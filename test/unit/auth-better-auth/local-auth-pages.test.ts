@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { localPagePaths } from '../../../src/auth/local-auth/better-auth/local-auth-pages.ts';
+import { localPagePaths } from '../../../src/interfaces/web/auth/better-auth/local-auth-pages.ts';
 import { ProviderDouble } from './fixtures/local-auth-pages-fixtures.ts';
 
 describe('Local page paths', () => {

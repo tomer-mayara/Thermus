@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { OauthException } from '@workos-inc/node';
-import { sessionCookie, signInCookie, type SessionEnvelope, type SignInEnvelope } from '../../../../src/auth/hosted-auth/workos/session-cookies.ts';
-import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
+import { sessionCookie, signInCookie, type SessionEnvelope, type SignInEnvelope } from '../../../../src/accounts/providers/workos/session-cookies.ts';
+import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/accounts/providers/workos/workos-browser-session.ts';
 import type {
   CodeExchange,
   SealCheck,
   SealRefresh,
   StoredSession,
   WorkOSSessionClient,
-} from '../../../../src/auth/hosted-auth/workos/workos-session-client.ts';
+} from '../../../../src/accounts/providers/workos/workos-session-client.ts';
 
 export const settings = {
   clientId: 'client_01TEST',

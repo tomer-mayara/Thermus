@@ -1,9 +1,9 @@
 import type { TestContext } from 'node:test';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { openWorkOSApplication } from '../../../src/hosted-workos-application.ts';
-import { HostedPortal } from '../../../src/hosted-portal.ts';
-import { browserSessionIssuer } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import { startHttpServer } from '../../../src/http/server.ts';
+import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
+import { openWorkOSApplication } from '../../../src/app/hosted-workos-application.ts';
+import { HostedPortal } from '../../../src/app/hosted-portal.ts';
+import { browserSessionIssuer } from '../../../src/accounts/providers/workos/workos-settings.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import { listenerTransport } from '../drivers/browser/hosted-browser.ts';
 import { WorkOSFake, type FakeUser } from '../doubles/workos/workos-fake.ts';
 import { WorkOSSignupFake } from '../doubles/workos/workos-signup-fake.ts';

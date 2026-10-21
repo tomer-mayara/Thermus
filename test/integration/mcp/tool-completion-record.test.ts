@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { RequestContext } from '../../../src/auth/access-context.ts';
-import { formatToolCompletion } from '../../../src/mcp/tool-completion-record.ts';
+import type { RequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { formatToolCompletion } from '../../../src/interfaces/mcp/tool-completion-record.ts';
 
 const context: RequestContext = {
   user: { authority: 'synthetic-authority', subject: 'trusted-subject' }, tenantId: 'trusted-tenant', grants: [], permissions: [],

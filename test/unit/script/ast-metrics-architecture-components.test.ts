@@ -76,6 +76,28 @@ test('Given noncanonical legacy paths, when files group, then traversal does not
   assert.deepEqual(componentsOf(snapshot([file('src/../bad.ts'), file('src//bad.ts')])), []);
 });
 
+test('Given nested ownership in each snapshot, when roots change under stable IDs, then the components and their dependency remain matched', () => {
+  const oldPaths = ['src/domain/a/a.ts', 'src/transport/b/b.ts'];
+  const newPaths = ['src/accounts/a/a.ts', 'src/interfaces/b/b.ts'];
+  const base = { ...snapshot(oldPaths.map((path) => file(path)), [pair(oldPaths[0], oldPaths[1])]), ownership: { a: { roots: ['src/domain/a/'] }, b: { roots: ['src/transport/b/'] } } };
+  const head = { ...snapshot(newPaths.map((path) => file(path)), [pair(newPaths[0], newPaths[1])]), ownership: { a: { roots: ['src/accounts/a/'] }, b: { roots: ['src/interfaces/b/'] } } };
+  const map = componentMapOf({ base, head, touched: newPaths, changes: oldPaths.map((oldPath, index) => ({ status: 'R' as const, oldPath, path: newPaths[index] })) }, undefined);
+  assert.deepEqual(map.nodes.map(({ label, status, touched }) => [label, status, touched]), [['a', 'kept', true], ['b', 'kept', true]]);
+  assert.deepEqual(map.edges.map(({ from, to, status }) => [from.label, to.label, status]), [['a', 'b', 'kept']]);
+});
+
+test('Given legacy root files and an explicit app owner, when compared, then src continues as app without changing historical grouping', () => {
+  const base = snapshot([file('src/index.ts')]);
+  const head = { ...base, ownership: { app: { roots: ['src/app/'], files: ['src/index.ts'] } } };
+  const map = componentMapOf({ base, head, touched: [] }, undefined);
+  assert.deepEqual(map.nodes.map(({ label, status }) => [label, status]), [['app', 'kept']]);
+  assert.equal(componentsOf(base)[0].name, 'src');
+});
+
+test('Given explicit snapshot owners and an unowned measured file, when components aggregate, then missing ownership cannot omit the file', () => {
+  assert.throws(() => componentsOf({ ...snapshot([file('src/unowned.ts')]), ownership: { app: { roots: ['src/app/'], files: ['src/index.ts'] } } }), /no component owner/);
+});
+
 test('Given an existing CRAP delta for members in different tool communities, when a folder component renders, then its band uses the supplied complete member assessment', () => {
   const source = snapshot([file('src/auth/a.ts'), file('src/auth/b.ts')]);
   const baseFunctions = [{ name: 'risk', paths: 6, share: 0, crap: 42 }];

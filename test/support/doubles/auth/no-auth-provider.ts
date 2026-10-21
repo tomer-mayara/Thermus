@@ -1,5 +1,5 @@
-import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../../../../src/auth/access-context.ts';
-import type { IdentityVerifier, VerifiedIdentity } from '../../../../src/auth/identity-verifier.ts';
+import type { AccessDecision, AccessResolver, AuthenticatedUser } from '../../../../src/accounts/identity/access-context.ts';
+import type { IdentityVerifier, VerifiedIdentity } from '../../../../src/accounts/identity/identity-verifier.ts';
 
 export class NoAuthProvider implements IdentityVerifier, AccessResolver {
   constructor(private readonly resource: URL) {}

@@ -7,7 +7,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { before, describe, test, type TestContext } from 'node:test';
 import type { CallToolResult, Client } from '@modelcontextprotocol/client';
-import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { HtmlToMarkdownPipeline } from '../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
 import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 import { assertExit } from '../../support/processes/command-process.ts';

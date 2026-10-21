@@ -1,5 +1,5 @@
 import { fromJsonSchema, McpServer } from '@modelcontextprotocol/server';
-import { requirePermission, type RequestContext } from '../../../../src/auth/access-context.ts';
+import { requirePermission, type RequestContext } from '../../../../src/accounts/identity/access-context.ts';
 
 type ProbeArguments = Readonly<Record<string, string>> & { readonly url: string };
 

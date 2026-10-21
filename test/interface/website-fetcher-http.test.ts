@@ -3,8 +3,8 @@ import type { ExecFileException } from 'node:child_process';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { after, before, describe, test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { WebsiteFetchHttpError } from '../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetcherLightpanda } from '../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchHttpError } from '../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { permitIPv4Fixture } from '../support/doubles/website-fetcher/network-fixture.ts';
 
 describe('WebsiteFetcherLightpanda HTTP contract', () => {

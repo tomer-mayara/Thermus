@@ -1,8 +1,8 @@
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createApplication } from '../../../src/application.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
+import { createApplication } from '../../../src/app/application.ts';
+import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 
 const environment = {

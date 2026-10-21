@@ -7,13 +7,13 @@ const compiler = `typescript-${(require('typescript/package.json') as { version:
 const excludedNames = new Set(['node_modules', '.git', '.DS_Store']);
 function generated(path: string): boolean {
   if (path.split('/').some((part) => excludedNames.has(part))) return true;
-  return ['dist', 'ast-report', 'coverage', 'src/user-portal/dist', 'src/user-portal/.vite'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+  return ['dist', 'ast-report', 'coverage', 'src/user-portal/dist', 'src/user-portal/.vite', 'src/interfaces/user-portal/dist', 'src/interfaces/user-portal/.vite'].some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 const directories = new Set(['src', 'test', 'script', 'patches', 'migrations', 'docker', '.github', '.habit-hooks']);
 function accepted(path: string): boolean {
   const parts = path.split('/');
   if (generated(path)) return false;
-  if (path === 'docs' || path === 'docs/lightpanda-runtime.md') return true;
+  if (['docs', 'docs/implementation', 'docs/lightpanda-runtime.md', 'docs/implementation/pr-review-rules.yaml'].includes(path)) return true;
   if (parts[0] === 'docs') return false;
   if (directories.has(parts[0]) && path.endsWith('.md') && !['src', 'test'].includes(parts[0])) return false;
   if (directories.has(parts[0])) return true;

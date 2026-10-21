@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { PromptInjectionRemoverSanitizer } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { HtmlToMarkdownPipeline } from '../../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { PromptInjectionRemoverSanitizer } from '../../../../../src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { HtmlToMarkdownPipeline } from '../../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { sanitizeHtml } from '../../fixtures/sanitize-html.ts';
 import { createContext } from '../../fixtures/html-cleaner-context.ts';
 

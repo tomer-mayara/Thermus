@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { organizationSelectionPage } from '../../../src/hosted-admin/account-pages.ts';
+import { organizationSelectionPage } from '../../../src/interfaces/web/account/account-pages.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 
 test('Given a selected organization and a long organization name, when the selector renders, then the current choice is named in text and semantics and each complete name stays on a submit button', async () => {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WorkOSBrowserSession } from '../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
+import { WorkOSBrowserSession } from '../../../src/accounts/providers/workos/workos-browser-session.ts';
 import {
   authority, cookieHeader, cookieHeaderOf, envelope, sessionEnvelopeIn, settings,
   signedIn, signInCookieHeader, WorkOSSessionClientDouble,

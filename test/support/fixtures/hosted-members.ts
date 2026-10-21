@@ -1,4 +1,4 @@
-import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-context.ts';
+import type { AuthenticatedUser, RoleGrant } from '../../../src/accounts/identity/access-context.ts';
 import type { MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
 import { adminGrant, memberRole, superAdminGrant, userGrant } from './hosted-roles.ts';
 

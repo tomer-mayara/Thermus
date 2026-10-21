@@ -50,7 +50,7 @@ test('Given an unsupported method, when a page receives it, then it returns 405 
 });
 
 test('Given a provider failure, when the sign-in form is posted, then the page returns a safe failure without the cause', async () => {
-  const pages = new (await import('../../../src/auth/local-auth/better-auth/local-auth-pages.ts')).LocalAuthPages(async () => { throw new Error('private database details'); }, { issuer: 'http://localhost:8080/api/auth', paths });
+  const pages = new (await import('../../../src/interfaces/web/auth/better-auth/local-auth-pages.ts')).LocalAuthPages(async () => { throw new Error('private database details'); }, { issuer: 'http://localhost:8080/api/auth', paths });
   const response = await pages.handle(formPost(paths.signIn, { email: 'alice@example.com', password: 'private-password', oauth_query: signedQuery }));
   assert.equal(response.status, 500);
   assert.doesNotMatch(await response.text(), /private/);

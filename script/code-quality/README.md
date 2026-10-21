@@ -347,8 +347,10 @@ cap is 40 paths and LOC stays 150. The wrapper removes only the native medium
 new-function warning at exactly 10 paths. It validates fresh native Markdown,
 JSON, counts, gate, stdout, and exit status before any policy adjustment.
 
-New resolved imports from `src/html-cleaner-pipeline/` to `src/mcp/`, and from
-`src/website-fetcher/` to `src/auth/`, are high findings. These rules use CR-13
+New resolved imports from HTML processing to MCP, and from website-fetcher to
+identity, auth providers, web, or CLI, are high findings. Each revision supplies
+its component roots from the review policy; revisions without this declaration
+keep the legacy folder rules. These rules use CR-13
 source resolution and compare with the merge base. Known forbidden base pairs
 can follow proven Git renames or unique exact-content deleted/added moves;
 allowed imports moved across a forbidden boundary are new findings. Uncertain dependencies in affected guarded sources fail with
@@ -702,8 +704,10 @@ notice. `--touched` selects rows; it alone does not prove unchanged source.
 Missing or different fingerprints suppress the test-only claim. Offline mode
 reads no checkout to fill the evidence.
 
-Components are populated top-level `src/` folders, plus `src` for root files.
-Nodes use file counts, LOC-weighted maintainability, paths, and eligible
+Components use the IDs and source roots declared in each revision's review
+policy. The exact `src/index.ts` exception belongs to `app`. Revisions without
+that declaration keep the legacy top-level folder grouping, with `src` for
+root files. Nodes use file counts, LOC-weighted maintainability, paths, and eligible
 bands. Each importing file counts once per target component; internal
 imports make no self-edge or self-cycle. Import evidence shows up to ten
 file pairs per changed community edge and an omitted count. It separates

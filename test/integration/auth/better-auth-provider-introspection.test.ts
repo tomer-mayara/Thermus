@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { inspect } from 'node:util';
 import { describe, test } from 'node:test';
 import { decodeBasicCredentials } from 'better-auth/oauth2';
-import { BetterAuthProvider, type BetterAuthProviderSettings } from '../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
-import { CLIENT_ADDRESS_HEADER } from '../../../src/http/client-address.ts';
-import { InvalidAccessTokenError } from '../../../src/auth/identity-verifier.ts';
+import { BetterAuthProvider, type BetterAuthProviderSettings } from '../../../src/accounts/providers/better-auth/better-auth-provider.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../src/runtime/http/client-address.ts';
+import { InvalidAccessTokenError } from '../../../src/accounts/identity/identity-verifier.ts';
 import { AccessTokenSigner, localIssuer, localUserClaims } from './fixtures/local-access-tokens.ts';
 import { localSettings, TokenProviderDouble } from './fixtures/token-provider-double.ts';
 

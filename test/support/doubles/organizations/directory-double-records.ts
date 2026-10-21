@@ -1,5 +1,5 @@
-import type { RoleGrant } from '../../../../src/auth/access-context.ts';
-import type { InvitationState, MembershipStatus, OrganizationMember, Page } from '../../../../src/organizations/organization-directory.ts';
+import type { RoleGrant } from '../../../../src/accounts/identity/access-context.ts';
+import type { InvitationState, MembershipStatus, OrganizationMember, Page } from '../../../../src/accounts/organizations/organization-directory.ts';
 import { memberRole } from '../../fixtures/hosted-roles.ts';
 
 export interface MemberSeed {

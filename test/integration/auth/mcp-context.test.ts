@@ -5,9 +5,9 @@ import {
   type AccessDecision,
   type AuthenticatedUser,
   type RoleGrant,
-} from '../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+} from '../../../src/accounts/identity/access-context.ts';
+import type { VerifiedIdentity } from '../../../src/accounts/identity/identity-verifier.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { AccessResolverSpy, type ConfiguredAccess } from '../../support/doubles/auth/access-resolver-spy.ts';
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { FailureReporterSpy } from '../../support/doubles/mcp/failure-reporter-spy.ts';

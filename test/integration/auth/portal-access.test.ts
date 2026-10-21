@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { createRequestContext, type RoleGrant } from '../../../src/auth/access-context.ts';
-import { portalAccessOperation } from '../../../src/hosted-admin/portal-access.ts';
+import { createRequestContext, type RoleGrant } from '../../../src/accounts/identity/access-context.ts';
+import { portalAccessOperation } from '../../../src/interfaces/web/account/portal-access.ts';
 
 const base = 'https://thermus.example/team';
 const user: RoleGrant = { role: 'user', permissions: ['product:access'] };

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import { createRequestContext } from '../../../src/auth/access-context.ts';
-import { createFetchPage } from '../../../src/page-fetch/fetch-page.ts';
-import type { StepResult } from '../../../src/page-fetch/pipeline-step.ts';
-import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
-import { WebsiteFetchHttpError, type WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { createRequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { createFetchPage } from '../../../src/pipelines/page-fetch/fetch-page.ts';
+import type { StepResult } from '../../../src/pipelines/execution/pipeline-step.ts';
+import type { StepRecord } from '../../../src/pipelines/execution/step-record.ts';
+import { WebsiteFetchHttpError, type WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 
 const url = 'https://source.example/article';

@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { completionLinesIn, completionRecordsIn, listeningUrlIn, stepRecordsIn, tenantIn } from '../../support/drivers/operator-log.ts';
 
-// The messages have the formats of src: the listening line of src/index.ts, the tenant line of src/application.ts,
-// and the completion record of src/mcp/tool-completion-record.ts.
+// The messages have the formats of src: the listening line of src/index.ts, the tenant line of src/app/application.ts,
+// and the completion record of src/interfaces/mcp/tool-completion-record.ts.
 const tenant = 'local:7303c1d8-a899-4392-8a3e-62b354fc839c';
 const tenantMessage = `The self-hosted installation uses tenant ${tenant}.`;
 const listeningMessage = 'Listening on http://127.0.0.1:52947';

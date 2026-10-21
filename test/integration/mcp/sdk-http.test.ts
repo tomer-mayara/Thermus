@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { SdkHttpError, StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
 import { createMcpHandler, ProtocolError, ProtocolErrorCode, Server } from '@modelcontextprotocol/server';
-import { startHttpServer } from '../../../src/http/server.ts';
+import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 for (const era of ['2026-07-28', '2025-11-25'] as const) {

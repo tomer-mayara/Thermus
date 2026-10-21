@@ -1,7 +1,7 @@
 import type { TestContext } from 'node:test';
-import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../../src/auth/access-context.ts';
-import type { VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import type { AccessDecision, AuthenticatedUser, RequestContext } from '../../../src/accounts/identity/access-context.ts';
+import type { VerifiedIdentity } from '../../../src/accounts/identity/identity-verifier.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { AccessResolverSpy, type ConfiguredAccess } from '../doubles/auth/access-resolver-spy.ts';
 import { IdentityVerifierSpy, type ConfiguredClaims } from '../doubles/auth/identity-verifier-spy.ts';
 import { ContextReportToolSpy } from '../doubles/mcp/context-report-tool-spy.ts';

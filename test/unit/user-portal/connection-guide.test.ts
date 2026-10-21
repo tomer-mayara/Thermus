@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { renderConnectionGuide } from '../../../src/user-portal/connection-guide.ts';
+import { renderConnectionGuide } from '../../../src/interfaces/user-portal/connection-guide.ts';
 
 function element<T extends Element = HTMLElement>(parent: Element, selector: string): T {
   const result = parent.querySelector<T>(selector);

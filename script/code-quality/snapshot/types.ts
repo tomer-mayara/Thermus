@@ -1,6 +1,7 @@
 import type { DependencyEvidence } from '../dependencies/types.ts';
 import type { InputIdentity } from '../provenance/types.ts';
 import type { FunctionIdentity, SourceEvidence } from '../identity/types.ts';
+import type { ComponentDefinitions } from '../../component-ownership.ts';
 
 // The snapshot of one tree, as script/code-quality/ast-metrics-snapshot.ts writes it to snapshot.json: the numbers of ast-metrics for
 // the files under src/ and their communities. See docs/implementation/ast-metrics-review.md, "Take a snapshot",
@@ -11,6 +12,7 @@ import type { FunctionIdentity, SourceEvidence } from '../identity/types.ts';
 // snapshots diff well.
 
 export interface Snapshot {
+  readonly ownership?: ComponentDefinitions;
   readonly tool?: string;
   readonly version: 1;
   // The commit of HEAD of the analyzed tree and its committer date (ISO 8601): with --base, the merge base. The files of

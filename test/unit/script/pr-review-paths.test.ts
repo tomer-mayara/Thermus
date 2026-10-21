@@ -60,7 +60,7 @@ test('Given a changed surface module, a surface module that imports a changed fi
   ]);
   const surface = { modules: ['src/index.ts', 'src/auth/access-context.ts', 'src/index.ts', 'src/http/b.ts'], contractDocuments: ['docs/reference/**'] };
 
-  assert.deepEqual(surfaceReasons(surface, imports, ['src/auth/roles.ts', 'src/http/b.ts', 'docs/reference/fetch.md', 'docs/guide.md']), [
+  assert.deepEqual(surfaceReasons(surface, { imports }, ['src/auth/roles.ts', 'src/http/b.ts', 'docs/reference/fetch.md', 'docs/guide.md']), [
     { route: 'CLARIFICATION_NEEDED', key: 'public_surface', fact: 'src/auth/access-context.ts (imports changed src/auth/roles.ts)' },
     { route: 'CLARIFICATION_NEEDED', key: 'public_surface', fact: 'src/http/b.ts' },
     { route: 'CLARIFICATION_NEEDED', key: 'public_surface', fact: 'docs/reference/fetch.md' },

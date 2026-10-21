@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { escapeHtml } from '../../../src/html/html-escape.ts';
+import { escapeHtml } from '../../../src/interfaces/web/html-escape.ts';
 import { decodeHtml } from '../../support/drivers/browser/html-entities.ts';
 
 describe('HTML escape of the product pages', () => {

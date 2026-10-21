@@ -19,7 +19,7 @@ Tenant ID is part of content identity, so one URL in two tenants has different k
 
 ## Trusted tenant boundary
 
-The tenant ID comes only from the [`RequestContext`](../../src/auth/access-context.ts) that MCPServer binds to the request. MCPServer verifies the token once, gives only the verified user to the access resolver, and binds a frozen copy of the decided context to that request. Use the context of the request that reads or writes the entry.
+The tenant ID comes only from the [`RequestContext`](../../src/accounts/identity/access-context.ts) that MCPServer binds to the request. MCPServer verifies the token once, gives only the verified user to the access resolver, and binds a frozen copy of the decided context to that request. Use the context of the request that reads or writes the entry.
 
 Never take the tenant ID from request headers, tool arguments, the page URL, the OAuth client ID, the token issuer, or an earlier request. Never use a user subject or an organization ID alone as the tenant ID. A refused request, or a request without a trusted context, reads and writes no entry.
 

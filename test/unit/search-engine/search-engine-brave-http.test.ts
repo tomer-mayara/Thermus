@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { SearchEngineBraveHttp } from '../../../src/search-engine/search-engine-brave-http.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { SearchEngineBraveHttp } from '../../../src/pipelines/providers/search-engine/search-engine-brave-http.ts';
+import type { WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
 const capturedPage: WebsiteFetchResult = {

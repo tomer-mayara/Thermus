@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { BillingState } from '../../../src/billing/billing.ts';
-import { BillingFree } from '../../../src/billing/billing-free.ts';
+import type { BillingState } from '../../../src/accounts/billing/billing.ts';
+import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
 
 const freeOrgA: BillingState = { organizationId: 'org-a', plan: 'free', billedSeats: 0 };
 const missingOrganization = { name: 'TypeError', message: 'Billing needs an organization ID' };

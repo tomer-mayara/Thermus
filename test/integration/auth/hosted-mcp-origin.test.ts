@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { composeHostedApplication } from '../../../src/application.ts';
-import { BillingFree } from '../../../src/billing/billing-free.ts';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { composeHostedApplication } from '../../../src/app/application.ts';
+import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { BrowserSessionDouble } from '../../support/doubles/auth/browser-session-double.ts';
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { MembershipDirectoryDouble } from '../../support/doubles/organizations/membership-directory-double.ts';

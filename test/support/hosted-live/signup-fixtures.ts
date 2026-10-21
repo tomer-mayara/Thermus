@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { WorkOS } from '@workos-inc/node';
-import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import type { FixtureRegistry } from './fixture-registry.ts';
 import { FixtureFactory, type LiveUser } from './staging-fixtures.ts';
 

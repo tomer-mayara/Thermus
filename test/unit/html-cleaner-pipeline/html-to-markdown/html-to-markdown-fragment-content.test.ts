@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import type { HtmlProcessingContext } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import type { HtmlProcessingContext } from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { createContextForUrl as createContext } from '../fixtures/html-cleaner-context.ts';
 
 let converter: CleanHtmlToMarkdownDefuddle;

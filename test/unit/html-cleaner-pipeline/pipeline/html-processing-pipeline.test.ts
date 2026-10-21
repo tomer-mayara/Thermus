@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { CleanHtmlToMarkdownDefuddle } from '../../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
-import { PromptInjectionRemoverSanitizer } from '../../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { CleanHtmlToMarkdownDefuddle } from '../../../../src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts';
+import { PromptInjectionRemoverSanitizer } from '../../../../src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import {
   HtmlToMarkdownPipeline,
   type HtmlProcessingContext,
   type HtmlTransformation,
-} from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+} from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 import { readAdFixture } from '../fixtures/ad-pages.ts';
 

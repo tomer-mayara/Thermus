@@ -26,8 +26,8 @@ function fixture(t: TestContext): string {
   }
   cpSync(join(root, 'test/unit/build-output.test.ts'), join(dir, 'test/unit/build-output.test.ts'));
   writeFileSync(join(dir, 'src/current.ts'), 'export const current = true;\n');
-  mkdirSync(join(dir, 'src/user-portal'));
-  writeFileSync(join(dir, 'src/user-portal/current.ts'), 'export const portal = true;\n');
+  mkdirSync(join(dir, 'src/interfaces/user-portal'), { recursive: true });
+  writeFileSync(join(dir, 'src/interfaces/user-portal/current.ts'), 'export const portal = true;\n');
   return dir;
 }
 function run(dir: string, command: string): SpawnSyncReturns<string> {
@@ -89,7 +89,7 @@ test('Given a deleted module, repeated builds remove its output and preserve out
   passes(run(dir, 'build'));
   assert.ok(existsSync(join(dir, 'dist/src/obsolete.js')));
   assert.equal(existsSync(join(dir, 'dist/test/unit/build-output.test.js')), false);
-  assert.equal(existsSync(join(dir, 'dist/src/user-portal')), false);
+  assert.equal(existsSync(join(dir, 'dist/src/interfaces/user-portal')), false);
   assert.equal(existsSync(join(dir, 'dist/test/unit/user-portal')), false);
   rmSync(join(dir, 'src/obsolete.ts'));
   passes(run(dir, 'build'));

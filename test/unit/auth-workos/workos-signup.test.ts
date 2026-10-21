@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WorkOSSignup } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
+import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
 import { SignupClientFake, documents, user } from './fixtures/signup-client-fake.ts';
 
 test('Given a verified identity without access, when it accepts the documents, then one personal workspace receives only User access', async () => {

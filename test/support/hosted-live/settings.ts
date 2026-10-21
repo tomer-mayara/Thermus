@@ -1,6 +1,6 @@
 import type { HostedMfaPolicy } from './mfa-profile.ts';
 import { WorkOS } from '@workos-inc/node';
-import { browserSessionIssuer } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { browserSessionIssuer } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { hostedRolePermissions } from '../fixtures/hosted-roles.ts';
 
 export interface HostedLiveSettings {

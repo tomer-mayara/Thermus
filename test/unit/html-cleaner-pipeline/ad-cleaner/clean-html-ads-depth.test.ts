@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import adblockRust from 'adblock-rs';
-import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import {
   HtmlDepthLimitError,
   MAX_HTML_ELEMENT_DEPTH,
-} from '../../../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts';
+} from '../../../../src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts';
 import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 import { createContext } from '../fixtures/html-cleaner-context.ts';
 

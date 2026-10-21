@@ -134,7 +134,7 @@ function hostedImageFacts(): unknown {
     user: process.getuid?.(),
     rootEntries: readdirSync(APPLICATION).sort(),
     distEntries: readdirSync(join(APPLICATION, 'dist')).sort(),
-    portal: existsSync(join(APPLICATION, 'src/user-portal/dist/index.html')),
+    portal: existsSync(join(APPLICATION, 'src/interfaces/user-portal/dist/index.html')),
     developmentPackages: developmentPackages(),
     productionPackages: productionPackages(),
     rulesHash: createHash('sha256').update(readFileSync(process.env.AD_RULES_FILE ?? '', 'utf8')).digest('hex'),

@@ -1,5 +1,8 @@
+import { importContext } from './import-context.mjs';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
+
+const contextPlugin = { rules: { 'import-context': importContext } };
 
 const sourceFiles = [
   '**/*.ts',
@@ -112,6 +115,11 @@ export default [
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/no-inferrable-types': 'error',
     },
+  },
+  {
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    plugins: { 'phase-one': contextPlugin },
+    rules: { 'phase-one/import-context': 'error' },
   },
   {
     files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**'],

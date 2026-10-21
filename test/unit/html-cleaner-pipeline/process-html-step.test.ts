@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { ProcessHtmlStep } from '../../../src/html-cleaner-pipeline/process-html-step.ts';
-import type { HtmlProcessingContext } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { ProcessHtmlStep } from '../../../src/pipelines/html-processing/process-html-step.ts';
+import type { HtmlProcessingContext } from '../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
+import type { WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 
 const page: WebsiteFetchResult = { requestedUrl: 'HTTPS://Source.Example/Page', finalUrl: 'https://destination.example/final', html: '<p>Source</p>' };
 

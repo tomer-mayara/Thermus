@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { type CleanHtmlAds } from '../../../../src/html-cleaner-pipeline/ad-cleaner/clean-html-ads.ts';
-import { type HtmlProcessingContext } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { type CleanHtmlAds } from '../../../../src/pipelines/html-processing/ad-cleaner/clean-html-ads.ts';
+import { type HtmlProcessingContext } from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 import { readAdFixture } from '../fixtures/ad-pages.ts';
 

@@ -34,10 +34,10 @@ test('Given this repository, when the command builds and runs the unit suite, th
   assert.ok(report.provenance.status === 'verified');
   assert.equal(report.commit, report.provenance.capturedCommit);
   for (const hash of [report.provenance.captureManifestFingerprint, report.provenance.buildFingerprint, report.provenance.inputsFingerprint]) assert.match(hash, /^[a-f0-9]{64}$/);
-  const portal = report.files.find((file) => file.path === 'src/user-portal/portal.ts');
+  const portal = report.files.find((file) => file.path === 'src/interfaces/user-portal/portal.ts');
   assert.ok(portal?.functions.some((entry) => entry.name === 'initializePortal' && entry.called >= 1), JSON.stringify(portal));
-  const application = report.files.find((file) => file.path === 'src/application.ts');
-  assert.ok(application !== undefined, 'The report has no entry for src/application.ts.');
+  const application = report.files.find((file) => file.path === 'src/app/application.ts');
+  assert.ok(application !== undefined, 'The report has no entry for src/app/application.ts.');
   assert.ok(application.functions.some((entry) => entry.name === 'createApplication'), JSON.stringify(application));
   // Only the integration and acceptance tests call createApplication; the unit tests call other functions of the file.
   assert.ok(application.functions.some((entry) => entry.name !== '(anonymous)' && entry.called >= 1), JSON.stringify(application));

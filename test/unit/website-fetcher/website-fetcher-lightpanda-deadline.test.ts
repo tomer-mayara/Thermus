@@ -1,9 +1,9 @@
-import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
+import { WebsiteFetchFailure } from '../../../src/pipelines/providers/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import type { ChildProcess, ExecFileException } from 'node:child_process';
 import { test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { WebsiteFetchHttpError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchHttpError } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 function setExitState(child: ChildProcess, state: { exitCode?: number; signalCode?: NodeJS.Signals }): void {

@@ -6,7 +6,7 @@ import {
   workosAuthority,
   WorkOSSettingsError,
   type WorkOSSettings,
-} from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+} from '../../../src/accounts/providers/workos/workos-settings.ts';
 
 type Environment = Record<string, string | undefined>;
 

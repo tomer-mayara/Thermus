@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WebsiteFetchFailure, type FetchDiagnostic } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetchFailure, type FetchDiagnostic } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 
 for (const [diagnostic, detail] of [

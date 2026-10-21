@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WorkOSSignup } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
+import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
 import { SignupClientFake, documents, user } from './fixtures/signup-client-fake.ts';
 
 const inspect = (fake: SignupClientFake, signal = new AbortController().signal) => new WorkOSSignup(fake.options()).inspect({ user, signal });

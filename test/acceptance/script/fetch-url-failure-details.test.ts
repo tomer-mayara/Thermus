@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WebsiteFetchFailure, WebsiteFetchHttpError, WebsiteFetchReadinessTimeoutError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetchFailure, WebsiteFetchHttpError, WebsiteFetchReadinessTimeoutError } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { openFetchSite } from '../../support/in-process/mcp-fetch-site.ts';
 import { runFetchUrl } from '../../support/processes/fetch-url-command.ts';
 

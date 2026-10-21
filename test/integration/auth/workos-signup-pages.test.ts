@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupSignInPage } from '../../../src/auth/hosted-auth/workos/workos-signup-pages.ts';
+import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupSignInPage } from '../../../src/interfaces/web/auth/workos/workos-signup-pages.ts';
 
 const documentOf = (text: string) => ({ version: 'legal-v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents = { version: 'bundle-v1', terms: documentOf('# Terms\n\nOriginal terms.'), notice: documentOf('# Notice\n\nOriginal notice.'), agreement: { version: 'agreement-v1', text: 'I agree to these exact terms.\n' } };

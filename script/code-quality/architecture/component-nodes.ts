@@ -5,10 +5,11 @@ import type { CrapDelta } from './crap-delta.ts';
 import type { CommunityNumbers, MapNode, MapSources } from './types.ts';
 
 export function componentNodesOf(sources: MapSources, delta: CrapDelta | undefined): MapNode[] {
-  const base = new Map(componentsOf(sources.base).map((component) => [component.name, component]));
-  const head = new Map(componentsOf(sources.head).map((component) => [component.name, component]));
+  const legacyRoot = sources.base.ownership?.app || sources.head.ownership?.app ? 'app' : 'src';
+  const base = new Map(componentsOf(sources.base, legacyRoot).map((component) => [component.name, component]));
+  const head = new Map(componentsOf(sources.head, legacyRoot).map((component) => [component.name, component]));
   const paths = [...sources.touched, ...(sources.changes ?? []).flatMap((change) => [change.path, change.oldPath ?? change.path])];
-  const touched = new Set(paths.map(componentNameOf));
+  const touched = new Set(paths.flatMap((path) => [sources.base, sources.head].map((snapshot) => componentNameOf(path, snapshot.ownership, legacyRoot))));
   const bandOf = bandRuleOf(delta);
   return [...new Set([...base.keys(), ...head.keys()])].sort().flatMap((name): MapNode[] => {
     const before = base.get(name);

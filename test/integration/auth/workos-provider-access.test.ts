@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { createLocalJWKSet, type JWTPayload } from 'jose';
-import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-context.ts';
-import { hostedTenantId, WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
-import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
-import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import type { AuthenticatedUser, RoleGrant } from '../../../src/accounts/identity/access-context.ts';
+import { hostedTenantId, WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
+import { HostedRoleConfigurationError } from '../../../src/accounts/providers/workos/hosted-role-mapping.ts';
+import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../support/doubles/workos/jwt-signing-key.ts';
 
 const authority = workosAuthority('client_01ENVIRONMENT');

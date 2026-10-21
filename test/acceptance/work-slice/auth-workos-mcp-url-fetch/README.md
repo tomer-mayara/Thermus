@@ -91,7 +91,7 @@ The launcher writes the settings to stderr before the start, one `NAME=value`
 line each. It never writes `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, or
 `AXIOM_API_KEY`. If `AD_RULES_FILE` is not a file, the launcher stops and shows
 the `touch` command that makes an empty file. If the portal build
-`src/user-portal/dist/index.html` is missing, the launcher stops and shows
+`src/interfaces/user-portal/dist/index.html` is missing, the launcher stops and shows
 `npm run build:user-portal`. `LISTEN_HOST` and `LISTEN_PORT` have no effect:
 the Thermus listener behind the HTTPS front listens on `127.0.0.1` with a free
 port.

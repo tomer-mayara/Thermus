@@ -1,4 +1,4 @@
-import type { HtmlProcessingContext } from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import type { HtmlProcessingContext } from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 
 export function createContext(html: string, overrides: Partial<HtmlProcessingContext> = {}): HtmlProcessingContext {
   return {

@@ -7,7 +7,7 @@ import {
   signInCookie,
   type SessionEnvelope,
   type SignInEnvelope,
-} from '../../../src/auth/hosted-auth/workos/session-cookies.ts';
+} from '../../../src/accounts/providers/workos/session-cookies.ts';
 
 const password = 'session-cookie-test-password-0123456789';
 const otherPassword = 'another-cookie-password-0123456789-abcdef';

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import type { LocalAuthSettings } from '../../../../src/auth/local-auth/local-user-administration.ts';
-import { runLocalAuthCommand, type HiddenInput, type OpenedLocalAdministration } from '../../../../src/auth/local-auth/local-auth-command.ts';
-import { BetterAuthUserAdministration } from '../../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
+import type { LocalAuthSettings, OpenedLocalAdministration } from '../../../../src/accounts/identity/local-user-administration.ts';
+import { runLocalAuthCommand, type HiddenInput } from '../../../../src/interfaces/cli/local-auth-command.ts';
+import { BetterAuthUserAdministration } from '../../../../src/accounts/providers/better-auth/better-auth-user-administration.ts';
 import { BaseLogger } from '../../../../src/logging/base-logger.ts';
 import { LocalProviderDouble } from '../../../support/doubles/auth/local-provider-double.ts';
 

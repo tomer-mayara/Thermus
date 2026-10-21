@@ -12,7 +12,7 @@
   ],
   "imports": {
     "#auth-local-migrations/*": "./migrations/auth-local/*",
-    "#hosted-portal/*": "./src/user-portal/dist/*"
+    "#hosted-portal/*": "./src/interfaces/user-portal/dist/*"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -34,9 +34,9 @@
     "work-slice:basic-mcp-url-fetch": "tsx test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts",
     "work-slice:auth-workos-mcp-url-fetch": "tsx test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
     "test:build": "node --test test/unit/build-output.test.ts",
-    "dev:user-portal": "vite --config src/user-portal/vite.config.ts",
-    "build:user-portal": "npm run typecheck:user-portal && vite build --config src/user-portal/vite.config.ts",
-    "preview:user-portal": "vite preview --config src/user-portal/vite.config.ts",
+    "dev:user-portal": "vite --config src/interfaces/user-portal/vite.config.ts",
+    "build:user-portal": "npm run typecheck:user-portal && vite build --config src/interfaces/user-portal/vite.config.ts",
+    "preview:user-portal": "vite preview --config src/interfaces/user-portal/vite.config.ts",
     "typecheck:user-portal": "tsc --project tsconfig.user-portal.json",
     "test:user-portal": "node --test \"test/unit/user-portal/**/*.test.ts\" \"test/acceptance/user-portal/**/*.test.ts\"",
     "build:hosted": "npm run check && node --test \"dist/test/integration/**/*.test.js\" && node --test \"dist/test/acceptance/architecture/*.test.js\" dist/test/acceptance/hosted-ad-policy.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-portal.test.js dist/test/acceptance/auth/hosted-mcp-origin.test.js dist/test/acceptance/auth/hosted-workos-signup.test.js dist/test/acceptance/auth/hosted-signup-restart.test.js dist/test/acceptance/auth/hosted-signup-guidance.test.js dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js dist/test/acceptance/mcp/hosted-fetch-tool.test.js dist/test/acceptance/mcp/search-pipeline.test.js dist/test/acceptance/mcp/hosted-search-capacity.test.js dist/test/acceptance/mcp/search-lifecycle.test.js dist/test/acceptance/mcp/hosted-process-shutdown.test.js dist/test/acceptance/mcp/server-only-modules.test.js dist/test/interface/hosted-renderer-startup.test.js && node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js dist/test/acceptance/mcp/search-pipeline.runtime.js",

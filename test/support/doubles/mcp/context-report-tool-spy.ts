@@ -1,5 +1,5 @@
 import { fromJsonSchema, McpServer } from '@modelcontextprotocol/server';
-import type { RequestContext } from '../../../../src/auth/access-context.ts';
+import type { RequestContext } from '../../../../src/accounts/identity/access-context.ts';
 
 type ContextReportArguments = Readonly<Record<string, string>>;
 

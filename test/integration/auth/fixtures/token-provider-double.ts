@@ -1,5 +1,5 @@
-import type { BetterAuthProviderSettings } from '../../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
-import type { LocalAuth } from '../../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
+import type { BetterAuthProviderSettings } from '../../../../src/accounts/providers/better-auth/better-auth-provider.ts';
+import type { LocalAuth } from '../../../../src/accounts/providers/better-auth/better-auth-runtime.ts';
 import { localIssuer, mcpResourceUrl, type PublicSigningKey } from './local-access-tokens.ts';
 
 export const installationId = '0f6c1e9a-4b7d-4e2a-9c35-8d1f2a6b7e40';

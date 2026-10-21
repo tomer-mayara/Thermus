@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { CleanHtmlAdsAdblockRs } from '../../../../src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
-import { HtmlDepthLimitError } from '../../../../src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts';
+import { CleanHtmlAdsAdblockRs } from '../../../../src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
+import { HtmlDepthLimitError } from '../../../../src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts';
 import {
   HtmlToMarkdownPipeline,
   type HtmlProcessingContext,
-} from '../../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+} from '../../../../src/pipelines/html-processing/html-to-markdown-pipeline.ts';
 import { elementHidingRules } from '../../../support/fixtures/ad-rules.ts';
 
 describe('HTML to Markdown pipeline depth limit', () => {

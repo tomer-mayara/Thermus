@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
-import { ObserveRequestStep } from '../../../src/page-fetch/observe-request-step.ts';
-import type { StepResult } from '../../../src/page-fetch/pipeline-step.ts';
+import { ObserveRequestStep } from '../../../src/pipelines/execution/observe-request-step.ts';
+import type { StepResult } from '../../../src/pipelines/execution/pipeline-step.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { stepRecordsIn } from '../../support/drivers/operator-log.ts';

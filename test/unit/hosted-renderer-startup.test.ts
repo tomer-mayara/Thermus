@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import { test } from 'node:test';
-import { assertHostedRenderer } from '../../src/hosted-renderer-startup.ts';
+import { assertHostedRenderer } from '../../src/app/hosted-renderer-startup.ts';
 import { syncBuiltinMocks } from '../support/doubles/website-fetcher/builtin-mocks.ts';
 
 for (const executable of [undefined, '', 'lightpanda']) {

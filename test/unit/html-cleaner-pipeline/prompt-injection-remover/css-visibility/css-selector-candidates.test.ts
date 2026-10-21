@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parse } from 'css-tree';
-import { createSelectorMatcher } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-selectors.ts';
-import { SourceHtmlDocument } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts';
-import { resolveCssVisibility } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility.ts';
+import { createSelectorMatcher } from '../../../../../src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts';
+import { SourceHtmlDocument } from '../../../../../src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts';
+import { resolveCssVisibility } from '../../../../../src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts';
 
 for (const { name, selector, html, expected } of [
   { name: 'escaped class whitespace', selector: String.raw`.pay\a0 load`, html: '<p class="pay&nbsp;load" data-key="target"></p><p class="pay load"></p>', expected: ['target'] },

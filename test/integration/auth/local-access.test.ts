@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
 import { inspect } from 'node:util';
 import { describe, test, type TestContext } from 'node:test';
-import { BetterAuthProvider, LOCAL_USER_GRANT } from '../../../src/auth/local-auth/better-auth/better-auth-provider.ts';
+import { BetterAuthProvider, LOCAL_USER_GRANT } from '../../../src/accounts/providers/better-auth/better-auth-provider.ts';
 import {
   openBetterAuthRuntime,
   type BetterAuthRuntime,
   type ResourceServerClient,
-} from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+} from '../../../src/accounts/providers/better-auth/better-auth-runtime.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
 import {
   errorCodeOf,
   followAuthorizationWithConsent,

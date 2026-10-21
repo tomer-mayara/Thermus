@@ -1,6 +1,6 @@
 # User portal
 
-The browser portal is in `src/user-portal/`. It uses TypeScript and Vite. It
+The browser portal is in `src/interfaces/user-portal/`. It uses TypeScript and Vite. It
 shares `package.json` and `pnpm-lock.yaml` with the server. Install and build
 it from the repository root with Node 24 and pnpm 12.10.1.
 
@@ -11,7 +11,7 @@ pnpm test:user-portal
 pnpm build:user-portal
 ```
 
-The build writes `src/user-portal/dist/`: `index.html` and the files in
+The build writes `src/interfaces/user-portal/dist/`: `index.html` and the files in
 `assets/`. The portal reads no build setting and keeps no secret.
 
 ## Public entry
@@ -40,7 +40,7 @@ Privacy Notice and Terms of Service at `https://thermus.ai/privacy` and
 `https://thermus.ai/terms`. The product activation documents remain on signup.
 
 The logo, favicon, and IBM Plex Sans, Serif, and Mono font files are in
-`src/user-portal/public/assets/`. Vite copies them into the flat output asset
+`src/interfaces/user-portal/public/assets/`. Vite copies them into the flat output asset
 directory. The fonts use the SIL Open Font License. The unmodified license is
 shipped beside them as `assets/plex-OFL.txt`. The logo and font files come from
 the existing Thermus marketing design kit. No third-party font request is made.
@@ -94,7 +94,7 @@ or show how to copy manually if the write fails.
 
 ## Deployment
 
-The production hosted application serves `src/user-portal/dist/` itself. Run
+The production hosted application serves `src/interfaces/user-portal/dist/` itself. Run
 `pnpm build:user-portal` before startup. Its package import
 `#hosted-portal/*` resolves the build in source and emitted server layouts.
 The public base path must be `/`, because the Vite build uses absolute asset

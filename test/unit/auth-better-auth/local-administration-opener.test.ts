@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { BetterAuthRuntime } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
-import { openBetterAuthAdministration } from '../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
+import type { BetterAuthRuntime } from '../../../src/accounts/providers/better-auth/better-auth-runtime.ts';
+import { openBetterAuthAdministration } from '../../../src/accounts/providers/better-auth/better-auth-user-administration.ts';
 import { LocalProviderDouble } from '../../support/doubles/auth/local-provider-double.ts';
 
 const settings = { dataDirectory: '/var/lib/thermus', publicBaseUrl: 'http://localhost:8080/', mcpResourceUrl: 'http://localhost:8080/mcp' };

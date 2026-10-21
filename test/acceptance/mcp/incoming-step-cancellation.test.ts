@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
-import { ProcessHtmlStep } from '../../../src/html-cleaner-pipeline/process-html-step.ts';
-import type { StepResult } from '../../../src/page-fetch/pipeline-step.ts';
-import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
+import { ProcessHtmlStep } from '../../../src/pipelines/html-processing/process-html-step.ts';
+import type { StepResult } from '../../../src/pipelines/execution/pipeline-step.ts';
+import type { WebsiteFetchResult } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { stepRecordsIn } from '../../support/drivers/operator-log.ts';

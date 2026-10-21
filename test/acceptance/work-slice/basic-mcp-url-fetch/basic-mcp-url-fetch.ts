@@ -4,13 +4,13 @@
 // Start it with the launcher basic-mcp-url-fetch.sh in this folder, as README.md here says.
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application, type ApplicationLogger } from '../../../../src/application.ts';
-import { loadListenAddress, loadPublicUrls, type PublicUrls } from '../../../../src/config/deployment-config.ts';
-import { createToolOperations, fetchToolServers } from '../../../../src/fetch-tool.ts';
-import { assertHostedRenderer } from '../../../../src/hosted-renderer-startup.ts';
+import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application, type ApplicationLogger } from '../../../../src/app/application.ts';
+import { loadListenAddress, loadPublicUrls, type PublicUrls } from '../../../../src/runtime/config/deployment-config.ts';
+import { createToolOperations, fetchToolServers } from '../../../../src/app/fetch-tool.ts';
+import { assertHostedRenderer } from '../../../../src/app/hosted-renderer-startup.ts';
 import { serveApplication } from '../../../../src/index.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
-import { MCPServer } from '../../../../src/mcp/mcp-server.ts';
+import { MCPServer } from '../../../../src/interfaces/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../../../support/doubles/auth/no-auth-provider.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { fetchOperationSpy } from '../../../support/doubles/mcp/fetch-operation-spy.ts';

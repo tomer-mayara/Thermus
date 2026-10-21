@@ -4,7 +4,7 @@ import { externalNameOf } from './external.ts';
 import { importStatementsOf, type ImportKind, type ImportStatement } from './imports.ts';
 import { resolutionOf, type SourceFiles } from './resolution.ts';
 
-export interface FileImport {
+interface FileImport {
   readonly target: string;
   readonly kind: ImportKind;
 }
@@ -30,6 +30,7 @@ export interface UnresolvedImport {
 }
 
 export interface SourceGraph {
+  readonly owners?: ReadonlyMap<string, string>;
   readonly packages: readonly string[];
   readonly imports: ReadonlyMap<string, readonly FileImport[]>;
   readonly edges: readonly PackageEdge[];
@@ -38,6 +39,7 @@ export interface SourceGraph {
 }
 
 interface Collection {
+  readonly ownerOf: (path: string) => string;
   readonly files: SourceFiles;
   readonly imports: Map<string, FileImport[]>;
   readonly externals: Map<string, ExternalImport>;
@@ -50,16 +52,18 @@ export function packageOf(path: string): string {
 }
 
 // paths holds every path under src/ at HEAD, and sources the text of each TypeScript file among them.
-export function sourceGraphOf(paths: readonly string[], sources: ReadonlyMap<string, string>): SourceGraph {
+export function sourceGraphOf(paths: readonly string[], sources: ReadonlyMap<string, string>, ownerOf = packageOf): SourceGraph {
+  const owners = new Map(paths.map((path) => [path, ownerOf(path)]));
   const javascript = paths.filter(isJavaScript);
   const files = { code: new Set([...sources.keys(), ...javascript]), all: new Set(paths) };
-  const collection: Collection = { files, imports: new Map(), externals: new Map(), unresolved: new Map() };
+  const collection: Collection = { files, ownerOf, imports: new Map(), externals: new Map(), unresolved: new Map() };
   for (const file of [...sources.keys()].sort(textOrder)) addFile(collection, file, sources.get(file) ?? '');
   for (const file of javascript) addUnresolved(collection, { file, detail: 'the check reads TypeScript only' });
   return {
-    packages: [...new Set(paths.map(packageOf))].sort(textOrder),
+    owners,
+    packages: [...new Set(owners.values())].sort(textOrder),
     imports: collection.imports,
-    edges: edgesOf(collection.imports),
+    edges: edgesOf(collection.imports, ownerOf),
     externals: [...collection.externals.values()],
     unresolved: [...collection.unresolved.values()],
   };
@@ -94,15 +98,15 @@ function addUnresolved(collection: Collection, entry: UnresolvedImport): void {
 
 function addExternal(collection: Collection, file: string, specifier: string): void {
   const { name, builtin } = externalNameOf(specifier);
-  const owner = packageOf(file);
+  const owner = collection.ownerOf(file);
   const key = `${owner}\0${name}`;
   if (!collection.externals.has(key)) collection.externals.set(key, { owner, name, builtin, source: file });
 }
 
-function edgesOf(imports: ReadonlyMap<string, readonly FileImport[]>): PackageEdge[] {
+function edgesOf(imports: ReadonlyMap<string, readonly FileImport[]>, ownerOf: (path: string) => string): PackageEdge[] {
   const edges = new Map<string, PackageEdge>();
   for (const [file, targets] of imports) {
-    for (const { target, kind } of targets) addEdge(edges, { from: packageOf(file), to: packageOf(target), kind, source: file });
+    for (const { target, kind } of targets) addEdge(edges, { from: ownerOf(file), to: ownerOf(target), kind, source: file });
   }
   return [...edges.values()].sort((first, second) => textOrder(first.from, second.from) || textOrder(first.to, second.to));
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WorkOSBrowserSession } from '../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
-import { sessionCookie } from '../../../src/auth/hosted-auth/workos/session-cookies.ts';
+import { WorkOSBrowserSession } from '../../../src/accounts/providers/workos/workos-browser-session.ts';
+import { sessionCookie } from '../../../src/accounts/providers/workos/session-cookies.ts';
 import { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 
 const organizationId = 'org_MFA';

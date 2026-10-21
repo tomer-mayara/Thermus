@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { RequestContext } from '../../../src/auth/access-context.ts';
+import type { RequestContext } from '../../../src/accounts/identity/access-context.ts';
 import { contextAt, destinationPaths, statusesOf } from '../../support/dsl/hosted-access.ts';
 import type { BrowserAnswer, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 

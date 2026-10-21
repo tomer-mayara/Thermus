@@ -21,8 +21,8 @@ const fatalLine = /^\[[^\]]*\] FATAL (?:\[[^\]]*\]: )?(.*)$/gm;
 const blocked = 'The test blocked a server-only module';
 const rendererReport = 'Renderer setup failure';
 const serverOnlyModuleGuard = `data:text/javascript,${encodeURIComponent(`import { registerHooks } from 'node:module';
-const serverOnly = (url) => /\\/src\\/(?:config\\/ad-rules-file|website-fetcher\\/website-fetcher-lightpanda|hosted-renderer-startup|hosted-portal)\\.(?:js|ts)$/.test(url)
-  || ['/src/html-cleaner-pipeline/', '/adblock-rs/'].some((part) => url.includes(part));
+const serverOnly = (url) => /\\/src\\/(?:runtime\\/config\\/ad-rules-file|pipelines\\/providers\\/website-fetcher\\/website-fetcher-lightpanda|app\\/hosted-renderer-startup|app\\/hosted-portal)\\.(?:js|ts)$/.test(url)
+  || ['/src/pipelines/html-processing/', '/adblock-rs/'].some((part) => url.includes(part));
 registerHooks({ resolve(specifier, context, nextResolve) {
   const result = nextResolve(specifier, context);
   if (serverOnly(result.url)) throw new Error(${JSON.stringify(blocked)});

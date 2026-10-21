@@ -18,7 +18,7 @@
   },
   "include": ["src", "test", "script"],
   "exclude": [
-    "src/user-portal",
+    "src/interfaces/user-portal",
     "test/acceptance/user-portal",
     "test/unit/user-portal"
   ]

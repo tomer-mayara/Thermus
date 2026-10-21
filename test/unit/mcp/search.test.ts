@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { projectSearchOutcome } from '../../../src/mcp/search.ts';
-import type { SearchOutcome } from '../../../src/search-pipeline/search-pipeline.ts';
+import { projectSearchOutcome } from '../../../src/interfaces/mcp/search.ts';
+import type { SearchOutcome } from '../../../src/pipelines/search/search-pipeline.ts';
 
 test('Given released search text, when projected, then one exact text result is returned', () => {
   for (const markdown of ['  # Result\n😀\n', 'No search results.']) {

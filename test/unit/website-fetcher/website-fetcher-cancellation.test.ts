@@ -1,11 +1,11 @@
-import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
+import { WebsiteFetchFailure } from '../../../src/pipelines/providers/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, { ChildProcess, type ExecFileException } from 'node:child_process';
 import dns from 'node:dns/promises';
 import { getEventListeners } from 'node:events';
 import { syncBuiltinESMExports } from 'node:module';
 import { test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
 import { controlledRenderer, RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 type Completion = (error: ExecFileException | null, stdout: string, stderr: string) => void;

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { GenericServerException } from '@workos-inc/node';
-import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
-import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
-import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
-import type { MemberEntry, MemberOverview } from '../../../src/organizations/administration-overviews.ts';
-import type { ChangeOutcome, ChangeRecord, ChangeResult } from '../../../src/organizations/change-records.ts';
+import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
+import type { MemberEntry, MemberOverview } from '../../../src/accounts/organizations/administration-overviews.ts';
+import type { ChangeOutcome, ChangeRecord, ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
 import {
   OrganizationAdministration,
   type Actor,
@@ -13,7 +13,7 @@ import {
   type GrantChangeRequest,
   type InvitationChangeRequest,
   type InvitationSendRequest,
-} from '../../../src/organizations/organization-administration.ts';
+} from '../../../src/accounts/organizations/organization-administration.ts';
 import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
 import { fakeClientId, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 import { WorkOSFake, type FakeInvitation, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';

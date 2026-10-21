@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src/user-portal", "test/acceptance/user-portal", "test/unit/user-portal"]
+  "include": ["src/interfaces/user-portal", "test/acceptance/user-portal", "test/unit/user-portal"]
 }

@@ -6,8 +6,8 @@ import childProcess, {
 } from 'node:child_process';
 import dns from 'node:dns/promises';
 import { test } from 'node:test';
-import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/website-fetcher/network-policy.ts';
-import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { LIGHTPANDA_BLOCKED_CIDRS } from '../../../src/pipelines/providers/website-fetcher/network-policy.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
 import { syncBuiltinMocks } from '../../support/doubles/website-fetcher/builtin-mocks.ts';
 import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 

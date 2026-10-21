@@ -1,4 +1,4 @@
-import { WebsiteFetchFailure } from '../../../src/website-fetcher/fetch-diagnostic.ts';
+import { WebsiteFetchFailure } from '../../../src/pipelines/providers/website-fetcher/fetch-diagnostic.ts';
 import assert from 'node:assert/strict';
 import childProcess, {
   ChildProcess,
@@ -8,8 +8,8 @@ import childProcess, {
 import dns from 'node:dns/promises';
 import { syncBuiltinESMExports } from 'node:module';
 import { afterEach, beforeEach, describe, mock, test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
-import { WebsiteFetchReadinessTimeoutError } from '../../../src/website-fetcher/website-fetcher.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetchReadinessTimeoutError } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 import { RendererChildDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 describe('WebsiteFetcherLightpanda', () => {

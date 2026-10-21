@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { GenericServerException } from '@workos-inc/node';
 import { createRemoteJWKSet } from 'jose';
-import type { AuthenticatedUser } from '../../../src/auth/access-context.ts';
-import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
-import { HostedRoleConfigurationError } from '../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
-import { WorkOSOrganizations } from '../../../src/auth/hosted-auth/workos/workos-organizations.ts';
-import { workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import type { AuthenticatedUser } from '../../../src/accounts/identity/access-context.ts';
+import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
+import { HostedRoleConfigurationError } from '../../../src/accounts/providers/workos/hosted-role-mapping.ts';
+import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../support/doubles/workos/jwt-signing-key.ts';
 import { fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 

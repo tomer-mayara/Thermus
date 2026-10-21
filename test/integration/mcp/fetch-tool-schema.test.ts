@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fetchToolInputSchema, parseFetchToolArguments } from '../../../src/mcp/fetch-tool-schema.ts';
+import { fetchToolInputSchema, parseFetchToolArguments } from '../../../src/interfaces/mcp/fetch-tool-schema.ts';
 
-import { isValidFetchUrl } from '../../../src/page-fetch/fetch-url.ts';
+import { isValidFetchUrl } from '../../../src/pipelines/page-fetch/fetch-url.ts';
 
 const validUrl = 'https://example.com/page';
 

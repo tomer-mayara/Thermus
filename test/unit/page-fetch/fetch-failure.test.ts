@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { PageFetchFailure } from '../../../src/page-fetch/fetch-failure.ts';
+import { PageFetchFailure } from '../../../src/pipelines/page-fetch/fetch-failure.ts';
 
 for (const status of [400, 403, 404, 418, 429, 500, 503, 599]) {
   test(`Given an HTTP ${status} failure, when its public failure is made, then it reports that status`, () => {

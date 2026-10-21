@@ -7,8 +7,10 @@ import { serverCommunitiesOf, snapshotFunctionsOf } from './input.ts';
 import { communityMapOf } from './map.ts';
 import * as numbers from '../shared/numbers.ts';
 import type { FileMeasurement, Snapshot, SnapshotFile } from './types.ts';
+import type { ComponentDefinitions } from '../../component-ownership.ts';
 
 export interface SnapshotSources {
+  readonly ownership?: ComponentDefinitions;
   readonly commit: string;
   readonly date: string;
   readonly title?: string;
@@ -27,6 +29,7 @@ export function snapshotOf(sources: SnapshotSources): Snapshot {
     .map((file) => snapshotFileOf(file, map.communityOf(file.path), sources.functions.get(file.path)))
     .map((file) => fileWithEvidence(file, sources.sourceTexts?.get(file.path)));
   return {
+    ...(sources.ownership === undefined ? {} : { ownership: sources.ownership }),
     version: 1,
     commit: sources.commit,
     date: sources.date,

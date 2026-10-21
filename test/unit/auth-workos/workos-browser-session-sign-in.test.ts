@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { GenericServerException, OauthException, UnauthorizedException } from '@workos-inc/node';
-import type { SignInEnvelope } from '../../../src/auth/hosted-auth/workos/session-cookies.ts';
-import { WorkOSBrowserSession } from '../../../src/auth/hosted-auth/workos/workos-browser-session.ts';
-import type { SignInRefusal } from '../../../src/auth/hosted-auth/workos/workos-sign-in.ts';
+import type { SignInEnvelope } from '../../../src/accounts/providers/workos/session-cookies.ts';
+import { WorkOSBrowserSession } from '../../../src/accounts/providers/workos/workos-browser-session.ts';
+import type { SignInRefusal } from '../../../src/accounts/providers/workos/workos-sign-in.ts';
 import {
   ada,
   authority,

@@ -1,11 +1,11 @@
-import type { AuthenticatedUser } from '../../../../src/auth/access-context.ts';
+import type { AuthenticatedUser } from '../../../../src/accounts/identity/access-context.ts';
 import type {
   BrowserSession,
   BrowserSessionState,
   CookieEffects,
   OrganizationSwitch,
   SignedInBrowserSession,
-} from '../../../../src/auth/hosted-auth/browser-session.ts';
+} from '../../../../src/accounts/identity/browser-session.ts';
 
 export type ConfiguredSession = BrowserSessionState | Error | (() => Promise<BrowserSessionState>);
 type ConfiguredSwitch = OrganizationSwitch | Error;

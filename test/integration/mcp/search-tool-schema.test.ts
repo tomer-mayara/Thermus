@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { searchToolInputSchema, parseSearchToolArguments } from '../../../src/mcp/search-tool-schema.ts';
+import { searchToolInputSchema, parseSearchToolArguments } from '../../../src/interfaces/mcp/search-tool-schema.ts';
 
 test('Given search discovery, when inspected, then query and reason are the only required fields', () => {
   assert.deepEqual(searchToolInputSchema.required, ['query', 'reason']);

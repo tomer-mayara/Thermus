@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { inspect } from 'node:util';
 import { describe, test, type TestContext } from 'node:test';
 import { createLocalJWKSet, createRemoteJWKSet, SignJWT, UnsecuredJWT, type JWTPayload, type JWTVerifyGetKey } from 'jose';
-import { InvalidAccessTokenError } from '../../../src/auth/identity-verifier.ts';
-import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
-import { browserSessionIssuer, workosAuthority } from '../../../src/auth/hosted-auth/workos/workos-settings.ts';
+import { InvalidAccessTokenError } from '../../../src/accounts/identity/identity-verifier.ts';
+import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
+import { browserSessionIssuer, workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey, type TokenSettings } from '../../support/doubles/workos/jwt-signing-key.ts';
 import { refusedLoopbackPort, WorkOSFakeApi, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
 

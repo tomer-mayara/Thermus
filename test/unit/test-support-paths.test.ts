@@ -99,7 +99,7 @@ describe('Run-time paths of the test support code', () => {
   // The portal build exists only after npm run build:user-portal, which npm run check runs after the unit tests.
   test('Given the repository, when the portal build is resolved, then it is the dist folder of the portal source', () => {
     assert.ok(existsSync(dirname(portalBuild)), `${portalBuild} is not under the portal source.`);
-    assert.ok(portalBuild.endsWith('/src/user-portal/dist/'), portalBuild);
+    assert.ok(portalBuild.endsWith('/src/interfaces/user-portal/dist/'), portalBuild);
   });
 
   test('Given a build, when the repository root is resolved, then it is the folder of package.json', () => {

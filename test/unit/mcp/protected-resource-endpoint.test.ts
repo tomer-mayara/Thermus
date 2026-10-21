@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { ProtectedResourceEndpoint } from '../../../src/mcp/protected-resource-endpoint.ts';
+import { ProtectedResourceEndpoint } from '../../../src/interfaces/mcp/protected-resource-endpoint.ts';
 
 const origin = 'https://thermus.example';
 const mcpResourceUrl = `${origin}/team/mcp`;

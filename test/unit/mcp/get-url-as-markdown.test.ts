@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { RequestContext } from '../../../src/auth/access-context.ts';
-import { createGetURLAsMarkdown } from '../../../src/mcp/get-url-as-markdown.ts';
-import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
+import type { RequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { createGetURLAsMarkdown } from '../../../src/interfaces/mcp/get-url-as-markdown.ts';
+import type { ExecutionContext } from '../../../src/pipelines/execution/execution-context.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 
 const context: RequestContext = { user: { authority: 'authority', subject: 'subject' }, tenantId: 'tenant', grants: [], permissions: ['product:access'] };

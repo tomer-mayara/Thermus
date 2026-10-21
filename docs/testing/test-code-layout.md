@@ -126,7 +126,7 @@ test/
     processes/           layer 4: the system as a child process; CLI driver; preloads; probes; module-paths.ts
     container/           layer 4: the system in Docker; Docker driver; container scripts
     hosted-live/         layers 2 to 4 of the live staging environment (unchanged)
-    doubles/<name>/      <name> = src package of the contract (auth, mcp, organizations, hosted-admin,
+    doubles/<name>/      <name> = existing contract-family name (auth, mcp, organizations, hosted-admin,
                          billing, application, website-fetcher, logging) or external system (workos,
                          ast-metrics; the git stub of the ast-metrics command tests lives there too)
     fixtures/            shared fixture data, settings, data files
@@ -141,6 +141,13 @@ result/record assertions live in `S/dsl/mcp-request-isolation.ts`. The three
 case files cover concurrency, cancellation and shutdown, and refusals after
 success. They share these existing scenario operations; no general site
 framework is needed.
+
+The existing flat test-area and double-family names remain stable after source
+components move. Determine a test's owner from the production code it executes,
+not from a former source folder name. Writer-only execution cases live in
+`test/unit/execution/`; public page-fetch cases that execute the real writer
+live in `test/integration/page-fetch/`. Private app support tests live in
+`test/unit/app/`.
 
 Two axes stay apart. The top folders under `test/` give the test type.
 AGENTS.md decides the type by the packages that a test executes, not by the

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
+import { stringify } from 'yaml';
 import { astMetricsCliFakeOnPath } from '../../support/doubles/ast-metrics/ast-metrics-cli-path.ts';
 import { astMetricsReviewScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
@@ -48,6 +49,37 @@ test('Given new forbidden imports in both approved components, when review runs,
   assert.match(result.stdout, /src\/html-cleaner-pipeline\/source.ts.*src\/mcp\/target.ts/);
   assert.doesNotMatch(result.stdout, /src\/website-fetcher\/source.ts.*src\/auth\/target.ts/);
   assert.equal(readFileSync(join(repository.root, 'ast-report/review.md'), 'utf8'), result.stdout);
+});
+
+for (const target of ['identity', 'workos', 'web', 'cli']) {
+  test(`Given nested component roots and a website-fetcher import of ${target}, when review runs, then the high-severity layer guard remains active`, async (t) => {
+    const components = { 'website-fetcher': { roots: ['src/pipelines/providers/website-fetcher/'] }, [target]: { roots: [`src/group/${target}/`] } };
+    const repository = GitRepository.onFeatureBranch(t, {
+      '.ast-metrics-baseline.yaml': 'ignored: []\n',
+      'docs/implementation/pr-review-rules.yaml': stringify({ dependency_graph: { components } }),
+      'src/pipelines/providers/website-fetcher/source.ts': 'export const source = 1;\n',
+      [`src/group/${target}/target.ts`]: 'export const target = 1;\n',
+    });
+    repository.write({ 'src/pipelines/providers/website-fetcher/source.ts': `export { target } from '../../../group/${target}/target.ts';\n` });
+    const result = await runReview(t, repository);
+    assert.equal(result.code, 1, result.stderr);
+    assert.equal(result.report.summary.high, 1);
+    assert.equal(result.report.regressions[0].target, `src/group/${target}/target.ts`);
+  });
+}
+
+test('Given HTML and MCP nested roots, when a literal dynamic import crosses the boundary, then the high-severity layer guard remains active', async (t) => {
+  const components = { 'html-processing': { roots: ['src/pipelines/html-processing/'] }, mcp: { roots: ['src/interfaces/mcp/'] } };
+  const repository = GitRepository.onFeatureBranch(t, {
+    '.ast-metrics-baseline.yaml': 'ignored: []\n',
+    'docs/implementation/pr-review-rules.yaml': stringify({ dependency_graph: { components } }),
+    'src/pipelines/html-processing/source.ts': 'export const source = 1;\n',
+    'src/interfaces/mcp/target.ts': 'export const target = 1;\n',
+  });
+  repository.write({ 'src/pipelines/html-processing/source.ts': "export const source = import('../../interfaces/mcp/target.ts');\n" });
+  const result = await runReview(t, repository);
+  assert.equal(result.code, 1, result.stderr);
+  assert.equal(result.report.summary.high, 1);
 });
 
 for (const [kind, source] of [

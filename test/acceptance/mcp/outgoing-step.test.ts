@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { StepResult } from '../../../src/page-fetch/pipeline-step.ts';
+import type { StepResult } from '../../../src/pipelines/execution/pipeline-step.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
 import { exactMarkdown, openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';

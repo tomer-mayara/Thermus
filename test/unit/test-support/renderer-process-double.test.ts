@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { ChildProcess } from 'node:child_process';
 import { test } from 'node:test';
-import { WebsiteFetcherLightpanda } from '../../../src/website-fetcher/website-fetcher-lightpanda.ts';
+import { WebsiteFetcherLightpanda } from '../../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts';
 import { controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 
 for (const requester of ['the readiness deadline', 'a cancellation'] as const) {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { isSearchCancelled, throwIfSearchCancelled } from '../../../src/search-pipeline/search-cancellation.ts';
+import { isSearchCancelled, throwIfSearchCancelled } from '../../../src/pipelines/search/search-cancellation.ts';
 
 for (const error of [undefined, null, 'AbortError', { name: 'AbortError' }, new Error('private failure')]) {
   test('Given no cancelled signal or Error, when cancellation is checked, then ordinary failures remain failures', () => {

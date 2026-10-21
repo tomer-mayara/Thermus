@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test, type TestContext } from 'node:test';
-import type { Application } from '../../../src/application.ts';
-import { HostedPortal } from '../../../src/hosted-portal.ts';
+import type { Application } from '../../../src/app/application.ts';
+import { HostedPortal } from '../../../src/app/hosted-portal.ts';
 
 const issuer = 'https://auth.example.com';
 const html = '<!doctype html><html><head><link rel="stylesheet" href="/assets/portal.css"></head><body><div id="app"></div><script type="module" src="/assets/portal.js"></script></body></html>';

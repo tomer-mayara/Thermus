@@ -7,11 +7,11 @@ import type { Fact } from './types.ts';
 // come from the changed files only.
 export function factsOf(graph: SourceGraph, rules: { readonly graph: GraphRules; readonly surface: { readonly modules: readonly string[] } }, changed: ReadonlySet<string>): Fact[] {
   return [
-    ...packageFacts(graph.packages, rules.graph.packages),
+    ...packageFacts(graph.packages, rules.graph.packages, rules.graph.components !== undefined),
     ...graph.edges.flatMap((edge) => edgeFacts(edge, rules.graph)),
     ...cycleFacts(graph.edges, rules.graph),
     ...graph.externals.flatMap((use) => externalFacts(use, rules.graph)),
-    ...crossPackageFacts(graph.imports, new Set(rules.surface.modules), changed),
+    ...crossPackageFacts(graph, new Set(rules.surface.modules), changed),
   ];
 }
 
@@ -19,8 +19,8 @@ function trigger(name: string): string {
   return `dependency_graph.triggers.${name}`;
 }
 
-function packageFacts(present: readonly string[], listed: readonly string[]): Fact[] {
-  const key = 'dependency_graph.packages';
+function packageFacts(present: readonly string[], listed: readonly string[], components: boolean): Fact[] {
+  const key = components ? 'dependency_graph.components' : 'dependency_graph.packages';
   return [
     ...present.filter((name) => !listed.includes(name)).map((name) => ({ key: trigger('folder_not_listed'), text: name, declare: { key, value: name } })),
     ...listed.filter((name) => !present.includes(name))
@@ -49,13 +49,14 @@ function externalFacts(use: ExternalImport, rules: GraphRules): Fact[] {
 }
 
 // Composition wires the packages, so its imports need no public surface.
-function crossPackageFacts(imports: SourceGraph['imports'], surface: ReadonlySet<string>, changed: ReadonlySet<string>): Fact[] {
-  return [...imports].filter(([file]) => changed.has(file) && packageOf(file) !== 'composition').flatMap(([file, targets]) =>
+function crossPackageFacts(graph: SourceGraph, surface: ReadonlySet<string>, changed: ReadonlySet<string>): Fact[] {
+  const ownerOf = (path: string) => graph.owners?.get(path) ?? packageOf(path);
+  return [...graph.imports].filter(([file]) => changed.has(file) && !['composition', 'app'].includes(ownerOf(file))).flatMap(([file, targets]) =>
     [...new Set(targets.map((entry) => entry.target))]
-      .filter((target) => packageOf(target) !== packageOf(file) && !surface.has(target))
+      .filter((target) => ownerOf(target) !== ownerOf(file) && !surface.has(target))
       .map((target) => ({
         key: trigger('cross_package_file_not_in_public_surface'),
         text: `${target} (imported by ${file})`,
-        declare: { key: `public_surface.between_packages.${packageOf(target)}`, value: target },
+        declare: { key: `public_surface.between_packages.${ownerOf(target)}`, value: target },
       })));
 }

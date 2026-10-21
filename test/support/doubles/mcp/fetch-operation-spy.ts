@@ -1,6 +1,6 @@
-import type { ApplicationLogger } from '../../../../src/application.ts';
+import type { ApplicationLogger } from '../../../../src/app/application.ts';
 import { BaseLogger } from '../../../../src/logging/base-logger.ts';
-import type { FetchOperation } from '../../../../src/mcp/get-url-as-markdown.ts';
+import type { FetchOperation } from '../../../../src/interfaces/mcp/get-url-as-markdown.ts';
 
 // The Markdown of the completed line is cut at this many code points.
 export const MARKDOWN_LOG_LIMIT = 64 * 1024;

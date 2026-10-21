@@ -160,7 +160,7 @@ test('Given an AD_RULES_FILE that does not exist, when the script runs, then it 
 
 test('Given a repository root without the portal build, when the script runs, then it exits with status 1 and a message that names the missing index.html and npm run build:user-portal, it makes no certificate, and pnpm does not run', (t) => {
   const launcher = scriptHarness(t);
-  const portalBuild = join(launcher.root, 'src/user-portal/dist/index.html');
+  const portalBuild = join(launcher.root, 'src/interfaces/user-portal/dist/index.html');
   rmSync(portalBuild);
 
   const result = launcher.run(workos);

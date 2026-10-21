@@ -5,15 +5,21 @@ import type { Fact } from './types.ts';
 
 type GraphView = Pick<Rules, 'graph' | 'surface'>;
 
+interface DependencyRevision {
+  readonly graph: SourceGraph;
+  readonly rules: GraphView;
+}
+
 export interface FactOutcome {
   readonly fix: readonly Fact[];
   readonly declared: readonly Fact[];
   readonly notes: readonly string[];
 }
 
-export function dependencyOutcome(graph: SourceGraph, rules: { readonly base: GraphView; readonly head: GraphView }, changed: ReadonlySet<string>): FactOutcome {
-  const { fix, declared } = splitFacts(factsOf(graph, rules.base, changed), factsOf(graph, rules.head, changed));
-  const unresolved = unresolvedOutcome(graph.unresolved, changed);
+export function dependencyOutcome(revisions: { readonly base: DependencyRevision; readonly head: DependencyRevision }, changed: ReadonlySet<string>): FactOutcome {
+  const { base, head } = revisions;
+  const { fix, declared } = splitFacts(factsOf(base.graph, base.rules, changed), factsOf(head.graph, head.rules, changed));
+  const unresolved = unresolvedOutcome(head.graph.unresolved, changed);
   return { fix: [...unresolved.fix, ...fix], declared, notes: unresolved.notes };
 }
 

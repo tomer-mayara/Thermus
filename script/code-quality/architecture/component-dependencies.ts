@@ -8,12 +8,13 @@ interface Edge {
   readonly inCycle: boolean;
 }
 
-export function componentDependenciesOf(snapshot: MapSnapshot): Map<string, Edge> {
+export function componentDependenciesOf(snapshot: MapSnapshot, legacyRoot = 'src'): Map<string, Edge> {
+  const nameOf = (path: string) => componentNameOf(path, snapshot.ownership, legacyRoot);
   const importing = new Map<string, Set<string>>();
-  const components = new Set(snapshot.files.map((file) => componentNameOf(file.path)));
+  const components = new Set(snapshot.files.map((file) => nameOf(file.path)));
   for (const pair of snapshot.dependencies?.pairs ?? []) {
-    const from = componentNameOf(pair.from);
-    const to = componentNameOf(pair.to);
+    const from = nameOf(pair.from);
+    const to = nameOf(pair.to);
     if (from === undefined || to === undefined || from === to || !components.has(from) || !components.has(to)) continue;
     const key = JSON.stringify([from, to]);
     const files = importing.get(key) ?? new Set<string>();

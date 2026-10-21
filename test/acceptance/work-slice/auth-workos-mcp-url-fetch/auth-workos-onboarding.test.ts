@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import type { CallToolResult } from '@modelcontextprotocol/client';
 import { listenerTransport } from '../../../support/drivers/browser/hosted-browser.ts';
 import { mcpRequest, rpcResult } from '../../../support/drivers/mcp/mcp-http-request.ts';
-import { startHttpServer } from '../../../../src/http/server.ts';
+import { startHttpServer } from '../../../../src/runtime/http/server.ts';
 import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { WorkOSFake } from '../../../support/doubles/workos/workos-fake.ts';
 import { signInThroughServer } from '../../../support/dsl/workos-sign-in.ts';

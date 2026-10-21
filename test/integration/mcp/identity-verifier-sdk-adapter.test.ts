@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { OAuthError, OAuthErrorCode, type AuthInfo } from '@modelcontextprotocol/server';
-import { IdentityVerifierSdkAdapter, verifiedUserOf } from '../../../src/mcp/identity-verifier-sdk-adapter.ts';
-import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/auth/identity-verifier.ts';
+import { IdentityVerifierSdkAdapter, verifiedUserOf } from '../../../src/interfaces/mcp/identity-verifier-sdk-adapter.ts';
+import { InvalidAccessTokenError, type VerifiedIdentity } from '../../../src/accounts/identity/identity-verifier.ts';
 import { IdentityVerifierSpy, type ConfiguredClaims } from '../../support/doubles/auth/identity-verifier-spy.ts';
 
 function verifiedIdentity(): VerifiedIdentity {

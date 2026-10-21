@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
-import { validateSignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-signup-documents.ts';
-import { loadSelfServeSignupEnabled } from '../../../src/auth/hosted-auth/workos/workos-signup-settings.ts';
+import { validateSignupDocuments } from '../../../src/accounts/providers/workos/workos-signup-documents.ts';
+import { loadSelfServeSignupEnabled } from '../../../src/accounts/providers/workos/workos-signup-settings.ts';
 
 function document(text: string) {
   return { version: 'test-1', text, sha256: createHash('sha256').update(text, 'utf8').digest('hex') };

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { InMemoryTransport, SERVER_INFO_META_KEY } from '@modelcontextprotocol/client';
-import { MCPServer } from '../../../src/mcp/mcp-server.ts';
+import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 
 describe('MCPServer', () => {

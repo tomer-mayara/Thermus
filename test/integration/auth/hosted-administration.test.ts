@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import { describe, test, type TestContext } from 'node:test';
-import { accountChangeRecorder, accountFailureReporter, createApplication } from '../../../src/application.ts';
-import { BillingFree } from '../../../src/billing/billing-free.ts';
-import type { ChangeRecord } from '../../../src/organizations/change-records.ts';
+import { accountChangeRecorder, accountFailureReporter, createApplication } from '../../../src/app/application.ts';
+import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
+import type { ChangeRecord } from '../../../src/accounts/organizations/change-records.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import {
   OrganizationAdministration,
   type Actor,
   type GrantChangeRequest,
-} from '../../../src/organizations/organization-administration.ts';
+} from '../../../src/accounts/organizations/organization-administration.ts';
 import { BrowserSessionStore } from '../../support/doubles/auth/browser-session-store.ts';
 import { recordLines, rolesOf, shownPage, submitOnPage, toolOutcome } from '../../support/dsl/hosted-administration.ts';
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';

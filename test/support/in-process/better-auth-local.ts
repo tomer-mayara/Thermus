@@ -2,8 +2,8 @@ import { DatabaseSync } from 'node:sqlite';
 import { betterAuth } from 'better-auth';
 import { applySetCookies } from 'better-auth/cookies';
 import { getMigrations } from 'better-auth/db/migration';
-import { localProviderOptions } from '../../../src/auth/local-auth/better-auth/better-auth-runtime.ts';
-import { CLIENT_ADDRESS_HEADER } from '../../../src/http/client-address.ts';
+import { localProviderOptions } from '../../../src/accounts/providers/better-auth/better-auth-runtime.ts';
+import { CLIENT_ADDRESS_HEADER } from '../../../src/runtime/http/client-address.ts';
 
 export const publicBaseUrl = 'http://localhost:8080';
 export const authIssuer = `${publicBaseUrl}/api/auth`;

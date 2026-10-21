@@ -9,8 +9,8 @@ import {
   type RemoveRoleOptions,
   type SendInvitationOptions,
 } from '@workos-inc/node';
-import { HostedRoleConfigurationError } from '../../../../src/auth/hosted-auth/workos/hosted-role-mapping.ts';
-import { WorkOSOrganizations } from '../../../../src/auth/hosted-auth/workos/workos-organizations.ts';
+import { HostedRoleConfigurationError } from '../../../../src/accounts/providers/workos/hosted-role-mapping.ts';
+import { WorkOSOrganizations } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
 
 export interface MembershipRecord {
   readonly id: string;

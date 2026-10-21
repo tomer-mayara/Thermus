@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { BetterAuthUserAdministration } from '../../../src/auth/local-auth/better-auth/better-auth-user-administration.ts';
+import { BetterAuthUserAdministration } from '../../../src/accounts/providers/better-auth/better-auth-user-administration.ts';
 import { LocalProviderDouble } from '../../support/doubles/auth/local-provider-double.ts';
 import { PasswordAnswers, rejectsWith } from './fixtures/administration-fixtures.ts';
 

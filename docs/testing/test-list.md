@@ -7,6 +7,24 @@
 
 # Tests
 
+## Component boundaries and execution records
+
+`test/acceptance/architecture/component-context-boundaries.test.ts` checks the
+merged server-web owner, exact WorkOS role/helper access, composition-only
+construction, and browser runtime versus Vite/declaration contexts. Existing
+auth, page-fetch, search, and test-layout specifications retain old-path guards
+and protect the moved paths through the shared component policy.
+
+`test/unit/execution/step-record.test.ts` checks finite step IDs and duration.
+Account routes in `test/integration/hosted-admin/` and session routes in
+`test/integration/auth-workos/` use real identity request-context behavior.
+Signup form refusal cases use the public signup routes in
+`test/integration/auth/workos-signup-routes.test.ts`.
+
+The incoming/outgoing operation cases in `test/integration/page-fetch/` exercise
+the real record writer through public `createFetchPage`; they wait for held
+incoming work before cancellation and select records by `stepId`.
+
 ## Public MCP search
 
 `test/acceptance/mcp/search-pipeline.test.ts` runs the real operation factories,
@@ -62,7 +80,7 @@ calls in both tool orders prove busy refusal, held cleanup after cancellation,
 and successful recovery. Existing MCP lifecycle tests retain the public fetch
 shutdown and cancellation proof.
 
-`test/unit/mcp/operation-capacity.test.ts` checks the shared capacity contract
+`test/unit/app/operation-capacity.test.ts` checks the shared capacity contract
 with operation doubles, including context and result identity, no queue,
 cleanup settlement, independent owners, and synchronous failure.
 The [SEARCH-04 record](../implementation/search-04.md) gives verification
@@ -577,9 +595,9 @@ inspection has unverified status and no invented capture commit.
 
 `ast-metrics-coverage.live.ts` builds and runs both complete parts of the
 real unit suite. It checks verified report provenance, `createApplication`
-present in `src/application.ts`, calls of other application functions, and
+present in `src/app/application.ts`, calls of other application functions, and
 the explicit proof that portal unit tests call `initializePortal` in
-`src/user-portal/portal.ts`. It uses a private `--out` report and asserts
+`src/interfaces/user-portal/portal.ts`. It uses a private `--out` report and asserts
 that the default report stays unchanged. It needs no
 ast-metrics. Run it only when `src/` changed or both complete unit parts
 were independently selected: emitted Node tests and source portal tests.
@@ -1410,7 +1428,7 @@ These tests run `startHttpServer()` on a loopback port with test handlers. Raw s
 
 **HTML escape of the product pages** (`test/unit/html/html-escape.test.ts`)
 
-The three escapes of the WorkOS notice pages, the bundled local pages, and the account pages were the same table and the same regex. `escapeHtml()` in `src/html/html-escape.ts` is the one copy. The test browsers decode the same five entities.
+The three escapes of the WorkOS notice pages, the bundled local pages, and the account pages were the same table and the same regex. `escapeHtml()` in `src/interfaces/web/html-escape.ts` is the one copy. The test browsers decode the same five entities.
 
 [V] Escapes each of the five characters `&`, `<`, `>`, `"`, and `'` to its entity: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
 [V] Escapes several characters in one text and keeps the other text
@@ -1556,7 +1574,7 @@ Run only these tests:
 npm run build && node --test dist/test/unit/auth-better-auth/local-administration-opener.test.js
 ```
 
-**Hidden line input** (`test/unit/terminal/hidden-line-input.test.ts`)
+**Hidden line input** (`test/unit/app/hidden-line-input.test.ts`)
 
 `PassThrough` streams stand in for a pipe and for a terminal with `isTTY` and `setRawMode`.
 
@@ -1586,120 +1604,6 @@ npm run build && node --test dist/test/unit/application-operator-log.test.js
 [V] Refuses private provider routes, the hosted organization and onboarding paths, unrelated paths, and near-matching path suffixes without calling a route owner
 [V] Hosted routing: sends the MCP resource and both protected-resource metadata paths to the MCP handler and each other path under the configured public path to the account routes, with the complete request; paths outside the public path give 404 without a handler call
 [V] Hosted routing: the browser routes of the provider (sign-in, callback, sign-out, and session) answer before the account routes, and every other path keeps its owner
-
-**Hosted account routes** (`test/unit/hosted-admin/account-routes.test.ts`)
-
-`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its MFA evidence (completed by default), its cookie effects, and a configured answer to an organization switch. `AccessResolverSpy` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
-
-[V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
-[V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
-[V] Gives the operation a frozen copy of the decided context; later changes to the resolver's records, such as another organization or added grants, cannot reach it
-[V] For a signed-out session, gives 401 with the cookie effects of the session to account, organization, and billing requests, also with forged cookies, bearer tokens, organization IDs, and form input; reads no body, and runs no access resolution, organization read, organization switch, or operation
-[V] Gives 403 without the reason for each denial reason and runs no operation
-[V] Gives 404 after allowed access when no operation exists
-[V] Gives a session lookup failure to the caller and runs no access resolution, operation, or report
-[V] Sends each notice page as fixed HTML without a form, script, or other resource, with `Cache-Control: no-store`, a Content Security Policy that allows nothing, `nosniff`, and `X-Frame-Options: DENY`
-
-**Hosted account route failures and cookie effects** (`test/unit/hosted-admin/account-routes-effects.test.ts`)
-
-[V] Refuses an allowed decision without a tenant ID before the operation with the 500 failure page, and gives the operator a report with the path and the cause
-[V] For a failed access lookup or operation after a sign-in that refreshed the session, gives the 500 failure page with the refreshed session cookie, and gives the operator the path and the cause
-[V] For operation answers that cannot carry the session cookies, an error response and an answer whose body was already read, gives the 500 failure page with the session cookies, and gives the operator the cause (a `RangeError` and a `TypeError`)
-[V] For a failed operation of a request that the client aborted, gives the failure to the caller and no report to the operator
-[V] Gives the operation answer, also a redirect whose headers cannot change, with its status, headers, and body, and with the session cookies before its own cookies
-[V] Gives the session cookie effects, in their order, with the 401, 403, and 404 refusal pages
-[V] Under a public URL path, the 403 page of a denial links to the organization page under that path
-
-**Hosted organization page** (`test/unit/hosted-admin/account-routes-organization-page.test.ts`)
-
-This file and the two selection files below also use `fixtures/organization-routes-fixtures.ts`: `serveAnn()`, the session and switch cookies, the form token, and the selection post. `OrganizationAdministrationDouble` gives the configured authorized organizations of each user subject, or a configured failure, and records each list and each selection check. `SignedInSessionDouble` records each organization switch and gives a configured switch answer or failure. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
-
-[V] For a GET and a HEAD request, lists each authorized organization of a signed-in user with a selection form that posts the form token of the session, the organization ID, and the return destination; marks the selected organization; sends the session cookies, `form-action 'self'`, and the other page headers, and no script, style, or other resource; runs no access resolution or operation
-[V] Shows organization names and IDs with HTML characters as text
-[V] For a public URL with and without a final slash, and without a return destination, each form posts to the selection route under the public path and returns to the organization page there
-[V] Without an authorized organization, gives the guidance to accept an invitation or to contact the operator, with the session cookies and without a form, also with forged organization values; resolves no tenant access
-[V] Under a public URL without a final slash, gives 400 with the session cookies and lists no organization for a return destination that is an absolute URL, a URL without a scheme, a path with a backslash, a relative path, a path outside the public path, or a path that only starts like it (`/teamevil/` for `/team`), or that has dot segments (also encoded), a query, a fragment, a control character, or a space; also for an empty value, a very long path, and two values
-[V] Gives 405 with `Allow: GET, HEAD` and the session cookies to POST, PUT, and DELETE requests for the organization page, and lists no organization
-[V] For a failed organization list, gives the 500 failure page with the session cookies, and gives the operator the path and the cause
-
-**Selection input checks** (`test/unit/hosted-admin/account-routes-selection-input.test.ts`)
-
-Each refusal comes before an organization check and a session switch.
-
-[V] Gives 403 with the session cookies to a post from a foreign origin, a `null` origin, another scheme, another port, or without an origin, and does not read its body
-[V] Gives 403 with the session cookies to a post without a form token, with an empty or a longer token, with the token of another session, or with two tokens; the token check comes first, so a wrong token with an unknown field also gets 403; refuses an empty token also when the form token of the session is empty
-[V] Gives 400 with the session cookies to a post with no, an empty, two, or a very long organization ID, an ID with a space or a control character, no or two return destinations, an absolute, another-host, or dot-segment destination, an organization name, or an unknown field
-[V] Gives 415 to JSON and multipart form data, and 413 to a post larger than 16 KiB, with and without a `Content-Length`
-[V] When the client disconnects while the body is read, stops the reading and cancels the body, gives the failure to the caller, and checks, switches, or reports nothing
-
-**Organization selection** (`test/unit/hosted-admin/account-routes-selection.test.ts`)
-
-[V] Switches the session to an authorized organization for a same-origin post with the form token of the session, also with a forged `X-Organization-Id` header; gives 303 to the destination with `Cache-Control: no-store`, an empty body, and the session cookies before the switch cookies; runs no access resolution
-[V] Under a public URL path, redirects to the destination under that path on the public origin
-[V] Gives 403 with the session cookies and no switch when the service refuses an organization of another user or an inactive or unknown organization, also with forged organization values in the query and headers
-[V] Gives 403 for a `refused` switch and 401 for a `signed-out` switch, with the session cookies and then the switch cookies, and no redirect
-[V] Gives the 500 failure page with the session cookies and no redirect for a failed organization check or switch, and gives the operator the path and the cause
-[V] Gives 405 with `Allow: POST` to GET and PUT requests for the selection route
-[V] For a signed-out session, gives 401 to the organization page and to a selection post with the form token of another session, and lists, checks, or switches no organization
-
-**Member and invitation pages** (`test/unit/hosted-admin/account-routes-administration-pages.test.ts`)
-
-This file and the two files below also use `fixtures/administration-routes-fixtures.ts`. `serveAdministration()` serves the routes for Ann: a signed-in session with a refreshed session cookie, a form token, and MFA evidence, and allowed access to Acme with User and Admin. The fixtures also give member and invitation overviews and one valid post for each change. `OrganizationAdministrationDouble` gives the configured overview, refusal, change result, or failure, and records each call with its actor and its request. A setup can give a session whose sign-in did not complete MFA, a session without a form token, another access decision, or another public URL. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
-
-[V] For a GET and a HEAD request with forged organization values in the query and headers, gives the service the user of the decided context with the MFA evidence of the session and the organization of the context; the members page shows the seat count, each member with its status and roles, a link to the invitations page, and one form for each change with the form token, the organization, the membership, its revision, the role, and the action; sends the session cookies and the page headers with `form-action 'self'`, and no script, style, or other resource
-[V] For each identity policy, the invitations page has a send form with an email field for each role that the actor can invite, a resend and a revoke form for each pending invitation of a role of the actor, each invitation with its role and state, a link to the members page, and the policy text of the directory
-[V] The invitations page says that the acceptance of a pending invitation gives the role that the page shows, and that for an accepted, revoked, or expired invitation the sign-in service can show the current role of the member instead
-[V] For an unknown identity policy, the invitations page claims no strict address match
-[V] Shows provider values with HTML characters as text on both pages: email addresses, roles, IDs, revisions, and the organization
-[V] Without an invitation, the invitations page says "There are no invitations." and still offers a send form for each invitable role
-[V] For a session whose sign-in did not complete MFA, gives the service that evidence, and each page gets the 403 MFA notice with the session cookies and no form
-[V] When the service denies the actor, each page gets 403 with a link to the organization page and the session cookies
-[V] When the access resolver denies access, each page gets 403 before the service runs
-[V] Gives 405 with `Allow: GET, HEAD` and the session cookies to POST, PUT, and DELETE requests for both pages, and does not ask the service
-[V] For a failed overview, each page gets the 500 failure page with the session cookies, and the operator gets the path and the cause
-[V] Under a public URL path, each form posts under that path, and each link points under it
-[V] For a decided context without an organization, each page gets the 403 access denial, and the service is not asked
-
-Run only these tests:
-
-```sh
-npm run build && node --test dist/test/unit/hosted-admin/account-routes-administration-pages.test.js
-```
-
-**Grant and invitation changes** (`test/unit/hosted-admin/account-routes-administration-changes.test.ts`)
-
-[V] For a valid grant, invitation, resend, and revoke post, also with a forged `X-Organization-Id` header, and an `applied` or `unchanged` answer, gives the service the actor with the MFA evidence of the session and no form token or cookie; the browser gets 303 to the members or invitations page with `Cache-Control: no-store`, an empty body, and the session cookies
-[V] For a session whose sign-in did not complete MFA, gives the service that evidence, and each post gets the 403 MFA notice with the session cookies
-[V] Gives each change exactly the fields of its form
-[V] Gives each post 403 for `denied` and `mfa-required`, 409 for `stale`, `not-pending`, and `address-in-use`, and 503 for `unsupported`, each with its notice, the session cookies, and no redirect
-[V] Gives forged roles and actions to the service unchanged, also Super Admin, an account disable, a membership deactivation, a credential reset, and a Super Admin invitation; the denial of the service gives 403
-[V] For a change that fails in the service, gives the 500 failure page with the session cookies and no redirect, and gives the operator the path and the cause
-[V] Gives 401 to a change post of a signed-out session and 403 when the resolver denies access, before any form check; does not ask the service
-
-Run only these tests:
-
-```sh
-npm run build && node --test dist/test/unit/hosted-admin/account-routes-administration-changes.test.js
-```
-
-**Change input checks** (`test/unit/hosted-admin/account-routes-administration-input.test.ts`)
-
-Each refusal comes before a call of the service.
-
-[V] Gives 403 with the session cookies to change posts from a foreign origin, a `null` origin, another scheme, or without an origin, and does not read the body
-[V] Gives 403 with the session cookies to change posts without a form token, with an empty or a longer token, or with the token of another session, also with an unknown field
-[V] Gives 403 to change posts with two form tokens and to each post of a session without a form token
-[V] For each change, gives 400 with the session cookies to a post with a missing, repeated, or empty field, a value with a space or with 257 characters, or an unknown field
-[V] Gives 400 to an invitation with an address without an `@`, with two, with a space or a line break, with an empty part, or with more than 254 characters
-[V] Gives 409 with the out-of-date notice and the session cookies to change posts for another organization than the one of the session
-[V] Gives 415 to JSON and 413 to a change post larger than 16 KiB, with the session cookies
-[V] Gives 405 with `Allow: POST` and the session cookies to GET and PUT requests for each change route
-
-Run only these tests:
-
-```sh
-npm run build && node --test dist/test/unit/hosted-admin/account-routes-administration-input.test.js
-```
 
 **Organization administration** (`test/unit/organizations/organization-administration.test.ts`)
 
@@ -1877,18 +1781,6 @@ The two source and compiled cases passed on 2026-10-15; the final complete-candi
 ```sh
 npm run build && node --test dist/test/unit/auth-workos/workos-sign-in-onboarding.test.js
 ```
-
-**WorkOS session routes** (`test/unit/auth-workos/workos-session-routes.test.ts`, `workos-session-routes-sign-in.test.ts`, and `workos-session-routes-logout.test.ts`)
-
-A double of the browser session records each call (`test/unit/auth-workos/fixtures/session-routes-fixtures.ts`).
-
-[V] Takes only the sign-in, callback, sign-out, and session paths of the public base URL, with or without its final slash; another path gets 404
-[V] The session path gives 200 JSON with the email, the name, the organization, the MFA evidence, and the CSRF token, or 401 `{"signedIn":false}`, each with the cookie effects of the session; absent values are left out; POST gets 405 JSON
-[V] The sign-in path starts a sign-in that returns to the base path or to one valid return path of at most 1,024 path characters, and sends the browser to AuthKit with the sign-in cookie; an invalid or repeated return path gets 400; POST gets 405
-[V] A completed callback goes to the return path on the public origin with the cleared sign-in cookie and the session cookie; a refused callback gets the 400 page with an escaped link to the sign-in path; a stored return path that is not a page of this service goes to the base path; POST gets 405
-[V] The sign-out with the session token from the public origin ends the session and goes to the WorkOS logout URL with the cleared cookie; without a usable session it goes to the base URL; another token gets 403 and ends nothing
-[V] The sign-out checks the method (405), the origin before the body (403, also without `Origin` or with `null`), the content type (415), the 16 KiB limit with and without `Content-Length` (413), a client abort, and exactly one CSRF token and no other field (400)
-[V] A failure of the session check, the sign-in start, the callback, or the sign-out gives a 500 page, or 500 JSON for the session path, without a cookie change, and one operator report; an aborted request gets no report
 
 **WorkOS grant reads** (`test/unit/auth-workos/workos-organizations.test.ts`)
 
@@ -2449,10 +2341,10 @@ Step 7b also moved the DSL steps of the site to `test/support/dsl/hosted-access.
 
 **Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
 
-`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads `lingeringHostedHandle`, `heldHostedIdentity`, and `heldHostedCleanup`, the hosted portal fixture and its preload `hostedPortalPreload`, the Lightpanda stub `lightpandaStub`, the three container scripts `containerEdgeScript`, `containerPageScript`, and `containerProbeScript` of `test/support/container/`, the identity preload `hostedImageIdentity` of the hosted image gate, and, since 2026-10-15, the portal build `src/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, the local HTTPS site, the container gate, and the hosted image gate read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. Before Step 9b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md), `container-gate.ts` and `container-site.ts` computed the paths of the three container scripts. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts` and `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`.
+`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads `lingeringHostedHandle`, `heldHostedIdentity`, and `heldHostedCleanup`, the hosted portal fixture and its preload `hostedPortalPreload`, the Lightpanda stub `lightpandaStub`, the three container scripts `containerEdgeScript`, `containerPageScript`, and `containerProbeScript` of `test/support/container/`, the identity preload `hostedImageIdentity` of the hosted image gate, and, since 2026-10-15, the portal build `src/interfaces/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, the local HTTPS site, the container gate, and the hosted image gate read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. Before Step 9b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md), `container-gate.ts` and `container-site.ts` computed the paths of the three container scripts. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts` and `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`.
 
 [V] Given a build, each of the program entry, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads, the hosted portal preload and the index page of the hosted portal fixture, the Lightpanda stub, the identity preload of the hosted image gate, the failing ad cleaner preload, the trusted ad rules file, and the three container scripts names a file that exists
-[V] Given the repository, the portal build is the `dist/` folder of the portal source `src/user-portal/`, and that source folder exists; the build itself exists only after `npm run build:user-portal`, which `npm run check` runs after the unit tests
+[V] Given the repository, the portal build is the `dist/` folder of the portal source `src/interfaces/user-portal/`, and that source folder exists; the build itself exists only after `npm run build:user-portal`, which `npm run check` runs after the unit tests
 [V] Given a build, the repository root is the folder of `package.json`
 
 The matrix has 17 file paths and two structural cases, or 19 tests. When
@@ -2521,7 +2413,7 @@ npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch-scrip
 
 **Work slice launcher script: auth WorkOS MCP URL fetch** (`test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`)
 
-The 13 source and compiled cases passed on 2026-10-15 with the slice organization default and override checks. The harness `test/unit/work-slice/fixtures/auth-workos-mcp-url-fetch-script-harness.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the eleven settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The settings include `THERMUS_SLICE_ORGANIZATION_ID`: the staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, and a custom organization is passed unchanged. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
+The 13 source and compiled cases passed on 2026-10-15 with the slice organization default and override checks. The harness `test/unit/work-slice/fixtures/auth-workos-mcp-url-fetch-script-harness.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/interfaces/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the eleven settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The settings include `THERMUS_SLICE_ORGANIZATION_ID`: the staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, and a custom organization is passed unchanged. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
 
 [V] Given only the three WorkOS settings and `AXIOM_API_KEY`, when the script runs from another directory, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from `openssl rand`, and the keys; stderr lists the eleven settings after the certificate line, and no output shows a secret
 [V] Given each setting with a custom value, a cookie password, and a TLS directory with both files, pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the eleven values without the secrets
@@ -2544,6 +2436,132 @@ npm run build && node --test dist/test/unit/work-slice/auth-workos-mcp-url-fetch
 No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
 
 ## Integration
+
+**Hosted account routes (integration)** (`test/integration/hosted-admin/account-routes.test.ts`)
+
+`BrowserSessionDouble` gives a configured session state for each `Cookie` header value. `SignedInSessionDouble` gives a signed-in session with its form token, its MFA evidence (completed by default), its cookie effects, and a configured answer to an organization switch. `AccessResolverSpy` gives configured decisions, a test-only operation double records each call and gives a configured answer, and the failure reporter records each report. The tests import the access contracts as types only. The other `account-routes-*.test.ts` files below use the same fixtures.
+
+[V] Gives the browser session only the `Cookie` header of the request; gives the operation the original request, with its body unread, and the decided context of a signed-in session with allowed access, and returns the operation answer
+[V] Keeps the context of each request when two users of different organizations overlap and their access resolutions finish in reverse order
+[V] Gives the operation a frozen copy of the decided context; later changes to the resolver's records, such as another organization or added grants, cannot reach it
+[V] For a signed-out session, gives 401 with the cookie effects of the session to account, organization, and billing requests, also with forged cookies, bearer tokens, organization IDs, and form input; reads no body, and runs no access resolution, organization read, organization switch, or operation
+[V] Gives 403 without the reason for each denial reason and runs no operation
+[V] Gives 404 after allowed access when no operation exists
+[V] Gives a session lookup failure to the caller and runs no access resolution, operation, or report
+[V] Sends each notice page as fixed HTML without a form, script, or other resource, with `Cache-Control: no-store`, a Content Security Policy that allows nothing, `nosniff`, and `X-Frame-Options: DENY`
+
+**Hosted account route failures and cookie effects** (`test/integration/hosted-admin/account-routes-effects.test.ts`)
+
+[V] Refuses an allowed decision without a tenant ID before the operation with the 500 failure page, and gives the operator a report with the path and the cause
+[V] For a failed access lookup or operation after a sign-in that refreshed the session, gives the 500 failure page with the refreshed session cookie, and gives the operator the path and the cause
+[V] For operation answers that cannot carry the session cookies, an error response and an answer whose body was already read, gives the 500 failure page with the session cookies, and gives the operator the cause (a `RangeError` and a `TypeError`)
+[V] For a failed operation of a request that the client aborted, gives the failure to the caller and no report to the operator
+[V] Gives the operation answer, also a redirect whose headers cannot change, with its status, headers, and body, and with the session cookies before its own cookies
+[V] Gives the session cookie effects, in their order, with the 401, 403, and 404 refusal pages
+[V] Under a public URL path, the 403 page of a denial links to the organization page under that path
+
+**Hosted organization page** (`test/integration/hosted-admin/account-routes-organization-page.test.ts`)
+
+This file and the two selection files below also use `fixtures/organization-routes-fixtures.ts`: `serveAnn()`, the session and switch cookies, the form token, and the selection post. `OrganizationAdministrationDouble` gives the configured authorized organizations of each user subject, or a configured failure, and records each list and each selection check. `SignedInSessionDouble` records each organization switch and gives a configured switch answer or failure. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
+
+[V] For a GET and a HEAD request, lists each authorized organization of a signed-in user with a selection form that posts the form token of the session, the organization ID, and the return destination; marks the selected organization; sends the session cookies, `form-action 'self'`, and the other page headers, and no script, style, or other resource; runs no access resolution or operation
+[V] Shows organization names and IDs with HTML characters as text
+[V] For a public URL with and without a final slash, and without a return destination, each form posts to the selection route under the public path and returns to the organization page there
+[V] Without an authorized organization, gives the guidance to accept an invitation or to contact the operator, with the session cookies and without a form, also with forged organization values; resolves no tenant access
+[V] Under a public URL without a final slash, gives 400 with the session cookies and lists no organization for a return destination that is an absolute URL, a URL without a scheme, a path with a backslash, a relative path, a path outside the public path, or a path that only starts like it (`/teamevil/` for `/team`), or that has dot segments (also encoded), a query, a fragment, a control character, or a space; also for an empty value, a very long path, and two values
+[V] Gives 405 with `Allow: GET, HEAD` and the session cookies to POST, PUT, and DELETE requests for the organization page, and lists no organization
+[V] For a failed organization list, gives the 500 failure page with the session cookies, and gives the operator the path and the cause
+
+**Selection input checks** (`test/integration/hosted-admin/account-routes-selection-input.test.ts`)
+
+Each refusal comes before an organization check and a session switch.
+
+[V] Gives 403 with the session cookies to a post from a foreign origin, a `null` origin, another scheme, another port, or without an origin, and does not read its body
+[V] Gives 403 with the session cookies to a post without a form token, with an empty or a longer token, with the token of another session, or with two tokens; the token check comes first, so a wrong token with an unknown field also gets 403; refuses an empty token also when the form token of the session is empty
+[V] Gives 400 with the session cookies to a post with no, an empty, two, or a very long organization ID, an ID with a space or a control character, no or two return destinations, an absolute, another-host, or dot-segment destination, an organization name, or an unknown field
+[V] Gives 415 to JSON and multipart form data, and 413 to a post larger than 16 KiB, with and without a `Content-Length`
+[V] When the client disconnects while the body is read, stops the reading and cancels the body, gives the failure to the caller, and checks, switches, or reports nothing
+
+**Organization selection** (`test/integration/hosted-admin/account-routes-selection.test.ts`)
+
+[V] Switches the session to an authorized organization for a same-origin post with the form token of the session, also with a forged `X-Organization-Id` header; gives 303 to the destination with `Cache-Control: no-store`, an empty body, and the session cookies before the switch cookies; runs no access resolution
+[V] Under a public URL path, redirects to the destination under that path on the public origin
+[V] Gives 403 with the session cookies and no switch when the service refuses an organization of another user or an inactive or unknown organization, also with forged organization values in the query and headers
+[V] Gives 403 for a `refused` switch and 401 for a `signed-out` switch, with the session cookies and then the switch cookies, and no redirect
+[V] Gives the 500 failure page with the session cookies and no redirect for a failed organization check or switch, and gives the operator the path and the cause
+[V] Gives 405 with `Allow: POST` to GET and PUT requests for the selection route
+[V] For a signed-out session, gives 401 to the organization page and to a selection post with the form token of another session, and lists, checks, or switches no organization
+
+**Member and invitation pages** (`test/integration/hosted-admin/account-routes-administration-pages.test.ts`)
+
+This file and the two files below also use `fixtures/administration-routes-fixtures.ts`. `serveAdministration()` serves the routes for Ann: a signed-in session with a refreshed session cookie, a form token, and MFA evidence, and allowed access to Acme with User and Admin. The fixtures also give member and invitation overviews and one valid post for each change. `OrganizationAdministrationDouble` gives the configured overview, refusal, change result, or failure, and records each call with its actor and its request. A setup can give a session whose sign-in did not complete MFA, a session without a form token, another access decision, or another public URL. `formsIn()` from `test/support/drivers/browser/hosted-browser.ts` reads the forms of a page.
+
+[V] For a GET and a HEAD request with forged organization values in the query and headers, gives the service the user of the decided context with the MFA evidence of the session and the organization of the context; the members page shows the seat count, each member with its status and roles, a link to the invitations page, and one form for each change with the form token, the organization, the membership, its revision, the role, and the action; sends the session cookies and the page headers with `form-action 'self'`, and no script, style, or other resource
+[V] For each identity policy, the invitations page has a send form with an email field for each role that the actor can invite, a resend and a revoke form for each pending invitation of a role of the actor, each invitation with its role and state, a link to the members page, and the policy text of the directory
+[V] The invitations page says that the acceptance of a pending invitation gives the role that the page shows, and that for an accepted, revoked, or expired invitation the sign-in service can show the current role of the member instead
+[V] For an unknown identity policy, the invitations page claims no strict address match
+[V] Shows provider values with HTML characters as text on both pages: email addresses, roles, IDs, revisions, and the organization
+[V] Without an invitation, the invitations page says "There are no invitations." and still offers a send form for each invitable role
+[V] For a session whose sign-in did not complete MFA, gives the service that evidence, and each page gets the 403 MFA notice with the session cookies and no form
+[V] When the service denies the actor, each page gets 403 with a link to the organization page and the session cookies
+[V] When the access resolver denies access, each page gets 403 before the service runs
+[V] Gives 405 with `Allow: GET, HEAD` and the session cookies to POST, PUT, and DELETE requests for both pages, and does not ask the service
+[V] For a failed overview, each page gets the 500 failure page with the session cookies, and the operator gets the path and the cause
+[V] Under a public URL path, each form posts under that path, and each link points under it
+[V] For a decided context without an organization, each page gets the 403 access denial, and the service is not asked
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/hosted-admin/account-routes-administration-pages.test.js
+```
+
+**Grant and invitation changes** (`test/integration/hosted-admin/account-routes-administration-changes.test.ts`)
+
+[V] For a valid grant, invitation, resend, and revoke post, also with a forged `X-Organization-Id` header, and an `applied` or `unchanged` answer, gives the service the actor with the MFA evidence of the session and no form token or cookie; the browser gets 303 to the members or invitations page with `Cache-Control: no-store`, an empty body, and the session cookies
+[V] For a session whose sign-in did not complete MFA, gives the service that evidence, and each post gets the 403 MFA notice with the session cookies
+[V] Gives each change exactly the fields of its form
+[V] Gives each post 403 for `denied` and `mfa-required`, 409 for `stale`, `not-pending`, and `address-in-use`, and 503 for `unsupported`, each with its notice, the session cookies, and no redirect
+[V] Gives forged roles and actions to the service unchanged, also Super Admin, an account disable, a membership deactivation, a credential reset, and a Super Admin invitation; the denial of the service gives 403
+[V] For a change that fails in the service, gives the 500 failure page with the session cookies and no redirect, and gives the operator the path and the cause
+[V] Gives 401 to a change post of a signed-out session and 403 when the resolver denies access, before any form check; does not ask the service
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/hosted-admin/account-routes-administration-changes.test.js
+```
+
+**Change input checks** (`test/integration/hosted-admin/account-routes-administration-input.test.ts`)
+
+Each refusal comes before a call of the service.
+
+[V] Gives 403 with the session cookies to change posts from a foreign origin, a `null` origin, another scheme, or without an origin, and does not read the body
+[V] Gives 403 with the session cookies to change posts without a form token, with an empty or a longer token, or with the token of another session, also with an unknown field
+[V] Gives 403 to change posts with two form tokens and to each post of a session without a form token
+[V] For each change, gives 400 with the session cookies to a post with a missing, repeated, or empty field, a value with a space or with 257 characters, or an unknown field
+[V] Gives 400 to an invitation with an address without an `@`, with two, with a space or a line break, with an empty part, or with more than 254 characters
+[V] Gives 409 with the out-of-date notice and the session cookies to change posts for another organization than the one of the session
+[V] Gives 415 to JSON and 413 to a change post larger than 16 KiB, with the session cookies
+[V] Gives 405 with `Allow: POST` and the session cookies to GET and PUT requests for each change route
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/integration/hosted-admin/account-routes-administration-input.test.js
+```
+
+**WorkOS session routes (integration)** (`test/integration/auth-workos/workos-session-routes.test.ts`, `workos-session-routes-sign-in.test.ts`, and `workos-session-routes-logout.test.ts`)
+
+A double of the browser session records each call (`test/integration/auth-workos/fixtures/session-routes-fixtures.ts`).
+
+[V] Takes only the sign-in, callback, sign-out, and session paths of the public base URL, with or without its final slash; another path gets 404
+[V] The session path gives 200 JSON with the email, the name, the organization, the MFA evidence, and the CSRF token, or 401 `{"signedIn":false}`, each with the cookie effects of the session; absent values are left out; POST gets 405 JSON
+[V] The sign-in path starts a sign-in that returns to the base path or to one valid return path of at most 1,024 path characters, and sends the browser to AuthKit with the sign-in cookie; an invalid or repeated return path gets 400; POST gets 405
+[V] A completed callback goes to the return path on the public origin with the cleared sign-in cookie and the session cookie; a refused callback gets the 400 page with an escaped link to the sign-in path; a stored return path that is not a page of this service goes to the base path; POST gets 405
+[V] The sign-out with the session token from the public origin ends the session and goes to the WorkOS logout URL with the cleared cookie; without a usable session it goes to the base URL; another token gets 403 and ends nothing
+[V] The sign-out checks the method (405), the origin before the body (403, also without `Origin` or with `null`), the content type (415), the 16 KiB limit with and without `Content-Length` (413), a client abort, and exactly one CSRF token and no other field (400)
+[V] A failure of the session check, the sign-in start, the callback, or the sign-out gives a 500 page, or 500 JSON for the session path, without a cookie change, and one operator report; an aborted request gets no report
 
 **Entry shutdown and startup cleanup** (`test/integration/server-stop-signals.test.ts`)
 
@@ -3248,9 +3266,9 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 [V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
 [V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
 [V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: stalled cleanup or a residual handle causes an error exit at the fixed 10-second hosted CLI deadline, while shutdown during MCP/account/session identity waits exits cleanly
-[V] `test/unit/mcp/operation-capacity.test.ts`: one owner shares capacity across fetch and search, refuses overlap without queuing, checks cancellation before busy, and returns capacity only after settlement
+[V] `test/unit/app/operation-capacity.test.ts`: one owner shares capacity across fetch and search, refuses overlap without queuing, checks cancellation before busy, and returns capacity only after settlement
 [V] `test/unit/website-fetcher/website-fetcher-dns-wait.test.ts`: the five-second wait, abort, late completion, residual lookup ownership, and recovery do not change the resolver policy or start late rendering
-[V] `test/unit/http/request-cancellation.test.ts`, `test/unit/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/unit/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
+[V] `test/unit/http/request-cancellation.test.ts`, `test/integration/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/integration/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
 
 The [RHD-01 record](../implementation/rhd-01.md#verification) gives focused
 commands, recorded red steps, and the gate results.

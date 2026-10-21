@@ -6,10 +6,10 @@ import { createServer, type Server } from 'node:https';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
-import type { SignupDocuments } from '../../../src/auth/hosted-auth/workos/workos-signup.ts';
-import { createApplication, type Application, type ApplicationLogger } from '../../../src/application.ts';
-import { loadDeploymentConfig } from '../../../src/config/deployment-config.ts';
-import { startHttpServer, type HttpServer } from '../../../src/http/server.ts';
+import type { SignupDocuments } from '../../../src/accounts/providers/workos/workos-signup.ts';
+import { createApplication, type Application, type ApplicationLogger } from '../../../src/app/application.ts';
+import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
+import { startHttpServer, type HttpServer } from '../../../src/runtime/http/server.ts';
 import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
 import { portalBuild } from '../processes/module-paths.ts';
 import { trustedAdRulesFile } from '../fixtures/ad-rules.ts';
@@ -41,7 +41,7 @@ function closeFront(front: Server): Promise<void> {
 
 interface LocalHttpsSiteOptions {
   readonly signupDocuments?: SignupDocuments;
-  // Only a custom application uses the static front. Its default portal build is src/user-portal/dist/.
+  // Only a custom application uses the static front. Its default portal build is src/interfaces/user-portal/dist/.
   readonly portalBuild?: string;
   // The default application checks this executable. The live gate uses LIGHTPANDA_BIN from its environment.
   readonly rendererExecutable?: string;
@@ -132,10 +132,10 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
   };
   const config = loadDeploymentConfig(environment, 'http');
   if (documents === undefined) return createApplication(config, logger, environment);
-  const { composeWorkOSApplication, openWorkOSConnection } = await import('../../../src/hosted-workos-application.ts');
-  const { createHostedToolOperations, fetchToolServers } = await import('../../../src/fetch-tool.ts');
-  const { assertHostedRenderer } = await import('../../../src/hosted-renderer-startup.ts');
-  const { HostedPortal } = await import('../../../src/hosted-portal.ts');
+  const { composeWorkOSApplication, openWorkOSConnection } = await import('../../../src/app/hosted-workos-application.ts');
+  const { createHostedToolOperations, fetchToolServers } = await import('../../../src/app/fetch-tool.ts');
+  const { assertHostedRenderer } = await import('../../../src/app/hosted-renderer-startup.ts');
+  const { HostedPortal } = await import('../../../src/app/hosted-portal.ts');
   await assertHostedRenderer(executable);
   const connection = await openWorkOSConnection(config, logger, environment);
   const portal = await HostedPortal.load(settings.authkitIssuer);

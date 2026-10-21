@@ -3,7 +3,7 @@ import diagnostics from 'node:diagnostics_channel';
 import { once } from 'node:events';
 import { connect, type Socket } from 'node:net';
 import type { TestContext } from 'node:test';
-import { startHttpServer, type FetchHandler, type HttpServer, type HttpServerOptions } from '../../../../src/http/server.ts';
+import { startHttpServer, type FetchHandler, type HttpServer, type HttpServerOptions } from '../../../../src/runtime/http/server.ts';
 
 export const loopback = { host: '127.0.0.1', port: 0 };
 export const publicBaseUrl = 'http://localhost:8080/';

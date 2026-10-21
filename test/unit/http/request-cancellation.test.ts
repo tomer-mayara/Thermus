@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
-import { waitForRequest } from '../../../src/http/request-cancellation.ts';
+import { waitForRequest } from '../../../src/runtime/http/request-cancellation.ts';
 
 test('Given cancellation before a request stage, when the wait starts, then it refuses without starting that stage', async () => {
   const stop = new AbortController();

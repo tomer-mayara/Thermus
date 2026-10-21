@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { StreamableHTTPClientTransport, type CallToolResult, type Client } from '@modelcontextprotocol/client';
-import type { ApplicationLogger } from '../../../../src/application.ts';
-import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
-import { startHttpServer } from '../../../../src/http/server.ts';
-import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
-import { searchToolInputSchema } from '../../../../src/mcp/search-tool-schema.ts';
+import type { ApplicationLogger } from '../../../../src/app/application.ts';
+import { loadDeploymentConfig } from '../../../../src/runtime/config/deployment-config.ts';
+import { startHttpServer } from '../../../../src/runtime/http/server.ts';
+import { fetchToolInputSchema } from '../../../../src/interfaces/mcp/fetch-tool-schema.ts';
+import { searchToolInputSchema } from '../../../../src/interfaces/mcp/search-tool-schema.ts';
 import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
 import { generatedOperationIdPattern } from '../../../support/fixtures/execution-context.ts';
 import { completionRecordsIn } from '../../../support/drivers/operator-log.ts';

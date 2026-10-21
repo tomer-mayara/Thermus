@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { AuthenticatedUser, RoleGrant } from '../../../src/auth/access-context.ts';
-import type { Billing } from '../../../src/billing/billing.ts';
-import { OrganizationAdministration } from '../../../src/organizations/organization-administration.ts';
-import type { OrganizationMembership } from '../../../src/organizations/organization-directory.ts';
+import type { AuthenticatedUser, RoleGrant } from '../../../src/accounts/identity/access-context.ts';
+import type { Billing } from '../../../src/accounts/billing/billing.ts';
+import { OrganizationAdministration } from '../../../src/accounts/organizations/organization-administration.ts';
+import type { OrganizationMembership } from '../../../src/accounts/organizations/organization-directory.ts';
 import { OrganizationDirectoryDouble } from '../../support/doubles/organizations/organization-directory-double.ts';
 
 const authority = 'hosted-provider-double';

@@ -1,10 +1,10 @@
 import '../../support/processes/deny-network.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { ApplicationLogger } from '../../../src/application.ts';
-import type { RequestContext } from '../../../src/auth/access-context.ts';
-import type { FetchOperation } from '../../../src/mcp/get-url-as-markdown.ts';
-import type { ExecutionContext } from '../../../src/page-fetch/execution-context.ts';
+import type { ApplicationLogger } from '../../../src/app/application.ts';
+import type { RequestContext } from '../../../src/accounts/identity/access-context.ts';
+import type { FetchOperation } from '../../../src/interfaces/mcp/get-url-as-markdown.ts';
+import type { ExecutionContext } from '../../../src/pipelines/execution/execution-context.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 import { MARKDOWN_LOG_LIMIT, fetchOperationSpy } from '../../support/doubles/mcp/fetch-operation-spy.ts';
 

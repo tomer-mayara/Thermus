@@ -4,7 +4,7 @@ import { parseEnv } from 'node:util';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider, type LogRecordExporter } from '@opentelemetry/sdk-logs';
 import { OtelLogger } from '../../../src/logging/otel-logger.ts';
-import { systemErrorName } from '../../../src/website-fetcher/website-fetcher.ts';
+import { systemErrorName } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 
 function loadLocalSettings(): NodeJS.ProcessEnv {
   try {

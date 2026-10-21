@@ -1,6 +1,6 @@
-import { createRequestContext } from '../../../src/auth/access-context.ts';
-import { InvalidAccessTokenError } from '../../../src/auth/identity-verifier.ts';
-import { WorkOSAuthProvider } from '../../../src/auth/hosted-auth/workos/workos-auth-provider.ts';
+import { createRequestContext } from '../../../src/accounts/identity/access-context.ts';
+import { InvalidAccessTokenError } from '../../../src/accounts/identity/identity-verifier.ts';
+import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
 
 // The gate mounts this preload at the same path as emitted tests. It is absent from the image.
 // Only the external identity boundary changes; CLI startup, MCP handling and fetching stay real.

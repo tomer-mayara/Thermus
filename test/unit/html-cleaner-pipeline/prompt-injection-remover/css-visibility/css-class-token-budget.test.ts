@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parse } from 'css-tree';
-import { createSelectorMatcher } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-selectors.ts';
-import { SourceHtmlDocument } from '../../../../../src/html-cleaner-pipeline/prompt-injection-remover/css-visibility-tree.ts';
+import { createSelectorMatcher } from '../../../../../src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts';
+import { SourceHtmlDocument } from '../../../../../src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts';
 
 test('Given a long class list, when several selectors repeatedly match its tokens, then class parsing does not exhaust the work budget', () => {
   const tree = SourceHtmlDocument.parse(`<p class="${'ordinary '.repeat(500)}payload">Visible</p>`);

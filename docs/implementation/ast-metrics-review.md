@@ -208,8 +208,8 @@ production files first, lowest first, then the other files, then the files
 without a measurement:
 
 ```
-  41.4  src/user-portal/connection-guide.ts  below 85
-  91.0  src/http/server.ts
+  41.4  src/interfaces/user-portal/connection-guide.ts  below 85
+  91.0  src/runtime/http/server.ts
   42.9  test/acceptance/script/ast-metrics-delta.test.ts  no goal
   not measured  src/types.d.ts
 Result: 1 of 2 production files below 85. Goal: 85 or more for each production file. 1 other file without a goal. 1 file not measured.
@@ -249,8 +249,8 @@ The report lists:
   after (severity high).
 - A new function with more than 10 decision paths, with its file, line, and
   name (severity high at 25 or more, else medium).
-- A new forbidden resolved import from `src/html-cleaner-pipeline/` to
-  `src/mcp/`, or from `src/website-fetcher/` to `src/auth/` (severity high).
+- A new forbidden resolved import from `src/pipelines/html-processing/` to
+  `src/interfaces/mcp/`, or from `src/pipelines/providers/website-fetcher/` to `src/accounts/identity/` (severity high).
 - A rule violation that the baseline does not list, for the rules in
   `.ast-metrics.yaml`.
 - A summary of the change in complexity, maintainability, outgoing
@@ -605,7 +605,7 @@ The selected roots are `src/`, `test/`, `script/`, `patches/`,
 read. Markdown outside `src/` and `test/` is excluded from the other
 selected roots. Generated roots `dist/`, `ast-report/`,
 and `coverage/`, plus
-`src/user-portal/dist/` and `src/user-portal/.vite/`, are excluded. So are
+`src/interfaces/user-portal/dist/` and `src/interfaces/user-portal/.vite/`, are excluded. So are
 `node_modules/`, `.git/`, and `.DS_Store` at any depth and unrelated prose.
 Markdown fixtures under `test/` remain inputs. Paths use forward
 slashes and lexical order. Length-prefixed path/content entries prevent
@@ -810,6 +810,9 @@ It runs `ast-metrics analyze src` for the JSON report and one MCP session of
   compiler, suite, and measurement version. These inputs are checked before
   and after analysis. The commit label alone does not identify uncommitted
   snapshot content.
+- `ownership`: optional component roots and exact files from the source
+  revision's `dependency_graph.components`. Missing ownership keeps the legacy
+  first-level `src/` grouping; comparisons normalize only the root owner to app.
 - `dependencies`: version 1 source dependency evidence: normalized `pairs`
   with `from`, `to`, and `kinds`, plus `issues` for unresolved evidence.
   The pairs keep local static imports, type imports, re-exports, side-effect
@@ -1169,7 +1172,7 @@ no new/gone labels or count deltas; gone base edges are omitted. The report
 does not claim that cycles changed or that the component map stayed the same.
 Its incomplete-evidence notice states that more dependencies and cycles may
 exist. Diagnostics remain visible. For example, the stylesheet import
-`./style.css` in `src/user-portal/main.ts` is `unresolved-local`, because CSS
+`./style.css` in `src/interfaces/user-portal/main.ts` is `unresolved-local`, because CSS
 is outside the analyzed TypeScript file set.
 Missing metrics remain unavailable. Offline mode
 uses only the supplied snapshots and change evidence; it never reads the
@@ -1459,7 +1462,7 @@ These facts, measured with `ast-metrics-mcp.ts file <path> --json` on
   with the grouping of the whole repository, it named a "cycle" between two
   halves of `script/` that have no import cycle.
 - With namespace granularity, a member of a community can be a deep folder,
-  such as `src/auth/hosted-auth`. The snapshot gives each file the community
+  such as `src/accounts/identity/hosted-auth`. The snapshot gives each file the community
   of the nearest member; a file under no member has none.
 - The commands run ast-metrics in the repository root that git names from
   the current folder. A worktree of an agent has its own copy of the files;

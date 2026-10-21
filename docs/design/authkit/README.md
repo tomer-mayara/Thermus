@@ -26,7 +26,7 @@ First save a complete copy of the current branding and match the production
 client ID. Keep that backup outside the repository if it contains account data.
 Use the same confirmed application and environment for apply and read-back.
 
-Upload the exact logo and favicon from `src/user-portal/public/assets/` to the
+Upload the exact logo and favicon from `src/interfaces/user-portal/public/assets/` to the
 production branding. Set the dark logo to `thermus-logo.svg` and the dark
 favicon to `thermus-favicon.svg`. Then replace `THERMUS_AUTHKIT_LOGO_URL` in
 `panel.html` with the public logo URL. The panel does not redraw the logo.

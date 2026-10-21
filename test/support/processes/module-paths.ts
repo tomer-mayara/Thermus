@@ -20,7 +20,7 @@ export const repositoryRoot = new URL(fromSource ? '../../../' : '../../../../',
 
 // The portal build that the local HTTPS site serves. It exists only after npm run build:user-portal, so the paths
 // test checks only its parent folder.
-export const portalBuild = fileURLToPath(new URL('src/user-portal/dist/', repositoryRoot));
+export const portalBuild = fileURLToPath(new URL('src/interfaces/user-portal/dist/', repositoryRoot));
 
 // Offline hosted tests select these local inputs without changing the real portal build. The stub of the Lightpanda
 // executable answers only the pinned version.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { formatToolCompletion } from '../../../src/mcp/tool-completion-record.ts';
+import { formatToolCompletion } from '../../../src/interfaces/mcp/tool-completion-record.ts';
 
 const context = { user: { authority: 'trusted', subject: 'actor' }, tenantId: 'tenant', grants: [], permissions: [] };
 
