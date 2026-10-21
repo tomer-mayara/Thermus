@@ -57,6 +57,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `assessment/crap-deterioration.ts` compares supplied CRAP observations or bounds.
 `assessment/crap-assessment.ts` returns per-function absolute and decline results.
 `assessment/crap-ceiling.ts` compares supplied CRAP operands/bounds with a ceiling.
+`assessment/mi-floor.ts` compares supplied raw MI with a supplied floor.
 `assessment/mi-decline.ts` compares supplied MI operands for decline.
 `assessment/mi-assessment.ts` calculates per-unit MI floor and independent decline results.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
@@ -909,6 +910,22 @@ activates no policy. Full assessment remains pending; existing commands and
 manual merging stay unchanged. The process does not call it yet. `LOW` or
 `UNKNOWN` alone is not an architect trigger; broader checks remain pending.
 
+The pure `miFloorOf({ head?, floor })` in `assessment/mi-floor.ts` retains
+`observation: { head?, floor }` and returns `meetsFloor` with `PASS`, `MISS` or
+`UNKNOWN` and a reason. Head at least floor passes; lower head misses; absent
+or undefined head stays unknown. The mandatory floor must be finite even when
+head is absent; present head must be finite. Negative values, zero, subnormal
+values and finite extremes are valid. Raw ordering uses no rounding or
+subtraction.
+
+For A=96, B=90, H=90 and floor 90, the supplied floor passes while independent
+cumulative decline still misses; head 89.9 misses the floor. Floor 70 with head
+72 can pass while MI85 stays low. This checks the numeric part of E1 only. It
+does not prove an exception is valid or covers this condition. Exception
+applicability, tightening/retirement and history/identity proof remain pending.
+It adds no route, command/process wiring or policy adoption; existing behavior
+and manual merging stay unchanged.
+
 The separate pure `miDeclineOf({ reference?, head? })` in
 `assessment/mi-decline.ts` retains supplied operands in `observation` (missing
 properties omitted) and returns `belowFive`
@@ -1218,6 +1235,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-decline.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-mi-floor.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
@@ -1297,6 +1315,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-mi-floor.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |

@@ -697,7 +697,8 @@ the reference commit, with exact-snapshot CLI, raw file MI and native class
 observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
 process outcomes in F.12, exact per-file MI85 in F.13 and absolute CRAP
 calculation in F.14, MI decline in F.15, CRAP deterioration in F.16, and per-unit
-MI/per-function CRAP assessment in F.17/F.18 and supplied CRAP ceilings in F.19.
+MI/per-function CRAP assessment in F.17/F.18 and supplied CRAP ceilings/MI
+floors in F.19/F.20.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -729,6 +730,7 @@ Other proposed operations remain unavailable.
 | `assessment/mi-assessment.ts` | F.17 returns per-unit MI floor and independent PR/cumulative decline results; first real caller of unchanged `miDeclineOf`. | Caller proves identity, comparability, scope and accepted history; no aggregate pass, route or anchor update. |
 | `assessment/crap-assessment.ts` | F.18 returns independent per-function absolute and PR/cumulative CRAP results; first real caller of unchanged `crapDeteriorationOf`. | Caller proves origin/applicability, identity, comparability, scope and accepted history; no aggregate pass or anchor update. |
 | `assessment/crap-ceiling.ts` | F.19 compares supplied CRAP operands/bounds with a supplied ceiling. | Arithmetic only; no exception validity/applicability, reference/history/provenance proof or route. |
+| `assessment/mi-floor.ts` | F.20 compares supplied raw head MI with a supplied floor. | Arithmetic only; no proof an exception is valid or covers a condition, history/identity or route proof. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | F.14/F.16 add sound absolute and difference bounds over supplied values. Lasting origin rules remain pending. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -2084,7 +2086,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 
 | Owner/path | Planned change |
 | --- | --- |
-| `assessment/` | F.13–F.19 add only MI85, CRAP absolute/decline/ceiling calculations and per-unit MI/CRAP assessment over supplied values. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
+| `assessment/` | F.13–F.20 add only MI85, supplied MI floors, CRAP absolute/decline/ceiling calculations and per-unit MI/CRAP assessment over supplied values. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
@@ -2103,7 +2105,8 @@ operands. F.16 adds exact CRAP deterioration comparisons over supplied
 observations or bounds. F.17 adds per-unit MI floor and independent
 PR/cumulative decline results. F.18 adds independent per-function absolute and
 PR/cumulative CRAP results. F.19 compares supplied CRAP operands/bounds with
-a supplied ceiling. These calculations do not change commands.
+a supplied ceiling. F.20 compares supplied raw MI with a supplied floor. These
+calculations do not change commands.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -3069,6 +3072,52 @@ No `src/` edit, broader real group, collector, runtime or merge behavior changed
 The three known failures keep PR #201 in Draft; merging stays manual. Final
 habit-hooks after this prose and committed process evidence will follow on
 the PR.
+
+### F.20. Supplied MI floor implementation record
+
+`assessment/mi-floor.ts` adds pure `miFloorOf({ head?, floor })`, retaining
+`observation: { head?, floor }`. `meetsFloor` returns `PASS`, `MISS` or
+`UNKNOWN` with a reason. Head at least floor passes; lower head misses;
+absent/undefined head stays unknown. Validate the mandatory finite floor even
+without head; present head must be finite. Negative values, zero, subnormal
+values and finite extremes are valid. Direct raw ordering uses no rounding or
+subtraction.
+
+For A=96, B=90, H=90 and floor 90, the supplied floor passes while independent
+cumulative decline misses; head 89.9 misses the floor. Floor 70 with head 72
+can pass while MI85 stays low. This checks the numeric part of E1 only. It does
+not prove an exception is valid or covers this condition. Exception
+applicability, tightening/retirement, history/identity and full assessment
+remain pending. No route, CLI/process wiring or policy is added; existing
+behavior and manual merging stay unchanged.
+
+The unit and acceptance files are both named `ast-metrics-mi-floor.test.ts`.
+Measured validation on 2026-10-20:
+
+- The baseline passed 169/169. Four new acceptance and 41 new unit cases first
+  failed for the absent module. The typed build passed and focused checks passed
+  214/214: 169 existing, 41 new unit and four new acceptance cases, with zero
+  failures, cancellations, skips or todo tests.
+- Full unit passed 4,343 compiled and 23 portal checks, 4,366 total, with zero
+  failures, cancellations, skips or todo tests. Existing runtime bodies and
+  commands stay unchanged.
+
+- Full acceptance ran 946 tests: 943 passed and three failed, with zero
+  cancellations, skips or todo tests. Only missing `AXIOM_API_KEY` and the two
+  known missing-search-tool cases failed. All four new cases, MCP timeout,
+  fetch hangs and the forced-GC regression passed with original deadlines.
+  README/help/inventory checks passed 18/18 within acceptance.
+- Compiled failures stopped the package portal phase; separate selected portal
+  acceptance passed 18/18. Build-command-selection sentinels passed 3/3 in
+  disposable fixtures. Native snapshot passed 3/3 and structural architecture
+  passed 1/1 without skips. Frozen source/test hashes matched and all 35 history
+  records stayed unchanged. Manager and independent local review found no
+  actionable issue.
+
+No new live check was selected for pure floor arithmetic; no broader groups,
+collectors, CLI change or policy adoption were added. Three known required
+failures keep PR #201 in Draft; merging stays manual. See PR #201
+for the final habit-hooks result and the clean committed process report.
 
 ## References
 
