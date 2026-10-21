@@ -1,8 +1,10 @@
 # PR review rules for Thermus.
 #
-# Status: proposal of 2026-10-20, in manual trial. The checks do not exist yet.
-# Agents apply these rules by hand, as the section "Review route" of AGENTS.md
-# says. In the trial that section governs where it differs from this file. The playbook docs/implementation/pr-review-playbook.md explains the
+# Status: proposal of 2026-10-20, in manual trial. The command
+# script/pr-review/check.ts applies protected_paths, read_paths, scopes,
+# public_surface, dependency_graph and size. The other keys wait for CI and the
+# later checks. The section "Review route" of AGENTS.md governs where it differs
+# from this file. The playbook docs/implementation/pr-review-playbook.md explains the
 # routes and the seven checks. The checks will read this file. A change to
 # this file is ASK.
 #
@@ -13,7 +15,7 @@
 
 version: 1
 status: manual-trial
-glob_syntax: minimatch on the repository path, dot files included
+glob_syntax: "**, * and ? as in minimatch, on the repository path, dot files included; a pattern without a slash matches a root file; no other syntax"
 diff_base: the merge base with origin/main, with rename detection
 
 routes:
@@ -66,7 +68,7 @@ required_checks:
     - habit-hooks --branch origin/main
     - pnpm exec node script/code-quality/ast-metrics-coverage.ts --suite unit --suite integration --suite acceptance --out ast-report/coverage.json
     - pnpm exec node script/code-quality/ast-metrics-process.ts --coverage ast-report/coverage.json
-    - pnpm exec node script/pr-review/check.ts   # checks 1 to 5; to create
+    - pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus   # checks 1, 3 and 5, and the modules of check 2
   when_paths_change:
     - paths: [src/**, docker/**, "Dockerfile*"]
       commands: [pnpm run build:hosted, pnpm run test:container:hosted]   # the AMD64 runner replaces the emulated local build
@@ -93,7 +95,7 @@ protected_paths:
       - docs/api-surface/**          # to create
       - docs/reference/**            # the documented contracts; check 2 names them too
       - test/acceptance/architecture/**
-      - script/pr-review/**          # to create; the checks protect themselves
+      - script/pr-review/**          # the checks protect themselves
       - script/code-quality/review/**   # the layer rules and the high-severity gate
       - .habit-hooks/**
       - .ast-metrics.yaml

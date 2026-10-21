@@ -950,6 +950,59 @@ node --test dist/test/acceptance/script/script-readme.test.js
 See [the script guide](../../script/README.md) and
 [the ast-metrics review guide](../implementation/ast-metrics-review.md).
 
+## PR review check
+
+Five acceptance files run `script/pr-review/check.ts` in small git
+repositories. Each repository has its own rules file from
+`test/acceptance/script/fixtures/pr-review-rules.ts`.
+`test/acceptance/script/pr-review-check.test.ts` checks the route from the
+changed paths: `SHIP` for a document change, with the complete report and its
+commits; `ASK` for a protected path with the question of its group, for a
+renamed protected file, for a changed surface module, and for a changed
+contract document; `SHOW` for a change of tests only; and `SHIP` with no
+changed path when HEAD is the merge base.
+`test/acceptance/script/pr-review-check-size.test.ts` checks `READ` for a
+production line count above the limit, also for a file that moves into `src/`,
+for a removed test case that the reason names, and for an added skip.
+`test/acceptance/script/pr-review-check-facts.test.ts` checks the dependency
+facts. `FIX`: an edge that the rules do not list, with the key that lists it, a
+forbidden edge, a new cycle with no entry to declare it, a new edge inside a
+known cycle also when the branch declares the edge, an import of a file of
+another package outside the public surface, an unresolved import in a changed
+file, and a changed JavaScript file. `ASK`, not `FIX`: an edge that the rules
+file of the branch declares, also when no protected group lists the rules
+file. A stylesheet import is no fact, and an unresolved import in an unchanged
+file is a note. `test/acceptance/script/pr-review-check-record.test.ts` checks
+the JSON keys and the commits, the stop for uncommitted changes and the note
+with `--allow-dirty`, and the rules file of HEAD when the merge base has none
+or has one that is not valid.
+`test/acceptance/script/pr-review-check-failures.test.ts` checks exit status 1
+for a rules file at HEAD without a key, with a trigger of another route, or
+that is not valid YAML, for a deleted rules file, a missing base ref, an
+unknown option, a rules path outside the repository, and a repository without
+an owner. It also checks that the README gives the same synopsis, options, and
+defaults as the help, which it reads without child processes.
+
+The unit tests `test/unit/script/pr-review-*.test.ts` check the parts: the glob
+matcher with dot files (`globs`), the kind of each import statement in each
+kind of TypeScript file (`imports`), the package graph, its resolution, and
+its assets (`graph`), the cycles and the edges inside known cycles (`cycles`),
+the dependency facts (`dependency-facts`), the declared and the undeclared
+facts (`facts`), the rules reader, its route guards, and its diagnostics
+(`rules`), the readers of the diff output (`changes`), the reader of `git
+cat-file --batch` (`blobs`), the line counts and the snooze file (`size`), each
+form of a test case, a skip, and a todo (`test-counts`), the path and surface
+reasons (`paths`), the route and the label command (`route`), and the result
+and its report (`result`).
+
+```sh
+npm run build
+node --test "dist/test/acceptance/script/pr-review-check*.test.js"
+node --test "dist/test/unit/script/pr-review-*.test.js"
+```
+
+See [the check guide](../../script/pr-review/README.md).
+
 ## Free hosted signup (FS-01)
 
 The [FS-01 record](../implementation/fs-01.md) keeps the complete-candidate
