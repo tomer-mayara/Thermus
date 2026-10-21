@@ -159,7 +159,7 @@ for (const action of ['wait', 'cancel'] as const) {
     const site = await serveFetchUrlOAuthSite(t);
     const stateDirectory = await fetchUrlState(t);
     const args = ['--endpoint', site.profile.endpoint, '--login'];
-    const result = await runFetchUrl(t, args, { stateDirectory, oauth: { ...site, authTimeoutMs: 150, browserAction: action } });
+    const result = await runFetchUrl(t, args, { stateDirectory, oauth: { ...site, ...(action === 'wait' ? { authTimeoutMs: 150 } : {}), browserAction: action } });
     assert.equal(result.code, 1);
     assert.match(result.stderr, action === 'wait' ? /timed out/ : /cancelled/);
     assert.equal(result.stdout, '');
