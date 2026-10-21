@@ -10,7 +10,8 @@
 #
 # A scan of the imports in src/**/*.ts on main 304cd24f (PR #200) seeded the
 # lists: 138 files, 438 import statements, every relative specifier resolved
-# to one file. A date in a comment says when the list last matched the code.
+# to one file. The check declared the facts of main 6ac961ae (PR #202) on
+# 2026-10-21. A date in a comment says when the list last matched the code.
 # "to create" marks a path that does not exist yet.
 
 version: 1
@@ -194,7 +195,7 @@ public_surface:
     - src/search-engine/search-engine.ts
     - src/config/deployment-config.ts   # auth and http import it too
     - src/config/ad-rules-file.ts
-  between_packages:                  # imported by a package other than composition on 2026-10-20
+  between_packages:                  # imported by a package other than composition on 2026-10-21
     auth:
       - src/auth/access-context.ts
       - src/auth/identity-verifier.ts
@@ -221,6 +222,11 @@ public_surface:
       - src/page-fetch/fetch-failure.ts
       - src/page-fetch/execution-context.ts
       - src/page-fetch/pipeline-step.ts
+      - src/page-fetch/step-record.ts                 # imported by search-pipeline since PR #202
+      - src/page-fetch/renderer-failure-reports.ts    # imported by search-pipeline since PR #202
+    search-pipeline:                 # imported by mcp since PR #202
+      - src/search-pipeline/search-failure.ts
+      - src/search-pipeline/search-pipeline.ts
     website-fetcher:
       - src/website-fetcher/website-fetcher.ts
   documented:                        # named in docs/reference on 2026-10-20
@@ -229,8 +235,8 @@ public_surface:
     - src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts
     - src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts
     - src/website-fetcher/network-policy.ts
-  # 56 files are imported across packages today. 35 of them are imported only
-  # by composition. Those are wiring, not contracts, and have no snapshot.
+  # A file that only composition imports is wiring, not a contract, and has no
+  # snapshot.
 
 # Check 3. CI builds the package graph of src/ from the imports with relative
 # specifiers and from the external imports. Each trigger below names its route.
@@ -269,7 +275,7 @@ dependency_graph:
     - user-portal
     - website-fetcher
     - composition
-  allowed_edges:                     # 34 edges on 2026-10-20; kind is the maximum allowed: type allows type-only imports, runtime and both allow any import
+  allowed_edges:                     # 41 edges on 2026-10-21; kind is the maximum allowed: type allows type-only imports, runtime and both allow any import
     - { from: auth, to: billing, kind: type }
     - { from: auth, to: config, kind: both }
     - { from: auth, to: hosted-admin, kind: runtime }   # known cycle
@@ -286,6 +292,8 @@ dependency_graph:
     - { from: composition, to: mcp, kind: both }
     - { from: composition, to: organizations, kind: both }
     - { from: composition, to: page-fetch, kind: both }
+    - { from: composition, to: search-engine, kind: runtime }     # PR #202
+    - { from: composition, to: search-pipeline, kind: runtime }   # PR #202
     - { from: composition, to: terminal, kind: runtime }
     - { from: composition, to: website-fetcher, kind: runtime }
     - { from: hosted-admin, to: auth, kind: both }       # known cycle
@@ -299,11 +307,16 @@ dependency_graph:
     - { from: mcp, to: auth, kind: both }
     - { from: mcp, to: http, kind: runtime }
     - { from: mcp, to: page-fetch, kind: both }
+    - { from: mcp, to: search-pipeline, kind: runtime }           # PR #202
     - { from: organizations, to: auth, kind: type }     # known cycle
     - { from: organizations, to: billing, kind: type }
     - { from: page-fetch, to: auth, kind: runtime }
     - { from: page-fetch, to: website-fetcher, kind: both }
     - { from: search-engine, to: website-fetcher, kind: type }
+    - { from: search-pipeline, to: auth, kind: runtime }          # PR #202
+    - { from: search-pipeline, to: page-fetch, kind: runtime }    # PR #202
+    - { from: search-pipeline, to: search-engine, kind: type }    # PR #202
+    - { from: search-pipeline, to: website-fetcher, kind: runtime }   # PR #202
   forbidden_edges:                   # from the existing guards
     - { from: html-cleaner-pipeline, to: mcp }
     - { from: website-fetcher, to: auth }
@@ -361,6 +374,7 @@ dependency_graph:
     logging: ["node:path", "node:stream", "node:url"]
     mcp: ["node:crypto"]
     page-fetch: ["node:os"]
+    search-pipeline: ["node:os"]
     terminal: ["node:readline", "node:stream"]
     user-portal: ["node:url"]
     website-fetcher: ["node:child_process", "node:dns", "node:dns/promises", "node:net", "node:os"]
