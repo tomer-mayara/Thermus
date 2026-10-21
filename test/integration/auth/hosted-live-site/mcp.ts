@@ -29,10 +29,10 @@ export function describeHttpsMcp(): void {
       const site = await LocalHttpsSite.start(fake.settings, {
         portalBuild: await writePortalBuild(t), certificate,
         application: (logger) => composeApplicationWithWorkOSFake(config, fake, {
-          logger, buildServer: fetchToolServers(async (url, context) => {
+          logger, buildServer: fetchToolServers({ fetch: async (url, context) => {
             calls.push({ url, subject: context.user.subject, tenantId: context.tenantId });
             return '# HTTPS story';
-          }, logger),
+          }, search: async () => { throw new Error('Unexpected search call'); } }, logger),
         }),
       });
       t.after(() => site.close());
@@ -68,12 +68,12 @@ export function describeHttpsMcp(): void {
       const site = await LocalHttpsSite.start(fake.settings, {
         portalBuild: await writePortalBuild(t), certificate,
         application: (logger) => composeApplicationWithWorkOSFake(config, fake, {
-          logger, buildServer: fetchToolServers(async (_url, _context, { signal }) => {
+          logger, buildServer: fetchToolServers({ fetch: async (_url, _context, { signal }) => {
             signal.addEventListener('abort', () => aborted.resolve(), { once: true });
             started.resolve();
             await Promise.race([aborted.promise, release.promise]);
             return 'A late result';
-          }, { info: (record) => records.push(record), error: (record) => records.push(record) }),
+          }, search: async () => { throw new Error('Unexpected search call'); } }, { info: (record) => records.push(record), error: (record) => records.push(record) }),
         }),
       });
       t.after(() => site.close());

@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Application, ApplicationLogger, RouteConfig } from '../../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
-import { createFetchOperation, fetchToolServers } from '../../../../src/fetch-tool.ts';
+import { createToolOperations, fetchToolServers } from '../../../../src/fetch-tool.ts';
 import { assertHostedRenderer } from '../../../../src/hosted-renderer-startup.ts';
 import { composeWorkOSApplication, openWorkOSConnection, type WorkOSConnection } from '../../../../src/hosted-workos-application.ts';
 import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
@@ -50,8 +50,9 @@ export async function composeWorkSliceApplication(parts: WorkSliceParts, logger:
   const { config, connection, environment } = parts;
   const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
   if (!organizationId) throw new Error('Set THERMUS_SLICE_ORGANIZATION_ID to the WorkOS organization of this slice');
-  const operation = fetchOperationSpy(createFetchOperation(environment, logger), logger);
-  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operation, logger), onboarding: { organizationId }, mfaEvidence: 'unproven' });
+  const operations = createToolOperations(environment, logger);
+  const operation = fetchOperationSpy(operations.fetch, logger);
+  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers({ ...operations, fetch: operation }, logger), onboarding: { organizationId }, mfaEvidence: 'unproven' });
 }
 
 async function run(consoleLog: ConsoleLogger): Promise<number> {

@@ -96,11 +96,11 @@ export async function openSite(t: TestContext, era: McpProtocolEra) {
   const server = new MCPServer({
     auth: { verifier, accessResolver: resolver, expectedResource: resource, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' },
     buildServer: (context, lifetime) => createFetchToolServer(context, {
-      operation: async (url, callContext, execution) => {
+      operations: { search: async () => ({ status: 'released', markdown: 'test search' }), fetch: async (url, callContext, execution) => {
         operationContexts.push(callContext);
         operationExecutions.push(execution);
         return operation(url, callContext, execution);
-      }, logger,
+      } }, logger,
     }, lifetime),
     reportFailure: () => {},
   });

@@ -17,6 +17,10 @@ const noResultsPage: WebsiteFetchResult = {
 };
 
 const supportedResults = '<html><head></head><body><main id="search-page"><section id="mixed-main"><div class="snippet" data-type="web"><div class="result-content"><a class="l1" href="https://example.com"><div class="title search-snippet-title">Title</div></a><div class="generic-snippet"><div class="content">Snippet</div></div></div></div></section></main></body></html>';
+const videoDescription = '<div class="desktop-default-regular line-clamp-2">Video description</div>';
+const videoMetadata = '<div class="item-attributes"><div class="attr"><strong>Published:</strong> <span>April 28, 2026</span></div></div>';
+const videoContent = `<div class="video-snippet" data-macro="video"><div class="content">${videoDescription}${videoMetadata}</div></div>`;
+const supportedVideoResults = supportedResults.replace('<div class="generic-snippet"><div class="content">Snippet</div></div>', videoContent);
 
 const unknownPage: WebsiteFetchResult = {
   requestedUrl: 'https://search.brave.com/search?q=sources',
@@ -33,6 +37,56 @@ test('Given the captured Brave results page, when the engine searches, then it r
   assert.equal(result.page, capturedPage);
 });
 
+test('Given captured Brave results with a video description, when the engine searches, then it accepts every web result and returns the original full page', async () => {
+  const page = { ...capturedPage, html: readFileSync(new URL('test/support/fixtures/search-engine/brave-results-video.html', repositoryRoot), 'utf8') };
+  const engine = new SearchEngineBraveHttp({ fetchURL: async () => page });
+
+  const result = await engine.search('Lightpanda browser', new AbortController().signal);
+
+  assert.equal(result.kind, 'results');
+  assert.equal(result.page, page);
+});
+
+test('Given a supported video description without metadata, when classified, then the description and title are sufficient for a result', async () => {
+  const page = { ...capturedPage, html: supportedVideoResults.replace(videoMetadata, '') };
+  const engine = new SearchEngineBraveHttp({ fetchURL: async () => page });
+
+  const result = await engine.search('sources', new AbortController().signal);
+
+  assert.equal(result.kind, 'results');
+  assert.equal(result.page, page);
+});
+
+for (const [part, html] of [
+  ['missing macro', supportedVideoResults.replace(' data-macro="video"', '')],
+  ['wrong macro', supportedVideoResults.replace('data-macro="video"', 'data-macro="image"')],
+  ['missing video wrapper', supportedVideoResults.replace('class="video-snippet"', 'class="other-snippet"')],
+  ['absent description and metadata only', supportedVideoResults.replace(videoDescription, '')],
+  ['blank description and metadata', supportedVideoResults.replace('>Video description</div>', '> \n </div>')],
+  ['missing description classes', supportedVideoResults.replace('class="desktop-default-regular line-clamp-2"', 'class="other-description"')],
+  ['metadata with description classes', supportedVideoResults.replace(videoDescription, '').replace('class="attr"', 'class="desktop-default-regular line-clamp-2"')],
+  ['description outside its content', supportedVideoResults.replace(videoContent, `<div class="video-snippet" data-macro="video">${videoDescription}<div class="content">${videoMetadata}</div></div>`)],
+  ['description nested in an unsupported wrapper', supportedVideoResults.replace(videoDescription, `<article>${videoDescription}</article>`)],
+  ['video outside result content', supportedVideoResults.replace(videoContent, '').replace('</section>', `${videoContent}</section>`)],
+  ['missing title', supportedVideoResults.replace('>Title</div>', '> </div>')],
+  ['missing destination', supportedVideoResults.replace(' href="https://example.com"', '')],
+] as const) {
+  test(`Given a video result with ${part}, when classified, then the unsupported card fails without claiming absence`, async () => {
+    assert.notEqual(html, supportedVideoResults);
+    const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...capturedPage, html }) });
+
+    await assert.rejects(engine.search('sources', new AbortController().signal), { message: 'Search failed' });
+  });
+}
+
+test('Given valid generic results and one video card with only metadata, when classified, then the engine refuses the whole page instead of dropping the unsupported card', async () => {
+  const genericCard = '<div class="snippet" data-type="web"><div class="result-content"><a class="l1" href="https://example.org"><div class="title search-snippet-title">Generic title</div></a><div class="generic-snippet"><div class="content">Generic description</div></div></div></div>';
+  const html = supportedVideoResults.replace(videoDescription, '').replace('</section>', `${genericCard}</section>`);
+  const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...capturedPage, html }) });
+
+  await assert.rejects(engine.search('sources', new AbortController().signal), { message: 'Search failed' });
+});
+
 test('Given the controlled no-results page derived from the provider template, when classified, then it returns no-results with the original full page', async () => {
   const engine = new SearchEngineBraveHttp({ fetchURL: async () => noResultsPage });
 
@@ -41,6 +95,52 @@ test('Given the controlled no-results page derived from the provider template, w
   assert.equal(result.kind, 'no_results');
   assert.equal(result.page, noResultsPage);
 });
+
+for (const [kind, original] of [['no_results', noResultsPage], ['results', { ...capturedPage, html: supportedResults }]] as const) {
+  for (const [conflict, html] of [
+    ['a duplicate results section outside the search main', original.html.replace('</body>', '<section id="mixed-main"></section></body>')],
+    ['a duplicate results section inside the search main', original.html.replace('</main>', '<section id="mixed-main"></section></main>')],
+    ['the only results section outside the search main', original.html.replace('id="search-page"', 'id="other-page"').replace('</body>', '<main id="search-page"></main></body>')],
+    ['a known banner outside the search main', original.html.replace('</body>', '<section id="bad-results-info-banner">Conflicting banner</section></body>')],
+    ['a known banner outside the results section', original.html.replace('</main>', '<section id="bad-results-info-banner">Conflicting banner</section></main>')],
+  ] as const) {
+    test(`Given supported ${kind} with ${conflict}, when classified, then the document is refused`, async () => {
+      assert.notEqual(html, original.html);
+      const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...original, html }) });
+
+      await assert.rejects(engine.search('sources', new AbortController().signal), { message: 'Search failed' });
+    });
+  }
+
+  test(`Given supported ${kind} with ordinary footer links and generic data attributes, when classified, then the original full page is returned`, async () => {
+    const html = original.html.replace('</body>', '<footer data-type="navigation"><a href="https://example.com/help" data-type="help">Help</a><div data-type="images">Footer preferences</div></footer></body>');
+    assert.notEqual(html, original.html);
+    const page = { ...original, html };
+    const engine = new SearchEngineBraveHttp({ fetchURL: async () => page });
+
+    const result = await engine.search('sources', new AbortController().signal);
+
+    assert.equal(result.kind, kind);
+    assert.equal(result.page, page);
+  });
+}
+
+for (const [marker, content] of [
+  ['web result card', '<div class="snippet" data-type="web"><div class="result-content"><a class="l1" href="https://example.com"><div class="title search-snippet-title">Title</div></a><div class="generic-snippet"><div class="content">Snippet</div></div></div></div>'],
+  ['non-web result card', '<div class="snippet" data-type="images">Image result</div>'],
+  ['untyped result snippet', '<div class="snippet">Other result</div>'],
+  ['result content', '<div class="result-content">Other result</div>'],
+  ['result link', '<a class="l1" href="https://example.com">Other result</a>'],
+  ['result title', '<div class="search-snippet-title">Other result</div>'],
+] as const) {
+  test(`Given supported no-results with a known ${marker} outside the search main, when classified, then it fails without claiming absence`, async () => {
+    const html = noResultsPage.html.replace('</body>', `${content}</body>`);
+    assert.notEqual(html, noResultsPage.html);
+    const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...noResultsPage, html }) });
+
+    await assert.rejects(engine.search('sources', new AbortController().signal), { message: 'Search failed' });
+  });
+}
 
 for (const [shape, html] of [
   ['an error header', noResultsPage.html.replace('Not many great matches came back for your search:', 'Sorry, something went wrong')],

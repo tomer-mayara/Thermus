@@ -7,6 +7,67 @@
 
 # Tests
 
+## Public MCP search
+
+`test/acceptance/mcp/search-pipeline.test.ts` runs the real operation factories,
+Brave HTTP adapter, classifier, and cleaners through the HTTP MCP server.
+It uses a test identity provider and controlled DNS and renderer processes.
+It checks both protocol eras, exact discovery guidance, all 18 captured
+results in order, their snippets, no-results, scan withholding, validation,
+and private correlated completion and stage records. Authentication, access,
+Origin, malformed body, and envelope refusals create no operation records.
+
+The added search cases in `self-hosted-fetch-tool.test.ts` and
+`hosted-fetch-tool.test.ts` use the actual production entry compositions with
+Better Auth or the WorkOS provider and its local API double. Each edition
+discovers both tools and returns the captured results in both protocol eras.
+`search-lifecycle.test.ts` proves that shutdown in either era waits for
+search renderer cleanup and attempts one cancellation completion.
+
+`test/integration/mcp/search-tool-schema.test.ts` checks query and reason
+boundaries through the SDK validator and real `SearchQuery`.
+`fetch-tool-server.test.ts` covers the dispatcher, exact result projection,
+safe typed and unexpected errors, changing or throwing error getters,
+malformed arguments and outcomes, logger failures, and tracked cancellation.
+Four regression cases also abort during error inspection. They require the
+cancellation result and one correlated `cancelled` completion that omits
+private data for allowlisted, typed, unknown, and throwing-inspection paths.
+`test/unit/mcp/search.test.ts` checks typed result projection.
+`test/unit/mcp/tool-completion-record.test.ts` proves that search completion
+formatting reads no argument properties, even when they have throwing getters.
+
+The [SEARCH-05 record](../implementation/search-05.md) gives the earlier runs
+and limits. [SEARCH-09](../implementation/search-09.md) records the stronger
+live assertion and its dated result. The
+[cancellation follow-up](../implementation/search-mcp-cancellation.md) records
+the failure-mapper regression. Ordinary tests do not replace the separate
+pinned renderer and live Brave proofs; file selection alone is not a gate pass.
+
+## Shared fetch and search resources
+
+`test/integration/tool-operations.test.ts` runs the concrete composition with
+DNS and renderer process doubles. It checks cancellation before native DNS
+settles, the guard in both tool orders, recovery after a late DNS result or
+failure, and isolation between applications. Real cleaning preserves the
+captured search results and exact query. It also checks one rules read per
+application, shared compatible cleaners and setup warning state, and separate
+converter instances.
+
+`test/acceptance/mcp/hosted-search-capacity.test.ts` exercises the production
+operation factories and public MCP dispatch. It checks both tool
+orders while outgoing, renderer, or incoming work is held; success, failure,
+abort, cancellation before busy, held renderer cleanup, and subsequent calls.
+Separate hosted applications and self-hosted operations can overlap. Public
+calls in both tool orders prove busy refusal, held cleanup after cancellation,
+and successful recovery. Existing MCP lifecycle tests retain the public fetch
+shutdown and cancellation proof.
+
+`test/unit/mcp/operation-capacity.test.ts` checks the shared capacity contract
+with operation doubles, including context and result identity, no queue,
+cleanup settlement, independent owners, and synchronous failure.
+The [SEARCH-04 record](../implementation/search-04.md) gives verification
+results and limits. SEARCH-05 adds the public search proofs above.
+
 ## MCP fetch debug command
 
 `test/unit/script/fetch-url.test.ts` checks CLI input, help, credential input,
@@ -2437,7 +2498,7 @@ real tool server, and SDK client.
 
 **Renderer setup reports of the server composition** (`test/integration/fetch-tool-renderer-setup-report.test.ts`)
 
-`createFetchOperation` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
+`createToolOperations(...).fetch` and `fetchToolServers` run with trusted test rules, the real pipeline and fetcher, and a process double at `child_process.execFile`. Each launch gives a `RendererChildDouble` as the renderer child. No renderer runs.
 
 [V] Given renderer starts that fail with `ENOENT` and `EACCES` two times each and then with `ENOEXEC` at once, each call gets a safe launch detail with its approved code and a `fetch_failed` record, and the operator log gets one setup warning for each code and one correlated structured failure event for each call
 
@@ -3050,7 +3111,7 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 [V] `test/acceptance/mcp/http-authentication-cancellation.test.ts`: disconnect and shutdown stop token/access waits and prevent dispatch after a late result
 [V] `test/acceptance/auth/hosted-request-cancellation.test.ts`: disconnect and shutdown stop account session/access waits and prevent the protected operation
 [V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: stalled cleanup or a residual handle causes an error exit at the fixed 10-second hosted CLI deadline, while shutdown during MCP/account/session identity waits exits cleanly
-[V] `test/unit/mcp/single-fetch-operation.test.ts`: one shared slot refuses overlap without queuing and returns capacity only after settlement
+[V] `test/unit/mcp/operation-capacity.test.ts`: one owner shares capacity across fetch and search, refuses overlap without queuing, checks cancellation before busy, and returns capacity only after settlement
 [V] `test/unit/website-fetcher/website-fetcher-dns-wait.test.ts`: the five-second wait, abort, late completion, residual lookup ownership, and recovery do not change the resolver policy or start late rendering
 [V] `test/unit/http/request-cancellation.test.ts`, `test/unit/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/unit/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
 
@@ -3140,13 +3201,67 @@ npm run build && node --test dist/test/acceptance/mcp/self-hosted-rules-startup.
 
 **Renderer gate setup** (`test/acceptance/mcp/renderer-gate-setup.test.ts`)
 
-The test runs the built renderer gate file in a separate `node --test` process with bad prerequisites. It needs no renderer.
+The tests run both built renderer runtime files and the live search file
+in separate `node --test` processes with bad prerequisites and network access
+blocked. All three use the shared validator in
+`test/support/processes/pinned-renderer.ts`. They need no renderer. Two cases also
+inspect the actual package scripts without starting builds or gates.
 
-[V] Given `LIGHTPANDA_BIN` that is unset, relative, a missing file, or an unsupported Lightpanda version, the explicit renderer gate fails with its setup error, and no gate test passes, is skipped, or is left as todo
+Given `LIGHTPANDA_BIN` that is unset, relative, a missing file, or an
+unsupported Lightpanda version, each of the three files must fail with its
+setup error before an outbound network attempt. No gate test may pass, be
+skipped, or remain as todo.
+
+Given the package scripts, the local renderer command must select both fetch
+and search runtime files; hosted build must select those files plus ordinary
+public search, shared capacity, and search shutdown acceptance. Only
+`test:mcp:search:live` may build and select the live Brave file. These checks
+inspect executable selection, not document prose.
 
 ```sh
 npm run build && node --test dist/test/acceptance/mcp/renderer-gate-setup.test.js
 ```
+
+**Search runtime and live proof**
+
+`test/acceptance/mcp/search-pipeline.runtime.ts` uses pinned Lightpanda 1.0.0
+and a test-only `WebsiteFetcher` transport from the canonical Brave request
+to a local rendered fixture. It returns canonical Brave metadata to the real
+adapter, classifier, cleaners, and MCP result with a test identity provider.
+The fixture has an isolated
+loopback allowance. The test introduces no production endpoint override or
+network bypass. `npm run test:mcp:renderer` and the final phase of
+`npm run build:hosted` select this file and the fetch runtime file together.
+
+`test/acceptance/mcp/search-pipeline.live.ts` calls actual Brave through the
+production composition with a real local Better Auth token and pinned
+Lightpanda 1.0.0. It requires a useful external Lightpanda result link with
+description text in the same paragraph or the immediately following paragraph,
+without crossing another result or a section boundary. Link title text alone
+is not a description. It also checks safe correlated stage and completion
+records. A provider block or rate limit fails the proof. Only its dedicated
+command selects it; ordinary, offline, and container build gates exclude it:
+
+```sh
+npm run test:mcp:search:live
+```
+
+The [nine controlled assertion cases](../../test/unit/test-support/search-results.test.ts)
+use the [same shared assertion](../../test/support/dsl/search-results.ts) as
+the live proof. They accept descriptions in the same or next paragraph and
+reject unrelated footers, another result's description, Brave navigation,
+title-only descriptions, rule boundaries, and paragraphs with multiple result
+links. These cases check the assertion, not current Brave access.
+
+These two proofs have separate scopes. Follow the
+[live proof evidence policy](../implementation/test-gate-policy.md#live-brave-search-proof-search-06)
+for new dated evidence and preserve earlier records.
+[SEARCH-09](../implementation/search-09.md) records the stronger assertion,
+its dated live result, and final selected checks; [SEARCH-06](../implementation/search-06.md)
+retains the earlier runtime and live evidence. The
+[cancellation follow-up](../implementation/search-mcp-cancellation.md) records
+the later corrected candidate and its own dated live proof. A local fixture
+pass does not establish live Brave access.
 
 **Renderer gate** (`test/acceptance/mcp/get-url-as-markdown.runtime.ts`)
 
@@ -3161,7 +3276,8 @@ The production `serve()` runs in the test process with real Better Auth, the rea
 [V] Given a page that keeps the renderer waiting, a modern client cancellation stops the renderer child, the client gets no Markdown, and the server writes one `cancelled` record
 [V] Given a legacy call that keeps the renderer waiting, server shutdown cancels it; the renderer child stops before the server finishes stopping, and the server writes one `cancelled` record
 
-Run the renderer gate with the pinned runtime. The `.runtime.ts` name keeps the file out of `npm test` and `npm run test:acceptance`:
+Run both renderer runtime files with the pinned runtime. Their `.runtime.ts`
+names keep them out of `npm test` and `npm run test:acceptance`:
 
 ```sh
 npm run test:mcp:renderer
