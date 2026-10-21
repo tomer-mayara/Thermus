@@ -46,6 +46,7 @@ export function rulesDocument() {
       test_counts: { fewer_tests_than_base: 'READ', more_skipped_or_todo_than_base: 'READ' },
       habit_hooks_snooze_non_empty: 'FIX',
     },
+    ratchet: { maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 } as Record<string, number> },
   };
 }
 
@@ -66,6 +67,11 @@ export function mainFiles(rules = rulesYaml()): Record<string, string> {
     'src/alpha/alpha.ts': 'export const alpha = 1;\n',
     'src/beta/beta.ts': 'export const beta = 2;\n',
   };
+}
+
+// The snapshots of check 4 go to ast-report/, which git ignores, as the snapshot command writes them in the repository.
+export function measuredFiles(rules = rulesYaml()): Record<string, string> {
+  return { ...mainFiles(rules), '.gitignore': 'ast-report/\n', 'src/alpha/parser.ts': 'export const parser = 1;\n', 'src/alpha/printer.ts': 'export const printer = 1;\n' };
 }
 
 export const betaUsesAlpha: Readonly<Record<string, string>> = {

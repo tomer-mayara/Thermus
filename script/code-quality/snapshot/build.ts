@@ -52,6 +52,7 @@ function snapshotFileOf(file: FileMeasurement, community: string | null, functio
     path: file.path,
     community,
     maintainability: numbers.rounded(file.maintainability, 1),
+    maintainabilityRaw: file.maintainability,
     paths: file.paths,
     loc: file.loc,
     risk: numbers.rounded(file.risk, 2),

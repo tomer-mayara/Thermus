@@ -44,6 +44,42 @@ for (const [args, diagnostic] of [
 // The build of the snapshot is pure, so the cases below call it in the test process. Its module runs from source next to
 // the command, as the command runs it. The cases use the production types.
 const { snapshotOf } = await import(new URL('snapshot/build.ts', pathToFileURL(astMetricsSnapshotScript)).href) as typeof import('../../../script/code-quality/snapshot/build.ts');
+const { sourceFilesOf } = await import(new URL('snapshot/input.ts', pathToFileURL(astMetricsSnapshotScript)).href) as typeof import('../../../script/code-quality/snapshot/input.ts');
+
+test('Given absent native file MI, when a snapshot is built, then both MI fields stay absent', () => {
+  for (const fields of [{}, { maintainability: {} }]) {
+    const [file] = sourceFilesOf(JSON.stringify({ concernedFiles: [{ path: '/repo/src/value.ts', ...fields }] }), '/repo');
+    assert.equal(file.maintainability, undefined);
+    assert.deepEqual(snapshotFor([file], {}).files[0], { path: 'src/value.ts', community: null, paths: 0, loc: 0, functions: [] });
+  }
+});
+
+test('Given finite native file MI, when a snapshot is built, then zero and full precision remain raw while the old field stays rounded', () => {
+  for (const value of [0, 84.96, 56.17474697614129, 128.00000001, -3.14159]) {
+    const [file] = sourceFilesOf(JSON.stringify({ concernedFiles: [{ path: '/repo/src/value.ts', maintainability: { maintainabilityIndex: value } }] }), '/repo');
+    assert.equal(file.maintainability, value);
+    assert.deepEqual(snapshotFor([file], {}).files[0], {
+      path: 'src/value.ts', community: null, maintainability: Number(value.toFixed(1)), maintainabilityRaw: value, paths: 0, loc: 0, functions: [],
+    });
+  }
+});
+
+test('Given malformed or nonfinite native file MI, when the report is read, then a path-specific error rejects it', () => {
+  for (const value of ['null', '[]', '4', '"84.96"', '{"maintainabilityIndex":null}', '{"maintainabilityIndex":"84.96"}', '{"maintainabilityIndex":true}', '{"maintainabilityIndex":[]}', '{"maintainabilityIndex":{}}', '{"maintainabilityIndex":1e999}', '{"maintainabilityIndex":-1e999}']) {
+    const report = `{"concernedFiles":[{"path":"/repo/src/value.ts","maintainability":${value}}]}`;
+    assert.throws(() => sourceFilesOf(report, '/repo'), { message: 'Invalid file maintainability for src/value.ts: expected an object with an optional finite maintainabilityIndex.' }, value);
+  }
+});
+
+test('Given malformed MI outside src and malformed unrelated source metrics, when the report is read, then only source file MI has the new validation', () => {
+  const report = { concernedFiles: [
+    { path: '/repo/test/value.ts', maintainability: null },
+    { path: '/repo/script/value.ts', maintainability: { maintainabilityIndex: 'invalid' } },
+    { path: '/elsewhere/value.ts', maintainability: [] },
+    { path: '/repo/src/value.ts', complexity: { cyclomatic: 'invalid' }, volume: { loc: 'invalid' }, risk: { score: 'invalid' } },
+  ] };
+  assert.deepEqual(sourceFilesOf(JSON.stringify(report), '/repo'), [{ path: 'src/value.ts', paths: 0, loc: 0, maintainability: undefined, risk: undefined }]);
+});
 
 // A community of the get_communities answer, with its members as hubs.
 function community(id: string, members: readonly string[], namespaces: Readonly<Record<string, number>> = {}) {

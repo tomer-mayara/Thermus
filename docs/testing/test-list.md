@@ -542,6 +542,9 @@ refused arguments of the snapshot command with an empty PATH, and the rules
 of the pure build in the test process: the LOC-weighted maintainability, the
 label rule, the `src/` filter, the cycles, the community of a file in a
 folder member, and the join of the functions.
+Raw file MI cases retain finite precision and zero, preserve unavailable values,
+and reject malformed/nonfinite native MI for `src/` files without changing
+rounded scores. Out-of-scope entries remain ignored.
 `test/acceptance/script/ast-metrics-snapshot.test.ts` runs the command
 against both doubles with the answers of
 `fixtures/ast-metrics-snapshot-answers.ts`: the whole snapshot from one
@@ -574,6 +577,12 @@ data and refuses invalid evidence. `test/acceptance/script/ast-metrics-snapshot-
 checks retained dependency pairs and issues through the snapshot command.
 The snapshot live cases also check unique normalized pairs between analyzed
 source files and the real literal dynamic import from `application.ts`.
+They compare emitted raw file MI with the pinned native analysis value.
+
+`test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts` checks raw file MI
+beside rounded output, refusal before publication, and identical architecture
+reports from legacy and raw-enriched snapshots. The architecture reader still
+ignores the optional raw field.
 
 `test/acceptance/script/ast-metrics-snapshot-provenance.test.ts` checks that
 capture records source and expected coverage-input identity and refuses to
@@ -946,6 +955,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
 | live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
@@ -1023,7 +1033,7 @@ See [the script guide](../../script/README.md) and
 
 ## PR review check
 
-Five acceptance files run `script/pr-review/check.ts` in small git
+Seven acceptance files run `script/pr-review/check.ts` in small git
 repositories. Each repository has its own rules file from
 `test/acceptance/script/fixtures/pr-review-rules.ts`.
 `test/acceptance/script/pr-review-check.test.ts` checks the route from the
@@ -1048,11 +1058,27 @@ the JSON keys and the commits, the stop for uncommitted changes and the note
 with `--allow-dirty`, and the rules file of HEAD when the merge base has none
 or has one that is not valid.
 `test/acceptance/script/pr-review-check-failures.test.ts` checks exit status 1
-for a rules file at HEAD without a key, with a trigger of another route, or
-that is not valid YAML, for a deleted rules file, a missing base ref, an
-unknown option, a rules path outside the repository, and a repository without
-an owner. It also checks that the README gives the same synopsis, options, and
+for a rules file at HEAD without a key, without the MI limit of a new file,
+with a trigger of another route, or that is not valid YAML, for a deleted
+rules file, a missing base ref, an unknown option, a rules path outside the
+repository, a repository without an owner, and a head snapshot without a base
+snapshot. It also checks that the README gives the same synopsis, options, and
 defaults as the help, which it reads without child processes.
+`test/acceptance/script/pr-review-check-ratchet.test.ts` checks the MI rules
+of check 4 with snapshot files that the test writes under `ast-report/`:
+`FIX` for a new production file at raw MI 84.96 and no reason at 85; `READ`
+for an existing file that drops from 90 to 85, with both values, and no
+reason at 85.1; a renamed file that compares its old path in the base
+snapshot with its new path in the head snapshot; and not applicable for a
+file without raw MI in the snapshot that it needs. It checks exit status 1
+for a head or base snapshot of another commit, with the snapshot and both
+commits, for a missing snapshot file, and for a raw MI that is a text.
+`test/acceptance/script/pr-review-check-exceptions.test.ts` checks the
+exceptions file: an entry with a future date turns the `FIX` into a `READ`
+reason that names the entry, a past date keeps the `FIX` and adds the expired
+entry, an expired entry of a changed file is `FIX` without the snapshot
+options while the MI section says that MI was not checked, and an expiry that
+is not a calendar date gives exit status 1.
 
 The unit tests `test/unit/script/pr-review-*.test.ts` check the parts: the glob
 matcher with dot files (`globs`), the kind of each import statement in each
@@ -1063,8 +1089,11 @@ facts (`facts`), the rules reader, its route guards, and its diagnostics
 (`rules`), the readers of the diff output (`changes`), the reader of `git
 cat-file --batch` (`blobs`), the line counts and the snooze file (`size`), each
 form of a test case, a skip, and a todo (`test-counts`), the path and surface
-reasons (`paths`), the route and the label command (`route`), and the result
-and its report (`result`).
+reasons (`paths`), the route and the label command (`route`), the result and
+its report with the MI section (`result`), the MI rules with renames, limits,
+and exceptions (`ratchet`), the reader of the snapshot files and its
+diagnostics (`snapshots`), and the reader of the exceptions file, its dates,
+its cover, and its expiry (`exceptions`).
 
 ```sh
 npm run build

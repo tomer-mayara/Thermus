@@ -18,6 +18,8 @@ for (const [name, rules, diagnostic] of [
     `${atHead} has no valid key dependency_graph.packages: give a list of text.\n`],
   ['that gives a trigger another route', rulesYaml(({ dependency_graph: graph }) => { graph.triggers.known_cycle_grows = 'READ'; }),
     `${atHead} has no valid key dependency_graph.triggers.known_cycle_grows: give FIX, the route that the check uses.\n`],
+  ['without the MI limit of a new file', rulesYaml(({ ratchet }) => { Reflect.deleteProperty(ratchet.maintainability_index, 'new_file_below'); }),
+    `${atHead} has no valid key ratchet.maintainability_index.new_file_below: give a whole number, 0 or more.\n`],
 ] as const) {
   test(`Given a rules file ${name}, when the check runs, then it exits 1 and names the key`, { timeout }, async (t) => {
     const repository = GitRepository.onFeatureBranch(t, mainFiles(rules));
@@ -69,6 +71,7 @@ for (const [name, args, diagnostic] of [
   ['an absolute rules path', ['--rules', '/etc/rules.yaml'], 'The --rules value must name a file of the repository, relative to its root.'],
   ['a rules path outside the repository', ['--rules', 'docs/../../rules.yaml'], 'The --rules value must name a file of the repository, relative to its root.'],
   ['a repository without an owner', ['--repo', 'Thermus'], 'The --repo value must have the form OWNER/NAME.'],
+  ['a head snapshot without a base snapshot', ['--head-snapshot', 'ast-report/snapshot.json'], 'Give both --base-snapshot and --head-snapshot, or neither.'],
 ] as const) {
   test(`Given ${name}, when the check runs, then it exits 1 with a diagnostic before it reads git`, { timeout }, async (t) => {
     const result = await runScript(t, prReviewCheckScript, { args, env: { PATH: '' } });

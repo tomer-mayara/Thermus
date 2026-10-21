@@ -19,6 +19,7 @@ export interface Rules {
   // modules holds every module that public_surface lists: external, between_packages, and documented.
   readonly surface: { readonly modules: readonly string[]; readonly contractDocuments: readonly string[] };
   readonly graph: GraphRules;
+  readonly maintainability: { readonly newFileBelow: number; readonly existingFileDropReadAt: number };
 }
 
 // base applies to the candidate. head is the rules file of the candidate: the facts that it lists are declared. path
@@ -47,6 +48,7 @@ export function rulesOf(text: string, where: string): Rules {
     limits: { production: numberAt(document, 'size.production_lines_read_above', where), total: numberAt(document, 'size.total_lines_read_above', where) },
     surface: surfaceOf(document, where),
     graph: graphRulesOf(document, where),
+    maintainability: maintainabilityOf(document, where),
   };
 }
 
@@ -66,4 +68,11 @@ function surfaceOf(document: unknown, where: string): Rules['surface'] {
     ...textListAt(document, 'public_surface.documented', where),
   ];
   return { modules, contractDocuments: globsAt(document, 'public_surface.contract_documents', where) };
+}
+
+function maintainabilityOf(document: unknown, where: string): Rules['maintainability'] {
+  return {
+    newFileBelow: numberAt(document, 'ratchet.maintainability_index.new_file_below', where),
+    existingFileDropReadAt: numberAt(document, 'ratchet.maintainability_index.existing_file_drop_read_at', where),
+  };
 }

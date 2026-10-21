@@ -39,6 +39,7 @@ function documentOf() {
       allowed_external_imports: { auth: ['jose'] },
       allowed_node_builtins: { http: ['node:http'] },
     },
+    ratchet: { maintainability_index: { unit: 'production file', new_file_below: 85, existing_file_drop_read_at: 5 } },
   };
 }
 
@@ -59,6 +60,7 @@ test('Given a complete rules document, when it is read, then the check gets the 
   assert.deepEqual(rules.graph.knownCycles, [{ members: ['auth', 'http'], kind: 'runtime' }]);
   assert.deepEqual(rules.graph.externalImports, new Map([['auth', ['jose']]]));
   assert.deepEqual(rules.graph.nodeBuiltins, new Map([['http', ['node:http']]]));
+  assert.deepEqual(rules.maintainability, { newFileBelow: 85, existingFileDropReadAt: 5 });
 });
 
 test('Given contract documents as a list, when the rules are read, then each pattern counts', () => {
@@ -87,6 +89,8 @@ for (const [name, edit, message] of [
   ['with an unresolved import of another route', (document: Document) => document.setIn(['dependency_graph', 'counting', 'unresolved_relative_import'], 'READ'), 'dependency_graph.counting.unresolved_relative_import: give FIX, the route that the check uses'],
   ['with a snooze file of another route', (document: Document) => document.setIn(['size', 'habit_hooks_snooze_non_empty'], 'READ'), 'size.habit_hooks_snooze_non_empty: give FIX, the route that the check uses'],
   ['with fewer tests of another route', (document: Document) => document.setIn(['size', 'test_counts', 'fewer_tests_than_base'], 'FIX'), 'size.test_counts.fewer_tests_than_base: give READ, the route that the check uses'],
+  ['without the MI limit of a new file', (document: Document) => document.deleteIn(['ratchet', 'maintainability_index', 'new_file_below']), 'ratchet.maintainability_index.new_file_below: give a whole number, 0 or more'],
+  ['with an MI drop that is a text', (document: Document) => document.setIn(['ratchet', 'maintainability_index', 'existing_file_drop_read_at'], 'five'), 'ratchet.maintainability_index.existing_file_drop_read_at: give a whole number, 0 or more'],
 ] as const) {
   test(`Given a rules document ${name}, when it is read, then the diagnostic names the key`, () => {
     const document = new Document(documentOf());

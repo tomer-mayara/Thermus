@@ -31,6 +31,7 @@ const rules = rulesOf(stringify({
     packages: ['a', 'composition'], allowed_edges: [{ from: 'composition', to: 'a', kind: 'runtime' }], forbidden_edges: [], known_cycles: [],
     allowed_external_imports: {}, allowed_node_builtins: {},
   },
+  ratchet: { maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 } },
 }), 'The rules file r.yaml at HEAD');
 
 const candidate = {
@@ -43,6 +44,7 @@ const candidate = {
   sourcePaths: ['src/a/a.ts', 'src/index.ts'],
   sources: new Map([['src/a/a.ts', 'export const a = 1;\n'], ['src/index.ts', "import { a } from './a/a.ts';\n\nexport const b = a;\n"]]),
   snooze: '[]',
+  today: '2026-10-21',
   dirty: true,
 };
 
@@ -68,4 +70,18 @@ test('Given a renamed file and a changed module that is both a protected contrac
   assert.match(report, /\nChanged paths:\n- R src\/a\/old\.ts -> src\/a\/a\.ts\n- M src\/index\.ts\n\n/);
   assert.match(report, /\nSurface differences:\n- src\/index\.ts\n\n/);
   assert.deepEqual(JSON.parse(jsonOf(result)), JSON.parse(JSON.stringify(result)));
+});
+
+test('Given snapshots in which the changed contract drops by five, when the result is made, then the MI reason is READ among the other reasons and the report gives the MI section after the tests', () => {
+  const snapshots = { base: new Map([['src/a/old.ts', 90], ['src/index.ts', 88]]), head: new Map([['src/a/a.ts', 89.5], ['src/index.ts', 82.5]]) };
+  const result = resultOf({ ...candidate, snapshots }, { base: rules, head: rules, path: 'r.yaml', notes: [] }, undefined);
+
+  assert.deepEqual(result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`), [
+    'ASK protected_paths.contracts: src/index.ts',
+    'ASK public_surface: src/index.ts',
+    'READ ratchet.maintainability_index.existing_file_drop_read_at: src/index.ts: 88 to 82.5',
+    'SHOW scopes.executable: 2 changed files',
+  ]);
+  assert.deepEqual(result.mi, ['changed: src/a/old.ts -> src/a/a.ts: 90 to 89.5', 'changed: src/index.ts: 88 to 82.5']);
+  assert.match(markdownOf(result), /\nTests:\n(?:- .*\n){3}\nMI:\n- changed: src\/a\/old\.ts -> src\/a\/a\.ts: 90 to 89\.5\n- changed: src\/index\.ts: 88 to 82\.5\n\nFacts to declare:\n/);
 });

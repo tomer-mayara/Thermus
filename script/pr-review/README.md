@@ -5,21 +5,31 @@ step "Run the check" of the section "Review route" of
 [AGENTS.md](../../AGENTS.md). It reads the
 [rules file](../../docs/implementation/pr-review-rules.yaml). The
 [PR review playbook](../../docs/implementation/pr-review-playbook.md) explains
-the routes and the checks. Commit every file first, then run the check from
-the repository root. No build is needed.
+the routes and the checks. Commit every file first, then take the two
+snapshots of check 4 and run the check from the repository root. No build is
+needed.
+
+```sh
+pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main
+pnpm exec node script/code-quality/ast-metrics-snapshot.ts
+pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus \
+  --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json
+```
 
 ```text
-Usage: pnpm exec node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--json] [--help]
+Usage: pnpm exec node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--json] [--help]
 
 Options:
-  --base REF          Git ref to compare with (default: origin/main)
-  --rules PATH        Rules file, relative to the repository root
-                      (default: docs/implementation/pr-review-rules.yaml)
-  --repo OWNER/NAME   Repository for the printed label command
-                      (default: the repository of the current folder)
-  --allow-dirty       Check HEAD also when the working tree has uncommitted changes
-  --json              Print one JSON object instead of Markdown
-  --help, -h          Show this help
+  --base REF            Git ref to compare with (default: origin/main)
+  --rules PATH          Rules file, relative to the repository root
+                        (default: docs/implementation/pr-review-rules.yaml)
+  --repo OWNER/NAME     Repository for the printed label command
+                        (default: the repository of the current folder)
+  --allow-dirty         Check HEAD also when the working tree has uncommitted changes
+  --base-snapshot FILE  Snapshot of the merge base, relative to the current folder
+  --head-snapshot FILE  Snapshot of HEAD, relative to the current folder
+  --json                Print one JSON object instead of Markdown
+  --help, -h            Show this help
 ```
 
 Exit status 0 means that the check computed a route, also when the route is
@@ -27,7 +37,9 @@ Exit status 0 means that the check computed a route, also when the route is
 the working tree has uncommitted changes and `--allow-dirty` is absent, or the
 folder is not a git repository. Or the base ref is missing, or the rules file
 at HEAD is missing, is not valid YAML, or has a key that is missing or wrong.
-The diagnostic names the key.
+Or a snapshot cannot be read, is not valid, or is not of its commit, or the
+exceptions file is not valid. The diagnostic names the key, or the snapshot
+and both commits.
 
 ## The routes
 
@@ -36,9 +48,9 @@ every reason, not only the first.
 
 | Route | Meaning |
 | --- | --- |
-| `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. The author repairs the pull request or declares the fact. |
+| `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. Or a new production file has a raw MI below the limit and no exception covers it, or an exception entry of a changed path has expired. The author repairs the pull request or declares the fact. |
 | `ASK` | A protected path, the rules file, a module of the public surface, or a contract document changed, or the pull request declares a fact. The architect answers the question of each matching group. |
-| `READ` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. The owner reads the diff before the merge. |
+| `READ` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit. The owner reads the diff before the merge. |
 | `SHOW` | No other reason, and a file under `scopes.executable` changed. The owner skims the merged diff. |
 | `SHIP` | No reason. The pull request merges on green. |
 
@@ -92,6 +104,32 @@ change of the rules file is `ASK`.
   into test cases. An added line under `test/` with a `skip` or `todo` option,
   variable, or call is `READ`, also in a text value. A
   `.habit-hooks/snooze.json` that is not `[]` is `FIX`.
+- MI: the rules of `ratchet.maintainability_index` for each change under
+  `scopes.production`; both paths of a rename count, and a deleted file has no
+  rule. The check reads `maintainabilityRaw` from the two snapshot files and
+  compares the values as numbers, with no rounding. A new file (status `A`)
+  below `new_file_below` is `FIX`. A file in both snapshots whose value drops
+  by `existing_file_drop_read_at` or more is `READ`. A renamed file compares
+  the value of its old path in the base snapshot with the value of its new
+  path in the head snapshot. A file without raw MI in the snapshot that it
+  needs is not applicable. The section "MI" gives each file with its values,
+  or `not checked` without the two options.
+- Snapshots: each option names a file relative to the current folder. Each
+  file must be JSON with `version` 1 and a `files` list. Each file entry has
+  a `path` text and an optional finite `maintainabilityRaw`; the check ignores
+  the other fields. The `commit` of the base snapshot must be the merge base,
+  and the `commit` of the head snapshot must be HEAD. Otherwise the check
+  stops and names the snapshot and both commits. The snapshot command records
+  HEAD also for uncommitted files, so commit first.
+- Exceptions: the check reads `.code-quality-exceptions.yaml` from HEAD, when
+  it exists. Each entry under `exceptions` needs `path`, `metric: mi`, a finite
+  `bound`, a `reason`, and `expires` as `YYYY-MM-DD`; an entry that is not
+  valid stops the check, and the diagnostic names the entry and the field.
+  Today is the committer date of HEAD, so that a rerun gives the same route.
+  An entry covers the `FIX` of its new file while the raw MI is at least the
+  bound and today is not after `expires`. The covered file stays a `READ`
+  reason that names the entry. An entry that expired before today is `FIX`
+  when its path changed. A change to the file is `READ` through `read_paths`.
 - Route: the first route with a reason. The check does not run the required
   checks; a failed required check is `FIX`, as the step "Route" says.
 - Record: the Markdown section "Review route" for the pull request
@@ -109,9 +147,9 @@ them.
   declare it under the key that the entry names. Compare the declarations of
   each module under "Surface differences".
 - "Metrics": take the final report of the process "Code quality review with
-  ast-metrics" in AGENTS.md. A recorded miss of an added or changed function or
-  file, a kept high finding on a changed file, or an MI drop of five or more on
-  an existing file is a reason for `READ`.
+  ast-metrics" in AGENTS.md. A recorded CRAP miss of an added or changed
+  function, or a kept high finding on a changed file, is a reason for `READ`.
+  The check applies the MI rules.
 - "Decision": for `ASK`, write the draft decision in the section "Review route"
   of the pull request description. Answer the question of each matching group,
   and state the guarantee that holds after the change.
@@ -127,7 +165,9 @@ check the rules file. `changes.ts` reads the diff output. `code-files.ts`,
 graph. `dependency-facts.ts`, `cycles.ts`, and `facts.ts` compare it with the
 rules, and `sources.ts` joins the graph with the public surface of
 `surface.ts`. `paths.ts`, `size.ts`, and `test-counts.ts` give the other
-reasons; `globs.ts` matches the patterns. `analysis.ts` and `result.ts` collect
+reasons; `globs.ts` matches the patterns. `snapshots.ts` reads the two
+snapshot files, `exceptions.ts` reads the exceptions file, and `ratchet.ts`
+applies the MI rules. `analysis.ts` and `result.ts` collect
 the reasons, and `route.ts` and `report.ts` give the route, the label command,
 and the record.
 
