@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, realpathSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { parse } from 'yaml';
 import { dataDirectory } from '../../support/isolation/data-directory.ts';
 import { astMetricsArchitectureScript, repositoryRoot } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
@@ -31,7 +32,8 @@ test('Given the real ast-metrics and no source edits, when architecture runs wit
   const args = ['--base', 'HEAD', '--trend-store', store, '--no-coverage'];
   const result = await runScript(t, astMetricsArchitectureScript, { args, cwd: root, env: { TMPDIR: folder } });
   assert.equal(result.code, 0, result.stderr);
-  assertArchitectureOfHead(result.stdout, git('rev-parse', 'HEAD').trim(), { sourceInventory: git('ls-files', '--', 'src'), testChangesOnly });
+  const ownership = parse(readFileSync(join(root, 'docs/implementation/pr-review-rules.yaml'), 'utf8')).dependency_graph.components;
+  assertArchitectureOfHead(result.stdout, git('rev-parse', 'HEAD').trim(), { sourceInventory: git('ls-files', '--', 'src'), testChangesOnly, ownership });
   assert.equal(existsSync(store), false);
   assert.deepEqual(readdirSync(folder).filter((name) => name.startsWith('thermus-snapshot-base-')), []);
   const worktrees = git('worktree', 'list', '--porcelain');

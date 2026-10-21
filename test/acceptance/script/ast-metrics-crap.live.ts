@@ -10,7 +10,7 @@ import { runScript } from '../../support/processes/script-command.ts';
 // Reuse compatible coverage. This check starts no build, collector, or nested test suite.
 // Missing tools or reports defer the check; a present stale report must fail it.
 const root = fileURLToPath(repositoryRoot);
-const source = 'src/html-cleaner-pipeline/html-input-limit.ts';
+const source = 'src/pipelines/html-processing/html-input-limit.ts';
 const defaultReport = join(root, 'ast-report', 'coverage.json');
 const coverage = resolve(root, process.env.AST_METRICS_CRAP_COVERAGE ?? defaultReport);
 const installed = (process.env.PATH ?? '').split(delimiter).some((folder) => folder !== '' && existsSync(join(folder, 'ast-metrics')));

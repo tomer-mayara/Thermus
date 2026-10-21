@@ -13,10 +13,10 @@ const live = { timeout: 30_000, skip: installed ? false : 'ast-metrics is not on
 const root = fileURLToPath(repositoryRoot);
 
 test('Given the real ast-metrics and a production file, when file runs in the repository root, then it prints one line for each function within 30 seconds', live, async (t) => {
-  const result = await runScript(t, astMetricsMcpScript, { args: ['file', 'src/application.ts'], cwd: root });
+  const result = await runScript(t, astMetricsMcpScript, { args: ['file', 'src/app/application.ts'], cwd: root });
   assert.equal(result.code, 0, result.stderr);
   const [header, heading, ...functions] = result.stdout.trimEnd().split('\n');
-  const summary = /^src\/application\.ts: (?:score \d+\.\d, )?\d+ decision paths?, (\d+) functions?$/.exec(header);
+  const summary = /^src\/app\/application\.ts: (?:score \d+\.\d, )?\d+ decision paths?, (\d+) functions?$/.exec(header);
   assert.ok(summary, header);
   assert.equal(heading, '  score  paths  lines  name');
   assert.ok(functions.length > 0, result.stdout);
