@@ -149,6 +149,36 @@ See [the script guide](../../script/README.md) for use and the
 [OAuth implementation record](../implementation/mcp-fetch-debug-oauth-plan.md)
 for configuration and validation results.
 
+## MCP search debug command
+
+`test/acceptance/script/search.test.ts` runs the source CLI against a local MCP
+SDK server through the production HTTP bridge. It checks exact query and reason
+text, scalar limits, exact and empty Markdown, no results, environment and stdin
+Bearer input, modern JSON/SSE and legacy negotiation, safe failures, refused
+HTTP requests, redirects, deadlines, and cancellation.
+
+`test/acceptance/script/search-oauth.test.ts` checks saved-token reuse through a
+private grant and injected test profile. It also checks browser login through
+the local TLS OAuth site, reuse by fetch, and shared local logout. These cases
+prove command wiring. Existing fetch OAuth tests retain the detailed refresh,
+storage, and callback proofs. No live hosted service or renderer is needed.
+
+`test/unit/script/search.test.ts` checks help, argument refusal, explicit
+credentials, custom endpoint restrictions, and non-interactive login guidance.
+`search-input.test.ts` checks query scalar and reason code point boundaries,
+including lone query surrogates. `search-public-failure.test.ts` checks the
+fixed search error phrases, all failed HTTP statuses, and malformed or private
+error text. The run-time path test includes the source search command and its
+OAuth test entry.
+
+```sh
+npm run build && node --test "dist/test/unit/script/search*.test.js" "dist/test/acceptance/script/search*.test.js" dist/test/unit/test-support-paths.test.js
+```
+
+The [script guide](../../script/README.md#search-through-mcp) gives command use.
+The [MCP search contract](../reference/mcp-search-tool.md#debug-command) gives
+inputs, results, and allowed public failures.
+
 ## ast-metrics commands
 
 `test/acceptance/script/script-readme.test.ts` checks the actual help of every

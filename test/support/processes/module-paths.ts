@@ -56,6 +56,8 @@ export const hostedImageIdentity = containerModule('hosted-image-identity');
 export const fetchPublicScriptEntry = fileURLToPath(siblingModule('fetch-public-script-entry'));
 export const fetchUrlOAuthEntry = fileURLToPath(siblingModule('fetch-url-oauth-entry'));
 export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.ts', repositoryRoot));
+export const searchScript = fileURLToPath(new URL('script/search/search.ts', repositoryRoot));
+export const searchOAuthEntry = fileURLToPath(siblingModule('search-oauth-entry'));
 export const fetchUrlCredentials = new URL('script/fetch-url/helper/credential-store.ts', repositoryRoot).href;
 
 // The ast-metrics commands run directly from source too. Their tests put a double of the ast-metrics executable, or
