@@ -56,6 +56,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `assessment/crap-absolute.ts` calculates both absolute CRAP goals from operands.
 `assessment/crap-deterioration.ts` compares supplied CRAP observations or bounds.
 `assessment/mi-decline.ts` compares supplied MI operands for decline.
+`assessment/mi-assessment.ts` calculates per-unit MI floor and independent decline results.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
 and parent signal observations live in `coverage/propagation.ts` and
@@ -880,6 +881,26 @@ not apply exceptions, choose routes or change commands. It activates no policy.
 Full assessment
 remains pending; merging stays manual.
 
+The pure `miAssessmentOf({ base?, head?, acceptedBest? })` in
+`assessment/mi-assessment.ts` keeps `observation: { base?, head?, acceptedBest? }`
+and returns four independent results: `mi85` (`MEETS`, `LOW` or `UNKNOWN`),
+`prDecline` (`base − head < 5`), `cumulativeDecline` (`acceptedBest − head < 5`) and
+`noPrDeterioration` (`base − head ≤ 0`). Comparisons return `PASS`, `MISS` or
+`UNKNOWN` with reasons. It reuses unchanged `miDeclineOf` exact decimal
+comparisons. Raw head MI at least 85 is `MEETS`; below 85 is `LOW`; absent head
+is `UNKNOWN`. The floor uses no rounding, averaging or substitution.
+Missing references remain unknown, never `NOT_APPLICABLE` or default zero.
+Every supplied value must be finite; null/nonfinite values are invalid even
+when a comparison's other value is absent.
+
+For accepted best 90, base 84 and head 85, the floor meets, PR decline passes,
+cumulative decline misses and no PR deterioration passes. There is no aggregate
+pass or route. File or class raw MI can be supplied, but the caller must prove
+identity, comparability, scope and accepted history. This selects or updates no
+anchor, replays no history, applies no exception, and adds no process/command
+integration or adoption. Existing standalone APIs and manual merging stay
+unchanged.
+
 `tool` keeps the checked actual version, including an explicit override.
 Optional `title` is the commit message's first line; optional `provenance`
 contains source and expected coverage-input fingerprints, runtime, compiler,
@@ -1149,6 +1170,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
@@ -1225,6 +1247,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |

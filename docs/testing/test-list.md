@@ -169,6 +169,12 @@ records stay immutable. Gap checks cover only the interval between displayed
 first-parent endpoints; every stored full SHA counts, also when its row is not
 shown. Offline snapshot dates cannot establish omitted commits.
 
+`test/unit/script/ast-metrics-mi-assessment.test.ts` and
+`test/acceptance/script/ast-metrics-mi-assessment.test.ts` specify independent
+labeled MI floor, PR/cumulative decline and no PR deterioration results. They
+cover distinct references, exact raw thresholds, missing values and invalid
+operands, without proving scope or accepted history.
+
 `test/unit/script/ast-metrics-mi-decline.test.ts` and
 `test/acceptance/script/ast-metrics-mi-decline.test.ts` specify exact supplied-MI
 decline below five and no deterioration, unknown operands, invalid values and
@@ -946,6 +952,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
@@ -1022,6 +1029,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |

@@ -899,6 +899,26 @@ not apply exceptions, choose routes or change commands. It activates no policy.
 Full assessment
 remains pending; merging stays manual.
 
+The pure `miAssessmentOf({ base?, head?, acceptedBest? })` in
+`assessment/mi-assessment.ts` keeps `observation: { base?, head?, acceptedBest? }`
+and returns four independent results: `mi85` (`MEETS`, `LOW` or `UNKNOWN`),
+`prDecline` (`base − head < 5`), `cumulativeDecline` (`acceptedBest − head < 5`) and
+`noPrDeterioration` (`base − head ≤ 0`). Comparisons return `PASS`, `MISS` or
+`UNKNOWN` with reasons. It reuses unchanged `miDeclineOf` exact decimal
+comparisons. Raw head MI at least 85 is `MEETS`; below 85 is `LOW`; absent head
+is `UNKNOWN`. The floor uses no rounding, averaging or substitution.
+Missing references remain unknown, never `NOT_APPLICABLE` or default zero.
+Every supplied value must be finite; null/nonfinite values are invalid even
+when a comparison's other value is absent.
+
+For accepted best 90, base 84 and head 85, the floor meets, PR decline passes,
+cumulative decline misses and no PR deterioration passes. There is no aggregate
+pass or route. File or class raw MI can be supplied, but the caller must prove
+identity, comparability, scope and accepted history. This selects or updates no
+anchor, replays no history, applies no exception, and adds no process/command
+integration or adoption. Existing standalone APIs and manual merging stay
+unchanged.
+
 The raw 0.43.1 JSON gives file coupling counts and namespace relations, but
 does not give complete file import pairs. The snapshot therefore uses the
 TypeScript parser supplied by `ts-morph`. It ignores package imports and
