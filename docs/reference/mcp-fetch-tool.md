@@ -126,9 +126,12 @@ time. Then it makes these parts one time:
 
 The same factory creates the protected search operation with `SearchPipeline`
 and `SearchEngineBraveHttp`. It shares the fetcher, ad cleaner, sanitizer,
-outgoing step, record sink, and setup reporter with fetch. Its separate
-converter enables `preserveSearchResults`. The shared fetcher retains one
-abandoned DNS guard across both operations. Each application has its own
+outgoing step, record sink, and setup reporter with fetch. Its
+search-only `BraveHTTPResultCleanup` runs after full-page sanitation and before
+its converter, which enables `preserveSearchResults`. Cleanup selects organic
+result fields and builds an ordered list of title links and optional surviving
+descriptions. Fetch keeps its existing conversion path. The shared fetcher
+retains one abandoned DNS guard across both operations. Each application has its own
 resources and setup warning state.
 
 `createToolOperations` returns both operations. Then the branch calls

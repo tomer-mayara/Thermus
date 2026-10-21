@@ -1,7 +1,7 @@
 # Search results cleanup plan
 
 Date: 2026-10-20 (America/Denver).
-Status: revised plan reviewed and signed off. Implementation has not started.
+Status: implementation in progress in draft PR 208; delivery verification and final manager review pending.
 
 ## Decision
 
@@ -18,8 +18,10 @@ contracts unchanged. Keep fetch conversion unchanged.
 
 Deliver this as one test-first implementation change with its documentation
 and required checks. Improved failure diagnosis is a separate, deferred
-follow-up. It does not block this fix. The current plan creates no code,
-tracker issues, pull request, commit, or deployment.
+follow-up. It does not block this fix. The user authorized implementation after
+plan review. Draft
+[PR 208](https://github.com/tomer-mayara/Thermus/pull/208) tracks this change.
+SR-02 remains deferred and does not block SR-01.
 
 ## Evidence and reproduction limits
 
@@ -83,8 +85,8 @@ rate limit:
 - `best hiking boots 2026`
 - `python requests`
 
-This revision uses source and fixture inspection only. It adds no tests, live
-calls, or implementation evidence to that earlier review.
+The plan review used source and fixture inspection only. The dated evidence
+above predates implementation and is not delivery evidence for PR 208.
 
 ## Findings and review corrections
 
@@ -274,7 +276,8 @@ contract; a live call establishes access only within its observed scope.
 The implementation change includes affected current guidance, habit-hooks,
 ast-metrics evidence, manager review, and the draft-to-Ready/owner review
 workflow required by repository policy. Keep historical records unchanged.
-No checks, code-quality runs, or live calls are required to draft this plan.
+The plan review required no implementation checks, code-quality runs, or live
+calls. Implementation must complete the selected delivery gates above.
 
 ## Appendix: Tickets
 
@@ -327,9 +330,72 @@ provenance, focused engine/error tests, and the applicable public regression.
 Done: the independently agreed behavior is tested and reviewed. No API migration,
 new controls, retry policy, or release obligation is implied by this placeholder.
 
-## Review status
+## Review and delivery status
 
-The manager reviewed and signed off the revised contract, architecture, ticket
-scope, and evidence limits. An independent review checked the source contracts
-and the corrections. Only this plan changed in this revision. No implementation
-has started.
+The manager signed off the plan's contract, architecture, ticket scope, and
+evidence limits before implementation. An independent review checked source
+contracts and corrections. Implementation is now in progress in draft PR 208.
+Final candidate review and delivery signoff remain pending.
+
+Implementation review identified an inherited converter limitation: escaped
+source can produce the literal entity `&#x202e;` in raw Markdown. A downstream
+Markdown renderer can interpret that entity as U+202E. A new unit test
+characterizes both the existing converter baseline and the cleanup path: the
+raw Markdown contains no U+202E, and cleanup's DOM projection does not decode
+the entity twice. This does not establish literal-entity fidelity after Markdown
+rendering. Generic conversion and fetch behavior remain unchanged. Further
+converter investigation is separate from SR-02 provider diagnostics; it adds no
+ticket or delivery obligation here. Full gate evidence remains pending.
+
+The implementation uses one public `BraveHTTPResultCleanup` transformation.
+Two private helpers are created per invocation: `BraveResultDocument` owns DOM
+projection, and `BraveResultFields` owns decoded sanitation, base and destination
+handling, and reports. No pipeline contract changed. Source review corrected
+selection of same-ID cards outside the results section, template/noscript/hidden
+ancestors, blank hrefs before resolution, and non-HTTP base fallback behavior.
+
+The initial BDD run had four failures and no passes or skips. The final focused
+built run covered four files: cleanup unit tests, real-cleaner integration,
+public MCP search acceptance, and DSL helper tests. It passed 62/62 tests with
+zero failures, cancellations, skips, or todos; exit code 0; duration 2,705 ms.
+Duplicate acceptance cases were consolidated into existing protocol/edition
+cases. The current MCP search acceptance file has 24 tests. These focused passes
+do not qualify the full candidate gates.
+
+Fixture replay used the real engine and cleaners with empty ad rules, as did
+the baseline replay. Both captures retained all expected safe snippet excerpts.
+The local evidence is `.cache/search-cleanup-evidence/measurements.jsonl`.
+
+| Fixture | Baseline Markdown bytes | Cleanup Markdown bytes | Rows / verified primary pairs | Total links | Image markers / proxy occurrences |
+| --- | ---: | ---: | --- | ---: | --- |
+| `brave-results.html` | 27,970 | 6,484 | 18 / 18 | 18 | 0 / 0 |
+| `brave-results-video.html` | 27,332 | 6,379 | 18 / 18 | 18 | 0 / 0 |
+
+After three maintainability measurements, the following scores remain below
+the production-file goal of 85. These are retained misses, not metric passes.
+
+| File role | Score | Reason retained |
+| --- | ---: | --- |
+| `BraveHTTPResultCleanup` | 74.6 | Keep the transformation's context, withholding, and projection decisions together. Further mechanical splitting would scatter its policy. |
+| `BraveResultDocument` | 42.6 | Keep result selection and approved DOM construction together. Further mechanical splitting would scatter the projection rules. |
+| `BraveResultFields` | 59.3 | Keep decoded field sanitation, URL decisions, and reports together. Further mechanical splitting would scatter the field policy. |
+| `fetch-tool.ts` | 67.9 | Keep the factory as the explicit composition owner. Further splitting would hide the application wiring. |
+
+Habit-hooks findings for new complexity, parameter counts, and non-null
+assertions were corrected. Retained findings are three existing comments in
+`fetch-tool.ts` that explain why, and the cohesive 231-line public acceptance
+file. Keep the comments' reasons near the composition they explain and the
+public cases together. The snooze file is `[]`. Final quality evidence is still
+pending; CRAP and architecture assessments are not yet complete. The complete
+final ast-metrics report must go into the PR unchanged.
+
+The manager will complete these remaining fields from the final candidate:
+
+- Candidate revision and final changed files: pending.
+- Full required test, type, build, renderer, and edition gate evidence: pending.
+- Final habit-hooks and ast-metrics evidence, including CRAP and architecture: pending.
+- Bounded live proof or recorded access limit: pending.
+- Final manager review, Ready status, owner review, and Actions outcomes: pending.
+
+SR-02 remains an independent deferred follow-up. No result in this pending
+record is a full-gate pass or release approval.

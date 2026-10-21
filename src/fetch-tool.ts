@@ -5,6 +5,7 @@ import { HtmlToMarkdownPipeline } from './html-cleaner-pipeline/html-to-markdown
 import { ProcessHtmlStep } from './html-cleaner-pipeline/process-html-step.ts';
 import { CleanHtmlToMarkdownDefuddle } from './html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { PromptInjectionRemoverSanitizer } from './html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
+import { BraveHTTPResultCleanup } from './html-cleaner-pipeline/search-results/brave-http-result-cleanup.ts';
 import { createFetchToolServer, type ToolOperations } from './mcp/fetch-tool-server.ts';
 import { createGetURLAsMarkdown } from './mcp/get-url-as-markdown.ts';
 import { OperationCapacity } from './mcp/operation-capacity.ts';
@@ -42,7 +43,7 @@ export function createToolOperations(environment: Environment, logger: Applicati
   const search = new SearchPipeline({
     ...shared,
     engine: new SearchEngineBraveHttp(fetcher),
-    incoming: new ProcessHtmlStep(new HtmlToMarkdownPipeline([ads, sanitizer, new CleanHtmlToMarkdownDefuddle({ preserveSearchResults: true })])),
+    incoming: new ProcessHtmlStep(new HtmlToMarkdownPipeline([ads, sanitizer, new BraveHTTPResultCleanup(), new CleanHtmlToMarkdownDefuddle({ preserveSearchResults: true })])),
   });
   return { fetch, search: (query, context, execution) => search.search(query, context, execution) };
 }

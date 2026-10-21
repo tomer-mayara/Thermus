@@ -9,8 +9,14 @@ The [MCP cancellation follow-up](search-mcp-cancellation.md) fixes R4 and
 records the checks for its later candidate.
 Earlier test and build passes remain evidence for their recorded inputs;
 they do not qualify changed inputs.
-Owner review and merge of
-[PR 202](https://github.com/tomer-mayara/Thermus/pull/202) remain pending.
+[PR 202](https://github.com/tomer-mayara/Thermus/pull/202) merged on
+2026-10-21 at 04:51:01 UTC as
+`6ac961ae2865fbe6ebdbd586869c30a1b0ae52f2`.
+
+The [search results cleanup plan](search-results-cleanup-plan.md) is in
+implementation in [PR 208](https://github.com/tomer-mayara/Thermus/pull/208).
+It adds result-only projection after full-page safety cleaning. Its delivery
+checks and review remain pending; earlier SEARCH evidence does not qualify it.
 
 This document owns the current design, acceptance criteria, and next steps.
 The [search reference](../reference/mcp-search-tool.md) owns tool usage.
@@ -119,9 +125,10 @@ typed, unknown, and throwing-inspection paths. No new abstraction is needed.
   sustained access, every query, a live hosted search, or every future layout.
 - Public Brave can return a challenge, rate limit, or changed page. HTTP
   access is not a guarantee against blocking. Unsupported responses fail.
-- Full-page conversion can include page context. Captured fixtures prove
-  safe result fidelity for their shapes. A nonblank runtime check cannot
-  prove completeness on every unseen page.
+- Result-only projection follows full-page safety cleaning. Captured fixtures
+  establish fidelity only for their supported shapes. The pipeline's nonblank
+  runtime check does not validate final result links or prove completeness on
+  every unseen page.
 - Quality exceptions remain in the dated verification records. Unknown coverage
   assessments are not passing assessments.
 
@@ -132,7 +139,7 @@ Authenticated MCP search(query, reason)
   -> protected SearchPipeline
   -> outgoing: allow the exact query
   -> SearchEngineBraveHttp: render and classify the full page
-  -> incoming: ad cleaning, sanitizing, HTML-to-Markdown
+  -> incoming: full-page ad cleaning and sanitizing, Brave result projection, HTML-to-Markdown
   -> release Markdown, withhold content, or fail safely
 ```
 
@@ -142,7 +149,7 @@ Authenticated MCP search(query, reason)
 | Provider boundary | Keep one `SearchEngine` interface and the `SearchDocument` record. Return original HTML and classification. Design an API response format only when an API adapter is needed. |
 | Brave HTTP | Keep classification and document-wide checks private in `search-engine-brave-http.ts`. No provider registry or generic DOM classifier is needed. |
 | Core and stages | Keep one protected pipeline and two local executors. Their query checks, withholding rules, and safe failures differ from fetch. Share the safe cancellation check and its checkpoint wrapper. |
-| HTML conversion | Keep the full document through the existing cleaners. Keep the tested search-only preservation option; retain fetch defaults. |
+| HTML conversion | Keep the full document through the safety cleaners. Then use `BraveHTTPResultCleanup` to select result-only HTML before the search-only preserve-mode converter. Retain fetch defaults. |
 | Resources | Keep one renderer, shared compatible cleaners and reports, separate converter instances, and one hosted capacity owner. These lifetimes are required behavior. |
 | MCP | Keep direct dispatch for two tools and the existing description field. No tool router, `details` field, or nested MCP call is needed. |
 | Tests | Keep provider contracts, real-cleaner fixtures, public behavior, local pinned rendering, and live access proofs at their proper layers. Add assertions to existing cases where possible. |
@@ -197,9 +204,26 @@ these checks across the document. Phrases in query or snippet text do not
 determine classification.
 
 Pass the original full page, including head, styles, and ancestors, to
-`ProcessHtmlStep` once. Use the ad cleaner, sanitizer, and search-mode
-Defuddle converter in that order. Preserve base-URL resolution. Safety
-cleaning may remove unsafe content.
+`ProcessHtmlStep` once. Use the ad cleaner, sanitizer,
+`BraveHTTPResultCleanup`, and search-mode Defuddle converter in that order.
+The full-page safety steps retain styles and ancestors before projection.
+Cleanup sanitizes decoded required fields before eligibility checks, resolves
+permitted destinations against the sanitized effective base, and builds an
+ordered list. Each eligible card has a numbered title link and optional
+surviving description, including meaningful safe inline links. Preserve dates
+already in selected description text literally. Add no header, hostname,
+count limit, or deduplication. Exclude unrelated page fields and images.
+
+A missing or blank sanitized primary href, blank sanitized title, or invalid
+primary HTTP(S) destination excludes the whole card. Optional descriptions can
+be removed without excluding an otherwise eligible card. An invalid optional
+anchor becomes safe visible text. Safety removals cannot be restored from raw
+HTML or page state. The converter retains decoded-DOM and final-output
+sanitation; the pipeline checks only nonblank output, not final row links.
+Zero eligible rows produces blank HTML. Existing kind handling distinguishes
+allowed provider no-results from blank results; withholding stays authoritative.
+See the [cleanup plan](search-results-cleanup-plan.md) for its implementation
+contract and pending delivery evidence.
 
 ### Outcomes and failures
 
