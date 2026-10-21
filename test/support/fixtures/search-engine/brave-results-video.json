@@ -1,0 +1,11 @@
+{
+  "query": "Lightpanda browser",
+  "requestedUrl": "https://search.brave.com/search?q=Lightpanda+browser",
+  "finalUrl": "https://search.brave.com/search?q=Lightpanda+browser",
+  "captureStartedAt": "2026-10-20T23:02:00.483Z",
+  "lightpandaVersion": "1.0.0",
+  "executableSha256": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d",
+  "htmlBytes": 241431,
+  "htmlSha256": "f27f913dab952f1f2604e1dda098b18420ed86c31a6d90107f2b357396570ce8",
+  "transformations": []
+}

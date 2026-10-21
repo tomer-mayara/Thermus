@@ -2,9 +2,14 @@ import type { RequestContext } from '../auth/access-context.ts';
 import { isValidFetchUrl } from '../page-fetch/fetch-url.ts';
 import { fetchToolInputSchema, fieldStatus } from './fetch-tool-schema.ts';
 
-export type CompletionStatus = 'success' | 'invalid_arguments' | 'unknown_tool' | 'access_denied' | 'fetch_failed' | 'processing_failed' | 'cancelled' | 'busy';
+export type CompletionStatus = 'success' | 'invalid_arguments' | 'unknown_tool' | 'access_denied' | 'fetch_failed' | 'processing_failed' | 'cancelled' | 'busy' | 'search_failed' | 'withheld';
 
 export function formatToolCompletion(context: RequestContext, call: { operationId: string; name: string; arguments: unknown; status: CompletionStatus; durationMs: number }): string {
+  if (call.name === 'search') return JSON.stringify({
+    event: 'mcp.tool.completed', operationId: call.operationId,
+    authority: context.user.authority, subject: context.user.subject, tenantId: context.tenantId,
+    tool: 'search', status: call.status, durationMs: call.durationMs,
+  });
   const args = typeof call.arguments === 'object' && call.arguments !== null ? call.arguments as Record<string, unknown> : {};
   return JSON.stringify({
     event: 'mcp.tool.completed',

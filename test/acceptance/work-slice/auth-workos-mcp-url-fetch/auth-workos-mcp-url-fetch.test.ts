@@ -5,6 +5,7 @@ import type { ApplicationLogger } from '../../../../src/application.ts';
 import { loadDeploymentConfig } from '../../../../src/config/deployment-config.ts';
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
+import { searchToolInputSchema } from '../../../../src/mcp/search-tool-schema.ts';
 import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
 import { generatedOperationIdPattern } from '../../../support/fixtures/execution-context.ts';
 import { completionRecordsIn } from '../../../support/drivers/operator-log.ts';
@@ -176,7 +177,7 @@ describe('The auth WorkOS MCP URL fetch work slice with the WorkOS provider, the
       const { signedIn, organizationId, mfaCompleted } = session.body;
       assert.deepEqual({ status: session.status, signedIn, organizationId, mfaCompleted }, { status: 200, signedIn: true, organizationId: acme, mfaCompleted: false });
       assert.deepEqual(access, { status: 200, body: { organizationId: acme, roles: ['user'], plan: 'free', mcpUrl: config.mcpResourceUrl } });
-      assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }]);
+      assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }, { name: 'search', inputSchema: searchToolInputSchema }]);
       assertText(result, expectedMarkdown);
       assertFetchLog(site.log, ada);
       assert.deepEqual(site.renderer.launches.map(({ executable }) => executable), [rendererExecutable]);

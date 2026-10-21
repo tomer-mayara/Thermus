@@ -52,7 +52,7 @@ export async function openFetchSite(t: TestContext, era: McpProtocolEra, options
   });
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: options.resolver ?? provider, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp', expectedResource: new URL(resourceUrl) },
-    buildServer: (context, lifetime) => createFetchToolServer(context, { operation, logger: { info: record, error: record } }, lifetime),
+    buildServer: (context, lifetime) => createFetchToolServer(context, { operations: { fetch: operation, search: async () => ({ status: 'released', markdown: 'test search' }) }, logger: { info: record, error: record } }, lifetime),
     reportFailure: () => {},
   });
   const listener = await startHttpServer((request) => server.fetch(request), { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resourceUrl });

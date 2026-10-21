@@ -133,10 +133,10 @@ export async function proveFirstPartyConnect() {
     const config = loadDeploymentConfig({ DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://localhost:46443/' }, 'http');
     const calls: Array<{ subject: string; organizationId?: string }> = [];
     const application = await composeWorkOSApplication(config, { settings, workos, authkitKeySet: keys }, {
-      logger: log, buildServer: fetchToolServers(async (_url, context) => {
+      logger: log, buildServer: fetchToolServers({ fetch: async (_url, context) => {
         calls.push({ subject: context.user.subject, organizationId: context.organizationId });
         return '# First-party Public client accepted';
-      }, log),
+      }, search: async () => { throw new Error('Unexpected search call'); } }, log),
     });
     const backend = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
     closeBackend = async () => { const draining = backend.close(); await application.close(draining); await draining; };

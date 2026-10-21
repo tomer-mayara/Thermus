@@ -50,14 +50,17 @@ connect an LLM client to the tool, and monitor each fetch in Axiom.
 The slice shows that an LLM client gets web pages as Markdown through the real
 MCP server, HTTP bridge, cleaning pipeline, and pinned renderer. The mock
 provider accepts each Bearer token. The slice composes the production parts,
-`createFetchOperation`, `fetchToolServers`, `MCPServer`, `routeLocalRequests`,
+`createToolOperations`, `fetchToolServers`, `MCPServer`, `routeLocalRequests`,
 `composeApplication`, and `serveApplication`, with the test-only mock provider.
 Only the mock provider and the two log lines with the full URL and the Markdown
 are slice-only. The acceptance test shows the same path offline, with a renderer
 double. The manual run also shows the client, the renderer, and the export to
 Axiom.
 
-One tool call writes three log lines in this sequence:
+The slice registers both production tools. Its extra content logging wraps
+only fetch; search keeps its private production records.
+
+One fetch call writes three log lines in this sequence:
 
 1. `work-slice fetch started: <requested URL>`
 2. `work-slice fetch completed: <requested URL> gave <n> characters of Markdown:`,

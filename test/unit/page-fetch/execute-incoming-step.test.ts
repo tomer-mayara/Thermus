@@ -3,7 +3,7 @@ import { setImmediate } from 'node:timers/promises';
 import { test, type TestContext } from 'node:test';
 import { executeIncomingStep } from '../../../src/page-fetch/execute-incoming-step.ts';
 import type { PipelineStep, StepResult } from '../../../src/page-fetch/pipeline-step.ts';
-import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
+import { writeStepRecord, type StepRecord } from '../../../src/page-fetch/step-record.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 
@@ -159,3 +159,18 @@ test('Given a collaborator AbortError with no signal change, when incoming work 
   assert.equal(dependencies.entries.length, 1);
   assert.equal(dependencies.entries[0].outcome, 'cancelled');
 });
+
+for (const stepId of ['incoming.process_html', 'search.incoming.process_html'] as const) {
+  test(`Given shared ${stepId} metadata, when the record writer runs, then it preserves the finite ID and safe outcome`, (t) => {
+    const entries: StepRecord[] = [];
+    const execution = executionContextOf();
+    t.mock.method(performance, 'now', () => 10);
+
+    writeStepRecord({ record: (entry) => { entries.push(entry); } }, {
+      operationId: execution.operationId, stepId, outcome: 'allowed',
+    }, 0);
+
+    assert.deepEqual(entries, [{ event: 'pipeline.step.completed', operationId: execution.operationId,
+      stepId, outcome: 'allowed', durationMs: 10 }]);
+  });
+}

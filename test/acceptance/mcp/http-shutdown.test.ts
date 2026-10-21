@@ -44,7 +44,7 @@ for (const era of mcpProtocolEras) {
     });
     const server = new MCPServer({
       auth: { verifier: provider, accessResolver: provider, expectedResource: resource, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' },
-      buildServer: (context, lifetime) => createFetchToolServer(context, { operation, logger: { info: (record) => records.push(record), error: (record) => records.push(record) } }, lifetime),
+      buildServer: (context, lifetime) => createFetchToolServer(context, { operations: { fetch: operation, search: async () => { throw new Error('Unexpected search call'); } }, logger: { info: (record) => records.push(record), error: (record) => records.push(record) } }, lifetime),
       reportFailure: () => {},
     });
     const providerResources = new AsyncDisposableStack();
@@ -117,7 +117,7 @@ for (const era of mcpProtocolEras) {
         expectedResource: resource,
         resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp',
       },
-      buildServer: (context, lifetime) => createFetchToolServer(context, { operation, logger: { info: (record) => records.push(record), error: (record) => records.push(record) } }, lifetime),
+      buildServer: (context, lifetime) => createFetchToolServer(context, { operations: { fetch: operation, search: async () => { throw new Error('Unexpected search call'); } }, logger: { info: (record) => records.push(record), error: (record) => records.push(record) } }, lifetime),
       reportFailure: () => {},
     });
     const application = composeApplication((request) => server.fetch(request), server);

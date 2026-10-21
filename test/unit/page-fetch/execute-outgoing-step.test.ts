@@ -3,7 +3,7 @@ import { setImmediate } from 'node:timers/promises';
 import { test, type TestContext } from 'node:test';
 import { executeOutgoingStep } from '../../../src/page-fetch/execute-outgoing-step.ts';
 import type { PipelineStep, StepResult } from '../../../src/page-fetch/pipeline-step.ts';
-import type { StepRecord } from '../../../src/page-fetch/step-record.ts';
+import { writeStepRecord, type StepRecord } from '../../../src/page-fetch/step-record.ts';
 import { executionContextOf } from '../../support/fixtures/execution-context.ts';
 
 const url = 'HTTPS://Source.Example/private-path?private-query#private-fragment';
@@ -227,3 +227,18 @@ test('Given an allowed output accessor that aborts the request, when validation 
   assert.equal(dependencies.entries.length, 1);
   assert.equal(dependencies.entries[0].outcome, 'cancelled');
 });
+
+for (const stepId of ['outgoing.observe_request', 'search.outgoing.observe_request'] as const) {
+  test(`Given shared ${stepId} metadata, when the record writer runs, then it preserves the finite ID and safe outcome`, (t) => {
+    const entries: StepRecord[] = [];
+    const execution = executionContextOf();
+    t.mock.method(performance, 'now', () => 10);
+
+    writeStepRecord({ record: (entry) => { entries.push(entry); } }, {
+      operationId: execution.operationId, stepId, outcome: 'allowed',
+    }, 0);
+
+    assert.deepEqual(entries, [{ event: 'pipeline.step.completed', operationId: execution.operationId,
+      stepId, outcome: 'allowed', durationMs: 10 }]);
+  });
+}

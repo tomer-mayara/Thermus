@@ -2,11 +2,10 @@
 // It needs LIGHTPANDA_BIN with the pinned Lightpanda 1.0.0 (docs/lightpanda-runtime.md). Without it, setup fails.
 import assert from 'node:assert/strict';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
-import childProcess, { execFile, type ChildProcess } from 'node:child_process';
+import childProcess, { type ChildProcess } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
-import { isAbsolute, join } from 'node:path';
+import { join } from 'node:path';
 import { before, describe, test, type TestContext } from 'node:test';
-import { promisify } from 'node:util';
 import type { CallToolResult, Client } from '@modelcontextprotocol/client';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import type { AccountCredentials } from '../../support/in-process/better-auth-local.ts';
@@ -20,11 +19,10 @@ import { selfHostedServerSettings } from '../../support/in-process/local-runtime
 import { mcpProtocolEras, type McpProtocolEra } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { permitIPv4Fixture, startFixture } from '../../support/doubles/website-fetcher/network-fixture.ts';
 import { setProcessEnvironment } from '../../support/isolation/process-environment.ts';
+import { pinnedRenderer } from '../../support/processes/pinned-renderer.ts';
 
-const runCommand = promisify(execFile);
 const alice: AccountCredentials = { email: 'alice@example.com', password: 'alice-password-1' };
 const reason = 'Read the rendered page for the task';
-const setupGuide = 'See docs/lightpanda-runtime.md.';
 
 const page = (body: string, script?: string): string => '<!DOCTYPE html><html><head><title>Runtime fixture</title></head><body>'
   + `<main>${body}</main>${script === undefined ? '' : `<script src="${script}"></script>`}</body></html>`;
@@ -59,22 +57,6 @@ const pages: Readonly<Record<string, string>> = {
 const redirectedPage = page('<h1>Redirected story</h1><p>The final page has a first paragraph with enough words to keep it.</p>'
   + '<p class="final-host-target">Final host target</p><p class="requested-host-target">Requested host target</p>'
   + '<p>Related <a href="child">child</a> and <a href="/root">root</a>.</p>');
-
-async function pinnedRenderer(): Promise<string> {
-  const executable = process.env.LIGHTPANDA_BIN;
-  if (executable === undefined || executable === '') {
-    throw new Error(`Renderer gate setup failed: set LIGHTPANDA_BIN to the absolute path of the pinned Lightpanda 1.0.0 executable. ${setupGuide}`);
-  }
-  if (!isAbsolute(executable)) throw new Error(`Renderer gate setup failed: LIGHTPANDA_BIN must be an absolute path. ${setupGuide}`);
-  let version: string;
-  try {
-    version = (await runCommand(executable, ['version'], { timeout: 10_000 })).stdout.trim();
-  } catch (cause) {
-    throw new Error(`Renderer gate setup failed: the LIGHTPANDA_BIN executable does not run. ${setupGuide}`, { cause });
-  }
-  if (version !== '1.0.0') throw new Error(`Renderer gate setup failed: LIGHTPANDA_BIN reports Lightpanda ${version}; the gate supports only 1.0.0. ${setupGuide}`);
-  return executable;
-}
 
 interface RuntimeSite {
   readonly server: InProcessServer;

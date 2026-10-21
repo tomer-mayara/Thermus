@@ -42,7 +42,7 @@ for (const era of mcpProtocolEras) {
     const server = new MCPServer({
       auth: { verifier: provider, accessResolver: provider, expectedResource: resource, resourceMetadataUrl: 'https://thermus.example/metadata' },
       buildServer: (context, lifetime) => createFetchToolServer(context, {
-        operation, logger: { info: (entry) => records.push(entry), error: (entry) => records.push(entry) },
+        operations: { fetch: operation, search: async () => { throw new Error('Unexpected search call'); } }, logger: { info: (entry) => records.push(entry), error: (entry) => records.push(entry) },
       }, lifetime),
       reportFailure: () => {},
     });

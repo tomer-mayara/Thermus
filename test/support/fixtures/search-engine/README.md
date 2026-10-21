@@ -25,6 +25,32 @@ original order. Each entry has its primary title, destination, and a short
 snippet excerpt. The integration test renders the output Markdown and checks
 real links and text. Finding a raw URL in Markdown is not enough.
 
+## Captured results with a video description
+
+`brave-results-video.html` is a second complete, unchanged rendered response
+for `https://search.brave.com/search?q=Lightpanda+browser`. A single diagnostic
+request through the production fetcher started on 2026-10-20 at
+23:02:00.483 UTC. It used Lightpanda **1.0.0** on macOS ARM64 with the same
+executable SHA256 above. No endpoint, renderer option, user agent, proxy,
+network rule, or page content was changed. No challenge bypass was used.
+
+The response has 241,431 UTF-8 bytes and SHA256
+`f27f913dab952f1f2604e1dda098b18420ed86c31a6d90107f2b357396570ce8`.
+`brave-results-video.json` records the capture metadata and confirms that no
+transformations were made. Keep its full document context unchanged.
+
+The page has 18 web result cards. Seventeen use the generic description.
+The YouTube card uses `.video-snippet[data-macro="video"] > .content`.
+Its description is the direct `.desktop-default-regular.line-clamp-2` child;
+the other child holds publication metadata. The classifier requires the
+description itself. Publication metadata alone cannot qualify a card.
+The original classifier refused this page because it required a generic
+description for every card. The public MCP regression reproduces that failure
+offline and then checks all 18 cleaned titles, destination links, description
+excerpts, and their order against `brave-results-video-expected.json`.
+
+This capture is provider data. It does not prove a successful live MCP call.
+
 ## Derived no-results page
 
 `brave-no-results-derived.html` is a controlled variant, **not a captured
@@ -55,7 +81,9 @@ The live capture attempt for a quoted rare term returned fallback results,
 not an empty page. A later query received HTTP 429 from the renderer. No
 retry or challenge bypass was used. These fixtures do not prove that the
 supported no-results branch occurs in a current live response. That remains
-an explicit limit of this ticket and needs a live check in SEARCH-06.
+unverified. [SEARCH-06](../../../../docs/implementation/search-06.md) records
+a successful live results call and controlled no-results coverage; it does
+not claim a live empty-results proof.
 
 ## Controlled test changes
 
