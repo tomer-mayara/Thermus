@@ -160,6 +160,36 @@ for (const edition of ['hosted', 'self-hosted'] as const) {
 }
 
 for (const edition of ['hosted', 'self-hosted'] as const) {
+  for (const [conflict, content] of [
+    ['a duplicate results section', '<section id="mixed-main"><div class="snippet" data-type="web"><div class="result-content"><a class="l1" href="https://private-result.example"><div class="title search-snippet-title">private-conflicting-title</div></a><div class="generic-snippet"><div class="content">private-conflicting-description</div></div></div></div></section>'],
+    ['a second known banner', '<section id="bad-results-info-banner">private-conflicting-banner</section>'],
+    ['a Brave result card', '<div class="snippet" data-type="web"><div class="result-content"><a class="l1" href="https://private-result.example"><div class="title search-snippet-title">private-conflicting-title</div></a><div class="generic-snippet"><div class="content">private-conflicting-description</div></div></div></div>'],
+  ] as const) {
+    test(`Given ${edition} with supported no-results and ${conflict} outside the search main, when a client searches, then it fails before incoming with one provider call and private records`, async (t) => {
+      const renderer = RendererProcessDouble.install(t);
+      const original = fixture('brave-no-results-derived.html');
+      const html = original.replace('</body>', `${content}</body>`);
+      assert.notEqual(html, original);
+      renderer.serve(searchUrl, { finalUrl: searchUrl, html });
+      const site = await openSearchSite(t, '2026-07-28', edition);
+
+      const result = await site.client.callTool({ name: 'search', arguments: { query: 'private-acceptance-query', reason: 'private-acceptance-reason' } });
+
+      assert.deepEqual(result.content, [{ type: 'text', text: 'Search failed' }]);
+      assert.equal(result.isError, true);
+      assert.equal(result.structuredContent, undefined);
+      assert.equal(renderer.launches.length, 1);
+      assert.equal(site.completions().length, 1);
+      const [completion] = site.completions();
+      assert.equal(completion.tool, 'search');
+      assert.equal(completion.status, 'search_failed');
+      assert.deepEqual(Object.keys(completion).sort(), ['event', 'operationId', 'authority', 'subject', 'tenantId', 'tool', 'status', 'durationMs'].sort());
+      assert.deepEqual(site.stages().map(({ operationId, stepId, outcome }) => ({ operationId, stepId, outcome })), [
+        { operationId: completion.operationId, stepId: 'search.outgoing.observe_request', outcome: 'allowed' },
+      ]);
+      assert.doesNotMatch(site.records.join('\n'), /private-acceptance-query|private-acceptance-reason|private-conflicting|private-result\.example|lightpanda browser/);
+    });
+  }
   test(`Given ${edition} with an incoming scan failure, when a client searches, then the public result withholds all content and logs one safe completion`, async (t) => {
     const renderer = RendererProcessDouble.install(t);
     renderer.serve(searchUrl, { finalUrl: searchUrl, html: fixture('brave-results.html') });

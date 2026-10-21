@@ -78,6 +78,11 @@ search URL and uses the shared Lightpanda fetcher. It validates the final
 destination and classifies the full rendered page. The search pipeline runs
 outgoing observation, the engine, and incoming processing in that order.
 
+Known Brave search containers and banners must be unique across the document
+and have the supported containment. A no-results page with a known result
+marker anywhere in the document fails instead of claiming absence. Ordinary
+footer links and generic footer data attributes do not imply search results.
+
 Incoming processing applies the shared ad cleaner and sanitizer, then a
 separate Defuddle converter with result preservation enabled. It fetches no
 result links. The public Brave website needs no API key. It can refuse or

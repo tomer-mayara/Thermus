@@ -2,46 +2,47 @@
 
 Reviewed: 2026-10-20, against `ec1647bb`.
 
-**Status:** SEARCH-01 through SEARCH-06 are implemented. Their selected test
-and build gates passed for source and test candidate `85817282`; later
-changes recorded evidence. This review found two boundary defects and small
-proof gaps. SEARCH-07 through SEARCH-09 below are planned, not implemented.
+**Status:** SEARCH-01 through SEARCH-07 are implemented. SEARCH-07 corrects
+R1 below; its current verification is in [SEARCH-07 evidence](search-07.md).
+The earlier complete-candidate gates passed for `85817282` and remain
+historical evidence after the classifier change. SEARCH-08 and SEARCH-09
+remain planned for the other boundary defect and proof gaps.
 [PR 202](https://github.com/tomer-mayara/Thermus/pull/202) is Draft.
 Owner review and merge remain pending.
 
 This document owns the current design, acceptance criteria, and next steps.
 The [search reference](../reference/mcp-search-tool.md) owns tool usage.
-The [SEARCH-06 record](search-06.md) owns the earlier gate results and retained
-quality exceptions. Passing test and build gates does not mean that all
-maintainability or coverage assessments met their goals.
+The [SEARCH-06 record](search-06.md) owns the earlier gate results and quality
+exceptions; SEARCH-07 records the new checks. Passing test and build gates
+does not mean that all maintainability or coverage assessments met their goals.
 
 ## Review findings
 
 ### R1: Contradictory document can report no results — medium priority
 
-The Brave classifier checks for duplicate results sections and banners only
-inside `main#search-page`. Its no-results check looks for conflicting result
-markers inside that same root. See
+**Fixed by SEARCH-07.** At the reviewed revision, the Brave classifier checked
+duplicate results sections, banners, and conflicting result markers only
+inside `main#search-page`. See
 [the provider](../../src/search-engine/search-engine-brave-http.ts), methods
 `classify` and `isNoResults`.
 
 A controlled reproduction starts with the documented no-results fixture and
 adds a second `section#mixed-main`, with a valid web result, outside that
-root. The provider returns `no_results`. A second known banner outside the
-root has the same outcome. Moving the duplicate section inside the root, or
-adding a second `main#search-page`, correctly fails. Ordinary footer
-navigation remains valid.
+root. The provider returned `no_results`. A second known banner outside the
+root had the same outcome. Moving the duplicate section inside the root, or
+adding a second `main#search-page`, correctly failed. Ordinary footer
+navigation was valid and remains valid after the fix.
 
 The earlier record accurately describes the narrower root check. The mistake
 is treating that check as sufficient for the plan's broader requirement to
 refuse ambiguous pages before claiming absence. This is a reproduced
 classification gap, not an observed live Brave failure.
 
-**Correction:** SEARCH-07 will check known container and banner uniqueness
-across the document, require their expected containment, and reject conflicting
-Brave result cards before returning no-results. It will keep unrelated
-navigation and generic data attributes valid. No challenge phrase list or
-general page validator is needed.
+**Correction:** SEARCH-07 checks known container and banner uniqueness across
+the document, requires the results section inside the search root, and rejects
+known result markers anywhere before returning no-results. Banner containment
+still follows the strict fallback structure. Ordinary footer navigation and
+generic footer data attributes remain valid. No new abstraction was needed.
 
 ### R2: A malformed error can escape the core's safe failure — low priority
 
@@ -114,7 +115,7 @@ Authenticated MCP search(query, reason)
 | --- | --- |
 | Query | Keep the small `SearchQuery` value class. The MCP parser and direct core boundary both use its rules. These checks protect different entry points. |
 | Provider boundary | Keep one `SearchEngine` interface and the `SearchDocument` record. Return original HTML and classification. Design an API response format only when an API adapter is needed. |
-| Brave HTTP | Keep classification private in `search-engine-brave-http.ts`. Repair the document scope; do not add a provider registry or generic DOM classifier. |
+| Brave HTTP | Keep classification and document-wide checks private in `search-engine-brave-http.ts`. No provider registry or generic DOM classifier is needed. |
 | Core and stages | Keep one protected pipeline and two local executors. Their query checks, withholding rules, and safe failures differ from fetch. Share only the repeated safe cancellation check in SEARCH-08. |
 | HTML conversion | Keep the full document through the existing cleaners. Keep the tested search-only preservation option; retain fetch defaults. |
 | Resources | Keep one renderer, shared compatible cleaners and reports, separate converter instances, and one hosted capacity owner. These lifetimes are required behavior. |
@@ -166,7 +167,7 @@ synchronous work; parsing cannot be interrupted midway.
 Supported result cards need nonblank titles, destinations, and descriptions.
 Recognize the captured generic and video-description structures. Do not skip
 an unsupported card to make a page pass. For no-results, require the supported
-absence structure and no conflicting known results. SEARCH-07 strengthens
+absence structure and no conflicting known results. SEARCH-07 applies
 these checks across the document. Phrases in query or snippet text do not
 determine classification.
 
@@ -276,9 +277,9 @@ the earlier passing runs do not prove the new cases.
 1. **Review complete:** preserve the current implementation and record the
    findings and simplified plan here. No production or test code changes
    belong to this review.
-2. **SEARCH-07:** write the public failing ambiguity scenario, add focused
-   provider cases and valid-page controls, then make the narrow classifier
-   correction. Run the affected cases.
+2. **SEARCH-07 complete:** public and provider scenarios failed first, then
+   passed after the document-scope correction. Existing valid pages and
+   ordinary footer navigation remain supported. See the verification record.
 3. **SEARCH-08:** write failing protected-core specifications for unreadable
    error names at all three boundaries. Add the shared safe cancellation
    check. Preserve cancellation precedence, records, and fixed failures.
@@ -299,11 +300,12 @@ the earlier passing runs do not prove the new cases.
    process report. Then follow [AGENTS.md](../../AGENTS.md) for Ready,
    started Actions jobs, owner review, and merge.
 
-The earlier full-suite results remain evidence for the unchanged baseline.
-This review used source inspection, 214 passing existing focused tests, and
-independently repeated in-memory reproductions of R1 and R2. It made no new
-public Brave request and does not claim a new full-suite run or a fix for
-either defect. Only this plan changed.
+The original review used source inspection, 214 passing focused tests, and
+independent in-memory reproductions of R1 and R2. SEARCH-07 now fixes R1 and
+records its own checks. R2 remains open. Final image/build qualification of
+the completed SEARCH-07–09 candidate remains required before Ready; earlier
+passes do not qualify changed production inputs. No new public Brave request
+is needed for SEARCH-07.
 
 A future unchanged live empty-results capture should get provenance and a
 full-flow regression. Until then, retain the explicit unverified limit.
@@ -323,8 +325,8 @@ initial specifications. Covers AC2. See [SEARCH-01 evidence](search-01.md).
 
 ### SEARCH-02: Prove Brave HTTP classification and full-page fidelity
 
-**Implemented, with R1 open.** Added the HTTP provider and captured-page
-conversion proof, including the search-only preservation setting.
+**Implemented; R1 fixed by SEARCH-07.** Added the HTTP provider and
+captured-page conversion proof, including the search-only preservation setting.
 Covers AC5–AC6. See [SEARCH-02 evidence](search-02.md).
 
 ### SEARCH-03: Implement the protected search pipeline and records
@@ -353,7 +355,8 @@ across AC1–AC9. Retained quality exceptions and the live result are in
 
 ### SEARCH-07: Refuse contradictory Brave documents
 
-**Planned; before Ready.** Addresses R1, AC4, and AC5.
+**Implemented.** Addresses R1, AC4, and AC5. The public acceptance red,
+provider red, narrow fix, and current checks are in [SEARCH-07 evidence](search-07.md).
 
 **Paths:** `src/search-engine/search-engine-brave-http.ts`,
 `test/unit/search-engine/search-engine-brave-http.test.ts`, and

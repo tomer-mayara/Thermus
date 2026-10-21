@@ -96,6 +96,52 @@ test('Given the controlled no-results page derived from the provider template, w
   assert.equal(result.page, noResultsPage);
 });
 
+for (const [kind, original] of [['no_results', noResultsPage], ['results', { ...capturedPage, html: supportedResults }]] as const) {
+  for (const [conflict, html] of [
+    ['a duplicate results section outside the search main', original.html.replace('</body>', '<section id="mixed-main"></section></body>')],
+    ['a duplicate results section inside the search main', original.html.replace('</main>', '<section id="mixed-main"></section></main>')],
+    ['the only results section outside the search main', original.html.replace('id="search-page"', 'id="other-page"').replace('</body>', '<main id="search-page"></main></body>')],
+    ['a known banner outside the search main', original.html.replace('</body>', '<section id="bad-results-info-banner">Conflicting banner</section></body>')],
+    ['a known banner outside the results section', original.html.replace('</main>', '<section id="bad-results-info-banner">Conflicting banner</section></main>')],
+  ] as const) {
+    test(`Given supported ${kind} with ${conflict}, when classified, then the document is refused`, async () => {
+      assert.notEqual(html, original.html);
+      const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...original, html }) });
+
+      await assert.rejects(engine.search('sources', new AbortController().signal), { message: 'Search failed' });
+    });
+  }
+
+  test(`Given supported ${kind} with ordinary footer links and generic data attributes, when classified, then the original full page is returned`, async () => {
+    const html = original.html.replace('</body>', '<footer data-type="navigation"><a href="https://example.com/help" data-type="help">Help</a><div data-type="images">Footer preferences</div></footer></body>');
+    assert.notEqual(html, original.html);
+    const page = { ...original, html };
+    const engine = new SearchEngineBraveHttp({ fetchURL: async () => page });
+
+    const result = await engine.search('sources', new AbortController().signal);
+
+    assert.equal(result.kind, kind);
+    assert.equal(result.page, page);
+  });
+}
+
+for (const [marker, content] of [
+  ['web result card', '<div class="snippet" data-type="web"><div class="result-content"><a class="l1" href="https://example.com"><div class="title search-snippet-title">Title</div></a><div class="generic-snippet"><div class="content">Snippet</div></div></div></div>'],
+  ['non-web result card', '<div class="snippet" data-type="images">Image result</div>'],
+  ['untyped result snippet', '<div class="snippet">Other result</div>'],
+  ['result content', '<div class="result-content">Other result</div>'],
+  ['result link', '<a class="l1" href="https://example.com">Other result</a>'],
+  ['result title', '<div class="search-snippet-title">Other result</div>'],
+] as const) {
+  test(`Given supported no-results with a known ${marker} outside the search main, when classified, then it fails without claiming absence`, async () => {
+    const html = noResultsPage.html.replace('</body>', `${content}</body>`);
+    assert.notEqual(html, noResultsPage.html);
+    const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...noResultsPage, html }) });
+
+    await assert.rejects(engine.search('sources', new AbortController().signal), { message: 'Search failed' });
+  });
+}
+
 for (const [shape, html] of [
   ['an error header', noResultsPage.html.replace('Not many great matches came back for your search:', 'Sorry, something went wrong')],
   ['a query-too-long header', noResultsPage.html.replace('Not many great matches came back for your search:', 'Your query is too long')],
