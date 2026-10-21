@@ -145,9 +145,11 @@ renderer's `finalUrl` selects the ad rules and resolves relative links.
 The request server exposes both operations. Search has a separate
 [result and completion contract](mcp-search-tool.md).
 
-The neutral code lives under `src/pipelines/page-fetch/`. It owns semantic URL
-validation, the step protocol/executor and record-sink contract, and the
-protected fetch sequence. Separate `executeOutgoingStep` and
+The neutral page-fetch code lives under `src/pipelines/page-fetch/`. It owns
+semantic URL validation, step execution, and the protected fetch sequence.
+The shared [step protocol](../../src/pipelines/execution/pipeline-step.ts) and
+[record-sink contract](../../src/pipelines/execution/step-record.ts) live under
+`src/pipelines/execution/`. Separate `executeOutgoingStep` and
 `executeIncomingStep` functions enforce the two trusted roles. The MCP schema uses the same
 URL rules while retaining SDK schema conversion at the transport boundary.
 The cleaner-owned adapter stays under `src/pipelines/html-processing/`; the
