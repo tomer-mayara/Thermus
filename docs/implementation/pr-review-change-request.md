@@ -133,8 +133,8 @@ with the kind of each edge. Update the count and date comments.
 **Out of scope.** Any code change. Any rule change beyond the declarations.
 
 **Acceptance criteria.**
-- Given the merged branch, when the check runs against PR #203's branch, then it prints `ASK` with the rules file as the reason and lists no fact to declare.
-- Given the merged branch, when the check runs against `origin/main`, then the facts of PR #202 appear under "Declared facts".
+- Given the merged branch, when the check runs against PR #203's branch, then it lists no fact to declare, and the facts of PR #202 appear under "Declared facts".
+- Given the merged branch, when the check runs against `origin/main`, then the rules file of the merge base does not exist, the file at HEAD applies, and the check lists no fact to declare.
 
 **Test list.** No executable test: documents and the rules file only. The
 check output goes into the pull request.
