@@ -29,14 +29,19 @@ boundaries through the SDK validator and real `SearchQuery`.
 `fetch-tool-server.test.ts` covers the dispatcher, exact result projection,
 safe typed and unexpected errors, changing or throwing error getters,
 malformed arguments and outcomes, logger failures, and tracked cancellation.
+Four regression cases also abort during error inspection. They require the
+cancellation result and one correlated `cancelled` completion that omits
+private data for allowlisted, typed, unknown, and throwing-inspection paths.
 `test/unit/mcp/search.test.ts` checks typed result projection.
 `test/unit/mcp/tool-completion-record.test.ts` proves that search completion
 formatting reads no argument properties, even when they have throwing getters.
 
-The [SEARCH-05 record](../implementation/search-05.md) gives the runs and
-limits. SEARCH-06 adds separate pinned local runtime and live Brave files. These
-ordinary tests do not replace their proof. Their dated results belong in the
-SEARCH-06 evidence; file selection alone is not a gate pass.
+The [SEARCH-05 record](../implementation/search-05.md) gives the earlier runs
+and limits. [SEARCH-09](../implementation/search-09.md) records the stronger
+live assertion and its dated result. The
+[cancellation follow-up](../implementation/search-mcp-cancellation.md) records
+the failure-mapper regression. Ordinary tests do not replace the separate
+pinned renderer and live Brave proofs; file selection alone is not a gate pass.
 
 ## Shared fetch and search resources
 
@@ -3200,8 +3205,10 @@ These two proofs have separate scopes. Follow the
 for new dated evidence and preserve earlier records.
 [SEARCH-09](../implementation/search-09.md) records the stronger assertion,
 its dated live result, and final selected checks; [SEARCH-06](../implementation/search-06.md)
-retains the earlier runtime and live evidence. A local fixture pass does not
-establish live Brave access.
+retains the earlier runtime and live evidence. The
+[cancellation follow-up](../implementation/search-mcp-cancellation.md) records
+the later corrected candidate and its own dated live proof. A local fixture
+pass does not establish live Brave access.
 
 **Renderer gate** (`test/acceptance/mcp/get-url-as-markdown.runtime.ts`)
 

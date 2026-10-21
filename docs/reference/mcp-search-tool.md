@@ -96,7 +96,8 @@ request lifetime tracking owns search cancellation and shutdown too.
 An aborted signal wins before error inspection. Cancellation during that
 inspection also wins. An unreadable error name or prototype uses the fixed
 failure for its boundary, starts no later stage, and preserves the safe stage
-and completion records.
+and completion records. The MCP failure mapper also checks the signal after
+error inspection for injected search operations, including when a getter throws.
 
 Every dispatched call attempts one `mcp.tool.completed` record, including
 invalid arguments. Search records contain only `event`, `operationId`,
@@ -160,7 +161,9 @@ unsupported page fails this proof. A successful local fixture run does not
 establish current Brave availability.
 
 The [SEARCH-09 record](../implementation/search-09.md) owns the current
-assertion, final selected checks, and its separate live result.
+assertion, its selected checks, and its separate live result. The
+[MCP cancellation follow-up](../implementation/search-mcp-cancellation.md)
+records the later corrected candidate and its own dated live proof.
 [SEARCH-06](../implementation/search-06.md) retains the earlier successful
 call on 2026-10-20. Each saved result is evidence for its dated call; it does
 not guarantee later access or verify a live empty-results response. The

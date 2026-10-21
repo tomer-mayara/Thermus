@@ -5,6 +5,8 @@ Initial review: 2026-10-20, against `ec1647bb`.
 **Status:** SEARCH-01 through SEARCH-09 are implemented. SEARCH-07 corrected
 R1; SEARCH-08 corrected R2; SEARCH-09 addressed R3. The completed candidate's
 selected test and build gates passed; see [SEARCH-09 evidence](search-09.md).
+The [MCP cancellation follow-up](search-mcp-cancellation.md) fixes R4 and
+records the checks for its later candidate.
 Earlier test and build passes remain evidence for their recorded inputs;
 they do not qualify changed inputs.
 Owner review and merge of
@@ -90,6 +92,19 @@ Controlled cases reject detached footer text and another result's description.
 Current references name each proof's scope. Historical records stay intact;
 the new record owns the separate live result and final selected checks.
 
+### R4: MCP failure inspection can miss cancellation — low priority
+
+**Fixed by the [cancellation follow-up](search-mcp-cancellation.md).** An
+injected search operation can throw an error whose getter aborts the request.
+The MCP mapper checked the signal before inspection, then returned a failure
+with the wrong completion status. The production pipeline already handled
+this case at its own boundary.
+
+**Correction:** The MCP mapper keeps the safe classification in one local
+value and checks the signal again after inspection, including its catch path.
+Four public factory regressions prove that cancellation wins for allowlisted,
+typed, unknown, and throwing-inspection paths. No new abstraction is needed.
+
 ### Known limits, not new defects
 
 - The no-results fixture is derived from a captured page and Brave's fallback
@@ -98,8 +113,9 @@ the new record owns the separate live result and final selected checks.
   remains unverified. The [fixture notes](../../test/support/fixtures/search-engine/README.md)
   describe its origin and limits.
 - Dated real self-hosted MCP searches passed with Lightpanda 1.0.0 in
-  SEARCH-06 and SEARCH-09. The latest call, at 2026-10-21 01:22:51 UTC,
-  passed the stronger result/description assertion. These calls do not prove
+  SEARCH-06 and SEARCH-09. The [cancellation follow-up](search-mcp-cancellation.md)
+  records the later call at 2026-10-21 04:37:49 UTC, which also passed the
+  stronger result/description assertion. These calls do not prove
   sustained access, every query, a live hosted search, or every future layout.
 - Public Brave can return a challenge, rate limit, or changed page. HTTP
   access is not a guarantee against blocking. Unsupported responses fail.
