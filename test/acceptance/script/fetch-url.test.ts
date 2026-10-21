@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { fileURLToPath } from 'node:url';
 import type { CallToolResult } from '@modelcontextprotocol/server';
 import { serveFetchUrlDebugSite } from '../../support/in-process/fetch-url-debug-site.ts';
 import { runFetchUrl } from '../../support/processes/fetch-url-command.ts';
+import { forcedGarbageCollection } from '../../support/processes/module-paths.ts';
 
 const pageUrl = 'https://example.com/article?item=1';
 const reason = 'Debug the page conversion';
@@ -202,4 +206,19 @@ test('Given a custom endpoint without an explicit credential, when fetch runs, t
   assert.equal(result.stdout, '');
   assert.match(result.stderr, /explicit Bearer/);
   assert.equal(site.requests.length, 0);
+});
+
+test('Given garbage collection during hung requests, when deadlines pass, then all three aborts remain observable', { timeout: 20_000 }, async (t) => {
+  const environment = { ...process.env };
+  delete environment.NODE_TEST_CONTEXT;
+  const result = await promisify(execFile)(process.execPath, [
+    '--expose-gc', '--import', forcedGarbageCollection, '--test', '--test-concurrency=1', '--test-reporter=tap',
+    '--test-name-pattern=^Given a hung ', fileURLToPath(import.meta.url),
+  ], { timeout: 18_000, killSignal: 'SIGKILL', signal: t.signal, env: environment }).catch((error: Error & { stdout?: string; stderr?: string }) => {
+    assert.fail(JSON.stringify({ message: error.message, stdout: error.stdout, stderr: error.stderr }));
+  });
+  assert.match(result.stdout, /^# tests 3$/m);
+  assert.match(result.stdout, /^# pass 3$/m);
+  assert.match(result.stdout, /^# cancelled 0$/m);
+  assert.match(result.stdout, /^# skipped 0$/m);
 });

@@ -169,7 +169,7 @@ test('Given a server that does not answer, when the deadline passes, then the co
   assert.equal(result.code, 1);
   assert.equal(result.stdout, '');
   assert.equal(result.stderr, 'ast-metrics-mcp: The call timed out after 300 ms. Increase --timeout-ms if needed.\n');
-  assert.equal(fake.calls().length, 1);
+  assert.equal(fake.calls().length, 1, JSON.stringify({ elapsed, result, requests: fake.requests() }, null, 2));
   assert.deepEqual(await fake.stillRunning(), []);
 });
 

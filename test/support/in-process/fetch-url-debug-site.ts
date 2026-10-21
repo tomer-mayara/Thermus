@@ -18,6 +18,7 @@ export async function serveFetchUrlDebugSite(t: TestContext, options: DebugSiteO
   const requests: { method?: string; authorization: string | null; version: string | null }[] = [];
   const abortObserved = Promise.withResolvers<void>();
   let aborted = 0;
+  const pendingSignals = new Set<AbortSignal>();
   const handler = createMcpHandler(() => {
     const server = new McpServer({ name: 'thermus-debug-test', version: '0.0.0' });
     server.registerTool('getURLAsMarkdown', {
@@ -43,15 +44,22 @@ export async function serveFetchUrlDebugSite(t: TestContext, options: DebugSiteO
     if (options.legacy && body.method === 'server/discover') return Response.json({ jsonrpc: '2.0', id: body.id, error: { code: -32601, message: 'Method not found' } });
     if (options.malformed) return new Response('not-json', { headers: { 'content-type': 'application/json' } });
     if (options.hang !== undefined && body.method === options.hang) {
-      await new Promise<void>((resolve) => {
-        const onAbort = () => { aborted += 1; abortObserved.resolve(); resolve(); };
-        if (request.signal.aborted) onAbort();
-        else request.signal.addEventListener('abort', onAbort, { once: true });
-      });
+      const signal = request.signal;
+      pendingSignals.add(signal);
+      const pendingAbort = Promise.withResolvers<void>();
+      const onAbort = () => { aborted += 1; abortObserved.resolve(); pendingAbort.resolve(); };
+      try {
+        if (signal.aborted) onAbort();
+        else signal.addEventListener('abort', onAbort, { once: true });
+        await pendingAbort.promise;
+      } finally {
+        signal.removeEventListener('abort', onAbort);
+        pendingSignals.delete(signal);
+      }
       return new Response(null, { status: 499 });
     }
     return handler.fetch(request);
   }, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: 'http://127.0.0.1', shutdownGraceMs: 100 });
-  t.after(async () => { await listener.close(); await handler.close(); });
+  t.after(async () => { await listener.close(); pendingSignals.clear(); await handler.close(); });
   return { endpoint: new URL('mcp', listener.url).href, calls, requests, abortObserved: abortObserved.promise, aborted: () => aborted };
 }

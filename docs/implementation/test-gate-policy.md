@@ -40,13 +40,14 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
 `npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
-The backend unit command uses `node --test --test-concurrency=1` with the
-complete unit glob. It runs one test file at a time, so other unit files do not
-compete with the child processes that check work deadlines. Test selection,
-process isolation, assertions, and deadlines stay unchanged.
-It does not run the full integration, acceptance, interface, or container suites,
-the hosted image gate, or the renderer gate. `npm test` does not run the build test, because `tsconfig.build.json`
-excludes it from `dist/`. Only `npm run test:hosted-live` runs the hosted live file.
+The compiled ordinary, unit and acceptance commands use
+`node --test --test-concurrency=1` with their existing selections. They run one
+test file at a time, so other files do not compete with child processes that
+check work deadlines. Test selection, process isolation, assertions and
+deadlines stay unchanged.
+`npm run check` does not run the full integration, acceptance, interface or
+container suites, the hosted image gate or the renderer gate. `npm test` does
+not run the build test, because `tsconfig.build.json` excludes it from `dist/`. Only `npm run test:hosted-live` runs the hosted live file.
 The ordinary `test` and `test:acceptance` commands use the quoted Node glob
 `**/!(hosted-image).test.js` to exclude the hosted image test by basename.
 Node 24.20.0 supports this exclusion. Only `npm run test:container:hosted` runs

@@ -2947,9 +2947,11 @@ Validation on 2026-10-20:
   checks passed 273/273, including all 38 new cases.
 - Full unit passed 4,268 compiled and 23 portal checks, 4,291 total. Full compiled
   acceptance passed 933/937. Four cases failed: the same two search-tool cases,
-  missing `AXIOM_API_KEY`, and the unchanged MCP timeout case, which expected
-  exit 1 but received 0. All five new cases, 18 README/help/inventory checks and
-  fetch/OAuth timeout cases passed. Separate portal acceptance passed 18/18.
+  missing `AXIOM_API_KEY`, and the unchanged MCP timeout case, whose fake recorded
+  zero tool calls instead of one. Exit 1, empty stdout and the exact 300 ms
+  timeout diagnostic all passed. All five new cases, 18 README/help/inventory
+  checks and fetch/OAuth timeout cases passed. Separate portal acceptance passed
+  18/18.
 - The unchanged MCP timeout case passed a focused rerun, 1/1, in 560 ms with
   its 300 ms deadline retained. This does not erase the full-run failure;
   its cause is unconfirmed. No fix, assertion or deadline change was made.
@@ -2965,6 +2967,61 @@ Validation on 2026-10-20:
 No `src/` file changed; no extra suite or collector ran. Required failures keep
 PR #201 in Draft; merging stays manual. Final habit-hooks after this prose and
 process evidence from the committed candidate will follow on the PR.
+
+### F.18.1. Timeout scheduling and cancellation fixture maintenance
+
+The F.18 full acceptance run passed 933/937. Its MCP timeout failure was the
+fake's zero recorded calls instead of one; exit 1, empty stdout and exact 300 ms
+stderr passed. The session budget includes process startup and initialization.
+Parallel acceptance files can consume that budget before the tool request.
+
+The compiled ordinary and acceptance commands now use `--test-concurrency=1`,
+as the unit command already does. Suite selections and subprocess isolation
+stay unchanged. The timeout test keeps its 300 ms budget, elapsed time below
+five seconds, exit 1, exact stderr, empty stdout, one tool call and no
+remaining server process. A failed call-count assertion now includes the command
+result and request log for diagnosis. No MCP runtime or SDK behavior changes.
+
+The worker baseline and focused MCP set each passed 34/34. The first serial
+acceptance run passed 933/937: three known failures plus a hosted-live-setup
+helper failure. MCP passed in 552.881458 ms. A one-line helper regex fix accepts
+optional concurrency 1 and requires the first compiled `dist/test` glob instead
+of falling through to a portal glob. Focused setup/MCP then passed 42/42 and
+portal acceptance passed 18/18. Build-output sentinels passed both changed
+commands and the hosted negative control.
+
+The next serial run had 937 tests: 933 passed, three known failures and one
+cancelled hung-tool fetch case. MCP passed in 548.54 ms and setup passed. This
+run remains a failed gate. A forced-GC probe proved that the fixture's weakly
+held request signal could disappear before `abortObserved` completed; a strong
+signal control passed. GC in the original uninstrumented run remains inferred.
+
+The regression uses the actual helper and three original hung-request cases.
+Before the fix all three cancelled at five seconds, and the new wrapper failed.
+A local reference with `finally` was insufficient under GC. The site now owns a
+pending-signal set, removes each signal in request cleanup and clears the set
+during teardown.
+The existing `fetch-url.test.ts` regression runs itself with `--expose-gc` and
+`force-garbage-collection.ts`, selects the three original cases and checks actual
+pass counts with no skip or cancellation. Child/parent limits are 18/20 seconds;
+original 300 ms/five-second limits and all assertions stay unchanged. Focused
+validation passed 4/4 outer checks plus 3/3 nested cases. No general driver or
+ordinary test entry was added; module paths gained only the new consumer export.
+
+Final validation passed 4,268 compiled and 23 portal unit checks, 4,291 total,
+with no failure, cancellation or skip. Final acceptance ran 938 tests: 935
+passed, three failed and none were cancelled, skipped or todo. Only the two
+known search cases and missing `AXIOM_API_KEY` remained. MCP timeout passed in
+537.713083 ms; hung discover/init/tools cases passed in 442.287833, 450.995541
+and 443.90825 ms. The GC regression passed in 1530.1935 ms with all three nested
+cases passing. Separate portal acceptance passed 18/18. Native snapshot passed
+3/3 and structural architecture passed 1/1 without skips. Existing build-output
+sentinels passed 3/3 and focused MCP/setup passed 42/42.
+
+No MCP runtime or SDK change was made. Earlier full-run failures remain
+recorded. Required failures keep PR #201 in Draft; merging stays manual. Final
+habit-hooks and committed process evidence will follow on the PR after this
+prose.
 
 ## References
 

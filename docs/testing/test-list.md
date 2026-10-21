@@ -25,7 +25,12 @@ The hung-request cases check that the selected request reached the site, then
 wait for its abort signal before checking exactly one abort. Child-process exit
 alone does not show that the server has processed the disconnect. The cases
 keep the 300 ms command deadline, the five-second test limit, and the check
-that a timed-out tool call is not repeated.
+that a timed-out tool call is not repeated. The site retains pending abort signals
+until request cleanup and clears them at teardown. An existing-file regression
+runs the same three cases in a child with `--expose-gc` and the
+`force-garbage-collection.ts` preload, requiring all three to pass without skips
+or cancellations. Its child/parent limits are 18/20 seconds; each original case
+keeps its five-second limit. The preload is not a separate test entry.
 
 `test/unit/script/fetch-url-public-failure.test.ts` checks every fixed public
 phrase and HTTP status from 400 to 599. It refuses malformed text, unknown
@@ -3395,7 +3400,10 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 [V] Given a repeated count or an older count, the result does not change
 [V] Given two organizations, a seat change in one does not change the other
 
-`npm run test:acceptance` runs every acceptance test, except the container gate suite, which it skips. `npm run check` does not select the acceptance directory.
+`npm run test:acceptance` runs ordinary acceptance and portal tests; compiled
+files run one at a time. The hosted image test stays excluded; the self-hosted
+container suite is skipped without its opt-in. `npm run check` does not select
+the acceptance directory.
 
 **Hosted startup with WorkOS** (`test/acceptance/auth/hosted-startup.test.ts`)
 
