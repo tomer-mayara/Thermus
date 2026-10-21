@@ -123,6 +123,42 @@ the snooze file empty and preserve immutable metric records.
 
 ## Results
 
-Final results, the separate live outcome, and retained quality exceptions
-will be added after verification. Earlier gate passes do not qualify changed
-source or test inputs. Owner review and merge remain pending.
+The source and test candidate is `f7516391`; later edits record evidence only.
+The current results follow. The AMD64 image gate and final quality review
+remain in progress. Owner review and merge remain pending.
+
+| Check | Result |
+| --- | --- |
+| Changed focused tests | 137 passed. |
+| Final `npm test` | 5,824 backend tests in 304 suites and 41 portal tests passed on the unchanged repeat. |
+| `npm run typecheck` | Passed. |
+| `npm run test:build` | 13 passed. |
+| `npm run build:user-portal` | Passed. |
+| `npm run test:mcp:renderer` | All 13 fetch and search cases passed. |
+| `npm run test:container` | All 13 cases passed without outbound access; 107.92 seconds. |
+| `npm run build:hosted` | Passed: 4,029 backend unit, 23 portal unit, 13 build, 18 portal acceptance, 703 integration, 194 selected acceptance/interface, and 13 renderer tests. |
+| Separate live Brave proof | One test passed on its single request, as recorded above. |
+| Fresh unit and integration coverage | 4,029 backend unit, 23 portal unit, and 703 integration tests passed. Verified capture covers 134 files from 1,158 processes. |
+
+These completed runs have zero failures, cancellations, skips, or todo cases.
+Commands use pnpm with the pinned Node 24.20.0 runtime. The ordinary suite
+uses the existing temporary Axiom test launcher, which loads the test key
+and endpoint from the main checkout and fixes the dataset to
+`system-log-test`. No secret was copied into this worktree or printed.
+
+Gate logs use `/tmp/thermus-search09-` with `ordinary-retry.log`,
+`typecheck.log`, `test-build.log`, `portal-build.log`, `renderer.log`,
+`container.log`, `hosted-build.log`, and `coverage.log`. The coverage capture
+passed on its first attempt with fixed source, test, configuration, and build
+inputs. No coverage data was edited.
+
+The first ordinary run exited 1: 5,823 of 5,824 backend tests passed, with
+one failure and no cancellations, skips, or todo cases. The existing OAuth
+CLI case for pending browser cancellation reported authorization timeout
+instead of cancellation. Its 150 ms timeout starts before store, metadata,
+and listener preparation; the fixture sends cancellation only when browser
+opening starts. This can race under load, but the retained output does not
+establish which step consumed the timeout. SEARCH-09 changes none of that
+path. All 15 tests in its file passed in isolation without edits. Logs:
+`/tmp/thermus-search09-ordinary.log` and
+`/tmp/thermus-search09-oauth-focused.log`. The failed run is not a gate pass.

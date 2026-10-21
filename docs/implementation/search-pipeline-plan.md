@@ -96,9 +96,10 @@ the new record owns the separate live result and final selected checks.
   tested for that supported structure; current live empty-results behavior
   remains unverified. The [fixture notes](../../test/support/fixtures/search-engine/README.md)
   describe its origin and limits.
-- One real self-hosted MCP search passed with Lightpanda 1.0.0 on
-  2026-10-20 at 23:06:10 UTC. This proves that call, not sustained access,
-  every query, a live hosted search, or every future provider layout.
+- Dated real self-hosted MCP searches passed with Lightpanda 1.0.0 in
+  SEARCH-06 and SEARCH-09. The latest call, at 2026-10-21 01:22:51 UTC,
+  passed the stronger result/description assertion. These calls do not prove
+  sustained access, every query, a live hosted search, or every future layout.
 - Public Brave can return a challenge, rate limit, or changed page. HTTP
   access is not a guarantee against blocking. Unsupported responses fail.
 - Full-page conversion can include page context. Captured fixtures prove
