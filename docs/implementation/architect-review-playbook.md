@@ -696,7 +696,7 @@ Paths in this appendix are relative to
 the reference commit, with exact-snapshot CLI, raw file MI and native class
 observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
 process outcomes in F.12, exact per-file MI85 in F.13 and absolute CRAP
-calculation in F.14.
+calculation in F.14 and MI decline from supplied values in F.15.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -723,6 +723,7 @@ Other proposed operations remain unavailable.
 | `snapshot/input.ts`, `build.ts` | Native file metric parsing, raw file MI and optional typed native class observations beside rounded output. | F.9/F.10 preserve available raw values and the native reported class subset; the architecture reader ignores them. F.11 adds the separate `snapshot/observations.ts` projection decoder. Full assessment/provenance validation, source class correspondence/completeness and class history remain pending. |
 | `assessment/file-mi85.ts` | F.13 calculates exact per-file MI85 states from declared observations and caller selection; first non-test caller of the F.11 decoder. | No source/authenticity or full-scope proof, route/AUTO eligibility or full assessment. |
 | `assessment/crap-absolute.ts` | F.14 calculates both absolute CRAP goals from supplied paths and optional coverage, with exact comparisons and safe bounds. | Arithmetic only; no accepted evidence, origin/applicability, exceptions, decline or route decisions. |
+| `assessment/mi-decline.ts` | F.15 compares supplied MI reference/head operands exactly for a drop below five points and no deterioration. | Caller validates B/A reference; arithmetic proves no comparability, lineage, best accepted score/history or scope. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | Add sound upper/difference bounds and lasting origin rules. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -2078,7 +2079,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 
 | Owner/path | Planned change |
 | --- | --- |
-| `assessment/` | F.13/F.14 add only exact per-file MI85 and absolute CRAP calculations. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
+| `assessment/` | F.13–F.15 add only per-file MI85, absolute CRAP and MI decline from supplied values calculations. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
@@ -2092,7 +2093,8 @@ CLI option; full assessment/provenance validation remains pending. F.12 exposes
 final typed process outcomes through the programmatic API only, with no new
 operation, artifact or policy adoption. F.13 adds only a synchronous per-file
 MI85 calculation for declared inputs and caller selection. F.14 adds pure
-absolute CRAP arithmetic over supplied operands; neither changes commands.
+absolute CRAP arithmetic, and F.15 adds MI decline comparisons over supplied
+operands. These calculations do not change commands.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -2746,6 +2748,64 @@ checks ran, with no collector or broader suite. Required failures keep PR #201
 in Draft; merging stays manual. Final habit-hooks and clean committed candidate
 process evidence, with reasons for retained findings, will be added to the PR;
 those results are not yet available.
+
+### F.15. MI decline calculation implementation record
+
+`assessment/mi-decline.ts` adds pure `miDeclineOf({ reference?, head? })`.
+The result retains operands in `observation`, omitting missing properties, and
+reports `belowFive` (`reference − head < 5`)
+and `noDeterioration` (`reference − head ≤ 0`), each with `PASS`, `MISS` or
+`UNKNOWN` and a reason. Missing operands stay unknown. Every supplied operand
+must be finite; null/nonfinite values are invalid even when the other is absent.
+Exact decimal arithmetic over supplied number representations decides both
+comparisons, without rounding, tolerance or an exact numeric difference claim.
+This is separate from the MI85 floor.
+
+The caller supplies a validated B or A reference. Arithmetic proves no
+comparability, lineage, origin, best accepted score/history or scope. Exceptions,
+routes, command wiring and full assessment remain pending. No policy is adopted;
+existing commands and manual merging stay unchanged. PR #201 remains Draft.
+
+The unit and acceptance files are both named `ast-metrics-mi-decline.test.ts`.
+They specify thresholds, precision, unknown operands and invalid inputs.
+
+Validation on 2026-10-20:
+
+- The existing MI85/absolute CRAP baseline passed 79/79. Four new acceptance
+  and 40 new unit cases first failed for the absent module. Initial and final
+  green sets passed 123/123: 79 existing, 40 new unit and four new acceptance
+  checks. The final build passed.
+- A precision test initially assumed `6.6 − 1.6` differed from 5; it equals 5
+  in the pinned Node runtime. The fixture was corrected to verified
+  `8.2 − 3.2 = 4.999999999999999`, with exact decimal decline 5 correctly
+  expected to `MISS`. Existing runtime code did not change.
+- `pnpm run test:unit` passed 4,133 compiled and 23 portal checks, 4,156 total,
+  with exit 0. Full acceptance passed 919/922 compiled checks and exited 1;
+  all four new cases passed. The same two missing-public-search cases failed.
+  The existing logger failed before export for missing `AXIOM_API_KEY`.
+  Both `AXIOM_API_KEY` and `AXOIM_ENDPOINT_URL` were absent, with no `.env.local`;
+  involved source, tests and support matched `origin/main`.
+- Separate selected portal acceptance passed 18/18. README/help/inventory checks
+  passed 18/18 within full acceptance; existing fetch, OAuth and MCP timeout
+  checks passed. Native snapshot passed 3/3 and structural architecture with
+  `--no-coverage` passed 1/1. All completed green/full runs had zero skipped,
+  cancelled or todo tests. The 35 history hashes stayed unchanged after native
+  checks. Portal and native checks preceded the private-helper cleanup below;
+  they exercise unchanged code with no dependency on that helper.
+- Habit-hooks found high complexity in the new entry point. Private
+  `unknownDeclineOf` now separates missing-result construction from exact
+  comparison. API, validation order, reasons and tests stay unchanged. The build
+  and all 123 focused checks passed again, as did the full 4,156-check unit run.
+  Manager and independent review still found no defect. A second habit-hooks run
+  cleared complexity; one unused-file, three unused-export, 76 comment and one
+  oversized finding remain, with reasons on the PR. Final acceptance again
+  passed 919/922 compiled checks and exited 1 for the same three search/logger
+  failures. All four new cases, README/help/inventory and timeout checks passed;
+  no test was cancelled, skipped or todo.
+
+No `src/` path or existing runtime code changed; no extra suite or collector ran.
+Required failures keep PR #201 in Draft; merging stays manual. Final committed
+process evidence and reasons for retained findings will be added to the PR.
 
 ## References
 

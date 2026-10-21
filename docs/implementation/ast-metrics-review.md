@@ -864,6 +864,22 @@ activates no policy. Full assessment remains pending; existing commands and
 manual merging stay unchanged. The process does not call it yet. `LOW` or
 `UNKNOWN` alone is not an architect trigger; broader checks remain pending.
 
+The separate pure `miDeclineOf({ reference?, head? })` in
+`assessment/mi-decline.ts` retains supplied operands in `observation` (missing
+properties omitted) and returns `belowFive`
+(`reference − head < 5`) and `noDeterioration` (`reference − head ≤ 0`), each
+with `PASS`, `MISS` or `UNKNOWN` and a reason. Missing operands stay unknown.
+Every supplied operand must be finite; null and nonfinite values are invalid
+even when the other operand is absent. Comparisons use exact decimal arithmetic
+over the supplied number representations, with no rounding or tolerance. The
+result makes no exact numeric difference claim and does not apply the MI85 floor.
+
+The caller supplies a validated B or A reference. This arithmetic proves no
+comparability, lineage, origin, best accepted score/history or scope. It does
+not apply exceptions, choose routes or change commands. It activates no policy.
+Full assessment
+remains pending; merging stays manual.
+
 The raw 0.43.1 JSON gives file coupling counts and namespace relations, but
 does not give complete file import pairs. The snapshot therefore uses the
 TypeScript parser supplied by `ts-morph`. It ignores package imports and

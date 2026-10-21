@@ -54,6 +54,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `snapshot/observations.ts` owns the separate offline raw-observation projection.
 `assessment/file-mi85.ts` calculates exact per-file MI85 states for caller selection.
 `assessment/crap-absolute.ts` calculates both absolute CRAP goals from operands.
+`assessment/mi-decline.ts` compares supplied MI operands for decline.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
 and parent signal observations live in `coverage/propagation.ts` and
@@ -843,6 +844,22 @@ activates no policy. Full assessment remains pending; existing commands and
 manual merging stay unchanged. The process does not call it yet. `LOW` or
 `UNKNOWN` alone is not an architect trigger; broader checks remain pending.
 
+The separate pure `miDeclineOf({ reference?, head? })` in
+`assessment/mi-decline.ts` retains supplied operands in `observation` (missing
+properties omitted) and returns `belowFive`
+(`reference − head < 5`) and `noDeterioration` (`reference − head ≤ 0`), each
+with `PASS`, `MISS` or `UNKNOWN` and a reason. Missing operands stay unknown.
+Every supplied operand must be finite; null and nonfinite values are invalid
+even when the other operand is absent. Comparisons use exact decimal arithmetic
+over the supplied number representations, with no rounding or tolerance. The
+result makes no exact numeric difference claim and does not apply the MI85 floor.
+
+The caller supplies a validated B or A reference. This arithmetic proves no
+comparability, lineage, origin, best accepted score/history or scope. It does
+not apply exceptions, choose routes or change commands. It activates no policy.
+Full assessment
+remains pending; merging stays manual.
+
 `tool` keeps the checked actual version, including an explicit override.
 Optional `title` is the commit message's first line; optional `provenance`
 contains source and expected coverage-input fingerprints, runtime, compiler,
@@ -1111,6 +1128,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
 | live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
@@ -1185,6 +1203,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-file-mi85.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
