@@ -40,7 +40,7 @@ export interface LoadedRules {
 export function rulesOf(text: string, where: string, source: 'head' | 'merge-base' = 'head'): Rules {
   const document = documentOf(text, where);
   const protectedPaths = groupsOf(document, where);
-  checkRoutes(document, where, protectedPaths.map((group) => group.name), source === 'merge-base');
+  checkRoutes(document, where, source === 'merge-base');
   checkMetricsFiles(document, where);
   return {
     protectedPaths,

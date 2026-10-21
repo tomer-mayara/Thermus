@@ -1,4 +1,4 @@
-import { invalidKey, textListAt, valueAt } from './rules-values.ts';
+import { invalidKey, recordAt, textListAt, valueAt } from './rules-values.ts';
 import { routes } from './types.ts';
 
 const historicalOrder = ['FIX', 'ASK', 'READ', 'SHOW', 'SHIP'];
@@ -9,7 +9,7 @@ const fixTriggers = [
 
 // The check gives each reason a fixed route. A rules file that names another route for it asks for a check that does
 // not exist, so the check refuses it. The trigger runtime_edge_becomes_type has no reason, so the check ignores it.
-export function checkRoutes(document: unknown, where: string, groups: readonly string[], allowHistoricalRoutes = false): void {
+export function checkRoutes(document: unknown, where: string, allowHistoricalRoutes = false): void {
   const givenOrder = textListAt(document, 'routes.order', where).join();
   // Only a merge base can use the complete former vocabulary. Its other rules still apply.
   const historical = allowHistoricalRoutes && givenOrder === historicalOrder.join();
@@ -17,6 +17,7 @@ export function checkRoutes(document: unknown, where: string, groups: readonly s
   if (givenOrder !== order.join()) {
     throw invalidKey(where, 'routes.order', `give ${order.join(', ')}, the order that the check uses`);
   }
+  const groups = Object.keys(recordAt(document, 'protected_paths', where));
   const expected = expectedRoutes(groups, historical ? 'ASK' : 'CLARIFICATION_NEEDED', historical ? 'READ' : 'ARCHITECT_REVIEW_NEEDED');
   const wrong = expected.find(([key, route]) => valueAt(document, key) !== route);
   if (wrong) throw invalidKey(where, wrong[0], `give ${wrong[1]}, the route that the check uses`);
