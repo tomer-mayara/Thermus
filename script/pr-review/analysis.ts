@@ -1,6 +1,7 @@
 import { changedPathsOf } from './changes.ts';
 import { crapOutcome } from './crap.ts';
 import type { Candidate } from './git-reads.ts';
+import { metricsOutcome } from './metrics.ts';
 import { pathOutcome } from './paths.ts';
 import { ratchetOutcome } from './ratchet.ts';
 import type { LoadedRules } from './rules.ts';
@@ -19,19 +20,21 @@ export function analysisOf(candidate: Candidate, rules: LoadedRules) {
   const size = sizeOutcome(candidate, rules.base);
   const ratchet = ratchetOutcome(candidate, rules.base);
   const crap = crapOutcome(candidate, rules.base);
+  const metrics = metricsOutcome(candidate, rules.base);
   const contracts = surface.length > 0 ? [{ key: 'protected_paths.contracts', question: rules.base.contractsQuestion }] : [];
   const declared = declarationsOf(facts.declared);
   return {
     reasons: [
       ...facts.fix.map(reasonOf), ...located.reasons,
       ...declared.map((entry): Reason => ({ route: 'ASK', key: 'dependency_graph.declared', fact: `${entry.key}: ${entry.value}` })),
-      ...surface, ...size.reasons, ...ratchet.reasons, ...crap.reasons,
+      ...surface, ...size.reasons, ...ratchet.reasons, ...crap.reasons, ...metrics.reasons,
     ],
     questions: [...new Map([...located.questions, ...contracts].map((entry) => [entry.key, entry] as const)).values()],
     counts: size.counts,
     tests: size.tests,
     mi: ratchet.lines,
     crap: crap.lines,
+    metrics: metrics.lines,
     factsToDeclare: declarationsOf(facts.fix),
     declared,
     notes: facts.notes,

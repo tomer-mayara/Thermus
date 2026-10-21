@@ -49,6 +49,8 @@ export function rulesDocument() {
     ratchet: {
       maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 } as Record<string, number>,
       crap: { new_function_above: 15, changed_legacy_function_at_or_above: 30 } as Record<string, number>,
+      process_outcomes: 'ast-report/process.json',
+      review_findings: 'ast-report/review.json',
     },
   };
 }

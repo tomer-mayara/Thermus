@@ -7,6 +7,7 @@ import type { CheckResult } from './types.ts';
 const dirtyNote = 'Uncommitted changes are not part of the candidate: the check reads the commit HEAD only.';
 const surfaceNote = 'The check does not compare declarations: compare the exported declarations of each module under "Surface differences" before and after the change, as the step "Declare or remove facts" says.';
 const manualNote = 'The steps "Metrics" and "Decision" of the review route are manual: do them before Ready, as AGENTS.md says.';
+const decisionNote = 'The step "Decision" of the review route is manual: do it before Ready, as AGENTS.md says.';
 
 // Without a repository, the label command applies to the repository of the current folder.
 export function resultOf(candidate: Candidate, rules: LoadedRules, repository: string | undefined): CheckResult {
@@ -25,6 +26,7 @@ export function resultOf(candidate: Candidate, rules: LoadedRules, repository: s
     tests: { added: tests.added, removed: tests.removedCases.length, skippedOrTodo: tests.skippedOrTodo },
     mi: analysis.mi,
     crap: analysis.crap,
+    metrics: analysis.metrics,
     factsToDeclare: analysis.factsToDeclare,
     declaredFacts: analysis.declared,
     surfaceDifferences: analysis.surface,
@@ -39,6 +41,6 @@ function notesOf(candidate: Candidate, rules: LoadedRules, analysis: Analysis): 
     ...rules.notes,
     ...analysis.notes,
     ...(analysis.surface.length > 0 ? [surfaceNote] : []),
-    manualNote,
+    candidate.metrics === undefined ? manualNote : decisionNote,
   ];
 }

@@ -42,6 +42,8 @@ function documentOf() {
     ratchet: {
       maintainability_index: { unit: 'production file', new_file_below: 85, existing_file_drop_read_at: 5 },
       crap: { unit: 'function', new_function_above: 15, changed_legacy_function_at_or_above: 30, changed_function_above_goal_and_worse_than_base: 'later' },
+      process_outcomes: 'ast-report/process.json',
+      review_findings: 'ast-report/review.json',
     },
   };
 }
@@ -98,6 +100,8 @@ for (const [name, edit, message] of [
   ['without the CRAP goal of a new function', (document: Document) => document.deleteIn(['ratchet', 'crap', 'new_function_above']), 'ratchet.crap.new_function_above: give a whole number, 0 or more'],
   ['with a CRAP goal of 10 for a new function', (document: Document) => document.setIn(['ratchet', 'crap', 'new_function_above'], 10), 'ratchet.crap.new_function_above: give 15; the check supports the goals 15 and 30 only'],
   ['with a CRAP goal of 40 for a changed function', (document: Document) => document.setIn(['ratchet', 'crap', 'changed_legacy_function_at_or_above'], 40), 'ratchet.crap.changed_legacy_function_at_or_above: give 30; the check supports the goals 15 and 30 only'],
+  ['with a number as the location of the stage outcomes', (document: Document) => document.setIn(['ratchet', 'process_outcomes'], 1), 'ratchet.process_outcomes: give a non-empty text, or leave it out'],
+  ['with an empty location of the review findings', (document: Document) => document.setIn(['ratchet', 'review_findings'], ' '), 'ratchet.review_findings: give a non-empty text, or leave it out'],
 ] as const) {
   test(`Given a rules document ${name}, when it is read, then the diagnostic names the key`, () => {
     const document = new Document(documentOf());
@@ -117,6 +121,14 @@ for (const pattern of ['{src,test}/**', 'src/[ab].ts', '!src/**', 'src\\a.ts', '
     });
   });
 }
+
+test('Given a rules document without the locations of the metrics files, when it is read, then the check accepts it, because it takes the files from --process and --review', () => {
+  const document = new Document(documentOf());
+  document.deleteIn(['ratchet', 'process_outcomes']);
+  document.deleteIn(['ratchet', 'review_findings']);
+
+  assert.deepEqual(rulesOf(String(document), where).scopes.production, ['src/**']);
+});
 
 test('Given the trigger runtime_edge_becomes_type with the value none, when the rules are read, then the check accepts it, because it does not implement that trigger', () => {
   assert.equal(rulesOf(stringify(documentOf()), where).graph.packages.length, 3);

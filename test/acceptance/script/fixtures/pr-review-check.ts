@@ -7,8 +7,11 @@ import type { GitRepository } from './git-repository.ts';
 export const manualNote = '- The steps "Metrics" and "Decision" of the review route are manual: do them before Ready, as AGENTS.md says.';
 export const snapshotOptions = ['--base-snapshot', 'ast-report/snapshot-base.json', '--head-snapshot', 'ast-report/snapshot.json'];
 export const crapOptions = ['--crap', 'ast-report/crap.json'];
+export const metricsOptions = ['--process', 'ast-report/process.json', '--review', 'ast-report/review.json'];
+export const decisionNote = '- The step "Decision" of the review route is manual: do it before Ready, as AGENTS.md says.';
 
 type RawValues = Readonly<Record<string, number | undefined>>;
+type Commits = { readonly base: string; readonly head: string };
 
 // A row of the JSON that script/code-quality/ast-metrics-crap.ts writes with --json.
 export interface CrapRowFixture {
@@ -18,6 +21,13 @@ export interface CrapRowFixture {
   readonly paths: number;
   readonly share?: number;
   readonly crap?: number;
+}
+
+// A regression of the JSON that the review stage of the metrics process writes to ast-report/review.json.
+export interface FindingFixture {
+  readonly severity: string;
+  readonly file: string;
+  readonly message: string;
 }
 
 export function checkOn(t: TestContext, repository: GitRepository, ...args: string[]) {
@@ -56,4 +66,23 @@ export function crapText(commits: { readonly base: string; readonly head: string
 // The CRAP command writes its rows of HEAD to ast-report/, which git ignores.
 export function writeCrap(repository: GitRepository, rows: readonly CrapRowFixture[]): void {
   repository.write({ 'ast-report/crap.json': crapText(commitsOf(repository), rows) });
+}
+
+export function processText(commits: Commits, statuses: readonly string[]): string {
+  const outcomes = ['Delta', 'Review', 'CRAP', 'Architecture'].slice(0, statuses.length).map((name, index) => ({ name, status: statuses[index], text: `${name} evidence.` }));
+  return JSON.stringify({ version: 1, base: commits.base, head: commits.head, outcomes });
+}
+
+export function reviewText(commits: Commits, findings: readonly FindingFixture[]): string {
+  const regressions = findings.map((finding) => ({ kind: 'regression', rule: 'new-violation:maintainability', ...finding }));
+  return JSON.stringify({ methodologyVersion: '1.1', baseRef: 'main', baseSha: commits.base, headSha: commits.head, regressions, improvements: [] });
+}
+
+// Without findings, no review file is written, as after a Review stage that did not complete.
+export function writeMetrics(repository: GitRepository, statuses: readonly string[], findings?: readonly FindingFixture[]): void {
+  const commits = commitsOf(repository);
+  repository.write({
+    'ast-report/process.json': processText(commits, statuses),
+    ...(findings === undefined ? {} : { 'ast-report/review.json': reviewText(commits, findings) }),
+  });
 }

@@ -18,8 +18,8 @@ test('Given --json, when the check runs, then it prints one JSON object with sta
   assert.equal(result.stderr, '');
   const report = JSON.parse(result.stdout) as Record<string, unknown>;
   assert.deepEqual(Object.keys(report), [
-    'route', 'candidate', 'mergeBase', 'reasons', 'questions', 'changedPaths', 'lineCounts', 'tests', 'mi', 'crap', 'factsToDeclare',
-    'declaredFacts', 'surfaceDifferences', 'notes', 'label',
+    'route', 'candidate', 'mergeBase', 'reasons', 'questions', 'changedPaths', 'lineCounts', 'tests', 'mi', 'crap', 'metrics',
+    'factsToDeclare', 'declaredFacts', 'surfaceDifferences', 'notes', 'label',
   ]);
   assert.equal(report.route, 'FIX');
   assert.equal(report.candidate, repository.git('rev-parse', 'HEAD').trim());

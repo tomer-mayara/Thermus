@@ -117,7 +117,7 @@ and adds no complete suite. A build only prepares emitted test files.
 ### Run the complete process: `script/code-quality/ast-metrics-process.ts`
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-process.ts [--base REF] [--coverage FILE] [--collect-coverage | --skip-coverage] [--out FILE] [--allow-tool-version]
+pnpm exec node script/code-quality/ast-metrics-process.ts [--base REF] [--coverage FILE] [--collect-coverage | --skip-coverage] [--out FILE] [--json FILE] [--allow-tool-version]
 ```
 
 The defaults are base `origin/main`, reuse of `ast-report/coverage.json`,
@@ -135,6 +135,24 @@ prerequisite leaves dependent stages unavailable, saves partial evidence,
 and exits 1. Required assessments without sufficient data do not pass.
 Exit 0 means all required assessments completed and passed. Invalid options
 or a recording failure also exit 1.
+
+The programmatic `runProcess` result is `ProcessResult`, which extends
+`StageReport` with `readonly outcomes: readonly StageOutcome[]`. Outcomes keep
+the final Delta, Review, CRAP, Architecture order and each stage's text and
+status: `passed`, `goal miss`, `failed` or `unavailable`. Each entry reflects
+the final state, including any history publication result. These are process
+stage outcomes, not native exit records. CLI output, saved Markdown, exits,
+stage execution, coverage and history behavior stay unchanged.
+
+With `--json FILE`, the process also writes these outcomes to `FILE`, relative
+to the current folder. The file has `version` 1, `base` (the merge base of
+`--base` and HEAD), `head` (HEAD), and `outcomes`. Each outcome has `name`,
+`status`, and `text`. The process writes the file also after a goal miss or a
+failed stage. The Markdown, the exit status, and the history record do not
+change. The review route check reads the file with `--process`, and the review
+findings of `ast-report/review.json` with `--review`. See
+[the check guide](../../script/pr-review/README.md). Write the file under
+`ast-report/`, as `ast-report/process.json`.
 
 Reuse is the default; `--coverage FILE` selects another report. Missing or
 stale coverage never starts a suite. `--collect-coverage` explicitly builds

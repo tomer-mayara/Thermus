@@ -4,6 +4,7 @@ import { changesOf, numstatOf, type NumstatRow } from './changes.ts';
 import { isTypeScript } from './code-files.ts';
 import type { CrapRow } from './crap-rows.ts';
 import { exceptionsPath } from './exceptions.ts';
+import type { MetricsFiles } from './metrics-files.ts';
 import type { SnapshotPair } from './snapshots.ts';
 import type { Change } from './types.ts';
 
@@ -31,6 +32,7 @@ export interface Candidate extends Revisions {
   readonly today: string;
   readonly snapshots?: SnapshotPair;
   readonly crap?: readonly CrapRow[];
+  readonly metrics?: MetricsFiles;
   readonly dirty: boolean;
 }
 
@@ -45,7 +47,7 @@ export function isDirty(root: string): boolean {
 
 // production holds the patterns of scopes.production. Git limits a second numstat to them, so that a file that moves
 // into the scope counts all its lines.
-export function candidateOf(root: string, revisions: Revisions, production: readonly string[]): Omit<Candidate, 'dirty' | 'snapshots' | 'crap'> {
+export function candidateOf(root: string, revisions: Revisions, production: readonly string[]): Omit<Candidate, 'dirty' | 'snapshots' | 'crap' | 'metrics'> {
   const diff = (args: readonly string[], paths: readonly string[] = []) => git(root,
     ['-c', 'core.quotePath=false', 'diff', ...diffOptions, ...args, revisions.mergeBase, revisions.head, '--', ...paths],
     'git diff could not compare the merge base with HEAD.');

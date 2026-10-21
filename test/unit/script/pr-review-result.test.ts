@@ -83,7 +83,7 @@ test('Given snapshots in which the changed contract drops by five, when the resu
     'SHOW scopes.executable: 2 changed files',
   ]);
   assert.deepEqual(result.mi, ['changed: src/a/old.ts -> src/a/a.ts: 90 to 89.5', 'changed: src/index.ts: 88 to 82.5']);
-  assert.match(markdownOf(result), /\nTests:\n(?:- .*\n){3}\nMI:\n- changed: src\/a\/old\.ts -> src\/a\/a\.ts: 90 to 89\.5\n- changed: src\/index\.ts: 88 to 82\.5\n\nCRAP:\n- not checked: give --crap\n\nFacts to declare:\n/);
+  assert.match(markdownOf(result), /\nTests:\n(?:- .*\n){3}\nMI:\n- changed: src\/a\/old\.ts -> src\/a\/a\.ts: 90 to 89\.5\n- changed: src\/index\.ts: 88 to 82\.5\n\nCRAP:\n- not checked: give --crap\n\nMetrics:\n- not checked: give --process and --review\n\nFacts to declare:\n/);
 });
 
 test('Given CRAP rows of the renamed file, when the result is made, then the CRAP reason is FIX among the other reasons and the report gives the CRAP section after the MI section', () => {
@@ -101,5 +101,25 @@ test('Given CRAP rows of the renamed file, when the result is made, then the CRA
     'SHOW scopes.executable: 2 changed files',
   ]);
   assert.deepEqual(result.crap, ['src/a/a.ts: small: pass from the bound [2, 6]']);
-  assert.match(markdownOf(result), /\nMI:\n- not checked: give --base-snapshot and --head-snapshot\n\nCRAP:\n- src\/a\/a\.ts: small: pass from the bound \[2, 6\]\n\nFacts to declare:\n/);
+  assert.match(markdownOf(result), /\nMI:\n- not checked: give --base-snapshot and --head-snapshot\n\nCRAP:\n- src\/a\/a\.ts: small: pass from the bound \[2, 6\]\n\nMetrics:\n- not checked: give --process and --review\n\nFacts to declare:\n/);
+});
+
+test('Given metrics files with a failed CRAP stage and a high finding on the renamed file, when the result is made, then the metrics reasons join the others, the report gives the Metrics section after the CRAP section, and only the step "Decision" stays manual', () => {
+  const metrics = {
+    outcomes: [{ name: 'Delta', status: 'passed' }, { name: 'Review', status: 'goal miss' }, { name: 'CRAP', status: 'failed' }, { name: 'Architecture', status: 'passed' }],
+    findings: [{ severity: 'high', file: 'src/a/a.ts', message: 'Maintainability too low: got 63 (min: 85)' }],
+  } as const;
+  const result = resultOf({ ...candidate, dirty: false, metrics }, { base: rules, head: rules, path: 'r.yaml', notes: [] }, undefined);
+
+  assert.equal(result.route, 'FIX');
+  assert.deepEqual(result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`), [
+    'FIX required_checks: CRAP failed',
+    'ASK protected_paths.contracts: src/index.ts',
+    'ASK public_surface: src/index.ts',
+    'READ ratchet.review_findings: src/a/a.ts: Maintainability too low: got 63 (min: 85)',
+    'SHOW scopes.executable: 2 changed files',
+  ]);
+  assert.deepEqual(result.metrics, ['Delta: passed', 'Review: goal miss', 'CRAP: failed', 'Architecture: passed', '0 findings on unchanged files, reason unchanged by this PR']);
+  assert.equal(result.notes.at(-1), 'The step "Decision" of the review route is manual: do it before Ready, as AGENTS.md says.');
+  assert.match(markdownOf(result), /\nCRAP:\n- not checked: give --crap\n\nMetrics:\n- Delta: passed\n- Review: goal miss\n- CRAP: failed\n- Architecture: passed\n- 0 findings on unchanged files, reason unchanged by this PR\n\nFacts to declare:\n/);
 });

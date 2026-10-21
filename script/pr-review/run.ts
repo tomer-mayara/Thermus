@@ -3,6 +3,7 @@ import { verifyBase } from '../code-quality/shared/repository.ts';
 import type { CheckOptions } from './command-line.ts';
 import { crapRowsOf } from './crap-rows.ts';
 import { candidateOf, isDirty, revisionsOf } from './git-reads.ts';
+import { metricsFilesOf } from './metrics-files.ts';
 import { resultOf } from './result.ts';
 import { rulesAt } from './rules-source.ts';
 import { snapshotPairOf } from './snapshots.ts';
@@ -18,5 +19,6 @@ export function runCheck(root: string, options: CheckOptions): CheckResult {
   const rules = rulesAt(root, revisions, options.rules);
   const snapshots = options.snapshots === undefined ? undefined : snapshotPairOf(options.snapshots, revisions);
   const crap = options.crap === undefined ? undefined : crapRowsOf(options.crap, revisions);
-  return resultOf({ ...candidateOf(root, revisions, rules.base.scopes.production), dirty, snapshots, crap }, rules, options.repository);
+  const metrics = options.metrics === undefined ? undefined : metricsFilesOf(options.metrics, revisions.head);
+  return resultOf({ ...candidateOf(root, revisions, rules.base.scopes.production), dirty, snapshots, crap, metrics }, rules, options.repository);
 }
