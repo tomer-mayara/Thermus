@@ -33,7 +33,7 @@ test('Given goal misses of the process and high findings on unchanged files only
   assert.equal(result.code, 0);
 });
 
-test('Given a high finding on a changed production file, when the check runs with both files, then the route is T1 Team review with the file and the message, and a finding on a changed test file is no reason', { timeout }, async (t) => {
+test('Given a high finding on a changed production file, when the check runs with both files, then the tier is T1 Team review with the file and the message, and a finding on a changed test file is no reason', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change the parser and its fixture', { ...parserChange, 'test/alpha/fixture.ts': 'export const fixture = 1;\n' });
   writeMetrics(repository, completed, [

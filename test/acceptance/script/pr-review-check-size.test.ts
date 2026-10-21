@@ -4,12 +4,12 @@ import { GitRepository } from './fixtures/git-repository.ts';
 import { checkOn, linesUnder, tierOf } from './fixtures/pr-review-check.ts';
 import { mainFiles, rulesYaml, testFile } from './fixtures/pr-review-rules.ts';
 
-// The size and the tests of the review tier. pr-review-check.test.ts specifies the route from the changed paths.
+// The size and the tests of the review tier. pr-review-check.test.ts specifies the tier from the changed paths.
 const timeout = 30_000;
 const lowLimit = rulesYaml((rules) => { rules.size.production_lines_read_above = 5; });
 const longModule = Array.from({ length: 8 }, (_, index) => `export const value${index} = ${index};\n`).join('');
 
-test('Given a source change above the production line limit, when the check runs, then the route is T1 Team review with the count and the limit', { timeout }, async (t) => {
+test('Given a source change above the production line limit, when the check runs, then the tier is T1 Team review with the count and the limit', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles(lowLimit));
   repository.commit('Add a longer module', { 'src/alpha/more.ts': longModule });
 
@@ -38,7 +38,7 @@ test('Given a file that moves into src without a change, when the check runs, th
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that removes a test case, when the check runs, then the route is T1 Team review and the reason names the removed case', { timeout }, async (t) => {
+test('Given a branch that removes a test case, when the check runs, then the tier is T1 Team review and the reason names the removed case', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, { ...mainFiles(), 'test/unit/sample.test.ts': testFile(['first', 'second']) });
   repository.commit('Remove a test case', { 'test/unit/sample.test.ts': testFile(['first']) });
 
@@ -53,7 +53,7 @@ test('Given a branch that removes a test case, when the check runs, then the rou
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that skips a test with an option shorthand, when the check runs, then the route is T1 Team review and names the file', { timeout }, async (t) => {
+test('Given a branch that skips a test with an option shorthand, when the check runs, then the tier is T1 Team review and names the file', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, { ...mainFiles(), 'test/unit/sample.test.ts': testFile(['first']) });
   repository.commit('Skip a test', { 'test/unit/sample.test.ts': "import { test } from 'node:test';\n\nconst skip = true;\ntest('first', { skip }, () => {});\n" });
 

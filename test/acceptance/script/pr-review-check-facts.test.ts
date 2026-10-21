@@ -5,7 +5,7 @@ import { checkOn, eligibilityOf, linesUnder, manualNote, tierOf } from './fixtur
 import { betaUsesAlpha, mainFiles, rulesPath, rulesYaml } from './fixtures/pr-review-rules.ts';
 
 // The dependency facts of the review tier: the facts to declare and the declared facts. pr-review-check.test.ts
-// specifies the route from the changed paths.
+// specifies the tier from the changed paths.
 const timeout = 30_000;
 const betaToAlpha = '{ from: beta, to: alpha, kind: runtime }';
 
@@ -25,7 +25,7 @@ test('Given a source change that adds a package edge that the rules file does no
   assert.equal(result.code, 0);
 });
 
-test('Given the edge declared in a rules file that no protected group lists, when the check runs, then the route is T1 Team review for the rules file and for the declared fact', { timeout }, async (t) => {
+test('Given the edge declared in a rules file that no protected group lists, when the check runs, then the tier is T1 Team review for the rules file and for the declared fact', { timeout }, async (t) => {
   const unprotected = (edges: readonly string[][]) => rulesYaml((rules) => {
     rules.protected_paths.policy.paths = ['AGENTS.md'];
     rules.dependency_graph.allowed_edges.push(...edges.map(([from, to]) => ({ from, to, kind: 'runtime' })));

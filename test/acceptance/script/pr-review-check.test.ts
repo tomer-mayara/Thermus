@@ -4,12 +4,12 @@ import { GitRepository } from './fixtures/git-repository.ts';
 import { checkOn, linesUnder, manualNote, tierOf } from './fixtures/pr-review-check.ts';
 import { guideChange, mainFiles, testFile } from './fixtures/pr-review-rules.ts';
 
-// The route from the changed paths (AGENTS.md, "Review tier"). pr-review-check-size.test.ts specifies the size and
+// The tier from the changed paths (AGENTS.md, "Review tier"). pr-review-check-size.test.ts specifies the size and
 // the tests, pr-review-check-facts.test.ts the dependency facts, pr-review-check-record.test.ts the record, and
 // pr-review-check-failures.test.ts the failures.
 const timeout = 30_000;
 
-test('Given a branch that changes only a document, when the check runs, then the route is T0 Auto merge and the report gives every section in order', { timeout }, async (t) => {
+test('Given a branch that changes only a document, when the check runs, then the tier is T0 Auto merge and the report gives every section in order', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.commit('Change the guide', guideChange);
 
@@ -40,7 +40,7 @@ test('Given a branch that changes only a document, when the check runs, then the
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that changes a protected policy path, when the check runs with --repo, then the route is T1 Team review with the question of the group and the label command names the repository', { timeout }, async (t) => {
+test('Given a branch that changes a protected policy path, when the check runs with --repo, then the tier is T1 Team review with the question of the group and the label command names the repository', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.commit('Change the agent rules', { 'AGENTS.md': '# Agents\n\nA new rule.\n' });
 
@@ -68,7 +68,7 @@ test('Given a branch that renames a protected file, when the check runs, then th
   assert.equal(result.code, 0);
 });
 
-test('Given a change to a module of the public surface, when the check runs, then the route is T1 Team review with the question of the contracts group', { timeout }, async (t) => {
+test('Given a change to a module of the public surface, when the check runs, then the tier is T1 Team review with the question of the contracts group', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.commit('Change alpha', { 'src/alpha/alpha.ts': 'export const alpha = 3;\n' });
 
@@ -96,7 +96,7 @@ test('Given a change to a contract document, when the check runs, then it is a s
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that only adds a test case, when the check runs, then the route is T0 Auto merge with no reason that requires a human review', { timeout }, async (t) => {
+test('Given a branch that only adds a test case, when the check runs, then the tier is T0 Auto merge with no reason that requires a human review', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, { ...mainFiles(), 'test/unit/sample.test.ts': testFile(['first']) });
   repository.commit('Add a test case', { 'test/unit/sample.test.ts': testFile(['first', 'second']) });
 
@@ -109,7 +109,7 @@ test('Given a branch that only adds a test case, when the check runs, then the r
   assert.equal(result.code, 0);
 });
 
-test('Given a branch whose HEAD is the merge base, when the check runs, then the route is T0 Auto merge with no changed path', { timeout }, async (t) => {
+test('Given a branch whose HEAD is the merge base, when the check runs, then the tier is T0 Auto merge with no changed path', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
 
   const result = await checkOn(t, repository);

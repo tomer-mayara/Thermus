@@ -96,7 +96,7 @@ for (const [expires, route, reasons] of [
     `- T1 Team review read_paths: ${exceptionsPath}`,
   ]],
 ] as const) {
-  test(`Given an exception entry for the function with a bound of 20 that expires on ${expires}, when the check runs, then the route is ${route}`, { timeout }, async (t) => {
+  test(`Given an exception entry for the function with a bound of 20 that expires on ${expires}, when the check runs, then the review or blocker outcome is ${route}`, { timeout }, async (t) => {
     const repository = GitRepository.onFeatureBranch(t, measuredFiles(rulesYaml((document) => { document.read_paths.paths.push(exceptionsPath); })));
     repository.commit('Add a wide module and its exception', { ...wideModule, [exceptionsPath]: exceptionsFile(expires) });
     writeCrap(repository, [wideRow]);

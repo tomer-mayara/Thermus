@@ -5,7 +5,7 @@ import { checkOn, eligibilityOf, commitsOf, linesUnder, tierOf, snapshotOptions,
 import { measuredFiles } from './fixtures/pr-review-rules.ts';
 
 // The MI rules of check 4 on the two snapshots. pr-review-check-exceptions.test.ts specifies the exceptions file, and
-// pr-review-check.test.ts the route from the changed paths.
+// pr-review-check.test.ts specifies the tier from the changed paths.
 const timeout = 30_000;
 const newModule = { 'src/alpha/low.ts': 'export const low = 1;\n' };
 
