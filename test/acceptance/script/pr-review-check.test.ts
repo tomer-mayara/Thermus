@@ -33,26 +33,26 @@ test('Given a branch that changes only a document, when the check runs, then the
     'Declared facts:', '- none', '',
     'Surface differences:', '- none', '',
     'Notes:', manualNote, '',
-    'Label:', '`gh pr edit <n> --add-label route:ship --remove-label route:fix --remove-label route:ask --remove-label route:read --remove-label route:show`', '',
+    'Label:', '`gh pr edit <n> --add-label route:ship --remove-label route:fix --remove-label route:clarification_needed --remove-label route:architect_review_needed --remove-label route:ask --remove-label route:read --remove-label route:show`', '',
   ].join('\n'));
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that changes a protected policy path, when the check runs with --repo, then the route is ASK with the question of the group and the label command names the repository', { timeout }, async (t) => {
+test('Given a branch that changes a protected policy path, when the check runs with --repo, then the route is CLARIFICATION_NEEDED with the question of the group and the label command names the repository', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.commit('Change the agent rules', { 'AGENTS.md': '# Agents\n\nA new rule.\n' });
 
   const result = await checkOn(t, repository, '--repo', 'owner/name');
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ASK');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- ASK protected_paths.policy: AGENTS.md']);
+  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- CLARIFICATION_NEEDED protected_paths.policy: AGENTS.md']);
   assert.deepEqual(linesUnder(result.stdout, 'Questions to answer'), ['- protected_paths.policy: Does this change what the checks enforce? Record the new rule.']);
-  assert.deepEqual(linesUnder(result.stdout, 'Label'), ['`gh pr edit <n> --repo owner/name --add-label route:ask --remove-label route:fix --remove-label route:read --remove-label route:show --remove-label route:ship`']);
+  assert.deepEqual(linesUnder(result.stdout, 'Label'), ['`gh pr edit <n> --repo owner/name --add-label route:clarification_needed --remove-label route:fix --remove-label route:architect_review_needed --remove-label route:ship --remove-label route:ask --remove-label route:read --remove-label route:show`']);
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that renames a protected file, when the check runs, then the old path gives ASK and the changed paths show the rename', { timeout }, async (t) => {
+test('Given a branch that renames a protected file, when the check runs, then the old path gives CLARIFICATION_NEEDED and the changed paths show the rename', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.git('mv', 'AGENTS.md', 'docs/agents.md');
   repository.commit('Move the agent rules');
@@ -60,21 +60,21 @@ test('Given a branch that renames a protected file, when the check runs, then th
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ASK');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- ASK protected_paths.policy: AGENTS.md']);
+  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- CLARIFICATION_NEEDED protected_paths.policy: AGENTS.md']);
   assert.deepEqual(linesUnder(result.stdout, 'Changed paths'), ['- R AGENTS.md -> docs/agents.md']);
   assert.equal(result.code, 0);
 });
 
-test('Given a change to a module of the public surface, when the check runs, then the route is ASK with the question of the contracts group', { timeout }, async (t) => {
+test('Given a change to a module of the public surface, when the check runs, then the route is CLARIFICATION_NEEDED with the question of the contracts group', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.commit('Change alpha', { 'src/alpha/alpha.ts': 'export const alpha = 3;\n' });
 
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ASK');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- ASK public_surface: src/alpha/alpha.ts', '- SHOW scopes.executable: 1 changed file']);
+  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- CLARIFICATION_NEEDED public_surface: src/alpha/alpha.ts']);
   assert.deepEqual(linesUnder(result.stdout, 'Questions to answer'), ['- protected_paths.contracts: Does a client see a different input or output? Record the promise.']);
   assert.deepEqual(linesUnder(result.stdout, 'Surface differences'), ['- src/alpha/alpha.ts']);
   assert.equal(result.code, 0);
@@ -87,22 +87,22 @@ test('Given a change to a contract document, when the check runs, then it is a s
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ASK');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- ASK public_surface: docs/reference/fetch.md']);
+  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- CLARIFICATION_NEEDED public_surface: docs/reference/fetch.md']);
   assert.deepEqual(linesUnder(result.stdout, 'Questions to answer'), ['- protected_paths.contracts: Does a client see a different input or output? Record the promise.']);
   assert.deepEqual(linesUnder(result.stdout, 'Surface differences'), ['- docs/reference/fetch.md']);
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that only adds a test case, when the check runs, then the route is SHOW with one line for the changed executable files', { timeout }, async (t) => {
+test('Given a branch that only adds a test case, when the check runs, then the route is SHIP with no reason that requires a human review', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, { ...mainFiles(), 'test/unit/sample.test.ts': testFile(['first']) });
   repository.commit('Add a test case', { 'test/unit/sample.test.ts': testFile(['first', 'second']) });
 
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHOW');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- SHOW scopes.executable: 1 changed file']);
+  assert.equal(routeOf(result.stdout), 'SHIP');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'Tests'), ['- Added test cases: 1', '- Removed test cases: 0', '- Added skips or todos: none']);
   assert.equal(result.code, 0);
 });

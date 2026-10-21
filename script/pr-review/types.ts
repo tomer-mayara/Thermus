@@ -1,6 +1,6 @@
 // SHIP has no reason: it applies when no other route has one.
-export type Route = 'FIX' | 'ASK' | 'READ' | 'SHOW' | 'SHIP';
-export const routes: readonly Route[] = ['FIX', 'ASK', 'READ', 'SHOW', 'SHIP'];
+export type Route = 'FIX' | 'CLARIFICATION_NEEDED' | 'ARCHITECT_REVIEW_NEEDED' | 'SHIP';
+export const routes: readonly Route[] = ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIP'];
 
 export interface Reason {
   readonly route: Exclude<Route, 'SHIP'>;

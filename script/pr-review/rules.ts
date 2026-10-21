@@ -19,7 +19,7 @@ export interface Rules {
   readonly policyQuestion: string;
   readonly contractsQuestion: string;
   readonly readPaths: readonly string[];
-  readonly scopes: { readonly production: readonly string[]; readonly executable: readonly string[]; readonly generated: readonly string[] };
+  readonly scopes: { readonly production: readonly string[]; readonly generated: readonly string[] };
   readonly limits: { readonly production: number; readonly total: number };
   // modules holds every module that public_surface lists: external, between_packages, and documented.
   readonly surface: { readonly modules: readonly string[]; readonly contractDocuments: readonly string[] };
@@ -37,10 +37,10 @@ export interface LoadedRules {
   readonly notes: readonly string[];
 }
 
-export function rulesOf(text: string, where: string): Rules {
+export function rulesOf(text: string, where: string, source: 'head' | 'merge-base' = 'head'): Rules {
   const document = documentOf(text, where);
   const protectedPaths = groupsOf(document, where);
-  checkRoutes(document, where, protectedPaths.map((group) => group.name));
+  checkRoutes(document, where, protectedPaths.map((group) => group.name), source === 'merge-base');
   checkMetricsFiles(document, where);
   return {
     protectedPaths,
@@ -49,7 +49,6 @@ export function rulesOf(text: string, where: string): Rules {
     readPaths: [...globListAt(document, 'read_paths.paths', where), ...globListAt(document, 'read_paths.moved_by_stop_rule', where)],
     scopes: {
       production: globListAt(document, 'scopes.production', where),
-      executable: globListAt(document, 'scopes.executable', where),
       generated: globListAt(document, 'scopes.generated', where),
     },
     limits: { production: numberAt(document, 'size.production_lines_read_above', where), total: numberAt(document, 'size.total_lines_read_above', where) },

@@ -104,11 +104,16 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 ## Review route
 
 The [PR review playbook](docs/implementation/pr-review-playbook.md) and its
-[rules file](docs/implementation/pr-review-rules.yaml) define five routes:
-`FIX`, `ASK`, `READ`, `SHOW`, `SHIP`. A route says how deeply a human reads
-the pull request. The command `script/pr-review/check.ts` computes the route;
+[rules file](docs/implementation/pr-review-rules.yaml) define four routes in
+priority order:
+`FIX`, `CLARIFICATION_NEEDED`, `ARCHITECT_REVIEW_NEEDED`, `SHIP`. A route says
+which human action the pull request needs before merge. The owner can act as
+the architect. `SHIP` needs no route-specific human review or post-merge skim.
+The command `script/pr-review/check.ts` computes the route;
 the [check guide](script/pr-review/README.md) gives its options and its output.
-The route does not change who merges.
+The route does not change who merges. Historical rules at the merge base
+keep their thresholds and protected paths; the check maps their old route
+names to the current names. The rules at HEAD use the current four routes.
 
 In this trial, this section governs where it differs from the rules file.
 The check applies the keys `protected_paths`, `read_paths`, `scopes`,
@@ -143,26 +148,26 @@ candidate.
    Before the metrics process, leave out `--crap`, `--process`, and
    `--review`. The check compares HEAD with the merge base. It reads the
    rules file of the merge base and the facts that HEAD declares. It prints
-   the route, every reason, the questions for `ASK`, the changed paths, the
-   line counts, the test counts, the MI of the changed production files, the
-   CRAP goals of their new and changed functions, the metrics step, the facts
-   to declare, the modules to compare, and the label command. Exit status 1
-   means that the check could not run: repair the cause.
+   the route, every reason, the questions for `CLARIFICATION_NEEDED`, the
+   changed paths, the line counts, the test counts, the MI of the changed
+   production files, the CRAP goals of their new and changed functions, the
+   metrics step, the facts to declare, the modules to compare, and the label
+   command. Exit status 1 means that the check could not run: repair the cause.
 2. **Declare or remove facts.** For each entry under "Facts to declare",
    remove the fact, for example by an import through a module that
    `public_surface` lists, or declare it in the rules file in the same pull
    request under the key that the entry names. Update the count and date
-   comments. That edit changes a protected path, so the route is `ASK`. A
-   forbidden edge, a new cycle, or a known cycle that grows has no entry:
-   remove the import. For each module under "Surface differences", compare
-   its exported declarations before and after the change, and describe the
-   difference in the decision. Run the check again.
+   comments. That edit changes a protected path, so the route is
+   `CLARIFICATION_NEEDED`. A forbidden edge, a new cycle, or a known cycle
+   that grows has no entry: remove the import. For each module under
+   "Surface differences", compare its exported declarations before and after
+   the change, and describe the difference in the decision. Run the check again.
 3. **Metrics.** After the final metrics report, run the check of step 1 with
    `--process` and `--review`. Read its reasons. A kept high finding on a
-   changed production file is `READ`. A failed or unavailable stage of the
-   process is `FIX`. A finding with the reason `unchanged by this PR` is not a
-   reason. A goal miss alone is not a reason: the check applies the MI rules
-   and the CRAP goals.
+   changed production file is `ARCHITECT_REVIEW_NEEDED`. A failed or
+   unavailable stage of the process is `FIX`. A finding with the reason
+   `unchanged by this PR` is not a reason. A goal miss alone is not a reason:
+   the check applies the MI rules and the CRAP goals.
 4. **Route.** A required check is a required run of the test gate policy, or
    habit-hooks. While one fails, the route is `FIX`. Do not mark a `FIX`
    pull request Ready: make the check pass, then run the check again. In
@@ -170,11 +175,12 @@ candidate.
    reason, not only the first.
 5. **Record.** Paste the output of the check of step 3 into a section "Review
    route" of the pull request description. Set the label with the printed
-   command. The labels `route:fix`, `route:ask`, `route:read`, `route:show`,
-   and `route:ship` exist in the repository. Update the section and the label
-   after each change to the candidate.
-6. **Decision.** For `ASK`, write the draft decision in the "Review route"
-   section. Answer the question of each matching group of `protected_paths`.
+   command. Use the labels `route:fix`, `route:clarification_needed`,
+   `route:architect_review_needed`, and `route:ship`. Update the section and
+   the label after each change to the candidate.
+6. **Decision.** For `CLARIFICATION_NEEDED`, write the draft decision in the
+   "Review route" section. Answer the question of each matching group of
+   `protected_paths`.
    State the guarantee that holds after the change. The owner decides
    whether the decision becomes a record under `architecture/decisions/`.
    A record has the name `YYYY-MM-DD-<topic>.md` and the headings Context,

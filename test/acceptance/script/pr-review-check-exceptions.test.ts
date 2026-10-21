@@ -15,7 +15,7 @@ function exceptionsFile(path: string, expires: string): string {
   return ['exceptions:', `  - path: ${path}`, '    metric: mi', '    bound: 80', '    reason: The parser keeps one table of rules.', `    expires: ${expires}`, ''].join('\n');
 }
 
-test('Given an exception entry with a bound of 80 and a future date for a new file at raw MI 82, when the check runs, then the FIX becomes a READ reason that names the entry', { timeout }, async (t) => {
+test('Given an exception entry with a bound of 80 and a future date for a new file at raw MI 82, when the check runs, then the FIX becomes an ARCHITECT_REVIEW_NEEDED reason that names the entry', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, startFiles);
   repository.commit('Add a module and its exception', { ...newModule, [exceptionsPath]: exceptionsFile('src/alpha/low.ts', '2999-12-31') });
   writeSnapshots(repository, {}, { 'src/alpha/low.ts': 82 });
@@ -23,11 +23,10 @@ test('Given an exception entry with a bound of 80 and a future date for a new fi
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'READ');
+  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    `- READ read_paths: ${exceptionsPath}`,
-    '- READ ratchet.exceptions: src/alpha/low.ts covered by "The parser keeps one table of rules." until 2999-12-31',
-    '- SHOW scopes.executable: 1 changed file',
+    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
+    '- ARCHITECT_REVIEW_NEEDED ratchet.exceptions: src/alpha/low.ts covered by "The parser keeps one table of rules." until 2999-12-31',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- new: src/alpha/low.ts: 82']);
   assert.equal(result.code, 0);
@@ -45,8 +44,7 @@ test('Given the same exception entry with a past date, when the check runs, then
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX ratchet.maintainability_index.new_file_below: src/alpha/low.ts: 82',
     '- FIX ratchet.exceptions.expired: src/alpha/low.ts',
-    `- READ read_paths: ${exceptionsPath}`,
-    '- SHOW scopes.executable: 1 changed file',
+    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
   ]);
   assert.equal(result.code, 0);
 });
@@ -59,7 +57,7 @@ test('Given an expired exception entry for a changed file and no snapshot option
 
   assert.equal(result.stderr, '');
   assert.equal(routeOf(result.stdout), 'FIX');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- FIX ratchet.exceptions.expired: src/alpha/parser.ts', '- SHOW scopes.executable: 1 changed file']);
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- FIX ratchet.exceptions.expired: src/alpha/parser.ts']);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- not checked: give --base-snapshot and --head-snapshot']);
   assert.equal(result.code, 0);
 });

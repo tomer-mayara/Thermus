@@ -12,7 +12,7 @@ import type { Declaration, Fact, Reason } from './types.ts';
 export type Analysis = ReturnType<typeof analysisOf>;
 
 // The rules of the merge base apply. The rules of HEAD only tell which dependency facts the candidate declares. Each
-// declared fact is ASK, so that a human reads it also when the change of the rules file is the only other reason.
+// declared fact is CLARIFICATION_NEEDED, so that a human reads it also when the change of the rules file is the only other reason.
 export function analysisOf(candidate: Candidate, rules: LoadedRules) {
   const paths = changedPathsOf(candidate.changes);
   const located = pathOutcome(candidate.changes, rules.base, rules.path);
@@ -26,7 +26,7 @@ export function analysisOf(candidate: Candidate, rules: LoadedRules) {
   return {
     reasons: [
       ...facts.fix.map(reasonOf), ...located.reasons,
-      ...declared.map((entry): Reason => ({ route: 'ASK', key: 'dependency_graph.declared', fact: `${entry.key}: ${entry.value}` })),
+      ...declared.map((entry): Reason => ({ route: 'CLARIFICATION_NEEDED', key: 'dependency_graph.declared', fact: `${entry.key}: ${entry.value}` })),
       ...surface, ...size.reasons, ...ratchet.reasons, ...crap.reasons, ...metrics.reasons,
     ],
     questions: [...new Map([...located.questions, ...contracts].map((entry) => [entry.key, entry] as const)).values()],

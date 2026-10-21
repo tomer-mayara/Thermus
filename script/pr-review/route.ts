@@ -16,5 +16,6 @@ export function labelCommand(route: Route, repository: string | undefined): stri
     ...(repository === undefined ? [] : [`--repo ${repository}`]),
     `--add-label ${label(route)}`,
     ...routes.filter((other) => other !== route).map((other) => `--remove-label ${label(other)}`),
+    ...['ask', 'read', 'show'].map((old) => `--remove-label route:${old}`),
   ].join(' ');
 }

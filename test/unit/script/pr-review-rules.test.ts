@@ -14,16 +14,16 @@ const triggers = [
 
 function documentOf() {
   return {
-    routes: { order: ['FIX', 'ASK', 'READ', 'SHOW', 'SHIP'] },
+    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIP'] },
     protected_paths: {
-      policy: { route: 'ASK', question: 'Who decides?', paths: ['AGENTS.md', '.github/**'] },
-      contracts: { route: 'ASK', question: 'What does a client see?', paths: ['src/index.ts'] },
+      policy: { route: 'CLARIFICATION_NEEDED', question: 'Who decides?', paths: ['AGENTS.md', '.github/**'] },
+      contracts: { route: 'CLARIFICATION_NEEDED', question: 'What does a client see?', paths: ['src/index.ts'] },
     },
-    read_paths: { route: 'READ', paths: ['.ast-metrics-baseline.yaml'], moved_by_stop_rule: ['src/a.ts'] },
-    scopes: { production: ['src/**'], executable: ['src/**', 'test/**'], generated: ['docs/metrics/**'] },
+    read_paths: { route: 'ARCHITECT_REVIEW_NEEDED', paths: ['.ast-metrics-baseline.yaml'], moved_by_stop_rule: ['src/a.ts'] },
+    scopes: { production: ['src/**'], generated: ['docs/metrics/**'] },
     size: {
       production_lines_read_above: 400, total_lines_read_above: 1500,
-      test_counts: { fewer_tests_than_base: 'READ', more_skipped_or_todo_than_base: 'READ' }, habit_hooks_snooze_non_empty: 'FIX',
+      test_counts: { fewer_tests_than_base: 'ARCHITECT_REVIEW_NEEDED', more_skipped_or_todo_than_base: 'ARCHITECT_REVIEW_NEEDED' }, habit_hooks_snooze_non_empty: 'FIX',
     },
     public_surface: {
       contract_documents: 'docs/reference/**',
@@ -58,7 +58,7 @@ test('Given a complete rules document, when it is read, then the check gets the 
   assert.equal(rules.policyQuestion, 'Who decides?');
   assert.equal(rules.contractsQuestion, 'What does a client see?');
   assert.deepEqual(rules.readPaths, ['.ast-metrics-baseline.yaml', 'src/a.ts']);
-  assert.deepEqual(rules.scopes, { production: ['src/**'], executable: ['src/**', 'test/**'], generated: ['docs/metrics/**'] });
+  assert.deepEqual(rules.scopes, { production: ['src/**'], generated: ['docs/metrics/**'] });
   assert.deepEqual(rules.limits, { production: 400, total: 1500 });
   assert.deepEqual(rules.surface, { modules: ['src/index.ts', 'src/auth/a.ts', 'src/http/b.ts', 'src/c.ts'], contractDocuments: ['docs/reference/**'] });
   assert.deepEqual(rules.graph.forbiddenEdges, [{ from: 'http', to: ['auth'] }, { from: 'auth', to: ['composition', 'mcp'] }]);
@@ -88,13 +88,13 @@ for (const [name, edit, message] of [
   ['with a builtin list that is not a list', (document: Document) => document.setIn(['dependency_graph', 'allowed_node_builtins', 'http'], 'node:http'), 'dependency_graph.allowed_node_builtins.http: give a list of text'],
   ['with a surface module that is not text', (document: Document) => document.setIn(['public_surface', 'between_packages', 'auth'], [1]), 'public_surface.between_packages.auth: give a list of text'],
   ['with contract documents that are not text', (document: Document) => document.setIn(['public_surface', 'contract_documents'], 3), 'public_surface.contract_documents: give a text or a list of text'],
-  ['with another route order', (document: Document) => document.setIn(['routes', 'order'], ['FIX', 'READ', 'ASK', 'SHOW', 'SHIP']), 'routes.order: give FIX, ASK, READ, SHOW, SHIP, the order that the check uses'],
-  ['with a protected group of another route', (document: Document) => document.setIn(['protected_paths', 'contracts', 'route'], 'READ'), 'protected_paths.contracts.route: give ASK, the route that the check uses'],
-  ['with read paths of another route', (document: Document) => document.deleteIn(['read_paths', 'route']), 'read_paths.route: give READ, the route that the check uses'],
-  ['with a trigger of another route', (document: Document) => document.setIn(['dependency_graph', 'triggers', 'forbidden_edge'], 'ASK'), 'dependency_graph.triggers.forbidden_edge: give FIX, the route that the check uses'],
-  ['with an unresolved import of another route', (document: Document) => document.setIn(['dependency_graph', 'counting', 'unresolved_relative_import'], 'READ'), 'dependency_graph.counting.unresolved_relative_import: give FIX, the route that the check uses'],
-  ['with a snooze file of another route', (document: Document) => document.setIn(['size', 'habit_hooks_snooze_non_empty'], 'READ'), 'size.habit_hooks_snooze_non_empty: give FIX, the route that the check uses'],
-  ['with fewer tests of another route', (document: Document) => document.setIn(['size', 'test_counts', 'fewer_tests_than_base'], 'FIX'), 'size.test_counts.fewer_tests_than_base: give READ, the route that the check uses'],
+  ['with another route order', (document: Document) => document.setIn(['routes', 'order'], ['FIX', 'ARCHITECT_REVIEW_NEEDED', 'CLARIFICATION_NEEDED', 'SHIP']), 'routes.order: give FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIP, the order that the check uses'],
+  ['with a protected group of another route', (document: Document) => document.setIn(['protected_paths', 'contracts', 'route'], 'ARCHITECT_REVIEW_NEEDED'), 'protected_paths.contracts.route: give CLARIFICATION_NEEDED, the route that the check uses'],
+  ['with read paths of another route', (document: Document) => document.deleteIn(['read_paths', 'route']), 'read_paths.route: give ARCHITECT_REVIEW_NEEDED, the route that the check uses'],
+  ['with a trigger of another route', (document: Document) => document.setIn(['dependency_graph', 'triggers', 'forbidden_edge'], 'CLARIFICATION_NEEDED'), 'dependency_graph.triggers.forbidden_edge: give FIX, the route that the check uses'],
+  ['with an unresolved import of another route', (document: Document) => document.setIn(['dependency_graph', 'counting', 'unresolved_relative_import'], 'ARCHITECT_REVIEW_NEEDED'), 'dependency_graph.counting.unresolved_relative_import: give FIX, the route that the check uses'],
+  ['with a snooze file of another route', (document: Document) => document.setIn(['size', 'habit_hooks_snooze_non_empty'], 'ARCHITECT_REVIEW_NEEDED'), 'size.habit_hooks_snooze_non_empty: give FIX, the route that the check uses'],
+  ['with fewer tests of another route', (document: Document) => document.setIn(['size', 'test_counts', 'fewer_tests_than_base'], 'FIX'), 'size.test_counts.fewer_tests_than_base: give ARCHITECT_REVIEW_NEEDED, the route that the check uses'],
   ['without the MI limit of a new file', (document: Document) => document.deleteIn(['ratchet', 'maintainability_index', 'new_file_below']), 'ratchet.maintainability_index.new_file_below: give a whole number, 0 or more'],
   ['with an MI drop that is a text', (document: Document) => document.setIn(['ratchet', 'maintainability_index', 'existing_file_drop_read_at'], 'five'), 'ratchet.maintainability_index.existing_file_drop_read_at: give a whole number, 0 or more'],
   ['without the CRAP goal of a new function', (document: Document) => document.deleteIn(['ratchet', 'crap', 'new_function_above']), 'ratchet.crap.new_function_above: give a whole number, 0 or more'],
@@ -114,10 +114,10 @@ for (const [name, edit, message] of [
 for (const pattern of ['{src,test}/**', 'src/[ab].ts', '!src/**', 'src\\a.ts', '/src/**', 'src/', 'src//a.ts', './src/**', 'src/../a.ts', 'src/./a.ts']) {
   test(`Given the pattern ${JSON.stringify(pattern)}, when the rules are read, then the diagnostic names the scope`, () => {
     const document = new Document(documentOf());
-    document.addIn(['scopes', 'executable'], pattern);
+    document.addIn(['scopes', 'production'], pattern);
 
     assert.throws(() => rulesOf(String(document), where), {
-      message: `${where} has no valid key scopes.executable: give repository paths with only **, * and ? as wildcards, not ${pattern}.`,
+      message: `${where} has no valid key scopes.production: give repository paths with only **, * and ? as wildcards, not ${pattern}.`,
     });
   });
 }
