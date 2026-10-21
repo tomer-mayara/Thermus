@@ -1,0 +1,13 @@
+{
+  "query": "consumer laptop 2026 for coding",
+  "requestedUrl": "https://search.brave.com/search?q=consumer+laptop+2026+for+coding",
+  "finalUrl": "https://search.brave.com/search?q=consumer+laptop+2026+for+coding",
+  "capturedAt": "2026-10-21T15:25:53.719Z",
+  "lightpandaVersion": "1.0.0",
+  "lightpandaSha256": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d",
+  "platform": "macOS ARM64",
+  "durationMs": 2440,
+  "htmlBytes": 396040,
+  "htmlSha256": "aef6be672fff0cc94f93555c1fb97bbb8793394738d7eadceda36a3e07ba4a5f",
+  "transformations": []
+}

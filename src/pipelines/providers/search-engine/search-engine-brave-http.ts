@@ -79,7 +79,8 @@ export class SearchEngineBraveHttp implements SearchEngine {
   private isWebResult(result: HtmlElement): boolean {
     const title = selectOne<HtmlNode, HtmlElement>('.result-content > a.l1[href] > .title.search-snippet-title', result);
     const content = selectOne<HtmlNode, HtmlElement>('.generic-snippet .content, '
-      + '.result-content > .video-snippet[data-macro="video"] > .content > .desktop-default-regular.line-clamp-2', result);
+      + '.result-content > .video-snippet[data-macro="video"] > .content > .desktop-default-regular.line-clamp-2, '
+      + '.result-content > .inline-qa-question', result);
     const link = title?.parent;
     const href = link && 'attribs' in link ? link.attribs.href : undefined;
     return Boolean(title && DomUtils.textContent(title).trim() && href?.trim() && content && DomUtils.textContent(content).trim());

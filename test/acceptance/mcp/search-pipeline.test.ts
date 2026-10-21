@@ -117,6 +117,37 @@ for (const edition of ['hosted', 'self-hosted'] as const) {
 }
 
 for (const edition of ['hosted', 'self-hosted'] as const) {
+  test(`Given ${edition} and the full inline question page, when an authorized client searches, then all organic results and question descriptions reach the client without answer widgets`, async (t) => {
+    const renderer = RendererProcessDouble.install(t);
+    const metadata = JSON.parse(fixture('brave-results-inline-qa.json')) as { query: string; requestedUrl: string; finalUrl: string };
+    renderer.serve(metadata.requestedUrl, { finalUrl: metadata.finalUrl, html: fixture('brave-results-inline-qa.html') });
+    const site = await openSearchSite(t, '2026-07-28', edition);
+
+    const result = await site.client.callTool({ name: 'search', arguments: { query: metadata.query, reason } });
+
+    assert.notEqual(result.isError, true);
+    assert.equal(result.structuredContent, undefined);
+    assert.equal(result.content.length, 1);
+    const content = result.content[0];
+    assert.equal(content.type, 'text');
+    if (content.type !== 'text') throw new Error('Expected Markdown');
+    const expected = JSON.parse(fixture('brave-results-inline-qa-expected.json')) as { title: string; url: string; snippet: string }[];
+    assert.equal(expected.length, 20);
+    assertCleanSearchResults(content.text, expected);
+    assert.doesNotMatch(content.text, /Top answer|1 of 2|2 of 2|Also you should be looking for laptops with support for thunderbolt 5|As someone who's recently been on a similar search/);
+    assert.equal(renderer.launches.length, 1);
+    const [completion] = site.completions();
+    assert.equal(site.completions().length, 1);
+    assert.equal(completion.status, 'success');
+    assert.deepEqual(site.stages().map(({ operationId, stepId, outcome }) => ({ operationId, stepId, outcome })), [
+      { operationId: completion.operationId, stepId: 'search.outgoing.observe_request', outcome: 'allowed' },
+      { operationId: completion.operationId, stepId: 'search.incoming.process_html', outcome: 'allowed' },
+    ]);
+    assert.doesNotMatch(site.records.join('\n'), /consumer laptop|Find sources|reddit\.com|GamingLaptops/);
+  });
+}
+
+for (const edition of ['hosted', 'self-hosted'] as const) {
   for (const era of mcpProtocolEras) {
     test(`Given ${edition} in ${era}, when an authorized client discovers and searches the captured Brave page, then guidance and all cleaned results reach the client with private correlated records`, async (t) => {
       const renderer = RendererProcessDouble.install(t);

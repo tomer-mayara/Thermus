@@ -138,3 +138,33 @@ test('Given the documented no-results derivative of the captured page, when the 
   assert.doesNotMatch(result.markdown ?? '', /Lightpanda \| The headless browser/);
   assert.deepEqual(page, original);
 });
+
+test('Given an inline question with ad targets, hidden text, and encoded controls, when the real engine and cleaners run, then safe question text survives without answers or unsafe fields', async () => {
+  const captured = new CapturedBraveResults();
+  const { document } = parseHTML(captured.page.html);
+  document.head.insertAdjacentHTML('beforeend', '<style>.search-test-hidden { display: none; }</style>');
+  const generic = document.querySelector('#mixed-main .snippet[data-type="web"] .generic-snippet');
+  assert.ok(generic);
+  const content = generic.querySelector('.content');
+  assert.ok(content);
+  const question = document.createElement('div');
+  question.className = 'inline-qa-question';
+  question.innerHTML = `<p>${content.innerHTML}</p><p>Question before&#x202e;after <a href="/question-details">Question details</a></p>`
+    + '<div class="search-test-hidden">search-test-hidden-instruction</div><div id="search-test-ad">search-test-ad-content</div>';
+  generic.replaceWith(question);
+  question.parentElement?.insertAdjacentHTML('afterend', '<div class="inline-qa"><div class="inline-qa-upvotes">42 votes</div><div class="inline-qa-answer">search-test-answer-content</div></div>');
+  const page = { ...captured.page, html: document.toString() };
+  const original = { ...page };
+
+  const result = await captured.clean(page, 'search.brave.com###search-test-ad');
+
+  assert.equal(result.scanWithholding, undefined);
+  captured.assertFidelity(result.markdown ?? '');
+  const rendered = parseHTML(`<html><body>${micromark(result.markdown ?? '')}</body></html>`).document;
+  const link = [...rendered.querySelectorAll('a')].find((anchor) => anchor.textContent === 'Question details');
+  assert.equal(link?.getAttribute('href'), 'https://search.brave.com/question-details');
+  assert.match(result.markdown ?? '', /Question beforeafter/);
+  assert.doesNotMatch(result.markdown ?? '', /search-test-hidden-instruction|search-test-ad-content|search-test-answer-content|42 votes|\u202e/);
+  assert.ok(result.found?.includes('cf-format'));
+  assert.deepEqual(page, original);
+});

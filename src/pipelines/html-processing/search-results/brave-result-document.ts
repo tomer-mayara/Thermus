@@ -49,7 +49,8 @@ export class BraveResultDocument {
     anchor.textContent = title;
     row.appendChild(anchor);
     const description = card.querySelector('.generic-snippet .content, '
-      + '.result-content > .video-snippet[data-macro="video"] > .content > .desktop-default-regular.line-clamp-2');
+      + '.result-content > .video-snippet[data-macro="video"] > .content > .desktop-default-regular.line-clamp-2, '
+      + '.result-content > .inline-qa-question');
     if (description) await this.appendDescription(description, row, base);
     return row;
   }

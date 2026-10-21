@@ -47,6 +47,11 @@ safe organic cards remain in source order. It adds no header, domain field,
 count limit, or deduplication. Dates already in selected descriptions remain
 literal text. Navigation, images, carousels, and other page widgets are excluded.
 Meaningful safe inline description links remain.
+Supported descriptions include generic snippets, video description text, and
+a direct `.result-content > .inline-qa-question` with nonblank text. Inline
+questions keep their timestamp and question paragraphs. Separate answer cards,
+vote counts, and top-answer labels are excluded. Each card still needs its
+standard nonblank title and destination before incoming cleaning.
 
 An explicit no-results page returns exactly `No search results.` after incoming
 processing allows it. A missing result structure or a challenge page is a search
@@ -168,8 +173,9 @@ Each proof has a specific scope:
 - Protected pipeline tests assert one engine call for incoming malformed and
   withholding outcomes. Public withholding tests assert one renderer launch.
 - The edition-by-era matrix checks tool behavior and destination strings.
-  Full captured-page integration, the video regression, and local runtime
-  cases check actual Markdown links and their descriptions through real cleaners.
+  Full captured-page integration, the video and inline-question regressions,
+  and local runtime cases check actual Markdown links and their descriptions
+  through real cleaners.
 - Controlled tests of the live assertion reject a result title paired only
   with an unrelated footer paragraph. This is proof of the assertion, not
   current access to Brave.
