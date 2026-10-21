@@ -82,6 +82,12 @@ public-error cases also check approved details and refuse appended private text,
 control characters, invalid HTTP status numbers, extra content, and details that
 appear only in metadata.
 
+The hung-request cases check that the selected request reached the site, then
+wait for its abort signal before checking exactly one abort. Child-process exit
+alone does not show that the server has processed the disconnect. The cases
+keep the 300 ms command deadline, the five-second test limit, and the check
+that a timed-out tool call is not repeated.
+
 `test/unit/script/fetch-url-public-failure.test.ts` checks every fixed public
 phrase and HTTP status from 400 to 599. It refuses malformed text, unknown
 launch codes, control characters, and private suffixes.
@@ -95,7 +101,11 @@ fake credentials and need no live provider or renderer.
 `test/acceptance/script/fetch-url-oauth.test.ts` adds process tests with a local
 TLS OAuth site and private credential directories. It checks browser sign-in,
 cached reuse, refresh, recovery markers, fresh login, logout, and refusal of
-bad metadata. `fetch-url-oauth-failures.test.ts` checks durable write order,
+bad metadata. The pending-browser timeout case uses a 150 ms authorization
+budget. The cancellation case uses the normal authorization budget so that
+setup can reach the browser before the test sends SIGTERM. Both cases keep
+the five-second test limit and must show that a later login can reuse the
+listener and lock. `fetch-url-oauth-failures.test.ts` checks durable write order,
 uncertain refresh outcomes, and explicit-credential isolation. The script unit
 files cover callback validation, token response validation, private file storage,
 durable replacement, and process locks. `fetch-url-browser.test.ts` reaches
