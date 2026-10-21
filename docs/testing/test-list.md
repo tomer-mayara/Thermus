@@ -3177,18 +3177,31 @@ network bypass. `npm run test:mcp:renderer` and the final phase of
 
 `test/acceptance/mcp/search-pipeline.live.ts` calls actual Brave through the
 production composition with a real local Better Auth token and pinned
-Lightpanda 1.0.0. It checks useful result titles, links, snippets, and safe
-correlated stage and completion records. A provider block or rate limit fails
-the proof. Only its dedicated command selects it; ordinary, offline, and
-container build gates exclude it:
+Lightpanda 1.0.0. It requires a useful external Lightpanda result link with
+description text in the same paragraph or the immediately following paragraph,
+without crossing another result or a section boundary. Link title text alone
+is not a description. It also checks safe correlated stage and completion
+records. A provider block or rate limit fails the proof. Only its dedicated
+command selects it; ordinary, offline, and container build gates exclude it:
 
 ```sh
 npm run test:mcp:search:live
 ```
 
-These two proofs have separate scopes. Record the command, date, pinned
-version, and tool result under SEARCH-06 before claiming either proof passed.
-A local fixture pass does not establish live Brave access.
+The [nine controlled assertion cases](../../test/unit/test-support/search-results.test.ts)
+use the [same shared assertion](../../test/support/dsl/search-results.ts) as
+the live proof. They accept descriptions in the same or next paragraph and
+reject unrelated footers, another result's description, Brave navigation,
+title-only descriptions, rule boundaries, and paragraphs with multiple result
+links. These cases check the assertion, not current Brave access.
+
+These two proofs have separate scopes. Follow the
+[live proof evidence policy](../implementation/test-gate-policy.md#live-brave-search-proof-search-06)
+for new dated evidence and preserve earlier records.
+[SEARCH-09](../implementation/search-09.md) records the stronger assertion,
+its dated live result, and final selected checks; [SEARCH-06](../implementation/search-06.md)
+retains the earlier runtime and live evidence. A local fixture pass does not
+establish live Brave access.
 
 **Renderer gate** (`test/acceptance/mcp/get-url-as-markdown.runtime.ts`)
 
