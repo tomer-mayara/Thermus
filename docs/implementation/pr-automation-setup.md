@@ -9,7 +9,10 @@ does not grant merge authority.
 
 [`pr-validation.yml`](../../.github/workflows/pr-validation.yml) runs with a
 read-only token and no repository secrets. It installs Node 24.20.0, pnpm
-12.10.1, and habit-hooks 1.3.1. It runs whitespace checks, habit-hooks, and the
+12.10.1, and habit-hooks core, TypeScript, and generic plugins at 1.3.1. The
+workflow constrains the plugin packages during installation: pinning only the
+core permits newer plugin versions with an incompatible sensor format.
+It runs whitespace checks, habit-hooks, and the
 available selected tests:
 
 - Ordinary prose needs no executable suite.

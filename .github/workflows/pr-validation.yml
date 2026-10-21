@@ -26,7 +26,10 @@ jobs:
           node-version: 24.20.0
       - run: npm install --global pnpm@12.10.1
       - run: pnpm install --frozen-lockfile
-      - run: pipx install 'habit-hooks[typescript]==1.3.1'
+      - name: Install matching habit-hooks plugins
+        run: |
+          printf '%s\n' 'habit-hooks-typescript==1.3.1' 'habit-hooks-generic==1.3.1' > "$RUNNER_TEMP/habit-hooks-constraints.txt"
+          pipx install 'habit-hooks[typescript]==1.3.1' --pip-args="--constraint $RUNNER_TEMP/habit-hooks-constraints.txt"
       - name: Run the available selected checks
         env:
           THERMUS_BASE_SHA: ${{ github.event.pull_request.base.sha }}
