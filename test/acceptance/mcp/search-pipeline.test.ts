@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseHTML } from 'linkedom';
-import { micromark } from 'micromark';
 import { readFileSync } from 'node:fs';
 import { openSearchSite } from '../../support/in-process/mcp-search-site.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
@@ -9,6 +7,7 @@ import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts'
 import { RendererProcessDouble } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { HiddenHtmlScanner } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/hidden-html-scanner.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
+import { assertCleanSearchResults } from '../../support/dsl/search-results.ts';
 
 const reason = 'Find sources for this task';
 const boundedSearchSchema = {
@@ -66,45 +65,56 @@ const fetchDescription = 'Fetch a known web page URL as Markdown. For web search
 const searchUrl = 'https://search.brave.com/search?q=private-acceptance-query';
 const fixture = (name: string) => readFileSync(new URL(`test/support/fixtures/search-engine/${name}`, repositoryRoot), 'utf8');
 
-test('Given the captured Brave page with a video result, when an authorized MCP client searches, then all eighteen cleaned result links, titles, and descriptions reach the client in order', async (t) => {
+test('Given a results page whose web cards are all hidden, when an authorized client searches, then processing fails without releasing chrome or claiming no results', async (t) => {
   const renderer = RendererProcessDouble.install(t);
-  const metadata = JSON.parse(fixture('brave-results-video.json')) as { query: string; requestedUrl: string; finalUrl: string };
-  renderer.serve(metadata.requestedUrl, { finalUrl: metadata.finalUrl, html: fixture('brave-results-video.html') });
+  const original = fixture('brave-results.html');
+  const html = original.replace('</head>', '<style>.snippet[data-type="web"] { display: none; }</style></head>');
+  assert.notEqual(html, original);
+  renderer.serve(searchUrl, { finalUrl: searchUrl, html });
   const site = await openSearchSite(t, '2026-07-28', 'self-hosted');
 
-  const result = await site.client.callTool({ name: 'search', arguments: { query: metadata.query, reason } });
+  const result = await site.client.callTool({ name: 'search', arguments: { query: 'private-acceptance-query', reason } });
 
-  assert.notEqual(result.isError, true);
-  assert.equal(result.content.length, 1);
-  const content = result.content[0];
-  assert.equal(content.type, 'text');
-  if (content.type !== 'text') throw new Error('Expected Markdown');
-  const document = parseHTML(`<html><body>${micromark(content.text)}</body></html>`).document;
-  const text = document.body.textContent.replace(/\s+/g, ' ').trim();
-  const links = [...document.querySelectorAll('a[href]')];
-  const expected = JSON.parse(fixture('brave-results-video-expected.json')) as { title: string; url: string; snippet: string }[];
-  assert.equal(expected.length, 18);
-  let previousLink = -1;
-  let previousText = -1;
-  for (const entry of expected) {
-    const position = links.findIndex((link, index) => index > previousLink && link.getAttribute('href') === entry.url
-      && link.textContent.replace(/\s+/g, ' ').trim().includes(entry.title));
-    assert.ok(position > previousLink, `Missing or reordered result link: ${entry.title}`);
-    const titlePosition = text.indexOf(entry.title, previousText + 1);
-    assert.ok(titlePosition > previousText, `Missing or reordered title: ${entry.title}`);
-    const snippetPosition = text.indexOf(entry.snippet, titlePosition + entry.title.length);
-    assert.ok(snippetPosition >= 0, `Missing result description: ${entry.title}`);
-    previousLink = position;
-    previousText = snippetPosition;
-  }
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent, undefined);
+  assert.deepEqual(result.content, [{ type: 'text', text: 'Search processing failed' }]);
   assert.equal(renderer.launches.length, 1);
   assert.equal(site.completions().length, 1);
-  assert.equal(site.completions()[0].status, 'success');
+  assert.equal(site.completions()[0].status, 'processing_failed');
   assert.deepEqual(site.stages().map(({ stepId, outcome }) => ({ stepId, outcome })), [
     { stepId: 'search.outgoing.observe_request', outcome: 'allowed' },
     { stepId: 'search.incoming.process_html', outcome: 'allowed' },
   ]);
+  assert.doesNotMatch(site.records.join('\n'), /private-acceptance-query|Lightpanda \| The headless browser/);
 });
+
+for (const edition of ['hosted', 'self-hosted'] as const) {
+  test(`Given ${edition} and the full video-result page, when an authorized client searches, then only numbered organic results with associated descriptions reach the client`, async (t) => {
+    const renderer = RendererProcessDouble.install(t);
+    const metadata = JSON.parse(fixture('brave-results-video.json')) as { query: string; requestedUrl: string; finalUrl: string };
+    renderer.serve(metadata.requestedUrl, { finalUrl: metadata.finalUrl, html: fixture('brave-results-video.html') });
+    const site = await openSearchSite(t, '2026-07-28', edition);
+
+    const result = await site.client.callTool({ name: 'search', arguments: { query: metadata.query, reason } });
+
+    assert.notEqual(result.isError, true);
+    assert.equal(result.structuredContent, undefined);
+    assert.equal(result.content.length, 1);
+    const content = result.content[0];
+    assert.equal(content.type, 'text');
+    if (content.type !== 'text') throw new Error('Expected Markdown');
+    const expected = JSON.parse(fixture('brave-results-video-expected.json')) as { title: string; url: string; snippet: string }[];
+    assert.equal(expected.length, 18);
+    assertCleanSearchResults(content.text, expected);
+    assert.equal(renderer.launches.length, 1);
+    assert.equal(site.completions().length, 1);
+    assert.equal(site.completions()[0].status, 'success');
+    assert.deepEqual(site.stages().map(({ stepId, outcome }) => ({ stepId, outcome })), [
+      { stepId: 'search.outgoing.observe_request', outcome: 'allowed' },
+      { stepId: 'search.incoming.process_html', outcome: 'allowed' },
+    ]);
+  });
+}
 
 for (const edition of ['hosted', 'self-hosted'] as const) {
   for (const era of mcpProtocolEras) {
@@ -126,16 +136,8 @@ for (const edition of ['hosted', 'self-hosted'] as const) {
       assert.equal(content.type, 'text');
       if (content.type !== 'text') throw new Error('Expected Markdown');
       const expected = JSON.parse(fixture('brave-results-expected.json')) as { title: string; url: string; snippet: string }[];
-      const rendered = parseHTML(`<html><body>${micromark(content.text)}</body></html>`).document;
-      const visibleText = rendered.body.textContent.replace(/\s+/g, ' ').trim();
-      let previous = -1;
-      for (const entry of expected) {
-        const position = content.text.indexOf(entry.title, previous + 1);
-        assert.ok(position > previous, `Missing or reordered result: ${entry.title}`);
-        assert.ok(content.text.includes(entry.url), `Missing result destination: ${entry.url}`);
-        assert.ok(visibleText.includes(entry.snippet), `Missing result snippet: ${entry.title}`);
-        previous = position;
-      }
+      assert.equal(expected.length, 18);
+      assertCleanSearchResults(content.text, expected);
       assert.equal(renderer.launches.length, 1);
       const [completion] = site.completions();
       assert.equal(site.completions().length, 1);

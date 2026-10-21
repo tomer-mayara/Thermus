@@ -8,6 +8,7 @@ import { CleanHtmlAdsAdblockRs } from '../../../src/html-cleaner-pipeline/ad-cle
 import { PromptInjectionRemoverSanitizer } from '../../../src/html-cleaner-pipeline/prompt-injection-remover/prompt-injection-remover-sanitizer.ts';
 import { CleanHtmlToMarkdownDefuddle } from '../../../src/html-cleaner-pipeline/html-to-markdown/clean-html-to-markdown-defuddle.ts';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
+import { BraveHTTPResultCleanup } from '../../../src/html-cleaner-pipeline/search-results/brave-http-result-cleanup.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
@@ -34,6 +35,7 @@ class CapturedBraveResults {
     const pipeline = new HtmlToMarkdownPipeline([
       new CleanHtmlAdsAdblockRs(rules),
       new PromptInjectionRemoverSanitizer(),
+      new BraveHTTPResultCleanup(),
       new CleanHtmlToMarkdownDefuddle({ preserveSearchResults: true }),
     ]);
     return pipeline.process(document.page);
@@ -73,6 +75,10 @@ test('Given the full captured Brave results page, when the real engine and incom
   assert.equal(result.scanWithholding, undefined);
   assert.equal(typeof result.markdown, 'string');
   captured.assertFidelity(result.markdown ?? '');
+  const rendered = parseHTML(`<html><body>${micromark(result.markdown ?? '')}</body></html>`).document;
+  assert.equal(rendered.querySelectorAll('body > ol').length, 1);
+  assert.equal(rendered.querySelectorAll('body > ol > li').length, 18);
+  assert.equal(rendered.querySelector('img'), null);
   assert.deepEqual(captured.page, original);
 });
 
@@ -121,6 +127,7 @@ test('Given the documented no-results derivative of the captured page, when the 
   const pipeline = new HtmlToMarkdownPipeline([
     new CleanHtmlAdsAdblockRs(''),
     new PromptInjectionRemoverSanitizer(),
+    new BraveHTTPResultCleanup(),
     new CleanHtmlToMarkdownDefuddle({ preserveSearchResults: true }),
   ]);
 

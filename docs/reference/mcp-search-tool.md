@@ -41,9 +41,18 @@ go to the search engine or appear in search completion records.
 ## Results and failures
 
 A successful call returns one text content item with the exact Markdown.
-It adds no title, footer, JSON wrapper, or structured content. An explicit
-no-results page returns exactly `No search results.` after incoming processing
-allows it. A missing result structure or a challenge page is a search failure.
+It adds no title, footer, JSON wrapper, or structured content. Result Markdown
+contains numbered title links with optional surviving descriptions. All eligible
+safe organic cards remain in source order. It adds no header, domain field,
+count limit, or deduplication. Dates already in selected descriptions remain
+literal text. Navigation, images, carousels, and other page widgets are excluded.
+Meaningful safe inline description links remain.
+
+An explicit no-results page returns exactly `No search results.` after incoming
+processing allows it. A missing result structure or a challenge page is a search
+failure. A card with a blank sanitized title or invalid primary destination is
+excluded; a removed optional description does not exclude its card. No eligible
+cards on a results page causes a processing failure, not a no-results response.
 
 | Outcome | Text and completion status |
 | --- | --- |
@@ -114,10 +123,15 @@ and have the supported containment. A no-results page with a known result
 marker anywhere in the document fails instead of claiming absence. Ordinary
 footer links and generic footer data attributes do not imply search results.
 
-Incoming processing applies the shared ad cleaner and sanitizer, then a
-separate Defuddle converter with result preservation enabled. It fetches no
-result links. The public Brave website needs no API key. It can refuse or
-rate-limit requests; this adapter does not retry around a challenge.
+Incoming processing applies the shared ad cleaner and sanitizer to the full
+page before `BraveHTTPResultCleanup` selects result fields and builds result-only
+HTML. A separate Defuddle converter then runs with result preservation enabled,
+including its existing decoded-text and final-output sanitation. Cleanup
+sanitizes decoded required fields before selecting cards and resolves permitted
+primary and description links to absolute HTTP(S) URLs. It fetches no result
+links. Known scan withholding remains authoritative, and provider no-results
+handling stays after incoming processing. The public Brave website needs no
+API key. It can refuse or rate-limit requests; this adapter does not retry around a challenge.
 
 `fetchToolServers(operations, logger)` supplies both operations to each
 request server. Hosted fetch and search use one capacity owner for the full
