@@ -68,6 +68,288 @@ importing only neutral roles. The [review rules](../docs/implementation/pr-revie
 and generated metrics reports provide the complete import view; this diagram
 does not duplicate it.
 
+## arc42 building-block view
+
+This section uses the static decomposition described by
+[arc42 section 5](https://docs.arc42.org/section-5/): a whole-system view and
+selected deeper views. The [Ownership](#ownership) table supplies each component's
+responsibility, public boundary, and source location. The diagrams add structure
+and selected dependencies; they are not a complete import graph.
+
+### Level 1: Thermus whitebox
+
+All 19 stable component IDs appear below. A subgraph contains logical building
+blocks; it does not add a source owner. The browser boundary separates browser
+code from server code. The server / command group locates source for alternative
+entry paths; its contents do not all run in one process. These groups do not
+prescribe separate deployments. `app` selects and constructs the server
+collaborators; the wide composition access is stated here instead of drawn as
+an arrow to every component.
+
+Solid arrows in this overview mean a selected source dependency, including type
+imports. They point from the importer to the owner of the imported module.
+Dependencies on injected roles point to the component that defines the role,
+not to the selected implementation. The labelled browser arrow is an HTTP
+contract, not a source import. The two refinements below separate role use,
+implementation, and composition in more detail. Omitted arrows do not imply
+that an import or collaboration is forbidden; the review rules give that check.
+
+```mermaid
+flowchart TB
+  subgraph arc_browser["Browser"]
+    arc_portal["user-portal"]
+  end
+  subgraph arc_server["Thermus server / local commands"]
+    subgraph arc_composition["Composition and support"]
+      arc_app["app"]
+      arc_config["config"]
+      arc_http["http"]
+      arc_logging["logging"]
+    end
+    subgraph arc_adapters["Request adapters"]
+      arc_mcp["mcp"]
+      arc_web["web"]
+      arc_cli["cli"]
+    end
+    subgraph arc_accounts["Account rules and roles"]
+      arc_identity["identity"]
+      arc_orgs["organizations"]
+      arc_billing["billing"]
+    end
+    subgraph arc_auth["Alternative authentication providers"]
+      arc_workos["workos · hosted"]
+      arc_better["better-auth · local"]
+    end
+    subgraph arc_tools["Tool operations and processing"]
+      arc_fetch["page-fetch"]
+      arc_search["search"]
+      arc_execution["execution"]
+      arc_html["html-processing"]
+    end
+    subgraph arc_content["Page and search adapters"]
+      arc_engine["search-engine"]
+      arc_fetcher["website-fetcher"]
+    end
+  end
+  arc_portal -->|HTTP routes| arc_web
+  arc_app --> arc_config
+  arc_app --> arc_http
+  arc_app --> arc_logging
+  arc_app --> arc_mcp
+  arc_app --> arc_web
+  arc_mcp --> arc_fetch
+  arc_mcp --> arc_search
+  arc_fetch --> arc_fetcher
+  arc_mcp --> arc_identity
+  arc_web --> arc_orgs
+  arc_cli --> arc_identity
+  arc_orgs --> arc_identity
+  arc_orgs --> arc_billing
+  arc_workos --> arc_identity
+  arc_workos --> arc_orgs
+  arc_better --> arc_identity
+  arc_fetch --> arc_execution
+  arc_search --> arc_execution
+  arc_search --> arc_engine
+  arc_html --> arc_execution
+  arc_engine --> arc_fetcher
+```
+
+The browser portion of `user-portal` uses server routes through HTTP. Its Vite
+configuration is build-time Node code, not browser access to server modules.
+[HostedPortal](../src/app/hosted-portal.ts) loads the built assets. The overview
+shows selected dependencies across component boundaries, not every sibling
+relationship or external library.
+
+### Level 2: refinement of tool operations and processing
+
+This whitebox refines `page-fetch`, `search`, `execution`, `html-processing`,
+`search-engine`, and `website-fetcher`. Boxes within an owner are private parts
+or public contracts of that owner, not new component IDs. Solid arrows labelled
+`uses` mean dependency on a supplied role or a directly held collaborator.
+Dotted `implements` arrows point from an implementation to its contract.
+Thick `constructs / supplies` arrows are composition by `app`; they do not
+mean that the recipient imports app or the concrete provider.
+
+```mermaid
+flowchart TB
+  tool_root["app / fetch-tool.ts<br/>shared tool composition"]
+  subgraph tool_fetch_owner["page-fetch"]
+    tool_fetch["createFetchPage<br/>permission · URL · outcomes"]
+  end
+  subgraph tool_search_owner["search"]
+    tool_search["SearchPipeline<br/>permission · query · outcomes"]
+  end
+  subgraph tool_execution_owner["execution"]
+    tool_steps["OutgoingStep / IncomingStep<br/>execute → allow or block"]
+    tool_observer["ObserveRequestStep"]
+    tool_records["ExecutionContext / StepRecordSink"]
+  end
+  subgraph tool_html_owner["html-processing"]
+    tool_process["ProcessHtmlStep"]
+    tool_runner["HtmlToMarkdownPipeline<br/>fresh HtmlProcessingContext"]
+    tool_transforms["HtmlTransformation.invoke<br/>ads · sanitizer · optional Brave projection<br/>Markdown converter"]
+  end
+  subgraph tool_engine_owner["search-engine"]
+    tool_engine_role["SearchEngine"]
+    tool_brave["SearchEngineBraveHttp"]
+  end
+  subgraph tool_fetcher_owner["website-fetcher"]
+    tool_fetch_role["WebsiteFetcher"]
+    tool_lightpanda["WebsiteFetcherLightpanda<br/>destination and process limits"]
+  end
+  tool_child["Lightpanda child<br/>one per fetch"]
+  tool_web(["Public pages / Brave HTML"])
+  tool_root ==>|constructs / supplies| tool_fetch
+  tool_root ==>|constructs / supplies| tool_search
+  tool_root ==>|constructs / supplies| tool_process
+  tool_fetch -->|uses| tool_steps
+  tool_search -->|uses| tool_steps
+  tool_fetch -->|uses| tool_records
+  tool_search -->|uses| tool_records
+  tool_observer -.->|implements OutgoingStep| tool_steps
+  tool_process -.->|implements IncomingStep| tool_steps
+  tool_process -->|uses| tool_runner
+  tool_runner -->|uses ordered transformations| tool_transforms
+  tool_fetch -->|uses| tool_fetch_role
+  tool_search -->|uses| tool_engine_role
+  tool_brave -.->|implements| tool_engine_role
+  tool_brave -->|uses| tool_fetch_role
+  tool_lightpanda -.->|implements| tool_fetch_role
+  tool_lightpanda -->|starts and bounds| tool_child
+  tool_child -->|loads pages| tool_web
+```
+
+The last two arrows mark the adapter's external boundary, not TypeScript
+imports. [Tool composition](../src/app/fetch-tool.ts) constructs one fetcher,
+ad cleaner, sanitizer, observer, record sink, and renderer-report closures for
+both operations. It supplies these objects through the roles above. Each tool
+has its own `ProcessHtmlStep`, HTML runner, and Markdown converter. Fetch uses
+ads → sanitizer → Markdown; search adds Brave projection before Markdown.
+[PipelineStep](../src/pipelines/execution/pipeline-step.ts) and
+[HtmlTransformation](../src/pipelines/html-processing/html-to-markdown-pipeline.ts)
+are distinct contracts. There is no shared generic pipeline engine.
+
+Each operation has fresh execution and HTML context. Hosted composition wraps
+both operations in one application-wide capacity slot. The
+[Lightpanda adapter](../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts)
+owns each child until completion or cancellation. These lifetimes explain
+sharing inside this static decomposition; the Runtime view describes calls.
+
+### Level 2: refinement of accounts and browser authentication
+
+The two whiteboxes below refine the account/provider groups and their request
+adapters for the hosted and local authentication editions.
+Solid `uses` arrows name required contracts. Dotted `implements` arrows point
+from providers to neutral contracts; the contracts do not depend on providers.
+Thick composition arrows mark app's selection and binding of one edition.
+The direct WorkOS web dependency is explicit because browser authentication is
+only partly provider-neutral.
+
+#### Hosted edition
+
+```mermaid
+flowchart TB
+  account_root["app<br/>hosted composition"]
+  subgraph account_identity_owner["identity"]
+    account_access["IdentityVerifier / AccessResolver<br/>trusted access records"]
+    account_browser["BrowserSession"]
+  end
+  subgraph account_org_owner["organizations"]
+    account_admin["OrganizationAdministration<br/>roles · MFA · changes · seat count"]
+    account_directory["OrganizationDirectory"]
+  end
+  subgraph account_billing_owner["billing"]
+    account_billing_role["Billing / BillingFree"]
+  end
+  subgraph account_web_owner["web"]
+    account_routes["HostedAccountRoutes"]
+    account_workos_routes["WorkOS session / signup routes"]
+  end
+  account_mcp["mcp / MCPServer"]
+  subgraph account_workos_owner["workos · hosted alternative"]
+    account_workos_access["WorkOSAuthProvider"]
+    account_workos_directory["WorkOSOrganizations"]
+    account_workos_session["WorkOSBrowserSession"]
+    account_workos_signup["WorkOSSignup / signup contracts"]
+  end
+  account_workos_external(["WorkOS / AuthKit<br/>remote identity and organizations"])
+  account_root ==>|constructs / supplies hosted roles| account_workos_owner
+  account_mcp -->|uses| account_access
+  account_routes -->|uses| account_access
+  account_routes -->|uses| account_browser
+  account_routes -->|uses| account_admin
+  account_admin -->|uses| account_directory
+  account_admin -->|uses| account_billing_role
+  account_workos_access -.->|implements| account_access
+  account_workos_directory -.->|implements| account_directory
+  account_workos_session -.->|implements BrowserSession| account_browser
+  account_workos_routes -->|uses provider session roles| account_workos_session
+  account_workos_routes -->|uses signup contracts| account_workos_signup
+  account_workos_owner -->|SDK / key-set boundary| account_workos_external
+```
+
+#### Local edition
+
+The local alternative repeats the neutral identity roles. The web-owned
+`ProviderHandler` is a function contract; app supplies the runtime handler.
+This binding is not a source dependency from web to the provider.
+
+```mermaid
+flowchart TB
+  local_root["app / local composition and CLI entry"]
+  subgraph local_identity_owner["identity"]
+    local_access["IdentityVerifier / AccessResolver"]
+    local_admin_role["LocalUserAdministration"]
+  end
+  subgraph local_web_owner["web"]
+    account_local_pages["LocalAuthPages"]
+    account_local_handler["ProviderHandler<br/>Request → Promise of Response"]
+  end
+  account_cli["cli / local-auth-command.ts"]
+  local_mcp["mcp / MCPServer"]
+  subgraph account_better_owner["better-auth"]
+    account_better_access["BetterAuthProvider"]
+    account_better_admin["BetterAuthUserAdministration"]
+    account_better_runtime["Better Auth runtime / installation"]
+  end
+  account_local_data[("Local auth data<br/>SQLite · secret · client record")]
+  local_root ==>|opens / supplies local roles| account_better_owner
+  local_root ==>|binds local handler| account_local_handler
+  local_mcp -->|uses| local_access
+  account_cli -->|uses| local_admin_role
+  account_local_pages -->|uses| account_local_handler
+  account_better_access -.->|implements| local_access
+  account_better_admin -.->|implements| local_admin_role
+  account_better_runtime -->|owns open resources| account_local_data
+```
+
+The two external-boundary arrows describe service/storage access, not imports.
+[Hosted composition](../src/app/hosted-workos-application.ts) shares a WorkOS
+SDK client, key-set resolver, and directory. It supplies that directory to
+access resolution and account administration, and selects `BillingFree`.
+The [provider](../src/accounts/providers/workos/workos-auth-provider.ts)
+implements identity verification and access resolution;
+[WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
+implements the directory. Account administration depends on those neutral
+roles, not WorkOS classes. WorkOS-specific web routes use provider session,
+signup, cookie, and document contracts directly.
+[LocalAuthPages](../src/interfaces/web/auth/better-auth/local-auth-pages.ts)
+imports the web-owned `ProviderHandler` contract from
+[local-auth-provider-routes.ts](../src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts).
+It has no source dependency on the Better Auth runtime: app binds
+`runtime.auth.handler` to that function contract.
+
+[Application composition](../src/app/application.ts) uses edition-specific
+dynamic imports. The local edition supplies a Better Auth handler to local
+pages and a verifier/resolver to MCP; it does not construct hosted organization
+administration. Local CLI administration is a separate open/close path using
+the neutral administration role. The
+[Better Auth runtime](../src/accounts/providers/better-auth/better-auth-runtime.ts)
+owns its database and data-directory lock until app or CLI closure. App closes
+request work before provider resources. HTTP listener drain and logging sinks
+remain the support responsibilities shown at level 1.
+
 ## Ownership
 
 The 19 IDs below are stable logical component names. Each root owns its source
