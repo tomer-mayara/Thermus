@@ -7,13 +7,7 @@
 
 # Tests
 
-## Component boundaries and execution records
-
-`test/acceptance/architecture/component-context-boundaries.test.ts` checks the
-merged server-web owner, exact WorkOS role/helper access, composition-only
-construction, and browser runtime versus Vite/declaration contexts. Existing
-auth, page-fetch, search, and test-layout specifications retain old-path guards
-and protect the moved paths through the shared component policy.
+## Execution records
 
 `test/unit/execution/step-record.test.ts` checks finite step IDs and duration.
 Account routes in `test/integration/hosted-admin/` and session routes in
@@ -88,69 +82,14 @@ results and limits. SEARCH-05 adds the public search proofs above.
 
 ## MCP fetch debug command
 
-`test/unit/script/fetch-url.test.ts` checks CLI input, help, credential input,
-and the stdin deadline. `test/acceptance/script/fetch-url.test.ts` runs the actual
-script against an MCP SDK server through the production HTTP bridge. It checks
-exact and empty Markdown, the `getURLAsMarkdown` arguments, environment and stdin
-credentials, modern JSON and SSE, legacy negotiation, refused authentication,
-HTTP failures, failed and unexpected tool results, exact public failure messages
-without private metadata or extra content, invalid protocol data,
-connection failures, redirects, and cancellation of hung requests. The changed
-public-error cases also check approved details and refuse appended private text,
-control characters, invalid HTTP status numbers, extra content, and details that
-appear only in metadata.
-
-The hung-request cases check that the selected request reached the site, then
-wait for its abort signal before checking exactly one abort. Child-process exit
-alone does not show that the server has processed the disconnect. The cases
-keep the 300 ms command deadline, the five-second test limit, and the check
-that a timed-out tool call is not repeated.
-
-`test/unit/script/fetch-url-public-failure.test.ts` checks every fixed public
-phrase and HTTP status from 400 to 599. It refuses malformed text, unknown
-launch codes, control characters, and private suffixes.
 `test/acceptance/script/fetch-url-failure-details.test.ts` runs the actual CLI
 against the real fetch operation and MCP tool, with a fetcher double. It checks
 HTTP 429, readiness timeout, DNS failure, and unknown-error fallback, with no
 private data, partial output, HTML processing, or changed completion status.
-The focused changed tests and the full ordinary suite passed. All use local
-fake credentials and need no live provider or renderer.
-
-`test/acceptance/script/fetch-url-oauth.test.ts` adds process tests with a local
-TLS OAuth site and private credential directories. It checks browser sign-in,
-cached reuse, refresh, recovery markers, fresh login, logout, and refusal of
-bad metadata. The pending-browser timeout case uses a 150 ms authorization
-budget. The cancellation case uses the normal authorization budget so that
-setup can reach the browser before the test sends SIGTERM. Both cases keep
-the five-second test limit and must show that a later login can reuse the
-listener and lock. `fetch-url-oauth-failures.test.ts` checks durable write order,
-uncertain refresh outcomes, and explicit-credential isolation. The script unit
-files cover callback validation, token response validation, private file storage,
-durable replacement, and process locks. `fetch-url-browser.test.ts` reaches
-callback validation through `browserAuthorization()` and HTTP requests. It also
-checks the actual OS opener failure and successful manual callback.
-`fetch-url-oauth.test.ts` reaches token validation through `prepareOAuth()` and
-checks the saved credentials. Its clock changes when the token response arrives,
-so the expiry must still use the request start. The private
-`test/unit/script/fixtures/browser-callback-harness.ts` reserves callback ports
-and observes callback responses for these two unit files. The private
-`test/unit/script/fixtures/oauth-login-harness.ts` sets up login with a token
-response and reads the saved credentials for the 11 OAuth unit scenarios.
-`test/support/processes/oauth-store-process.ts` keeps the intentional crash at
-the marker, ready, and temporary-write boundaries. Under coverage it prepares
-`THERMUS_COVERAGE_SEAL_NONCE` and seals synchronously before blocking without
-adding an IPC listener, then the parent verifies the
-SIGKILL receipt. The temporary-write fault intercepts only the actual grant-file
-rename; capture marker renames pass through. The credential-state and
-forced-exit assertions remain intact. This is not limited to an event-loop IPC
-seal and does not by itself prove full-suite capture.
-`test/interface/script/fetch-url-oauth.test.ts` checks the pinned SDK's metadata
-boundary through `prepareOAuth()` with expired saved credentials and a fetch
-spy. It preserves the strict resource, issuer, endpoint, and PKCE requirements
-and checks that failed discovery makes no token request.
+The cases use local fake credentials and need no live provider or renderer.
 
 ```sh
-npm run build && node --test "dist/test/unit/script/*.test.js" "dist/test/interface/script/*.test.js" "dist/test/acceptance/script/*.test.js"
+npm run build && node --test dist/test/acceptance/script/fetch-url-failure-details.test.js
 ```
 
 Two dedicated Staging proofs use the first-party Public Connect application.
@@ -177,1048 +116,6 @@ See [the script guide](../../script/README.md) for use and the
 [OAuth implementation record](../implementation/mcp-fetch-debug-oauth-plan.md)
 for configuration and validation results.
 
-## MCP search debug command
-
-`test/acceptance/script/search.test.ts` runs the source CLI against a local MCP
-SDK server through the production HTTP bridge. It checks exact query and reason
-text, scalar limits, exact and empty Markdown, no results, environment and stdin
-Bearer input, modern JSON/SSE and legacy negotiation, safe failures, refused
-HTTP requests, redirects, deadlines, and cancellation.
-
-`test/acceptance/script/search-oauth.test.ts` checks saved-token reuse through a
-private grant and injected test profile. It also checks browser login through
-the local TLS OAuth site, reuse by fetch, and shared local logout. These cases
-prove command wiring. Existing fetch OAuth tests retain the detailed refresh,
-storage, and callback proofs. No live hosted service or renderer is needed.
-
-`test/unit/script/search.test.ts` checks help, argument refusal, explicit
-credentials, custom endpoint restrictions, and non-interactive login guidance.
-`search-input.test.ts` checks query scalar and reason code point boundaries,
-including lone query surrogates. `search-public-failure.test.ts` checks the
-fixed search error phrases, all failed HTTP statuses, and malformed or private
-error text. The run-time path test includes the source search command and its
-OAuth test entry.
-
-```sh
-npm run build && node --test "dist/test/unit/script/search*.test.js" "dist/test/acceptance/script/search*.test.js" dist/test/unit/test-support-paths.test.js
-```
-
-The [script guide](../../script/README.md#search-through-mcp) gives command use.
-The [MCP search contract](../reference/mcp-search-tool.md#debug-command) gives
-inputs, results, and allowed public failures.
-
-## ast-metrics commands
-
-`test/acceptance/script/script-readme.test.ts` checks the actual help of every
-code-quality entry point in knip. With an empty PATH and a preload that refuses
-all child-process APIs, help starts no tool, Git command, build, or suite.
-The contracts normalize `node` and `pnpm exec node`, whitespace, wrapped options,
-and multiple synopses. They compare each option and its declared default,
-including defaults delegated to ast-metrics. Fixture documents check missing
-and extra synopses and options, changed option and argument defaults, missing delegation, a future
-command without Usage or Options, missing ordinary and live tests, stale extra
-tests, incorrect collector labels or test kinds, and duplicate tests. Every
-failure names the command, option, synopsis, or test. Both document inventories
-must match the discovered ordinary/live set and its coverage collector labels.
-The test reads listed commands and never executes them. The
-[detailed README](../../script/code-quality/README.md) explains CRAP before its
-process-ordered command sections. Changes to documented help contracts or
-either test inventory select this existing focused contract under the
-[test gate policy](../implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts).
-Other README prose can have no applicable test. No new prose test or broader
-suite is selected.
-
-`test/acceptance/script/ast-metrics-mcp-help.test.ts` checks that MCP help gives
-0 to 128 as the maintainability range, identifies the lines column as LOC rather
-than source positions, and declares delegated defaults for the two tool options.
-
-`test/unit/script/ast-metrics-tool-version.test.ts` checks the 0.43.1 pin,
-explicit override, a missing version, the CLI version subcommand, reuse of
-the checked value, MCP agreement within a composite run, and notices for
-different or missing snapshot versions.
-`test/acceptance/script/ast-metrics-tool-version.test.ts` checks refusal
-before analysis or record writes and explicit override for delta, review,
-snapshot, online architecture, and MCP. New snapshots and records retain
-the actual version. A later read-only architecture run preserves a stored
-record's version and leaves the record unchanged. An overridden snapshot
-refuses disagreement between
-the CLI and MCP before any MCP tool call or snapshot publication. Offline
-rendering with an empty PATH identifies different versions and rejects
-malformed snapshot tool metadata. Help starts no tool; coverage imports work
-without ast-metrics. Coverage has no version option.
-
-The ten commands run from source in `script/code-quality/`. See the
-[code quality script guide](../../script/code-quality/README.md) for their
-entry points and helper folders.
-
-`test/unit/script/ast-metrics-baseline.test.ts` checks help and argument
-validation before Git or tool access, and counts YAML ignored entries without
-counting occurrence totals or message text. It rejects invalid baseline data.
-`test/acceptance/script/ast-metrics-baseline.test.ts` checks root execution,
-counts before and after, a missing initial baseline, the version pin and
-explicit override, and failed tools or malformed output without success counts.
-
-`test/unit/script/ast-metrics-backfill.test.ts` checks positive safe counts,
-help before validation, exact gap intervals, full SHA membership, records outside
-display date order, unavailable history, and the displayed-endpoint boundary.
-`test/acceptance/script/ast-metrics-backfill.test.ts` checks exact first-parent
-trees after a branch fork, oldest-first capture, repeated runs without rewrites,
-help and invalid counts before Git or tool access, missing or shallow history,
-analysis and cleanup failures, tool override propagation, and exclusion of merge
-side parents. Existing snapshot-base tests still check shared cleanup, signals,
-stale worktrees, and repository hooks after worktree extraction. The support-path
-contract includes the new command.
-`test/acceptance/script/ast-metrics-trend-gaps.test.ts` checks one exact gap
-between recorded endpoints, offline reporting without Git, and explicit missing
-or shallow history notices that preserve structural Markdown. The changed
-`fixtures/ast-metrics-trend-view.ts` golden adds the offline-store notice.
-Backfill collects no coverage. Only missing exact first-parent `origin/main`
-commits within its requested latest-count selection are recorded. Existing
-records stay immutable. Gap checks cover only the interval between displayed
-first-parent endpoints; every stored full SHA counts, also when its row is not
-shown. Offline snapshot dates cannot establish omitted commits.
-
-`test/unit/script/ast-metrics-crap-absolute.test.ts` and
-`test/acceptance/script/ast-metrics-crap-absolute.test.ts` specify both absolute
-CRAP goals over supplied operands: exact comparisons, display-only scores,
-missing-coverage bounds, proven zero, invalid inputs and distinct reasons.
-They establish arithmetic only, not accepted evidence or route eligibility.
-
-`test/unit/script/ast-metrics-process.test.ts` checks stage order, completed
-goal misses, operational failures, unavailable required coverage, an empty
-production selection, recording failure, and option conflicts. It checks a
-fenced delta with aligned rows and preserves indentation in Markdown stages.
-The typed result checks cover the final ordered stage outcomes, their texts
-and statuses, including any history publication result. The option checks
-include `--json`.
-The acceptance process files check the complete command with tool and Git
-doubles: `ast-metrics-process.test.ts` checks the document-only four-section
-report and structural record without a CRAP session or suite;
-`ast-metrics-process-coverage.test.ts` checks compatible older captures,
-missing or stale required coverage, explicit skip, paths from a nested
-caller, and reuse of combined-suite provenance without any added suite launch;
-`ast-metrics-process-failures.test.ts` checks custom base and version
-propagation, continued evidence after a goal miss, failed analysis without
-history, and retained drawings when recording fails.
-`ast-metrics-process-json.test.ts` checks `--json`: the file gives the merge
-base, HEAD, and the four outcomes of the unchanged printed report, and from a
-subfolder, with a relative path, the failed review and the unavailable
-dependent stages.
-`ast-metrics-process-collection.test.ts` selects both unit parts in a small
-fixture repository and proves explicit collection runs its build and each
-part once; a failed fixture build saves failure evidence and writes no
-history. Its package script declares the fixture unit selection explicitly.
-These ordinary tests never collect application coverage implicitly.
-
-`test/unit/script/ast-metrics-review-report.test.ts` checks that fresh,
-structured review evidence identifies completed goals and rejects malformed
-or contradictory results. `test/acceptance/script/ast-metrics-stage-outcomes.test.ts`
-checks that delta, review, and CRAP distinguish completed goal misses from
-operational failures, including stale or absent review JSON. This prevents
-an ambiguous exit status from authorizing a history write.
-
-`test/unit/script/ast-metrics-delta.test.ts`,
-`test/unit/script/ast-metrics-review.test.ts`, and
-`test/unit/script/ast-metrics-mcp.test.ts` check the help and the refused
-arguments of the three commands. They run with an empty PATH, so they also
-show that each command checks its arguments before it runs git or
-ast-metrics. The acceptance tests run the commands in temporary git
-repositories from `test/acceptance/script/fixtures/git-repository.ts`, with
-a double of the ast-metrics executable first on PATH
-(`test/support/doubles/ast-metrics/`); they need git, not ast-metrics.
-`test/acceptance/script/ast-metrics-delta.test.ts` checks the delta
-(committed, staged, unstaged, untracked, and renamed TypeScript files; no
-deleted or other file) and the exact arguments that reach `ast-metrics
-analyze`, with and without the comparison. `ast-metrics-delta-goal.test.ts`
-checks the goal: the production files under `src/` first, the other files
-with `no goal`, the files without a measurement, the result line, `--min`,
-and the exit status. `ast-metrics-delta-failures.test.ts` checks a caller
-through a symbolic link, a missing executable, a failed analysis, and unknown
-base refs. `ast-metrics-review.test.ts` checks the exact arguments of
-`ast-metrics review`, the Markdown on stdout, the exit status, the missing
-baseline warning, `--max-findings`, a missing executable, and an unknown
-base ref. `ast-metrics-mcp.test.ts` runs the one-shot MCP call against a
-double of the server: the function table, the pass-through of arguments,
-error answers, a hanging and an early-exiting server, and that no server
-process remains. Its tools case checks unique names, nonempty descriptions,
-the four documented subcommand tools, and a representative description.
-`ast-metrics-mcp-shutdown.test.ts` checks the busy timeout fake separately.
-An actual SIGTERM releases its timers and input, produces no answer, and ends
-with exit code 0 and no signal or live child. This allows normal completion
-evidence without changing the never-answering timeout contract. The original
-MCP command specification stays unchanged.
-`ast-metrics-mcp.live.ts` runs the real server when
-`ast-metrics` is on PATH; ordinary suites do not select it. It checks a
-positive function table, its declared row count, and the missing-file error,
-without requiring an incidental function name. An absent-tool skip is not a pass.
-
-`ast-metrics-crap*.test.ts` covers the per-function goal command. Unit cases
-check threshold validation, strict and inclusive boundaries, minimum whole
-coverage percentages, goal scope, unknown data, ordering, and report output.
-Acceptance cases use temporary repositories, source identity, verified fixture
-coverage, and MCP doubles. They check the complete table and goal exit status,
-empty default selection without coverage or MCP, explicit inspection paths,
-custom base, unchanged high functions, and missing or stale coverage. These
-cases run no application suite. `ast-metrics-crap.test.ts` also runs the
-command with `--json`: the file holds the rows of the table in its order, with
-the merge base and HEAD, without share and CRAP for an unmeasured function and
-without identity for a function without source identity, while the table and
-the exit status stay the same; an empty selection gives no rows.
-`test/unit/script/ast-metrics-crap-json.test.ts` checks the JSON rows, their
-keys and the absent values, and the write of the file and its diagnostic.
-
-`ast-metrics-review-policy.test.ts` in the unit script group checks the strict
-new-function boundary, native high preservation, invalid numeric path evidence,
-metadata and improvements, full native evidence, and unchanged report handling.
-The acceptance file of the same name uses a complete Markdown golden in
-`fixtures/ast-metrics-review-policy.ts` and checks both approved resolved-path rules,
-aliases and re-exports, type/side-effect/literal dynamic imports, proven Git
-renames and unique exact-content unstaged moves, allowed pairs moved across a boundary, merge-base comparison after divergence,
-unrelated old uncertainty, affected dependency errors, report agreement, and the
-composed Review-stage gate. Markdown limits do not remove JSON findings or
-permit a hidden high finding to pass.
-
-`test/unit/script/ast-metrics-review-moves.test.ts` checks unique exact-content
-deleted/added move proof, ambiguity, and the existing Git rename map. The layer
-rule still checks whether a pair was forbidden before translating its move.
-
-`test/acceptance/script/ast-metrics-rules.live.ts` probes ast-metrics 0.43.1
-capabilities in temporary repositories. It checks that path-target coupling
-patterns do not catch named TypeScript imports, symbol patterns follow aliases
-and match the same symbol across target paths, and coupling findings are low
-severity. It checks that the fixed new-function warning starts at ten decision
-paths and becomes high at twenty-five, using separate files with nine, ten,
-eleven, twenty-four, and twenty-five paths under a high file cap. The same
-case checks that the wrapper removes 10 and retains 11 and high 25. Separate
-native cases check file limits at 39/40/41 paths and 149/150/151 LOC.
-It needs the real tool, skips explicitly when absent, and runs no coverage or
-application suite. The owner approved cleaner → MCP and website-fetcher →
-auth path rules through the review wrapper, file cap 40 with LOC 150 unchanged,
-and a strict new-function warning above 10 paths on 2026-10-19. These rules
-are implemented, and focused policy and boundary tests pass. Selected tests, typechecking, and all 13 affected live cases pass. Native coupling cases
-explain the need for resolved-path checks; the separate policy tests cover
-those wrapper rules.
-
-`test/acceptance/script/ast-metrics-crap.live.ts` uses real files and an
-existing compatible report from `AST_METRICS_CRAP_COVERAGE`, or
-`ast-report/coverage.json` by default. It starts no build, suite, or collector.
-Select it only for affected behavior or shared dependencies. Missing tool
-or report gives an explicit skip; record the assessment as deferred, not
-passed. Present stale coverage fails. See the
-[policy mapping](../implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts)
-for its command and collection limits.
-
-`test/unit/script/ast-metrics-coverage.test.ts` checks help, refused
-arguments, and unverified `--from` inspection with an empty PATH and a Git
-double. It covers the
-path map, execution union, calls, rounding, helper exclusion, report order,
-commit, output path, and diagnostics. These cases need no Git executable or
-ast-metrics. `test/support/fixtures/v8-coverage.ts` writes the V8 files and
-their identified script fixtures.
-
-`test/unit/script/ast-metrics-coverage-input.test.ts` checks the two ordered
-suite calls with one capture folder, source TypeScript and UTF-16 text,
-SHA-256 content identity, ignored test URLs, changed and missing script
-files, refusal of URL aliases, and failure of the second, portal test run. A fake runner proves the command contract
-without running either application suite.
-
-`test/unit/script/ast-metrics-coverage-suites.test.ts` checks default unit
-selection, repeated-suite order and deduplication, the exact acceptance globs
-and hosted-image exclusion, and rejection before launch of missing scripts,
-unknown prerequisites, nested commands, broader suite selections, and shell
-operators. It checks process/thread shutdown evidence against raw capture files and old string/new array report
-contracts, including empty, duplicate, or unknown suite arrays. Missing, killed,
-duplicate, or untracked participants cannot establish a complete
-capture. These cases use a fake runner or fixture files and run no application
-suite. Selection of an integration or acceptance capture must already be within
-the caller's complete selected scope; no collector option expands that scope.
-
-`test/unit/script/ast-metrics-coverage-own.test.ts` checks own-character
-shares across processes, a missing nested entry in either order,
-grandchildren, equal ranges, helper subtraction before exclusion,
-incompatible representations, content and identified lengths, crossing
-ranges, invalid raw
-offsets and counts, and summed-call overflow.
-`test/unit/script/ast-metrics-coverage-unmeasured.test.ts` checks that the
-architecture reader preserves an unmeasured function's file and withholds
-a measured namesake's share.
-
-`test/unit/script/ast-metrics-coverage-propagation.test.ts` checks capture
-preload propagation through Node child-process APIs, promisified calls, shell
-and native children, reduced environments, and custom Node options. Explicit
-alternate, empty, or own-undefined capture choices remain independent. Worker
-cases check explicit options and the active-worker registry used by sealing.
-An actual `node --test` regression checks default ESM file workers with an
-ambient Node option and both inherited and replaced `NODE_OPTIONS`. Undefined
-worker arguments retain Node's default filtering; only an explicit array gets
-the required capture preload. Default CommonJS eval workers without that
-adaptation stay unverified.
-Signal-outcome cases check captured PID receipts and preserve Node coverage
-when an uncaptured native child stops on a signal. These cases start fixture
-processes, not application suites.
-
-`test/unit/script/ast-metrics-coverage-seal.test.ts` checks request identities:
-positive integral PID, nonnegative integral thread ID, supported protocol,
-capture hash, nonce, and accepted request fields. Invalid requests cannot
-authorize a seal. Real-fork regression cases check normal exit and delayed
-product IPC without an injected seal message listener. A 15-second startup
-guard waits for child readiness after the capture preload and product listener
-setup. The original two-second exit guard starts at that readiness, and product
-IPC waits another 150 milliseconds before sending. A slow-start case exceeds
-two seconds before readiness to keep startup separate from the exit guarantee.
-Both parent and fork must exit normally; a 20-second outer timeout is a failsafe.
-
-`test/acceptance/script/ast-metrics-coverage-loader.test.ts` runs real `pnpm`
-and `tsx` TypeScript entries with actual asynchronous loaders under both import
-and require capture preloads. The require case explicitly registers `tsx/esm`
-through public `module.register()` and uses a namespaced typed import, while
-retaining the real `pnpm` and `node --import tsx` chain. It checks manual exit emission, a later typed import, delayed shutdown cleanup,
-actual loader thread identities, verified collection, and strict archived
-reimport with the original provenance. `ast-metrics-coverage-loader-exit.test.ts`
-adds nested manual exit events, late synchronous module registration by an exit
-listener, and a worker-owned loader with its actual owner thread ID. The fixtures
-under `test/acceptance/script/fixtures/ast-metrics-coverage-loader*.ts` build the
-small temporary repository and inspect its retained evidence.
-`ast-metrics-coverage-loader-refusal.test.ts` checks default SIGTERM,
-`Worker.terminate()`, a blocked loader message handler with shared-memory proof,
-and an exit listener that throws. It also checks that a direct require-preload
-`node --import tsx` invocation with cache disabled refuses the noncooperating
-ordinary esbuild worker created by its synchronous hooks. Refusal stays within the shutdown deadline, preserves the
-original thrown error, and keeps a real earlier verified report and archive
-byte-identical. The successful entries have no child stderr. These fixtures do
-not run the complete integration suite.
-
-`test/unit/script/ast-metrics-coverage-loader-runtime.test.ts` checks that the
-observer preserves public registration arguments, receivers, return values, and
-thrown errors. It verifies nested exit listener order, bounded timeout receipts,
-manual exit events, unavailable private exit state, borrowed emitters, and
-original exit-listener exceptions with Node API doubles.
-
-`test/unit/script/ast-metrics-coverage-loader-validation.test.ts` checks complete
-main-owned and worker-owned loader evidence. It rejects absent or malformed
-participants and handshake fields, wrong captures, PIDs, threads, owners, nonces,
-protocols, and states; a consistently malformed capture ID; orphan or duplicate
-participants; and signal deaths. A
-parked marker cannot claim normal exit or skip owner completion.
-`ast-metrics-coverage-loader-checkpoint.test.ts` checks sorted unique raw names
-and hashes, unchanged checkpoint files, and exactly one distinct later flush.
-Missing, malformed, changed, extra, or earlier raw evidence fails verification.
-Noncanonical zero-padded PID or thread filenames cannot conceal an extra file.
-These stricter loader checks do not change ordinary normal-exit checkpoint rules.
-`ast-metrics-coverage-loader-manifest.test.ts` checks version-4
-strict import and provenance, handshake fingerprint inputs, unchanged legacy
-version-1, version-2, and version-3 archives, and refusal to pass loader evidence
-under a legacy protocol. `test/unit/script/fixtures/loader-capture.ts` supplies
-isolated raw and lifecycle evidence; it does not simulate a complete real suite.
-
-`test/acceptance/script/ast-metrics-coverage-crash.test.ts` specifies the
-approved intentional-crash capture protocol in a temporary repository.
-Known crash fixtures opt in with `THERMUS_COVERAGE_CRASH=1`; other captured
-forks have no seal IPC listener. It checks that work before sealing is covered and queued later product work
-cannot run before SIGKILL. It rejects stale nonce/receipt, missing receipt or
-flush, changed or extra raw files, and active workers. Late-exit cases require
-raw evidence after `exitCheckpoint` and reject a late SIGKILL without a verified
-seal. A later flush is not proof of automatic-only termination. A protocol
-fixture is separate from the complete repository proof. The earlier real combined
-capture passed in order `[acceptance, unit]`: 853 emitted and 16 portal
-acceptance tests, then 3,544 emitted and 19 portal unit tests, with zero
-failures and skips. Both suite captures passed strict completion verification,
-including eight sealed unit crash children, normal MCP fake SIGTERM cleanup,
-and clean registration-server shutdown. That earlier proof did not select
-integration; its union contracts used doubles.
-All 13 affected live cases passed without skips: two collecting, ten
-structural, and one CRAP case with verified imported unit coverage.
-The complete real integration capture at `88bfbf71` passed all 535 tests in
-44 suites on 2026-10-19, with zero failures, cancellations, skips, or todos.
-It kept the existing real work-slice tests unchanged. All 113 participants
-verified: 109 normal-exit owners and four real internal `tsx` loaders. Each
-loader has matching request, acknowledgement, and owner receipt evidence, an
-unchanged checkpoint, one distinct later V8 flush, and a normal matching owner.
-Strict `--from` reimport produced a byte-identical report and kept the original
-`["integration"]` capture identity. The default coverage report stayed unchanged.
-This full capture is separate from the small protocol fixtures. The earlier
-`c620cf8f` run passed all 535 integration tests but failed verification because
-four loaders had raw-only evidence; that run remains unverified history.
-
-`test/acceptance/script/ast-metrics-coverage.test.ts` checks merging two
-processes and the build and default run of a small suite in a temporary Git
-repository. `ast-metrics-coverage-failures.test.ts` checks out-of-bounds
-build ranges, a failed build, an emitted-suite failure, and a repository
-without a commit. It also checks failed selected suites, killed-child
-incompleteness, and representation conflicts without replacing a good report.
-`ast-metrics-coverage.test.ts` adds selected unit/acceptance union with positive
-execution only in the second suite, duplicate removal, acceptance-only capture,
-a normally exiting status-1 child, normal worker-thread flush, and reimport
-with truthful suite labels.
-Each suite keeps an isolated capture and original identity; only complete,
-compatible own-character coverage is unioned.
-`ast-metrics-coverage-own.test.ts` checks own-character measurement,
-zero-own exclusions, schema-version-2 fields and `own-characters-1`, and rejection
-of malformed input, crossing function ranges, and call overflow without replacing
-an earlier report. It also checks a portal-suite failure after the emitted suite
-passes, with capture cleanup and the earlier report kept.
-Its small real typed fixture includes non-ASCII text and proves both unit
-parts run and that Node's stripped TypeScript offsets and shares match
-UTF-16 source text. It also checks the anonymous module range against
-Node 24.20.0's exact sourceURL trailer. This fixture does not run the
-application unit suite.
-
-
-`test/unit/script/ast-metrics-provenance-inputs.test.ts` checks deterministic
-framing and order, changed sources, tests, fixtures, scripts, lockfiles,
-config, migrations, and the runtime document that tests read. It checks
-excluded prose and generated files, symlink target changes, and cycles.
-`test/unit/script/ast-metrics-provenance-read.test.ts` checks the shared input
-and coverage provenance readers: valid identities, rejected malformed
-fingerprints, runtime, compiler, suite, semantic version, and original commit,
-and explicit unverified reasons and original data. Selected-suite cases check
-nonempty arrays, suite and capture order, capture manifests, aggregate
-fingerprints, original commits, source/build identities, runtime, compiler, and
-measurement version. They accept complete acceptance-only evidence and reject
-inconsistent combined records. Legacy unit strings remain readable.
-
-`test/unit/script/ast-metrics-coverage-capture.test.ts` uses a fake runner to
-prove build-before-suite ordering, stable capture and verified reimport with
-the original commit, mutation rejection at build and both unit stages,
-`--no-build` with valid and stale output, and tampered raw data with explicit
-unverified inspection. Its runner fixtures declare package selections and
-shutdown markers explicitly. New captures use version-4 manifests with per-suite
-identity, canonical unit comparison identity, the loader-aware completion protocol,
-and original capture identity. Legacy manifest versions 1, 2, and 3 remain readable
-under their original rules. A later selected suite with a nested command prevents even
-the build or first suite from starting. Incomplete version-2 imports fail or
-remain explicitly unverified; legacy version-1 unit captures without shutdown
-markers remain readable as verified captures. It runs no application suite.
-`test/acceptance/script/ast-metrics-coverage-provenance.test.ts` checks that
-raw data without its original manifest fails by default and that explicit
-inspection has unverified status and no invented capture commit.
-
-`ast-metrics-coverage.live.ts` builds and runs both complete parts of the
-real unit suite. It checks verified report provenance, `createApplication`
-present in `src/app/application.ts`, calls of other application functions, and
-the explicit proof that portal unit tests call `initializePortal` in
-`src/interfaces/user-portal/portal.ts`. It uses a private `--out` report and asserts
-that the default report stays unchanged. It needs no
-ast-metrics. Run it only when `src/` changed or both complete unit parts
-were independently selected: emitted Node tests and source portal tests.
-Otherwise record it as deferred, not passed. Ordinary suites do not select it.
-The separate architecture coverage live file has the same scope limit.
-
-`test/unit/script/ast-metrics-snapshot.test.ts` checks the help and the
-refused arguments of the snapshot command with an empty PATH, and the rules
-of the pure build in the test process: the LOC-weighted maintainability, the
-label rule, the `src/` filter, the cycles, the community of a file in a
-folder member, and the join of the functions.
-Raw file MI cases retain finite precision and zero, preserve unavailable values,
-and reject malformed/nonfinite native MI for `src/` files without changing
-rounded scores. Out-of-scope entries remain ignored.
-`test/acceptance/script/ast-metrics-snapshot.test.ts` runs the command
-against both doubles with the answers of
-`fixtures/ast-metrics-snapshot-answers.ts`: the whole snapshot from one
-analysis and one MCP session, `analyze` and `mcp` both given the folder
-`src`, a `script/` community in a cycle, two equal labels, a caller through a
-symbolic link, and `--out`. `ast-metrics-snapshot-failures.test.ts` checks a
-missing executable, a failed analysis, and a server without metrics for one
-file. `ast-metrics-snapshot-base.test.ts` checks `--base`: the snapshot of
-the merge base (not of the tip of `main`), the default base file, `--out`,
-no worktree left after a run, and a branch without a commit of its own.
-`ast-metrics-snapshot-base-failures.test.ts` checks a failed analysis of
-the base with the worktree removed, an unknown ref, a ref without a merge
-base, and a git that cannot remove the worktree.
-`ast-metrics-snapshot-base-worktree.test.ts` checks the sweep of stale
-worktrees (also a locked one, also one of an active run that must stay, also
-one that git cannot remove), SIGTERM and SIGINT with exit 143 and 130, and
-that no repository hook runs in the worktree. `ast-metrics-snapshot.live.ts`
-runs the real tool on the repository when it is on PATH, with and without
-`--base HEAD`. It checks the shared kernel, unique labels, source members,
-valid community and cycle references, positive file and function counts,
-HEAD, deadlines, and worktree cleanup. Community, cycle, and file counts
-can change without breaking these invariants. Ordinary suites do not select
-it; an absent-tool skip is not a pass.
-
-`test/unit/script/ast-metrics-dependencies.test.ts` checks the source parser:
-all local import forms, multiline syntax, unrelated comments and strings,
-package imports, normalized resolution, duplicate kinds, and unresolved
-evidence. `ast-metrics-dependencies-read.test.ts` checks optional legacy
-data and refuses invalid evidence. `test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts`
-checks retained dependency pairs and issues through the snapshot command.
-The snapshot live cases also check unique normalized pairs between analyzed
-source files and the real literal dynamic import from `application.ts`.
-They compare emitted raw file MI with the pinned native analysis value.
-
-`test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts` checks raw file MI
-beside rounded output, refusal before publication, and identical architecture
-reports from legacy and raw-enriched snapshots. The architecture reader still
-ignores the optional raw field.
-
-`test/acceptance/script/ast-metrics-snapshot-provenance.test.ts` checks that
-capture records source and expected coverage-input identity and refuses to
-publish after input mutation during analysis.
-
-`test/unit/script/ast-metrics-architecture.test.ts` checks the help and the
-refused arguments of the architecture command with an empty PATH (also an
-empty `--trend-store`), a missing snapshot file, and files that are not valid
-snapshots of version 1 (also one without files, one with a file without a
-path, one with a function without a name or decision paths, one without a date
-or with a date without a time, one without the count of its files, and one
-with a community without lines).
-`ast-metrics-architecture-coverage.test.ts` checks the coverage file with an
-empty PATH: a missing file, files that are not valid coverage reports (also a snapshot, and a
-covered share that is text), legacy version 1, and current version 2.
-`test/unit/script/ast-metrics-architecture-provenance.test.ts` checks the
-pure compatibility rule. Coverage must match the supplied head's full input
-identity, suite, and measurement version; original capture commits are not
-restamped. Complete combined-suite and acceptance-only reports are accepted;
-legacy or mismatched provenance withholds assessment.
-`test/acceptance/script/ast-metrics-architecture-provenance.test.ts` checks
-repository-free rendering with matching old captures, mismatches, missing,
-legacy, unverified, relabeled, and malformed provenance, explicit skip, and
-conflicting coverage options. It checks the original capture note, distinct
-notices, complete structural output, and no CRAP assessment when withheld.
-`ast-metrics-architecture-repository-provenance.test.ts` checks that a
-prose-only commit reuses compatible default coverage and that explicit skip
-ignores a malformed default report.
-
-`test/unit/script/ast-metrics-json-file.test.ts` checks the snapshot,
-coverage, trend, and change metadata readers. Missing files retain the exact
-file-kind diagnostic. Malformed JSON, arrays, null, and empty objects retain
-each reader's exact schema diagnostic.
-
-`test/unit/script/ast-metrics-order.test.ts` checks tied map labels and
-edges, risk path tie-breaks, duplicate file paths, equal community and target
-labels, equal namespace counts, and coverage ranges with tied or locale-equal
-names. Equal keys preserve input order.
-
-`test/unit/script/ast-metrics-file-changes.test.ts` checks NUL-separated
-Git status records, similarity scores, exact unusual paths, malformed records,
-conflicting mappings, and moves across the source boundary.
-`test/acceptance/script/ast-metrics-file-changes.test.ts` checks real Git
-changes across committed and working-tree edits, deletions, renames,
-untracked files, unusual paths, and extension changes. Delta scores only
-current supported TypeScript paths.
-`test/unit/script/ast-metrics-architecture-changes.test.ts` checks the offline
-version-1 metadata format, both snapshot commits and source fingerprints,
-source paths and supported extensions, unique predecessors and destinations,
-status consistency, legacy snapshots, and refused repository-mode metadata.
-`test/acceptance/script/ast-metrics-architecture-changes.test.ts` checks
-repository-free rename rendering with old base values at one new-path row.
-
-`test/unit/script/ast-metrics-architecture-test-changes.test.ts` checks
-all-extension test paths, source boundaries, committed, staged, unstaged,
-untracked, and deleted fixture inputs, ignored inputs, and source assets in each
-Git state. `test/acceptance/script/ast-metrics-architecture-test-changes.test.ts`
-checks complexity-section goldens for test-only, fixture-only, source-plus-test,
-source-asset-plus-fixture, and unavailable-coverage reports. Offline cases check
-declared fixtures, absent declarations, explicit skip, source status evidence,
-different source fingerprints, and missing provenance. The fixture file
-`fixtures/ast-metrics-test-change-goldens.ts` holds the exact expected sections.
-The notice says that base estimates use head coverage, or that no comparison
-was made. Offline claims require known, equal source fingerprints in both
-snapshots plus declared test paths without declared source changes. The tests
-run no application suite and do not change TypeScript delta selection.
-
-`test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts`
-checks a pure Git rename, a deletion-only comparison, and an unchanged
-function moved to an untracked file. It checks equal rename values, touched
-communities, gone cells, and missing base shares through the command.
-
-`test/unit/script/ast-metrics-source-evidence.test.ts` and
-`test/acceptance/script/ast-metrics-snapshot-source.test.ts` check TypeScript
-source ranges, declaration owners, normalized body and signature evidence,
-ordinary edits, trivia, and unsupported or ambiguous declarations.
-`test/unit/script/ast-metrics-source-evidence-read.test.ts` checks the optional
-source metadata boundary without reading the checkout. It rejects a metric
-with an unrelated declaration name and repeated source ranges, including
-when evidence is incomplete.
-`ast-metrics-architecture-identity.test.ts` in the unit and acceptance script
-groups checks same-file declaration continuity, changed bodies and signatures,
-unique unchanged moves and renames, new declarations, copies and ambiguity,
-legacy snapshots, and visible identity unknowns. Unpaired base functions,
-including removed functions, receive no estimated covered share.
-
-`test/support/fixtures/ast-metrics-map-snapshot.ts` supplies complete
-snapshot metadata to the architecture report, bands, table, functions, and
-CRAP unit tests. These tests import the production contracts with `import type`
-and type source-module loads with `typeof import`.
-
-`ast-metrics-architecture-crap.test.ts` checks the pure CRAP formula, rounding,
-and coverage join by file and V8 name. Anonymous, duplicate, missing, and
-unmeasured function entries get no exact CRAP. Tests count unmatched
-functions at 30 or more paths as known violations, preserve their lower
-bounds, and cover zero-own exclusions. A complete verified report can treat
-an absent head file as uncovered. Source correspondence separately controls
-which base functions can use a head share and which functions are new or
-worse. Tests check equal supported trees and unknown base estimates.
-`ast-metrics-architecture-bands.test.ts` checks the bands in the pure
-report: good, warning, and critical with their counts and the sign of a
-change, a gone and a new community, the band classes and their order, the
-summary count and the legend, the report without coverage, and the change of
-the map by a band. Every band-change case keeps the graph and checks whether
-the unchanged-map line applies.
-`ast-metrics-architecture-report.test.ts` checks the pure report in the test
-process: the Jaccard match at 0.5, the tie by label, the greedy order, each
-base community once, identity by files across new ids and labels, the ids
-and the escaping, a label shared by a gone and a new community, the arrows
-and the rounding, the change detection, and the end of a report without a
-changed `src/` file. Equal snapshots, renamed labels, numeric changes, and
-other unchanged-map cases keep the graph; the change rules still select
-the unchanged-map line.
-`ast-metrics-architecture-table.test.ts` checks the pure complexity table:
-the lines of the section, the cells with their arrows and rounding, `new`
-and `gone`, `not measured` on each side, the risk rank among the ten
-riskiest (the eleventh file, a tie by path, a file without a risk score, and
-a gone file), the section without a changed `src/` file, and one row for
-each file, sorted by path.
-`ast-metrics-architecture-functions.test.ts` checks the table with coverage:
-the CRAP column (counts with their arrows, `new`, `gone`, and `not
-measured`) and the list after the table (sorted by path and name, `base new`
-or the base CRAP, the share and the CRAP, a method without its module, and
-the unmatched count of the changed files only).
-`test/unit/script/ast-metrics-architecture-unmeasured.test.ts` checks
-incomplete head and gone communities with no good band, known warning or
-critical lower-bound violations, ambiguous names counted once each,
-unmeasured files without a guessed function count, and risk totals that
-retain unknown-share counts. It checks the list of unmeasured functions
-at five paths or more, sorted by path and name.
-`test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts` checks
-that a zero-own exclusion with 30 paths is a known violation with unknown
-coverage and a CRAP lower bound. Existing band goldens also show the
-unmatched `refresh` function at 30 and an anonymous function at five paths.
-`ast-metrics-architecture-trend.test.ts` checks the pure record of a snapshot
-and the pure trend section: the fields of the record in their order, the count
-of the cycles, the counts of the functions at CRAP 30 or more of `src/` and of
-each community, the communities sorted by label, nothing for each file, a
-record without coverage and without maintainability, the rows with the first
-eight characters of the commit and the day of its date, the decimals, the
-head as `this pull request` without a date, the en dash for a value that a row
-does not have, and the distinct line of a configured empty store
-(`No snapshot of main in the trend store yet.`).
-`ast-metrics-architecture-trend-store.test.ts` checks the store in a folder of
-the test: the file name in the time zone of the commit, the text of a new file
-in a new folder, the file of the same commit under another date that stays
-unchanged, a file of another commit, files that are not records (also a folder
-with the name of a record), the diagnostics for record files that are not
-valid records of version 1 (and that no file is written then), the last ten of
-eleven records and a new one, and the order by the time of the date in several
-time zones, with the file name for two records of the same time.
-`test/unit/script/ast-metrics-architecture-trend-provenance.test.ts` checks
-measured, estimated, legacy unknown, and unavailable count cells, the
-first-recording estimate note, and valid and invalid count provenance.
-It also checks that reading table numbers preserves a present tool version
-and leaves the optional field absent in legacy records.
-
-Combined-suite trend cases retain every capture identity and original order,
-name normalized suite sets in nonunit risk cells, and split charts when the risk
-basis or suite set changes. Missing capture evidence is rejected rather than
-invented. Existing D3 measured or head-derived estimate records without
-`captureProvenance` retain their historical unit-only schema; pre-D3
-`legacy unknown` records stay unknown. The process-coverage acceptance case
-reuses this evidence, saves it in
-the base estimate, and starts no unselected suite.
-
-`test/unit/script/ast-metrics-architecture-trend-publication.test.ts` checks
-full-SHA identity across dates, prefix collisions, record-shaped directories
-and symlinks, malformed global and community fields, bounded lock failure
-with manual recovery guidance, and concurrent publication without overwrite.
-`test/unit/script/ast-metrics-architecture-trend-file.test.ts` checks that
-malformed required fields and malformed optional tool versions fail before
-publication and name the bad file.
-
-`test/unit/script/ast-metrics-snapshot-title.test.ts` and
-`test/acceptance/script/ast-metrics-snapshot-title.test.ts` check optional
-commit titles through snapshot reading and repository capture.
-`test/unit/script/ast-metrics-architecture-trend-title.test.ts` checks title
-preservation in records and table inputs, legacy absence, and refused
-nonstring titles. The complete snapshot golden also checks the captured title.
-
-`ast-metrics-architecture-trend-view.test.ts` in the unit and acceptance
-script groups checks terminal-only PR suffixes, the chronological component
-matrix with stable sorted names, independent MI and risk labels, zero versus
-missing values, D3 provenance, escaped labels, and empty or absent stores.
-The acceptance case compares the complete three-record trend Markdown
-through the offline command. `fixtures/ast-metrics-trend-view.ts` supplies
-its record, snapshot, and expected Markdown data.
-
-`ast-metrics-architecture-trend-charts.test.ts` in the unit and acceptance
-script groups checks separate maintainability and risk charts, missing-value
-gaps, splits at count-basis changes, single values, empty series, constant
-zero and nonzero axes, safe commit labels, and exact decimal output for tiny
-and large finite values without exponents. Unit cases check the documented
-numeric Mermaid grammar and frontmatter for 45-degree x-axis labels. The
-acceptance case uses three stored records through the offline command.
-Parser validation is separate from the two-point and full-window rotated
-GitHub rendering checks recorded in the review guide.
-
-`test/acceptance/script/ast-metrics-architecture.test.ts` compares the
-complete Markdown for snapshot files from
-`fixtures/ast-metrics-architecture-snapshots.ts`: equal snapshots with no
-touched files keep every node and dependency without change arrows or
-touched borders, the unchanged-map line, the missing-coverage reason, and
-the legend; a new dependency, a cycle, a split, `--touched` with a fall of 2.0 and the table
-row of the file, numeric changes with the unchanged-map line and the graph,
-a quote and a backtick, and `--out` with the complete graph. The shared
-`fixtures/ast-metrics-architecture-goldens.ts` supplies the complete base,
-banded, and repository drawings. Without `--trend-store`, the Markdown of
-two snapshot files ends with the trend
-section that says `No trend store.`
-`ast-metrics-architecture-table.test.ts` compares the complete Markdown of
-the complexity table: a file whose maintainability fell from 72.0 to 60.0,
-with its risk rank, a new file, a gone file, a file of types without a
-maintainability index, one row for each kind sorted by path, and changed
-files outside `src/`. These cases give no coverage report, so the line after
-the summary says that the bands need it.
-`ast-metrics-architecture-bands.test.ts` compares the complete Markdown with
-the coverage report of `fixtures/ast-metrics-architecture-coverage.ts`: equal
-covered snapshots with no touched files keep the unchanged-map line, every
-node with its assessable band without change arrows or touched borders,
-and the legend; a touched community without a function at CRAP 30 or more
-(good), one with two such functions in the base and none added or worse
-(warning), an added
-function (critical, `base new`), a function whose decision paths rose
-(worse, critical, with its base CRAP), an anonymous function and a name
-twice in the report (unmatched 2), a file that the report does not have
-(uncovered, CRAP 30.0 at the limit), and no `--coverage` (the line that the
-bands need the coverage, no band, no CRAP column, no list).
-`ast-metrics-architecture-base.test.ts` runs both doubles in a temporary
-repository: both snapshots with the table row of the changed file, the
-changed files of the delta rule (an added and a changed `src/` file, but not
-a changed test file or a change of `main` after the fork), the bands from
-the `ast-report/coverage.json` of the repository root, a failed base
-analysis, and an unknown ref. Each complete Markdown ends with the trend
-table: the existing recorded history and the row of the head. A run without
-`--record` writes no history.
-`ast-metrics-architecture-unchanged.test.ts` checks a temporary repository
-whose branch changes only a document, with explicit `--no-coverage` and
-both doubles:
-the complete Markdown keeps the unchanged-map line, every community, the
-dependencies and the legend without bands, `No production file changed.`,
-and the trend. A suite marker stays absent, the ast-metrics calls are only
-analysis and MCP, and no worktree or server stays after the run.
-`ast-metrics-architecture-trend.test.ts` checks deliberate recording through
-the CLI: no write without `--record`, repeated immutable recording, verified
-ancestors, non-ancestors with existing history, missing refs and commits,
-short commits, missing provenance, source and date mismatches, offline
-verification against immutable base content, malformed history, concurrent
-writers, and repository-free reading of legacy history. Temporary trend
-stores isolate every case.
-`ast-metrics-architecture.live.ts` runs only the structural case with the
-real tool, `--base HEAD`, `--no-coverage`, and a private trend store. It
-checks equal summary values, every reported community, the complete graph
-and legend, no production file changes, no record, and no worktree left.
-It also checks every populated source-folder component and its graph and
-legend. It starts no suite.
-The complexity assertion requires the exact no-coverage test-change notice if
-and only if actual Git changes and nonignored untracked paths are test-only.
-It permits at most one unknown-identity notice with its exact format and rejects
-other extra lines. Repository Markdown goldens also retain the explicit
-missing-`origin/main` gap-check notice; offline goldens keep their separate rule.
-
-`test/unit/script/ast-metrics-architecture-components.test.ts` checks stable
-folder nodes, importing-file counts per target component, internal imports
-without self-edges or cycles, cross-component cycles, changed states, and
-legacy or incomplete evidence. `ast-metrics-architecture-component-records.test.ts`
-checks sorted component metrics and D3 provenance, absent unknown data,
-and legacy record reading. `test/acceptance/script/ast-metrics-architecture-components.test.ts`
-checks the always-visible component graph through the offline command.
-Component trend charts remain outside CR-13.
-
-`ast-metrics-community-evidence.test.ts` in the unit and acceptance script
-groups checks import changes separately from community regrouping, proven
-source and target path moves, evidence-kind changes on an unchanged pair,
-partial or legacy evidence, and the ten-pair limit with its omitted count.
-The acceptance cases compare complete offline Markdown in
-`fixtures/community-evidence/`; the shared fixture data is in
-`test/support/fixtures/ast-metrics-community-evidence.ts`.
-
-`ast-metrics-architecture-coverage.live.ts` separately builds and collects
-both complete unit parts to a private report, then passes it with
-`--coverage` and marks each source file touched. It checks that numeric base
-risk counts do not exceed head counts and that no band is critical and no
-function is added or worse. CR-05 can withhold base risk where function
-identity is unknown, so a base cell can be `not measured` and its head cell
-numeric. It asserts that the default coverage report stays unchanged and
-uses a private trend store. It writes no repository trend record. Run it
-only when `src/` changed or both complete unit parts were independently selected.
-Otherwise record it as deferred, not passed.
-
-Both architecture files need ast-metrics on PATH and skip when it is absent;
-a skip is not a pass. Ordinary suites do not select these live files.
-Command and double changes select affected focused and live contracts only,
-as the [policy mapping](../implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts)
-describes. A slice that changes only dedicated live files and documents can
-run MCP, snapshot, structural architecture, and the existing focused README
-contract after a build. It defers both collectors and selects no complete
-unit, acceptance, integration, or interface suite. The build only prepares
-emitted tests.
-
-The following is the same complete inventory as the script README. The
-contract discovers available files in lexical order. These rows do not select
-all tests. Build first, then run only the files selected by the test gate policy;
-use the emitted `dist/test/` path and `.js` suffix.
-
-```sh
-npm run build
-node --test dist/test/acceptance/script/script-readme.test.js
-```
-
-<!-- code-quality-tests:start -->
-
-| Kind | Test file | Collects full unit coverage |
-| --- | --- | --- |
-| ordinary | test/acceptance/script/ast-metrics-architecture-bands.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-base.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-components.test.ts | no |
-| live | test/acceptance/script/ast-metrics-architecture-coverage.live.ts | yes |
-| ordinary | test/acceptance/script/ast-metrics-architecture-identity.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-provenance.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-repository-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-repository-provenance.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-table.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-test-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-trend-charts.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-trend-view.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-trend.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-unchanged.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture-unmeasured.test.ts | no |
-| live | test/acceptance/script/ast-metrics-architecture.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-architecture.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-backfill.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-baseline.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-community-evidence.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-crash.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-loader-exit.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-loader-refusal.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-loader.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-own.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
-| live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
-| ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-paths.test.ts | no |
-| live | test/acceptance/script/ast-metrics-crap.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-delta-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-delta-goal.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-delta.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-file-changes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-mcp-help.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-mcp-shutdown.test.ts | no |
-| live | test/acceptance/script/ast-metrics-mcp.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-mcp.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process-json.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-process.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-review-policy.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-review.test.ts | no |
-| live | test/acceptance/script/ast-metrics-rules.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-base-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-base-worktree.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-base.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-dependencies.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-failures.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-provenance.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-raw-mi.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-source.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot-title.test.ts | no |
-| live | test/acceptance/script/ast-metrics-snapshot.live.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-snapshot.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-stage-outcomes.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-tool-version.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-trend-gaps.test.ts | no |
-| ordinary | test/acceptance/script/script-readme.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-bands.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-changes.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-component-records.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-components.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-coverage.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-crap.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-functions.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-identity.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-provenance.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-report.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-table.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-test-changes.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-charts.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-file.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-provenance.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-publication.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-store.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-title.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend-view.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-trend.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture-unmeasured.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-architecture.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-backfill.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-baseline.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-community-evidence.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-capture.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-input.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-checkpoint.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-manifest.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-runtime.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-loader-validation.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-own.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-propagation.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-seal.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-suites.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-json.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-delta.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-dependencies-read.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-dependencies.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-file-changes.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-json-file.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-mcp.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-order.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-process.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-provenance-read.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review-moves.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review-policy.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review-report.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-review.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-snapshot-source.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-snapshot-title.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-snapshot.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-source-evidence-read.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-source-evidence.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-tool-version.test.ts | no |
-
-<!-- code-quality-tests:end -->
-
-See [the script guide](../../script/README.md) and
-[the ast-metrics review guide](../implementation/ast-metrics-review.md).
-
-## PR review check
-
-Nine acceptance files run `script/pr-review/check.ts` in small git
-repositories. Each repository has its own rules file from
-`test/acceptance/script/fixtures/pr-review-rules.ts`.
-`test/acceptance/script/pr-review-check.test.ts` checks the route from the
-changed paths: `SHIPPED` for a document change, with the complete report and its
-commits; `CLARIFICATION_NEEDED` for a protected path with the question of its
-group, for a
-renamed protected file, for a changed surface module, and for a changed
-contract document; `SHIPPED` for a change of tests only; and `SHIPPED` with no
-changed path when HEAD is the merge base.
-`test/acceptance/script/pr-review-check-size.test.ts` checks
-`ARCHITECT_REVIEW_NEEDED` for a
-production line count above the limit, also for a file that moves into `src/`,
-for a removed test case that the reason names, and for an added skip.
-`test/acceptance/script/pr-review-check-facts.test.ts` checks the dependency
-facts. `FIX`: an edge that the rules do not list, with the key that lists it, a
-forbidden edge, a new cycle with no entry to declare it, a new edge inside a
-known cycle also when the branch declares the edge, an import of a file of
-another package outside the public surface, an unresolved import in a changed
-file, and a changed JavaScript file. `CLARIFICATION_NEEDED`: an edge that the rules
-file of the branch declares, also when no protected group lists the rules
-file. A stylesheet import is no fact, and an unresolved import in an unchanged
-file is a note. `test/acceptance/script/pr-review-check-record.test.ts` checks
-the JSON keys and the commits, the stop for uncommitted changes and the note
-with `--allow-dirty`, and the rules file of HEAD when the merge base has none
-or has one that is not valid. Historical route names at the merge base keep
-its thresholds and protected paths when HEAD adopts the four routes. The
-check refuses historical route names at HEAD.
-`test/acceptance/script/pr-review-check-failures.test.ts` checks exit status 1
-for a rules file at HEAD without a key, without the MI limit of a new file,
-with a CRAP goal other than 15, with a number as the location of the review
-findings, with a trigger of another route, or that is not valid YAML, for a
-deleted rules file, a missing base ref, an unknown option, a rules path
-outside the repository, a repository without an owner, a head snapshot
-without a base snapshot, and a process file without a review file. It also checks that the README gives the same synopsis, options, and
-defaults as the help, which it reads without child processes.
-`test/acceptance/script/pr-review-check-ratchet.test.ts` checks the MI rules
-of check 4 with snapshot files that the test writes under `ast-report/`:
-`FIX` for a new production file at raw MI 84.96 and no reason at 85;
-`ARCHITECT_REVIEW_NEEDED`
-for an existing file that drops from 90 to 85, with both values, and no
-reason at 85.1; a renamed file that compares its old path in the base
-snapshot with its new path in the head snapshot; and not applicable for a
-file without raw MI in the snapshot that it needs. It checks exit status 1
-for a head or base snapshot of another commit, with the snapshot and both
-commits, for a missing snapshot file, and for a raw MI that is a text.
-`test/acceptance/script/pr-review-check-exceptions.test.ts` checks the
-exceptions file: an entry with a future date turns the `FIX` into an
-`ARCHITECT_REVIEW_NEEDED`
-reason that names the entry, a past date keeps the `FIX` and adds the expired
-entry, an expired entry of a changed file is `FIX` without the snapshot
-options while the MI section says that MI was not checked, and an expiry that
-is not a calendar date gives exit status 1.
-`test/acceptance/script/pr-review-check-crap.test.ts` checks the CRAP goals of
-check 4 with a CRAP file that the test writes under `ast-report/`: a pass from
-the bound `[3, 12]` for a new function of three paths without a share; `FIX`
-for a new function of four paths, whose range `[4, 20]` crosses 15; a pass at
-29.999 and `FIX` at 30 for changed functions with known coverage; `FIX` with
-the goal of a new function for an unknown function, while an unchanged
-function and a row of an unchanged file give no reason. A function entry of
-the exceptions file with a future date turns the `FIX` into an
-`ARCHITECT_REVIEW_NEEDED` reason
-that names the entry; with a past date the `FIX` stays and the expired entry
-is `FIX` too. It checks exit status 1 for a CRAP file of another commit, with
-the file and both commits, for a missing file, and for a row whose paths are
-a text. The complete report of `pr-review-check.test.ts` says that CRAP was
-not checked without `--crap`, and that the metrics step was not checked
-without `--process` and `--review`.
-`test/acceptance/script/pr-review-check-metrics.test.ts` checks the metrics
-step with a process file and a review file that the test writes under
-`ast-report/`: goal misses of the process and high findings on unchanged files
-only give no reason, the section counts the findings, and the note leaves only
-the step "Decision" manual; a high finding on a changed production file is
-`ARCHITECT_REVIEW_NEEDED` with the file and the message, while a low finding
-there gives no
-reason and a high finding on a changed test file has a line without a reason;
-a failed Delta stage is `FIX` with each stage that did not complete, and the
-check does not read a review file that does not exist. It checks exit status
-1 for a process file or a review file of another commit, with the file and
-both commits, for a missing process file, for a process file with three
-stages, and for a review finding of another severity.
-
-The unit tests `test/unit/script/pr-review-*.test.ts` check the parts: the glob
-matcher with dot files (`globs`), the kind of each import statement in each
-kind of TypeScript file (`imports`), the package graph, its resolution, and
-its assets (`graph`), the cycles and the edges inside known cycles (`cycles`),
-the dependency facts (`dependency-facts`), the declared and the undeclared
-facts (`facts`), the rules reader, its route guards, and its diagnostics
-(`rules`), the readers of the diff output (`changes`), the reader of `git
-cat-file --batch` (`blobs`), the line counts and the snooze file (`size`), each
-form of a test case, a skip, and a todo (`test-counts`), the path and surface
-reasons (`paths`), the route and the label command (`route`), the result and
-its report with the MI and CRAP sections (`result`), the MI rules with renames, limits,
-and exceptions (`ratchet`), the reader of the snapshot files and its
-diagnostics (`snapshots`), the reader of the exceptions file with its file
-and function entries, its dates, its cover, and its expiry (`exceptions`), the
-reader of the CRAP file and its diagnostics (`crap-rows`), the CRAP goals
-with their bounds, the exact values at the goals, the rows that count, and
-the function entries (`crap`), the readers of the process file and the review
-file with their commits, their diagnostics, and the review file that is not
-read after a Review stage that did not complete (`metrics-files`), and the
-metrics step with the stages that did not complete, the goal misses, and the
-high findings on changed, renamed, test, and unchanged files (`metrics`). The
-rules reader also checks the optional locations of the two metrics files, and
-the result checks the Metrics section and the note that leaves only the step
-"Decision" manual.
-
-```sh
-npm run build
-node --test "dist/test/acceptance/script/pr-review-check*.test.js"
-node --test "dist/test/unit/script/pr-review-*.test.js"
-```
-
-See [the check guide](../../script/pr-review/README.md).
-
 ## Free hosted signup (FS-01)
 
 The [FS-01 record](../implementation/fs-01.md) keeps the complete-candidate
@@ -1243,10 +140,6 @@ production document proofs below.
   notice and no activation writes. Signed-out old forms return 401 with a usable
   sign-in link. A fresh sign-in can activate for its new subject. Current-user
   outages remain 503.
-- Interface: `test/interface/auth/workos-signup.test.ts` checks single-attempt
-  writes after provider faults. `test/interface/auth/workos-signup.live.ts`
-  checks concurrent creation and acceptance metadata in disposable Staging
-  organizations. Only `npm run test:interface:workos-signup` selects the live file.
 
 ### Approved production documents (FS-04)
 
@@ -1454,28 +347,13 @@ controlled promise. Real listener/provider order is integration coverage below.
 
 **Stop-signal wait** (`test/unit/stop-signal.test.ts`)
 
-Since 2026-10-15, `src/index.ts` exports `stopSignal()`. An `EventEmitter` is the double for process signals. This helper removes its handlers on the first signal. The auth WorkOS MCP URL fetch slice now uses its own stop wait below so repeated forwarded signals cannot interrupt its later cleanup. The production entry and `test/integration/server-stop-signals.test.ts` keep their existing contract.
+Since 2026-10-15, `src/index.ts` exports `stopSignal()`. An `EventEmitter` is the double for process signals. This helper removes its handlers on the first signal. The auth WorkOS MCP URL fetch slice uses its own stop wait so repeated forwarded signals cannot interrupt its later cleanup. The production entry and `test/integration/server-stop-signals.test.ts` keep their existing contract.
 
 [V] Given a double for the process signals, the wait registers `SIGINT` and `SIGTERM`; when it gets `SIGTERM`, it gives `SIGTERM` and removes both listeners
 [V] Given a wait that is disposed before any signal, a later signal finds no listener, and the wait gives nothing
 
 ```sh
 npm run build && node --test dist/test/unit/stop-signal.test.js
-```
-
-**Work slice stop wait** (`test/unit/test-support/stop-signal.test.ts`)
-
-Three source cases passed in the reviewed 20-case shutdown focus. An
-`EventEmitter` replaces process signals at the public helper interface. The
-slice installs `test/support/processes/stop-signal.ts` before asynchronous
-startup and keeps its signal handlers until the site closes and logging flushes.
-
-[V] Captures a startup signal and retains both handlers until disposal
-[V] Keeps the first signal when repeated SIGINT and SIGTERM arrive during cleanup
-[V] Disposes twice after failed startup without removing another owner's handler or resolving a stop result
-
-```sh
-npm run build && node --test dist/test/unit/test-support/stop-signal.test.js
 ```
 
 **Better Auth runtime lifecycle** (`test/unit/auth-better-auth/better-auth-runtime.test.ts`)
@@ -1855,19 +733,6 @@ Run only these tests:
 npm run build && node --test dist/test/unit/auth-workos/workos-organizations-invitations.test.js
 ```
 
-**Operator runbook driver** (`test/unit/auth-workos/operator-runbook.test.ts`)
-
-The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` added these tests of the test-support driver of the [operator runbook](../implementation/hosted-organization-setup.md), `test/support/hosted-live/operator-runbook.ts`. A stateful double of the narrow SDK part (`test/unit/auth-workos/fixtures/runbook-client-double.ts`) keeps one membership, records each write, and can add a change of another person or a failure at a write. The hosted live gate proves the WorkOS side.
-
-[V] A grant to an active membership with User and Admin sends one role assignment of `super-admin` on the organization resource with the external ID of the organization, and no other write; the record is `applied` with the roles before and after
-[V] A revocation sends one removal of `super-admin` on the same resource and no other write; the other role stays, and without another role the default role counts as `applied`
-[V] A customer change of another role at the same time as the operator write still gives `applied` for the grant and for the revocation, and the record keeps the current roles
-[V] A grant without a membership creates it with only `super-admin`
-[V] An inactive or pending membership stops the grant, the revocation, and the inspection after an unknown outcome without a write; a grant in place and an absent grant for a revocation give `unchanged` without a write
-[V] A membership that someone deactivates during the grant, or a grant that someone removes at once, gives `unknown`
-[V] A grant write that fails before or after its effect gives `unknown` and no second write; the inspection after it gives `applied` for a grant in place and `stopped` for an absent grant
-[V] An organization without an external ID stops the grant and the revocation before a write
-
 **Billing** (`test/unit/billing/billing-free.test.ts`)
 
 `BillingFree` is the only `Billing` implementation until the owner chooses a payment provider. No paid billing test exists yet; the [AUTH-11 specification](../design/billing-design.md#auth-11-implementation-specification) lists the planned tests.
@@ -2194,98 +1059,10 @@ fetch-result contracts are type-only imports; these cases execute one package.
 
 [V] One fetcher with a configured executable runs two concurrent calls with the same executable, arguments, and process options, each with its own URL; each call gets its own result
 
-**Local renderer fixture launcher** (`test/unit/test-support/network-fixture.test.ts`)
-
-[V] Uses the selected executable for default, empty, and configured LIGHTPANDA_BIN values, including a path with spaces
-[V] Permits only the trusted localhost fetch scope and keeps the launch options of the fetcher, also its renderer environment
-[V] Rejects another executable or a public-site fetch through the fixture launcher
-
-**Renderer process double** (`test/unit/test-support/renderer-process-double.test.ts`)
-
-`kill` on a `ChildProcess` that did not start sends the signal to the whole process group of the test runner. `RendererChildDouble` in `test/support/doubles/website-fetcher/renderer-process-double.ts` stands in for the renderer child process and has a `kill` that sends no signal. Each renderer child in the fetcher unit tests is this double. The offline acceptance tests get one for each launch from `RendererProcessDouble`. The renderer setup report test of the server composition and the renderer shutdown cases also give this double as the renderer child.
-
-[V] Records `SIGKILL` and sends no signal to a process when the readiness deadline or a cancellation of a running fetch requests a kill
-
-**Outbound fetch guard** (`test/unit/test-support/outbound-fetch-guard.test.ts`)
-
-The WorkOS SDK proofs, the Better Auth proofs, the local MCP access tests, and the fixtures of the WorkOS browser session had the same guard. Each replaced `globalThis.fetch` in a `before` hook and put the real fetch back in an `after` hook. `guardOutboundFetch()` in `test/support/isolation/outbound-fetch-guard.ts` is the one copy. Its `before` hook installs the guard of `outboundFetchGuard()`, and its `after` hook releases the guard. `guardOutboundFetch()` also gives the record of the refused requests. The Better Auth telemetry proof checks this record before the end of its block. Each caller keeps its own refusal and finding; the two WorkOS callers let requests to `127.0.0.1` through to the local fake. `deny-network.ts` and `foreign-origin-probe.ts` block `fetch` for a whole child process and stay as they are.
-
-[V] Refuses a request to a public URL with an `Error` that has the refusal message, and adds the URL to the record of the guard at once; the release puts the real fetch back and then fails with the finding, which lists the URL
-[V] Records the URL of a refused `Request` object and of a refused `URL` object
-[V] With `allowLoopback`, sends a POST with a body and a `Request` object through the real fetch to a local server on `127.0.0.1`, with their method and body; the answers come back, and the release passes and puts the real fetch back
-[V] With `allowLoopback`, still refuses and records a request to a public URL and a request to `localhost`
-[V] `guardOutboundFetch()` in a describe block replaces the real fetch for the tests of the block and puts it back after them; the record that it gives is empty while no request was refused
-
-**HTML entities of the test browsers** (`test/unit/test-support/html-entities.test.ts`)
-
-The three decoders of `HostedBrowser`, `LocalBrowser`, and the local auth page fixtures were the same table and the same regex. `decodeHtml()` in `test/support/drivers/browser/html-entities.ts` is the one copy.
-
-[V] Decodes each of the five entities that the product pages write: `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`
-[V] Decodes several entities in one text and keeps the other text
-[V] Decodes one time only: `&amp;lt;` gives `&lt;`
-[V] Keeps plain text, an unknown named entity such as `&eacute;`, and a numeric entity other than `&#39;` such as `&#40;` unchanged
-[V] Gives the empty string for the empty string
-
-**Operator log reader of the server sites** (`test/unit/test-support/operator-log.test.ts`)
-
-`ServerProcess`, `ServerContainer`, and `InProcessServer` each parsed the listening line and the tenant line of the operator log. `ServerContainer` and `InProcessServer` also parsed the completion records. `HostedImageServer` of `test/support/container/hosted-image-gate.ts` waited for the listening line with its own text of the line. `listeningUrlIn()`, `tenantIn()`, `completionLinesIn()`, and `completionRecordsIn()` in `test/support/drivers/operator-log.ts` are the one copy; each site keeps the log in its own form: the text of the child process, the text of `docker start --attach`, or the messages of its logger.
-
-[V] Gives no listening URL before the `Listening on` line arrives, and the URL of that line when other lines are around it
-[V] Gives the local tenant of the tenant line; gives none without that line or before the full stop of that line arrives, so it gives only a complete ID
-[V] Gives the completion records of an output in their order, also when other lines and a JSON line of another event are between them and when the console logger writes the time, the level, and the call site before each record; an output without a record gives none
-[V] Gives the same URL, tenant, and records for the messages of the in-process logger, joined with line breaks, as for the console text of the same messages
-
-**Cookie jar of the test browsers** (`test/unit/test-support/cookie-jar.test.ts`)
-
-`HttpAgent`, `LocalBrowser`, and `HostedBrowser` each parsed the Set-Cookie lines of an answer and made the Cookie header. `keepCookies()` and `cookieHeaderOf()` in `test/support/drivers/browser/cookie-jar.ts` are the one copy; each browser keeps its own `Map` and its own transport.
-
-[V] Keeps a new cookie from a Set-Cookie line by its name, without its attributes
-[V] Replaces the value of a cookie with the same name and keeps its place in the jar
-[V] Applies several lines for one cookie in their order, so the last line wins
-[V] Drops a cookie on `Max-Age=0` in any letter case and at any position in the line; the other cookies stay
-[V] Drops a cookie whose value is empty (`name=; Path=/`)
-[V] Skips a line without a cookie name; the jar does not change
-[V] Removes the spaces around the name and the value
-[V] Gives no Cookie header for an empty jar
-[V] Gives the `name=value` pairs in the order that the jar got them, joined by `; `
-[V] Seeds a jar from the pairs of a Cookie header, and the jar gives the same header
-
-**Hosted live SDK errors** (`test/unit/test-support/sdk-errors.test.ts`)
-
-The fixture registry, the operator runbook driver, and the operator setup proofs had the same `statusOf()` helper. `test/support/hosted-live/sdk-errors.ts` is the one copy.
-
-[V] Gives the numeric status of an object, also of an error of a refused SDK call
-[V] Gives a status of another type (a string, null, or an object) unchanged
-[V] Gives undefined for an Error without a status
-[V] Gives undefined for null, undefined, and a string
-
-**Built-in mock sync** (`test/unit/test-support/builtin-mocks.test.ts`)
-
-`controlledRenderer()`, `RendererProcessDouble.install()`, and `permitIPv4Fixture()` had the same sequence after their mocks of Node built-in modules. `syncBuiltinMocks()` in `test/support/doubles/website-fetcher/builtin-mocks.ts` is the one copy: it syncs the ESM exports, and at the end of the test it restores all mocks of the test and syncs again. Nine test files outside `test/support` call it too, after their mocks of `execFile`, `lookup`, or `readFileSync`.
-
-[V] After a mock of `lookup` of `node:dns/promises`, the named ESM export `lookup` is the mock in the test; at the end of the test the named export and the module property are the original function again
-[V] Mocks of two built-in modules, `node:dns/promises` and `node:child_process`, made before one sync, are both restored at the same end of the test, in the named exports and in the module properties
-
-**Axiom export headers** (`test/unit/test-support/axiom-test-export.test.ts`)
-
-`openAxiomLogging()`, `createOtlpFixture()`, and the live Axiom interface test each wrote the two headers of their OTLP exporter. `axiomExportHeaders()` in `test/support/in-process/axiom-test-export.ts` is the one copy; each exporter keeps its own timeout.
-
-[V] Builds exactly the `Authorization` header with the API key as a bearer token and the `X-Axiom-Dataset` header with the dataset
-
-**Operator log spy** (`test/unit/test-support/operator-log-spy.test.ts`)
-
-The three hosted WorkOS acceptance specifications, `LocalHttpsSite` of the hosted live gate, and the hosted organization and administration integration tests each had the same class that recorded the operator log lines with the prefix `INFO` or `ERROR`. `OperatorLogSpy` in `test/support/doubles/application/operator-log-spy.ts` is the one copy. The operator log lines unit test and the local installation integration test keep their own logger, because it records each message without a prefix.
-
-[V] Records `info` and `error` calls in turn as `INFO <message>` and `ERROR <message>` lines, in the order of the calls
-[V] Records the lines in the same spy when `info` and `error` are taken off the spy and called without it
-[V] Keeps the lines of each spy apart: each of two spies has only its own line
-
 **Hosted test configuration** (`test/unit/test-support/hosted-config.test.ts`)
 
 Eight files loaded the same hosted test configuration: the three hosted WorkOS acceptance specifications, the hosted MCP access guidance specification, three integration tests, and `test/support/in-process/hosted-organization-site.ts`. The integration tests are the tests of the WorkOS organization reads, of the hosted account routes, and of the origin check at the hosted MCP endpoint. The access guidance specification wrote the public base URL with the slash at the end; the loader gives the same configuration for both forms. `hostedConfig` in `test/support/fixtures/hosted-config.ts` is the one copy: the hosted edition at the public base URL `https://thermus.example/team`. Ten more files loaded the hosted edition at the root of the host, `https://thermus.example/` or the same URL without the slash: the hosted signup and MFA policy specifications, the onboarding and MFA specifications of the auth WorkOS work slice, the integration tests of the hosted administration, the hosted organizations, the local installation, and the WorkOS connection, and the hosted signup and fetch sites. `hostedRootConfig` in the same module is the one copy of it. Each is a test setting of the hosted environment, not literal test data. A settings record that a test gives to a process or to the loader stays in its test.
 
-[V] Is the hosted edition at the public base URL `https://thermus.example/team/`, with the slash that the loader adds
-[V] Has the MCP resource URL `https://thermus.example/team/mcp` and a resource metadata URL on the same origin
 [V] Has, at the root of the host, the public base URL `https://thermus.example/` and the MCP resource URL `https://thermus.example/mcp`; the origin without the slash loads the same values
 
 **Hosted WorkOS site** (`test/unit/test-support/workos-site.test.ts`)
@@ -2299,141 +1076,6 @@ The three hosted WorkOS acceptance specifications and the hosted MCP access guid
 [V] With the signup fake and signup with the test documents, the signup page gives 200 with the full notice, and the signup fake has no personal organization
 [V] With signup but without approved documents, `serveWorkOSSite()` rejects with the document error of the composition
 [V] With the hosted configuration at the root of the host, the site has the public base URL `https://thermus.example/`, and `server/discover` without a token gets 401 with the resource metadata of the root
-[V] Has the public base URL of the hosted test configuration and a fake without memberships when the test gives no set-up
-[V] Closes its server when the test that opened it ends, so that a later request to the site fails
-
-**Hosted role catalog** (`test/unit/test-support/hosted-roles.test.ts`)
-
-Three support modules had the role catalog of the hosted edition. The WorkOS fake had it as `environmentRoles`, and `test/support/hosted-live/settings.ts` of the hosted live gate as `hostedRolePermissions`. `test/support/in-process/hosted-organization-site.ts` had it as its grants. `memberRole` was in that site and in `test/support/doubles/organizations/directory-double-records.ts`. The signup fake, `test/support/doubles/workos/workos-signup-fake.ts`, had the catalog too, for the personal organizations of signup. `test/support/fixtures/hosted-roles.ts` is the one copy. `hostedRolePermissions` gives each environment role with its application permissions, as the WorkOS staging environment defines them. `user` has `product:access`, `admin` has `user-grants:manage`, `super-admin` has `admin-grants:manage` and `billing:manage`, and `member` has no permission. `userGrant`, `adminGrant`, `superAdminGrant`, and `memberRole` are the grants of these roles. The fake answers with the catalog, the live gate checks the staging environment against it, and the organization site grants from it. Thus the fake and the live gate cannot drift apart. The signup fake gives each personal organization the organization JSON and the role JSON of the WorkOS fake. Thus a personal organization also lists its roles in the order of the catalog. The unit tests of `OrganizationAdministration` keep their own User, Admin, and Super Admin grants. The unit tests of `WorkOSSignup` keep their own role list. The hosted account integration test keeps its own grants too. Each test shows its data. `roleGrantOf()` of the directory double keeps its own map of User and Admin, because it refuses each other role.
-
-[V] Lists the roles `user`, `admin`, `super-admin`, and `member` in this order, the order in which the WorkOS fake lists the roles of an organization
-[V] Gives each of `userGrant`, `adminGrant`, `superAdminGrant`, and `memberRole` the name of its role and exactly the permissions of that role in the catalog
-[V] Gives the role `member` no permission
-[V] Has no permission in two roles
-
-**Form by label of the hosted browser** (`test/unit/test-support/form-labelled.test.ts`)
-
-Three functions found the form of a page by its button text. They were `formFor()` in `test/support/in-process/hosted-organization-site.ts`, `formNamed()` in `test/support/hosted-live/portal-visit.ts` of the hosted live gate, and a local `formNamed()` in `test/acceptance/auth/hosted-workos-administration.test.ts`. `formLabelled()` in `test/support/drivers/browser/hosted-browser.ts`, next to `formsIn()`, is the one copy. When no form has the button text, `formLabelled()` fails with the message of the two `formNamed()` copies. This message gives only the button texts of the page, because the fields hold the form token of the session. The message of `formFor()` also gave the fields of each form.
-
-[V] Gives the form with the button text, with its action and its hidden fields, from the forms that `formsIn()` reads from a page
-[V] Fails with an `AssertionError` when no form has the button text; the message names the text and lists the button texts of the page, without a field value such as the form token
-[V] Fails with a message that names the text and lists no button text, `[]`, when there is no form
-
-**Hosted members of the organization tests** (`test/unit/test-support/hosted-members.test.ts`)
-
-`test/support/in-process/hosted-organization-site.ts` had three layers: the site, its fixture data, and DSL steps. Step 7b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md) split it. `test/support/fixtures/hosted-members.ts` has the fixture data. `authority` is the authority of the provider double, `hosted-provider-double`. `userOf()` makes a user, and `member()` makes a membership. `members` has the memberships of the organization tests, and `administrationMembers` has the memberships of the administration tests. Before, `administrationMembers` was in `test/support/dsl/hosted-administration.ts`. The site keeps the composition. It gives `authority` to the directory double and to the MCP identities. When a test gives no memberships, the site uses `members`.
-
-[V] Gives a membership in each of the five organizations of the tests, `org-a` to `org-e`, the name of that organization: Acme, Globex, Initech, Umbrella, or Hooli; the membership is active and has the given grants
-[V] Gives a membership in another organization the organization ID as its name
-[V] Gives a user without an organization the authority `hosted-provider-double` and no `selectedOrganizationId`
-[V] Gives a user with an organization that organization as `selectedOrganizationId`
-[V] In `members`, nora has no membership; mia is a User in Acme, an Admin in Globex, and inactive in Initech; and otto is the only member of Umbrella
-[V] In `administrationMembers`, Acme has four active memberships with User: otto, cy, fay, and una, and Globex has three: cy, una, and ben; the User grants of ivy, which is inactive, and of pia, which is pending, do not count
-
-**Access steps of the hosted organization tests** (`test/unit/test-support/hosted-access.test.ts`)
-
-Step 7b also moved the DSL steps of the site to `test/support/dsl/hosted-access.ts`. `statusesOf()` gives the status of each page that a browser opens, and `contextAt()` gives the request context of a page. `destinationPaths`, the four destinations of the site, is the default of `statusesOf()`. Each step takes a browser that can open a path, `Pick<HostedBrowser, 'open'>`. Thus the test gives a stub browser that answers by path.
-
-[V] `statusesOf()` gives the status of each path, in the order of the paths
-[V] Without paths, `statusesOf()` opens the four destinations `portal`, `administration/users`, `administration/admins`, and `billing`
-[V] `contextAt()` gives the request context of a page that answers 200 with the context in JSON
-[V] `contextAt()` fails with an `AssertionError` when the page answers 403; the message begins with the body of the answer
-
-**Run-time paths of the test support code** (`test/unit/test-support-paths.test.ts`)
-
-`test/support/processes/module-paths.ts` is the one module that computes run-time paths from the support code to other folders and to the repository root, rule D8 of the [test code layout](test-code-layout.md): the program entry `dist/src/index.js`, the repository root, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads `lingeringHostedHandle`, `heldHostedIdentity`, and `heldHostedCleanup`, the hosted portal fixture and its preload `hostedPortalPreload`, the Lightpanda stub `lightpandaStub`, the three container scripts `containerEdgeScript`, `containerPageScript`, and `containerProbeScript` of `test/support/container/`, the identity preload `hostedImageIdentity` of the hosted image gate, and, since 2026-10-15, the portal build `src/interfaces/user-portal/dist/` that the local HTTPS site serves. The compiler cannot check such a path. The hosted live setup specification, the Better Auth interface proofs, the local command provider loading specification, the ad rules deployment test, the Lightpanda digest check, the local HTTPS site, the container gate, and the hosted image gate read their paths from it. Before, the local HTTPS site computed the portal build from its own place. That path was correct only from `dist/`. From the source, where the auth WorkOS MCP URL fetch work slice runs the site, the path was one folder above the repository root. Before Step 9b of the [test code refactoring plan](../implementation/test-code-refactoring-plan.md), `container-gate.ts` and `container-site.ts` computed the paths of the three container scripts. The test also covers `failingAdCleaner` of `test/support/processes/server-preloads.ts` and `trustedAdRulesFile` of `test/support/fixtures/ad-rules.ts`.
-
-[V] Given a build, each of the program entry, the network blocker, the SQL tracer, the foreign origin probe, the work-slice shutdown probe, the three hosted process preloads, the hosted portal preload and the index page of the hosted portal fixture, the Lightpanda stub, the identity preload of the hosted image gate, the failing ad cleaner preload, the trusted ad rules file, and the three container scripts names a file that exists
-[V] Given the repository, the portal build is the `dist/` folder of the portal source `src/interfaces/user-portal/`, and that source folder exists; the build itself exists only after `npm run build:user-portal`, which `npm run check` runs after the unit tests
-[V] Given a build, the repository root is the folder of `package.json`
-
-The matrix has 17 file paths and two structural cases, or 19 tests. When
-the work-slice shutdown probe came, it added one generated file-existence
-case, and the matrix had ten file paths and two structural cases, or twelve
-tests. That new path case and both real launcher-chain cases passed from
-source: 3/3 in 1 suite, with zero failures, cancellations, skips, or todo
-cases. Log:
-`/tmp/thermus-pr108-path-refactor-focused.log`. The final complete check, integration, acceptance, and container commands
-also passed after this test-only path correction.
-
-```sh
-npm run build && node --test dist/test/unit/test-support-paths.test.js
-```
-
-**MCP SDK client driver** (`test/unit/test-support/mcp-sdk-client.test.ts`)
-
-Sixteen setups in fifteen files built an SDK `Client` with a `versionNegotiation` option and connected it. They were in `LocalMcpUser`, `openFetchSite()`, the two work-slice acceptance tests, the SDK HTTP contract test, the MCP access and failure report tests, the HTTP fetch refusal, fetch cancellation, DNS cancellation, request isolation, and renderer shutdown tests, the two cases of the HTTP shutdown test, the MCP discovery unit test, and the signup cases of the hosted live gate. `connectMcpClient()` in `test/support/drivers/mcp/mcp-sdk-client.ts` is the one copy. Each caller keeps its own transport, because the auth and the fetch differ. Each caller closes the client itself. If the connection or the era check fails, the driver closes the client.
-
-[V] Connects to an SDK server with the defaults in protocol version 2026-07-28; the client lists the tools of the server
-[V] Connects in the era 2025-11-25 through the legacy negotiation of the SDK; the client lists the tools of the server
-[V] Stops the version probe of a server that does not answer after the default connect timeout of 5,000 ms
-[V] Stops the version probe after a connect timeout of 10,000 ms
-[V] Stops the version probe after its own 5,000 ms with `probe: true`, also when the connect timeout is 10,000 ms
-[V] Fails the era check when an SDK server offers only protocol version 2025-06-18 to a connection in the era 2025-11-25, and closes the client
-[V] Gives the client of that connection with `checkEra: false`; the client uses protocol version 2025-06-18
-
-**Image build: Lightpanda digest check** (`test/unit/image/check-lightpanda-digest.test.ts`)
-
-The test runs `docker/check-lightpanda-digest.sh` with `sh`. A `sha256sum` double gives the check the digest of the asset, because the unit suite has no Lightpanda asset. The expected digests come from `docs/lightpanda-runtime.md`.
-
-[V] Given the digest that the runtime guide records for `linux/amd64` or `linux/arm64`, the check accepts the asset without output
-[V] Given another digest for `linux/amd64` or `linux/arm64`, also the digest of the other Linux asset, the check stops the build with an error that names the platform, the digest of the asset, and the recorded digest
-[V] Given a target architecture without a Lightpanda 1.0.0 Linux asset, the check stops the build with an error that names the supported platforms
-
-```sh
-npm run build && node --test dist/test/unit/image/check-lightpanda-digest.test.js
-```
-
-**Work slice fetch lines** (`test/unit/test-support/fetch-operation-spy.test.ts`)
-
-`fetchOperationSpy()` and `MARKDOWN_LOG_LIMIT` write the fetch lines of both work slices. They are in `test/support/doubles/mcp/fetch-operation-spy.ts`, and the test imports them from there. Before 2026-10-15, they were private to the entry point of the basic slice, and the test was `test/unit/work-slice/basic-mcp-url-fetch.test.ts`. The cases did not change. A double stands in for the fetch operation, and a recording logger stands in for the log. The tests need no renderer, no Axiom settings, and no network access.
-
-[V] `fetchOperationSpy()` writes the started line before the operation runs; then, below the limit, the completed line has the number of characters and the whole Markdown
-[V] Counts code points, not UTF-16 units; above the limit, the completed line keeps the first code points without a split surrogate pair and ends with `[cut: <n> more characters]`, and the caller still gets the whole Markdown; the default limit is 65,536 code points
-[V] When the operation fails with an `Error`, a cancellation `DOMException`, or a value that is not an `Error`, writes one ERROR line with the message and throws the same value again
-[V] Gives the operation the same URL, request context, and signal
-
-```sh
-npm run build && node --test dist/test/unit/test-support/fetch-operation-spy.test.js
-```
-
-**Work slice launcher script: basic MCP URL fetch** (`test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`)
-
-The test runs `test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh` with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the five settings, and whether `AXIOM_API_KEY` is set, but never the value of the key. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no `ad-rules.txt` of the repository, and no renderer.
-
-[V] Given only `AD_RULES_FILE` with an empty file and `AXIOM_API_KEY`, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other four settings and the key; stderr lists the five settings, and no output shows the key
-[V] Given each of the five settings with a custom value, pnpm gets each value unchanged, and stderr lists these values
-[V] Given extra arguments, pnpm exec gets them after the entry point
-[V] Given an `AD_RULES_FILE` that does not exist, the script exits with status 1 and a message that names `AD_RULES_FILE` and the `touch` command, and pnpm does not run
-[V] Given a pnpm that exits with status 3, the script exits with status 3
-
-```sh
-npm run build && node --test dist/test/unit/work-slice/basic-mcp-url-fetch-script.test.js
-```
-
-**Work slice launcher script: auth WorkOS MCP URL fetch** (`test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`)
-
-The 13 source and compiled cases passed on 2026-10-15 with the slice organization default and override checks. The harness `test/unit/work-slice/fixtures/auth-workos-mcp-url-fetch-script-harness.ts` copies `test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.sh` into a temporary root with an empty `ad-rules.txt` and a portal build, `src/interfaces/user-portal/dist/index.html`, and runs the copy with `bash` from a temporary directory. A `pnpm` double first on `PATH` writes one JSON line with its arguments, its working directory, the eleven settings, whether each of `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, and `AXIOM_API_KEY` is set, and the length of the cookie password, but never the value of a secret. An `openssl` double records each call, gives a fixed value for `rand -base64 32`, and writes test files for `req`. Each run gets only `PATH`, `HOME`, and the settings of the case. Thus the test reads no `.env.local`, no file of the real repository root, and no renderer, and it runs no real OpenSSL. The settings include `THERMUS_SLICE_ORGANIZATION_ID`: the staging default is `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, and a custom organization is passed unchanged. The file has 13 cases: the case of a missing WorkOS setting runs for each of the three settings.
-
-[V] Given only the three WorkOS settings and `AXIOM_API_KEY`, when the script runs from another directory, pnpm exec runs the entry point with the pinned Node runtime in the repository root with the defaults of the other settings, the redirect URI on the public base URL, a new cookie password from `openssl rand`, and the keys; stderr lists the eleven settings after the certificate line, and no output shows a secret
-[V] Given each setting with a custom value, a cookie password, and a TLS directory with both files, pnpm gets each value unchanged, openssl does not run, the files stay, and stderr lists the eleven values without the secrets
-[V] Given a `PUBLIC_BASE_URL` with a final slash and no `WORKOS_REDIRECT_URI`, the redirect URI is the callback on that base without a double slash
-[V] Given no `WORKOS_API_KEY`, no `WORKOS_CLIENT_ID`, or no `WORKOS_AUTHKIT_ISSUER` (three cases), the script exits with status 1 and a message that names the missing setting and the staging launcher and shows no value, and neither openssl nor pnpm runs
-[V] Given the three WorkOS settings with empty values, the script exits with status 1, and the message names the three settings
-[V] Given no certificate files, the first of two runs makes `key.pem` and `cert.pem` with `openssl req` in the default TLS directory, which only the owner can read (the directory `0700`, the key `0600`), and says so on stderr; the second run calls no `openssl req` and keeps the files
-[V] Given a TLS directory with `cert.pem` only, the script makes a new `key.pem` and `cert.pem`
-[V] Given an `AD_RULES_FILE` that does not exist, the script exits with status 1 and a message that names `AD_RULES_FILE` and the `touch` command; it makes no certificate, and pnpm does not run
-[V] Given a repository root without the portal build, the script exits with status 1 and a message that names the missing `index.html` and `npm run build:user-portal`; it makes no certificate, and pnpm does not run
-[V] Given extra arguments, pnpm exec gets them after the entry point
-[V] Given a pnpm that exits with status 3, the script exits with status 3
-
-```sh
-npm run build && node --test dist/test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.js
-```
-
-### Planned Cache Key Tests
-
-No cache key helper exists yet. The required unit test inputs and expected results are listed in the [planned cache key design](../design/cache-design.md#required-key-tests). All cases are pending. Do not mark them executed until the helper is implemented and each test passes after a RED → GREEN run.
 
 ## Integration
 
@@ -2568,31 +1210,6 @@ A double of the browser session records each call (`test/integration/auth-workos
 [V] Registers stop handlers before the listening log and removes them after SIGINT or SIGTERM
 [V] Starts MCP cleanup before real listener drain, refuses new connections, and keeps the real provider lock until both finish
 [V] Releases the provider lock and listener after startup logging fails, removes signal listeners, and retains a simultaneous MCP cleanup failure
-
-**Work slice signals through the real launcher chain** (`test/integration/work-slice/shutdown-signals.test.ts`)
-
-Two source cases passed in the reviewed 20-case shutdown focus. The child
-script `test/support/processes/work-slice-shutdown-probe.ts` runs real `pnpm`
-and `tsx` with an outer signal forwarder and the slice stop helper. It uses
-no WorkOS, renderer, or Axiom connection. This collaboration across the real
-child-process/launcher boundary is integration coverage. The source pass does
-not prove real Axiom delivery.
-
-Each signal case now uses its own offline local-dependency fixture without
-install-state metadata. This reproduced the Render failure: pnpm installed
-before the probe ran and wrote to stderr. The probe disables dependency
-verification only for its own pnpm invocation. The required frozen install still
-runs before tests; missing Node or tsx still fails startup. This signal check must
-not reinstall dependencies beside other tests that import them. Both regression
-cases failed before the change and pass with the invocation setting.
-
-[V] SIGINT sent to the process group and forwarded again during asynchronous cleanup preserves the first signal, reaches the flush marker, and exits the whole chain with 0
-[V] The same process-chain behavior holds for SIGTERM
-[V] Both signal cases retain empty stderr, the exact pinned runtime, and unchanged fixture and dependency-tree entries even when dependency install state is missing
-
-```sh
-npm run build && node --test dist/test/integration/work-slice/shutdown-signals.test.js
-```
 
 **MCP SDK HTTP contract** (`test/integration/mcp/sdk-http.test.ts`)
 
@@ -3012,20 +1629,17 @@ npm run build && node --test dist/test/integration/auth/workos-google-onboarding
 
 **Local HTTPS test server of the hosted live gate** (`test/integration/auth/hosted-live-site.test.ts`)
 
-The earlier eleven source and compiled cases passed on 2026-10-15 with the RHD-01 complete-candidate gates. RHD-02 changes the default front to forward the portal to production and adds the pinned renderer startup prerequisite; its results are pending in the [RHD-02 record](../implementation/rhd-02.md#verification). These integration cases start `LocalHttpsSite` with the real HTTP server. The failed-start and certificate cases stay in the entry file. The sibling test-case modules `hosted-live-site/mcp.ts` and `hosted-live-site/cancellation.ts` add the MCP and lifecycle cases. Their fixture data is in `test/integration/auth/fixtures/https-site-fixtures.ts`. The entry file and the sibling modules send each HTTPS request through one protocol driver, `test/support/drivers/browser/https-client.ts`. The MCP cases connect the real hosted composition and fetch server to the pinned SDK against a local WorkOS fake, with a fetch-operation double. `composeApplicationWithWorkOSFake()` of `test/support/in-process/workos-site.ts` composes that application. They prove HTTP and application collaboration, not real Google or renderer behavior. The complete-site cases listen on port 46443, so the hosted live gate and the manual slice must be stopped first.
+These integration cases serve the production portal and signup routes through
+`LocalHttpsSite` and the real HTTP server, with trusted rules and placeholder
+WorkOS settings. The sibling `hosted-live-site/mcp.ts` adds authenticated MCP
+and cancellation cases with the production hosted composition, a local WorkOS
+fake, and a fetch-operation double. The complete-site cases listen on port
+46443, so the hosted live gate and manual slice must be stopped first.
 
-[V] Given a missing portal build, start rejects with a setup message and file-system cause and leaves no listener
-[V] Given no OpenSSL, start rejects with the spawn error, closes the default application, and leaves no listener
-[V] Given certificate files, a logger, and an application function, the HTTPS front serves that certificate and portal, forwards requests, reports handler failure, and closes the application once
-[V] An authenticated MCP POST forwards the body and verified identity and returns the result; missing or invalid token and current User-role removal start no protected work
-[V] Disconnecting an authenticated MCP client cancels active fetch work and records no success
-[V] A client disconnect before response headers cancels its backend request
-[V] Streaming headers reach the client before the first chunk; disconnecting after a chunk cancels the upstream stream
-[V] A backend failure after a chunk fails the HTTPS response instead of completing with truncated content
-[V] Closing with active backend work cancels through application cleanup before the listener deadline and waits for the request to drain
-
-[V] A custom application that ignores the drain argument still keeps site close pending until the response drains
-[V] A custom application whose cleanup throws still drains the response before site close reports that failure
+[V] The default composition serves the portal and protects account and MCP requests without credentials
+[V] Signup with test documents serves the complete test notice and real portal without a WorkOS call
+[V] An authenticated MCP POST forwards the body and verified identity; invalid tokens and removed User grants start no protected work
+[V] An authenticated client's disconnect cancels active fetch work and records no success
 
 Run only these tests:
 
@@ -3068,53 +1682,6 @@ Run these proofs offline:
 npm run build && node --test dist/test/interface/auth/better-auth.test.js
 ```
 
-**WorkOS SDK** (`test/interface/auth/workos.test.ts`)
-
-The 38 source and compiled cases passed on 2026-10-15 after the explicit User-create proof was added; the final complete-candidate gates also passed. These proofs run the pinned `@workos-inc/node` 11.0.0 and `jose` 6.2.12 against a local fake of the WorkOS API (`test/support/doubles/workos/workos-fake-api.ts`) and local signing keys (`test/support/doubles/workos/jwt-signing-key.ts`). They show what the SDK sends, how it reads answers, and how it reports failures; they do not show what the WorkOS service does. They need no renderer or network access; with `guardOutboundFetch()` of `test/support/isolation/outbound-fetch-guard.ts`, a replaced `fetch` records no request that leaves the machine. The [authentication plan](../design/authentication-design.md#pinned-workos-sdk-proof) records the proven contracts and the findings.
-
-[V] Gives an AuthKit sign-in URL with the client ID, the exact redirect URI, `response_type=code`, `provider=authkit`, an S256 challenge, and a fresh state and verifier for each call; an organization ID adds `organization_id`
-[V] Exchanges a code with the verifier and the API key as `client_secret`, and returns the user, both tokens, and an iron seal that hides the tokens; a refused code throws `OauthException` with `invalid_grant`
-[V] Authenticates a seal against the browser key set and returns `sid` as the session ID, the organization, the roles, and the permissions, with one key-set read
-[V] Gives `invalid_session_cookie` for a wrong cookie password, a changed or invalid character in the encrypted part, and a value that is not a seal, and `no_session_cookie_provided` for an empty value, without a key-set read
-[V] Throws `InvalidCharacterError` for an HMAC part that is not valid base64url, and `Invalid expiration` for an expiration part that is not a number
-[V] Gives `invalid_jwt` for an expired token, another issuer, and a forged signature; without the issuer option, accepts another issuer
-[V] Throws `ERR_JWKS_NO_MATCHING_KEY`, not a failure result, for a token with an unknown key ID
-[V] Throws `ERR_JOSE_GENERIC`, `ERR_JWKS_TIMEOUT` after 5 s, or `TypeError` for a key set that answers 500, does not answer, or refuses the connection
-[V] Keeps the browser key set for 10 minutes, so an outage changes no result until then and throws after; reads a new key ID at most once in 5 minutes
-[V] Refreshes with the stored refresh token and the current organization, and returns a new seal with the rotated token; the old seal still opens and sends the old token
-[V] Switches the organization with a refresh that sends the requested organization
-[V] Gives terminal failures for `invalid_grant`, `mfa_enrollment`, and `sso_required`, each after one request with `maxRetries: 0`
-[V] Gives retryable failures for 500, 429 (with `retryAfter` 7, or `NaN` for a date), a timeout, and a dropped or refused connection, each after one request
-[V] Throws for a 401, another 4xx, and a 5xx answer that is not JSON, instead of a failure result
-[V] With the default of 3 retries, sends 4 refresh requests with one generated `Idempotency-Key` and waits at most 60 s for each `Retry-After`
-[V] Gives the logout URL with the session ID and the return URL and posts the session revocation; a seal that does not authenticate, also one with an expired access token, gets an error instead of a logout URL
-[V] Lists memberships with the exact user, organization, status, and limit query; keeps `role` and `roles`; an answer without `roles` gives no `roles` field
-[V] Pages memberships with the `after` cursor; `autoPagination()` returns only the first page after a limit, and reads the first page again and waits 350 ms between pages without one
-[V] Lists the roles of an organization with their permissions in one unpaged request
-[V] Writes the complete role set with `PUT`, and creates, deactivates, and reactivates memberships, with no `If-Match`, no version, and no `Idempotency-Key` with `maxRetries: 0`
-[V] An explicit User membership create sends `role_slug: user` with `maxRetries: 0`, no absence precondition, and no idempotency key, and reads the returned active status and role set
-[V] With the default retries, gives each membership create one generated `Idempotency-Key` and each role-set update none
-[V] Loses one of two concurrent role-set updates that start from the same read
-[V] Sends one role for each invitation and drops a role set
-[V] Reads one membership and one user by ID with one GET each; the membership keeps `id`, `organizationId`, `status`, `updatedAt`, `directoryManaged`, and `roles`, and the user its email; a 404 `entity_not_found` throws `NotFoundException` with that status and code
-[V] Assigns and removes one role with a POST and a DELETE of the same JSON body (`role_slug`, `resource_type_slug` `organization`, and `resource_external_id`) at `/authorization/organization_memberships/<id>/role_assignments`, without `If-Match` or `Idempotency-Key` with `maxRetries: 0`; `assignRole()` returns the role assignment, and `removeRole()` gives `undefined` for a 204 without a body and for a 200
-[V] Reads one organization by ID with one GET to `/organizations/<id>`, and gives its ID and its external ID; the external ID is `null` when the answer has `external_id` `null` and when the answer has no `external_id`
-[V] Lists the invitations of an organization with `organization_id`, `limit`, `after`, and `order=desc`, follows the `after` cursor, and reads one invitation by ID; each invitation keeps `token` and `acceptInvitationUrl`, so the directory must drop them
-[V] Sends an invitation with exactly `email`, `organization_id`, and `role_slug`; the 400 refusals `email_already_invited_to_organization`, `user_already_organization_member`, and `invalid_role`, without an `errors` list, each throw `GenericServerException` with status 400 and that code, not `BadRequestException`
-[V] Resends an invitation with the body `{}` and revokes it with an empty body, and returns each answer; a 400 `invite_not_pending` answer to a revoke throws `GenericServerException` with status 400 and that code
-[V] Verifies a Connect token with jose against the AuthKit key set, the exact issuer, the MCP audience, and RS256, and rejects another issuer, another audience, an expired token, a forged signature, and HS256
-[V] Accepts an M2M-shaped token without `sid` whose `sub` equals its `client_id`, so the MCP verifier needs its own rule
-[V] Refuses a new key ID during the key-set cooldown and accepts it after one new read
-[V] Keeps a withdrawn key until the cache age passes and then rejects its tokens
-[V] Keeps results through a key-set outage with fresh cached keys; after the cache age or without cached keys, throws a key-set error, not a token rejection
-[V] Uses the jose defaults: a 30 s cooldown and a 10 min cache age
-
-Run these proofs offline:
-
-```sh
-npm run build && node --test dist/test/interface/auth/workos.test.js
-```
-
 **Renderer network policy**
 
 [V] Blocks literal and DNS loopback targets before a connection
@@ -3138,24 +1705,6 @@ pnpm test:unit
 
 Use the pinned runtime for the local renderer interface tests. [Runtime setup](../lightpanda-runtime.md#verify-rendering) gives the checksum recipe and separate local fixture and public-site smoke commands. The controlled local interface suite passed 29 tests with Lightpanda 1.0.0 on macOS ARM64 for this change. Other platform binaries were not exercised. The public-site smoke tests remain a separate check.
 
-**LinkeDOM Serialization**
-
-[V] ESM and CommonJS preserve escaped numeric entities, ordinary entities, quotes, and query ampersands after attribute serialization and reparsing
-
-**Sanitizer Deletion Positions**
-
-[V] Reports exact UTF-16 deletion ranges for ANSI passes, Unicode controls, contextual joiners, emoji tags, and BOM handling
-[V] Keeps sanitizer output and findings the same when deletion reporting is enabled
-
-**Defuddle Extracted DOM**
-
-[V] Passes decoded selector-based Substack and generated Discourse content to the callback before URL conversion
-
-**Defuddle Emoji Joiners** (`test/interface/defuddle-emoji-joiners.test.ts`)
-
-[V] Keeps the exact woman-technologist code points from contiguous literal, decimal, and hexadecimal input
-[V] Keeps a literal joiner in a separate span or text node, including a sequence split across three spans
-
 **Website Fetcher Readiness** (`test/interface/website-fetcher-readiness.test.ts`)
 
 [V] Returns the completed asynchronous DOM after its 500 ms request delay, before the full wait budget
@@ -3174,12 +1723,9 @@ npm run build && node --test dist/test/interface/website-fetcher-cancellation.te
 
 **Axiom logging** (`test/interface/logging/axiom-logging.test.ts`)
 
-`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access. The closed-port case takes about 9 seconds, because the exporter retries a refused connection until its deadline.
+`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
 
 [V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets no line
-[V] Given a receiver that refuses the export with HTTP 401, the console gets one failure line with the error name and the HTTP status, without the error message or the response body; `close()` rejects with the count, `1 log export`
-[V] Given two refused batches, the console gets two failure lines, and `close()` rejects with the plural count, `2 log exports`
-[V] Given a closed loopback port, the console gets one failure line with the system error name `ECONNREFUSED`, without an HTTP status or the address; `close()` rejects with the count
 
 ```sh
 npm run build && node --test dist/test/interface/logging/axiom-logging.test.js
@@ -3293,8 +1839,6 @@ gives the results. PR #116 is stacked on PR #115; both await owner review.
 [V] `test/acceptance/auth/hosted-mcp-origin.test.ts`: absent/exact origins keep protected MCP behavior; foreign, malformed, and opaque origins get 403 before WorkOS; metadata stays public
 [V] `test/integration/auth/hosted-mcp-origin.test.ts` and `test/unit/application.test.ts`: all MCP methods, repeated/invalid origins, configured port authority, no authentication work on refusal, and unchanged metadata/browser/account/self-hosted delegation
 
-[V] `test/unit/test-support/server-preloads.test.ts`: adding a preload retains existing settings, preserves both preloads in order, and leaves the supplied settings unchanged (two cases, covered by the manager-confirmed unit run)
-
 [V] `test/acceptance/mcp/hosted-process-shutdown.test.ts`: the three held-identity cases retain shutdown under one second, clean exit, and no deadline error, with a 15-second total test allowance and timeout-phase diagnostics
 
 Build before these focused commands. The portal acceptance uses the explicit
@@ -3302,7 +1846,7 @@ fixture mapping; it does not establish the packaged image contract.
 
 ```sh
 npm run build
-node --test dist/test/unit/hosted-portal/hosted-portal.test.js dist/test/unit/hosted-renderer-startup.test.js dist/test/unit/application.test.js dist/test/unit/test-support/server-preloads.test.js
+node --test dist/test/unit/hosted-portal/hosted-portal.test.js dist/test/unit/hosted-renderer-startup.test.js dist/test/unit/application.test.js
 node --test dist/test/interface/hosted-renderer-startup.test.js dist/test/integration/auth/hosted-mcp-origin.test.js
 node --test dist/test/acceptance/auth/hosted-portal.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-mcp-origin.test.js
 ```
@@ -3354,29 +1898,6 @@ The built entry point runs in separate processes with an import hook that blocks
 npm run build && node --test dist/test/acceptance/mcp/self-hosted-rules-startup.test.js dist/test/acceptance/mcp/server-only-modules.test.js
 ```
 
-**Renderer gate setup** (`test/acceptance/mcp/renderer-gate-setup.test.ts`)
-
-The tests run both built renderer runtime files and the live search file
-in separate `node --test` processes with bad prerequisites and network access
-blocked. All three use the shared validator in
-`test/support/processes/pinned-renderer.ts`. They need no renderer. Two cases also
-inspect the actual package scripts without starting builds or gates.
-
-Given `LIGHTPANDA_BIN` that is unset, relative, a missing file, or an
-unsupported Lightpanda version, each of the three files must fail with its
-setup error before an outbound network attempt. No gate test may pass, be
-skipped, or remain as todo.
-
-Given the package scripts, the local renderer command must select both fetch
-and search runtime files; hosted build must select those files plus ordinary
-public search, shared capacity, and search shutdown acceptance. Only
-`test:mcp:search:live` may build and select the live Brave file. These checks
-inspect executable selection, not document prose.
-
-```sh
-npm run build && node --test dist/test/acceptance/mcp/renderer-gate-setup.test.js
-```
-
 **Search runtime and live proof**
 
 `test/acceptance/mcp/search-pipeline.runtime.ts` uses pinned Lightpanda 1.0.0
@@ -3400,13 +1921,6 @@ command selects it; ordinary, offline, and container build gates exclude it:
 ```sh
 npm run test:mcp:search:live
 ```
-
-The [nine controlled assertion cases](../../test/unit/test-support/search-results.test.ts)
-use the [same shared assertion](../../test/support/dsl/search-results.ts) as
-the live proof. They accept descriptions in the same or next paragraph and
-reject unrelated footers, another result's description, Brave navigation,
-title-only descriptions, rule boundaries, and paragraphs with multiple result
-links. These cases check the assertion, not current Brave access.
 
 These two proofs have separate scopes. Follow the
 [live proof evidence policy](../implementation/test-gate-policy.md#live-brave-search-proof-search-06)
@@ -3494,91 +2008,9 @@ The three source and compiled cases passed on 2026-10-15; the final complete-can
 
 [V] Given a new verified `thermus.ai` Google user without a membership, the callback grants explicit User access and selects the slice organization; `/session` has that organization without MFA evidence, portal access succeeds, and a separate organization Connect token returns Markdown; a Connect token without an organization is refused
 [V] Normal hosted composition without a policy signs in the same eligible user without creating a membership or granting portal access
-[V] Missing `THERMUS_SLICE_ORGANIZATION_ID` stops slice composition before any enrollment request
 
 ```sh
 npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.js
-```
-
-**Direct auth import boundaries** (`test/acceptance/architecture/auth-boundaries.test.ts`)
-
-The tests use the existing ESLint configuration against source snippets at the
-protected paths. They check direct static and type imports, named/type/star/namespace
-re-exports, and literal dynamic imports. Computed imports and transitive dependencies
-are outside this check.
-
-[V] Refuses provider imports in shared auth and the three neutral local files, including installed provider packages and subpaths
-[V] Refuses transport implementations and MCP SDK packages in shared auth, while allowing the HTTP client-address contract
-[V] Refuses provider and local command/parser implementations in MCP and hosted-account consumers, also the WorkOS provider files and `@workos-inc/node`
-[V] Allows public contracts, neutral config, organization use cases, the HTTP header, provider-owned browser adapters, and composition roots
-[V] Checks exact protected paths and path segments without refusing similar unrelated names
-
-Run only these tests:
-
-```sh
-npm run build && node --test dist/test/acceptance/architecture/auth-boundaries.test.js
-```
-
-**Protected page-fetch import boundary** (`test/acceptance/architecture/page-fetch-boundaries.test.ts`)
-
-The existing ESLint fixture machinery checks root and nested core paths with
-static/type imports, re-exports, and literal dynamic imports. Computed imports
-and transitive dependencies remain outside this direct-import proof.
-
-[V] Refuses MCP/SDK, application/composition, provider, concrete renderer/network, cleaner, and logger imports, including type-only imports
-[V] Allows public auth and fetch contracts, including fetcher errors, and core-local modules
-[V] Allows the cleaner-owned adapter's inward type dependency and composition's real collaborator selection
-
-```sh
-npm run build && node --test dist/test/acceptance/architecture/page-fetch-boundaries.test.js
-```
-
-**Test type boundaries** (`test/acceptance/architecture/test-type-boundaries.test.ts`)
-
-The tests use the same ESLint configuration against source snippets at example
-paths under `test/`. They check the rules D2 and D3 of the
-[test code layout](test-code-layout.md#dependency-rules): the rules of the test
-type axis. The three architecture specifications share the import forms and the
-assertions of `test/acceptance/architecture/fixtures/import-guards.ts`. Computed
-imports and transitive dependencies are outside this check.
-
-Since 2026-10-15, rule D2 has no exception. The unit test of the work-slice
-fetch lines imports them from test support. Thus the lint block of the
-exception and its three cases are gone. One case shows that the former
-exception is refused.
-
-[V] D2: refuses an import of another test type from each of the four test types; allows support code, own fixtures, the same type, `src`, and packages
-[V] D2, the former exception: `test/unit/test-support/fetch-operation-spy.test.ts` may not import the entry point of either work slice; it may import `test/support/doubles/mcp/fetch-operation-spy.ts`
-[V] D3: refuses the fixtures of another unit package, also from a fixture file; allows own fixtures, shared support fixtures and doubles, and the package fixtures from a nested folder
-[V] Checks exact path segments without refusing names that only resemble a test type folder
-
-Run only these tests:
-
-```sh
-npm run build && node --test dist/test/acceptance/architecture/test-type-boundaries.test.js
-```
-
-**Test support boundaries** (`test/acceptance/architecture/test-support-boundaries.test.ts`)
-
-The tests use the same ESLint configuration and the same import forms against
-source snippets at example paths under `test/`, most of them under
-`test/support/`. They check the rules D1 and D4 to D7 of the
-[test code layout](test-code-layout.md#dependency-rules): the rules of the
-support layer axis. Computed imports and transitive dependencies are outside
-this check.
-
-[V] D1: refuses an import of a test type folder from `test/support/`, also through `test/`; allows `src`, packages, and support code
-[V] D4: refuses an import of `test/support/dsl/` from `test/support/drivers/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
-[V] D5: refuses an import of `test/support/dsl/` or `test/support/drivers/` from `test/support/doubles/` and `test/support/fixtures/`, also through `support/` and `test/support/`; D1 still applies; allows `src`, packages, and the other support folders
-[V] D6: takes the scripts that the sites send into containers from `test/support/processes/module-paths.ts`, today the three container scripts in `test/support/container/`; D6 covers each one, refuses each of its imports that is not a `node:` module, and allows `node:` modules; a new script path in `module-paths.ts` without a D6 entry in the ESLint configuration fails the specification
-[V] D6, the identity preload: `test/support/container/hosted-image-identity.ts` runs in the server process of the hosted image, not alone in a container, so D6 does not cover it, and D1 allows its imports of `src`
-[V] D7: refuses each `*.test.ts` file under `test/support/` as a whole, also in `drivers/` and `doubles/`; allows a test of support code in `test/unit/test-support/`
-[V] Checks exact path segments without refusing names that only resemble a test type folder or a support folder
-
-Run only these tests:
-
-```sh
-npm run build && node --test dist/test/acceptance/architecture/test-support-boundaries.test.js
 ```
 
 **MCP access context** (`test/acceptance/auth/mcp-access.test.ts`)
@@ -3892,7 +2324,6 @@ The suite builds the image of the current candidate two times; the second build 
 [V] Given a live server container, one-off command containers on the same volume and a command in the server container fail with the lock error, ask for no password, and change no account
 [V] Given an installation that starts with zero accounts and later has only a disabled account, a command container that adds an account while the server is stopped gives MCP access through the installation client, and the tenant stays the same
 [V] Given a signed-in local user, hosted, paid, and private-provider paths give 404 and add no account, and MCP lists only `getURLAsMarkdown`; starting the self-hosted image with `DEPLOYMENT=hosted`, valid WorkOS settings, trusted rules, and its pinned renderer stops before listening because the portal build is absent, with safe FATAL output, exit code 1, no local tenant or fresh-volume data, and no outbound calls (RHD-02 dedicated gate: 13/13 passed)
-[V] Given the image and the compose file, the image holds the compiled `dist/src` of this build, the shipped migrations, the pinned production packages with a working native ad blocker, and the pinned Lightpanda 1.0.0 at `LIGHTPANDA_BIN=/opt/lightpanda/1.0.0/lightpanda`, which root owns with mode `0755`, which the `node` user cannot change, and which loads the CA certificates of the image, and no source, test output, or development package; it runs as `node` with production settings, no telemetry setting except `LIGHTPANDA_DISABLE_TELEMETRY=true`, a `0700` data directory, and `AD_RULES_FILE=/etc/thermus/ad-rules.txt`, but no rules file; the compose service mounts only that volume and the operator's `ad-rules.txt` read-only, which Compose must not make, starts with an init process, and publishes port 8080 on `127.0.0.1`
 
 Run the container gate. It needs Docker Engine with Buildx and Compose:
 
@@ -3921,23 +2352,17 @@ The fetch cases mount two test-only seams: the provider seam
 `test/support/container/container-page.ts` with `CONTAINER_GATE_PAGE=hosted`.
 These seams supply a fixed Connect User and permit the local JavaScript fixture. They keep
 the final image's real cleaner, renderer, production dependencies, and production
-entry point. The image case reads the files of the image with the `hosted-image`
-probe of `test/support/container/container-probe.ts`. The gate sends the probe
-on standard input, so the image holds no test file.
+entry point.
 The public HTTPS case uses the renderer's normal TLS verification.
 This proves packaged application behavior and does not prove WorkOS behavior.
-The gate has a 60-minute total allowance for the build and image cases. Its
-failed-check case injects a failure into an existing unit file, before the
-later suites. Production readiness and shutdown bounds stay unchanged.
+The gate has a 60-minute total allowance for the build and image cases. Production readiness and shutdown bounds stay unchanged.
 
-[V] Given the final image, its metadata and files show Linux AMD64, the checked portal, production packages, working native cleaner and shipped rules, Lightpanda 1.0.0, CA certificates, non-root execution, and no development tools or test output
 [V] Given the unmodified image and placeholder runtime settings, the real CLI serves portal assets and CSP, responds to health, requires MCP authentication, and refuses a foreign Origin
 [V] Given the unmodified image and placeholder credentials with signup enabled only in the test, a visitor sees the complete byte-exact approved notice before sign-in and no activation form
 [V] Given the provider seam's Connect User, the real renderer fetches public HTTPS with verified TLS and returns the controlled page's JavaScript output after the native cleaner applies the shipped policy
 [V] Given private targets, overload, disconnect, and active-renderer SIGTERM, address-policy refusals give `Page fetch failed` before rendering, a blocked renderer socket gives `Page fetch failed: Renderer connection failed`, excess work fails promptly, cancellation settles before capacity is reused, and shutdown exits with status 0 within the bound
 [V] Given missing rules, a missing renderer, an empty cookie password, or an HTTP public base URL, the real CLI exits with status 1 before listening and shows no secret
 [V] Given a final image with its portal hidden by an empty mount, startup fails before listening with a safe portal error
-[V] Given a copied context with an injected failing offline test, the final-target build fails and creates no runtime image
 
 Run the dedicated final Linux AMD64 gate:
 
@@ -3967,66 +2392,26 @@ Run the emitted specification after a clean build:
 npm run build && node --test dist/test/acceptance/hosted-ad-policy.test.js
 ```
 
-**Hosted live gate setup** (`test/acceptance/auth/hosted-live-setup.test.ts`)
-
-These cases run the compiled hosted live file in a new Node process, as `npm run test:hosted-live` runs it after its build, with the TAP reporter and outbound access denied. They need no portal build. Without it, the local HTTPS test server of the gate starts nothing and rejects at once with the message that names `npm run build:user-portal`. The gate process then exits.
-
-[V] Without WorkOS settings, the gate exits 1 with one failed test, no passed, skipped, or todo test, a setup error that names each missing setting, and no outbound network attempt
-[V] Refuses a production API key and requires a staging key; the output shows no setting value
-[V] Counts an empty `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, or `WORKOS_AUTHKIT_ISSUER` as missing
-[V] Refuses an AuthKit issuer that is not an absolute `https` URL without spaces, a username, a password, a query, or a fragment, and shows no value
-[V] With staging settings and outbound access denied, the live proofs run, try the network, and fail; no test passes or is skipped, and the API key does not show
-[V] Only `test:hosted-live` selects the hosted live file, and the acceptance suite selects this specification
-
-```sh
-npm run build && node --test dist/test/acceptance/auth/hosted-live-setup.test.js
-```
-
 **Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
 
-These live tests need the WorkOS staging environment, its settings, and the prerequisites of the [hosted live gate](../implementation/test-gate-policy.md#hosted-live-gate-auth-06). Run r5 ran the provider proofs and the AUTH-06 cases on 2026-10-14 through the staging launcher, after the owner saved the dashboard settings, and each of them passed. AUTH-07W added its provider proofs and cases after run r5. In AUTH-07W run r1 on 2026-10-14, one proof failed, and that proof changed after the run. AUTH-07W run r2 ran the complete command on 2026-10-14, and each of its 57 tests passed. The ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6` changed the Super Admin steps of the runbook to single-role writes and added three operator proofs; its run r1 ran the complete command on 2026-10-14, and each of its 60 tests passed. AUTH-08W added its provider proofs and cases after AUTH-07W run r2. A run of only the AUTH-08W tests, with the name pattern `AUTH-08W`, passed the 16 of them that existed then; the ninth provider proof came after it. AUTH-08W run r3 ran the complete command three times on 2026-10-14: the first run passed each of its 74 tests; the second run, after the merge of main and the organization read of the role writes, failed 3 of its 77 tests with transient `500` pages in organization C; the third run, on commit 9b47df0, passed each of its 77 tests. `[V]` marks a test that passed in run r5, or, for the AUTH-07W tests, in AUTH-07W run r2 and in run r1 of that ticket, or, for the AUTH-08W tests, in the third complete run of AUTH-08W run r3; `[ ]` marks a test that has not passed. On 2026-10-15, the auth WorkOS MCP URL fetch work slice changed two AUTH-06 provider proofs for decision D1 of its [plan](../implementation/auth-workos-mcp-url-fetch-plan.md). Now the sign-in page must offer Google as its only social provider. The AuthKit metadata must name the registration endpoint and support client ID metadata documents. The historical Required-profile candidate passed both changed proofs on 2026-10-15: exit 0, 77/77 tests in 17 suites, with zero failures, cancellations, skips, and todo cases. The [slice validation record](../implementation/auth-workos-mcp-url-fetch-validation.md) gives the result; the resumed fresh-account Google/client/Axiom manual walk also passed. The command passes only when every test passes. The [authentication plan](../design/authentication-design.md#live-provider-proofs) records the results.
-
-The MFA-policy revision has two 77-case profiles under the same complete command. Optional is selected by omitted or `optional` `WORKOS_MFA_POLICY`; explicit `required` selects Required. The entries marked `[V]` above preserve historical Required-profile evidence. Both revised profiles passed on 2026-10-15: Optional 77/77 in 16 suites and Required 77/77 in 17 suites, each exit 0 with zero failures, cancellations, skips, or todo cases. Shared Staging Optional was restored and verified.
-
-[V] Provider preflight requires `mfaEnabled: true` and `mfaRequired` matching the selected profile before live tests or login; a mismatch fails the run
-[V] Optional keeps normal browser, Connect, refresh, revocation, and organization flows with no application MFA evidence, including refreshed and switched sessions
-[V] Optional replaces eight positive administration cases with refusal and invitation-acceptance counterparts; administration GETs and writes get 403 without effects
-[V] Required retains the eight positive administration cases under explicit runtime Required and provider Required settings
-[V] Both profiles retain operator/API administration contract proofs, which do not authorize Optional browser sessions
+The gate reaches the production hosted application and its WorkOS adapter
+against WorkOS Staging. The [gate policy](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+gives its settings, browser, renderer, and local HTTPS prerequisites. Provider
+configuration is checked before the product cases start. Optional and Required
+MFA profiles each need a matching provider setting and a complete passing run.
+Historical counts and results remain in the
+[validation record](../implementation/auth-workos-mcp-url-fetch-validation.md).
 
 ```sh
 node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 WORKOS_MFA_POLICY=required node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 ```
 
-AUTH-06 provider proofs (`test/acceptance/auth/hosted-live/` and the read-only checks of `hosted.live.ts`):
-
-[V] The AuthKit authorization-server metadata names the exact issuer, the AuthKit key set, the authorization code grant, S256 PKCE, the client registration endpoint `<issuer>/oauth2/register`, and `client_id_metadata_document_supported: true` (changed and passed in the complete gate on 2026-10-15)
-[V] The AuthKit key set and the browser-session key set have signing keys with key IDs, and jose accepts them
-[V] WorkOS accepts the staging API key for a read of organizations
-[V] The saved redirect URI is exactly `https://localhost:46443/callback`, the default; no CORS origin is saved; the MCP resource indicator `https://localhost:46443/mcp` is saved
-[V] The environment roles have exactly the permissions of the hosted role mapping, as the role catalog of `test/support/fixtures/hosted-roles.ts` gives them, and no other role has an application permission
-[V] Provider preflight checks MFA against the selected Optional or Required profile, allows password sign-in, and refuses passkeys
-[V] The hosted sign-in page offers email sign-in and Google as its only social provider (changed for decision D1 and passed in the complete gate on 2026-10-15)
-[V] In the Required profile, a new user signs in with the password and a TOTP enrollment before the callback; the callback has the code and the state; the method is `Password`
-[V] The browser access token is an RS256 token of the environment client with a `session_` sid, no audience, no organization, and a 300-second lifetime; the sealed session is shorter than 3,800 characters
-[V] In the Required profile, a later sign-in asks for the TOTP code, not a new enrollment
-[V] A user with two memberships chooses the organization at AuthKit; the token has its `org_id`, both roles, and their combined permissions
-[V] A refresh switches the organization in the same session; an organization without a membership gives `organization_membership_not_found`, and the session still refreshes
-[V] The browser refresh token is not rotated in staging; a replay works at once and after 31 seconds
-[V] An operator revocation gives `invalid_grant` without retry, removes the session from the list, and the issued access token verifies until it expires
-[V] The WorkOS logout URL ends the session
-[V] After the logout, the browser goes through the logout of the AuthKit domain to the default Sign-out URI `https://localhost:46443/`
-[V] A visit to the AuthKit domain goes through `initiate_login` of WorkOS to the Initiate login URI `https://localhost:46443/login` before any sign-in page
-[V] A public PKCE client authorizes through AuthKit with the password, the MFA step, and the consent; the callback has the code and the state
-[V] The code exchange gives a bearer access token, a refresh token, and an ID token
-[V] The Connect access token is RS256 without `typ`, from the AuthKit issuer for the MCP resource, with the user, the MCP client, an `app_consent_` sid, the organization, the scope, `auth_time`, and a 300-second lifetime, and no role or permission claim
-[V] A Connect refresh rotates the refresh token and keeps the user, consent, organization, client, and audience
-[V] The MCP checks refuse a browser access token and an M2M token by the audience
-[V] The deletion of the authorized application ends the consent: the refresh gives `invalid_grant`, and the issued access token verifies until it expires
-[V] Membership reads give the complete role lists of independent and combined grants, Admin alone, and the default role `member` without a permission
-[V] The explicit status filter separates active and inactive memberships, and the `after` cursor reads six memberships exactly once in pages of 2
-[V] The roles of an organization are the four environment roles with their exact permissions
+The Optional profile checks no application MFA evidence and refuses browser
+administration. Required keeps the positive administration cases. Both profiles
+exercise the real organization services with service credentials; those checks
+do not give Optional browser sessions administration authority. The signup
+cases reach the production notice, agreement, callback, and access behavior.
 
 AUTH-06 cases of the hosted server (`test/acceptance/auth/hosted-live/hosted-server.ts`), with the local HTTPS test server at `https://localhost:46443/`:
 
@@ -4041,20 +2426,17 @@ AUTH-06 cases of the hosted server (`test/acceptance/auth/hosted-live/hosted-ser
 [V] The sign-out clears the cookie, ends the WorkOS session, and lands on the Sign-out URI with the signed-out portal; the `form-action` of the portal allows the AuthKit domain
 [V] After the 300-second lifetime, a session refreshes with one new cookie and the same form token; a revoked session gives 401 with a cleared cookie; an MCP grant whose consent was revoked works until its token expires and then gives 401
 
-AUTH-07W provider proofs (`test/acceptance/auth/hosted-live/operator-setup.ts`). They run the steps of the [operator runbook](../implementation/hosted-organization-setup.md) with the pinned SDK against the staging environment, through the test-support driver `test/support/hosted-live/operator-runbook.ts`, and read the result with the real `WorkOSOrganizations`. Since the ticket `9255ad59-3484-43bd-bdf5-e6e391e07bd6`, each Super Admin change of the runbook is one role assignment on the organization resource or its removal, and three proofs show the resource and a customer change at the same time. No proof covers the completed operator MFA that the runbook requires: the WorkOS API cannot show it, so it is a manual precondition. On 2026-10-14, the owner removed this proof from AUTH-07W; the decision ticket `ae984833-e115-4da9-bebe-7c4b1fb1a025` decides how it is enforced and proven. The run makes its own operator organization and users (`test/support/hosted-live/organization-fixtures.ts`) and deletes them at the end:
+AUTH-07W application service proofs (`test/acceptance/auth/hosted-live/operator-setup.ts`)
+use the operator driver to set state, then check real `WorkOSOrganizations`
+and `OrganizationAdministration` results against Staging. They cover grants,
+revocation, replacement, and recovery. Operator MFA remains a manual
+precondition of the [runbook](../implementation/hosted-organization-setup.md).
 
-[V] The operator locates or creates the organization by its external ID: the organization exists once; a second create with the same external ID is refused with `external_id_already_used`, also with an idempotency key, and a second locate step finds the organization without a change
 [V] A Super Admin grant to a verified identity without a membership gives exactly the role `super-admin`; the application reads only the Super Admin grant, no Admin and no User, and a second grant changes nothing
 [V] A grant and then a revocation of Super Admin keep User and Admin at each step; the identity and its membership in another organization do not change
-[V] A membership made without a role has its default role `member` as a role assignment on the authorization resource of type `organization` with the external ID of the organization; a role assignment that names the organization ID is refused with `404` `entity_not_found` and changes nothing; a Super Admin grant adds `super-admin` and keeps `member`
-[V] A Super Admin grant to a membership with User and Admin, while a customer removes Admin with a single-role write after the inspection of the runbook and before its write, adds only `super-admin`, and the removal of Admin stays
-[V] A Super Admin revocation of a membership with only Super Admin, while a customer grants User in the same order, removes only `super-admin`, and the User grant stays
 [V] The revocation of Super Admin, the only grant of a membership, keeps the membership active: WorkOS gives it only the default role; the organization service then lists no organization for the identity, and the identity stays
 [V] A replacement grants Super Admin to the new identity first, so that the organization keeps a Super Admin at each step; the old identity loses only Super Admin and keeps User
 [V] A recovery stops at the inactive membership of the lost Super Admin without a create or a reactivation, and grants Super Admin to another verified identity
-[V] After an unknown outcome, the inspection writes nothing for a grant in place, also after a later customer User grant, where a blind create would leave both grants; after a later revocation, it stops without a write, so that the removed grant stays removed
-[V] After an unknown outcome for an inactive membership, the inspection finds it with the explicit statuses and stops without a create or a reactivation; the membership stays inactive with its roles
-[V] Each operator record of the run names the actor, the organization, the target, the action, the time, and the outcome; each grant change names the roles before and after; no record holds a credential
 
 AUTH-07W cases of the hosted server (`test/acceptance/auth/hosted-live/organization-server.ts`), with the same local HTTPS test server. The run registers the first four cases before the AUTH-06 cases and the expiry case after them, so that the 300-second wait of the AUTH-06 cases also lets the access token of the selection session expire:
 
@@ -4064,12 +2446,8 @@ AUTH-07W cases of the hosted server (`test/acceptance/auth/hosted-live/organizat
 [V] An identity that the operator made Super Admin of the operator organization is offered that organization, opens the billing page with the Free plan, and gets 403 for the protected portal request; a customer grant of Super Admin gets 403 with a change record; after the operator revokes Super Admin, the next request of the same session is refused, and the organization page gives the onboarding guidance
 [V] After the access token of the selection session expired, a refused selection gets 403 with the refreshed session cookie; the form token stays the same, and the session stays in B
 
-AUTH-08W provider proofs (`test/acceptance/auth/hosted-live/administration-proofs.ts`). They run the single-role writes of WorkOS with the pinned SDK, and the directory methods of the real `WorkOSOrganizations`, against the staging environment, in organization D. D has no external ID, so the proofs cover an organization without one, whose resource WorkOS names by the organization ID. The run makes organizations C and D and 25 users, each with a password and a verified email (`test/support/hosted-live/administration-fixtures.ts`), and deletes them at the end:
+AUTH-08W application service proofs (`test/acceptance/auth/hosted-live/administration-proofs.ts`) run the directory methods of the real `WorkOSOrganizations` against Staging in organization D. D has no external ID, so the proofs cover an organization without one, whose resource WorkOS names by the organization ID. The run makes organizations C and D and 25 users, each with a password and a verified email (`test/support/hosted-live/administration-fixtures.ts`), and deletes them at the end:
 
-[V] An assignment of Admin on the organization resource of D, named by its organization ID, adds only Admin and changes the update time; the role assignment has the organization ID of D as the external ID of its resource; the same assignment again gives the same role assignment and changes neither the roles nor the update time
-[V] Assignments of Admin and Super Admin at the same time both stay, and User stays
-[V] The removal of Admin, which the membership does not have, succeeds and changes neither the roles nor the update time
-[V] A single-role write that names the organization resource of B gets 404 `entity_not_found` and changes neither the roles nor the update time
 [V] The directory grants Admin on the revision of a page and keeps User; the same request again, and the old request again after a later revoke of Admin, are each `stale` without a write, so the revoked grant does not return
 [V] The revoke of User, the only application role in D, keeps the membership active with only the default role `member`, whose grant gives no permission; the membership in B keeps User
 [V] A grant of Admin and a revoke of User on an inactive membership and on a pending membership from an invitation are each `unsupported`; WorkOS keeps the status, the roles, and the update time of each
@@ -4114,10 +2492,10 @@ npm run build && node --test dist/test/acceptance/small-text-cutoff.test.js
 [V] Keeps encoded joiners in separate inline spans and text nodes through the pipeline
 [V] Removes and reports prohibited bidi controls and joiners in ASCII words for all three encodings
 
-Run these tests separately; `npm run check` does not select the acceptance or interface directories:
+Run these acceptance tests separately; `npm run check` does not select the acceptance directory:
 
 ```sh
-npm run build && node --test dist/test/acceptance/emoji-joiners.test.js dist/test/acceptance/literal-inline-emoji-joiners.test.js dist/test/interface/defuddle-emoji-joiners.test.js
+npm run build && node --test dist/test/acceptance/emoji-joiners.test.js dist/test/acceptance/literal-inline-emoji-joiners.test.js
 ```
 
 **Pipeline counters** (`test/acceptance/pipeline-counters.test.ts`)
@@ -4202,21 +2580,6 @@ npm run build && node --test dist/test/acceptance/pipeline-counters.test.js
 [V] Keeps visible text and images after local and inherited offset cancellation or overflow, including embedded CSS and contents wrappers
 [V] Requires proven zero ancestor offsets before a relative-unit fallback and retains actual offscreen and restored-child controls
 [V] Applies offset error bounds through the independent public hidden-element check
-
-**Build output** (`test/unit/build-output.test.ts`, `pnpm test:build`)
-
-The real npm commands also prove that ordinary suites exclude the standard-named
-hosted image test, keep ordinary tests and a similarly named neighbor, and that
-the dedicated hosted image command selects only the image gate. The fixture
-image test performs no Docker operation.
-
-[V] All test commands exclude output from renamed and deleted tests
-[V] Unit, integration, acceptance, and interface commands keep their suite selection
-[V] Fresh and stale-output fixture tests produce the same current test names, complete emitted file set, and file bytes, including test source maps
-[V] Repeated builds remove deleted production modules and source maps
-[V] Builds preserve source and files outside the owned output when called from another directory
-[V] Builds reject symlink and regular-file output paths without deleting their data
-[V] Typecheck does not emit files or clear existing output
 
 ## Fetch failure diagnostics
 

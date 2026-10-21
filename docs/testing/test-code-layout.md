@@ -1,5 +1,8 @@
 # Test code layout and terms
 
+Tests under `test/` exercise components under `src/`, directly or through
+public interfaces. Keep support files only when those tests require them.
+
 This document gives the terms for the auxiliary files under `test/`: the files
 that are not test cases. It also gives the layout of `test/support`, the rules
 that say where a file lives, and the rules that say what a file may import.
@@ -45,8 +48,7 @@ selects it. The other runtime and live gate names stay as listed above.
 This repository needs these kinds of test double:
 
 - **Stub**: gives canned answers. Examples: `NoAuthProvider`, `ChangeAnswers`,
-  `WorkOSFakeApi` with scripted routes, and the git executable
-  `git-cli-stub.ts` of the unit tests of the ast-metrics commands.
+  `WorkOSFakeApi` with scripted routes.
 - **Spy**: gives canned or real answers and records the calls for later checks.
   This is the main kind here: all `*Mock` classes, the two in-process `*Probe`
   classes, `BillingRecorder`, most `*Double` classes.
@@ -127,8 +129,7 @@ test/
     container/           layer 4: the system in Docker; Docker driver; container scripts
     hosted-live/         layers 2 to 4 of the live staging environment (unchanged)
     doubles/<name>/      <name> = existing contract-family name (auth, mcp, organizations, hosted-admin,
-                         billing, application, website-fetcher, logging) or external system (workos,
-                         ast-metrics; the git stub of the ast-metrics command tests lives there too)
+                         billing, application, website-fetcher, logging) or external system (workos)
     fixtures/            shared fixture data, settings, data files
       hosted-portal/     the portal build fixture of the offline hosted tests
     isolation/           per-test isolation in the test process
@@ -177,12 +178,7 @@ home.
 ### Dependency rules
 
 - D1. `S/**` imports only `src/**`, packages, and `S/**`.
-- D2. A file in `test/<type>/` imports no other test type. The first version
-  had one exception: the unit test of the work-slice fetch lines imported the
-  entry point of the basic slice. That exception is gone. The auth WorkOS MCP
-  URL fetch slice moved the fetch lines to test support. They are now the spy
-  `S/doubles/mcp/fetch-operation-spy.ts`, and the unit test imports them from
-  there.
+- D2. A file in `test/<type>/` imports no other test type.
 - D3. A unit test imports `fixtures/` only from its own package.
 - D4. `S/drivers/**` imports no `S/dsl/**`.
 - D5. `S/doubles/**` and `S/fixtures/**` import no `S/dsl/**` and no
@@ -195,7 +191,6 @@ home.
   does not run alone: it runs in the server process of the image and imports
   `src` as the image has it.
 - D7. No `*.test.ts` under `S/`. The suite globs select by test-type folder.
-  The tests of support code live in `U/test-support/`, as PR #86 started.
 - D8. A run-time path from support code to another folder or to the repository
   root lives only in `S/processes/module-paths.ts`. A path to a sibling file
   may stay in its user. A test file may compute a path to a `src` module that it
@@ -204,9 +199,4 @@ home.
 The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 of the plan move the 13 borrowed
 files); unit → support stays, because `S/` is the shared base of all test
-types. ESLint enforces D1 to D7 (Steps 4 and 5i of the plan), and two
-architecture specifications prove each rule, one for each axis.
-`test/acceptance/architecture/test-type-boundaries.test.ts` proves D2 and D3,
-and `test/acceptance/architecture/test-support-boundaries.test.ts` proves D1 and
-D4 to D7, as `test/acceptance/architecture/auth-boundaries.test.ts` does for
-`src`.
+types. ESLint enforces D1 to D7 through the existing `habit-hooks` configuration.

@@ -69,7 +69,6 @@ required_checks:
   pull_request:
     - pnpm test # the full ordinary suite
     - pnpm run typecheck
-    - pnpm run test:build
     - pnpm run build:user-portal
     - habit-hooks --branch origin/main
     - pnpm exec node script/code-quality/ast-metrics-coverage.ts --suite unit --suite integration --suite acceptance --out ast-report/coverage.json
@@ -85,7 +84,7 @@ required_checks:
         - src/pipelines/providers/website-fetcher/**
         - src/pipelines/page-fetch/**
       commands: [ pnpm run test:mcp:renderer ] # needs the Lightpanda runtime on the runner
-  live_gates: docs/implementation/test-gate-policy.md # the hosted live gate and the signup gate stay manual
+  live_gates: docs/implementation/test-gate-policy.md # the hosted live gate stays manual
   main_push:
     - the same commands as pull_request
     - audit: recompute the route of the merged pull request; open an issue when the route was CLARIFICATION_NEEDED or ARCHITECT_REVIEW_NEEDED and the approved label was absent

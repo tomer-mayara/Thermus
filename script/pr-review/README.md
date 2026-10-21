@@ -291,18 +291,3 @@ review file, and `metrics.ts` applies the metrics step. `analysis.ts` and
 `result.ts` collect
 the reasons, and `route.ts` and `report.ts` give the route, the label command,
 and the record.
-
-## Tests
-
-The acceptance tests `test/acceptance/script/pr-review-check*.test.ts` run the
-command in small git repositories, each with its own rules file from
-`test/acceptance/script/fixtures/pr-review-rules.ts`. The unit tests are
-`test/unit/script/pr-review-*.test.ts`.
-[The test list](../../docs/testing/test-list.md#pr-review-check) says what each
-file checks.
-
-```sh
-pnpm run build
-node --test "dist/test/acceptance/script/pr-review-check*.test.js"
-node --test "dist/test/unit/script/pr-review-*.test.js"
-```

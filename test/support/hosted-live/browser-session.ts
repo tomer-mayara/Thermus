@@ -6,7 +6,7 @@ import { visitAuthKit, type AuthKitVisit } from './authkit-driver.ts';
 import type { LiveBrowser } from './live-browser.ts';
 import { browserRedirectUri, type HostedLiveSettings } from './settings.ts';
 import type { LiveUser } from './staging-fixtures.ts';
-import { readToken, type TokenView } from './tokens.ts';
+import { readToken } from './tokens.ts';
 
 interface SignInRequest {
   readonly user: LiveUser;
@@ -51,21 +51,12 @@ class BrowserSession {
     if (result.authenticated && result.sealedSession) this.#sealed = result.sealedSession;
     return result;
   }
-
-  async listed(): Promise<boolean> {
-    const sessions = await (await this.#workos.userManagement.listSessions(this.userId)).autoPagination();
-    return sessions.some(({ id }) => id === this.sessionId);
-  }
 }
 
 export function refreshedAccessToken(result: RefreshSessionResponse): string {
   if (!result.authenticated) assert.fail(`The session did not refresh: ${result.reason}, retryable ${String(result.retryable)}.`);
   assert.ok(result.session, 'The refresh gave no session.');
   return result.session.accessToken;
-}
-
-export function refreshedToken(result: RefreshSessionResponse): TokenView {
-  return readToken(refreshedAccessToken(result));
 }
 
 // A browser sign-in of the hosted edition, with PKCE and a sealed session; the callback is intercepted.

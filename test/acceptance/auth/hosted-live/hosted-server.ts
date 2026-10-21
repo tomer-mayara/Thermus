@@ -85,7 +85,7 @@ export function describeHostedServerCases(run: LiveRun): void {
     test('Given the Connect grant of a User in organization A, when its MCP client calls the MCP endpoint, then the call succeeds; without a token the answer is 401 with a Bearer challenge that names the protected-resource metadata, which names the AuthKit issuer', signInOptions, async (t) => {
       const site = await run.site();
       const { connectUser, organizationA, oauthApplication } = await run.fixtures();
-      // A new grant: the provider proofs revoked the consent of the first one, and its token can have expired.
+      // A fresh grant keeps this case independent of earlier consent changes and token expiry.
       const { tokens } = await authorizeWithConnect(run, { user: connectUser, organizationName: organizationA.name, clientId: oauthApplication.clientId });
       const allowed = await mcpStatus(tokens.accessToken);
       const missing = await mcpStatus(undefined);
@@ -104,8 +104,7 @@ export function describeHostedServerCases(run: LiveRun): void {
 
     test('Given a browser access token and an M2M token, when each is sent to the MCP endpoint, then each gets 401 and no MCP work', signInOptions, async () => {
       const { machineApplication } = await run.fixtures();
-      // The session of this sign-in stays active: the other proofs ended the other sessions. A new browser token lets
-      // only its kind refuse it.
+      // A fresh browser token makes this refusal depend on token kind, without expiry or revocation.
       const { session } = await run.newUserSignIn();
       const browserToken = refreshedAccessToken(await session.refresh());
       const machine = issuedTokens(await requestMachineTokens(settings.authkitIssuer, machineApplication, mcpResource), 'The M2M token request');

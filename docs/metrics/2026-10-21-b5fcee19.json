@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "tool": "0.43.1",
+  "commit": "b5fcee19e5880d086b11bf9d716c4f87891b46fd",
+  "date": "2026-10-21T15:45:52-06:00",
+  "title": "Add component registry and architecture maintenance workflow (#215)",
+  "modularity": 0.4,
+  "crossShare": 0.16,
+  "cycles": 1,
+  "maintainability": 56.2,
+  "paths": 3263,
+  "files": 148,
+  "functions": 1156,
+  "communities": [
+    {
+      "label": "accounts",
+      "files": 56,
+      "loc": 6093,
+      "maintainability": 61.8,
+      "paths": 1376
+    },
+    {
+      "label": "app",
+      "files": 5,
+      "loc": 477,
+      "maintainability": 57.6,
+      "paths": 92
+    },
+    {
+      "label": "logging",
+      "files": 3,
+      "loc": 210,
+      "maintainability": 62.5,
+      "paths": 39
+    },
+    {
+      "label": "pipelines",
+      "files": 73,
+      "loc": 5251,
+      "maintainability": 49.7,
+      "paths": 1647
+    }
+  ],
+  "components": [
+    {
+      "name": "app",
+      "files": 8,
+      "loc": 753,
+      "maintainability": 61.3,
+      "paths": 146
+    },
+    {
+      "name": "better-auth",
+      "files": 5,
+      "loc": 843,
+      "maintainability": 58.8,
+      "paths": 165
+    },
+    {
+      "name": "billing",
+      "files": 2,
+      "loc": 27,
+      "maintainability": 68.8,
+      "paths": 6
+    },
+    {
+      "name": "cli",
+      "files": 2,
+      "loc": 201,
+      "maintainability": 53.8,
+      "paths": 56
+    },
+    {
+      "name": "config",
+      "files": 2,
+      "loc": 199,
+      "maintainability": 56.8,
+      "paths": 56
+    },
+    {
+      "name": "execution",
+      "files": 4,
+      "loc": 69,
+      "maintainability": 83.4,
+      "paths": 10
+    },
+    {
+      "name": "html-processing",
+      "files": 37,
+      "loc": 3023,
+      "maintainability": 46.9,
+      "paths": 946
+    },
+    {
+      "name": "http",
+      "files": 4,
+      "loc": 233,
+      "maintainability": 64.6,
+      "paths": 66
+    },
+    {
+      "name": "identity",
+      "files": 4,
+      "loc": 171,
+      "maintainability": 62,
+      "paths": 12
+    },
+    {
+      "name": "logging",
+      "files": 3,
+      "loc": 210,
+      "maintainability": 62.4,
+      "paths": 39
+    },
+    {
+      "name": "mcp",
+      "files": 9,
+      "loc": 698,
+      "maintainability": 51.1,
+      "paths": 190
+    },
+    {
+      "name": "organizations",
+      "files": 6,
+      "loc": 587,
+      "maintainability": 75,
+      "paths": 112
+    },
+    {
+      "name": "page-fetch",
+      "files": 5,
+      "loc": 270,
+      "maintainability": 49.9,
+      "paths": 109
+    },
+    {
+      "name": "search",
+      "files": 6,
+      "loc": 331,
+      "maintainability": 48.3,
+      "paths": 131
+    },
+    {
+      "name": "search-engine",
+      "files": 2,
+      "loc": 122,
+      "maintainability": 34.1,
+      "paths": 56
+    },
+    {
+      "name": "user-portal",
+      "files": 8,
+      "loc": 472,
+      "maintainability": 52.7,
+      "paths": 65
+    },
+    {
+      "name": "web",
+      "files": 22,
+      "loc": 2031,
+      "maintainability": 62.7,
+      "paths": 473
+    },
+    {
+      "name": "website-fetcher",
+      "files": 6,
+      "loc": 439,
+      "maintainability": 60.9,
+      "paths": 133
+    },
+    {
+      "name": "workos",
+      "files": 13,
+      "loc": 2027,
+      "maintainability": 59.3,
+      "paths": 492
+    }
+  ],
+  "sourceFingerprint": "1b948825ec299b4ac77d1108367784e4856cb03cb0c6b296b3411254827825e2"
+}

@@ -65,7 +65,7 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 - Open a draft pull request first.
 - Before Ready, select tests from the complete candidate. If any file under
   `src/` changes, run the full ordinary suite with `npm test`, then
-  `npm run typecheck`, `npm run test:build`, and `npm run build:user-portal`,
+  `npm run typecheck` and `npm run build:user-portal`,
   plus the applicable gates in the test gate policy. These commands cover
   the remaining check stages; do not add `npm run check`, which would repeat
   unit and portal tests.
