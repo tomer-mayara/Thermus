@@ -1,0 +1,82 @@
+── non-essential-comment (55 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+.habit-hooks/eslint.config.mjs:63
+test/acceptance/auth/hosted-image.test.ts:19
+test/acceptance/auth/hosted.live.ts:15
+test/acceptance/auth/hosted.live.ts:41
+test/acceptance/auth/hosted.live.ts:73
+test/acceptance/auth/hosted.live.ts:91
+test/acceptance/auth/hosted.live.ts:92
+test/acceptance/auth/self-hosted-container.test.ts:24
+test/acceptance/auth/self-hosted-container.test.ts:27
+test/acceptance/auth/self-hosted-container.test.ts:28
+test/acceptance/auth/self-hosted-container.test.ts:54
+test/acceptance/auth/self-hosted-container.test.ts:90
+test/acceptance/auth/self-hosted-container.test.ts:153
+test/integration/auth/hosted-live-site.test.ts:13
+test/support/container/container-gate.ts:9
+test/support/container/container-gate.ts:13
+test/support/container/container-gate.ts:20
+test/support/container/container-probe.ts:1
+test/support/container/hosted-image-gate.ts:13
+test/support/container/hosted-image-gate.ts:14
+test/support/hosted-live/browser-session.ts:31
+test/support/hosted-live/browser-session.ts:62
+test/support/hosted-live/connect-client.ts:46
+test/support/hosted-live/settings.ts:22
+test/support/processes/module-paths.ts:3
+test/support/processes/module-paths.ts:4
+test/support/processes/module-paths.ts:5
+test/support/processes/module-paths.ts:6
+test/support/processes/module-paths.ts:18
+test/support/processes/module-paths.ts:21
+test/support/processes/module-paths.ts:24
+test/support/processes/module-paths.ts:25
+test/support/processes/module-paths.ts:30
+test/support/processes/module-paths.ts:33
+test/support/processes/module-paths.ts:43
+test/support/processes/module-paths.ts:44
+test/support/processes/module-paths.ts:50
+test/support/processes/module-paths.ts:53
+test/acceptance/auth/hosted-live/administration-proofs.ts:28
+test/acceptance/auth/hosted-live/administration-proofs.ts:45
+test/acceptance/auth/hosted-live/administration-proofs.ts:68
+test/acceptance/auth/hosted-live/administration-proofs.ts:69
+test/acceptance/auth/hosted-live/administration-proofs.ts:80
+test/acceptance/auth/hosted-live/administration-proofs.ts:96
+test/acceptance/auth/hosted-live/administration-proofs.ts:122
+test/acceptance/auth/hosted-live/administration-proofs.ts:135
+test/acceptance/auth/hosted-live/administration-proofs.ts:153
+test/acceptance/auth/hosted-live/administration-proofs.ts:189
+test/acceptance/auth/hosted-live/hosted-server.ts:21
+test/acceptance/auth/hosted-live/hosted-server.ts:88
+test/acceptance/auth/hosted-live/hosted-server.ts:107
+test/acceptance/auth/hosted-live/hosted-server.ts:163
+test/acceptance/auth/hosted-live/hosted-server.ts:198
+test/acceptance/auth/hosted-live/hosted-server.ts:228
+test/acceptance/auth/hosted-live/operator-setup.ts:22
+
+── oversized-file (4 issues) ──
+
+Files over 200 lines accumulate unrelated concerns. The smell is poor cohesion — a file that asks the reader to hold too many ideas at once — not the raw line count.
+
+First identify the seams: which exports, types, or helper clusters actually belong together? A long file usually splits cleanly along one of: a data type and its operations, a feature pipeline, or one concern per file.
+
+Avoid mechanical splits. Carving the file at line 200 into `foo-1.ts` and `foo-2.ts`, or moving every private helper into a `utils.ts`, satisfies the threshold without making anything clearer — the cohesion problem just hops to a new place.
+
+If the file's structure resists splitting, that is itself the signal: responsibilities are tangled. Look for a missing abstraction (a class, a small module with a focused interface) that would let related pieces move together as a unit.
+
+A concrete technique: write a one-sentence description of what each emerging seam *would* be responsible for. If you cannot, you have not found the seam yet — do not split.
+
+.habit-hooks/eslint.config.mjs
+test/acceptance/auth/hosted-live/administration-proofs.ts
+test/acceptance/auth/hosted-live/hosted-server.ts
+test/acceptance/auth/self-hosted-container.test.ts
