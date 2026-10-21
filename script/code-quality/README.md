@@ -56,6 +56,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `assessment/crap-absolute.ts` calculates both absolute CRAP goals from operands.
 `assessment/crap-deterioration.ts` compares supplied CRAP observations or bounds.
 `assessment/crap-assessment.ts` returns per-function absolute and decline results.
+`assessment/crap-ceiling.ts` compares supplied CRAP operands/bounds with a ceiling.
 `assessment/mi-decline.ts` compares supplied MI operands for decline.
 `assessment/mi-assessment.ts` calculates per-unit MI floor and independent decline results.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
@@ -185,6 +186,22 @@ anchor. There is no automatic best selection, use of bounds as exact anchors,
 `NOT_APPLICABLE`, history update/replay, aggregate pass, route, exception or
 process integration. No policy is adopted; existing APIs, commands and manual
 merging stay unchanged.
+
+The pure `crapCeilingOf({ head?, ceiling })` in `assessment/crap-ceiling.ts`
+accepts optional head `{ paths, share? }` and retains
+`observation: { head?, ceiling }`, where head keeps the existing absolute-CRAP
+observation variant. `withinCeiling` returns `PASS`, `MISS` or
+`UNKNOWN` with a reason. The ceiling must be finite and nonnegative even when
+head is absent. Known coverage uses exact operands through the existing
+comparator. With missing share, upper bound ≤ ceiling passes, lower bound >
+ceiling misses, and a crossing range stays unknown. Zero and missing head are
+distinct.
+
+For B=A=42, head bounds `[6,42]` and ceiling 42, the ceiling passes while the
+default `<30` remains unknown and independent declines pass. This proves only
+the arithmetic part of E6, not exception validity or applicability. It adds no
+command, origin/history/provenance validation, route/AUTO decision, report
+integration or policy adoption. Existing rules and manual merging stay unchanged.
 
 ### Own characters, joins, and unknowns
 
@@ -1182,6 +1199,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-assessment.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-ceiling.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
@@ -1264,6 +1282,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-assessment.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-ceiling.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |

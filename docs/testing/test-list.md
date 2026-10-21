@@ -192,6 +192,11 @@ deterioration below five and no deterioration from supplied observations or
 bounds. They cover missing and invalid sides, zero, strict boundaries and
 uncertainty; they do not establish reference identity or accepted history.
 
+`test/unit/script/ast-metrics-crap-ceiling.test.ts` and
+`test/acceptance/script/ast-metrics-crap-ceiling.test.ts` specify exact comparison
+with a supplied ceiling, safe bounds, zero versus missing head and ceiling
+validation. The E6 example proves arithmetic only, not exception validity.
+
 `test/unit/script/ast-metrics-crap-assessment.test.ts` and
 `test/acceptance/script/ast-metrics-crap-assessment.test.ts` specify independent
 per-function absolute, PR/cumulative decline and no PR deterioration results.
@@ -948,6 +953,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-assessment.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-crap-ceiling.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
@@ -1030,6 +1036,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-assessment.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-ceiling.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-deterioration.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
