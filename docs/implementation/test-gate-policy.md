@@ -86,7 +86,7 @@ A change that adds a prerequisite to a suite adds it to this table.
 Local-command tests that execute `loadDeploymentConfig()` belong to the
 integration suite, also when they use an administration role double. Config and
 local commands are separate logical packages. See the
-[component boundaries](../design/component-structure-proposal.md#target-tree-and-public-boundaries).
+[component boundaries](../../architecture/components.md).
 `npm run check` does not select these tests. Use their focused commands;
 run the integration group only when the path rules below select it.
 

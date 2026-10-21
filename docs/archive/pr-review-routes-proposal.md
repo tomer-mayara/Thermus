@@ -18,9 +18,9 @@ or who decides?
 ## Decision
 
 Adopt a manual trial of the PR review playbook
-([docs/implementation/pr-review-playbook.md](../../docs/implementation/pr-review-playbook.md))
+([docs/implementation/pr-review-playbook.md](../implementation/pr-review-playbook.md))
 and its rules file
-([docs/implementation/pr-review-rules.yaml](../../docs/implementation/pr-review-rules.yaml)).
+([docs/implementation/pr-review-rules.yaml](../implementation/pr-review-rules.yaml)).
 
 - Each pull request gets one of five routes: `FIX`, `ASK`, `READ`, `SHOW`,
   `SHIP`. The agent computes the route by hand, as the section "Review route"

@@ -16,7 +16,7 @@ The lists, thresholds and routes of each trigger are in
 [pr-review-rules.yaml](pr-review-rules.yaml). The checks will read that file.
 This playbook replaces the long architect review draft of 2026-10-20, which
 is not in the repository. This playbook gives the current route names and
-review duties. The [original decision record](../../architecture/decisions/2026-10-20-pr-review-routes.md)
+review duties. The [original decision proposal](../archive/pr-review-routes-proposal.md)
 and [implementation change request](pr-review-change-request.md) keep their
 historical wording.
 
