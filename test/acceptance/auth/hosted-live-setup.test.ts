@@ -109,7 +109,7 @@ function packageScripts(): PackageScripts {
 }
 
 function suiteGlob(scripts: PackageScripts, name: string): string {
-  const glob = /node --test "([^"]+)"/.exec(scripts[name] ?? '')?.[1];
+  const glob = /node --test(?: --test-concurrency=1)? "(dist\/test\/[^"]+)"/.exec(scripts[name] ?? '')?.[1];
   assert.ok(glob, `The ${name} script has no quoted test glob.`);
   return glob;
 }
