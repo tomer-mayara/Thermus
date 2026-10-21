@@ -1,0 +1,444 @@
+# PR review rules for Thermus.
+#
+# Status: proposal of 2026-10-20, in manual trial. The command
+# script/pr-review/check.ts applies protected_paths, read_paths, scopes,
+# public_surface, dependency_graph, size and ratchet.maintainability_index,
+# and it reads the exceptions file of ratchet. The other keys wait for CI and
+# the later checks. The section "Review route" of AGENTS.md governs where it
+# differs from this file. The playbook docs/implementation/pr-review-playbook.md explains the
+# routes and the seven checks. The checks will read this file. A change to
+# this file is ASK.
+#
+# A scan of the imports in src/**/*.ts on main 304cd24f (PR #200) seeded the
+# lists: 138 files, 438 import statements, every relative specifier resolved
+# to one file. The check declared the facts of main 6ac961ae (PR #202) on
+# 2026-10-21. A date in a comment says when the list last matched the code.
+# "to create" marks a path that does not exist yet.
+
+version: 1
+status: manual-trial
+glob_syntax: "**, * and ? as in minimatch, on the repository path, dot files included; a pattern without a slash matches a root file; no other syntax"
+diff_base: the merge base with origin/main, with rename detection
+
+routes:
+  # Take the first route whose condition holds. Print every reason.
+  order: [FIX, ASK, READ, SHOW, SHIP]
+  hold_label: hold                   # blocks the merge on every route
+  approved_label: approved           # the owner sets it; ASK and READ merge only with it
+  show_label: show                   # set on a merged SHOW pull request
+  route_label_prefix: "route:"       # the checks set route:<name>
+  show_review_within_working_days: 1
+  merge_method: squash
+  merge_by: workflow                 # nothing else merges; SHIP and SHOW need no label
+  ask_requires_decision_record: architecture/decisions/**   # to create; an ASK pull request must add or change a file there
+  deploy_note: Render deploys main on every push, so a SHOW change is live before the owner reads it
+
+scopes:
+  production:                        # the metric rules and the production line limit
+    - src/**
+  executable:                        # a change here is SHOW, not SHIP
+    - src/**
+    - script/**
+    - test/**
+    - docker/**
+    - migrations/**
+    - .habit-hooks/**
+  generated:                         # not counted by the size check
+    - docs/metrics/**
+    - docs/api-surface/**          # to create
+    - pnpm-lock.yaml
+    - .ast-metrics-baseline.yaml
+
+measurement_basis:
+  node: 24.20.0
+  ast_metrics: 0.43.1
+  typescript: 7.0.2                  # native build; no compiler API
+  # The snapshot command measures the merge base and the candidate with the
+  # installed tools, so a pull request that changes a version measures both
+  # with the new version.
+
+# Check 7. A failed command is FIX. None of this runs today: the repository has
+# no .github/workflows, and branch protection needs GitHub Pro or an organization.
+# CI runs the whole suite on every pull request. The selection rules of the
+# test gate policy stay for local runs.
+required_checks:
+  pull_request:
+    - pnpm test                      # the full ordinary suite
+    - pnpm run typecheck
+    - pnpm run test:build
+    - pnpm run build:user-portal
+    - habit-hooks --branch origin/main
+    - pnpm exec node script/code-quality/ast-metrics-coverage.ts --suite unit --suite integration --suite acceptance --out ast-report/coverage.json
+    - pnpm exec node script/code-quality/ast-metrics-process.ts --coverage ast-report/coverage.json
+    - pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main   # writes ast-report/snapshot-base.json
+    - pnpm exec node script/code-quality/ast-metrics-snapshot.ts                      # writes ast-report/snapshot.json
+    - pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json   # checks 1, 3 and 5, the MI rules of check 4, and the modules of check 2
+  when_paths_change:
+    - paths: [src/**, docker/**, "Dockerfile*"]
+      commands: [pnpm run build:hosted, pnpm run test:container:hosted]   # the AMD64 runner replaces the emulated local build
+    - paths: [src/website-fetcher/**, src/page-fetch/**]
+      commands: [pnpm run test:mcp:renderer]                             # needs the Lightpanda runtime on the runner
+  live_gates: docs/implementation/test-gate-policy.md   # the hosted live gate and the signup gate stay manual
+  main_push:
+    - the same commands as pull_request
+    - audit: recompute the route of the merged pull request; open an issue when the route was ASK or READ and the approved label was absent
+
+# Check 1. A changed path that matches a pattern is ASK. A path can appear in
+# more than one group. The lists matched the tree on 2026-10-20.
+protected_paths:
+  policy:
+    route: ASK
+    question: "Does this change what the checks enforce, or who decides? Record the new rule and why."
+    paths:
+      - AGENTS.md
+      - CLAUDE.md
+      - .github/**                   # to create
+      - docs/implementation/pr-review-playbook.md
+      - docs/implementation/pr-review-rules.yaml
+      - docs/api-surface/**          # to create
+      - docs/reference/**            # the documented contracts; check 2 names them too
+      - test/acceptance/architecture/**
+      - script/pr-review/**          # the checks protect themselves
+      - script/code-quality/review/**   # the layer rules and the high-severity gate
+      - .habit-hooks/**
+      - .ast-metrics.yaml
+  contracts:
+    route: ASK
+    question: "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    paths:
+      - src/index.ts
+      - src/mcp/fetch-tool-schema.ts   # a value-level schema; a declaration snapshot cannot see a changed limit or description
+  dependencies_and_build:
+    route: ASK
+    question: "Which new code runs in production or in the build, and who maintains it? Record the reason for the dependency."
+    paths:
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - patches/**
+      - tsconfig*.json
+      - .npmrc
+      - .nvmrc
+      - .gitmodules
+  deploy_and_data:
+    route: ASK
+    question: "What changes in the image, the runtime, or the stored data, and how is it rolled back? Record the recovery step."
+    paths:
+      - Dockerfile*
+      - .dockerignore
+      - compose.yaml
+      - docker/**
+      - migrations/**
+      - .env.example
+  security:
+    route: ASK
+    question: "Does this change admission, trust, permissions, or what untrusted content can reach? Record the guarantee that holds after the change."
+    paths:
+      - src/auth/**
+      - src/billing/**
+      - src/config/**
+      - src/organizations/**                       # roles and permissions
+      - src/hosted-admin/**                        # CSP, CSRF, Origin and return-path checks
+      - src/hosted-portal.ts                       # CSP
+      - src/hosted-renderer-startup.ts             # runs the renderer binary
+      - src/application.ts                         # MCP Origin check
+      - src/user-portal/portal.ts                  # CSRF token and endpoint check
+      - src/mcp/mcp-server.ts                      # access gate
+      - src/mcp/identity-verifier-sdk-adapter.ts
+      - src/mcp/protected-resource-endpoint.ts
+      - src/page-fetch/fetch-page.ts               # product access check; a busy file, see below
+      - src/html/html-escape.ts
+      - src/html-cleaner-pipeline/prompt-injection-remover/**
+      - src/html-cleaner-pipeline/html-to-markdown/sanitize-html-document.ts
+      - src/html-cleaner-pipeline/html-to-markdown/plain-text-input.ts
+      - src/html-cleaner-pipeline/html-input-limit.ts
+      - src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts
+      - src/http/server.ts                         # public origin
+      - src/http/fetch-exchange.ts
+      - src/http/client-address.ts
+      - src/website-fetcher/network-policy.ts
+      - src/website-fetcher/fetch-diagnostic.ts    # safe logging boundary
+      - src/website-fetcher/website-fetcher-lightpanda.ts   # renderer launch flags; a busy file
+      - src/search-engine/search-engine-brave-http.ts        # search origin allowlist; a busy file
+      - src/terminal/hidden-line-input.ts
+  # Three busy files carry one security concern each: fetch-page.ts, the
+  # lightpanda fetcher and the Brave engine. Moving the concern into a small
+  # file of its own shrinks the protected set to that file.
+
+# A change to one of these paths is READ.
+read_paths:
+  route: READ
+  paths:
+    - .ast-metrics-baseline.yaml     # the accepted native lint violations
+    - .code-quality-exceptions.yaml  # optional; the metric exceptions of check 4
+    - docs/implementation/test-gate-policy.md     # while no CI exists, this document is the enforcement; move it out when workflows run the checks
+    - docs/implementation/ast-metrics-review.md   # same reason
+    - .agent/**                                   # agent configuration
+  moved_by_stop_rule: []             # executable files of reverted SHOW pull requests; the owner removes them after the fix
+
+# Check 2. CI emits a declaration file for each module below and compares it
+# with the committed copy under snapshot_dir. The emitted file includes the
+# declarations of the same-package files that the module re-exports or imports
+# types from, so a changed shape behind a re-export shows. A change under
+# contract_documents is ASK through protected_paths.
+# Proof of 2026-10-20: tsc 7.0.2 with declaration and emitDeclarationOnly wrote
+# src/auth/access-context.d.ts in 0.12 s. A module with relative imports is not
+# tested yet.
+public_surface:
+  snapshot_dir: docs/api-surface     # to create
+  contract_documents: docs/reference/**
+  undeclared_difference: FIX         # the pull request has not committed the new snapshot
+  declared_change: ASK               # the snapshot folder is a protected path
+  external:                          # contracts with users, clients and operators
+    - src/index.ts
+    - src/mcp/fetch-tool-schema.ts
+    - src/mcp/protected-resource-endpoint.ts
+    - src/search-pipeline/search-query.ts
+    - src/search-engine/search-engine.ts
+    - src/config/deployment-config.ts   # auth and http import it too
+    - src/config/ad-rules-file.ts
+  between_packages:                  # imported by a package other than composition on 2026-10-21
+    auth:
+      - src/auth/access-context.ts
+      - src/auth/identity-verifier.ts
+      - src/auth/hosted-auth/browser-session.ts
+    billing:
+      - src/billing/billing.ts
+    hosted-admin:                    # imported by auth; part of the known cycle below
+      - src/hosted-admin/account-form.ts
+      - src/hosted-admin/page-html.ts
+    html:
+      - src/html/html-escape.ts
+    http:
+      - src/http/request-cancellation.ts
+      - src/http/client-address.ts
+    organizations:
+      - src/organizations/organization-directory.ts
+      - src/organizations/change-records.ts
+      - src/organizations/administration-overviews.ts
+      - src/organizations/organization-administration.ts
+      - src/organizations/customer-roles.ts
+    page-fetch:
+      - src/page-fetch/fetch-page.ts
+      - src/page-fetch/fetch-url.ts
+      - src/page-fetch/fetch-failure.ts
+      - src/page-fetch/execution-context.ts
+      - src/page-fetch/pipeline-step.ts
+      - src/page-fetch/step-record.ts                 # imported by search-pipeline since PR #202
+      - src/page-fetch/renderer-failure-reports.ts    # imported by search-pipeline since PR #202
+    search-pipeline:                 # imported by mcp since PR #202
+      - src/search-pipeline/search-failure.ts
+      - src/search-pipeline/search-pipeline.ts
+    website-fetcher:
+      - src/website-fetcher/website-fetcher.ts
+  documented:                        # named in docs/reference on 2026-10-20
+    - src/fetch-tool.ts
+    - src/html-cleaner-pipeline/html-to-markdown-pipeline.ts
+    - src/html-cleaner-pipeline/ad-cleaner/adb/clean-html-ads-adblock-rs.ts
+    - src/html-cleaner-pipeline/ad-cleaner/html-depth-limit-error.ts
+    - src/website-fetcher/network-policy.ts
+  # A file that only composition imports is wiring, not a contract, and has no
+  # snapshot.
+
+# Check 3. CI builds the package graph of src/ from the imports with relative
+# specifiers and from the external imports. Each trigger below names its route.
+dependency_graph:
+  counting:
+    forms: [static import, export from, side-effect import, dynamic import, import type]
+    type_only: "import type ... or export type ... from. An import whose specifiers all carry an inline type keyword is runtime: with verbatimModuleSyntax, TypeScript emits import {} from the module, which loads it."
+    subpath: "better-auth/oauth2 counts as better-auth"
+    unresolved_relative_import: FIX
+  triggers:
+    edge_not_listed: FIX             # until the pull request lists it; the listing is ASK through protected_paths
+    type_edge_becomes_runtime: FIX   # the same as a new edge
+    runtime_edge_becomes_type: none  # the kind is a maximum; a weaker use needs no change
+    folder_not_listed: FIX           # a new top-level folder under src/
+    package_removed: FIX             # until the list changes
+    cycle_not_listed: FIX
+    known_cycle_grows: FIX           # a new package edge among its members, or a new member
+    cross_package_file_not_in_public_surface: FIX   # a package other than composition imports a file that public_surface does not list
+    external_import_not_listed: FIX  # an npm package or a Node builtin that the package does not list
+    forbidden_edge: FIX              # no listing can allow it
+  packages:                          # the folders under src/; composition is the files directly in src/
+    - auth
+    - billing
+    - config
+    - hosted-admin
+    - html
+    - html-cleaner-pipeline
+    - http
+    - logging
+    - mcp
+    - organizations
+    - page-fetch
+    - search-engine
+    - search-pipeline
+    - terminal
+    - user-portal
+    - website-fetcher
+    - composition
+  allowed_edges:                     # 41 edges on 2026-10-21; kind is the maximum allowed: type allows type-only imports, runtime and both allow any import
+    - { from: auth, to: billing, kind: type }
+    - { from: auth, to: config, kind: both }
+    - { from: auth, to: hosted-admin, kind: runtime }   # known cycle
+    - { from: auth, to: html, kind: runtime }
+    - { from: auth, to: http, kind: runtime }
+    - { from: auth, to: organizations, kind: both }     # known cycle
+    - { from: composition, to: auth, kind: both }
+    - { from: composition, to: billing, kind: both }
+    - { from: composition, to: config, kind: both }
+    - { from: composition, to: hosted-admin, kind: runtime }
+    - { from: composition, to: html-cleaner-pipeline, kind: runtime }
+    - { from: composition, to: http, kind: both }
+    - { from: composition, to: logging, kind: runtime }
+    - { from: composition, to: mcp, kind: both }
+    - { from: composition, to: organizations, kind: both }
+    - { from: composition, to: page-fetch, kind: both }
+    - { from: composition, to: search-engine, kind: runtime }     # PR #202
+    - { from: composition, to: search-pipeline, kind: runtime }   # PR #202
+    - { from: composition, to: terminal, kind: runtime }
+    - { from: composition, to: website-fetcher, kind: runtime }
+    - { from: hosted-admin, to: auth, kind: both }       # known cycle
+    - { from: hosted-admin, to: billing, kind: type }
+    - { from: hosted-admin, to: html, kind: runtime }
+    - { from: hosted-admin, to: http, kind: runtime }
+    - { from: hosted-admin, to: organizations, kind: type }   # known cycle
+    - { from: html-cleaner-pipeline, to: page-fetch, kind: type }
+    - { from: html-cleaner-pipeline, to: website-fetcher, kind: both }   # one import type, one inline type that loads the module
+    - { from: http, to: config, kind: type }
+    - { from: mcp, to: auth, kind: both }
+    - { from: mcp, to: http, kind: runtime }
+    - { from: mcp, to: page-fetch, kind: both }
+    - { from: mcp, to: search-pipeline, kind: runtime }           # PR #202
+    - { from: organizations, to: auth, kind: type }     # known cycle
+    - { from: organizations, to: billing, kind: type }
+    - { from: page-fetch, to: auth, kind: runtime }
+    - { from: page-fetch, to: website-fetcher, kind: both }
+    - { from: search-engine, to: website-fetcher, kind: type }
+    - { from: search-pipeline, to: auth, kind: runtime }          # PR #202
+    - { from: search-pipeline, to: page-fetch, kind: runtime }    # PR #202
+    - { from: search-pipeline, to: search-engine, kind: type }    # PR #202
+    - { from: search-pipeline, to: website-fetcher, kind: runtime }   # PR #202
+  forbidden_edges:                   # from the existing guards
+    - { from: html-cleaner-pipeline, to: mcp }
+    - { from: website-fetcher, to: auth }
+    - { from: auth, to: mcp }
+    - { from: page-fetch, to: [mcp, http, hosted-admin, composition, html-cleaner-pipeline, logging] }
+  file_guards: keep                  # the eslint import rules in .habit-hooks and test/acceptance/architecture stay; at adoption they read this file
+  known_cycles:                      # frozen debt at the package level; growth is FIX
+    - members: [auth, hosted-admin]
+      kind: runtime
+      edges:
+        - { from: src/auth/hosted-auth/workos/workos-signup-pages.ts, to: src/hosted-admin/page-html.ts }
+        - { from: src/auth/hosted-auth/workos/workos-signup-routes.ts, to: src/hosted-admin/account-form.ts }
+        - { from: src/hosted-admin/portal-access.ts, to: src/auth/access-context.ts }
+      resolve: move the page helpers out of hosted-admin, or let auth stop rendering pages
+    - members: [auth, hosted-admin, organizations]
+      kind: all                      # the runtime cycle above plus these edges
+      edges:
+        - { from: src/auth/hosted-auth/workos/workos-google-onboarding.ts, to: src/organizations/administration-overviews.ts, kind: runtime }
+        - { from: src/auth/hosted-auth/workos/workos-google-onboarding.ts, to: src/organizations/change-records.ts, kind: runtime }
+        - { from: src/auth/hosted-auth/workos/workos-google-onboarding.ts, to: src/organizations/organization-directory.ts, kind: type }
+        - { from: src/auth/hosted-auth/workos/workos-organizations.ts, to: src/organizations/organization-directory.ts, kind: type }
+        - { from: src/auth/hosted-auth/workos/workos-signup.ts, to: src/organizations/organization-directory.ts, kind: type }
+        - { from: src/hosted-admin/account-form.ts, to: src/organizations/organization-administration.ts, kind: type }
+        - { from: src/hosted-admin/account-routes.ts, to: src/auth/access-context.ts, kind: type }
+        - { from: src/hosted-admin/account-routes.ts, to: src/organizations/organization-administration.ts, kind: type }
+        - { from: src/hosted-admin/account-routes.ts, to: src/auth/hosted-auth/browser-session.ts, kind: type }
+        - { from: src/hosted-admin/administration-pages.ts, to: src/organizations/administration-overviews.ts, kind: type }
+        - { from: src/hosted-admin/administration-pages.ts, to: src/organizations/customer-roles.ts, kind: type }
+        - { from: src/hosted-admin/administration-pages.ts, to: src/organizations/organization-directory.ts, kind: type }
+        - { from: src/hosted-admin/administration-routes.ts, to: src/auth/access-context.ts, kind: type }
+        - { from: src/hosted-admin/administration-routes.ts, to: src/organizations/change-records.ts, kind: type }
+        - { from: src/hosted-admin/administration-routes.ts, to: src/organizations/organization-administration.ts, kind: type }
+        - { from: src/hosted-admin/administration-routes.ts, to: src/auth/hosted-auth/browser-session.ts, kind: type }
+        - { from: src/hosted-admin/organization-selection-page.ts, to: src/organizations/organization-administration.ts, kind: type }
+        - { from: src/organizations/change-records.ts, to: src/auth/access-context.ts, kind: type }
+        - { from: src/organizations/customer-roles.ts, to: src/auth/access-context.ts, kind: type }
+        - { from: src/organizations/organization-administration.ts, to: src/auth/access-context.ts, kind: type }
+        - { from: src/organizations/organization-directory.ts, to: src/auth/access-context.ts, kind: type }
+  allowed_external_imports:          # npm packages per package on 2026-10-20
+    auth: ["@better-auth/mcp", "@workos-inc/node", better-auth, jose, linkedom, micromark, micromark-extension-gfm]
+    composition: ["@workos-inc/node", jose, linkedom]
+    config: ["@modelcontextprotocol/server"]
+    html-cleaner-pipeline: [adblock-rs, agent-input-sanitizer, css-select, css-tree, defuddle, htmlparser2, linkedom, parse5, parse5-htmlparser2-tree-adapter]
+    logging: ["@opentelemetry/api-logs"]
+    mcp: ["@modelcontextprotocol/server"]
+    search-engine: [css-select, htmlparser2]
+    user-portal: [vite]
+  allowed_node_builtins:             # node: imports per package on 2026-10-20
+    auth: ["node:crypto", "node:fs", "node:path", "node:sqlite", "node:util"]
+    composition: ["node:child_process", "node:fs/promises", "node:path", "node:url"]
+    config: ["node:fs", "node:path"]
+    hosted-admin: ["node:crypto"]
+    html-cleaner-pipeline: ["node:crypto"]
+    http: ["node:events", "node:http", "node:net"]
+    logging: ["node:path", "node:stream", "node:url"]
+    mcp: ["node:crypto"]
+    page-fetch: ["node:os"]
+    search-pipeline: ["node:os"]
+    terminal: ["node:readline", "node:stream"]
+    user-portal: ["node:url"]
+    website-fetcher: ["node:child_process", "node:dns", "node:dns/promises", "node:net", "node:os"]
+
+# Check 4. The author takes two snapshots with
+# script/code-quality/ast-metrics-snapshot.ts, one of the merge base and one
+# of the candidate. The check reads them with --base-snapshot and
+# --head-snapshot and applies maintainability_index to the raw MI of each
+# changed production file. A snapshot of another commit stops the check. The
+# check reads the exceptions file at HEAD; today is the committer date of
+# HEAD, so that a rerun gives the same route. The CRAP keys and identity wait
+# for the later check.
+ratchet:
+  base_snapshot: ast-report/snapshot-base.json   # the default output of the snapshot command with --base
+  head_snapshot: ast-report/snapshot.json        # the default output of the snapshot command without --base
+  coverage_suites: [unit, integration, acceptance]   # one basis for the AGENTS.md report and this check; the metrics guide uses unit only today
+  identity:
+    key: the function identity and move detection of script/code-quality/ast-metrics-crap.ts
+    new_function: a function with no score at the merge base
+    legacy_function: a function with a score at start_commit
+    start_commit: null               # set at adoption
+    unknown_coverage_on_changed_function: FIX
+  crap:
+    unit: function
+    new_function_above: 15           # FIX
+    changed_legacy_function_at_or_above: 30   # FIX
+    changed_function_above_goal_and_worse_than_base: FIX   # a function below its goal may get worse
+  maintainability_index:
+    unit: production file            # a test or support file has no rule
+    new_file_below: 85               # FIX for a new file (status A) below this raw MI
+    existing_file_drop_read_at: 5    # READ at a raw drop of five or more from the base snapshot; a renamed file continues its old path
+    compare: raw values, no rounding
+  exceptions:
+    file: .code-quality-exceptions.yaml   # optional; a change is READ through read_paths
+    fields: [unit, metric, bound, reason, expires, predecessor]   # the check reads path (the unit of mi), metric mi, bound, reason and expires (YYYY-MM-DD)
+    predecessor: the function that a renamed or moved function continues, so it keeps the legacy goal
+    expired_entry: FIX for a pull request that changes the unit; other expiries go to the monthly review
+
+# Check 5. Lines are additions plus deletions in the diff against the merge base.
+size:
+  production_lines_read_above: 400   # under scopes.production
+  total_lines_read_above: 1500       # all files minus scopes.generated
+  test_counts:
+    source: the summary of the Node test reporter, recorded per main commit
+    fewer_tests_than_base: READ
+    more_skipped_or_todo_than_base: READ
+  habit_hooks_snooze_non_empty: FIX  # .habit-hooks/snooze.json stays []
+  # Reference: pull requests #186 to #200 merged on 2026-10-19 and 2026-10-20.
+  # 6 of the 15 changed src/. The largest changed 450 src lines in 8 files.
+  # docs/metrics added 187 to 1,468 lines per pull request, so scopes.generated matters.
+
+# Check 6. A green pull request with no change under scopes.executable is SHIP,
+# if no other check fired. A green pull request with such a change is SHOW.
+ship_scope:
+  executable: scopes.executable
+
+calibration:
+  review_every: month
+  targets:
+    human_before_merge_share_max: 0.30   # ASK plus READ over all merged pull requests
+    false_alarm_share_max: 0.20          # ASK or READ pull requests with no commit after the route label
+  stop_rule:
+    show_reverts_per_month: 2            # then the executable files of the reverted pull requests go to read_paths.moved_by_stop_rule
+    revert: a merge whose message says "This reverts commit"
+  record: docs/implementation/pr-review-calibration.md   # to create; one table per month

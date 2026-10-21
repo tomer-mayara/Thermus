@@ -16,7 +16,9 @@ export interface DebugSiteOptions {
 export async function serveFetchUrlDebugSite(t: TestContext, options: DebugSiteOptions = {}) {
   const calls: { url: string; reason: string }[] = [];
   const requests: { method?: string; authorization: string | null; version: string | null }[] = [];
+  const abortObserved = Promise.withResolvers<void>();
   let aborted = 0;
+  const pendingSignals = new Set<AbortSignal>();
   const handler = createMcpHandler(() => {
     const server = new McpServer({ name: 'thermus-debug-test', version: '0.0.0' });
     server.registerTool('getURLAsMarkdown', {
@@ -42,11 +44,27 @@ export async function serveFetchUrlDebugSite(t: TestContext, options: DebugSiteO
     if (options.legacy && body.method === 'server/discover') return Response.json({ jsonrpc: '2.0', id: body.id, error: { code: -32601, message: 'Method not found' } });
     if (options.malformed) return new Response('not-json', { headers: { 'content-type': 'application/json' } });
     if (options.hang !== undefined && body.method === options.hang) {
-      await new Promise<void>((resolve) => request.signal.addEventListener('abort', () => { aborted += 1; resolve(); }, { once: true }));
-      return new Response(null, { status: 499 });
+      return holdUntilAborted(request.signal, pendingSignals, () => { aborted += 1; abortObserved.resolve(); });
     }
     return handler.fetch(request);
   }, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: 'http://127.0.0.1', shutdownGraceMs: 100 });
-  t.after(async () => { await listener.close(); await handler.close(); });
-  return { endpoint: new URL('mcp', listener.url).href, calls, requests, aborted: () => aborted };
+  t.after(async () => { await listener.close(); pendingSignals.clear(); await handler.close(); });
+  return { endpoint: new URL('mcp', listener.url).href, calls, requests, abortObserved: abortObserved.promise, aborted: () => aborted };
+}
+
+// A hung request ends only when its signal aborts. The site owns the pending signal until then, so a late abort
+// still counts exactly once and the listener does not outlive the request.
+async function holdUntilAborted(signal: AbortSignal, pending: Set<AbortSignal>, onAbort: () => void): Promise<Response> {
+  pending.add(signal);
+  const abort = Promise.withResolvers<void>();
+  const listener = () => { onAbort(); abort.resolve(); };
+  try {
+    if (signal.aborted) listener();
+    else signal.addEventListener('abort', listener, { once: true });
+    await abort.promise;
+  } finally {
+    signal.removeEventListener('abort', listener);
+    pending.delete(signal);
+  }
+  return new Response(null, { status: 499 });
 }

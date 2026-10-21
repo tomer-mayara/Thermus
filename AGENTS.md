@@ -88,15 +88,85 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 - Update the documents that the change affects in the same pull request.
 - Run the ast-metrics review process (the section "Code quality review
   with ast-metrics" below) on the complete candidate before Ready.
+- Compute and record the review route as the section "Review route" below
+  says: steps 1 and 2 when you open the draft, steps 3 to 6 before Ready.
 - Mark the pull request Ready and wait for every Actions job that starts
   for its head to pass; a started job that is pending, skipped, cancelled,
   or failed is not a pass. A fix after Ready returns the pull request to
   Draft first. The details are in
   [the test gate policy](docs/implementation/test-gate-policy.md).
 - The review is manual for now: you review the work of your subagents, and
-  the owner reviews the pull request. No agent reviewer runs on it.
+  the owner reviews the pull request with the depth that its route suggests.
+  No agent reviewer runs on it.
 - Merge a clean pull request one time. The owner merges a pull request that
   adds a decision record under `architecture/decisions/`.
+
+## Review route
+
+The [PR review playbook](docs/implementation/pr-review-playbook.md) and its
+[rules file](docs/implementation/pr-review-rules.yaml) define five routes:
+`FIX`, `ASK`, `READ`, `SHOW`, `SHIP`. A route says how deeply a human reads
+the pull request. The command `script/pr-review/check.ts` computes the route;
+the [check guide](script/pr-review/README.md) gives its options and its output.
+The route does not change who merges.
+
+In this trial, this section governs where it differs from the rules file.
+The check applies the keys `protected_paths`, `read_paths`, `scopes`,
+`public_surface`, `dependency_graph`, `size`, and
+`ratchet.maintainability_index`. It also reads the exceptions file. The keys
+`required_checks`, the other keys of `ratchet`, `calibration`, and the merge
+keys of `routes` wait for CI and the later checks; do not apply them by hand.
+
+Do steps 1 and 2 when you open the draft, and again after each change to the
+candidate. Do steps 3 to 6 after the final metrics report and before Ready.
+A subagent or a worker does steps 1 and 2 on its part and reports the output.
+The manager, or the Delamain session, does steps 3 to 6 on the complete
+candidate.
+
+1. **Run the check.** Commit every file first, so that `git status --porcelain`
+   prints nothing. Then take the two snapshots of the committed candidate.
+   `pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main`
+   writes `ast-report/snapshot-base.json`.
+   `pnpm exec node script/code-quality/ast-metrics-snapshot.ts` writes
+   `ast-report/snapshot.json`. Then run
+   `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json`.
+   The check compares HEAD with the merge base. It reads the rules file of
+   the merge base and the facts that HEAD declares. It prints the route,
+   every reason, the questions for `ASK`, the changed paths, the line counts,
+   the test counts, the MI of the changed production files, the facts to
+   declare, the modules to compare, and the label command. Exit status 1
+   means that the check could not run: repair the cause.
+2. **Declare or remove facts.** For each entry under "Facts to declare",
+   remove the fact, for example by an import through a module that
+   `public_surface` lists, or declare it in the rules file in the same pull
+   request under the key that the entry names. Update the count and date
+   comments. That edit changes a protected path, so the route is `ASK`. A
+   forbidden edge, a new cycle, or a known cycle that grows has no entry:
+   remove the import. For each module under "Surface differences", compare
+   its exported declarations before and after the change, and describe the
+   difference in the decision. Run the check again.
+3. **Metrics.** Use the final report of the process "Code quality review with
+   ast-metrics" below. A recorded CRAP miss of an added or changed function,
+   or a kept high finding on a changed file, is a reason for `READ`. A miss
+   or finding with the reason `unchanged by this PR` is not. The check
+   applies the MI rules. These rules replace the CRAP keys of `ratchet` in
+   the trial.
+4. **Route.** A required check is a required run of the test gate policy, or
+   habit-hooks. While one fails, the route is `FIX`. Do not mark a `FIX`
+   pull request Ready: make the check pass, then run the check again. In
+   every other case, the route of the check applies, raised to `READ` by a
+   metric reason of step 3. Keep every reason, not only the first.
+5. **Record.** Paste the output of the check into a section "Review route" of
+   the pull request description. Add the metric reasons of step 3. Set the
+   label with the printed command. The labels `route:fix`, `route:ask`,
+   `route:read`, `route:show`, and `route:ship` exist in the repository.
+   Update the section and the label after each change to the candidate.
+6. **Decision.** For `ASK`, write the draft decision in the "Review route"
+   section. Answer the question of each matching group of `protected_paths`.
+   State the guarantee that holds after the change. The owner decides
+   whether the decision becomes a record under `architecture/decisions/`.
+   A record has the name `YYYY-MM-DD-<topic>.md` and the headings Context,
+   Decision, and Consequences. The owner merges a pull request that adds one.
 
 ## Code quality review with ast-metrics
 
@@ -177,5 +247,6 @@ server.
 For a ticket from a Delamain board, follow the code prompt of your run.
 The prompt gives the order of the steps. The session opens and merges the
 pull request one time each. A worker run does neither: it runs the checks
-of "Pull requests" and none of its pull request steps. A restart reuses
+of "Pull requests", does steps 1 and 2 of the review route, and reports the
+results; it does none of the pull request steps. A restart reuses
 the same pull request and merge result.

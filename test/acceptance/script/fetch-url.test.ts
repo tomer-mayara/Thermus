@@ -135,6 +135,8 @@ for (const hang of ['server/discover', 'initialize', 'tools/call'] as const) {
     assert.equal(result.code, 1);
     assert.equal(result.stdout, '');
     assert.match(result.stderr, /timed out/i);
+    assert.ok(site.requests.some(({ method }) => method === hang), 'The timed-out request must reach the site');
+    await site.abortObserved;
     assert.equal(site.aborted(), 1);
     if (hang === 'tools/call') assert.equal(site.requests.filter(({ method }) => method === 'tools/call').length, 1, 'An uncertain tool outcome must not be repeated');
   });

@@ -314,3 +314,11 @@ produced a byte-identical report with the original `["integration"]` capture
 identity; the default coverage report stayed unchanged. This complete capture
 is separate from the protocol fixtures. The earlier `c620cf8f` run passed tests
 but remained unverified because four loaders had raw-only evidence.
+
+# Compute the review route
+
+[`pr-review/check.ts`](pr-review/check.ts) computes the review route of a pull
+request candidate: `FIX`, `ASK`, `READ`, `SHOW`, or `SHIP`. It reads the
+[rules file](../docs/implementation/pr-review-rules.yaml). It is the step "Run
+the check" of the section "Review route" of [AGENTS.md](../AGENTS.md). The
+[check guide](pr-review/README.md) gives its options, its output, and its tests.

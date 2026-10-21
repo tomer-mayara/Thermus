@@ -29,6 +29,8 @@ runtime guides stay current after implementation.
 
 ## Design and testing
 
+- [PR review playbook](implementation/pr-review-playbook.md): proposal in manual trial, in which agents run the check on each pull request; the five routes, the seven deterministic checks that decide when a human reads a pull request, the [rules file](implementation/pr-review-rules.yaml) with the protected paths, the public surface, the package graph, the metric ratchet and the size limits, and the [check](../script/pr-review/README.md) that computes the route.
+- [PR review change request](implementation/pr-review-change-request.md): the plan to adopt five pieces of PR #201 into the review process, one stacked pull request each, with the design decisions and the tickets.
 - [MCP pipeline refinements implementation record](implementation/mcp-pipeline-refinements.md): implemented and validated naming, trusted record identity, and static result refinements in [PR #164](https://github.com/tomer-mayara/Thermus/pull/164), with functional gates, manager sign-off, and retained quality exceptions.
 - [Two MCP pipelines plan](implementation/mcp-pipelines-plan.md): four slices for a neutral fetch operation, correlation IDs, outgoing observation, and incoming decisions; 01 merged in PR #155, 02 merged in PR #159, 03 merged in PR #160, and 04 is implemented and validated with manager sign-off in PR #162.
 - [Two MCP pipelines plan review](implementation/mcp-pipelines-plan-review.md): the deep review, corrected logical errors, section-by-section simplifications, and design sign-off.

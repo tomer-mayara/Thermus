@@ -41,13 +41,15 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
 `npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
-The backend unit command uses `node --test --test-concurrency=1` with the
-complete unit glob. It runs one test file at a time, so other unit files do not
-compete with the child processes that check work deadlines. Test selection,
-process isolation, assertions, and deadlines stay unchanged.
-It does not run the full integration, acceptance, interface, or container suites,
-the hosted image gate, or the renderer gate. `npm test` does not run the build test, because `tsconfig.build.json`
-excludes it from `dist/`. Only `npm run test:hosted-live` runs the hosted live file.
+The compiled ordinary, unit, and acceptance commands use
+`node --test --test-concurrency=1` with their existing selections. They run one
+test file at a time, so other files do not compete with the child processes
+that check work deadlines. Test selection, process isolation, assertions, and
+deadlines stay unchanged.
+`npm run check` does not run the full integration, acceptance, interface, or
+container suites, the hosted image gate, or the renderer gate. `npm test` does
+not run the build test, because `tsconfig.build.json` excludes it from `dist/`.
+Only `npm run test:hosted-live` runs the hosted live file.
 The ordinary `test` and `test:acceptance` commands use the quoted Node glob
 `**/!(hosted-image).test.js` to exclude the hosted image test by basename.
 Node 24.20.0 supports this exclusion. Only `npm run test:container:hosted` runs
@@ -856,17 +858,21 @@ payment collection, hosted features, or migration between editions.
    Then run the process "Code quality review with ast-metrics" of AGENTS.md
    on the complete candidate; the
    [ast-metrics review guide](ast-metrics-review.md) gives the commands.
-4. Mark the pull request Ready. Wait for every Actions job that starts for its
+4. Compute and record the review route as the section "Review route" of
+   AGENTS.md says.
+5. Mark the pull request Ready. Wait for every Actions job that starts for its
    head to pass. A started job that is pending, skipped, cancelled, or failed is
    not a pass.
-5. If you must make a fix after Ready, return the pull request to Draft first.
+6. If you must make a fix after Ready, return the pull request to Draft first.
    Then continue from step 2 with the new candidate.
-6. The review is manual. The manager reviews the work of each subagent. The
-   owner reviews the pull request. No agent reviewer runs on it.
-7. Merge a clean pull request one time. The owner merges a pull request that
+7. The review is manual. The manager reviews the work of each subagent. The
+   owner reviews the pull request with the depth that its route suggests. No
+   agent reviewer runs on it.
+8. Merge a clean pull request one time. The owner merges a pull request that
    adds a decision record under `architecture/decisions/`.
 
-A Delamain worker run does the required runs and none of the pull request steps.
+A Delamain worker run does the required runs and steps 1 to 4 of the review
+route, and none of the pull request steps.
 For a Delamain ticket, the session opens and merges the pull request one time
 each. A restart reuses the same pull request and merge result.
 

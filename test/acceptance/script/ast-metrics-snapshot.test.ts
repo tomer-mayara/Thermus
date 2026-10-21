@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
+import type { Snapshot } from '../../../script/code-quality/snapshot/types.ts';
 import { astMetricsSnapshotScript } from '../../support/processes/module-paths.ts';
 import { runScript } from '../../support/processes/script-command.ts';
 import { communitiesAnswer, communityOf, repositoryFiles, serverAnswers, snapshotDoublesOnPath, sourceFiles } from './fixtures/ast-metrics-snapshot-answers.ts';
@@ -73,9 +74,12 @@ test('Given the doubles with the answers of a small repository, when the snapsho
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, 'Wrote ast-report/snapshot.json: 3 communities, 4 files, 5 functions.\n');
   assert.equal(result.code, 0);
-  const { commit, date, provenance, ...snapshot } = snapshotIn(join(repository.root, 'ast-report', 'snapshot.json')) as { readonly commit: string; readonly date: string; readonly provenance: unknown };
+  const { commit, date, provenance, files, ...snapshot } = snapshotIn(join(repository.root, 'ast-report', 'snapshot.json')) as Snapshot;
   assert.ok(provenance);
-  assert.deepEqual(snapshot, expectedSnapshot);
+  assert.deepEqual({ ...snapshot, files: files.map(({ maintainabilityRaw: _raw, ...file }) => file) }, expectedSnapshot);
+  assert.deepEqual(files.map(({ path, maintainabilityRaw }) => [path, maintainabilityRaw]), [
+    ['src/admin/pages/account.ts', 70.06], ['src/auth/session.ts', 61.24], ['src/auth/tokens.ts', 88.8], ['src/kernel/ids.ts', undefined],
+  ]);
   assert.deepEqual({ commit, date }, { commit: repository.git('rev-parse', 'HEAD').trim(), date: repository.git('show', '-s', '--format=%cI', 'HEAD').trim() });
   assert.deepEqual(doubles.server.calls(), [
     { tool: 'get_communities', arguments: { with_members: true }, cwd: repository.root },
