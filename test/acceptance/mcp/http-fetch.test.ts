@@ -5,6 +5,7 @@ import { ProtocolError, type CallToolResult } from '@modelcontextprotocol/client
 import type { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import type { WebsiteFetchResult } from '../../../src/website-fetcher/website-fetcher.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
+import { searchToolInputSchema } from '../../../src/mcp/search-tool-schema.ts';
 import { exactMarkdown, openFetchSite, validFetchArguments } from '../../support/in-process/mcp-fetch-site.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
 import { generatedOperationIdPattern } from '../../support/fixtures/execution-context.ts';
@@ -15,8 +16,9 @@ for (const era of mcpProtocolEras) {
   test(`Given test-injected auth in ${era}, when an MCP HTTP client discovers and calls the fetch tool, then it gets exact Markdown and one completion record with an operation UUID`, async (t) => {
     const site = await openFetchSite(t, era, { headers: { 'X-Subject': 'forged-subject', 'X-Tenant-Id': 'forged-tenant', 'X-Authority': 'forged-authority' } });
     const listed = await site.client.listTools();
-    assert.deepEqual(listed.tools.map(({ name }) => name), ['getURLAsMarkdown']);
+    assert.deepEqual(listed.tools.map(({ name }) => name), ['getURLAsMarkdown', 'search']);
     assert.deepEqual(listed.tools[0]?.inputSchema, fetchToolInputSchema);
+    assert.deepEqual(listed.tools[1]?.inputSchema, searchToolInputSchema);
     const result = await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validFetchArguments });
     assertTextResult(result, exactMarkdown);
     assert.equal(site.fetchCalls.length, 1);

@@ -63,12 +63,12 @@ export class SearchEngineBraveHttp implements SearchEngine {
     const searchPages = selectAll<HtmlNode, HtmlElement>('main#search-page', document);
     if (searchPages.length !== 1) throw new Error('Search failed');
     const searchPage = searchPages[0];
-    const sections = selectAll<HtmlNode, HtmlElement>('section#mixed-main', searchPage);
-    if (sections.length !== 1) throw new Error('Search failed');
+    const sections = selectAll<HtmlNode, HtmlElement>('section#mixed-main', document);
+    if (sections.length !== 1 || selectOne<HtmlNode, HtmlElement>('section#mixed-main', searchPage) !== sections[0]) throw new Error('Search failed');
     const main = sections[0];
-    const banners = selectAll<HtmlNode, HtmlElement>('#bad-results-info-banner', searchPage);
+    const banners = selectAll<HtmlNode, HtmlElement>('#bad-results-info-banner', document);
     if (banners.length !== 0) {
-      if (banners.length === 1 && this.isNoResults(main, searchPage, banners[0])) return 'no_results';
+      if (banners.length === 1 && this.isNoResults(main, banners[0], document)) return 'no_results';
       throw new Error('Search failed');
     }
     const results = selectAll<HtmlNode, HtmlElement>('.snippet[data-type="web"]', main);
@@ -78,16 +78,17 @@ export class SearchEngineBraveHttp implements SearchEngine {
 
   private isWebResult(result: HtmlElement): boolean {
     const title = selectOne<HtmlNode, HtmlElement>('.result-content > a.l1[href] > .title.search-snippet-title', result);
-    const content = selectOne<HtmlNode, HtmlElement>('.generic-snippet .content', result);
+    const content = selectOne<HtmlNode, HtmlElement>('.generic-snippet .content, '
+      + '.result-content > .video-snippet[data-macro="video"] > .content > .desktop-default-regular.line-clamp-2', result);
     const link = title?.parent;
     const href = link && 'attribs' in link ? link.attribs.href : undefined;
     return Boolean(title && DomUtils.textContent(title).trim() && href?.trim() && content && DomUtils.textContent(content).trim());
   }
 
-  private isNoResults(main: HtmlElement, searchPage: HtmlElement, banner: HtmlElement): boolean {
+  private isNoResults(main: HtmlElement, banner: HtmlElement, document: HtmlDocument): boolean {
     const wrapper = selectOne<HtmlNode, HtmlElement>(':scope > .fallback-snippet', main);
     if (wrapper === null || banner.parent !== wrapper) return false;
-    if (selectOne<HtmlNode, HtmlElement>('.snippet, .result-content, a.l1, .search-snippet-title, [data-type]', searchPage) !== null) return false;
+    if (selectOne<HtmlNode, HtmlElement>('.snippet, .result-content, a.l1, .search-snippet-title, main#search-page [data-type]', document) !== null) return false;
     const headers = selectAll<HtmlNode, HtmlElement>(':scope > span', banner);
     if (headers.length !== 1) return false;
     const header = headers[0];

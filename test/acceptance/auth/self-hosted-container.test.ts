@@ -57,7 +57,7 @@ const hostedAndPaidPaths = [
 ] as const;
 
 let images: GateImages;
-const fetchToolNames = ['getURLAsMarkdown'];
+const fetchToolNames = ['getURLAsMarkdown', 'search'];
 const fetchReason = 'Read the rendered page for the task';
 const pinnedRenderer = '/opt/lightpanda/1.0.0/lightpanda';
 // The page of the test-only seam in container-page.ts, on port 8090 of a server container.

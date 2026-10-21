@@ -4,6 +4,7 @@ import { StreamableHTTPClientTransport, type CallToolResult, type Client } from 
 import type { ApplicationLogger } from '../../../../src/application.ts';
 import { startHttpServer } from '../../../../src/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/mcp/fetch-tool-schema.ts';
+import { searchToolInputSchema } from '../../../../src/mcp/search-tool-schema.ts';
 import { trustedAdRulesFile } from '../../../support/fixtures/ad-rules.ts';
 import { generatedOperationIdPattern } from '../../../support/fixtures/execution-context.ts';
 import { completionRecordsIn } from '../../../support/drivers/operator-log.ts';
@@ -116,7 +117,7 @@ describe('The basic MCP URL fetch work slice with the mock provider and the prod
       await server.close();
       await server.close();
 
-      assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }]);
+      assert.deepEqual(listed.tools.map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: 'getURLAsMarkdown', inputSchema: fetchToolInputSchema }, { name: 'search', inputSchema: searchToolInputSchema }]);
       assertText(result, expectedMarkdown);
       assert.deepEqual(log.lines.filter((line) => line.includes('work-slice fetch')), [
         `work-slice fetch started: ${storyUrl}`,

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { repositoryRoot } from '../../support/processes/module-paths.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
@@ -5,6 +7,7 @@ import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
 import { HtmlToMarkdownPipeline } from '../../../src/html-cleaner-pipeline/html-to-markdown-pipeline.ts';
 import { incomingPageCases } from '../../support/fixtures/incoming-pages.ts';
 import { mcpProtocolEras } from '../../support/drivers/mcp/mcp-protocol-eras.ts';
+import { searchToolInputSchema } from '../../../src/mcp/search-tool-schema.ts';
 import { fetchToolInputSchema } from '../../../src/mcp/fetch-tool-schema.ts';
 import { RendererProcessDouble, controlledRenderer } from '../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
@@ -24,7 +27,7 @@ test('Given production hosted composition with trusted rules and a valid Connect
   const renderer = RendererProcessDouble.install(t);
   renderer.serve(url, { finalUrl: url, html });
   const listed = await rpcResult(await site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/list', token: site.token })));
-  assert.deepEqual((listed.tools as Array<{ name: string; inputSchema: unknown }>).map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: params.name, inputSchema: fetchToolInputSchema }]);
+  assert.deepEqual((listed.tools as Array<{ name: string; inputSchema: unknown }>).map(({ name, inputSchema }) => ({ name, inputSchema })), [{ name: params.name, inputSchema: fetchToolInputSchema }, { name: 'search', inputSchema: searchToolInputSchema }]);
 
   const result = await rpcResult(await site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/call', token: site.token, params })));
   assert.deepEqual(result.content, [{ type: 'text', text: markdown }]);
@@ -148,5 +151,42 @@ for (const era of mcpProtocolEras) {
     for (const completion of completions) assert.match(completion.operationId as string, generatedOperationIdPattern);
     assert.doesNotMatch(JSON.stringify(steps), /private-|Visible text|Story|source|news|Bearer|warning/);
     assert.ok(!site.lines.join('\n').includes(site.token));
+  });
+}
+
+const searchDescription = 'Search the web with a text query and return cleaned results as Markdown. Use this tool for web searches; search engines may block generic page-fetch requests. Use getURLAsMarkdown to read a result page. Give the reason the agent needs the search.';
+const fetchDescription = 'Fetch a known web page URL as Markdown. For web searches, use search instead of fetching a search engine results URL. Give the reason the agent needs the page.';
+
+for (const era of mcpProtocolEras) {
+  test(`Given the production hosted application and an authorized user in ${era}, when the user discovers and calls search, then both tools have their guidance and schemas and the captured Brave results reach the client`, { timeout: 120_000 }, async (t) => {
+    const site = await openHostedFetchSite(t);
+    const searchUrl = 'https://search.brave.com/search?q=entry+wiring';
+    const renderer = RendererProcessDouble.install(t);
+    renderer.serve(searchUrl, { finalUrl: searchUrl, html: readFileSync(new URL('test/support/fixtures/search-engine/brave-results.html', repositoryRoot), 'utf8') });
+    const client = await connectMcpClient(t, new StreamableHTTPClientTransport(new URL(site.config.mcpResourceUrl), {
+      authProvider: { token: async () => site.token },
+      fetch: async (input, init) => site.application.handle(new Request(input, init)),
+    }), { era });
+    t.after(() => client.close());
+    const { tools } = await client.listTools();
+    assert.deepEqual(tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })), [
+      { name: 'getURLAsMarkdown', description: fetchDescription, inputSchema: fetchToolInputSchema },
+      { name: 'search', description: searchDescription, inputSchema: searchToolInputSchema },
+    ]);
+    const result = await client.callTool({ name: 'search', arguments: { query: 'entry wiring', reason: 'Verify production search' } });
+    assert.notEqual(result.isError, true);
+    assert.equal(result.structuredContent, undefined);
+    assert.equal(result.content.length, 1);
+    const content = result.content[0];
+    assert.equal(content.type, 'text');
+    if (content.type !== 'text') throw new Error('Expected Markdown');
+    const expected = JSON.parse(readFileSync(new URL('test/support/fixtures/search-engine/brave-results-expected.json', repositoryRoot), 'utf8')) as Array<{ title: string; url: string }>;
+    for (const entry of expected) {
+      assert.ok(content.text.includes(entry.title), `Missing result: ${entry.title}`);
+      assert.ok(content.text.includes(entry.url), `Missing destination: ${entry.url}`);
+    }
+    assert.equal(renderer.launches.length, 1);
+    assert.equal(renderer.launches[0]?.args.at(-1), searchUrl);
+    assert.equal(site.completions().at(-1)?.status, 'success');
   });
 }
