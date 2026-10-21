@@ -1,8 +1,12 @@
-# Fetch a URL through MCP
+# Fetch a URL or search through MCP
 
 `fetch-url.ts` calls Thermus `getURLAsMarkdown` without an LLM client. It sends
 `{url, reason}` and writes the returned Markdown to standard output. It uses the
 MCP SDK for protocol negotiation and JSON or SSE responses.
+
+`search/search.ts` calls Thermus `search` with `{query, reason}` and writes the
+exact results Markdown to standard output. It uses the same authentication,
+protocol negotiation, and deadline options as the fetch command.
 
 The default endpoint is `https://app.thermus.ai/mcp`. Sign in through WorkOS in
 your browser, or supply a Bearer credential yourself. The hosted backend accepts
@@ -75,6 +79,9 @@ On a supported POSIX local filesystem, the script stores one grant under
 files are private (0600). Symlinks and unsafe ownership or permissions are
 refused. Credentials are plaintext protected by file permissions, not an
 encrypted vault.
+
+Search and fetch share this grant and lock. Login in either command saves the
+grant for both commands. Logout in either command removes it for both.
 
 One command at a time can prepare or change credentials. A second command
 fails promptly if the store is busy. The lock is released before the MCP
@@ -160,6 +167,69 @@ Run the focused offline tests after a clean build:
 ```sh
 pnpm run build
 pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/script/*.test.js" "dist/test/acceptance/script/*.test.js"
+```
+
+# Search through MCP
+
+Run the search command from the repository root after the dependency installation
+above. No build is needed:
+
+```sh
+pnpm exec node script/search/search.ts --login
+pnpm exec node script/search/search.ts \
+  --query 'Lightpanda browser documentation' \
+  --reason 'Find the official browser documentation' > results.md
+```
+
+The query must contain 1 to 512 Unicode scalar values and at least one
+non-whitespace character. Lone UTF-16 surrogates are refused. The reason must
+contain 1 to 2000 Unicode code points and at least one non-whitespace character.
+The command sends accepted query and reason text unchanged.
+
+Use `--non-interactive` to reuse or refresh the shared grant without opening a
+browser. Use `--logout` to delete the shared local grant. As with fetch, unset
+`THERMUS_API_KEY` before `--login` or `--logout`; use these options without a
+query, reason, or explicit credential. Browser sign-in and token refresh use the
+same hosted profile and callback port as fetch.
+
+Explicit Bearer input uses `THERMUS_API_KEY` or `--api-key-stdin`. Stdin replaces
+the environment credential and must reach EOF. Custom endpoints need explicit
+input. For example, after the hidden credential read shown above:
+
+```sh
+printf '%s' "$THERMUS_API_KEY" | pnpm exec node script/search/search.ts \
+  --api-key-stdin \
+  --query 'Lightpanda browser documentation' \
+  --reason 'Find the official browser documentation' \
+  --timeout-ms 10000
+```
+
+The default endpoint is `https://app.thermus.ai/mcp`. `--endpoint` accepts HTTPS
+or loopback HTTP and refuses redirects. `--timeout-ms` bounds negotiation and
+the search call, including stdin in explicit mode. It defaults to 60000 ms and
+accepts 100 through 300000 ms. The search deadline starts after OAuth finishes.
+SIGINT, SIGTERM, and timeout abort network work and close the MCP client.
+
+Success returns status 0 and the exact Markdown, including `No search results.`
+or an empty result. Failure returns status 1, a safe `search:` diagnostic on
+stderr, and no Markdown. Only exact approved search failure text from one text
+item is printed. Unknown text, extra content, or a private suffix gives the
+fixed message `Search failed. Check the query and server logs.` Other result
+fields are never printed. The [search contract](../docs/reference/mcp-search-tool.md#debug-command)
+gives the allowed errors. Run `pnpm exec node script/search/search.ts --help`
+for all options.
+
+[`search.ts`](search/search.ts) is the entry point.
+[`search-input.ts`](search/helper/search-input.ts) checks query and reason limits.
+[`public-tool-failure.ts`](search/helper/public-tool-failure.ts) checks safe search
+errors. Search reuses the existing OAuth, browser, credential store, and error
+helpers under `fetch-url/helper/`.
+
+Run the focused search tests after a clean build:
+
+```sh
+pnpm run build
+pnpm exec node --test "dist/test/unit/script/search*.test.js" "dist/test/acceptance/script/search*.test.js" dist/test/unit/test-support-paths.test.js
 ```
 
 # Measure and review code quality
