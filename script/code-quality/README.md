@@ -58,6 +58,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `assessment/crap-assessment.ts` returns per-function absolute and decline results.
 `assessment/crap-ceiling.ts` compares supplied CRAP operands/bounds with a ceiling.
 `assessment/mi-floor.ts` compares supplied raw MI with a supplied floor.
+`assessment/numeric-evidence.ts` checks declared numeric fragment bindings.
 `assessment/mi-decline.ts` compares supplied MI operands for decline.
 `assessment/mi-assessment.ts` calculates per-unit MI floor and independent decline results.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
@@ -910,6 +911,37 @@ activates no policy. Full assessment remains pending; existing commands and
 manual merging stay unchanged. The process does not call it yet. `LOW` or
 `UNKNOWN` alone is not an architect trigger; broader checks remain pending.
 
+`numericEvidenceIn(input, expectedBinding)` in `assessment/numeric-evidence.ts`
+checks one numeric fragment of future assessment input. It is not a separate
+version or the full PREPARATION/FINAL schema. Expected bindings declare unit
+`{ id, kind }` (file/class/function), basis SHA256, full SHA1 base/head revisions
+and optional accepted-best revision. The fragment must match those declarations:
+MI for file/class, CRAP for function, with required base/head/acceptedBest slots.
+
+A bound slot has revision and evidence. MI evidence is known raw MI or a missing
+reason. CRAP evidence has paths and known share or missing-coverage reason, or
+is wholly missing with a reason. A selected accepted-best reference requires a
+bound revision with known or missing measurement; without one, the fragment
+must declare a missing reference and reason. When paths are greater than zero,
+missing coverage cannot be an exact accepted-best anchor; proven zero can. Strict fields and
+expected bindings are checked, including every supplied slot. The reader copies
+typed `{ unit, basis, metric, base, head, acceptedBest, operands }` evidence.
+`metric` selects MI number operands or CRAP `{ paths, share? }` operands under
+`operands: { base?, head?, acceptedBest? }`. Gaps remain explicit; only absent
+operands are omitted, and missing values never become zero.
+
+For example, an MI bound slot can hold
+`{ revision: expectedBinding.head, evidence: { state: 'known', raw: 85 } }`.
+Its missing measurement form is
+`{ revision: expectedBinding.head, evidence: { state: 'missing', reason: 'Not measured.' } }`.
+The surrounding fragment must still match all expected bindings.
+
+These are checks of declared bindings, not verified evidence. The fragment has
+no standalone source/hash records and proves no source authenticity, continuity,
+completeness, accepted history extract, origin, exception or route. There is no
+CLI/process integration or policy adoption; existing calculators and manual
+merging stay unchanged.
+
 The pure `miFloorOf({ head?, floor })` in `assessment/mi-floor.ts` retains
 `observation: { head?, floor }` and returns `meetsFloor` with `PASS`, `MISS` or
 `UNKNOWN` and a reason. Head at least floor passes; lower head misses; absent
@@ -1236,6 +1268,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-floor.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-numeric-evidence.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
@@ -1316,6 +1349,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-floor.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-numeric-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |

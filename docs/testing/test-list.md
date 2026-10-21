@@ -174,6 +174,12 @@ records stay immutable. Gap checks cover only the interval between displayed
 first-parent endpoints; every stored full SHA counts, also when its row is not
 shown. Offline snapshot dates cannot establish omitted commits.
 
+`test/unit/script/ast-metrics-numeric-evidence.test.ts` and
+`test/acceptance/script/ast-metrics-numeric-evidence.test.ts` specify strict
+numeric-fragment binding, MI/CRAP evidence, copied operands and retained gaps.
+They check accepted-best reference/measurement distinctions and exact-anchor
+limits, not source authenticity or full assessment input validity.
+
 `test/unit/script/ast-metrics-mi-floor.test.ts` and
 `test/acceptance/script/ast-metrics-mi-floor.test.ts` specify supplied raw MI
 floor ordering, missing head, mandatory floor validation and finite edge values.
@@ -979,6 +985,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/acceptance/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-mi-floor.test.ts | no |
+| ordinary | test/acceptance/script/ast-metrics-numeric-evidence.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-collection.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-coverage.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-process-failures.test.ts | no |
@@ -1059,6 +1066,7 @@ node --test dist/test/acceptance/script/script-readme.test.js
 | ordinary | test/unit/script/ast-metrics-mi-assessment.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-decline.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-mi-floor.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-numeric-evidence.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-order.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-process.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-provenance-inputs.test.ts | no |

@@ -698,7 +698,7 @@ observation updates in F.8/F.9/F.10, the projection decoder in F.11 and typed
 process outcomes in F.12, exact per-file MI85 in F.13 and absolute CRAP
 calculation in F.14, MI decline in F.15, CRAP deterioration in F.16, and per-unit
 MI/per-function CRAP assessment in F.17/F.18 and supplied CRAP ceilings/MI
-floors in F.19/F.20.
+floors in F.19/F.20, plus declared numeric fragment checks in F.21.
 Other proposed operations remain unavailable.
 
 ### A.1. Map the ten current commands
@@ -731,6 +731,7 @@ Other proposed operations remain unavailable.
 | `assessment/crap-assessment.ts` | F.18 returns independent per-function absolute and PR/cumulative CRAP results; first real caller of unchanged `crapDeteriorationOf`. | Caller proves origin/applicability, identity, comparability, scope and accepted history; no aggregate pass or anchor update. |
 | `assessment/crap-ceiling.ts` | F.19 compares supplied CRAP operands/bounds with a supplied ceiling. | Arithmetic only; no exception validity/applicability, reference/history/provenance proof or route. |
 | `assessment/mi-floor.ts` | F.20 compares supplied raw head MI with a supplied floor. | Arithmetic only; no proof an exception is valid or covers a condition, history/identity or route proof. |
+| `assessment/numeric-evidence.ts` | F.21 checks one numeric fragment against declared unit/basis/revision bindings and copies evidence/operands with gaps retained. | Not verified evidence or full PREPARATION/FINAL schema; source, history, origin, exception and route checks remain pending. |
 | `coverage/`, `provenance/`, `architecture/coverage*.ts` | Verified collection, imports and own-tree fingerprints. | Generic compatibility can accept non-unit/union reports. Require exactly canonical unit evidence. Never use permissive native defaults to validate new history. |
 | `identity/`, `architecture/*correspondence.ts`, `review/moves.ts` | Conservative declaration/file matching. | Pairwise matching is not persistent origin. Keep ambiguous cases unknown; do not unify distinct file/function move rules into one heuristic. |
 | `architecture/crap.ts`, `crap-score.ts`, `crap/goals.ts`, `advice.ts` | Score joins, exact comparison, bounds and advice foundations. | F.14/F.16 add sound absolute and difference bounds over supplied values. Lasting origin rules remain pending. `crap-snapshots.ts` base estimates must stay outside measured decisions. |
@@ -2086,7 +2087,7 @@ modules, not a required microfile for each check. Reuse the inventory in A.2.
 
 | Owner/path | Planned change |
 | --- | --- |
-| `assessment/` | F.13–F.20 add only MI85, supplied MI floors, CRAP absolute/decline/ceiling calculations and per-unit MI/CRAP assessment over supplied values. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
+| `assessment/` | F.13–F.20 add numeric calculations; F.21 adds a checked numeric fragment reader over declared bindings. Full assessment entry point, typed aggregate result and AUTO predicate remain pending. No Git, tools, network, rendering or archive writes. |
 | `process/` and `ast-metrics-process.ts` | Parse operation shapes; validate input/evidence/manual extract; coordinate collection, calculation, report/views/images and completion. F.12 exposes typed final process outcomes. Structured assessment and report integration remain pending; keep effectful validation outside the pure calculation. |
 | `snapshot/` and `ast-metrics-snapshot.ts` | Exact-commit CLI input is available under F.8 and reuses unchanged `snapshot/commit.ts`. F.9 adds optional raw file MI. F.10 adds optional native class observations, a reported subset without source identity or completeness proof. F.11 adds the separate synchronous offline `snapshot/observations.ts` projection decoder. Full assessment/provenance validation and source correspondence/completeness remain pending. |
 | Existing collectors/readers; optional `history/` and `ast-metrics-history.ts` | Reuse A.2. Add an automated history writer/replayer only if later justified; it is not needed for the first version. |
@@ -2106,7 +2107,9 @@ observations or bounds. F.17 adds per-unit MI floor and independent
 PR/cumulative decline results. F.18 adds independent per-function absolute and
 PR/cumulative CRAP results. F.19 compares supplied CRAP operands/bounds with
 a supplied ceiling. F.20 compares supplied raw MI with a supplied floor. These
-calculations do not change commands.
+calculations do not change commands. F.21 checks a numeric input fragment
+against declared bindings, without a full PREPARATION/FINAL schema or command
+wiring.
 Keep the existing process entry point; do not add an assess wrapper or a script
 for each step. Default `--operation report` preserves today's invocation.
 
@@ -3118,6 +3121,64 @@ No new live check was selected for pure floor arithmetic; no broader groups,
 collectors, CLI change or policy adoption were added. Three known required
 failures keep PR #201 in Draft; merging stays manual. See PR #201
 for the final habit-hooks result and the clean committed process report.
+
+### F.21. Checked numeric fragment implementation record
+
+`assessment/numeric-evidence.ts` adds
+`numericEvidenceIn(input, expectedBinding)` for one future numeric input
+fragment. It adds neither an independent version nor the full PREPARATION/FINAL
+schema. Expected bindings declare unit id/kind, basis SHA256, full SHA1 base/head
+and optional accepted-best revision. Strict fields must match declared unit,
+basis, metric (MI for file/class, CRAP for function) and revision bindings.
+Every supplied slot is checked.
+
+Base, head and acceptedBest slots are required. Bound slots carry revision and
+known or missing evidence. MI keeps raw values or missing reasons; CRAP keeps
+paths and known share or missing-coverage reasons, or a whole missing reason.
+A selected accepted-best revision must be bound even when measurement is missing;
+otherwise acceptedBest explicitly records a missing reference/reason. When paths
+are greater than zero, missing coverage cannot supply an exact accepted-best
+anchor; proven zero can. The reader copies `unit`, `basis`, discriminating `metric`, all three
+slots and `operands: { base?, head?, acceptedBest? }`. MI operands are numbers;
+CRAP operands are `{ paths, share? }`. It retains gaps and omits only absent
+operands, never supplying default zero.
+
+This checks declared bindings, not source authenticity or verified evidence.
+There are no standalone source/hash records. Continuity, completeness, history
+extract validation, origin, exceptions, routes and full assessment remain
+pending. No CLI/process wiring or policy is added; existing calculators and
+manual merging stay unchanged.
+
+The unit and acceptance files are both named
+`ast-metrics-numeric-evidence.test.ts`.
+Focused validation on 2026-10-20:
+
+- The baseline passed 413/413. Four new acceptance and 42 new unit cases first
+  failed for the absent module. Cases for fields declared on the object, hashes
+  with a newline and copied results were added. The final typed build exited 0 and frozen focused checks passed
+  464/464: 413 existing, 47 new unit and four new acceptance cases, with zero
+  failures, cancellations, skips or todo tests.
+- Manager and independent code/test review found no actionable issue. The new
+  runtime module has 141 lines; existing calculators and commands stay unchanged.
+
+- Full unit passed 4,390 compiled and 23 portal checks, 4,413 total, with zero
+  failures, cancellations, skips or todo tests. Full compiled acceptance ran 950
+  tests: 947 passed and three failed, with zero cancellations, skips or todo
+  tests. Only the two known search cases and missing `AXIOM_API_KEY` failed.
+- All four new cases, MCP timeout, hung discover/initialize/call and forced-GC
+  regression passed with original deadlines. README/help/inventory checks passed
+  18/18 within acceptance. The failed chain stopped before portal; separate
+  portal acceptance passed 18/18. Command-selection sentinels passed 3/3 in
+  fixtures. Native snapshot passed 3/3; structural architecture with explicit
+  coverage skip passed 1/1, with no skipped tests.
+- All 35 history hashes and three frozen file hashes stayed unchanged; the
+  snooze file is empty. Independent code/test/document review found no
+  actionable issue. No `src/` change, broader group or collector was added;
+  existing runtime commands stay unchanged in this slice.
+
+Three known failures keep PR #201 in Draft; merging stays manual. Final
+habit-hooks after this prose and the clean committed process report will
+follow on the PR.
 
 ## References
 
