@@ -25,9 +25,10 @@ alone do not establish components. Link important claims to their evidence.
 
 The baseline uses selected arc42 sections: context (3), building blocks (5),
 runtime (6), and deployment (7), with C4 conventions in ordinary Mermaid.
-Maintain those views and the small collaboration overview. Keep detail that
-explains the system; do not expand to a full arc42 template, trace every call,
-or introduce a new model or tool chain.
+Routine maintenance keeps those views and the small collaboration overview.
+Add views only when they explain an important architecture change. Keep useful
+detail without filling the full arc42 template or tracing every call. Do not
+add a model or tool chain merely for this check.
 
 Use this table to select affected views. A change can affect more than one row.
 Check adjacent views and their text even when their diagrams need no edit.
@@ -52,7 +53,7 @@ to container mappings across views. Mermaid node and participant IDs can be
 scoped to each view; existing prefixes do not need to match across diagrams.
 Keep source owners, C4 containers, and deployment nodes distinct: a source
 folder is not a C4 container, and a C4 process can share a Docker container with
-another process. Preserve hosted and local alternatives and their differences.
+another process. Keep editions distinct as the current code defines them.
 
 Check the links between levels:
 
@@ -70,14 +71,15 @@ Check the links between levels:
   recorded target, and live observations. State unknowns; this workflow does
   not require live cloud calls or turn a recorded target into live evidence.
 
-Give each diagram a type and scope in its heading or adjacent text. Identify
-element types and responsibilities; include technology where it helps explain
-the boundary. Label relationships with their direction and meaning, including
-the protocol for communication between processes. Distinguish construction,
-source imports, and runtime calls through supplied roles.
+Give each diagram a type and scope in its heading or adjacent text, with clear
+relationship directions and meanings. Context focuses on people and system
+relationships; the compact overview can use explained groups. In C4 container,
+component, and deployment views, identify types and responsibilities, add useful
+technology detail, and label protocols between processes. Distinguish
+construction, source imports, and runtime calls through supplied roles.
 
-Check important runtime order and observable results against the source.
-Where relevant, preserve access and trust checks, success and failure paths,
+Show and check actual runtime order and observable results against the final
+code. Include relevant access and trust checks, success and failure paths,
 cancellation, shared state, resource acquisition, and cleanup. Keep scenarios
 focused on architectural behavior rather than exhaustive call tracing.
 
@@ -90,8 +92,9 @@ Before finishing, compare all affected views and their text once more:
   stale references in the affected views or text.
 - Parse and render each changed Mermaid diagram with an available supported
   renderer. Inspect the result for readable labels, scope boundaries, arrows,
-  and sequence order. Record the tool and result, including any limitation;
-  no repository dependency change is required for this validation.
+  and sequence order. Fix syntax and rendering defects before recording the
+  tool and result, including any limitation. No repository dependency change
+  is required for this validation.
 
 ## Finish the pull request
 
