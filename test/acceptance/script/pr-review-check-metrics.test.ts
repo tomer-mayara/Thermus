@@ -23,8 +23,8 @@ test('Given goal misses of the process and high findings on unchanged files only
   const result = await checkOn(t, repository, ...metricsOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHOW');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- SHOW scopes.executable: 1 changed file']);
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'Metrics'), [
     '- Delta: goal miss', '- Review: goal miss', '- CRAP: goal miss', '- Architecture: passed',
     '- 2 findings on unchanged files, reason unchanged by this PR',
@@ -33,7 +33,7 @@ test('Given goal misses of the process and high findings on unchanged files only
   assert.equal(result.code, 0);
 });
 
-test('Given a high finding on a changed production file, when the check runs with both files, then the route is READ with the file and the message, and a finding on a changed test file is no reason', { timeout }, async (t) => {
+test('Given a high finding on a changed production file, when the check runs with both files, then the route is ARCHITECT_REVIEW_NEEDED with the file and the message, and a finding on a changed test file is no reason', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change the parser and its fixture', { ...parserChange, 'test/alpha/fixture.ts': 'export const fixture = 1;\n' });
   writeMetrics(repository, completed, [
@@ -46,10 +46,9 @@ test('Given a high finding on a changed production file, when the check runs wit
   const result = await checkOn(t, repository, ...metricsOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'READ');
+  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    `- READ ratchet.review_findings: src/alpha/parser.ts: ${lowMi}`,
-    '- SHOW scopes.executable: 2 changed files',
+    `- ARCHITECT_REVIEW_NEEDED ratchet.review_findings: src/alpha/parser.ts: ${lowMi}`,
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Metrics').slice(4), [
     '- outside scopes.production: test/alpha/fixture.ts: Maintainability index: 57 -> 52 (below 85 is hard to maintain)',

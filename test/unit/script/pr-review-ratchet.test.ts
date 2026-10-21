@@ -8,7 +8,7 @@ const { ratchetOutcome } = await import(new URL('ratchet.ts', pathToFileURL(prRe
 type RawValues = Readonly<Record<string, number | undefined>>;
 type Change = { readonly status: string; readonly oldPath?: string; readonly path: string };
 
-const rules = { scopes: { production: ['src/**'], executable: [], generated: [] }, maintainability: { newFileBelow: 85, existingFileDropReadAt: 5 } };
+const rules = { scopes: { production: ['src/**'], generated: [] }, maintainability: { newFileBelow: 85, existingFileDropReadAt: 5 } };
 const newKey = 'ratchet.maintainability_index.new_file_below';
 const dropKey = 'ratchet.maintainability_index.existing_file_drop_read_at';
 const today = '2026-10-21';
@@ -37,7 +37,7 @@ test('Given new production files around the limit, when the MI rules run, then a
   assert.deepEqual(outcome.lines, ['new: src/even.ts: 85', 'new: src/low.ts: 84.96', 'new: src/near.ts: 84.99999999999999']);
 });
 
-test('Given changed production files, when the MI rules run, then a raw drop of five or more is READ with both exact values, and a smaller drop or a rise is no reason', () => {
+test('Given changed production files, when the MI rules run, then a raw drop of five or more is ARCHITECT_REVIEW_NEEDED with both exact values, and a smaller drop or a rise is no reason', () => {
   const changes = ['src/five.ts', 'src/less.ts', 'src/rise.ts', 'src/raw.ts', 'src/decimal.ts'].map((path) => ({ status: 'M', path }));
   const outcome = outcomeOf(changes, {
     base: { 'src/five.ts': 90, 'src/less.ts': 90, 'src/rise.ts': 70, 'src/raw.ts': 61.17474697614129, 'src/decimal.ts': 66.1 },
@@ -45,9 +45,9 @@ test('Given changed production files, when the MI rules run, then a raw drop of 
   });
 
   assert.deepEqual(outcome.reasons, [
-    { route: 'READ', key: dropKey, fact: 'src/five.ts: 90 to 85' },
-    { route: 'READ', key: dropKey, fact: 'src/raw.ts: 61.17474697614129 to 56.17474697614129' },
-    { route: 'READ', key: dropKey, fact: 'src/decimal.ts: 66.1 to 61.1' },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/five.ts: 90 to 85' },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/raw.ts: 61.17474697614129 to 56.17474697614129' },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/decimal.ts: 66.1 to 61.1' },
   ]);
   assert.deepEqual(outcome.lines, [
     'changed: src/five.ts: 90 to 85', 'changed: src/less.ts: 90 to 85.1', 'changed: src/rise.ts: 70 to 80', 'changed: src/raw.ts: 61.17474697614129 to 56.17474697614129',
@@ -63,7 +63,7 @@ test('Given renames inside, into, and out of the production scope, when the MI r
   ];
   const outcome = outcomeOf(changes, { base: { 'src/old.ts': 90, 'src/gone.ts': 88 }, head: { 'src/new-name.ts': 84, 'src/moved.ts': 70 } });
 
-  assert.deepEqual(outcome.reasons, [{ route: 'READ', key: dropKey, fact: 'src/old.ts -> src/new-name.ts: 90 to 84' }]);
+  assert.deepEqual(outcome.reasons, [{ route: 'ARCHITECT_REVIEW_NEEDED', key: dropKey, fact: 'src/old.ts -> src/new-name.ts: 90 to 84' }]);
   assert.deepEqual(outcome.lines, [
     'changed: src/old.ts -> src/new-name.ts: 90 to 84',
     'not applicable: tools/moved.ts -> src/moved.ts: no raw MI in the base snapshot',
@@ -86,10 +86,10 @@ test('Given files without raw MI in the snapshot that each needs, a deleted file
   ]);
 });
 
-test('Given an exception entry for a new file below the limit, when its raw MI is at its bound and today is its expiry date, then the FIX becomes a READ reason that names the entry', () => {
+test('Given an exception entry for a new file below the limit, when its raw MI is at its bound and today is its expiry date, then the FIX becomes an ARCHITECT_REVIEW_NEEDED reason that names the entry', () => {
   const outcome = outcomeOf([{ status: 'A', path: 'src/new.ts' }], { base: {}, head: { 'src/new.ts': 80 }, exceptions: exceptionsFile(80, today) });
 
-  assert.deepEqual(outcome.reasons, [{ route: 'READ', key: 'ratchet.exceptions', fact: 'src/new.ts covered by "One table of rules." until 2026-10-21' }]);
+  assert.deepEqual(outcome.reasons, [{ route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.exceptions', fact: 'src/new.ts covered by "One table of rules." until 2026-10-21' }]);
   assert.deepEqual(outcome.lines, ['new: src/new.ts: 80']);
 });
 

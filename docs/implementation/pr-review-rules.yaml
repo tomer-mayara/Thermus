@@ -9,7 +9,7 @@
 # for CI and the later checks. The section "Review route" of AGENTS.md
 # governs where it differs from this file. The playbook
 # docs/implementation/pr-review-playbook.md explains the routes and the seven
-# checks. The checks will read this file. A change to this file is ASK.
+# checks. The checks will read this file. A change to this file is CLARIFICATION_NEEDED.
 #
 # A scan of the imports in src/**/*.ts on main 304cd24f (PR #200) seeded the
 # lists: 138 files, 438 import statements, every relative specifier resolved
@@ -24,21 +24,18 @@ diff_base: the merge base with origin/main, with rename detection
 
 routes:
   # Take the first route whose condition holds. Print every reason.
-  order: [FIX, ASK, READ, SHOW, SHIP]
+  order: [FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIPPED]
   hold_label: hold                   # blocks the merge on every route
-  approved_label: approved           # the owner sets it; ASK and READ merge only with it
-  show_label: show                   # set on a merged SHOW pull request
+  approved_label: approved           # the owner sets it; CLARIFICATION_NEEDED and ARCHITECT_REVIEW_NEEDED merge only with it
   route_label_prefix: "route:"       # the checks set route:<name>
-  show_review_within_working_days: 1
   merge_method: squash
-  merge_by: workflow                 # nothing else merges; SHIP and SHOW need no label
-  ask_requires_decision_record: architecture/decisions/**   # to create; an ASK pull request must add or change a file there
-  deploy_note: Render deploys main on every push, so a SHOW change is live before the owner reads it
+  merge_by: workflow                 # nothing else merges; SHIPPED needs no label
+  clarification_needed_requires_decision_record: architecture/decisions/**   # to create; a CLARIFICATION_NEEDED pull request must add or change a file there
 
 scopes:
   production:                        # the metric rules and the production line limit
     - src/**
-  executable:                        # a change here is SHOW, not SHIP
+  executable:                        # used by the calibration stop rule only
     - src/**
     - script/**
     - test/**
@@ -86,13 +83,13 @@ required_checks:
   live_gates: docs/implementation/test-gate-policy.md   # the hosted live gate and the signup gate stay manual
   main_push:
     - the same commands as pull_request
-    - audit: recompute the route of the merged pull request; open an issue when the route was ASK or READ and the approved label was absent
+    - audit: recompute the route of the merged pull request; open an issue when the route was CLARIFICATION_NEEDED or ARCHITECT_REVIEW_NEEDED and the approved label was absent
 
-# Check 1. A changed path that matches a pattern is ASK. A path can appear in
+# Check 1. A changed path that matches a pattern is CLARIFICATION_NEEDED. A path can appear in
 # more than one group. The lists matched the tree on 2026-10-20.
 protected_paths:
   policy:
-    route: ASK
+    route: CLARIFICATION_NEEDED
     question: "Does this change what the checks enforce, or who decides? Record the new rule and why."
     paths:
       - AGENTS.md
@@ -108,13 +105,13 @@ protected_paths:
       - .habit-hooks/**
       - .ast-metrics.yaml
   contracts:
-    route: ASK
+    route: CLARIFICATION_NEEDED
     question: "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
     paths:
       - src/index.ts
       - src/mcp/fetch-tool-schema.ts   # a value-level schema; a declaration snapshot cannot see a changed limit or description
   dependencies_and_build:
-    route: ASK
+    route: CLARIFICATION_NEEDED
     question: "Which new code runs in production or in the build, and who maintains it? Record the reason for the dependency."
     paths:
       - package.json
@@ -126,7 +123,7 @@ protected_paths:
       - .nvmrc
       - .gitmodules
   deploy_and_data:
-    route: ASK
+    route: CLARIFICATION_NEEDED
     question: "What changes in the image, the runtime, or the stored data, and how is it rolled back? Record the recovery step."
     paths:
       - Dockerfile*
@@ -136,7 +133,7 @@ protected_paths:
       - migrations/**
       - .env.example
   security:
-    route: ASK
+    route: CLARIFICATION_NEEDED
     question: "Does this change admission, trust, permissions, or what untrusted content can reach? Record the guarantee that holds after the change."
     paths:
       - src/auth/**
@@ -170,22 +167,22 @@ protected_paths:
   # lightpanda fetcher and the Brave engine. Moving the concern into a small
   # file of its own shrinks the protected set to that file.
 
-# A change to one of these paths is READ.
+# A change to one of these paths is ARCHITECT_REVIEW_NEEDED.
 read_paths:
-  route: READ
+  route: ARCHITECT_REVIEW_NEEDED
   paths:
     - .ast-metrics-baseline.yaml     # the accepted native lint violations
     - .code-quality-exceptions.yaml  # optional; the metric exceptions of check 4
     - docs/implementation/test-gate-policy.md     # while no CI exists, this document is the enforcement; move it out when workflows run the checks
     - docs/implementation/ast-metrics-review.md   # same reason
     - .agent/**                                   # agent configuration
-  moved_by_stop_rule: []             # executable files of reverted SHOW pull requests; the owner removes them after the fix
+  moved_by_stop_rule: []             # executable files of reverted SHIPPED pull requests; the owner removes them after the fix
 
 # Check 2. CI emits a declaration file for each module below and compares it
 # with the committed copy under snapshot_dir. The emitted file includes the
 # declarations of the same-package files that the module re-exports or imports
 # types from, so a changed shape behind a re-export shows. A change under
-# contract_documents is ASK through protected_paths.
+# contract_documents is CLARIFICATION_NEEDED through protected_paths.
 # Proof of 2026-10-20: tsc 7.0.2 with declaration and emitDeclarationOnly wrote
 # src/auth/access-context.d.ts in 0.12 s. A module with relative imports is not
 # tested yet.
@@ -193,7 +190,7 @@ public_surface:
   snapshot_dir: docs/api-surface     # to create
   contract_documents: docs/reference/**
   undeclared_difference: FIX         # the pull request has not committed the new snapshot
-  declared_change: ASK               # the snapshot folder is a protected path
+  declared_change: CLARIFICATION_NEEDED               # the snapshot folder is a protected path
   external:                          # contracts with users, clients and operators
     - src/index.ts
     - src/mcp/fetch-tool-schema.ts
@@ -254,7 +251,7 @@ dependency_graph:
     subpath: "better-auth/oauth2 counts as better-auth"
     unresolved_relative_import: FIX
   triggers:
-    edge_not_listed: FIX             # until the pull request lists it; the listing is ASK through protected_paths
+    edge_not_listed: FIX             # until the pull request lists it; the listing is CLARIFICATION_NEEDED through protected_paths
     type_edge_becomes_runtime: FIX   # the same as a new edge
     runtime_edge_becomes_type: none  # the kind is a maximum; a weaker use needs no change
     folder_not_listed: FIX           # a new top-level folder under src/
@@ -403,7 +400,7 @@ ratchet:
   base_snapshot: ast-report/snapshot-base.json   # the default output of the snapshot command with --base
   head_snapshot: ast-report/snapshot.json        # the default output of the snapshot command without --base
   process_outcomes: ast-report/process.json      # the default location of the JSON of ast-metrics-process.ts --json; the check reads it with --process; a failed or unavailable stage is FIX
-  review_findings: ast-report/review.json        # the JSON that the review stage of the metrics process writes; the check reads it with --review after a completed Review stage; a high finding on a changed production file is READ, a finding on an unchanged file keeps the reason "unchanged by this PR"
+  review_findings: ast-report/review.json        # the JSON that the review stage of the metrics process writes; the check reads it with --review after a completed Review stage; a high finding on a changed production file is ARCHITECT_REVIEW_NEEDED, a finding on an unchanged file keeps the reason "unchanged by this PR"
   coverage_suites: [unit, integration, acceptance]   # one basis for the AGENTS.md report and this check; the metrics guide uses unit only today
   identity:
     key: the function identity and move detection of script/code-quality/ast-metrics-crap.ts
@@ -420,10 +417,10 @@ ratchet:
   maintainability_index:
     unit: production file            # a test or support file has no rule
     new_file_below: 85               # FIX for a new file (status A) below this raw MI
-    existing_file_drop_read_at: 5    # READ at a raw drop of five or more from the base snapshot; a renamed file continues its old path
+    existing_file_drop_read_at: 5    # ARCHITECT_REVIEW_NEEDED at a raw drop of five or more from the base snapshot; a renamed file continues its old path
     compare: raw values, no rounding
   exceptions:
-    file: .code-quality-exceptions.yaml   # optional; a change is READ through read_paths
+    file: .code-quality-exceptions.yaml   # optional; a change is ARCHITECT_REVIEW_NEEDED through read_paths
     fields: [unit, metric, bound, reason, expires, predecessor]   # the check reads path (the unit of mi) or function (<file>#<function>, the unit of crap), metric, bound, reason and expires (YYYY-MM-DD)
     predecessor: the function that a renamed or moved function continues, so it keeps the legacy goal
     expired_entry: FIX for a pull request that changes the unit; other expiries go to the monthly review   # the check takes a change of the file of a function as a change of its unit
@@ -434,24 +431,21 @@ size:
   total_lines_read_above: 1500       # all files minus scopes.generated
   test_counts:
     source: the summary of the Node test reporter, recorded per main commit
-    fewer_tests_than_base: READ
-    more_skipped_or_todo_than_base: READ
+    fewer_tests_than_base: ARCHITECT_REVIEW_NEEDED
+    more_skipped_or_todo_than_base: ARCHITECT_REVIEW_NEEDED
   habit_hooks_snooze_non_empty: FIX  # .habit-hooks/snooze.json stays []
   # Reference: pull requests #186 to #200 merged on 2026-10-19 and 2026-10-20.
   # 6 of the 15 changed src/. The largest changed 450 src lines in 8 files.
   # docs/metrics added 187 to 1,468 lines per pull request, so scopes.generated matters.
 
-# Check 6. A green pull request with no change under scopes.executable is SHIP,
-# if no other check fired. A green pull request with such a change is SHOW.
-ship_scope:
-  executable: scopes.executable
+# Check 6. A green pull request is SHIPPED when no other check gives a reason.
 
 calibration:
   review_every: month
   targets:
-    human_before_merge_share_max: 0.30   # ASK plus READ over all merged pull requests
-    false_alarm_share_max: 0.20          # ASK or READ pull requests with no commit after the route label
+    human_before_merge_share_max: 0.30   # CLARIFICATION_NEEDED plus ARCHITECT_REVIEW_NEEDED over all merged pull requests
+    false_alarm_share_max: 0.20          # CLARIFICATION_NEEDED or ARCHITECT_REVIEW_NEEDED pull requests with no commit after the route label
   stop_rule:
-    show_reverts_per_month: 2            # then the executable files of the reverted pull requests go to read_paths.moved_by_stop_rule
+    shipped_reverts_per_month: 2         # count reverted SHIPPED pull requests that changed scopes.executable; then their executable files go to read_paths.moved_by_stop_rule
     revert: a merge whose message says "This reverts commit"
   record: docs/implementation/pr-review-calibration.md   # to create; one table per month

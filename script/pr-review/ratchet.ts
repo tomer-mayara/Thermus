@@ -59,7 +59,7 @@ function newFileOutcome(path: string, context: Context): FileOutcome {
 function belowReason(path: string, raw: number, context: Context): Reason {
   const entry = coveringException(context.entries, { path, raw, today: context.today });
   if (entry === undefined) return { route: 'FIX', key: `${key}.new_file_below`, fact: `${path}: ${raw}` };
-  return { route: 'READ', key: 'ratchet.exceptions', fact: `${path} covered by "${entry.reason}" until ${entry.expires}` };
+  return { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.exceptions', fact: `${path} covered by "${entry.reason}" until ${entry.expires}` };
 }
 
 // A renamed file continues its old path: the base value of the old path meets the head value of the new path.
@@ -71,7 +71,7 @@ function changedFileOutcome(change: Change, context: Context): FileOutcome {
   if (head === undefined) return notApplicable(shown, 'head');
   const values = `${shown}: ${base} to ${head}`;
   const dropped = dropOf(base, head) >= context.limits.existingFileDropReadAt;
-  return { line: `changed: ${values}`, reasons: dropped ? [{ route: 'READ', key: `${key}.existing_file_drop_read_at`, fact: values }] : [] };
+  return { line: `changed: ${values}`, reasons: dropped ? [{ route: 'ARCHITECT_REVIEW_NEEDED', key: `${key}.existing_file_drop_read_at`, fact: values }] : [] };
 }
 
 // Binary subtraction of decimal values can give 4.999999999999993 for a drop of five, so the drop keeps six decimals.

@@ -19,14 +19,13 @@ test('Given a source change that adds a package edge that the rules file does no
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX dependency_graph.triggers.edge_not_listed: beta -> alpha (runtime), in src/beta/uses-alpha.ts',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Facts to declare'), [`- dependency_graph.allowed_edges: ${betaToAlpha}`]);
   assert.deepEqual(linesUnder(result.stdout, 'Declared facts'), ['- none']);
   assert.equal(result.code, 0);
 });
 
-test('Given the edge declared in a rules file that no protected group lists, when the check runs, then the route is ASK for the rules file and for the declared fact', { timeout }, async (t) => {
+test('Given the edge declared in a rules file that no protected group lists, when the check runs, then the route is CLARIFICATION_NEEDED for the rules file and for the declared fact', { timeout }, async (t) => {
   const unprotected = (edges: readonly string[][]) => rulesYaml((rules) => {
     rules.protected_paths.policy.paths = ['AGENTS.md'];
     rules.dependency_graph.allowed_edges.push(...edges.map(([from, to]) => ({ from, to, kind: 'runtime' })));
@@ -37,11 +36,10 @@ test('Given the edge declared in a rules file that no protected group lists, whe
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'ASK');
+  assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    `- ASK protected_paths.policy: ${rulesPath}`,
-    `- ASK dependency_graph.declared: dependency_graph.allowed_edges: ${betaToAlpha}`,
-    '- SHOW scopes.executable: 1 changed file',
+    `- CLARIFICATION_NEEDED protected_paths.policy: ${rulesPath}`,
+    `- CLARIFICATION_NEEDED dependency_graph.declared: dependency_graph.allowed_edges: ${betaToAlpha}`,
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Questions to answer'), ['- protected_paths.policy: Does this change what the checks enforce? Record the new rule.']);
   assert.deepEqual(linesUnder(result.stdout, 'Facts to declare'), ['- none']);
@@ -63,7 +61,6 @@ test('Given a source change that adds a forbidden edge, when the check runs, the
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX dependency_graph.triggers.forbidden_edge: beta -> alpha (runtime), in src/beta/uses-alpha.ts',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Facts to declare'), ['- none']);
   assert.equal(result.code, 0);
@@ -80,7 +77,7 @@ test('Given two packages that start to import each other, when the check runs, t
 
   assert.equal(result.stderr, '');
   assert.equal(routeOf(result.stdout), 'FIX');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- FIX dependency_graph.triggers.cycle_not_listed: alpha, beta (runtime)', '- SHOW scopes.executable: 2 changed files']);
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- FIX dependency_graph.triggers.cycle_not_listed: alpha, beta (runtime)']);
   assert.deepEqual(linesUnder(result.stdout, 'Facts to declare'), ['- none']);
   assert.equal(result.code, 0);
 });
@@ -108,9 +105,8 @@ test('Given a new edge inside a known cycle that the rules file of the branch de
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX dependency_graph.triggers.known_cycle_grows: gamma -> beta (runtime) inside the known cycle alpha, beta, gamma, in src/gamma/uses-beta.ts',
-    `- ASK protected_paths.policy: ${rulesPath}`,
-    '- ASK dependency_graph.declared: dependency_graph.allowed_edges: { from: gamma, to: beta, kind: runtime }',
-    '- SHOW scopes.executable: 1 changed file',
+    `- CLARIFICATION_NEEDED protected_paths.policy: ${rulesPath}`,
+    '- CLARIFICATION_NEEDED dependency_graph.declared: dependency_graph.allowed_edges: { from: gamma, to: beta, kind: runtime }',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Declared facts'), ['- dependency_graph.allowed_edges: { from: gamma, to: beta, kind: runtime }']);
   assert.equal(result.code, 0);
@@ -127,7 +123,6 @@ test('Given a source change that imports a file of another package outside the p
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX dependency_graph.triggers.cross_package_file_not_in_public_surface: src/alpha/inner.ts (imported by src/beta/uses-inner.ts)',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Facts to declare'), ['- public_surface.between_packages.alpha: src/alpha/inner.ts']);
   assert.equal(result.code, 0);
@@ -145,7 +140,6 @@ test('Given a changed file with a missing import and a stylesheet import, and an
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX dependency_graph.counting.unresolved_relative_import: src/beta/page.ts: ./lost.ts',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'Notes'), ['- Unresolved import in an unchanged file: src/beta/old.ts: ./gone.ts', manualNote]);
   assert.equal(result.code, 0);
@@ -161,7 +155,6 @@ test('Given a changed JavaScript file under src, when the check runs, then the r
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX dependency_graph.counting.unresolved_relative_import: src/beta/legacy.js: the check reads TypeScript only',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.equal(result.code, 0);
 });

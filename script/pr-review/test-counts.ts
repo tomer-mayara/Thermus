@@ -31,11 +31,11 @@ export function testCountsOf(diff: string): TestCounts {
   return { added: state.added, removedCases: state.removedCases, skippedOrTodo: [...state.skippedOrTodo] };
 }
 
-// Fewer test cases than at the merge base, or a new test that does not run, is READ.
+// Fewer test cases than at the merge base, or a new test that does not run, is ARCHITECT_REVIEW_NEEDED.
 export function testReasons(tests: TestCounts): Reason[] {
   const removed = tests.removedCases.length > tests.added ? tests.removedCases : [];
   return [...removed, ...tests.skippedOrTodo.map((file) => `skipped or todo test added in ${file}`)]
-    .map((fact) => ({ route: 'READ', key: 'size.test_counts', fact }));
+    .map((fact) => ({ route: 'ARCHITECT_REVIEW_NEEDED', key: 'size.test_counts', fact }));
 }
 
 function readLine(state: DiffState, line: string): void {

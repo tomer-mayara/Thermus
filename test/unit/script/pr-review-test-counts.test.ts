@@ -64,13 +64,13 @@ test('Given file headers with a quoted path, a trailing tab, and a line of conte
   });
 });
 
-test('Given more removed test cases than added ones, when the test reasons are made, then each removed case is a READ reason, and each file with a skip or todo too', () => {
+test('Given more removed test cases than added ones, when the test reasons are made, then each removed case is an ARCHITECT_REVIEW_NEEDED reason, and each file with a skip or todo too', () => {
   const reasons = testReasons({ added: 1, removedCases: ["test/a.test.ts: test('one', () => {});", "test/a.test.ts: test('two', () => {});"], skippedOrTodo: ['test/b.test.ts'] });
 
   assert.deepEqual(reasons, [
-    { route: 'READ', key: 'size.test_counts', fact: "test/a.test.ts: test('one', () => {});" },
-    { route: 'READ', key: 'size.test_counts', fact: "test/a.test.ts: test('two', () => {});" },
-    { route: 'READ', key: 'size.test_counts', fact: 'skipped or todo test added in test/b.test.ts' },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'size.test_counts', fact: "test/a.test.ts: test('one', () => {});" },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'size.test_counts', fact: "test/a.test.ts: test('two', () => {});" },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'size.test_counts', fact: 'skipped or todo test added in test/b.test.ts' },
   ]);
   assert.deepEqual(testReasons({ added: 2, removedCases: ["test/a.test.ts: test('one', () => {});", "test/a.test.ts: test('two', () => {});"], skippedOrTodo: [] }), []);
 });

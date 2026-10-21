@@ -8,7 +8,7 @@ const { crapOutcome } = await import(new URL('crap.ts', pathToFileURL(prReviewCh
 
 type Change = { readonly status: string; readonly oldPath?: string; readonly path: string };
 
-const rules = { scopes: { production: ['src/**'], executable: [], generated: [] }, crap: { newFunctionAbove: 15, changedLegacyFunctionAtOrAbove: 30 } };
+const rules = { scopes: { production: ['src/**'], generated: [] }, crap: { newFunctionAbove: 15, changedLegacyFunctionAtOrAbove: 30 } };
 const newKey = 'ratchet.crap.new_function_above';
 const changedKey = 'ratchet.crap.changed_legacy_function_at_or_above';
 const today = '2026-10-21';
@@ -83,24 +83,24 @@ test('Given rows of unchanged functions, of unchanged and deleted files, and of 
 });
 
 for (const [name, rows, exceptions, route] of [
-  ['an upper bound at the bound of the entry', [row('new', 4)], exceptionsFile(20, '2026-12-31'), 'READ'],
+  ['an upper bound at the bound of the entry', [row('new', 4)], exceptionsFile(20, '2026-12-31'), 'ARCHITECT_REVIEW_NEEDED'],
   ['an upper bound above the bound of the entry', [row('new', 4)], exceptionsFile(19.5, '2026-12-31'), 'FIX'],
-  ['an entry that expires today', [row('new', 4)], exceptionsFile(20, today), 'READ'],
+  ['an entry that expires today', [row('new', 4)], exceptionsFile(20, today), 'ARCHITECT_REVIEW_NEEDED'],
   ['an entry that expired yesterday', [row('new', 4)], exceptionsFile(20, '2026-10-20'), 'FIX'],
   ['an exact value just above the bound of the entry', [row('new', 15, 0.9999999)], exceptionsFile(15, '2026-12-31'), 'FIX'],
-  ['an exact value just below the bound of the entry', [row('new', 15, 0.9999999)], exceptionsFile(15.000001, '2026-12-31'), 'READ'],
+  ['an exact value just below the bound of the entry', [row('new', 15, 0.9999999)], exceptionsFile(15.000001, '2026-12-31'), 'ARCHITECT_REVIEW_NEEDED'],
   ['an entry of another function', [{ ...row('new', 4), function: 'other' }], exceptionsFile(20, '2026-12-31'), 'FIX'],
 ] as const) {
   test(`Given a CRAP miss and ${name}, when the CRAP rules run, then the route of the reason is ${route}`, () => {
     const [reason] = outcomeOf(rows, { exceptions }).reasons;
 
     assert.equal(reason.route, route);
-    if (route === 'READ') assert.match(reason.fact, /^src\/a\.ts#run: \S.* covered by "A large switch\." until \d{4}-\d{2}-\d{2}$/);
+    if (route === 'ARCHITECT_REVIEW_NEEDED') assert.match(reason.fact, /^src\/a\.ts#run: \S.* covered by "A large switch\." until \d{4}-\d{2}-\d{2}$/);
   });
 }
 
-test('Given an exception entry that covers a miss of four paths, when the CRAP rules run, then the READ reason names the entry and the range', () => {
+test('Given an exception entry that covers a miss of four paths, when the CRAP rules run, then the ARCHITECT_REVIEW_NEEDED reason names the entry and the range', () => {
   assert.deepEqual(outcomeOf([row('new', 4)], { exceptions: exceptionsFile(20, '2026-12-31') }).reasons, [
-    { route: 'READ', key: 'ratchet.exceptions', fact: 'src/a.ts#run: [4, 20] covered by "A large switch." until 2026-12-31' },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.exceptions', fact: 'src/a.ts#run: [4, 20] covered by "A large switch." until 2026-12-31' },
   ]);
 });

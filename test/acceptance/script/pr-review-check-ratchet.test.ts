@@ -20,13 +20,12 @@ test('Given a new production file at raw MI 84.96 and one at 85, when the check 
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX ratchet.maintainability_index.new_file_below: src/alpha/low.ts: 84.96',
-    '- SHOW scopes.executable: 2 changed files',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- new: src/alpha/even.ts: 85', '- new: src/alpha/low.ts: 84.96']);
   assert.equal(result.code, 0);
 });
 
-test('Given an existing file at raw MI 90.0 in the base and 85.0 in the head, and one at 85.1, when the check runs, then only the first is READ with both values', { timeout }, async (t) => {
+test('Given an existing file at raw MI 90.0 in the base and 85.0 in the head, and one at 85.1, when the check runs, then only the first is ARCHITECT_REVIEW_NEEDED with both values', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, measuredFiles());
   repository.commit('Change two modules', { 'src/alpha/parser.ts': 'export const parser = 2;\n', 'src/alpha/printer.ts': 'export const printer = 2;\n' });
   writeSnapshots(repository, { 'src/alpha/parser.ts': 90.0, 'src/alpha/printer.ts': 90.0 }, { 'src/alpha/parser.ts': 85.0, 'src/alpha/printer.ts': 85.1 });
@@ -34,10 +33,9 @@ test('Given an existing file at raw MI 90.0 in the base and 85.0 in the head, an
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'READ');
+  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- READ ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts: 90 to 85',
-    '- SHOW scopes.executable: 2 changed files',
+    '- ARCHITECT_REVIEW_NEEDED ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts: 90 to 85',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- changed: src/alpha/parser.ts: 90 to 85', '- changed: src/alpha/printer.ts: 90 to 85.1']);
   assert.equal(result.code, 0);
@@ -52,10 +50,9 @@ test('Given a renamed production file whose raw MI drops by five, when the check
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'READ');
+  assert.equal(routeOf(result.stdout), 'ARCHITECT_REVIEW_NEEDED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
-    '- READ ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts -> src/alpha/reader.ts: 92.5 to 87.5',
-    '- SHOW scopes.executable: 1 changed file',
+    '- ARCHITECT_REVIEW_NEEDED ratchet.maintainability_index.existing_file_drop_read_at: src/alpha/parser.ts -> src/alpha/reader.ts: 92.5 to 87.5',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), ['- changed: src/alpha/parser.ts -> src/alpha/reader.ts: 92.5 to 87.5']);
   assert.equal(result.code, 0);
@@ -71,8 +68,8 @@ test('Given changed and new production files without raw MI in the snapshot that
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHOW');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- SHOW scopes.executable: 3 changed files']);
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), [
     '- not applicable: src/alpha/parser.ts: no raw MI in the head snapshot',
     '- not applicable: src/alpha/printer.ts: no raw MI in the base snapshot',

@@ -35,7 +35,7 @@ With --process and --review, the check reads the step "Metrics" of the review
 route. Give the two files of the final metrics process:
 script/code-quality/ast-metrics-process.ts --json FILE writes the stage
 outcomes, and its review stage writes ast-report/review.json. A failed or
-unavailable stage is FIX. A high finding on a changed production file is READ.
+unavailable stage is FIX. A high finding on a changed production file is ARCHITECT_REVIEW_NEEDED.
 A goal miss alone is no reason, and a finding on an unchanged file is no reason.
 Without the two options, the step "Metrics" stays with you.
 

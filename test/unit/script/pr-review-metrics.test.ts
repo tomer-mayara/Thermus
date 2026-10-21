@@ -8,7 +8,7 @@ const { metricsOutcome } = await import(new URL('metrics.ts', pathToFileURL(prRe
 
 type Status = MetricsFiles['outcomes'][number]['status'];
 
-const rules = { scopes: { production: ['src/**'], executable: [], generated: [] } };
+const rules = { scopes: { production: ['src/**'], generated: [] } };
 const changes = [{ status: 'M', path: 'src/a.ts' }, { status: 'R', oldPath: 'src/old.ts', path: 'src/b.ts' }, { status: 'A', path: 'test/a.test.ts' }];
 const unchangedLine = (count: string) => `${count} on unchanged files, reason unchanged by this PR`;
 const lowMi = 'Maintainability too low: got 63 (min: 85)';
@@ -51,15 +51,15 @@ test('Given a Review stage that did not complete, when the metrics step runs, th
   assert.deepEqual(outcome.lines, ['Delta: passed', 'Review: failed', 'CRAP: unavailable', 'Architecture: unavailable', 'findings not read: the Review stage did not complete']);
 });
 
-test('Given high findings on a changed and on a renamed production file, when the metrics step runs, then each is a READ reason with its file and message', () => {
+test('Given high findings on a changed and on a renamed production file, when the metrics step runs, then each is an ARCHITECT_REVIEW_NEEDED reason with its file and message', () => {
   const outcome = findingsOutcome([
     { severity: 'high', file: 'src/a.ts', message: lowMi },
     { severity: 'high', file: 'src/b.ts', message: 'Maintainability index: 90 -> 80 (below 85 is hard to maintain)' },
   ]);
 
   assert.deepEqual(outcome.reasons, [
-    { route: 'READ', key: 'ratchet.review_findings', fact: `src/a.ts: ${lowMi}` },
-    { route: 'READ', key: 'ratchet.review_findings', fact: 'src/b.ts: Maintainability index: 90 -> 80 (below 85 is hard to maintain)' },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.review_findings', fact: `src/a.ts: ${lowMi}` },
+    { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.review_findings', fact: 'src/b.ts: Maintainability index: 90 -> 80 (below 85 is hard to maintain)' },
   ]);
   assert.deepEqual(outcome.lines.slice(4), [unchangedLine('0 findings')]);
 });

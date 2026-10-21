@@ -61,7 +61,7 @@ function missReason(miss: { readonly row: AssessedRow; readonly goals: Goals; re
   const unit = `${miss.row.file}#${miss.row.function}`;
   const entry = coveringCrapException(context.entries, { function: unit, today: context.today, within: (bound) => withinBound(miss.goals, bound) });
   if (entry === undefined) return { route: 'FIX', key, fact: `${miss.row.file}: ${miss.row.function}: ${miss.value}` };
-  return { route: 'READ', key: 'ratchet.exceptions', fact: `${unit}: ${miss.value} covered by "${entry.reason}" until ${entry.expires}` };
+  return { route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.exceptions', fact: `${unit}: ${miss.value} covered by "${entry.reason}" until ${entry.expires}` };
 }
 
 // Without a covered share, p paths bound CRAP from p to p² + p, and zero paths prove 0.

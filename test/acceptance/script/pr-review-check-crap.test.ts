@@ -24,8 +24,8 @@ test('Given a new function with three paths and no coverage share, when the chec
   const result = await checkOn(t, repository, ...crapOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHOW');
-  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- SHOW scopes.executable: 1 changed file']);
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
+  assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- src/alpha/small.ts: small: pass from the bound [3, 12]']);
   assert.equal(result.code, 0);
 });
@@ -41,7 +41,6 @@ test('Given a new function with four paths and no coverage share, when the check
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX ratchet.crap.new_function_above: src/alpha/wide.ts: wide: [4, 20]',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- none']);
   assert.equal(result.code, 0);
@@ -61,7 +60,6 @@ test('Given changed legacy functions at CRAP 29.999 and 30 from known coverage, 
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX ratchet.crap.changed_legacy_function_at_or_above: src/alpha/parser.ts: tokenize: 30.0',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- src/alpha/parser.ts: parse: 29.999002513266692']);
   assert.equal(result.code, 0);
@@ -82,23 +80,20 @@ test('Given an unknown function above 15, an unchanged function above 30, and a 
   assert.equal(routeOf(result.stdout), 'FIX');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), [
     '- FIX ratchet.crap.new_function_above: src/alpha/parser.ts: (anonymous): 20.0',
-    '- SHOW scopes.executable: 1 changed file',
   ]);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- none']);
   assert.equal(result.code, 0);
 });
 
 for (const [expires, route, reasons] of [
-  ['2999-12-31', 'READ', [
-    `- READ read_paths: ${exceptionsPath}`,
-    '- READ ratchet.exceptions: src/alpha/wide.ts#wide: [4, 20] covered by "The parser keeps one table of rules." until 2999-12-31',
-    '- SHOW scopes.executable: 1 changed file',
+  ['2999-12-31', 'ARCHITECT_REVIEW_NEEDED', [
+    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
+    '- ARCHITECT_REVIEW_NEEDED ratchet.exceptions: src/alpha/wide.ts#wide: [4, 20] covered by "The parser keeps one table of rules." until 2999-12-31',
   ]],
   ['2000-01-01', 'FIX', [
     '- FIX ratchet.exceptions.expired: src/alpha/wide.ts#wide',
     '- FIX ratchet.crap.new_function_above: src/alpha/wide.ts: wide: [4, 20]',
-    `- READ read_paths: ${exceptionsPath}`,
-    '- SHOW scopes.executable: 1 changed file',
+    `- ARCHITECT_REVIEW_NEEDED read_paths: ${exceptionsPath}`,
   ]],
 ] as const) {
   test(`Given an exception entry for the function with a bound of 20 that expires on ${expires}, when the check runs, then the route is ${route}`, { timeout }, async (t) => {

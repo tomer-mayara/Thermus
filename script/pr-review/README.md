@@ -63,16 +63,18 @@ and both commits.
 
 ## The routes
 
-The first route of this list that has a reason applies. The report gives
-every reason, not only the first.
+The four routes below are in priority order. The first route with a reason
+applies; `SHIPPED` is the fallback. The report gives every reason, not only the
+first. The labels are `route:fix`, `route:clarification_needed`,
+`route:architect_review_needed`, and `route:shipped`. The owner can act as the
+architect. The manual trial does not automate merges.
 
 | Route | Meaning |
 | --- | --- |
 | `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. Or a new production file has a raw MI below the limit, or a new or changed function misses its CRAP goal, and no exception covers it. Or an exception entry of a changed path has expired. Or a stage of the metrics process failed or is unavailable. The author repairs the pull request or declares the fact. |
-| `ASK` | A protected path, the rules file, a module of the public surface, or a contract document changed, or the pull request declares a fact. The architect answers the question of each matching group. |
-| `READ` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit or a function that misses its CRAP goal. Or the review has a high finding on a changed production file. The owner reads the diff before the merge. |
-| `SHOW` | No other reason, and a file under `scopes.executable` changed. The owner skims the merged diff. |
-| `SHIP` | No reason. The pull request merges on green. |
+| `CLARIFICATION_NEEDED` | A protected path, the rules file, a module of the public surface, or a contract document changed, or the pull request declares a fact. The architect answers the question of each matching group. |
+| `ARCHITECT_REVIEW_NEEDED` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit or a function that misses its CRAP goal. Or the review has a high finding on a changed production file. The architect reads the diff before the merge. |
+| `SHIPPED` | No higher route has a reason. All applicable checks must pass before merge, for executable and document changes alike. No route-specific human review or post-merge skim is required. |
 
 ## What the check does
 
@@ -80,16 +82,21 @@ The candidate is the commit HEAD. The check resolves HEAD once and prints it as
 "Candidate", with the merge base `git merge-base <base> HEAD`. It reads every
 file from git with rename detection, so it stops when the working tree has
 uncommitted changes. With `--allow-dirty` it checks HEAD alone, and a note says
-so. The rules come from the merge base. When the rules file does not exist
-there, or is not valid, the file at HEAD applies, a note says so, and the
-change of the rules file is `ASK`.
+so. The rules come from the merge base. A historical base rules file uses
+its original route names: the check maps `ASK` to `CLARIFICATION_NEEDED`,
+`READ` to `ARCHITECT_REVIEW_NEEDED`, and both `SHOW` and `SHIP` to `SHIPPED`.
+The base thresholds and protected paths still govern the candidate. The
+rules at HEAD must use the current four routes. When the base rules file
+does not exist or is not valid, the file at HEAD applies, a note says so, and the
+change of the rules file is `CLARIFICATION_NEEDED`.
 
 - Changed paths: each path, both paths of a rename, against `protected_paths`
-  (`ASK`) and `read_paths` (`READ`). A change to the rules file is always
-  `ASK` in the group `policy`, also when no group lists the file. The glob
-  syntax is minimatch with dot files: `**`, `*`, and `?`. A pattern without a
-  slash matches a file at the root only. The rules file can use no other
-  syntax, and no pattern can start or end with a slash.
+  (`CLARIFICATION_NEEDED`) and `read_paths` (`ARCHITECT_REVIEW_NEEDED`). A
+  change to the rules file is always `CLARIFICATION_NEEDED` in the group
+  `policy`, also when no group lists the file. The glob syntax is minimatch
+  with dot files: `**`, `*`, and `?`. A pattern without a slash matches a file
+  at the root only. The rules file can use no other syntax, and no pattern can
+  start or end with a slash.
 - Facts to declare: the package graph of the TypeScript files under `src/` at
   HEAD (`.ts`, `.mts`, `.cts`, `.tsx`, and declaration files), from their
   import statements. A type statement is `import type`, `export type ...
@@ -103,18 +110,19 @@ change of the rules file is `ASK`.
 - The check compares the packages, edges, cycles, and external imports of the
   whole tree, and the imports across packages of the changed files, with the
   rules. A fact that the rules of the merge base lack and the rules of HEAD
-  list is declared, and each declared fact is `ASK`. Each fact that the rules
-  of HEAD lack is `FIX`. A forbidden edge, a new cycle, and a known cycle that
-  grows are `FIX`, and no listing can declare them. A known cycle grows when
-  it gains a member, or an edge between two members that `allowed_edges` of
-  the merge base does not cover. A known cycle may shrink.
-- Public surface: every change to a module of `public_surface` is `ASK`. So
-  is a module that imports a changed file of its own package, because a
-  re-export or an imported type can change its declarations. The check follows
-  these imports one level only. A changed file under
-  `public_surface.contract_documents` is `ASK` too. The check cannot compare
-  the declarations. It lists the modules and the documents under "Surface
-  differences".
+  list is declared, and each declared fact is `CLARIFICATION_NEEDED`. Each
+  fact that the rules of HEAD lack is `FIX`. A forbidden edge, a new cycle,
+  and a known cycle that grows are `FIX`, and no listing can declare them. A
+  known cycle grows when it gains a member, or an edge between two members
+  that `allowed_edges` of the merge base does not cover. A known cycle may
+  shrink.
+- Public surface: every change to a module of `public_surface` is
+  `CLARIFICATION_NEEDED`. So is a module that imports a changed file of its
+  own package, because a re-export or an imported type can change its
+  declarations. The check follows these imports one level only. A changed file
+  under `public_surface.contract_documents` is `CLARIFICATION_NEEDED` too. The
+  check cannot compare the declarations. It lists the modules and the
+  documents under "Surface differences".
 - Size and tests: the changed lines under `scopes.production`, also of a file
   that moves into it, and the changed lines of all files except
   `scopes.generated`, against the limits of `size`. Under `test/`, the added
@@ -122,18 +130,18 @@ change of the rules file is `ASK`.
   `test.only(`. When more test cases are removed than added, each removed case
   is a reason. The check cannot see a removed row of a table that a loop turns
   into test cases. An added line under `test/` with a `skip` or `todo` option,
-  variable, or call is `READ`, also in a text value. A
+  variable, or call is `ARCHITECT_REVIEW_NEEDED`, also in a text value. A
   `.habit-hooks/snooze.json` that is not `[]` is `FIX`.
 - MI: the rules of `ratchet.maintainability_index` for each change under
   `scopes.production`; both paths of a rename count, and a deleted file has no
   rule. The check reads `maintainabilityRaw` from the two snapshot files and
   compares the values as numbers, with no rounding. A new file (status `A`)
   below `new_file_below` is `FIX`. A file in both snapshots whose value drops
-  by `existing_file_drop_read_at` or more is `READ`. A renamed file compares
-  the value of its old path in the base snapshot with the value of its new
-  path in the head snapshot. A file without raw MI in the snapshot that it
-  needs is not applicable. The section "MI" gives each file with its values,
-  or `not checked` without the two options.
+  by `existing_file_drop_read_at` or more is `ARCHITECT_REVIEW_NEEDED`. A
+  renamed file compares the value of its old path in the base snapshot with
+  the value of its new path in the head snapshot. A file without raw MI in the
+  snapshot that it needs is not applicable. The section "MI" gives each file
+  with its values, or `not checked` without the two options.
 - CRAP: the goals of `ratchet.crap` for each row of the CRAP file whose
   `file` is the path at HEAD of a change under `scopes.production` that is
   not a deletion. A row of an unchanged function has no goal. The check
@@ -176,15 +184,15 @@ change of the rules file is `ASK`.
   completed Review stage, with the status `passed` or `goal miss`. Otherwise
   the section says `findings not read: the Review stage did not complete`. A
   finding of severity `high` whose `file` is a changed path under
-  `scopes.production` is `READ` `ratchet.review_findings: <file>: <message>`.
-  Both paths of a rename count. A high finding on a changed file outside
-  `scopes.production` has no rule: the section gives it as `outside
-  scopes.production: <file>: <message>`. A high finding on an unchanged file
-  is no reason: the section counts these as `<n> findings on unchanged files,
-  reason unchanged by this PR`. Medium and low findings are no reason, and
-  the section does not count them. The section "Metrics" gives each stage as
-  `<stage>: <status>`, then these lines. Without the two options, it says
-  `not checked: give --process and --review`.
+  `scopes.production` is `ARCHITECT_REVIEW_NEEDED` `ratchet.review_findings:
+  <file>: <message>`. Both paths of a rename count. A high finding on a
+  changed file outside `scopes.production` has no rule: the section gives it
+  as `outside scopes.production: <file>: <message>`. A high finding on an
+  unchanged file is no reason: the section counts these as `<n> findings on
+  unchanged files, reason unchanged by this PR`. Medium and low findings are
+  no reason, and the section does not count them. The section "Metrics" gives
+  each stage as `<stage>: <status>`, then these lines. Without the two
+  options, it says `not checked: give --process and --review`.
 - Metrics files: each option names a file relative to the current folder.
   The process file is the JSON of
   `script/code-quality/ast-metrics-process.ts --json FILE`. It must have
@@ -220,11 +228,12 @@ change of the rules file is `ASK`.
   and the field. Today is the committer date of HEAD, so that a rerun gives
   the same route. An `mi` entry covers the `FIX` of its new file while the raw
   MI is at least the bound and today is not after `expires`. A `crap` entry
-  covers the `FIX` of its function while the value from known coverage, or
-  the upper bound, is at most the bound and today is not after `expires`. The
-  covered unit stays a `READ` reason that names the entry. An entry that
-  expired before today is `FIX` when its path, or the file of its function,
-  changed. A change to the file is `READ` through `read_paths`.
+  covers the `FIX` of its function while the value from known coverage, or the
+  upper bound, is at most the bound and today is not after `expires`. The
+  covered unit stays an `ARCHITECT_REVIEW_NEEDED` reason that names the entry.
+  An entry that expired before today is `FIX` when its path, or the file of
+  its function, changed. A change to the file is `ARCHITECT_REVIEW_NEEDED`
+  through `read_paths`.
 - Route: the first route with a reason. The check runs no required check. It
   reads the stages of the metrics process with `--process`; another failed
   required check is `FIX`, as the step "Route" says.
@@ -233,9 +242,8 @@ change of the rules file is `ASK`.
 
 The report gives each reason as `<ROUTE> <key>: <fact>`. A dependency fact
 names a file that causes it. "Facts to declare" gives the key and the entry
-that would list each fact, in the form of the rules file. One `SHOW` reason
-counts the changed files under `scopes.executable`; the changed paths list
-them.
+that would list each fact, in the form of the rules file. Executable changes
+alone add no route reason; without a higher route reason they take `SHIPPED`.
 
 ## The steps that stay with you
 
@@ -247,9 +255,9 @@ them.
   read its reasons. The check applies the MI rules, the CRAP goals, the stages
   of the process, and the high findings of the review. A note says when this
   step stays with you.
-- "Decision": for `ASK`, write the draft decision in the section "Review route"
-  of the pull request description. Answer the question of each matching group,
-  and state the guarantee that holds after the change.
+- "Decision": for `CLARIFICATION_NEEDED`, write the draft decision in the
+  section "Review route" of the pull request description. Answer the question
+  of each matching group, and state the guarantee that holds after the change.
 
 ## Source layout
 

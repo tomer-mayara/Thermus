@@ -16,7 +16,7 @@ const atHead = `pr-review-check: The rules file ${rulesPath} at HEAD`;
 for (const [name, rules, diagnostic] of [
   ['without the package list', rulesYaml(({ dependency_graph: graph }) => { Reflect.deleteProperty(graph, 'packages'); }),
     `${atHead} has no valid key dependency_graph.packages: give a list of text.\n`],
-  ['that gives a trigger another route', rulesYaml(({ dependency_graph: graph }) => { graph.triggers.known_cycle_grows = 'READ'; }),
+  ['that gives a trigger another route', rulesYaml(({ dependency_graph: graph }) => { graph.triggers.known_cycle_grows = 'ARCHITECT_REVIEW_NEEDED'; }),
     `${atHead} has no valid key dependency_graph.triggers.known_cycle_grows: give FIX, the route that the check uses.\n`],
   ['without the MI limit of a new file', rulesYaml(({ ratchet }) => { Reflect.deleteProperty(ratchet.maintainability_index, 'new_file_below'); }),
     `${atHead} has no valid key ratchet.maintainability_index.new_file_below: give a whole number, 0 or more.\n`],

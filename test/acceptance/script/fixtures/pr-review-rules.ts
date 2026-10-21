@@ -17,13 +17,13 @@ const triggers = [
 
 export function rulesDocument() {
   return {
-    routes: { order: ['FIX', 'ASK', 'READ', 'SHOW', 'SHIP'] },
+    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'] },
     protected_paths: {
-      policy: { route: 'ASK', question: 'Does this change what the checks enforce? Record the new rule.', paths: ['AGENTS.md', rulesPath] },
-      contracts: { route: 'ASK', question: 'Does a client see a different input or output? Record the promise.', paths: ['src/index.ts'] },
+      policy: { route: 'CLARIFICATION_NEEDED', question: 'Does this change what the checks enforce? Record the new rule.', paths: ['AGENTS.md', rulesPath] },
+      contracts: { route: 'CLARIFICATION_NEEDED', question: 'Does a client see a different input or output? Record the promise.', paths: ['src/index.ts'] },
     },
-    read_paths: { route: 'READ', paths: ['docs/implementation/test-gate-policy.md'], moved_by_stop_rule: [] as string[] },
-    scopes: { production: ['src/**'], executable: ['src/**', 'test/**'], generated: ['docs/metrics/**'] },
+    read_paths: { route: 'ARCHITECT_REVIEW_NEEDED', paths: ['docs/implementation/test-gate-policy.md'], moved_by_stop_rule: [] as string[] },
+    scopes: { production: ['src/**'], generated: ['docs/metrics/**'] },
     public_surface: {
       contract_documents: 'docs/reference/**',
       external: ['src/index.ts'],
@@ -43,7 +43,7 @@ export function rulesDocument() {
     size: {
       production_lines_read_above: 400,
       total_lines_read_above: 1500,
-      test_counts: { fewer_tests_than_base: 'READ', more_skipped_or_todo_than_base: 'READ' },
+      test_counts: { fewer_tests_than_base: 'ARCHITECT_REVIEW_NEEDED', more_skipped_or_todo_than_base: 'ARCHITECT_REVIEW_NEEDED' },
       habit_hooks_snooze_non_empty: 'FIX',
     },
     ratchet: {
@@ -87,4 +87,24 @@ export const guideChange: Readonly<Record<string, string>> = { 'docs/guide.md': 
 
 export function testFile(names: readonly string[]): string {
   return `import { test } from 'node:test';\n\n${names.map((name) => `test('${name}', () => {});\n`).join('')}`;
+}
+
+// The merge base can still use the routes that came before the four-route policy.
+export function historicalRulesYaml() {
+  const rules = rulesDocument();
+  return stringify({
+    ...rules,
+    routes: { order: ['FIX', 'ASK', 'READ', 'SHOW', 'SHIP'] },
+    protected_paths: {
+      policy: { ...rules.protected_paths.policy, route: 'ASK', paths: [...rules.protected_paths.policy.paths, 'docs/guide.md'] },
+      contracts: { ...rules.protected_paths.contracts, route: 'ASK' },
+    },
+    read_paths: { ...rules.read_paths, route: 'READ' },
+    scopes: { ...rules.scopes, executable: ['src/**', 'test/**'] },
+    size: {
+      ...rules.size,
+      total_lines_read_above: 1,
+      test_counts: { fewer_tests_than_base: 'READ', more_skipped_or_todo_than_base: 'READ' },
+    },
+  });
 }

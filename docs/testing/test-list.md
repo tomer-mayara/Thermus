@@ -1090,12 +1090,14 @@ Nine acceptance files run `script/pr-review/check.ts` in small git
 repositories. Each repository has its own rules file from
 `test/acceptance/script/fixtures/pr-review-rules.ts`.
 `test/acceptance/script/pr-review-check.test.ts` checks the route from the
-changed paths: `SHIP` for a document change, with the complete report and its
-commits; `ASK` for a protected path with the question of its group, for a
+changed paths: `SHIPPED` for a document change, with the complete report and its
+commits; `CLARIFICATION_NEEDED` for a protected path with the question of its
+group, for a
 renamed protected file, for a changed surface module, and for a changed
-contract document; `SHOW` for a change of tests only; and `SHIP` with no
+contract document; `SHIPPED` for a change of tests only; and `SHIPPED` with no
 changed path when HEAD is the merge base.
-`test/acceptance/script/pr-review-check-size.test.ts` checks `READ` for a
+`test/acceptance/script/pr-review-check-size.test.ts` checks
+`ARCHITECT_REVIEW_NEEDED` for a
 production line count above the limit, also for a file that moves into `src/`,
 for a removed test case that the reason names, and for an added skip.
 `test/acceptance/script/pr-review-check-facts.test.ts` checks the dependency
@@ -1103,13 +1105,15 @@ facts. `FIX`: an edge that the rules do not list, with the key that lists it, a
 forbidden edge, a new cycle with no entry to declare it, a new edge inside a
 known cycle also when the branch declares the edge, an import of a file of
 another package outside the public surface, an unresolved import in a changed
-file, and a changed JavaScript file. `ASK`, not `FIX`: an edge that the rules
+file, and a changed JavaScript file. `CLARIFICATION_NEEDED`: an edge that the rules
 file of the branch declares, also when no protected group lists the rules
 file. A stylesheet import is no fact, and an unresolved import in an unchanged
 file is a note. `test/acceptance/script/pr-review-check-record.test.ts` checks
 the JSON keys and the commits, the stop for uncommitted changes and the note
 with `--allow-dirty`, and the rules file of HEAD when the merge base has none
-or has one that is not valid.
+or has one that is not valid. Historical route names at the merge base keep
+its thresholds and protected paths when HEAD adopts the four routes. The
+check refuses historical route names at HEAD.
 `test/acceptance/script/pr-review-check-failures.test.ts` checks exit status 1
 for a rules file at HEAD without a key, without the MI limit of a new file,
 with a CRAP goal other than 15, with a number as the location of the review
@@ -1120,7 +1124,8 @@ without a base snapshot, and a process file without a review file. It also check
 defaults as the help, which it reads without child processes.
 `test/acceptance/script/pr-review-check-ratchet.test.ts` checks the MI rules
 of check 4 with snapshot files that the test writes under `ast-report/`:
-`FIX` for a new production file at raw MI 84.96 and no reason at 85; `READ`
+`FIX` for a new production file at raw MI 84.96 and no reason at 85;
+`ARCHITECT_REVIEW_NEEDED`
 for an existing file that drops from 90 to 85, with both values, and no
 reason at 85.1; a renamed file that compares its old path in the base
 snapshot with its new path in the head snapshot; and not applicable for a
@@ -1128,7 +1133,8 @@ file without raw MI in the snapshot that it needs. It checks exit status 1
 for a head or base snapshot of another commit, with the snapshot and both
 commits, for a missing snapshot file, and for a raw MI that is a text.
 `test/acceptance/script/pr-review-check-exceptions.test.ts` checks the
-exceptions file: an entry with a future date turns the `FIX` into a `READ`
+exceptions file: an entry with a future date turns the `FIX` into an
+`ARCHITECT_REVIEW_NEEDED`
 reason that names the entry, a past date keeps the `FIX` and adds the expired
 entry, an expired entry of a changed file is `FIX` without the snapshot
 options while the MI section says that MI was not checked, and an expiry that
@@ -1140,7 +1146,8 @@ for a new function of four paths, whose range `[4, 20]` crosses 15; a pass at
 29.999 and `FIX` at 30 for changed functions with known coverage; `FIX` with
 the goal of a new function for an unknown function, while an unchanged
 function and a row of an unchanged file give no reason. A function entry of
-the exceptions file with a future date turns the `FIX` into a `READ` reason
+the exceptions file with a future date turns the `FIX` into an
+`ARCHITECT_REVIEW_NEEDED` reason
 that names the entry; with a past date the `FIX` stays and the expired entry
 is `FIX` too. It checks exit status 1 for a CRAP file of another commit, with
 the file and both commits, for a missing file, and for a row whose paths are
@@ -1152,7 +1159,8 @@ step with a process file and a review file that the test writes under
 `ast-report/`: goal misses of the process and high findings on unchanged files
 only give no reason, the section counts the findings, and the note leaves only
 the step "Decision" manual; a high finding on a changed production file is
-`READ` with the file and the message, while a low finding there gives no
+`ARCHITECT_REVIEW_NEEDED` with the file and the message, while a low finding
+there gives no
 reason and a high finding on a changed test file has a line without a reason;
 a failed Delta stage is `FIX` with each stage that did not complete, and the
 check does not read a review file that does not exist. It checks exit status
