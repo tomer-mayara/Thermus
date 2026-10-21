@@ -724,15 +724,18 @@ behavior only after a renderer gate pass.
 `dist/test/acceptance/mcp/search-pipeline.live.js`. It needs an absolute
 `LIGHTPANDA_BIN` for Lightpanda 1.0.0 and public network access to Brave.
 It uses a local Better Auth account, the production composition, the real
-Brave adapter, classifier, cleaners, and MCP client. It requires useful
-result titles, links, snippets, and safe correlated records. No endpoint
+Brave adapter, classifier, cleaners, and MCP client. It requires a useful
+external result link with an associated description and safe correlated
+records. An unrelated footer paragraph cannot satisfy the description check. No endpoint
 mapping or captured page replaces the provider response.
 
 The `.live.ts` name keeps this file out of ordinary suite globs. The renderer,
 hosted offline build, and container build gates do not run it. A blocked,
 rate-limited, unsupported, or failed response is an incomplete proof, even
 when the local renderer gate passes. Record the command, date, pinned version,
-and tool result in the SEARCH-06 evidence. Earlier raw requests or nightly
+and tool result in a new dated implementation record, preserving earlier
+records. [SEARCH-09](search-09.md) records the stronger association check.
+Earlier raw requests or nightly
 renderer probes do not replace this complete proof.
 
 ## Hosted offline checks

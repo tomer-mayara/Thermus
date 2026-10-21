@@ -1,8 +1,7 @@
 // The separate real-Brave proof: npm run test:mcp:search:live. Ordinary *.test.js gates exclude this file.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseHTML } from 'linkedom';
-import { micromark } from 'micromark';
+import { assertUsefulLightpandaResult } from '../../support/dsl/search-results.ts';
 import { addUser, operatorOn, registerArgs, registeredClientId } from '../../support/dsl/local-commands.ts';
 import { connectWithToken, issuedGrants } from '../../support/dsl/local-mcp-user.ts';
 import { stepRecordsIn } from '../../support/drivers/operator-log.ts';
@@ -46,21 +45,7 @@ test('Given pinned Lightpanda 1.0.0, real Brave access, and a real local access 
   assert.ok(content.text.trim().length > 0, 'Search results must not be blank');
   assert.notEqual(content.text, 'No search results.');
 
-  const document = parseHTML(`<html><body>${micromark(content.text)}</body></html>`).document;
-  const resultLinks = [...document.querySelectorAll('a[href]')].filter((link) => {
-    const destination = new URL(link.getAttribute('href') ?? '', 'https://search.brave.com/');
-    const title = link.textContent.replace(/\s+/g, ' ').trim();
-    return ['https:', 'http:'].includes(destination.protocol)
-      && destination.hostname !== 'brave.com' && !destination.hostname.endsWith('.brave.com')
-      && /lightpanda/i.test(title) && title.length >= 12;
-  });
-  assert.ok(resultLinks.length > 0, 'Expected an external result link with a useful Lightpanda title');
-  const snippets = [...document.querySelectorAll('p')].map((paragraph) => {
-    const copy = paragraph.cloneNode(true) as typeof paragraph;
-    for (const link of copy.querySelectorAll('a')) link.remove();
-    return copy.textContent.replace(/\s+/g, ' ').trim();
-  });
-  assert.ok(snippets.some((text) => text.length >= 50 && /browser|headless|automation|\bZig\b/i.test(text)), 'Expected useful result snippet text outside link titles');
+  assertUsefulLightpandaResult(content.text);
 
   assert.equal(completions.length, 1);
   const { operationId, durationMs, ...completion } = completions[0];

@@ -35,9 +35,10 @@ test('Given authorized search, when the protected pipeline runs, then it preserv
 for (const kind of ['results', 'no_results'] as const) {
   for (const code of ['scan_failed', 'scan_limit'] as const) {
     test(`Given ${kind} and incoming ${code}, when processed, then withholding wins`, async () => {
-      const f = fixture(); f.dependencies.engine.search = async () => ({ page, kind });
+      const f = fixture(); f.dependencies.engine.search = async () => { f.calls.push('engine'); return { page, kind }; };
       f.dependencies.incoming.execute = async () => ({ decision: 'block', code });
       assert.deepEqual(await f.run(), { status: 'withheld', code });
+      assert.equal(f.calls.filter((call) => call === 'engine').length, 1);
       assert.equal(f.entries[1].outcome, 'blocked');
     });
   }
@@ -65,6 +66,7 @@ for (const stage of ['outgoing', 'incoming'] as const) {
     test(`Given invalid or refused ${stage}, when searched, then the fixed failure hides content`, async () => {
       const f = fixture(); f.dependencies[stage].execute = async () => value as never;
       await assert.rejects(f.run(), { message: stage === 'outgoing' ? 'Search failed' : 'Search processing failed' });
+      assert.equal(f.calls.filter((call) => call === 'engine').length, stage === 'incoming' ? 1 : 0);
       const terminal = value !== null && Object.hasOwn(value, 'decision') && value.decision === 'block' && !Object.hasOwn(value, 'output') ? { outcome: 'blocked', code: 'blocked' } : { outcome: 'failed', code: 'invalid_step_result' };
       assert.deepEqual(f.entries.map((entry) => ({ outcome: entry.outcome, ...('code' in entry ? { code: entry.code } : {}) })), stage === 'outgoing' ? [terminal] : [{ outcome: 'allowed' }, terminal]);
       assert.doesNotMatch(JSON.stringify(f.entries), /private|changed/);
@@ -238,9 +240,10 @@ for (const output of ['provider says nothing', '']) {
 }
 for (const failure of ['throw', 'malformed', 'blocked'] as const) {
   test(`Given no-results and incoming ${failure}, when settled, then absence cannot override failure`, async () => {
-    const f = fixture(); f.dependencies.engine.search = async () => ({ page, kind: 'no_results' });
+    const f = fixture(); f.dependencies.engine.search = async () => { f.calls.push('engine'); return { page, kind: 'no_results' }; };
     f.dependencies.incoming.execute = async () => { if (failure === 'throw') throw new Error('private incoming'); return failure === 'blocked' ? { decision: 'block', code: 'blocked' } : {} as never; };
     await assert.rejects(f.run(), { message: 'Search processing failed' });
+    assert.equal(f.calls.filter((call) => call === 'engine').length, 1);
   });
 }
 

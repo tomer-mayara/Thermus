@@ -4,7 +4,7 @@ Thermus supports the official Lightpanda **1.0.0** release. The renderer is an e
 
 Use macOS or Linux on x86-64 or ARM64. The Linux binary requires glibc; Alpine Linux with musl is not supported by this recipe. On Windows, run the Linux recipe inside WSL2. See the [official installation guide](https://lightpanda.io/docs/open-source/installation/) for WSL2 setup.
 
-The macOS ARM64 asset download, SHA256 digest, and `version` output were verified. The 29 local renderer interface tests and the renderer gate passed with that executable. The Linux ARM64 executable runs in the container gate. A `linux/amd64` build of the renderer stage, with emulation on an ARM64 host, checked the digest of the Linux x86-64 asset, and that executable reported `1.0.0`. That renderer-stage check did not render a page. The final hosted image proof is tracked in [RHD-03](implementation/rhd-03.md); until a successful Linux AMD64 run is recorded there, AMD64 page rendering remains unverified. The macOS x86-64 asset was not exercised.
+The macOS ARM64 asset download, SHA256 digest, and `version` output were verified. The 29 local renderer interface tests and the renderer gate passed with that executable. The Linux ARM64 executable runs in the container gate. The final Linux AMD64 hosted image passed real HTTPS and JavaScript rendering in [RHD-03](implementation/rhd-03.md#verification). [SEARCH-06](implementation/search-06.md#complete-candidate-results) also records a passing AMD64 image gate, including both local fetch and search renderer tests in its offline build. These are dated results for their recorded candidates. The macOS x86-64 asset was not exercised.
 
 ## Install the pinned release
 
@@ -107,9 +107,11 @@ npm run test:container:hosted
 
 The gate uses the final image and its real packaged renderer. Ordinary suite
 commands explicitly exclude `hosted-image.test.js` from their globs. The [hosted image gate](implementation/test-gate-policy.md#hosted-image-gate)
-gives the prerequisites and evidence rules. The [RHD-03 record](implementation/rhd-03.md)
-tracks the AMD64 result. Digest or version evidence, a successful build, and
-an ARM64 rendering pass do not establish that result. WorkOS live behavior
+gives the prerequisites and evidence rules. The [RHD-03 record](implementation/rhd-03.md#verification)
+records the completed AMD64 runtime proof; the
+[SEARCH-09 record](implementation/search-09.md) owns the search PR's final gate results.
+Digest or version evidence, a successful build, and an ARM64 rendering pass
+do not replace a final AMD64 image gate. WorkOS live behavior
 and Render deployment need their separate proofs.
 
 ## Select the executable
@@ -292,12 +294,16 @@ npm run test:mcp:search:live
 This command makes a clean backend build and runs only
 `dist/test/acceptance/mcp/search-pipeline.live.js`. It uses a local Better Auth
 account and the production search composition. The real provider response
-must pass the adapter, classifier, cleaners, and MCP result checks for useful
-result titles, destination links, and snippets. It needs public network access,
+must pass the adapter, classifier, cleaners, and MCP result checks. The proof
+requires a useful external result link with description text in the same
+paragraph or the next paragraph, without crossing another result or a section
+boundary. An unrelated footer paragraph does not satisfy that check. It needs public network access,
 with no Brave API key or Axiom credential. Ordinary, offline, and container
 build gates exclude this `.live.ts` file. A block, HTTP 429, unsupported page,
 or setup failure is an incomplete live proof. Record the command, date,
-pinned version, and tool result in SEARCH-06 evidence. The local fixture
+pinned version, and tool result in a new dated implementation record. Keep
+earlier records intact. [SEARCH-09](implementation/search-09.md) records the
+stronger assertion and its live result. The local fixture
 gate and earlier raw or nightly probes cannot replace this proof.
 
 ## Upgrade policy

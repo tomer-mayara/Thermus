@@ -197,6 +197,7 @@ for (const edition of ['hosted', 'self-hosted'] as const) {
     const site = await openSearchSite(t, '2026-07-28', edition);
     const result = await site.client.callTool({ name: 'search', arguments: { query: 'private-acceptance-query', reason } });
     assert.deepEqual(result.content, [{ type: 'text', text: 'Search content withheld' }]);
+    assert.equal(renderer.launches.length, 1);
     assert.equal(result.isError, true);
     assert.equal(result.structuredContent, undefined);
     assert.equal(site.completions().length, 1);

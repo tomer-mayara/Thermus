@@ -117,6 +117,17 @@ Fetch completion fields retain their existing contract.
 Ordinary tests use controlled renderer processes with the captured Brave page
 and real classification and cleaning.
 
+Each proof has a specific scope:
+
+- Protected pipeline tests assert one engine call for incoming malformed and
+  withholding outcomes. Public withholding tests assert one renderer launch.
+- The edition-by-era matrix checks tool behavior and destination strings.
+  Full captured-page integration, the video regression, and local runtime
+  cases check actual Markdown links and their descriptions through real cleaners.
+- Controlled tests of the live assertion reject a result title paired only
+  with an unrelated footer paragraph. This is proof of the assertion, not
+  current access to Brave.
+
 With `LIGHTPANDA_BIN` set to an absolute path for Lightpanda 1.0.0, run:
 
 ```sh
@@ -139,16 +150,20 @@ npm run test:mcp:search:live
 
 It builds and runs only `search-pipeline.live.js`, using the pinned renderer,
 real Brave adapter, classifier, cleaners, and MCP result. It needs public
-network access and no Brave API key. It requires useful result titles,
-destination links, snippets, and private correlated records. Ordinary,
+network access and no Brave API key. It requires a useful external result link
+with description text in the same paragraph or the next paragraph, without
+crossing another result or a section boundary. It also requires private
+correlated records. This checks a result/description pair, not every result
+on an unseen page. Ordinary,
 offline, and container build gates exclude it. A block, rate limit, or
 unsupported page fails this proof. A successful local fixture run does not
 establish current Brave availability.
 
-The [SEARCH-06 record](../implementation/search-06.md) gives the local runtime
-results and the successful live MCP call on 2026-10-20 with Lightpanda 1.0.0.
-The saved result is evidence for that call; it does not guarantee later access
-or verify a live empty-results response. The
+The [SEARCH-09 record](../implementation/search-09.md) owns the current
+assertion, final selected checks, and its separate live result.
+[SEARCH-06](../implementation/search-06.md) retains the earlier successful
+call on 2026-10-20. Each saved result is evidence for its dated call; it does
+not guarantee later access or verify a live empty-results response. The
 [runtime guide](../lightpanda-runtime.md#verify-rendering) and
 [test gate policy](../implementation/test-gate-policy.md#live-brave-search-proof-search-06)
 give setup and evidence rules.

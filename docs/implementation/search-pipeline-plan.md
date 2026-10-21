@@ -2,18 +2,17 @@
 
 Initial review: 2026-10-20, against `ec1647bb`.
 
-**Status:** SEARCH-01 through SEARCH-08 are implemented. SEARCH-07 corrected
-R1; SEARCH-08 corrects R2. Current verification is in
-[SEARCH-08 evidence](search-08.md). Earlier test and build passes remain
-evidence for their recorded inputs; they do not qualify the changed pipeline.
-SEARCH-09 remains planned for the proof gaps.
+**Status:** SEARCH-01 through SEARCH-09 are implemented. SEARCH-07 corrected
+R1; SEARCH-08 corrected R2; SEARCH-09 addresses R3. Final qualification is in
+progress in [SEARCH-09 evidence](search-09.md). Earlier test and build passes
+remain evidence for their recorded inputs; they do not qualify changed inputs.
 [PR 202](https://github.com/tomer-mayara/Thermus/pull/202) is Draft.
 Owner review and merge remain pending.
 
 This document owns the current design, acceptance criteria, and next steps.
 The [search reference](../reference/mcp-search-tool.md) owns tool usage.
 The [SEARCH-06 record](search-06.md) owns the earlier gate results and quality
-exceptions; SEARCH-07 and SEARCH-08 record later checks. Passing test and build
+exceptions; SEARCH-07 through SEARCH-09 record later checks. Passing test and build
 gates does not mean that all maintainability or coverage assessments met their goals.
 
 ## Review findings
@@ -68,23 +67,27 @@ renderer-report classification too. Stage outcomes and recording stay local.
 
 ### R3: Proof claims need more precise ownership
 
-The evidence is useful, but some assertions prove less than their summaries:
+**Addressed by SEARCH-09.** At review, some assertions proved less than their summaries:
 
-- The live test finds an external result link and a relevant paragraph
-  independently. It does not prove that the paragraph describes that result.
-- Incoming withholding and malformed-outcome cases do not all assert that
-  the engine ran exactly once. The ordinary incoming-exception case does.
+- The live test found an external result link and a relevant paragraph
+  independently. It did not prove that the paragraph described that result.
+- Incoming withholding and malformed-outcome cases did not all assert that
+  the engine ran exactly once. The ordinary incoming-exception case did.
 - The edition-by-era matrix checks destination strings; the captured-page
   integration, video regression, and runtime cases check actual Markdown
   links. Fidelity is supported by their combined evidence, not by each matrix
   case alone.
-- The runtime guide still uses a pending AMD64 rendering statement. The
+- The runtime guide used a pending AMD64 rendering statement. The
   [RHD-03 record](rhd-03.md) and SEARCH-06 record contain successful image
-  rendering results. The guide should state the completed evidence directly.
+  rendering results. The guide now states that completed evidence directly.
 
-These are proof and documentation gaps, not demonstrated wrong search output.
-SEARCH-09 will strengthen the existing assertions and align current reference
-text. It will not create another test matrix or rewrite dated records.
+These were proof and documentation gaps, not demonstrated wrong search output.
+SEARCH-09 adds exact call counts to existing cases and requires a description
+in the result paragraph or the immediately following paragraph. It refuses
+ambiguous title blocks and does not cross another result or section boundary.
+Controlled cases reject detached footer text and another result's description.
+Current references name each proof's scope. Historical records stay intact;
+the new record owns the separate live result and final selected checks.
 
 ### Known limits, not new defects
 
@@ -101,7 +104,7 @@ text. It will not create another test matrix or rewrite dated records.
 - Full-page conversion can include page context. Captured fixtures prove
   safe result fidelity for their shapes. A nonblank runtime check cannot
   prove completeness on every unseen page.
-- Existing quality exceptions remain recorded in SEARCH-06. Unknown coverage
+- Quality exceptions remain in the dated verification records. Unknown coverage
   assessments are not passing assessments.
 
 ## Design and simplification decisions
@@ -273,14 +276,14 @@ the earlier passing runs do not prove the new cases.
 | --- | --- | --- |
 | AC1 | Authorized clients in both editions and eras discover both tools with guidance. Search preserves the query, fetches once, processes the full page once, and returns Markdown. | Public search acceptance and production-entry tests; SEARCH-05. |
 | AC2 | Invalid input, denied access, and invalid operation IDs start no stages, provider, cleaners, or failure reports. Dispatched invalid calls still get completion records. Cover bounds, supplementary characters, lone surrogates, blank text, and exact preservation. | Query, schema, protected pipeline, and public invalid-argument tests. |
-| AC3 | Outgoing refusal, changed query, malformed output, or failure prevents provider and incoming work. Incoming failure or withholding releases no page content and does not repeat provider work. | Protected pipeline tests; strengthen direct call-count assertions in SEARCH-09. |
+| AC3 | Outgoing refusal, changed query, malformed output, or failure prevents provider and incoming work. Incoming failure or withholding releases no page content and does not repeat provider work. | Protected pipeline tests assert one engine call for incoming malformed and withholding outcomes; public withholding asserts one renderer launch. SEARCH-09. |
 | AC4 | Results require nonblank allowed Markdown. No-results still passes incoming and releases only the fixed text. Withholding and cancellation win. Malformed or contradictory provider output never claims absence. | Protected, public, and runtime tests; document-wide conflict regressions in SEARCH-07. |
 | AC5 | Query delimiters remain one value at the fixed endpoint. Unexpected final destinations, unsupported shapes, oversized HTML, and excessive depth fail. Ordinary query/snippet phrases cannot override DOM structure. | Provider contract tests and document-wide container regressions in SEARCH-07. |
 | AC6 | Supported full-page fixtures retain safe titles, actual Markdown links, snippets, order, and correct base resolution through real cleaners. Unsafe content is removed or withheld. | Real-cleaner integration, video public regression, and local runtime assertions. No universal completeness claim. |
 | AC7 | Observed cancellation starts no later stage. Calls keep context and results isolated. Shared renderer ownership preserves DNS protection, prompt cancellation, cleanup, and shutdown. | Composition, DNS, lifecycle, and pinned fetch/search tests; SEARCH-08 adds malformed-error and inspection-triggered cancellation controls. |
 | AC8 | Held rendering, incoming work, or cleanup prevents overlapping hosted fetch/search in both orders. Cancelled callers get cancellation before busy. Capacity returns only after settlement on success, failure, or abort. | Capacity unit and public hosted acceptance tests. |
 | AC9 | Completion and entered-stage records are correlated, safe, and attempted once. Logger failure changes no behavior. Safe failures distinguish provider and renderer errors. Fetch remains compatible. | Dispatcher, formatter, core, and public tests; malformed-error core regression in SEARCH-08. |
-| AC10 | Pinned local rendering reaches the MCP result without public access. The separate live proof reaches real Brave and useful MCP output; a provider refusal fails that proof. | Both runtime files and the dated live result in SEARCH-06; improve result/description association in SEARCH-09. |
+| AC10 | Pinned local rendering reaches the MCP result without public access. The separate live proof reaches real Brave and useful MCP output; a provider refusal fails that proof. | Both runtime files; SEARCH-09 owns the stronger result/description assertion and its separate dated live result. SEARCH-06 retains its earlier evidence. |
 
 ## Implementation steps and completion gate
 
@@ -294,10 +297,11 @@ the earlier passing runs do not prove the new cases.
    passed with the shared safe cancellation check. Public tests preserve the
    boundary's message and completion status. Cancellation and stage records
    remain correct when inspecting an error fails or causes an abort.
-4. **SEARCH-09:** strengthen existing count and live-association assertions
-   and align current documents. Use a controlled false-positive example to
-   prove the stronger live assertion. A live result must be recorded as pass
-   or failure; do not retry until it happens to pass.
+4. **SEARCH-09 implementation complete:** existing cases assert call counts.
+   Controlled false-positive cases failed before the live assertion was
+   corrected. Current documents identify proof ownership and completed AMD64
+   evidence. Record the separate live result as pass or failure; do not retry
+   until it happens to pass.
 5. Select checks from the **complete candidate**, as the
    [test gate policy](test-gate-policy.md) requires. Source changes select
    `npm test`, `npm run typecheck`, `npm run test:build`,
@@ -359,10 +363,10 @@ See [SEARCH-05 evidence](search-05.md).
 
 ### SEARCH-06: Prove the pinned runtime and select the delivery gates
 
-**Implemented, with R3 open.** Local pinned rendering, one dated live MCP
+**Implemented; R3 addressed by SEARCH-09.** Local pinned rendering, one dated live MCP
 search, and selected test/build gates passed. Covers AC10 and final checks
 across AC1–AC9. Retained quality exceptions and the live result are in
-[SEARCH-06 evidence](search-06.md). This status does not close the new findings.
+[SEARCH-06 evidence](search-06.md). SEARCH-09 owns the later proof corrections.
 
 ### SEARCH-07: Refuse contradictory Brave documents
 
@@ -409,11 +413,13 @@ generalize fetch and search executors.
 
 ### SEARCH-09: Align proof strength and current documentation
 
-**Planned; before final sign-off.** Addresses R3, AC3, AC6, and AC10.
+**Implemented; final qualification in progress.** Addresses R3, AC3, AC6,
+and AC10. See [SEARCH-09 evidence](search-09.md).
 
 **Paths:** existing protected-search, public search, and live search tests;
-`docs/reference/mcp-search-tool.md`, `docs/lightpanda-runtime.md`, and this
-plan. Keep historical verification records intact; add new evidence separately.
+shared `test/support/dsl/search-results.ts` assertion and its controlled unit
+cases; `docs/reference/mcp-search-tool.md`, `docs/lightpanda-runtime.md`, the
+gate policy, and this plan. Historical verification records stay intact.
 
 **Acceptance:** Incoming malformed and withholding cases assert one engine
 call. Public withholding asserts one renderer launch. The live proof requires
