@@ -13,6 +13,7 @@ export function markdownOf(result: CheckResult): string {
     ...section('Line counts', [`Production: ${counts.production} (limit ${counts.productionLimit})`, `Total without generated files: ${counts.total} (limit ${counts.totalLimit})`]),
     ...section('Tests', [`Added test cases: ${tests.added}`, `Removed test cases: ${tests.removed}`, `Added skips or todos: ${tests.skippedOrTodo.join(', ') || 'none'}`]),
     ...section('MI', result.mi),
+    ...section('CRAP', result.crap),
     ...section('Facts to declare', result.factsToDeclare.map(declarationLine)),
     ...section('Declared facts', result.declaredFacts.map(declarationLine)),
     ...section('Surface differences', result.surfaceDifferences),

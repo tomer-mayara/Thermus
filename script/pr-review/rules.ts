@@ -1,6 +1,9 @@
 import { graphRulesOf, type GraphRules } from './rules-graph.ts';
 import { checkRoutes } from './rules-routes.ts';
-import { documentOf, globListAt, globsAt, numberAt, recordAt, textAt, textListAt } from './rules-values.ts';
+import { documentOf, globListAt, globsAt, invalidKey, numberAt, recordAt, textAt, textListAt } from './rules-values.ts';
+
+// crapAbsoluteOf of script/code-quality/assessment/crap-absolute.ts computes these two goals only.
+const supportedCrapGoals = { new_function_above: 15, changed_legacy_function_at_or_above: 30 } as const;
 
 interface PathGroup {
   readonly name: string;
@@ -20,6 +23,7 @@ export interface Rules {
   readonly surface: { readonly modules: readonly string[]; readonly contractDocuments: readonly string[] };
   readonly graph: GraphRules;
   readonly maintainability: { readonly newFileBelow: number; readonly existingFileDropReadAt: number };
+  readonly crap: { readonly newFunctionAbove: number; readonly changedLegacyFunctionAtOrAbove: number };
 }
 
 // base applies to the candidate. head is the rules file of the candidate: the facts that it lists are declared. path
@@ -49,6 +53,7 @@ export function rulesOf(text: string, where: string): Rules {
     surface: surfaceOf(document, where),
     graph: graphRulesOf(document, where),
     maintainability: maintainabilityOf(document, where),
+    crap: crapGoalsOf(document, where),
   };
 }
 
@@ -75,4 +80,18 @@ function maintainabilityOf(document: unknown, where: string): Rules['maintainabi
     newFileBelow: numberAt(document, 'ratchet.maintainability_index.new_file_below', where),
     existingFileDropReadAt: numberAt(document, 'ratchet.maintainability_index.existing_file_drop_read_at', where),
   };
+}
+
+function crapGoalsOf(document: unknown, where: string): Rules['crap'] {
+  return {
+    newFunctionAbove: crapGoalAt(document, 'new_function_above', where),
+    changedLegacyFunctionAtOrAbove: crapGoalAt(document, 'changed_legacy_function_at_or_above', where),
+  };
+}
+
+function crapGoalAt(document: unknown, name: keyof typeof supportedCrapGoals, where: string): number {
+  const key = `ratchet.crap.${name}`;
+  const goal = numberAt(document, key, where);
+  if (goal !== supportedCrapGoals[name]) throw invalidKey(where, key, `give ${supportedCrapGoals[name]}; the check supports the goals 15 and 30 only`);
+  return goal;
 }

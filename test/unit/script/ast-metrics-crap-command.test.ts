@@ -6,7 +6,14 @@ import { astMetricsCrapScript } from '../../support/processes/module-paths.ts';
 const { commandOf } = await import(new URL('crap/command-line.ts', pathToFileURL(astMetricsCrapScript)).href) as typeof import('../../../script/code-quality/crap/command-line.ts');
 
 test('Given no options, when the CRAP command line is read, then it selects the approved goals and changed source files', () => {
-  assert.deepEqual(commandOf([]), { kind: 'report', base: 'origin/main', coverage: undefined, limit: 30, target: 15, paths: [], allowToolVersion: false });
+  assert.deepEqual(commandOf([]), { kind: 'report', base: 'origin/main', coverage: undefined, limit: 30, target: 15, paths: [], allowToolVersion: false, json: undefined });
+});
+
+test('Given --json with a file, when the command line is read, then it keeps the file of the rows next to the other options', () => {
+  assert.deepEqual(commandOf(['--json', 'ast-report/crap.json', 'src/a.ts']), {
+    kind: 'report', base: 'origin/main', coverage: undefined, limit: 30, target: 15, paths: ['src/a.ts'], allowToolVersion: false, json: 'ast-report/crap.json',
+  });
+  assert.throws(() => commandOf(['--json']), /Invalid arguments/);
 });
 
 for (const value of ['NaN', 'Infinity', '0', '-1', '15.0000001', '1e2', '9007199254740992']) {
@@ -21,7 +28,7 @@ test('Given equal or reversed goals, when the command line is read, then it reje
 
 test('Given decimal goals and explicit paths, when the command line is read, then it keeps the base and version override', () => {
   assert.deepEqual(commandOf(['--base', 'main', '--limit', '30.000001', '--target', '0.000001', '--allow-tool-version', 'src/a.ts']), {
-    kind: 'report', base: 'main', coverage: undefined, limit: 30.000001, target: 0.000001, paths: ['src/a.ts'], allowToolVersion: true,
+    kind: 'report', base: 'main', coverage: undefined, limit: 30.000001, target: 0.000001, paths: ['src/a.ts'], allowToolVersion: true, json: undefined,
   });
 });
 

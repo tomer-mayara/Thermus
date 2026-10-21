@@ -112,10 +112,11 @@ The route does not change who merges.
 
 In this trial, this section governs where it differs from the rules file.
 The check applies the keys `protected_paths`, `read_paths`, `scopes`,
-`public_surface`, `dependency_graph`, `size`, and
-`ratchet.maintainability_index`. It also reads the exceptions file. The keys
-`required_checks`, the other keys of `ratchet`, `calibration`, and the merge
-keys of `routes` wait for CI and the later checks; do not apply them by hand.
+`public_surface`, `dependency_graph`, `size`,
+`ratchet.maintainability_index`, and the two goals of `ratchet.crap`. It also
+reads the exceptions file. The keys `required_checks`, the other keys of
+`ratchet`, `calibration`, and the merge keys of `routes` wait for CI and the
+later checks; do not apply them by hand.
 
 Do steps 1 and 2 when you open the draft, and again after each change to the
 candidate. Do steps 3 to 6 after the final metrics report and before Ready.
@@ -128,14 +129,20 @@ candidate.
    `pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main`
    writes `ast-report/snapshot-base.json`.
    `pnpm exec node script/code-quality/ast-metrics-snapshot.ts` writes
-   `ast-report/snapshot.json`. Then run
-   `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json`.
+   `ast-report/snapshot.json`. The CRAP rows need the coverage report of the
+   metrics process (below). After that process, run
+   `pnpm exec node script/code-quality/ast-metrics-crap.ts --base origin/main --json ast-report/crap.json`.
+   It exits 1 when a goal is missed or unknown, but it writes the file: the
+   check applies the goals. Then run
+   `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json --crap ast-report/crap.json`.
+   Before the metrics process, leave out `--crap`.
    The check compares HEAD with the merge base. It reads the rules file of
    the merge base and the facts that HEAD declares. It prints the route,
    every reason, the questions for `ASK`, the changed paths, the line counts,
-   the test counts, the MI of the changed production files, the facts to
-   declare, the modules to compare, and the label command. Exit status 1
-   means that the check could not run: repair the cause.
+   the test counts, the MI of the changed production files, the CRAP goals of
+   their new and changed functions, the facts to declare, the modules to
+   compare, and the label command. Exit status 1 means that the check could
+   not run: repair the cause.
 2. **Declare or remove facts.** For each entry under "Facts to declare",
    remove the fact, for example by an import through a module that
    `public_surface` lists, or declare it in the rules file in the same pull
@@ -146,11 +153,9 @@ candidate.
    its exported declarations before and after the change, and describe the
    difference in the decision. Run the check again.
 3. **Metrics.** Use the final report of the process "Code quality review with
-   ast-metrics" below. A recorded CRAP miss of an added or changed function,
-   or a kept high finding on a changed file, is a reason for `READ`. A miss
-   or finding with the reason `unchanged by this PR` is not. The check
-   applies the MI rules. These rules replace the CRAP keys of `ratchet` in
-   the trial.
+   ast-metrics" below. A kept high finding on a changed file is a reason for
+   `READ`. A finding with the reason `unchanged by this PR` is not. The check
+   applies the MI rules and the CRAP goals.
 4. **Route.** A required check is a required run of the test gate policy, or
    habit-hooks. While one fails, the route is `FIX`. Do not mark a `FIX`
    pull request Ready: make the check pass, then run the check again. In
@@ -204,7 +209,9 @@ the commands, their reports, the configuration, and the limits of the tool.
    Simplify the functions with a low score or many decision paths. Keep the
    selected tests green. Measure again with the delta command, at most three
    times. Record each remaining low score and its reason in the pull request
-   description.
+   description. For a new file below 85, also add an entry with its path,
+   `metric: mi`, a bound, the reason, and an expiry date to
+   `.code-quality-exceptions.yaml`; the review route check reads it.
 4. Review. Correct each finding of severity high, or record its reason in
    the pull request description. Refresh `.ast-metrics-baseline.yaml` with
    `pnpm exec node script/code-quality/ast-metrics-baseline.ts` only when
@@ -220,8 +227,12 @@ the commands, their reports, the configuration, and the limits of the tool.
    description: score or bound, paths, coverage, classification, and reason.
    This includes an added function between 15 and 30, and a function with
    unknown identity or unknown coverage. An unchanged function can keep the
-   reason `unchanged by this PR`. The pull request can go Ready with these
-   recorded exceptions; the command still exits 1. A tool failure is not an
+   reason `unchanged by this PR`. For an added or changed function that
+   misses its goal, also add an entry with `function: <file>#<function>`,
+   `metric: crap`, a bound, the reason, and an expiry date to
+   `.code-quality-exceptions.yaml`; the review route check reads it. The
+   pull request can go Ready with these recorded exceptions; the command
+   still exits 1. A tool failure is not an
    exception: correct it.
 6. Final report. After the last fix, run the process again on the complete
    candidate. Paste `ast-report/process.md` into the pull request

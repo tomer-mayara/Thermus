@@ -117,23 +117,15 @@ At 30 paths even full coverage fails it; at 15 paths full coverage meets 15.
 Decisions use unrounded scores. Display precision or an explicit inequality
 keeps 29.96 visibly below 30 and 15.04 above 15.
 
-The separate pure `crapAbsoluteOf({ paths, share? })` in
-`assessment/crap-absolute.ts` calculates both `atMost15` and `below30`, each with
-`PASS`, `MISS` or `UNKNOWN` and a reason. Its observation is one of
-`known-coverage { paths, share, displayValue }`, positive
-`missing-coverage { paths, lower, upper }`, or `proven-zero { paths: 0, value: 0 }`.
-Paths must be a nonnegative safe integer. A supplied share must be finite and in
-`[0,1]`; null is invalid. Missing coverage gives exact safe-integer bounds
-`[p,p²+p]`; reject a bound that is not a safe integer. Known coverage needs no unused
-bound cap. Zero paths without coverage prove zero without an invented share.
-
-`compareCrap` decides from the exact operands; `crapValueOf` supplies an
-approximate display value only. For five paths and share `1e-320`, display can
-be 30 while `below30` is `PASS`. This is arithmetic over supplied operands,
-not accepted evidence. It does not select origin/applicability, apply exceptions,
-track lineage/history or decline, decide routes/AUTO eligibility, or verify
-scope/provenance. It adds no command or process integration and activates no
-policy. MI85, CLI/report/process/history behavior and manual merging stay unchanged.
+Without a covered share, `p` paths bound CRAP from `p` to `p² + p`. The pure
+`crapAbsoluteOf({ paths, share? })` in `assessment/crap-absolute.ts` decides
+`atMost15` and `below30` from these bounds or from exact operands, as `PASS`,
+`MISS`, or `UNKNOWN`: three paths prove CRAP ≤ 15 without coverage, four paths
+give a range that crosses 15. The
+[review route check](../pr-review/README.md) applies it to the rows of
+`--json`; the
+[metrics guide](../../docs/implementation/ast-metrics-review.md#the-crap-goal)
+gives the details.
 
 ### Own characters, joins, and unknowns
 
@@ -576,7 +568,7 @@ above, even when a focused caller would otherwise select them.
 ## Assess per-function CRAP goals
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [--json FILE] [PATH...] [--help]
 
 Options:
   --base REF            Compare against the merge base of REF and HEAD
@@ -586,6 +578,8 @@ Options:
   --limit N             Require CRAP strictly below N (default: 30)
   --target N            Require new functions at or below N (default: 15)
   --allow-tool-version  Allow an installed version other than the pinned version
+  --json FILE           Also write the rows of the table as JSON to FILE,
+                        relative to the current folder
   --help, -h            Show this help
 ```
 
@@ -610,6 +604,19 @@ miss, unknown required goal, invalid input, or tool failure. It also reports
 unchanged high functions. Documented exceptions do not change this result.
 If compatible coverage is unavailable and collection is outside scope,
 record a deferred assessment.
+
+With `--json FILE`, the command also writes one JSON object to `FILE`:
+`version` 1, `base` (the merge base), `head` (HEAD), and `rows`. Each row of
+the table gives one entry, in the order of the table, with `file`,
+`function`, `change` (`new`, `changed`, `unchanged`, or `unknown`), `paths`,
+`share`, `crap`, and `identity`. Without a covered share, `share` and `crap`
+are absent; without source identity, `identity` is absent. An empty selection
+gives `rows: []`. The command writes the file also for a goal miss; the table
+and the exit status do not change. After a diagnostic it writes no file, so an
+older file can stay. The [review route check](../pr-review/README.md) reads
+the file with `--crap`. Write it under `ast-report/`, as
+`ast-report/crap.json`: a file in another folder of the repository can change
+the input identity of the coverage report.
 
 Focused tests: affected `ast-metrics-crap*.test.ts` rows in the
 [available inventory](#available-tests). The live contract reuses compatible
@@ -1094,6 +1101,7 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
+| ordinary | test/unit/script/ast-metrics-crap-json.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |

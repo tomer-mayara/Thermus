@@ -636,7 +636,7 @@ parts of the unit suite are within scope.
 The process includes this assessment. For a focused improvement pass, run:
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...]
+pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [--json FILE] [PATH...]
 ```
 
 Defaults are `origin/main`, `ast-report/coverage.json`, strict limit 30,
@@ -653,6 +653,15 @@ table. Record a deferred assessment when collection is outside the selected
 scope. This command runs no build or test suite and takes no full architecture
 snapshot. It uses one bounded MCP session and source evidence against the
 selected base.
+
+With `--json FILE`, the command also writes the rows of its table to `FILE`,
+relative to the current folder: `version` 1, `base`, `head`, and per row
+`file`, `function`, `change`, `paths`, `share`, `crap`, and `identity`. A value
+that the table shows as unknown is absent. The command writes the file also
+for a goal miss; the table and the exit status do not change. The review route
+check reads the file with `--crap`; the
+[code-quality README](../../script/code-quality/README.md#assess-per-function-crap-goals)
+gives the format.
 
 For decision paths `p` and own-character covered share `c`, the score is
 `p² × (1 − c)³ + p`. The original CRAP measure used basis-path coverage;
@@ -681,8 +690,10 @@ approximate display value only. For five paths and share `1e-320`, display can
 be 30 while `below30` is `PASS`. This is arithmetic over supplied operands,
 not accepted evidence. It does not select origin/applicability, apply exceptions,
 track lineage/history or decline, decide routes/AUTO eligibility, or verify
-scope/provenance. It adds no command or process integration and activates no
-policy. MI85, CLI/report/process/history behavior and manual merging stay unchanged.
+scope/provenance. The review route check calls it for each row of the CRAP
+command's `--json` file and applies the goal, the exceptions, and the route;
+see [the check guide](../../script/pr-review/README.md). The CRAP command, the
+process, the history, and manual merging do not use it.
 
 | Paths | Minimum whole percent for CRAP < 30 | Minimum whole percent for CRAP ≤ 15 |
 | --- | --- | --- |

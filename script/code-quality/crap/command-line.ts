@@ -2,12 +2,12 @@ import { parseCommandArguments } from '../shared/command-line.ts';
 import { CommandError } from '../shared/repository.ts';
 import type { CrapGoals } from './types.ts';
 
-export type CrapCommand = { readonly kind: 'help' } | ({ readonly kind: 'report'; readonly base: string; readonly coverage?: string; readonly paths: readonly string[]; readonly allowToolVersion: boolean } & CrapGoals);
+export type CrapCommand = { readonly kind: 'help' } | ({ readonly kind: 'report'; readonly base: string; readonly coverage?: string; readonly paths: readonly string[]; readonly allowToolVersion: boolean; readonly json?: string } & CrapGoals);
 
 const options = {
   base: { type: 'string', default: 'origin/main' }, coverage: { type: 'string' },
   limit: { type: 'string', default: '30' }, target: { type: 'string', default: '15' },
-  'allow-tool-version': { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
+  'allow-tool-version': { type: 'boolean' }, json: { type: 'string' }, help: { type: 'boolean', short: 'h' },
 } as const;
 
 export function commandOf(args: readonly string[]): CrapCommand {
@@ -16,7 +16,7 @@ export function commandOf(args: readonly string[]): CrapCommand {
   const limit = thresholdOf('limit', values.limit), target = thresholdOf('target', values.target);
   if (target >= limit) throw new CommandError('The target must be less than the limit.');
   if (values.base.trim() === '' || values.base.startsWith('-')) throw new CommandError('The --base value must name a ref.');
-  return { kind: 'report', base: values.base, coverage: values.coverage, limit, target, paths: positionals, allowToolVersion: values['allow-tool-version'] === true };
+  return { kind: 'report', base: values.base, coverage: values.coverage, limit, target, paths: positionals, allowToolVersion: values['allow-tool-version'] === true, json: values.json };
 }
 
 function parsed(args: readonly string[]) {
