@@ -6,7 +6,7 @@ import { tierNames, type CheckResult } from './types.ts';
 
 const dirtyNote = 'Uncommitted changes are not part of the candidate: the check reads the commit HEAD only.';
 const surfaceNote = 'The check does not compare declarations: compare the exported declarations of each module under "Surface differences" before and after the change, and record the result in the architecture impact.';
-const manualNote = 'Local eligibility is preliminary. The trusted merge gate must verify current checks, holds, and independent human approval.';
+const manualNote = 'Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.';
 
 // Without a repository, the label command applies to the repository of the current folder.
 export function resultOf(candidate: Candidate, rules: LoadedRules, repository: string | undefined): CheckResult {

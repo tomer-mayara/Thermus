@@ -8,16 +8,15 @@ the [playbook](../../docs/implementation/pr-review-playbook.md), and the
 
 | Tier | Required review |
 | --- | --- |
-| T0 Auto merge | No required human review. The trusted merge gate must pass before automatic merge. |
+| T0 Auto merge | No required human review. All applicable local checks and merge conditions must pass. |
 | T1 Team review | An independent authorized team member approves the candidate. |
 | T2 Need architect | An independent authorized architect approves the candidate and its architecture impact. |
 
 The highest matching tier applies. A failure blocks merge without replacing the
 tier. The report retains every reason. `eligible` means the local evidence is
-complete and passes this checker; it does not prove GitHub check provenance,
-current human approval, absence of a hold, or activation of automatic merge.
-The [automation guide](../../docs/implementation/pr-automation-setup.md)
-explains that final gate.
+complete and passes this checker; it does not prove
+completed local checks, current human approval, absence of a hold, or merge
+authority. The manager or Delamain session verifies those conditions.
 
 ## Run the check
 
@@ -75,8 +74,8 @@ must inspect `eligibility` and `blockers`; exit 0 alone never authorizes merge.
 
 Commit `.pr-impact.json` with `version`, `classification`, and `architecture`
 from the example below, without `base` or `head`. It must differ from the base
-for each candidate. The trusted automation gate reads that committed data and
-adds the actual commit IDs. A mutable pull request description cannot change
+for each candidate. The manager or Delamain session reads that committed data and
+adds the actual commit IDs to a local copy. A mutable pull request description cannot change
 the declaration or reuse an approval for different claims.
 
 Generate the local `--impact` input from the committed file:

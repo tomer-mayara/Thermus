@@ -15,8 +15,18 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Adopt T0 Auto merge, T1 Team review, and T2 Need architect for pull request checks and review. Product runtime, component boundaries, and deployment remain unchanged.",
-    "views": ["context", "containers", "components", "runtime", "deployment"],
-    "evidence": ["architecture/components.md", "docs/implementation/pr-review-playbook.md", "script/pr-review/check.ts", "docs/implementation/pr-automation-setup.md"]
+    "summary": "Use local manager or Delamain checks and review for T0 Auto merge, T1 Team review, and T2 Need architect. Remove GitHub Actions and tests whose subject is outside src/. Product runtime, component boundaries, and deployment remain unchanged.",
+    "views": [
+      "context",
+      "containers",
+      "components",
+      "runtime",
+      "deployment"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "docs/implementation/pr-review-playbook.md",
+      "script/pr-review/check.ts"
+    ]
   }
 }

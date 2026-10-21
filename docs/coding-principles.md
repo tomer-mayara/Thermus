@@ -23,18 +23,23 @@ design that depends on every caller remembering the same validation or sequence.
 Distinguish domain rules from transport formats and storage details. This helps
 the rules remain clear when an external system changes.
 
-For new user behavior, write a failing BDD acceptance specification first. Use
-Given-When-Then or an equivalent executable form through public interfaces.
+In this repository, tests under `test/` verify behavior whose subject is under
+`src/`. Apply the BDD, TDD, and test guidance below within that scope. For
+scripts, documents, configuration, and tooling, use relevant build, type, lint,
+and manual checks instead of adding tests.
+
+For new source behavior, write a failing BDD acceptance specification first.
+Use Given-When-Then or an equivalent executable form through public interfaces.
 Then use TDD for the behavior and contracts that the specification needs: write
 a focused failing test, make it pass, and refactor with tests green. Continue
 until the acceptance specification passes.
 
-For a refactor that must preserve behavior, establish passing characterization
-coverage before changing structure. Record important existing outcomes, including
-failure behavior. Do not break an unchanged acceptance case to create a false red
-step. If an existing defect must change, specify that change separately. Test
-observable results and meaningful contracts; do not freeze private call sequences
-unless their order affects required behavior.
+For a source refactor that must preserve behavior, establish passing
+characterization coverage before changing structure. Record important existing
+outcomes, including failure behavior. Do not break an unchanged acceptance case
+to create a false red step. If an existing defect must change, specify that
+change separately. Test observable results and meaningful contracts; do not
+freeze private call sequences unless their order affects required behavior.
 
 ## Make code explain its work
 

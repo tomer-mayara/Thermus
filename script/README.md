@@ -162,12 +162,7 @@ lists all details. Hosted details require the updated server to be deployed;
 the script also accepts generic failures from older servers. Use the server
 logs for operator diagnostics. Run `pnpm exec node script/fetch-url/fetch-url.ts --help` for the options.
 
-Run the focused offline tests after a clean build:
-
-```sh
-pnpm run build
-pnpm exec node --test "dist/test/unit/script/*.test.js" "dist/test/interface/script/*.test.js" "dist/test/acceptance/script/*.test.js"
-```
+Verify script changes with relevant type, lint, and manual command checks.
 
 # Search through MCP
 
@@ -225,23 +220,15 @@ for all options.
 errors. Search reuses the existing OAuth, browser, credential store, and error
 helpers under `fetch-url/helper/`.
 
-Run the focused search tests after a clean build:
-
-```sh
-pnpm run build
-pnpm exec node --test "dist/test/unit/script/search*.test.js" "dist/test/acceptance/script/search*.test.js" dist/test/unit/test-support-paths.test.js
-```
+Verify search script changes with relevant type, lint, and manual command checks.
 
 # Measure and review code quality
 
 The ten ast-metrics commands and their helpers are in
 [`code-quality/`](code-quality/README.md). That guide explains CRAP before
 the command sections, which follow the review process order. It gives the
-source layout, Usage/Options contracts, and the complete ordinary/live test
-inventory. Select affected tests from that inventory; the full list does not
-require a run of every file. The documentation contract runs each command's
-help without child processes and checks the same test set in the README and
-[test inventory](../docs/testing/test-list.md#ast-metrics-commands).
+source layout and Usage/Options contracts. Use relevant type, lint, help,
+and manual report checks for changes to these commands.
 The coverage command defaults to both complete unit parts: emitted Node tests
 and source portal tests. Repeat `--suite unit|integration|acceptance` for
 independently selected package suites. It builds once, preserves exact package
@@ -249,12 +236,7 @@ selections, retains each capture identity, and unions compatible coverage. Neste
 or broader commands defer collection; missing shutdown evidence rejects capture.
 No option expands the selected test scope. Trend charts split at changes in
 suite set. Older D3 records without `captureProvenance` retain their historical
-unit-only schema; pre-D3 unknown records stay unknown. Its
-`ast-metrics-coverage.live.ts` and the separate
-`ast-metrics-architecture-coverage.live.ts` have the same collector limit under
-the [test gate policy](../docs/implementation/test-gate-policy.md#ast-metrics-focused-and-live-contracts).
-Both use private output reports. Structural `ast-metrics-architecture.live.ts`
-uses `--no-coverage` and starts no suite. The report always includes community
+unit-only schema; pre-D3 unknown records stay unknown. The report always includesThe report always includes community
 and source-folder component graphs, their legends, and import evidence.
 Snapshots retain normalized source dependency pairs for offline reports;
 legacy missing evidence remains unavailable. Exploratory architecture is read-only;
@@ -324,6 +306,6 @@ trusted merge-base [rules](../docs/implementation/pr-review-rules.yaml), candida
 facts, and base/head-bound impact evidence. Root `.pr-impact.json` holds the
 committed declaration; local checks use a copy stamped with actual base/head
 identities as the check guide specifies. Its local result is preliminary and
-does not prove hosted checks or human approval. Follow "Review tier and merge
+does not prove completed local checks or human approval. Follow "Review tier and merge
 eligibility" in [AGENTS.md](../AGENTS.md). The
 [check guide](pr-review/README.md) gives options, evidence, output, and tests.

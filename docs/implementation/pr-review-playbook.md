@@ -7,12 +7,10 @@ and the [test gate policy](test-gate-policy.md) give the required work. The
 [checker](../../script/pr-review/README.md) classify mechanical facts. Semantic
 claims need explicit evidence and human assessment when required.
 
-Review tier and merge eligibility are separate. A local report is preliminary;
-it does not prove hosted checks, independent human approval, or merge authority.
-T0 Auto merge activation is separate from this implementation. The repository's
-`allow_auto_merge` setting was false when this change was prepared. Do not enable
-or perform automatic merge until trusted enforcement is established and the
-owner separately authorizes activation.
+Review tier and merge eligibility are separate. The manager or Delamain
+session runs the local process and verifies the complete current candidate.
+The checker result alone does not prove completed checks, human approval,
+or merge authority.
 
 ## Select the highest matching tier
 
@@ -20,7 +18,7 @@ Use these names in policy, tools, labels, templates, and reports:
 
 | Tier | Required review |
 | --- | --- |
-| T0 Auto merge | No human approval. Automatic merge requires all merge conditions and separately enabled trusted enforcement. |
+| T0 Auto merge | No human approval. An authorized agent or session can merge after all merge conditions pass. |
 | T1 Team review | An independent authorized team member or owner approves the complete candidate. |
 | T2 Need architect | An independent authorized architect approves the complete candidate and its architecture impact. The owner can act as architect. |
 
@@ -28,11 +26,9 @@ The author proposes a tier and records every matching reason. Apply the highest
 one. Anyone can escalate. An ambiguous classification needs at least T1 Team
 review; unresolved architecture questions need T2 Need architect and block
 eligibility until the impact is clear. De-escalation requires a reason and an
-independent reviewer authorized for the higher tier. The automatic controller
-retains the highest canonical tier ever applied as a label, so removing a label
-cannot lower the tier. It supports escalation only. An approved de-escalation
-uses manual review and merge with higher-tier authority and all required checks;
-it cannot remove a blocker or waive a required check.
+independent reviewer authorized for the higher tier. Keep the previous tier and
+reasons in the review evidence when recording an approved de-escalation. It
+cannot remove a blocker or waive a required check.
 
 ### T2 Need architect
 
@@ -65,7 +61,7 @@ Use T1 Team review when no T2 Need architect reason applies and the change:
   preserving approved architecture guarantees.
 - Adds a runtime library, or changes a library with material effects on behavior,
   security, data handling, or recovery.
-- Changes development process, CI, approval rules, quality policy, or their tools.
+- Changes development process, approval rules, quality policy, or their tools.
 - Needs human assessment of metric findings or a permitted metric exception.
 
 A static protected-path or public-surface touch is a conservative T1 Team review
@@ -73,9 +69,10 @@ floor, including contract and deployment files. It does not establish that an
 observable contract or topology changes. Team review checks those questions
 against evidence and escalates actual architecture changes to T2 Need architect.
 Uncertain impact blocks eligibility. Answer each applicable policy question and
-state the new rule or the guarantee that remains accurate. Size, fewer tests, added skips or todos, an MI drop, and retained high
-findings need team assessment; these signals do not by themselves prove an
-architecture change. Keep the existing thresholds in the trusted rules.
+state the new rule or the guarantee that remains accurate. Size, fewer tests,
+added skips or todos, an MI drop, and retained high findings need team
+assessment; these signals do not by themselves prove an architecture change.
+Keep the existing thresholds in the trusted rules.
 
 ### T0 Auto merge
 
@@ -83,9 +80,9 @@ Use T0 Auto merge for contained changes with no higher-tier reason, such as a
 private helper refactor that preserves behavior, a focused test, an ordinary
 prose correction, or a configuration correction with no material boundary or
 sensitive-behavior effect. A routine compatible library patch can be semantically
-low risk, but current dependency-file changes require T1 Team review and manual
-merge, or an explicitly approved manual de-escalation under this policy. They
-cannot use automatic T0 Auto merge.
+low risk. Dependency-file changes still have a T1 Team review floor under the
+rules. Obtain that human approval, or an authorized de-escalation, then let the
+authorized local session merge when the normal merge conditions pass.
 
 File type alone does not decide the tier. Documents can define contracts,
 configuration can change trust, and tests can weaken enforcement. Every tier
@@ -103,7 +100,7 @@ current candidate, all tiers require:
 - No hold, forbidden dependency, undeclared fact, required unresolved finding,
   or missing evidence remains.
 - Required independent human approvals cover the current head SHA and scope.
-- The candidate is mergeable and every required hosted check has a trusted pass.
+- The candidate is mergeable and every required local check has a recorded pass.
 
 Missing, pending, skipped, cancelled, failed, or unavailable required checks are
 not passes. N/A needs a reason allowed by trusted selection. A permitted metric
@@ -123,12 +120,12 @@ candidate changes. Return a Ready pull request to Draft before a fix.
 
 The checker reads classification rules from the trusted merge base and facts
 from the candidate. A pull request cannot exempt itself by changing its rules,
-workflow, label, impact claims, or check selection. Commit the root
+label, impact claims, or check selection. Commit the root
 `.pr-impact.json` with `version`, `classification`, and `architecture`, including
 all semantic fields, architecture summary, checked views, and evidence. The
 file must differ from the trusted base so stale declarations cannot be reused.
-The trusted merge controller reads that committed file and stamps actual base
-and head identities for the checker. Mutable pull request prose cannot change
+The manager or Delamain session reads that committed file and stamps actual
+base and head identities for the checker. Mutable pull request prose cannot change
 scope while retaining approvals for the same head. For local checks, stamp a
 copy as `ast-report/impact.json` under the
 [checker guide](../../script/pr-review/README.md). Missing impact evidence
@@ -174,34 +171,23 @@ The new process paths are `src/**`, `script/code-quality/**`,
 `.ast-metrics.yaml`, `.ast-metrics-baseline.yaml`, and
 `.code-quality-exceptions.yaml`. Source changes need full production evidence;
 source-free metric-tool changes need process/review with relevant checks. Other
-source-free changes, including prose, PR checker, CI, and policy scripts, can
-mark production metrics N/A and use applicable tests and habit-hooks. Historical
-base rules retain broader process requirements for their candidate. Follow the
-[metrics guide](ast-metrics-review.md) and test selection policy.
+source-free changes, including prose, PR checker, and policy scripts, can mark
+production metrics N/A and use relevant build, type, lint, or manual checks and
+habit-hooks. Historical base rules retain broader process requirements for their
+candidate. Follow the [metrics guide](ast-metrics-review.md) and test selection
+policy.
 
 Canonical tier labels use the exact names T0 Auto merge, T1 Team review, and
 T2 Need architect. Labels describe the result; they do not grant approval or
-eligibility. Canonical tier labels can only raise automatic review: the trusted
-controller retains the highest historical tier label. De-escalation requires
-manual higher-authority review and merge without bypassing checks. Recompute
-after every change and use the trusted current-head result at merge time. The manager reviews each subagent's work. An agent cannot
-supply required human review.
+eligibility. Keep the highest recorded tier unless an authorized independent reviewer for
+that tier approves a reasoned de-escalation. Recompute after every change.
+The manager reviews each subagent's work. An agent cannot supply required human review.
 
-## Activate enforcement separately
+## Complete the local process
 
-Before automatic merge can operate, the owner must establish and verify:
-
-1. Trusted CI selection and results for the complete current head, with retained
-   evidence and all selected production gates. Candidate code cannot choose its
-   own trusted workflow or exfiltrate trusted credentials.
-2. Independent authorized human identity and current-SHA approval evidence for
-   T1 Team review and T2 Need architect, including higher-tier de-escalation.
-3. Required-check and merge controls that fail closed for holds, stale or missing
-   evidence, blocked eligibility, and unavailable checks.
-4. Tests of classification, ambiguity, policy edits, failed checks, stale
-   approvals, holds, de-escalation, and candidate self-exemption attempts.
-5. Separate authorization to enable the repository setting and automatic merge.
-
-Until these conditions hold, classification and fail-closed automation can be
-reviewed and shipped without enabling T0 Auto merge. Keep a requested draft in
-Draft. This process document does not authorize a merge or change live settings.
+The manager or Delamain session confirms the selected checks, impact declaration,
+metrics where applicable, current-candidate human approvals for T1 Team review
+and T2 Need architect, and all holds before merge. T0 Auto merge needs no human
+review. An authorized agent or session can merge an eligible clean candidate
+once, within the user's request. The owner merges a candidate that adds an ADR.
+A request for a draft stops before Ready and merge.

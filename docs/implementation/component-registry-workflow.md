@@ -110,7 +110,7 @@ that you checked it. Do not copy the pull request history into it.
 
 After a later fix, check its architecture impact again and update the registry,
 diagrams, and pull request explanation when needed. Before Ready, requesting
-human review, or enabling any merge automation allowed by the existing policy,
+human review, or merge under the existing policy,
 recheck the complete candidate against the registry. Complete the
 selected tests and metrics, review tier, eligibility checks, and required human
 decisions as usual.

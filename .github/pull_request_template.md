@@ -25,9 +25,9 @@ Deployment, security, and data impact: <guarantees and recovery effects>
 Decision: <ADR for a lasting decision, or why none is needed>
 
 <!-- Update and commit root .pr-impact.json with version, classification, and
-architecture; it must differ from the trusted base. The trusted controller adds
-actual base/head identities. For local --impact checks, use a stamped copy as
+architecture; it must differ from the trusted base. The manager or Delamain session stamps
+actual base/head identities in the local check input. For local --impact checks, use a stamped copy as
 the checker guide specifies. PR body prose cannot replace the committed input.
-Labels can only escalate automatic review. De-escalation needs manual
+Labels record the tier; they do not establish eligibility. De-escalation needs manual
 higher-authority review/merge and all checks. Human approval and final
 eligibility come from the trusted process, not this template or a label. -->

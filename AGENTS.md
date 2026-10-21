@@ -23,16 +23,20 @@ them in your review.
 
 Read the [coding principles](docs/coding-principles.md) for general design guidance.
 
-- Write the BDD acceptance test first: a Given-When-Then scenario or an
+- For behavior under `src/`, write the BDD acceptance test first: a Given-When-Then scenario or an
   equivalent executable specification. The test fails, because the feature
   does not exist yet.
-- Drop down into TDD to implement the pieces that the acceptance test
+- For that source behavior, drop down into TDD to implement the pieces that the acceptance test
   needs. For each small step: write a failing unit, interface, or
   integration test; make the test pass; refactor.
 - Continue until the acceptance test is green. Green is the signal that
   the specification is met.
 - Follow DRY3: make a shared function after the third copy, not before.
 - Make sure that the required checks are green before a merge.
+
+Tests under `test/` verify behavior whose subject is under `src/`. Do not add
+tests for scripts, documents, configuration, or tooling. Use relevant build,
+type, lint, and manual checks for those changes.
 
 ### Test types
 
@@ -65,12 +69,12 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 - Open a draft pull request first.
 - Before Ready, select tests from the complete candidate. If any file under
   `src/` changes, run the full ordinary suite with `npm test`, then
-  `npm run typecheck`, `npm run test:build`, and `npm run build:user-portal`,
+  `npm run typecheck` and `npm run build:user-portal`,
   plus the applicable gates in the test gate policy. These commands cover
   the remaining check stages; do not add `npm run check`, which would repeat
   unit and portal tests.
   Otherwise, run only the affected test groups for changes under `test/`
-  and the existing focused tests for other changed files. Use the
+  and relevant build, type, lint, or manual checks for other changed files. Use the
   [test code layout](docs/testing/test-code-layout.md) to identify groups;
   follow shared helpers and fixtures to the groups that use them. Combine
   the selections for mixed changes; a `src/` change takes precedence.
@@ -88,24 +92,21 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 - Update the documents that the change affects in the same pull request.
 - Follow the [component registry workflow](docs/implementation/component-registry-workflow.md)
   to check architecture impact and maintain the registry before Ready or
-  requesting human review or merge automation allowed by this policy.
+  requesting human review or merge under this policy.
 - Select and run the applicable ast-metrics process as the section "Code
   quality review with ast-metrics" below says. Ordinary prose-only changes
   skip irrelevant production metrics.
 - Compute and record the review tier and blockers as the section "Review
   tier and merge eligibility" below says. Refresh them after each change.
-- Mark the pull request Ready and wait for every candidate-validation Actions
-  job that starts for its head to pass; a started job that is pending, skipped,
-  cancelled, or failed is not a pass. The trusted merge controller is the
-  final decision maker, not a candidate-validation job. A fix after Ready
-  returns the pull request to Draft first. The details are in
-  [the test gate policy](docs/implementation/test-gate-policy.md).
+- When the requested scope permits Ready, mark the pull request Ready after
+  the required local checks pass. The manager or Delamain session verifies
+  the complete candidate. Return a Ready pull request to Draft before a fix.
 - Review the work of your subagents. T1 Team review and T2 Need architect
   need an independent authorized human approval of the current candidate.
   An agent approval or a label alone is not human approval evidence.
 - Merge an eligible clean pull request one time, within the user's request.
-  T0 Auto merge can operate only after the trusted CI, approval identity,
-  and merge controls in the playbook are established and separately enabled.
+  An authorized agent or Delamain session can merge T0 Auto merge after
+  applicable checks pass and the requested scope permits merge.
   The owner merges a pull request that adds a decision record under
   `architecture/decisions/`. A request for a draft stops before Ready and merge.
 
@@ -116,13 +117,13 @@ The [PR review playbook](docs/implementation/pr-review-playbook.md) and
 
 | Tier | Required review |
 | --- | --- |
-| T0 Auto merge | No human approval; automatic merge only after separate activation of trusted enforcement. |
+| T0 Auto merge | No human approval; an authorized agent or session can merge an eligible candidate. |
 | T1 Team review | An independent authorized team member or owner approves. |
 | T2 Need architect | An independent authorized architect approves the candidate and architecture impact. The owner can act as architect. |
 
 Use the highest matching tier and keep every reason. Tier selects review;
 merge eligibility is separately `eligible` or `blocked`. A failed check is
-a blocker, not a fourth tier. A policy, CI, or quality-tool change requires
+a blocker, not a fourth tier. A policy or quality-tool change requires
 at least T1 Team review. Architecture changes require T2 Need architect as
 the playbook defines. Static protected-path or public-surface touches set a
 conservative T1 Team review floor; they do not prove an architecture change.
@@ -145,11 +146,10 @@ route names are input compatibility only, not active tiers.
    `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --impact ast-report/impact.json`.
    The [check guide](script/pr-review/README.md) defines the base/head-bound
    impact evidence, options, output, and labels. Supply every classification
-   field, architecture summary, checked views, and evidence. The trusted merge
-   controller reads the committed declaration and adds the actual base and
-   head; mutable pull request prose cannot replace it. Missing impact
+   field, architecture summary, checked views, and evidence. The manager or Delamain
+   session stamps the committed declaration with the actual base and head; mutable pull request prose cannot replace it. Missing impact
    evidence blocks eligibility and requires at least T1 Team review. The
-   local result is preliminary: it does not prove hosted checks or approval.
+   local result is preliminary: it does not prove completed local checks or human approval.
 2. **Resolve facts.** Remove an undeclared fact or declare it in the rules
    file under the reported key. Update applicable count and date comments.
    Remove forbidden imports, new cycles, and growth of known cycles; a
@@ -192,33 +192,30 @@ route names are input compatibility only, not active tiers.
    independent authorized human architect; one qualified reviewer can cover
    both concerns. Approval must cover the current head SHA and scope.
    Anyone can escalate. De-escalation needs a recorded reason and approval
-   from a reviewer authorized for the higher tier. The automatic controller
-   retains the highest canonical tier ever applied as a label; labels can
-   only escalate. It does not perform de-escalation. An approved de-escalation
-   uses manual review and merge with higher-tier authority and all checks.
-   It cannot waive blockers.
+   from a reviewer authorized for the higher tier. De-escalation cannot waive blockers. Record its approval and retain the
+   previous tier and reasons in the review evidence.
    An owner-account label or AI-generated approval is not proof of human
    identity. All applicable checks and holds must be resolved before merge.
 
 A subagent or worker classifies its part, resolves facts, and reports evidence;
 the manager or Delamain session checks the complete candidate. No local tier
-result authorizes automatic merge or changes the user's requested stopping point.
+result alone authorizes merge or changes the user's requested stopping point.
 
 ## Code quality review with ast-metrics
 
-Select this process from the complete candidate, after documents are updated
-and before Ready. Under the new rules, the process applies to `src/**`,
-`script/code-quality/**`, `.ast-metrics.yaml`, `.ast-metrics-baseline.yaml`,
-and `.code-quality-exceptions.yaml`. Source changes need the complete snapshots,
+Select this process from the complete candidate, after documents are updated and
+before Ready. Under the new rules, the process applies to `src/**`,
+`script/code-quality/**`, `.ast-metrics.yaml`, `.ast-metrics-baseline.yaml`, and
+`.code-quality-exceptions.yaml`. Source changes need the complete snapshots,
 CRAP, and process evidence. Metric-tool or configuration changes need the
-process/review and their relevant tests. Other changes, including ordinary prose,
-PR checker, CI, and policy scripts, can mark production metrics N/A when no
-listed path changes. They still need applicable tests, habit-hooks, architecture
-impact, and review. The trusted base controls selection: a historical rule that
-requires metrics for every candidate remains in force for that candidate.
-Use the commands under `script/code-quality/`. The
-[ast-metrics review guide](docs/implementation/ast-metrics-review.md) gives
-the commands, their reports, the configuration, and the limits of the tool.
+process/review and relevant build, type, lint, or manual checks. Other changes,
+including ordinary prose, PR checker and policy scripts, can mark production
+metrics N/A when no listed path changes. They still need applicable checks,
+habit-hooks, architecture impact, and review. The trusted base controls
+selection: a historical rule that requires metrics for every candidate remains
+in force for that candidate. Use the commands under `script/code-quality/`. The
+[ast-metrics review guide](docs/implementation/ast-metrics-review.md) gives the
+commands, their reports, the configuration, and the limits of the tool.
 
 1. Prepare. Update the branch from `origin/main`. Select the tests from the
    complete candidate, as the test gate policy says. A command of this process

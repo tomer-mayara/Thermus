@@ -43,18 +43,6 @@ async function buildImage(revision: string): Promise<string> {
   return tag;
 }
 
-interface AssetBuild extends DockerResult {
-  readonly tag: string;
-}
-
-// Builds the image with the file "lightpanda" of the directory in place of the downloaded Lightpanda asset. The build
-// context replaces the lightpanda-asset stage of the Dockerfile, as BuildKit does for a stage with the same name.
-export async function buildWithLightpandaAsset(directory: string): Promise<AssetBuild> {
-  const tag = `thermus-container-gate:${gateRun}-other-asset`;
-  const args = ['build', '--progress=plain', '--label', gateLabel, '--build-context', `lightpanda-asset=${directory}`, '--tag', tag, repositoryRoot];
-  return { ...(await docker(args)), tag };
-}
-
 export async function removeGateResources(): Promise<void> {
   await removeLabelled(gateLabel);
   const images = await labelled(['image', 'ls'], gateLabel);

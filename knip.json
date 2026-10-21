@@ -16,9 +16,7 @@
         "script/code-quality/ast-metrics-baseline.ts",
         "script/code-quality/ast-metrics-backfill.ts",
         "script/code-quality/coverage/loader-observer.ts",
-        "script/pr-review/check.ts",
-        "script/pr-review/automation-validate.ts",
-        "script/pr-review/automation-merge.ts"
+        "script/pr-review/check.ts"
       ]
     },
     ".habit-hooks": {

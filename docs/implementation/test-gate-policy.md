@@ -24,12 +24,10 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Suite | Command | Selects | Needs |
 | --- | --- | --- | --- |
 | Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. Git in `PATH`. No renderer. |
-| Build | `npm run test:build` | `test/unit/build-output.test.ts`, from source | Offline. It builds temporary projects with the real compiler. |
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
-| Signup provider contract | `npm run test:interface:workos-signup` | `dist/test/interface/auth/workos-signup.live.js` | Configured Thermus WorkOS Staging key and client, and public network access. Creates and deletes disposable organizations only. Production keys are refused. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Git in `PATH`, Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
@@ -39,21 +37,19 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
-`npm run check` runs `npm run typecheck`, `npm run test:unit`,
-`npm run test:build`, the portal acceptance tests, and `npm run build:user-portal`.
-The compiled ordinary, unit, and acceptance commands use
-`node --test --test-concurrency=1` with their existing selections. They run one
-test file at a time, so other files do not compete with the child processes
-that check work deadlines. Test selection, process isolation, assertions, and
-deadlines stay unchanged.
-`npm run check` does not run the full integration, acceptance, interface, or
-container suites, the hosted image gate, or the renderer gate. `npm test` does
-not run the build test, because `tsconfig.build.json` excludes it from `dist/`.
-Only `npm run test:hosted-live` runs the hosted live file.
-The ordinary `test` and `test:acceptance` commands use the quoted Node glob
-`**/!(hosted-image).test.js` to exclude the hosted image test by basename.
-Node 24.20.0 supports this exclusion. Only `npm run test:container:hosted` runs
-that gate; the ordinary commands do not register it as a skipped test.
+`npm run check` runs `npm run typecheck`, `npm run test:unit`, the portal
+acceptance tests, and `npm run build:user-portal`. The compiled ordinary, unit,
+and acceptance commands use `node --test --test-concurrency=1` with their
+existing selections. They run one test file at a time, so other files do not
+compete with the child processes that check work deadlines. Test selection,
+process isolation, assertions, and deadlines stay unchanged. `npm run check`
+does not run the full integration, acceptance, interface, or container suites,
+the hosted image gate, or the renderer gate. Only `npm run test:hosted-live`
+runs the hosted live file. The ordinary `test` and `test:acceptance` commands
+use the quoted Node glob `**/!(hosted-image).test.js` to exclude the hosted
+image test by basename. Node 24.20.0 supports this exclusion. Only `npm run
+test:container:hosted` runs that gate; the ordinary commands do not register it
+as a skipped test.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
 Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
@@ -92,18 +88,10 @@ run the integration group only when the path rules below select it.
 
 Provider tests that execute shared context creation or the canonical auth
 rejection class run in `test/integration/auth/`. MCP rejection and access tests
-run in `test/integration/mcp/` for the same reason. The direct auth import guards
-run through the existing ESLint configuration in `habit-hooks`. Their fixture
-specification is `test/acceptance/architecture/auth-boundaries.test.ts`.
-Select its focused run and test group by the [required runs](#required-runs).
-The rules D1 to D7 of the
-[test code layout](../testing/test-code-layout.md#dependency-rules) run through
-the same ESLint configuration. Two specifications prove them:
-`test/acceptance/architecture/test-type-boundaries.test.ts` for D2 and D3, and
-`test/acceptance/architecture/test-support-boundaries.test.ts` for D1 and D4 to
-D7. A change only to those ESLint rules needs the relevant focused
-specifications, not the complete acceptance suite. A change to the
-specifications themselves also selects the acceptance group.
+run in `test/integration/mcp/` for the same reason. The direct auth import
+guards and test dependency rules run through ESLint in `habit-hooks`. Review
+rule changes with lint and representative manual checks; tests under `test/`
+cover source behavior only.
 
 ## Focused commands
 
@@ -128,12 +116,7 @@ Run one case in that file. The pattern is a regular expression:
 npm run build && node --test --test-name-pattern="<test name>" dist/test/<suite>/<path>.test.js
 ```
 
-Make sure that the report shows the name of each test that you selected. The
-build test runs from source and needs no build:
-
-```sh
-node --test --test-name-pattern="<test name>" test/unit/build-output.test.ts
-```
+Make sure the report shows the name of each test that you selected.
 
 ## Required runs
 
@@ -151,18 +134,18 @@ the old and new paths of a rename or move.
 Apply these rules in order:
 
 1. **A path under the repository's `src/` changed:** run `npm test`,
-   `npm run typecheck`, `npm run test:build`, and
+   `npm run typecheck`, and
    `npm run build:user-portal`. Then run the applicable
    [production gates](#production-gates-for-source-changes) below. The
    prefix is exactly `src/`; a folder named `src` elsewhere does not count.
 2. **No `src/` path changed, but a repository `test/` path changed:** run
    only the affected test groups. Combine the groups when changes affect
-   more than one. For each other changed path, add its existing focused
-   tests. Do not replace this selection with `npm test` or `npm run check`.
-3. **Neither `src/` nor `test/` changed:** run only existing focused tests
-   for the changed paths. Do not run a full suite or a whole test group.
-   A documentation-only change outside those folders can have no applicable
-   executable test; record that result instead of adding an unrelated run.
+   more than one. For other changed paths, add relevant build, type, lint, or manual
+   checks. Do not replace this selection with `npm test` or `npm run check`.
+3. **Neither `src/` nor `test/` changed:** use relevant build, type, lint,
+   and manual checks. Do not add tests for scripts, documents, configuration,
+   or tooling. Check prose and links manually. Do not run a test suite solely
+   because a changed non-source file describes or invokes it.
 
 The full ordinary suite means the existing `npm test` command. It includes
 ordinary unit, integration, acceptance, interface, and portal tests. It
@@ -173,26 +156,15 @@ aggregate command, not an additional required run.
 
 | Changed path or test kind | Selection when no `src/` path changed | Command or example |
 | --- | --- | --- |
-| `test/unit/`, except the separate build test | Unit group | `npm run test:unit` |
-| `test/unit/build-output.test.ts` | Build test group | `npm run test:build` |
+| `test/unit/` | Unit group | `npm run test:unit` |
 | `test/integration/` | Integration group | `npm run test:integration` |
 | Ordinary tests in `test/acceptance/` | Acceptance group | `npm run test:acceptance` |
 | Ordinary tests in `test/interface/` | Interface group | `npm run test:interface` |
 | Portal unit or acceptance tests | The corresponding unit or acceptance group | `npm run test:unit` or `npm run test:acceptance`; do not add the other group through `test:user-portal`. |
 | Dedicated runtime, live, container, or manual work-slice files | Their own group, before the ordinary folder rule | Use their dedicated command from the suite table or the test's guide, subject to the nested-run limit below. |
 | `test/support/` or shared test fixture files | The union of their real consuming groups | Trace imports and run-time uses, including child processes and container mounts; then use the selected group commands. |
-| `script/`, build configuration, dependencies, migrations, Docker inputs, or other non-test paths | Existing focused tests for the changed files | For example, `npm run test:build` for build behavior, or `npm run build && node --test dist/test/unit/script/ast-metrics-coverage.test.js` for that command's behavior. |
-| Documents outside `src/` and `test/` | Relevant existing focused tests, if any | Check the changed instructions and links; a reference to a command does not select it. |
-
-The [code-quality README](../../script/code-quality/README.md#available-tests)
-lists the complete available ordinary and live script tests, including the
-coverage collectors. Its focused documentation contract is
-`npm run build && node --test dist/test/acceptance/script/script-readme.test.js`.
-It reads command help and the two document inventories without running their
-listed commands. For changes to documented help contracts or either test
-inventory, use this existing focused contract; add no prose test, broader
-suite, or live collector. Other README prose can have no applicable test. Use
-the path rules above to select it and other affected tests.
+| `script/`, build configuration, dependencies, migrations, Docker inputs, or other non-test paths | Relevant build, type, lint, or manual checks | Inspect affected commands and outputs without adding non-source tests. |
+| Documents outside `src/` and `test/` | Manual review | Check instructions and links; a reference to a command does not select it. |
 
 A shared support change does not select every suite because the file is
 under `test/support/`. Find its actual consumers and record the selected
@@ -209,120 +181,34 @@ Examples:
   integration tests selects those two groups.
 - A change to a support module used by integration and acceptance tests
   selects those two groups, including a use through another support module.
-- A script helper change with a new unit test selects the unit group and
-  the relevant existing focused script tests. Its hosted use does not add
-  an integration suite or an image build.
-- A change only to `.habit-hooks/` boundary rules selects the relevant
-  focused architecture specifications. If those acceptance specifications
-  also change, add the acceptance group.
+- A script helper change uses relevant type, lint, and manual command checks.
+- A change only to `.habit-hooks/` boundary rules uses lint and manual checks.
 - A move out of `src/` still selects rule 1 because its old path changed.
   A move between two test groups selects both groups.
 
-### ast-metrics focused and live contracts
+### Metrics tooling checks
 
-For command or double changes, select existing focused tests and the live
-contracts of the affected behavior. Do not select all metrics live files
-unconditionally. Trace shared modules and doubles to their real consumers.
-The [README inventory](../../script/code-quality/README.md#available-tests)
-lists the available focused tests and identifies both coverage collectors.
-
-| Changed module area or contract | Affected live contract |
-| --- | --- |
-| `ast-metrics-review.ts`, `review/`, approved layer resolution or warning policy, or `.ast-metrics.yaml` cap changes | Focused review policy and report tests; `ast-metrics-rules.live.ts` for affected pinned-tool capability and rule boundaries. These start no coverage collector. |
-| `ast-metrics-mcp.ts`, `mcp/`, or MCP double behavior | `ast-metrics-mcp.live.ts`; snapshot and architecture contracts only when their MCP use is affected. |
-| `ast-metrics-snapshot.ts`, `snapshot/`, snapshot identity/provenance, or analysis/MCP snapshot answers | `ast-metrics-snapshot.live.ts`; structural architecture when its snapshot input is affected. |
-| `ast-metrics-coverage.ts`, `coverage/`, capture provenance, or build/suite collection | `ast-metrics-coverage.live.ts`; collecting architecture when report compatibility or joining is affected. Both are subject to the collector limit below. |
-| `ast-metrics-architecture.ts`, `architecture/` structural input, matching, map, table, or trend behavior | Structural `ast-metrics-architecture.live.ts`, with `--no-coverage`. |
-| Architecture coverage compatibility, correspondence, CRAP, bands, or coverage rendering | `ast-metrics-architecture-coverage.live.ts`, subject to the collector limit; select affected focused tests with doubles even when collection is deferred. |
-| `ast-metrics-crap.ts`, `crap/`, or its source classification, coverage join, goal advice, or threshold comparisons | `ast-metrics-crap.live.ts` with an existing compatible report; select the affected focused tests too. This live file starts no build or collector. |
-| Shared repository, identity, provenance, process, or double helpers | Only the focused and live contracts that consume the changed behavior. Apply the collector limit to each collecting consumer. |
-| `ast-metrics-process.ts`, `process/`, `ast-metrics-baseline.ts`, `baseline/`, or structured review outcomes | Affected ordinary process, baseline, and stage-outcome contracts. Add a live contract only when a stage's real behavior or a shared dependency is affected. Process tests grant no collection eligibility. |
-| `ast-metrics-backfill.ts`, `backfill/`, exact commit snapshots, or history gaps | Backfill and gap contracts with doubles; snapshot live when exact worktree behavior changes, and structural architecture live when trend rendering changes. Backfill starts no tests or coverage. |
-| Native rule configuration or the pinned tool's rule capabilities | `ast-metrics-rules.live.ts` uses disposable repositories to check the actual coupling and new-function contracts. It starts no product test suite. |
-| README command help or either test inventory | The existing focused `script-readme.test.ts` contract. Reading a listed command does not select that command. |
-
-`ast-metrics-architecture.live.ts` contains only the structural case and
-starts no suite. The separate `ast-metrics-architecture-coverage.live.ts`
-and `ast-metrics-coverage.live.ts` each build and run both complete unit
-parts. Run either collector only when a `src/` path changed or both complete
-parts were independently selected by the path rules: emitted Node tests and
-source portal tests. A dedicated live-file change, a focused unit test, or a
-script/document change does not select those complete parts. The process
-command follows the same rule: `--collect-coverage` is an explicit request,
-not permission to expand the independently selected tests. Missing or stale
-coverage never starts collection automatically; `--skip-coverage` cannot
-make an unassessed required goal pass. Keep an affected
-collector deferred outside that scope. Deferred is not passed.
-
-The standalone collector also accepts repeated `--suite unit|integration|acceptance`.
-Each requested complete suite must already belong to the selected union. It reads
-the package-defined test commands, builds once, and captures each suite separately.
-Unsupported prerequisites or nested suite commands defer collection before launch.
-The process command's `--collect-coverage` still collects unit only. A real proof
-of another suite's coverage is deferred when that suite was not selected; use
-the affected collector contracts with doubles in that case. Preserve suite names
-and all capture origins in combined reports. An interrupted child without flush
-evidence leaves the capture unverified and cannot replace a valid report.
-
-For a slice that changes only these dedicated live files and their documents,
-run the changed MCP, snapshot, and structural architecture contracts and the
-existing focused README contract. Build only to prepare their emitted files:
-
-```sh
-npm run build
-node --test dist/test/acceptance/script/ast-metrics-mcp.live.js
-node --test dist/test/acceptance/script/ast-metrics-snapshot.live.js
-node --test dist/test/acceptance/script/ast-metrics-architecture.live.js
-node --test dist/test/acceptance/script/script-readme.test.js
-```
-
-This example selects these files because that slice changes their contracts.
-For a narrower change, select only affected rows. Do not add the whole unit,
-acceptance, integration, or interface suite, `npm run check`, or
-`npm run build:hosted`. Record both collectors as deferred for this slice.
-MCP, snapshot, and architecture live files skip without ast-metrics on PATH;
-`ast-metrics-coverage.live.ts` needs no ast-metrics. An absent-tool skip is
-not a pass. Both collectors use private output reports and assert that the
-default report stays unchanged. Architecture cases use private trend stores.
-
-When collection is selected and permitted, run only the affected collector
-file after the build. Run no other suite at the same time on a shared host:
-
-```sh
-node --test dist/test/acceptance/script/ast-metrics-coverage.live.js
-node --test dist/test/acceptance/script/ast-metrics-architecture-coverage.live.js
-```
-
-The CRAP live contract reuses an existing report. Select it when its behavior
-or a real shared dependency changes; do not add it as a blanket gate. After
-a build prepares its emitted file, pass a compatible private report when
-available:
-
-```sh
-AST_METRICS_CRAP_COVERAGE=/absolute/path/coverage.json node --test dist/test/acceptance/script/ast-metrics-crap.live.js
-```
-
-Without that variable it reads `ast-report/coverage.json`. It starts no build,
-suite, or collector. Missing ast-metrics or coverage gives an explicit skip;
-record the required assessment as deferred, not passed. A present stale report
-fails. Collect a report only when the independent selection permits each
-requested complete suite; an unavailable report does not expand that selection.
+For metrics command or configuration changes, use relevant type, lint, command
+help, and manual report checks. Do not add or run tests under `test/` whose
+subject is the metrics tooling. Run the applicable process and review under
+AGENTS.md. Reuse compatible coverage or report its limits; a tooling change
+alone does not select source tests or coverage collection.
 
 ### Keep the selection through nested commands
 
 Check what each selected command runs, including child processes and image
-builds. Without a `src/` change, a command must not add test groups outside
-the selected union or turn focused tests into a complete suite. In
-particular, do not add `npm run check`, `npm run build:hosted`, or default
-ast-metrics coverage collection only because a changed file is one of
-their inputs. The default coverage command runs both complete parts of the unit
-suite: emitted Node tests and source portal tests. Use it only when both
-complete parts are already selected or rule 1 applies. Each additional `--suite`
-must also be selected independently. A focused unit file or package does not
-select both complete parts. The same limit applies to a live metrics test that
-starts coverage collection. Use an existing coverage file only when it is valid
-for the source, selected-suite, and build inputs, or report metrics without coverage
-as the review guide permits.
+builds. Without a `src/` change, a command must not add test groups outside the
+selected union or turn focused tests into a complete suite. In particular, do
+not add `npm run check`, `npm run build:hosted`, or default ast-metrics coverage
+collection only because a changed file is one of their inputs. The default
+coverage command runs both complete parts of the unit suite: emitted Node tests
+and source portal tests. Use it only when both complete parts are already
+selected or rule 1 applies. Each additional `--suite` must also be selected
+independently. A focused unit file or package does not select both complete
+parts. The same limit applies to a metrics command that starts coverage
+collection. Use an existing coverage file only when it is valid for the source,
+selected-suite, and build inputs, or report metrics without coverage as the
+review guide permits.
 
 Intentional crash children need the approved verified pre-crash flush/stop/seal
 protocol. Only known crash fixtures set `THERMUS_COVERAGE_CRASH=1` to install
@@ -340,7 +226,7 @@ These rules grant no additional suite selection.
 Dedicated tests keep their own commands: for example,
 `npm run test:mcp:renderer`, `npm run test:mcp:search:live`,
 `npm run test:hosted-live`,
-`npm run test:interface:workos-signup`, and `npm run test:container`.
+`npm run test:container`.
 Their prerequisites and evidence rules still apply. Do not use
 `npm run build:hosted` to prepare a test-only renderer or hosted-live run;
 use the backend and portal builds that its dedicated command requires.
@@ -380,19 +266,10 @@ changed source affects their behavior:
   affects the hosted application, its portal, or its offline checks. The
   image gate must pass on Linux AMD64; a host-only or ARM64 run is not a
   replacement.
-- The offline signup retry proof,
-  `test/interface/auth/workos-signup.test.ts`, and the Staging provider
-  contract, `npm run test:interface:workos-signup`, for source that affects
-  signup creation, its acceptance record, or its SDK retry configuration.
-  The [FS-01 record](fs-01.md) gives the scope and limits.
+- Source signup behavior uses the applicable retained source acceptance tests.
 - `npm run test:hosted-live` for source that affects hosted authentication
   or WorkOS organization reads and changes, when the staging settings are
   available. If they are unavailable, record that the gate did not run.
-
-The ordinary full suite includes the offline Better Auth and WorkOS
-interface proofs. Select a focused run of those proofs when needed to
-verify the changed source; no separate whole interface run is needed after
-`npm test` passes.
 
 ### Common checks and evidence
 
@@ -437,10 +314,6 @@ AUTH-09 added the container acceptance suite
 - builds the image of the current candidate from `Dockerfile` two times. The
   second build has another revision label, so it is another image with the same
   content, for the image replacement case;
-- builds the image a third time with another file in place of the Lightpanda
-  download: a build context with the name `lightpanda-asset` replaces that
-  stage. The build must stop with `Lightpanda SHA256 check failed` and make no
-  image. This build needs no network access for the asset;
 - runs the server and the bundled commands in containers of that image, with the
   real provider and SQLite on Docker volumes;
 - copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt`
@@ -492,10 +365,6 @@ AUTH-09 added the container acceptance suite
   no portal build. The safe FATAL message names the build command, the exit
   code is 1, the fresh volume stays empty, and no outbound call occurs. RHD-03
   supplies the separate hosted image;
-- checks in the image that `LIGHTPANDA_BIN` names the pinned executable, which
-  root owns and the `node` user cannot change, that the executable reports
-  1.0.0 and loads the CA certificates of the image, and that the image sets
-  `LIGHTPANDA_DISABLE_TELEMETRY=true`;
 - removes its containers, networks, volumes, and images when it ends.
 
 Only a run of `npm run test:container` that exits with status 0 and shows each
@@ -531,8 +400,7 @@ backend during the unit suite and builds the portal last. The hosted command
 then runs these emitted files directly, without another build:
 
 1. `dist/test/integration/**/*.test.js`: the complete offline integration suite.
-2. `dist/test/acceptance/architecture/*.test.js`: all architecture specifications;
-   `dist/test/acceptance/hosted-ad-policy.test.js`,
+2. `dist/test/acceptance/hosted-ad-policy.test.js`,
    `dist/test/acceptance/auth/hosted-startup.test.js`,
    `dist/test/acceptance/auth/hosted-portal.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-origin.test.js`,
@@ -559,10 +427,11 @@ controlled renderer processes; the last phase checks actual rendering.
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
 excludes the Axiom tests, public-site renderer smoke test, live WorkOS gate,
-live Brave search proof, and Docker gates. The command needs the pinned Node and dependencies, Git and OpenSSL
-in `PATH`, a free local port 46443, local loopback connections, and the
-absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no live credential or
-public network access. When that aggregate gate is selected, a local command is:
+live Brave search proof, and Docker gates. The command needs the pinned Node and
+dependencies, Git and OpenSSL in `PATH`, a free local port 46443, local loopback
+connections, and the absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no
+live credential or public network access. When that aggregate gate is selected,
+a local command is:
 
 ```sh
 LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" npm run build:hosted
@@ -579,13 +448,10 @@ inside the build. These checks supplement the pull request runs only when
 the hosted build gate is selected. Every real hosted image build still runs
 the complete checks; the path selection does not weaken the image.
 
-The check stage has Git for tests that create their own temporary repositories,
-including `test/unit/script/ast-metrics-architecture-test-changes.test.ts`.
+The check stage has Git for source tests that need temporary repositories.
 It has no checkout `.git` folder (`Dockerfile.hosted.dockerignore` excludes it)
-and no ast-metrics executable. Tests must not depend on either. Tests that
-isolate the Git CLI use `test/support/doubles/ast-metrics/git-cli-stub.ts` on
-their own restricted PATH. Git is installed before the offline gate and stays
-out of the production-dependencies and runtime stages.
+and no ast-metrics executable. Tests must not depend on either. Git stays out
+of the production-dependencies and runtime stages.
 
 ### Acceptance: hosted build with constrained CPU
 
@@ -625,19 +491,17 @@ used for those runs. Use the current dedicated command for a new run. The
 renderer and live gate names did not change.
 
 The gate must build and run the final `Dockerfile.hosted` image for
-`linux/amd64`. It needs Docker Engine with Buildx and a native or emulated
-AMD64 builder and runtime. Downloading the pinned base images, packages, and
-Lightpanda asset needs network access unless those inputs are cached. The runtime test needs public HTTPS egress to
-`https://example.com/`. Tests need no live WorkOS or Axiom credential. The final-image run must prove real
-native cleaner loading, CA-backed HTTPS and JavaScript rendering, private
-network refusal, capacity refusal, cancellation, bounded shutdown, invalid
-startup refusal, the exact approved pre-sign-in notice with signup enabled only
-in an image test, and a failed offline check that prevents a runtime image.
-The [RHD-03 record](rhd-03.md) tracks the case details and results.
-The gate allows 60 minutes for its build and image cases. Its deliberate
-failed-check case injects a failing offline test into an existing unit file.
-The build must stop there without producing a runtime image. This allowance
-does not change production readiness or shutdown limits.
+`linux/amd64`. It needs Docker Engine with Buildx and a native or emulated AMD64
+builder and runtime. Downloading the pinned base images, packages, and
+Lightpanda asset needs network access unless those inputs are cached. The
+runtime test needs public HTTPS egress to `https://example.com/`. Tests need no
+live WorkOS or Axiom credential. The final-image run must prove real native
+cleaner loading, CA-backed HTTPS and JavaScript rendering, private network
+refusal, capacity refusal, cancellation, bounded shutdown, invalid startup
+refusal, the exact approved pre-sign-in notice with signup enabled only in an
+image test. The [RHD-03 record](rhd-03.md) tracks the case details and results.
+The gate allows 60 minutes for its build and runtime cases. This allowance does
+not change production readiness or shutdown limits.
 
 A successful build alone does not pass the runtime gate. A pass of the
 self-hosted container gate, host renderer gate, or ARM64 image does not prove
@@ -696,13 +560,8 @@ The real MCP SDK HTTP client calls `getURLAsMarkdown`. Its nine cases cover:
 
 Setup fails when `LIGHTPANDA_BIN` is unset or empty, is relative, does not run,
 or reports a version other than 1.0.0. Each setup message starts with
-`Renderer gate setup failed:` and points to the runtime guide. The normal
-acceptance suite has `test/acceptance/mcp/renderer-gate-setup.test.ts`. It runs
-both runtime files and the live search file four times each with bad
-prerequisites. All three files use `test/support/processes/pinned-renderer.ts`
-for setup validation. The specification blocks network access and checks
-that setup fails before any outbound attempt, with no test passed, skipped,
-or left as todo. It also checks package selection and live-file isolation.
+`Renderer gate setup failed:` and points to the runtime guide. All three renderer files use
+`test/support/processes/pinned-renderer.ts` for setup validation.
 
 A run of `npm run test:mcp:renderer` that exits with status 0 and shows
 every case in both runtime files as passed is a renderer gate pass. The
@@ -847,8 +706,7 @@ Each command must exit with status 0 and show each required test as passed:
 5. `npm run build && node --test dist/test/interface/auth/better-auth.test.js`
 6. `npm run test:container`
 
-If a candidate-validation Actions job starts for the release commit, it must
-pass too. Then build the release image with `docker compose build`. The release notes must not claim
+Then build the release image with `docker compose build`. The release notes must not claim
 payment collection, hosted features, or migration between editions.
 
 ## Pull request steps
@@ -864,19 +722,17 @@ payment collection, hosted features, or migration between editions.
    full metrics and record production metrics N/A. The new process paths are
    `src/**`, `script/code-quality/**`, `.ast-metrics.yaml`,
    `.ast-metrics-baseline.yaml`, and `.code-quality-exceptions.yaml`. Source-free
-   PR checker, CI, or policy scripts outside those paths need applicable tests
+   PR checker or policy scripts outside those paths need applicable checks
    and habit-hooks, with production metrics N/A. Metric-tool or rule changes
-   need process/review and relevant tests. Historical base rules retain their
+   need process/review and relevant build, type, lint, or manual checks. Historical base rules retain their
    broader requirements for that candidate. Keep the existing test selection;
    a metric command cannot start an unselected suite.
 5. Compute and record the tier, all reasons, blockers, current candidate SHA,
    selected checks, and linked retained reports as "Review tier and merge
    eligibility" in AGENTS.md says. The local result is preliminary.
-6. When the requested scope permits Ready, mark the pull request Ready and wait
-   for every candidate-validation Actions job that starts for its head to pass.
-   Pending, skipped, cancelled, failed, or unavailable required jobs are not
-   passes. An intentional
-   N/A needs trusted selection evidence.
+6. When the requested scope permits Ready, mark the pull request Ready after
+   the manager or Delamain session verifies the required local checks for the
+   complete current candidate. An intentional N/A needs selection evidence.
 7. Return a Ready pull request to Draft before any fix. Continue from step 2
    and refresh evidence and affected approvals for the new candidate.
 8. The manager reviews subagent work. T1 Team review needs an independent
@@ -885,37 +741,13 @@ payment collection, hosted features, or migration between editions.
    A label, an agent approval, or a request for review does not prove approval.
 9. Merge an eligible clean pull request one time, within the user's request.
    The owner merges a pull request that adds an architecture decision record.
-   T0 Auto merge requires separately activated trusted enforcement; adopting
-   this policy does not enable it.
+   T0 Auto merge needs no human review. An authorized agent or session can
+   merge after all applicable checks and merge conditions pass.
 
 A Delamain worker does the required runs, classifies its part, resolves facts,
 and reports its evidence; it performs none of the pull request steps. For a
 Delamain ticket, the session opens and merges the pull request one time each,
 within the run's authority. A restart reuses the same pull request and result.
-
-## Actions jobs
-
-The [automation setup guide](pr-automation-setup.md) describes the fail-closed
-validation and merge workflows and their separate activation prerequisites.
-`pr-validation.yml` runs candidate checks without secrets or write authority.
-`pr-merge.yml` uses trusted base code for the privileged eligibility decision;
-it cannot treat an author label or candidate workflow as proof of a pass.
-
-CI follows the complete-candidate selection in this policy. A source change
-still requires the full ordinary suite, static and build checks, metrics, and
-applicable production gates. An offline subset is not a pass of credentialed
-or runtime gates. Missing trusted external evidence keeps merge blocked.
-Neither CI nor a metrics command expands the selected tests for prose changes.
-
-The required local runs remain required. Every started candidate-validation
-Actions job for the head must pass before merge. The trusted merge controller
-is the final decision maker and is excluded from its own check-run inventory;
-this exclusion does not remove any candidate-validation job. No workflow,
-label, successful local classification, or repository setting alone proves
-eligibility. Activation requires trusted check
-identity and current-SHA evidence, independent authorized human approval where
-needed, and merge controls. Do not change live settings or enable automatic
-merge without separate owner authorization.
 
 ## Hosted live gate (AUTH-06)
 
@@ -1047,15 +879,14 @@ The gate also needs:
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 
-The historical Required-profile run took about 12 minutes: the third
-complete run of AUTH-08W run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
-tokens to expire, and the AUTH-07W expiry case after it uses the same wait.
+The historical Required-profile run took about 12 minutes: the third complete
+run of AUTH-08W run r3 ran its 77 tests in 688 seconds after the builds. One
+AUTH-06 case waits for the 300-second access tokens to expire, and the AUTH-07W
+expiry case after it uses the same wait.
 
 If a setting is missing, empty, or refused, the command fails with one setup
 error that names each such setting and the reason. The error shows no value.
 The command then makes no network request and runs no other test.
-`test/acceptance/auth/hosted-live-setup.test.ts` specifies this behavior
-offline.
 
 The hosted gate passes only when the dedicated command runs with the required
 settings and every live test passes. Missing hosted credentials, a setup error,
@@ -1102,8 +933,7 @@ The Required profile has these parts:
   cover that resource, which has the external ID of the organization, and a
   customer single-role change between the inspection of the runbook and its
   write, which stays. The driver is test support only: the product has no
-  operator method or route. Its decisions also have a focused unit test with
-  an SDK double, `test/unit/auth-workos/operator-runbook.test.ts`.
+  operator method or route. Review changes to this support driver with relevant type, lint, and manual checks.
 - The AUTH-07W cases of the hosted server, in
   `test/acceptance/auth/hosted-live/organization-server.ts`, with the same
   local HTTPS test server. The cases cover the onboarding of users without an
@@ -1235,12 +1065,14 @@ A suite must not depend on another command that selects it silently.
 ### Paid billing gate (AUTH-11)
 
 AUTH-11 adds the paid billing suites after the owner chooses the payment
-provider. The [AUTH-11 specification](../design/billing-design.md#auth-11-implementation-specification)
-lists them. The provider contract file `test/interface/billing/<provider>.live.ts`
-and the live acceptance file `test/acceptance/billing/paid-billing.live.ts` run
-in the provider sandbox with a dedicated command. The `.live.ts` names do not
-match the `*.test.js` globs on purpose. If the sandbox credentials are missing,
-the command must fail with a clear setup error.
+provider. The [AUTH-11
+specification](../design/billing-design.md#auth-11-implementation-specification)
+lists them. The provider contract file
+`test/interface/billing/<provider>.live.ts` and the live acceptance file
+`test/acceptance/billing/paid-billing.live.ts` run in the provider sandbox with
+a dedicated command. The `.live.ts` names do not match the `*.test.js` globs on
+purpose. If the sandbox credentials are missing, the command must fail with a
+clear setup error.
 
 The paid billing gate passes only when the dedicated command runs with the
 sandbox credentials and every live test passes. Missing credentials, a setup

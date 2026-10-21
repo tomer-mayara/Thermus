@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { X509Certificate } from 'node:crypto';
 import { once } from 'node:events';
 import { Server } from 'node:net';
-import { join } from 'node:path';
 import { text } from 'node:stream/consumers';
 import { describe, test, type TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -10,7 +9,6 @@ import { connect as tlsConnect } from 'node:tls';
 import type { Application, ApplicationLogger } from '../../../src/app/application.ts';
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
-import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
 import { sendHttpsRequest } from '../../support/drivers/browser/https-client.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../support/hosted-live/settings.ts';
@@ -44,23 +42,6 @@ class SmallApplication {
       close: async () => { this.closes += 1; },
     };
   };
-}
-
-// Node finds a command through the PATH of process.env when it starts the command. Without a PATH, Node uses a
-// default path, and that path can contain OpenSSL. Thus the test sets PATH to an empty directory.
-async function withPath<T>(t: TestContext, path: string, action: () => Promise<T>): Promise<T> {
-  const original = process.env.PATH;
-  const restore = (): void => {
-    if (original === undefined) delete process.env.PATH;
-    else process.env.PATH = original;
-  };
-  t.after(restore);
-  process.env.PATH = path;
-  try {
-    return await action();
-  } finally {
-    restore();
-  }
 }
 
 // A regression that leaks a server would keep the test process alive after the failed assertion. The listen mock
@@ -108,42 +89,6 @@ async function frontGet(path: string, ca: Buffer): Promise<FrontAnswer> {
 }
 
 describe('Local HTTPS site of the hosted live gate (test support) with the real HTTP server', () => {
-  test('Given the production application and a custom front portal directory, when the site starts, then it refuses the unused override', async (t) => {
-    await assert.rejects(LocalHttpsSite.start(settings, { portalBuild: await writePortalBuild(t) }), /portalBuild requires a custom application/);
-  });
-
-  test('Given a portal build directory that does not exist, when the site starts, then it rejects with the message that names the directory and npm run build:user-portal, keeps the file system error as the cause, and leaves no server listening', caseOptions, async (t) => {
-    closeLeakedServersAfter(t);
-    const missing = join(await temporaryDirectory(t), 'dist');
-    const before = serverHandles();
-
-    await assert.rejects(LocalHttpsSite.start(settings, { portalBuild: missing, application: new SmallApplication().open }), (error) => {
-      assert.ok(error instanceof Error);
-      assert.equal(error.message, `The local HTTPS site has no portal build in ${missing}. Run npm run build:user-portal first; npm run test:hosted-live does it.`);
-      assert.ok(error.cause instanceof Error);
-      assert.equal((error.cause as NodeJS.ErrnoException).code, 'ENOENT');
-      return true;
-    });
-
-    assert.equal(await serverHandlesAfterClose(before), before);
-  });
-
-  test('Given a portal build and a PATH without OpenSSL, when the site starts, then it rejects with the spawn error, closes the application that it started, and leaves no server listening', caseOptions, async (t) => {
-    closeLeakedServersAfter(t);
-    const emptyDirectory = await temporaryDirectory(t);
-    // The close of the hosted application closes its MCP server one time.
-    const mcpServerClose = t.mock.method(MCPServer.prototype, 'close');
-    const before = serverHandles();
-
-    const started = withPath(t, emptyDirectory, () => LocalHttpsSite.start(settings, { rendererExecutable: lightpandaStub }));
-
-    await assert.rejects(started, { code: 'ENOENT', syscall: 'spawn openssl' });
-    assert.deepEqual(
-      { applicationCloses: mcpServerClose.mock.callCount(), serverHandles: await serverHandlesAfterClose(before) },
-      { applicationCloses: 1, serverHandles: before },
-    );
-  });
-
   test('Given valid placeholder WorkOS settings and the default hosted gate composition, when the local HTTPS site starts with its trusted rules fixture, then it serves the portal and keeps account and MCP requests without credentials protected', caseOptions, async (t) => {
     const certificate = await selfSignedCertificate(await temporaryDirectory(t));
     const site = await LocalHttpsSite.start(settings, { rendererExecutable: lightpandaStub, certificate });

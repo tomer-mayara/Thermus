@@ -63,20 +63,17 @@ Select tests under the [test gate policy](test-gate-policy.md) before these
 commands. Only a change under `src/` requires the full ordinary suite
 (`npm test`) and the remaining static and build checks in that policy.
 Do not add `npm run check`, which would repeat unit and portal tests.
-For other changes, run only affected test groups and existing focused tests.
-The existing `script-readme.test.ts` contract checks command help and both test
-inventories. Changes to documented help contracts or either test inventory
-select that focused contract. They do not select listed commands, live
-collectors, or a complete suite. See the
-[focused command](test-gate-policy.md#select-by-changed-path).
+For test-only changes, run affected source test groups. For other changes,
+use relevant build, type, lint, help, and manual report checks. Do not add tests
+whose subject is scripts, documents, configuration, or tooling.
 The delta, review, snapshot, and architecture commands do not run tests.
 Select the process from the complete candidate as AGENTS.md says. The new
 rules select `src/**`, `script/code-quality/**`, `.ast-metrics.yaml`,
 `.ast-metrics-baseline.yaml`, and `.code-quality-exceptions.yaml`. Source changes
 need full snapshots, CRAP, and process evidence. Source-free metric-tool or rule
-changes need process/review and relevant tests, with production metrics N/A.
-Other source-free changes, including prose, PR checker, CI, and policy scripts,
-need their applicable tests and habit-hooks; they skip irrelevant full metrics.
+changes need process/review and relevant checks, with production metrics N/A.
+Other source-free changes, including prose, PR checker, and policy scripts,
+need applicable build, type, lint, or manual checks and habit-hooks; they skip irrelevant full metrics.
 All tiers still record architecture impact. The trusted merge-base policy
 controls selection. Historical rules that require a process for every candidate
 remain in force for that candidate. Individual commands remain available for inspection and improvement passes.
@@ -95,7 +92,7 @@ A base CRAP value derived with head coverage is an estimate, not measured base
 coverage or a measured CRAP delta.
 
 By default, the coverage command runs both parts of the unit suite: emitted Node tests
-and source portal tests. Run it, or its live test, only when `src/` changed
+and source portal tests. Run it only when `src/` changed
 or both complete parts were already selected. A focused unit package or a
 script change alone does not select both complete parts. Reuse a current
 valid report when available; otherwise, a review outside that scope uses
@@ -106,35 +103,6 @@ acceptance coverage. Each complete requested group must already be selected
 under the test gate policy. A flag does not grant that scope. The process
 wrapper still collects only the default unit group. See the coverage section
 for package selections, capture identities, and child-process limits.
-The separate `ast-metrics-architecture-coverage.live.ts` has the same
-restriction. It collects both complete unit parts and passes its private
-report with `--coverage`. `ast-metrics-architecture.live.ts` is structural
-only: it uses `--no-coverage` and starts no suite. Both collectors assert
-that the default coverage report stays unchanged. Both architecture files
-use private trend stores. Structural architecture checks worktree cleanup.
-
-Live contracts use repository invariants rather than fixed community, cycle,
-or file counts. Snapshot checks the shared kernel, unique labels, source
-members, valid community and cycle references, positive file and function
-counts, HEAD, deadlines, and cleanup. It also checks unique normalized source
-dependency pairs and the literal dynamic import in `application.ts`.
-Structural architecture checks equal metrics, every reported community,
-each populated source folder component, and both complete graphs and legends. MCP
-checks the function table without requiring an incidental function name.
-Coverage retains the explicit proof that portal unit tests call
-`initializePortal`.
-
-MCP, snapshot, and both architecture live files need ast-metrics on PATH and
-skip when it is absent. The coverage live file needs no ast-metrics. A skip
-or a deferred collector is not a pass. Command and double changes select
-only affected focused and live contracts. The
-[policy mapping and safe commands](test-gate-policy.md#ast-metrics-focused-and-live-contracts)
-show the module areas and the structural and collecting runs. A slice that
-changes only dedicated live files and documents can run MCP, snapshot,
-structural architecture, and
-the existing focused README contract after a build. It defers both collectors
-and adds no complete suite. A build only prepares emitted test files.
-
 ### Run the complete process: `script/code-quality/ast-metrics-process.ts`
 
 ```sh
@@ -231,7 +199,7 @@ without a measurement:
 ```
   41.4  src/interfaces/user-portal/connection-guide.ts  below 85
   91.0  src/runtime/http/server.ts
-  42.9  test/acceptance/script/ast-metrics-delta.test.ts  no goal
+  42.9  test/unit/example.test.ts  no goal
   not measured  src/types.d.ts
 Result: 1 of 2 production files below 85. Goal: 85 or more for each production file. 1 other file without a goal. 1 file not measured.
 Comparison with origin/main: ast-report/compare.html
@@ -1349,8 +1317,7 @@ those endpoints are not checked. Missing or shallow Git history gives an
 explicit reason. Offline reports with a store print
 `Gap check unavailable: offline snapshot dates cannot prove omitted commits.`;
 no-store output stays
-`No trend store.` In a repository, `--trend-store` replaces `docs/metrics/`, as
-the live test does with a temporary folder. D3 authorizes no base-coverage
+`No trend store.` In a repository, `--trend-store` replaces `docs/metrics/`, for an isolated report destination. D3 authorizes no base-coverage
 store or merge workflow; the owner deferred both under D4 and D5.
 
 Exit status 0 when the Markdown is printed (a report, not a gate); 1 with one
