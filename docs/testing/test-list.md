@@ -1090,11 +1090,11 @@ Nine acceptance files run `script/pr-review/check.ts` in small git
 repositories. Each repository has its own rules file from
 `test/acceptance/script/fixtures/pr-review-rules.ts`.
 `test/acceptance/script/pr-review-check.test.ts` checks the route from the
-changed paths: `SHIP` for a document change, with the complete report and its
+changed paths: `SHIPPED` for a document change, with the complete report and its
 commits; `CLARIFICATION_NEEDED` for a protected path with the question of its
 group, for a
 renamed protected file, for a changed surface module, and for a changed
-contract document; `SHIP` for a change of tests only; and `SHIP` with no
+contract document; `SHIPPED` for a change of tests only; and `SHIPPED` with no
 changed path when HEAD is the merge base.
 `test/acceptance/script/pr-review-check-size.test.ts` checks
 `ARCHITECT_REVIEW_NEEDED` for a

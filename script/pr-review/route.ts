@@ -1,7 +1,7 @@
 import { routes, type Reason, type Route } from './types.ts';
 
 export function routeOf(reasons: readonly Reason[]): Route {
-  return routes.find((route) => reasons.some((reason) => reason.route === route)) ?? 'SHIP';
+  return routes.find((route) => reasons.some((reason) => reason.route === route)) ?? 'SHIPPED';
 }
 
 export function orderedReasons(reasons: readonly Reason[]): Reason[] {
@@ -16,6 +16,6 @@ export function labelCommand(route: Route, repository: string | undefined): stri
     ...(repository === undefined ? [] : [`--repo ${repository}`]),
     `--add-label ${label(route)}`,
     ...routes.filter((other) => other !== route).map((other) => `--remove-label ${label(other)}`),
-    ...['ask', 'read', 'show'].map((old) => `--remove-label route:${old}`),
+    ...['ask', 'read', 'show', 'ship'].map((old) => `--remove-label route:${old}`),
   ].join(' ');
 }

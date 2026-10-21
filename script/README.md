@@ -319,7 +319,7 @@ but remained unverified because four loaders had raw-only evidence.
 
 [`pr-review/check.ts`](pr-review/check.ts) computes the review route of a pull
 request candidate: `FIX`, `CLARIFICATION_NEEDED`,
-`ARCHITECT_REVIEW_NEEDED`, or `SHIP`. It reads the
+`ARCHITECT_REVIEW_NEEDED`, or `SHIPPED`. It reads the
 [rules file](../docs/implementation/pr-review-rules.yaml). It is the step "Run
 the check" of the section "Review route" of [AGENTS.md](../AGENTS.md). The
 [check guide](pr-review/README.md) gives its options, its output, and its tests.

@@ -106,9 +106,9 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 The [PR review playbook](docs/implementation/pr-review-playbook.md) and its
 [rules file](docs/implementation/pr-review-rules.yaml) define four routes in
 priority order:
-`FIX`, `CLARIFICATION_NEEDED`, `ARCHITECT_REVIEW_NEEDED`, `SHIP`. A route says
+`FIX`, `CLARIFICATION_NEEDED`, `ARCHITECT_REVIEW_NEEDED`, `SHIPPED`. A route says
 which human action the pull request needs before merge. The owner can act as
-the architect. `SHIP` needs no route-specific human review or post-merge skim.
+the architect. `SHIPPED` needs no route-specific human review or post-merge skim.
 The command `script/pr-review/check.ts` computes the route;
 the [check guide](script/pr-review/README.md) gives its options and its output.
 The route does not change who merges. Historical rules at the merge base
@@ -176,7 +176,7 @@ candidate.
 5. **Record.** Paste the output of the check of step 3 into a section "Review
    route" of the pull request description. Set the label with the printed
    command. Use the labels `route:fix`, `route:clarification_needed`,
-   `route:architect_review_needed`, and `route:ship`. Update the section and
+   `route:architect_review_needed`, and `route:shipped`. Update the section and
    the label after each change to the candidate.
 6. **Decision.** For `CLARIFICATION_NEEDED`, write the draft decision in the
    "Review route" section. Answer the question of each matching group of

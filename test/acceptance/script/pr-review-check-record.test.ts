@@ -53,7 +53,7 @@ test('Given uncommitted changes and --allow-dirty, when the check runs, then a n
   const result = await checkOn(t, repository, '--allow-dirty');
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIP');
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
   assert.deepEqual(linesUnder(result.stdout, 'Changed paths'), ['- M docs/guide.md']);
   assert.deepEqual(linesUnder(result.stdout, 'Notes'), ['- Uncommitted changes are not part of the candidate: the check reads the commit HEAD only.', manualNote]);
   assert.equal(result.code, 0);
@@ -113,5 +113,5 @@ test('Given historical route names at HEAD, when the check runs, then the check 
 
   assert.equal(result.code, 1);
   assert.equal(result.stdout, '');
-  assert.match(result.stderr, /at HEAD has no valid key routes.order: give FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIP/);
+  assert.match(result.stderr, /at HEAD has no valid key routes.order: give FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIPPED/);
 });

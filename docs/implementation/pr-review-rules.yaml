@@ -24,12 +24,12 @@ diff_base: the merge base with origin/main, with rename detection
 
 routes:
   # Take the first route whose condition holds. Print every reason.
-  order: [FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIP]
+  order: [FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIPPED]
   hold_label: hold                   # blocks the merge on every route
   approved_label: approved           # the owner sets it; CLARIFICATION_NEEDED and ARCHITECT_REVIEW_NEEDED merge only with it
   route_label_prefix: "route:"       # the checks set route:<name>
   merge_method: squash
-  merge_by: workflow                 # nothing else merges; SHIP needs no label
+  merge_by: workflow                 # nothing else merges; SHIPPED needs no label
   clarification_needed_requires_decision_record: architecture/decisions/**   # to create; a CLARIFICATION_NEEDED pull request must add or change a file there
 
 scopes:
@@ -176,7 +176,7 @@ read_paths:
     - docs/implementation/test-gate-policy.md     # while no CI exists, this document is the enforcement; move it out when workflows run the checks
     - docs/implementation/ast-metrics-review.md   # same reason
     - .agent/**                                   # agent configuration
-  moved_by_stop_rule: []             # executable files of reverted SHIP pull requests; the owner removes them after the fix
+  moved_by_stop_rule: []             # executable files of reverted SHIPPED pull requests; the owner removes them after the fix
 
 # Check 2. CI emits a declaration file for each module below and compares it
 # with the committed copy under snapshot_dir. The emitted file includes the
@@ -438,7 +438,7 @@ size:
   # 6 of the 15 changed src/. The largest changed 450 src lines in 8 files.
   # docs/metrics added 187 to 1,468 lines per pull request, so scopes.generated matters.
 
-# Check 6. A green pull request is SHIP when no other check gives a reason.
+# Check 6. A green pull request is SHIPPED when no other check gives a reason.
 
 calibration:
   review_every: month
@@ -446,6 +446,6 @@ calibration:
     human_before_merge_share_max: 0.30   # CLARIFICATION_NEEDED plus ARCHITECT_REVIEW_NEEDED over all merged pull requests
     false_alarm_share_max: 0.20          # CLARIFICATION_NEEDED or ARCHITECT_REVIEW_NEEDED pull requests with no commit after the route label
   stop_rule:
-    ship_reverts_per_month: 2            # count reverted SHIP pull requests that changed scopes.executable; then their executable files go to read_paths.moved_by_stop_rule
+    shipped_reverts_per_month: 2         # count reverted SHIPPED pull requests that changed scopes.executable; then their executable files go to read_paths.moved_by_stop_rule
     revert: a merge whose message says "This reverts commit"
   record: docs/implementation/pr-review-calibration.md   # to create; one table per month

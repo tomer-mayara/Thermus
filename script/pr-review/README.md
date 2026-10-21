@@ -64,9 +64,9 @@ and both commits.
 ## The routes
 
 The four routes below are in priority order. The first route with a reason
-applies; `SHIP` is the fallback. The report gives every reason, not only the
+applies; `SHIPPED` is the fallback. The report gives every reason, not only the
 first. The labels are `route:fix`, `route:clarification_needed`,
-`route:architect_review_needed`, and `route:ship`. The owner can act as the
+`route:architect_review_needed`, and `route:shipped`. The owner can act as the
 architect. The manual trial does not automate merges.
 
 | Route | Meaning |
@@ -74,7 +74,7 @@ architect. The manual trial does not automate merges.
 | `FIX` | The candidate has a dependency fact that the rules file does not list, a forbidden edge, a new cycle, a known cycle that grows, an unresolved import in a changed file, or a snooze file that is not `[]`. Or a new production file has a raw MI below the limit, or a new or changed function misses its CRAP goal, and no exception covers it. Or an exception entry of a changed path has expired. Or a stage of the metrics process failed or is unavailable. The author repairs the pull request or declares the fact. |
 | `CLARIFICATION_NEEDED` | A protected path, the rules file, a module of the public surface, or a contract document changed, or the pull request declares a fact. The architect answers the question of each matching group. |
 | `ARCHITECT_REVIEW_NEEDED` | A read path changed, a line count is above its limit, the diff has more test cases removed than added, or it adds a skip or a todo. Or the raw MI of an existing production file dropped by the limit or more, or an exception entry covers a new file below the MI limit or a function that misses its CRAP goal. Or the review has a high finding on a changed production file. The architect reads the diff before the merge. |
-| `SHIP` | No higher route has a reason. All applicable checks must pass before merge, for executable and document changes alike. No route-specific human review or post-merge skim is required. |
+| `SHIPPED` | No higher route has a reason. All applicable checks must pass before merge, for executable and document changes alike. No route-specific human review or post-merge skim is required. |
 
 ## What the check does
 
@@ -84,7 +84,7 @@ file from git with rename detection, so it stops when the working tree has
 uncommitted changes. With `--allow-dirty` it checks HEAD alone, and a note says
 so. The rules come from the merge base. A historical base rules file uses
 its original route names: the check maps `ASK` to `CLARIFICATION_NEEDED`,
-`READ` to `ARCHITECT_REVIEW_NEEDED`, and both `SHOW` and `SHIP` to `SHIP`.
+`READ` to `ARCHITECT_REVIEW_NEEDED`, and both `SHOW` and `SHIP` to `SHIPPED`.
 The base thresholds and protected paths still govern the candidate. The
 rules at HEAD must use the current four routes. When the base rules file
 does not exist or is not valid, the file at HEAD applies, a note says so, and the
@@ -243,7 +243,7 @@ change of the rules file is `CLARIFICATION_NEEDED`.
 The report gives each reason as `<ROUTE> <key>: <fact>`. A dependency fact
 names a file that causes it. "Facts to declare" gives the key and the entry
 that would list each fact, in the form of the rules file. Executable changes
-alone add no route reason; without a higher route reason they take `SHIP`.
+alone add no route reason; without a higher route reason they take `SHIPPED`.
 
 ## The steps that stay with you
 

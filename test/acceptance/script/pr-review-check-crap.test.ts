@@ -24,7 +24,7 @@ test('Given a new function with three paths and no coverage share, when the chec
   const result = await checkOn(t, repository, ...crapOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIP');
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'CRAP'), ['- src/alpha/small.ts: small: pass from the bound [3, 12]']);
   assert.equal(result.code, 0);

@@ -14,7 +14,7 @@ const triggers = [
   'known_cycle_grows', 'cross_package_file_not_in_public_surface', 'external_import_not_listed', 'forbidden_edge',
 ];
 const rules = rulesOf(stringify({
-  routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIP'] },
+  routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'] },
   protected_paths: {
     policy: { route: 'CLARIFICATION_NEEDED', question: 'Who decides?', paths: ['AGENTS.md'] },
     contracts: { route: 'CLARIFICATION_NEEDED', question: 'What does a client see?', paths: ['src/index.ts'] },

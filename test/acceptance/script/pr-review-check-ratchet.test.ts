@@ -68,7 +68,7 @@ test('Given changed and new production files without raw MI in the snapshot that
   const result = await checkOn(t, repository, ...snapshotOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIP');
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'MI'), [
     '- not applicable: src/alpha/parser.ts: no raw MI in the head snapshot',

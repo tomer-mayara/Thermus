@@ -14,7 +14,7 @@ const triggers = [
 
 function documentOf() {
   return {
-    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIP'] },
+    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'] },
     protected_paths: {
       policy: { route: 'CLARIFICATION_NEEDED', question: 'Who decides?', paths: ['AGENTS.md', '.github/**'] },
       contracts: { route: 'CLARIFICATION_NEEDED', question: 'What does a client see?', paths: ['src/index.ts'] },
@@ -88,7 +88,7 @@ for (const [name, edit, message] of [
   ['with a builtin list that is not a list', (document: Document) => document.setIn(['dependency_graph', 'allowed_node_builtins', 'http'], 'node:http'), 'dependency_graph.allowed_node_builtins.http: give a list of text'],
   ['with a surface module that is not text', (document: Document) => document.setIn(['public_surface', 'between_packages', 'auth'], [1]), 'public_surface.between_packages.auth: give a list of text'],
   ['with contract documents that are not text', (document: Document) => document.setIn(['public_surface', 'contract_documents'], 3), 'public_surface.contract_documents: give a text or a list of text'],
-  ['with another route order', (document: Document) => document.setIn(['routes', 'order'], ['FIX', 'ARCHITECT_REVIEW_NEEDED', 'CLARIFICATION_NEEDED', 'SHIP']), 'routes.order: give FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIP, the order that the check uses'],
+  ['with another route order', (document: Document) => document.setIn(['routes', 'order'], ['FIX', 'ARCHITECT_REVIEW_NEEDED', 'CLARIFICATION_NEEDED', 'SHIPPED']), 'routes.order: give FIX, CLARIFICATION_NEEDED, ARCHITECT_REVIEW_NEEDED, SHIPPED, the order that the check uses'],
   ['with a protected group of another route', (document: Document) => document.setIn(['protected_paths', 'contracts', 'route'], 'ARCHITECT_REVIEW_NEEDED'), 'protected_paths.contracts.route: give CLARIFICATION_NEEDED, the route that the check uses'],
   ['with read paths of another route', (document: Document) => document.deleteIn(['read_paths', 'route']), 'read_paths.route: give ARCHITECT_REVIEW_NEEDED, the route that the check uses'],
   ['with a trigger of another route', (document: Document) => document.setIn(['dependency_graph', 'triggers', 'forbidden_edge'], 'CLARIFICATION_NEEDED'), 'dependency_graph.triggers.forbidden_edge: give FIX, the route that the check uses'],

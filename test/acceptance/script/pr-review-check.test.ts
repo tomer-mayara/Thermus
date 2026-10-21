@@ -9,7 +9,7 @@ import { guideChange, mainFiles, testFile } from './fixtures/pr-review-rules.ts'
 // pr-review-check-failures.test.ts the failures.
 const timeout = 30_000;
 
-test('Given a branch that changes only a document, when the check runs, then the route is SHIP and the report gives every section in order', { timeout }, async (t) => {
+test('Given a branch that changes only a document, when the check runs, then the route is SHIPPED and the report gives every section in order', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
   repository.commit('Change the guide', guideChange);
 
@@ -18,7 +18,7 @@ test('Given a branch that changes only a document, when the check runs, then the
   assert.equal(result.stderr, '');
   assert.equal(result.stdout, [
     '## Review route', '',
-    'Route: `SHIP`',
+    'Route: `SHIPPED`',
     `Candidate: ${repository.git('rev-parse', 'HEAD').trim()}`,
     `Merge base: ${repository.git('rev-parse', 'main').trim()}`, '',
     'Reasons:', '- none', '',
@@ -33,7 +33,7 @@ test('Given a branch that changes only a document, when the check runs, then the
     'Declared facts:', '- none', '',
     'Surface differences:', '- none', '',
     'Notes:', manualNote, '',
-    'Label:', '`gh pr edit <n> --add-label route:ship --remove-label route:fix --remove-label route:clarification_needed --remove-label route:architect_review_needed --remove-label route:ask --remove-label route:read --remove-label route:show`', '',
+    'Label:', '`gh pr edit <n> --add-label route:shipped --remove-label route:fix --remove-label route:clarification_needed --remove-label route:architect_review_needed --remove-label route:ask --remove-label route:read --remove-label route:show --remove-label route:ship`', '',
   ].join('\n'));
   assert.equal(result.code, 0);
 });
@@ -48,7 +48,7 @@ test('Given a branch that changes a protected policy path, when the check runs w
   assert.equal(routeOf(result.stdout), 'CLARIFICATION_NEEDED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- CLARIFICATION_NEEDED protected_paths.policy: AGENTS.md']);
   assert.deepEqual(linesUnder(result.stdout, 'Questions to answer'), ['- protected_paths.policy: Does this change what the checks enforce? Record the new rule.']);
-  assert.deepEqual(linesUnder(result.stdout, 'Label'), ['`gh pr edit <n> --repo owner/name --add-label route:clarification_needed --remove-label route:fix --remove-label route:architect_review_needed --remove-label route:ship --remove-label route:ask --remove-label route:read --remove-label route:show`']);
+  assert.deepEqual(linesUnder(result.stdout, 'Label'), ['`gh pr edit <n> --repo owner/name --add-label route:clarification_needed --remove-label route:fix --remove-label route:architect_review_needed --remove-label route:shipped --remove-label route:ask --remove-label route:read --remove-label route:show --remove-label route:ship`']);
   assert.equal(result.code, 0);
 });
 
@@ -94,26 +94,26 @@ test('Given a change to a contract document, when the check runs, then it is a s
   assert.equal(result.code, 0);
 });
 
-test('Given a branch that only adds a test case, when the check runs, then the route is SHIP with no reason that requires a human review', { timeout }, async (t) => {
+test('Given a branch that only adds a test case, when the check runs, then the route is SHIPPED with no reason that requires a human review', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, { ...mainFiles(), 'test/unit/sample.test.ts': testFile(['first']) });
   repository.commit('Add a test case', { 'test/unit/sample.test.ts': testFile(['first', 'second']) });
 
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIP');
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'Tests'), ['- Added test cases: 1', '- Removed test cases: 0', '- Added skips or todos: none']);
   assert.equal(result.code, 0);
 });
 
-test('Given a branch whose HEAD is the merge base, when the check runs, then the route is SHIP with no changed path', { timeout }, async (t) => {
+test('Given a branch whose HEAD is the merge base, when the check runs, then the route is SHIPPED with no changed path', { timeout }, async (t) => {
   const repository = GitRepository.onFeatureBranch(t, mainFiles());
 
   const result = await checkOn(t, repository);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIP');
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
   assert.deepEqual(linesUnder(result.stdout, 'Changed paths'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.equal(result.code, 0);

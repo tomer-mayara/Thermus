@@ -23,7 +23,7 @@ test('Given goal misses of the process and high findings on unchanged files only
   const result = await checkOn(t, repository, ...metricsOptions);
 
   assert.equal(result.stderr, '');
-  assert.equal(routeOf(result.stdout), 'SHIP');
+  assert.equal(routeOf(result.stdout), 'SHIPPED');
   assert.deepEqual(linesUnder(result.stdout, 'Reasons'), ['- none']);
   assert.deepEqual(linesUnder(result.stdout, 'Metrics'), [
     '- Delta: goal miss', '- Review: goal miss', '- CRAP: goal miss', '- Architecture: passed',

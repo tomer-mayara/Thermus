@@ -17,7 +17,7 @@ const triggers = [
 
 export function rulesDocument() {
   return {
-    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIP'] },
+    routes: { order: ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'] },
     protected_paths: {
       policy: { route: 'CLARIFICATION_NEEDED', question: 'Does this change what the checks enforce? Record the new rule.', paths: ['AGENTS.md', rulesPath] },
       contracts: { route: 'CLARIFICATION_NEEDED', question: 'Does a client see a different input or output? Record the promise.', paths: ['src/index.ts'] },

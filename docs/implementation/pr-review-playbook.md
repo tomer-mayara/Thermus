@@ -26,8 +26,8 @@ Deterministic checks decide which pull requests a human reads, and when.
 A human reads an architecture change before the merge. An architecture
 change is a change to a package, a public contract, a dependency direction,
 or a protected area. A change that stays inside a package and touches no
-protected path can take `SHIP` after all applicable checks pass, unless
-another review trigger applies. `SHIP` requires no human review or post-merge
+protected path can take `SHIPPED` after all applicable checks pass, unless
+another review trigger applies. `SHIPPED` requires no human review or post-merge
 skim. Target: at most three in ten pull requests need a human before the
 merge. No check calls a language model.
 
@@ -38,13 +38,13 @@ merge. No check calls a language model.
 | `FIX` | A required check failed, or a check found a fact that the pull request has not declared in the rules file: a new edge, a changed surface, a forbidden edge. | The author repairs the pull request, or declares the fact. A human cannot approve a red check. | Before merge. |
 | `CLARIFICATION_NEEDED` | The pull request changes a protected path. The rules file, a surface snapshot, a contract document and the dependency graph section are protected paths. | The architect answers the question of the matching rule and records the decision: in the trial in the pull request description, later as a decision record (ADR) under `architecture/decisions/`. | Before merge. |
 | `ARCHITECT_REVIEW_NEEDED` | A read path changed, a size, test or MI signal fired, the review has a high finding on a changed production file, an exception entry covers a metric `FIX`, or the pull request changes a metric exception or the lint baseline. | The architect reads the diff and sets the `approved` label. | Before merge. |
-| `SHIP` | All applicable checks are green and no higher route applies, whether executable files or documents changed. | No route-specific human review or post-merge skim. | Merge on green. |
+| `SHIPPED` | All applicable checks are green and no higher route applies, whether executable files or documents changed. | No route-specific human review or post-merge skim. | Merge on green. |
 
 The four routes are in priority order: `FIX`, `CLARIFICATION_NEEDED`,
-`ARCHITECT_REVIEW_NEEDED`, `SHIP`. Take the first route whose condition holds.
+`ARCHITECT_REVIEW_NEEDED`, `SHIPPED`. Take the first route whose condition holds.
 Print every reason, not only the first. The labels are `route:fix`,
 `route:clarification_needed`, `route:architect_review_needed`, and
-`route:ship`.
+`route:shipped`.
 
 A `hold` label blocks the merge on every route. The planned merge workflow
 will require the `approved` label for `CLARIFICATION_NEEDED` and
@@ -72,7 +72,7 @@ itself turns a failed command into `FIX`.
 | 3 | Dependency graph | CI builds the package graph of `src/` from static, re-export, side-effect, dynamic and type imports. The rules file lists the package edges, the top-level folders, the package cycles, the external imports, the Node builtins, and the cross-package files in `public_surface`. A fact that the rules file does not list is `FIX` until the pull request lists it. That listing is a protected change, so that change is `CLARIFICATION_NEEDED`. An edge in `forbidden_edges` is `FIX` with no way to list it. | `FIX`, `CLARIFICATION_NEEDED` | The command compares the graph of HEAD with the rules file and prints the facts to declare. |
 | 4 | Ratchet | CI measures CRAP per function and the maintainability index (MI) per production file. CRAP is the risk score of a function: its complexity, raised by the share of its code that the tests do not cover. The CRAP command writes the rows of its table to a JSON file: the change, the paths and the covered share of each function of the changed production files. Two snapshots of the snapshot command, one of the merge base and one of the candidate, give the raw MI of each production file. The check compares the raw values of each changed production file, with no rounding. `FIX` fires in four cases: a new function, or one of unknown identity, above CRAP 15; a changed legacy function at CRAP 30 or more; a new or changed function with unknown coverage whose bounds do not prove its goal; a new production file below MI 85. Without a covered share, `p` paths bound CRAP from `p` to `p² + p`. Three paths give at most 12, so they meet 15 without coverage. Four paths give a range from 4 to 20, which crosses 15, so the function stays `FIX` until coverage or fewer paths decide it. A legacy function is one that exists at the start commit. Until the start commit is set, each changed function counts as legacy. A later iteration adds a fifth case: a changed function above its goal and worse than at the base. It needs the CRAP of the base, which nothing measures yet. `ARCHITECT_REVIEW_NEEDED` fires for an MI drop of five or more on an existing file. An entry in the exceptions file `.code-quality-exceptions.yaml` needs a unit, a metric, a bound, a reason, and an expiry date. The unit is a path for MI and a function, `<file>#<function>`, for CRAP. An entry covers the `FIX` of its unit while the date has not passed and the value is within the bound: a raw MI at least the bound, or a CRAP or its upper bound at most the bound. The covered unit stays an `ARCHITECT_REVIEW_NEEDED` reason. Today is the committer date of HEAD, so that a rerun gives the same route. A change to that file is `ARCHITECT_REVIEW_NEEDED`. An expired entry is `FIX` for a pull request that changes its path, or the file of its function. | `FIX`, `ARCHITECT_REVIEW_NEEDED` | The author takes the two snapshots and, after the metrics process, writes the CRAP rows with `ast-metrics-crap.ts --json`. The check applies the MI rules, the two CRAP goals with their bounds, and the exceptions file with `--base-snapshot`, `--head-snapshot` and `--crap`. The CRAP comparison with the base is a later iteration. |
 | 5 | Size and tests | `ARCHITECT_REVIEW_NEEDED` fires above 400 changed production lines, or above 1,500 changed lines in total without generated files, with a request to split. CI compares the test counts of the Node test reporter with the merge base. Fewer tests, or more skipped or todo tests, is `ARCHITECT_REVIEW_NEEDED`. A non-empty habit-hooks snooze file is `FIX`. | `ARCHITECT_REVIEW_NEEDED`, `FIX` | The command counts the lines, the test cases, and the skip and todo marks. The test reporter counts are to build. |
-| 6 | Ship | A green pull request with no higher route merges on green. Executable and document changes use the same fallback. No daily review list or post-merge skim is required. | `SHIP` | To build: the merge step and the label. |
+| 6 | Shipped | A green pull request with no higher route merges on green. Executable and document changes use the same fallback. No daily review list or post-merge skim is required. | `SHIPPED` | To build: the merge step and the label. |
 | 7 | CI | Workflows run the full ordinary suite with coverage, the type check, the build checks, habit-hooks, the metrics process, and checks 1 to 5 on every pull request. CI runs the whole suite on every pull request. The selection rules of the test gate policy stay for local runs. The metrics process writes its stage outcomes to a JSON file, and its review stage writes the review findings. The check reads both files: a failed or unavailable stage is `FIX`, and a high finding on a changed production file is `ARCHITECT_REVIEW_NEEDED`. A goal miss alone, and a finding on an unchanged file, are no reason. The hosted build and container checks run on the AMD64 runner for a change under `src/`, `docker/` or a Dockerfile. The `main` workflow audits each merge. The audit recomputes the route and opens an issue when the route needed a human and the `approved` label was absent. Required checks need branch protection, which needs GitHub Pro or an organization. | `FIX`, `ARCHITECT_REVIEW_NEEDED` | The author runs the metrics process with `--json` and gives the two files to the check with `--process` and `--review`. The check reads the metrics step, so the human reads its reasons, not the metrics report. No workflow and no branch protection exist. |
 
 ## What the human does on each route
@@ -91,7 +91,7 @@ metrics report.
   the `approved` label, or request changes. The owner can act as the
   architect. For a metric exception, add or widen an entry in the exceptions
   file.
-- `SHIP`: no route-specific human review or post-merge skim is required. All
+- `SHIPPED`: no route-specific human review or post-merge skim is required. All
   applicable checks must pass before merge.
 - `FIX`: the author repairs the pull request, or declares the new fact in the
   rules file, and pushes again.
@@ -103,7 +103,7 @@ metrics report.
   A false alarm is a `CLARIFICATION_NEEDED` or `ARCHITECT_REVIEW_NEEDED` pull
   request with no commit after the route label. Change a threshold or a list
   through a `CLARIFICATION_NEEDED` pull request.
-- Stop rule: two reverts of `SHIP` pull requests that change executable
+- Stop rule: two reverts of `SHIPPED` pull requests that change executable
   files in one month move the executable files of those pull requests to
   `read_paths`. A revert is a merge whose message says "This reverts commit".
   The owner removes the paths from `read_paths` after the fix. There is no
@@ -133,5 +133,5 @@ metrics report.
    that the author makes.
 5. Run checks 1 to 5 in report-only mode for one month: the checks print
    routes and set labels, but nothing merges or blocks on the routes.
-6. Turn on merge on green for `SHIP`. Update AGENTS.md, the test
+6. Turn on merge on green for `SHIPPED`. Update AGENTS.md, the test
    gate policy, and the metrics guide in the same pull request.
