@@ -1,17 +1,19 @@
 import { sanitize } from 'agent-input-sanitizer';
 
 export class BraveResultFields {
-  private readonly reports: Awaited<ReturnType<typeof sanitize>>[] = [];
+  private readonly findings = new Set<string>();
+  private readonly notices = new Set<string>();
 
   public constructor(private readonly finalUrl: string) {}
 
-  public get found(): string[] { return this.reports.flatMap((report) => report.found); }
-  public get warnings(): string[] { return this.reports.flatMap((report) => report.warnings); }
+  public get found(): string[] { return [...this.findings]; }
+  public get warnings(): string[] { return [...this.notices]; }
 
   public async clean(value: string): Promise<string> {
     const report = await sanitize(' ' + value);
     if (!report.cleaned.startsWith(' ')) throw new Error('Sanitizer changed the text boundary prefix');
-    this.reports.push(report);
+    for (const category of report.found) this.findings.add(category);
+    for (const notice of report.warnings) this.notices.add(notice);
     return report.cleaned.slice(1);
   }
 

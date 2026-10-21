@@ -96,6 +96,16 @@ test('Given repeated concurrent calls, when one cleanup instance runs, then no r
   assert.doesNotMatch(results[1].html, /First/);
 });
 
+test('Given repeated decoded detections and existing metadata, when cleanup accumulates reports, then findings stay unique and do not leak to the next request', async () => {
+  const result = await cleaner.invoke(createContext(page(card('One&#x202e;', '/one') + card('Two&#x202e;', '/two')), { found: ['prior', 'cf-format'], warnings: ['notice'] }));
+  assert.deepEqual(result.found, ['prior', 'cf-format']);
+  assert.equal(new Set(result.warnings).size, result.warnings?.length);
+  assert.equal(result.warnings?.[0], 'notice');
+  const next = await cleaner.invoke(createContext(page(card('Clean'))));
+  assert.deepEqual(next.found, []);
+  assert.deepEqual(next.warnings, []);
+});
+
 test('Given punctuation and safe and unsafe snippet links, when cleanup and real conversion run, then text and approved destinations stay associated with one row', async () => {
   const input = createContext(page(card('[Title] *literal*', '/guide?a=1&amp;b=2', 'Read <a href="javascript:alert(1)">unsafe destination as text</a> and <a href="/details">safe details</a>.')));
   const result = await new HtmlToMarkdownPipeline([cleaner, new CleanHtmlToMarkdownDefuddle({ preserveSearchResults: true })]).process(input);
