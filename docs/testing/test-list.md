@@ -3463,7 +3463,10 @@ The tests use `BillingFree` through the `Billing` interface. They do not cover p
 [V] Given a repeated count or an older count, the result does not change
 [V] Given two organizations, a seat change in one does not change the other
 
-`npm run test:acceptance` runs every acceptance test, except the container gate suite, which it skips. `npm run check` does not select the acceptance directory.
+`npm run test:acceptance` runs ordinary acceptance and portal tests; compiled
+files run one at a time. The hosted image test stays excluded; the self-hosted
+container suite is skipped without its opt-in. `npm run check` does not select
+the acceptance directory.
 
 **Hosted startup with WorkOS** (`test/acceptance/auth/hosted-startup.test.ts`)
 
