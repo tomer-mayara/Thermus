@@ -43,7 +43,6 @@ export interface CheckResult {
   readonly lineCounts: { readonly production: number; readonly productionLimit: number; readonly total: number; readonly totalLimit: number };
   readonly tests: { readonly added: number; readonly removed: number; readonly skippedOrTodo: readonly string[] };
   readonly mi: readonly string[];
-  readonly crap: readonly string[];
   readonly factsToDeclare: readonly Declaration[];
   readonly declaredFacts: readonly Declaration[];
   readonly surfaceDifferences: readonly string[];

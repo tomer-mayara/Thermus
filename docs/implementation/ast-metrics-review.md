@@ -636,7 +636,7 @@ parts of the unit suite are within scope.
 The process includes this assessment. For a focused improvement pass, run:
 
 ```sh
-pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [--json FILE] [PATH...]
+pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...]
 ```
 
 Defaults are `origin/main`, `ast-report/coverage.json`, strict limit 30,
@@ -654,15 +654,6 @@ scope. This command runs no build or test suite and takes no full architecture
 snapshot. It uses one bounded MCP session and source evidence against the
 selected base.
 
-With `--json FILE`, the command also writes the rows of its table to `FILE`,
-relative to the current folder: `version` 1, `base`, `head`, and per row
-`file`, `function`, `change`, `paths`, `share`, `crap`, and `identity`. A value
-that the table shows as unknown is absent. The command writes the file also
-for a goal miss; the table and the exit status do not change. The review route
-check reads the file with `--crap`; the
-[code-quality README](../../script/code-quality/README.md#assess-per-function-crap-goals)
-gives the format.
-
 For decision paths `p` and own-character covered share `c`, the score is
 `p² × (1 − c)³ + p`. The original CRAP measure used basis-path coverage;
 this repository's V8 character share is an approximation. See the original
@@ -674,26 +665,6 @@ The owner approved these project goals on 2026-10-18; 15 is not a universal
 CRAP standard. The architecture bands and risk counts keep their boundary
 at CRAP ≥ 30. A new function between 15 and 30 can miss its required target
 without adding a critical architecture band.
-
-The separate pure `crapAbsoluteOf({ paths, share? })` in
-`assessment/crap-absolute.ts` calculates both `atMost15` and `below30`, each with
-`PASS`, `MISS` or `UNKNOWN` and a reason. Its observation is one of
-`known-coverage { paths, share, displayValue }`, positive
-`missing-coverage { paths, lower, upper }`, or `proven-zero { paths: 0, value: 0 }`.
-Paths must be a nonnegative safe integer. A supplied share must be finite and in
-`[0,1]`; null is invalid. Missing coverage gives exact safe-integer bounds
-`[p,p²+p]`; reject a bound that is not a safe integer. Known coverage needs no unused
-bound cap. Zero paths without coverage prove zero without an invented share.
-
-`compareCrap` decides from the exact operands; `crapValueOf` supplies an
-approximate display value only. For five paths and share `1e-320`, display can
-be 30 while `below30` is `PASS`. This is arithmetic over supplied operands,
-not accepted evidence. It does not select origin/applicability, apply exceptions,
-track lineage/history or decline, decide routes/AUTO eligibility, or verify
-scope/provenance. The review route check calls it for each row of the CRAP
-command's `--json` file and applies the goal, the exceptions, and the route;
-see [the check guide](../../script/pr-review/README.md). The CRAP command, the
-process, the history, and manual merging do not use it.
 
 | Paths | Minimum whole percent for CRAP < 30 | Minimum whole percent for CRAP ≤ 15 |
 | --- | --- | --- |

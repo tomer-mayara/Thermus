@@ -6,19 +6,8 @@ import type { GitRepository } from './git-repository.ts';
 
 export const manualNote = '- The steps "Metrics" and "Decision" of the review route are manual: do them before Ready, as AGENTS.md says.';
 export const snapshotOptions = ['--base-snapshot', 'ast-report/snapshot-base.json', '--head-snapshot', 'ast-report/snapshot.json'];
-export const crapOptions = ['--crap', 'ast-report/crap.json'];
 
 type RawValues = Readonly<Record<string, number | undefined>>;
-
-// A row of the JSON that script/code-quality/ast-metrics-crap.ts writes with --json.
-export interface CrapRowFixture {
-  readonly file: string;
-  readonly function: string;
-  readonly change: string;
-  readonly paths: number;
-  readonly share?: number;
-  readonly crap?: number;
-}
 
 export function checkOn(t: TestContext, repository: GitRepository, ...args: string[]) {
   return runScript(t, prReviewCheckScript, { args: ['--base', 'main', ...args], cwd: repository.root });
@@ -47,13 +36,4 @@ export function commitsOf(repository: GitRepository): { readonly base: string; r
 export function writeSnapshots(repository: GitRepository, base: RawValues, head: RawValues): void {
   const commits = commitsOf(repository);
   repository.write({ 'ast-report/snapshot-base.json': snapshotText(commits.base, base), 'ast-report/snapshot.json': snapshotText(commits.head, head) });
-}
-
-export function crapText(commits: { readonly base: string; readonly head: string }, rows: readonly CrapRowFixture[]): string {
-  return JSON.stringify({ version: 1, base: commits.base, head: commits.head, rows });
-}
-
-// The CRAP command writes its rows of HEAD to ast-report/, which git ignores.
-export function writeCrap(repository: GitRepository, rows: readonly CrapRowFixture[]): void {
-  repository.write({ 'ast-report/crap.json': crapText(commitsOf(repository), rows) });
 }

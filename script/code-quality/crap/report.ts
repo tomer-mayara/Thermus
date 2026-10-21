@@ -14,9 +14,7 @@ function byRisk(first: GoalFunction, second: GoalFunction): number {
   return second.crap - first.crap || textOrder(first.file, second.file) || textOrder(first.name, second.name) || textOrder(first.identity, second.identity);
 }
 
-// The JSON rows must keep the order of the table, so the report gives the ordered rows.
-export function crapReportOf(rows: readonly GoalFunction[], goals: CrapGoals): { text: string; passed: boolean; rows: GoalFunction[] } {
-  const ordered = [...rows].sort(byRisk);
+export function crapReportOf(rows: readonly GoalFunction[], goals: CrapGoals): { text: string; passed: boolean } {
   const assessments = rows.map((entry) => goalAssessmentOf(entry, goals));
   const violations = assessments.filter(({ limitMiss }) => limitMiss).length;
   const targetMisses = assessments.filter(({ targetMiss }) => targetMiss).length;
@@ -28,9 +26,9 @@ export function crapReportOf(rows: readonly GoalFunction[], goals: CrapGoals): {
     `Goals: CRAP < ${goals.limit}; new functions also CRAP ≤ ${goals.target}.`, '',
     '| File | Function | Change | Paths | Coverage | CRAP | To do |',
     '| --- | --- | --- | --- | --- | --- | --- |',
-    ...ordered.map((entry) => rowOf(entry, goals)), '',
+    ...[...rows].sort(byRisk).map((entry) => rowOf(entry, goals)), '',
     `Known limit violations: ${violations}. Measured target misses: ${targetMisses}. Unmeasured functions: ${unmeasured}. Required functions with unknown assessment or identity: ${unknown}.`,
     ...(unmeasured > 0 ? ['Unmeasured values are lower bounds; the known violation count is not an exact total.'] : []),
   ].join('\n');
-  return { text, passed: violations === 0 && requiredMisses === 0 && unknown === 0, rows: ordered };
+  return { text, passed: violations === 0 && requiredMisses === 0 && unknown === 0 };
 }

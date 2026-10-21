@@ -39,10 +39,7 @@ function documentOf() {
       allowed_external_imports: { auth: ['jose'] },
       allowed_node_builtins: { http: ['node:http'] },
     },
-    ratchet: {
-      maintainability_index: { unit: 'production file', new_file_below: 85, existing_file_drop_read_at: 5 },
-      crap: { unit: 'function', new_function_above: 15, changed_legacy_function_at_or_above: 30, changed_function_above_goal_and_worse_than_base: 'later' },
-    },
+    ratchet: { maintainability_index: { unit: 'production file', new_file_below: 85, existing_file_drop_read_at: 5 } },
   };
 }
 
@@ -64,7 +61,6 @@ test('Given a complete rules document, when it is read, then the check gets the 
   assert.deepEqual(rules.graph.externalImports, new Map([['auth', ['jose']]]));
   assert.deepEqual(rules.graph.nodeBuiltins, new Map([['http', ['node:http']]]));
   assert.deepEqual(rules.maintainability, { newFileBelow: 85, existingFileDropReadAt: 5 });
-  assert.deepEqual(rules.crap, { newFunctionAbove: 15, changedLegacyFunctionAtOrAbove: 30 });
 });
 
 test('Given contract documents as a list, when the rules are read, then each pattern counts', () => {
@@ -95,9 +91,6 @@ for (const [name, edit, message] of [
   ['with fewer tests of another route', (document: Document) => document.setIn(['size', 'test_counts', 'fewer_tests_than_base'], 'FIX'), 'size.test_counts.fewer_tests_than_base: give READ, the route that the check uses'],
   ['without the MI limit of a new file', (document: Document) => document.deleteIn(['ratchet', 'maintainability_index', 'new_file_below']), 'ratchet.maintainability_index.new_file_below: give a whole number, 0 or more'],
   ['with an MI drop that is a text', (document: Document) => document.setIn(['ratchet', 'maintainability_index', 'existing_file_drop_read_at'], 'five'), 'ratchet.maintainability_index.existing_file_drop_read_at: give a whole number, 0 or more'],
-  ['without the CRAP goal of a new function', (document: Document) => document.deleteIn(['ratchet', 'crap', 'new_function_above']), 'ratchet.crap.new_function_above: give a whole number, 0 or more'],
-  ['with a CRAP goal of 10 for a new function', (document: Document) => document.setIn(['ratchet', 'crap', 'new_function_above'], 10), 'ratchet.crap.new_function_above: give 15; the check supports the goals 15 and 30 only'],
-  ['with a CRAP goal of 40 for a changed function', (document: Document) => document.setIn(['ratchet', 'crap', 'changed_legacy_function_at_or_above'], 40), 'ratchet.crap.changed_legacy_function_at_or_above: give 30; the check supports the goals 15 and 30 only'],
 ] as const) {
   test(`Given a rules document ${name}, when it is read, then the diagnostic names the key`, () => {
     const document = new Document(documentOf());

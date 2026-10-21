@@ -31,7 +31,7 @@ const rules = rulesOf(stringify({
     packages: ['a', 'composition'], allowed_edges: [{ from: 'composition', to: 'a', kind: 'runtime' }], forbidden_edges: [], known_cycles: [],
     allowed_external_imports: {}, allowed_node_builtins: {},
   },
-  ratchet: { maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 }, crap: { new_function_above: 15, changed_legacy_function_at_or_above: 30 } },
+  ratchet: { maintainability_index: { new_file_below: 85, existing_file_drop_read_at: 5 } },
 }), 'The rules file r.yaml at HEAD');
 
 const candidate = {
@@ -83,23 +83,5 @@ test('Given snapshots in which the changed contract drops by five, when the resu
     'SHOW scopes.executable: 2 changed files',
   ]);
   assert.deepEqual(result.mi, ['changed: src/a/old.ts -> src/a/a.ts: 90 to 89.5', 'changed: src/index.ts: 88 to 82.5']);
-  assert.match(markdownOf(result), /\nTests:\n(?:- .*\n){3}\nMI:\n- changed: src\/a\/old\.ts -> src\/a\/a\.ts: 90 to 89\.5\n- changed: src\/index\.ts: 88 to 82\.5\n\nCRAP:\n- not checked: give --crap\n\nFacts to declare:\n/);
-});
-
-test('Given CRAP rows of the renamed file, when the result is made, then the CRAP reason is FIX among the other reasons and the report gives the CRAP section after the MI section', () => {
-  const crap = [
-    { file: 'src/a/a.ts', function: 'grow', change: 'changed' as const, paths: 5 },
-    { file: 'src/a/a.ts', function: 'small', change: 'new' as const, paths: 2 },
-  ];
-  const result = resultOf({ ...candidate, crap }, { base: rules, head: rules, path: 'r.yaml', notes: [] }, undefined);
-
-  assert.equal(result.route, 'FIX');
-  assert.deepEqual(result.reasons.map((reason) => `${reason.route} ${reason.key}: ${reason.fact}`), [
-    'FIX ratchet.crap.changed_legacy_function_at_or_above: src/a/a.ts: grow: [5, 30]',
-    'ASK protected_paths.contracts: src/index.ts',
-    'ASK public_surface: src/index.ts',
-    'SHOW scopes.executable: 2 changed files',
-  ]);
-  assert.deepEqual(result.crap, ['src/a/a.ts: small: pass from the bound [2, 6]']);
-  assert.match(markdownOf(result), /\nMI:\n- not checked: give --base-snapshot and --head-snapshot\n\nCRAP:\n- src\/a\/a\.ts: small: pass from the bound \[2, 6\]\n\nFacts to declare:\n/);
+  assert.match(markdownOf(result), /\nTests:\n(?:- .*\n){3}\nMI:\n- changed: src\/a\/old\.ts -> src\/a\/a\.ts: 90 to 89\.5\n- changed: src\/index\.ts: 88 to 82\.5\n\nFacts to declare:\n/);
 });

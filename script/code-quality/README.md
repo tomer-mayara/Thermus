@@ -51,7 +51,6 @@ The matching helper folders (`delta/`, `mcp/`, `review/`, `coverage/`,
 own each command's work. `identity/` owns source evidence and function identity;
 `provenance/` owns input identity and checked readers; `dependencies/` owns
 parsed imports, resolution, and checked snapshot dependency evidence.
-`assessment/crap-absolute.ts` calculates both absolute CRAP goals from operands.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
 and parent signal observations live in `coverage/propagation.ts` and
@@ -116,16 +115,6 @@ at zero coverage and 25 paths at 80% equal 30 and fail the strict goal.
 At 30 paths even full coverage fails it; at 15 paths full coverage meets 15.
 Decisions use unrounded scores. Display precision or an explicit inequality
 keeps 29.96 visibly below 30 and 15.04 above 15.
-
-Without a covered share, `p` paths bound CRAP from `p` to `p² + p`. The pure
-`crapAbsoluteOf({ paths, share? })` in `assessment/crap-absolute.ts` decides
-`atMost15` and `below30` from these bounds or from exact operands, as `PASS`,
-`MISS`, or `UNKNOWN`: three paths prove CRAP ≤ 15 without coverage, four paths
-give a range that crosses 15. The
-[review route check](../pr-review/README.md) applies it to the rows of
-`--json`; the
-[metrics guide](../../docs/implementation/ast-metrics-review.md#the-crap-goal)
-gives the details.
 
 ### Own characters, joins, and unknowns
 
@@ -568,7 +557,7 @@ above, even when a focused caller would otherwise select them.
 ## Assess per-function CRAP goals
 
 ```text
-Usage: pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [--json FILE] [PATH...] [--help]
+Usage: pnpm exec node script/code-quality/ast-metrics-crap.ts [--base REF] [--coverage FILE] [--limit N] [--target N] [--allow-tool-version] [PATH...] [--help]
 
 Options:
   --base REF            Compare against the merge base of REF and HEAD
@@ -578,8 +567,6 @@ Options:
   --limit N             Require CRAP strictly below N (default: 30)
   --target N            Require new functions at or below N (default: 15)
   --allow-tool-version  Allow an installed version other than the pinned version
-  --json FILE           Also write the rows of the table as JSON to FILE,
-                        relative to the current folder
   --help, -h            Show this help
 ```
 
@@ -604,19 +591,6 @@ miss, unknown required goal, invalid input, or tool failure. It also reports
 unchanged high functions. Documented exceptions do not change this result.
 If compatible coverage is unavailable and collection is outside scope,
 record a deferred assessment.
-
-With `--json FILE`, the command also writes one JSON object to `FILE`:
-`version` 1, `base` (the merge base), `head` (HEAD), and `rows`. Each row of
-the table gives one entry, in the order of the table, with `file`,
-`function`, `change` (`new`, `changed`, `unchanged`, or `unknown`), `paths`,
-`share`, `crap`, and `identity`. Without a covered share, `share` and `crap`
-are absent; without source identity, `identity` is absent. An empty selection
-gives `rows: []`. The command writes the file also for a goal miss; the table
-and the exit status do not change. After a diagnostic it writes no file, so an
-older file can stay. The [review route check](../pr-review/README.md) reads
-the file with `--crap`. Write it under `ast-report/`, as
-`ast-report/crap.json`: a file in another folder of the repository can change
-the input identity of the coverage report.
 
 Focused tests: affected `ast-metrics-crap*.test.ts` rows in the
 [available inventory](#available-tests). The live contract reuses compatible
@@ -1024,7 +998,6 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/acceptance/script/ast-metrics-coverage-provenance.test.ts | no |
 | live | test/acceptance/script/ast-metrics-coverage.live.ts | yes |
 | ordinary | test/acceptance/script/ast-metrics-coverage.test.ts | no |
-| ordinary | test/acceptance/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-goals.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-identity.test.ts | no |
 | ordinary | test/acceptance/script/ast-metrics-crap-inputs.test.ts | no |
@@ -1098,10 +1071,8 @@ emitted tests. Changes to one command or double do not select all live files.
 | ordinary | test/unit/script/ast-metrics-coverage-suites.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage-unmeasured.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-coverage.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-absolute.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-command.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-goals.test.ts | no |
-| ordinary | test/unit/script/ast-metrics-crap-json.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-metrics.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-crap-report.test.ts | no |
 | ordinary | test/unit/script/ast-metrics-delta.test.ts | no |

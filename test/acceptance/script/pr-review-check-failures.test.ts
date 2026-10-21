@@ -20,8 +20,6 @@ for (const [name, rules, diagnostic] of [
     `${atHead} has no valid key dependency_graph.triggers.known_cycle_grows: give FIX, the route that the check uses.\n`],
   ['without the MI limit of a new file', rulesYaml(({ ratchet }) => { Reflect.deleteProperty(ratchet.maintainability_index, 'new_file_below'); }),
     `${atHead} has no valid key ratchet.maintainability_index.new_file_below: give a whole number, 0 or more.\n`],
-  ['with a CRAP goal of 10 for a new function', rulesYaml(({ ratchet }) => { ratchet.crap.new_function_above = 10; }),
-    `${atHead} has no valid key ratchet.crap.new_function_above: give 15; the check supports the goals 15 and 30 only.\n`],
 ] as const) {
   test(`Given a rules file ${name}, when the check runs, then it exits 1 and names the key`, { timeout }, async (t) => {
     const repository = GitRepository.onFeatureBranch(t, mainFiles(rules));

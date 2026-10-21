@@ -2,12 +2,12 @@
 #
 # Status: proposal of 2026-10-20, in manual trial. The command
 # script/pr-review/check.ts applies protected_paths, read_paths, scopes,
-# public_surface, dependency_graph, size, ratchet.maintainability_index and
-# the two goals of ratchet.crap, and it reads the exceptions file of ratchet.
-# The other keys wait for CI and the later checks. The section "Review route"
-# of AGENTS.md governs where it differs from this file. The playbook
-# docs/implementation/pr-review-playbook.md explains the routes and the seven
-# checks. The checks will read this file. A change to this file is ASK.
+# public_surface, dependency_graph, size and ratchet.maintainability_index,
+# and it reads the exceptions file of ratchet. The other keys wait for CI and
+# the later checks. The section "Review route" of AGENTS.md governs where it
+# differs from this file. The playbook docs/implementation/pr-review-playbook.md explains the
+# routes and the seven checks. The checks will read this file. A change to
+# this file is ASK.
 #
 # A scan of the imports in src/**/*.ts on main 304cd24f (PR #200) seeded the
 # lists: 138 files, 438 import statements, every relative specifier resolved
@@ -72,8 +72,7 @@ required_checks:
     - pnpm exec node script/code-quality/ast-metrics-process.ts --coverage ast-report/coverage.json
     - pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main   # writes ast-report/snapshot-base.json
     - pnpm exec node script/code-quality/ast-metrics-snapshot.ts                      # writes ast-report/snapshot.json
-    - pnpm exec node script/code-quality/ast-metrics-crap.ts --base origin/main --coverage ast-report/coverage.json --json ast-report/crap.json   # writes the rows also for a goal miss; its exit status 1 for a goal is no failure, because the check applies the goals
-    - pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json --crap ast-report/crap.json   # checks 1, 3 and 5, the MI rules and CRAP goals of check 4, and the modules of check 2
+    - pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json   # checks 1, 3 and 5, the MI rules of check 4, and the modules of check 2
   when_paths_change:
     - paths: [src/**, docker/**, "Dockerfile*"]
       commands: [pnpm run build:hosted, pnpm run test:container:hosted]   # the AMD64 runner replaces the emulated local build
@@ -386,14 +385,10 @@ dependency_graph:
 # script/code-quality/ast-metrics-snapshot.ts, one of the merge base and one
 # of the candidate. The check reads them with --base-snapshot and
 # --head-snapshot and applies maintainability_index to the raw MI of each
-# changed production file. After the metrics process, the author writes the
-# CRAP rows of the candidate with script/code-quality/ast-metrics-crap.ts
-# --json. The check reads them with --crap and applies the two goals of crap
-# to the new, unknown and changed functions of the changed production files.
-# A snapshot or a CRAP file of another commit stops the check. The check reads
-# the exceptions file at HEAD; today is the committer date of HEAD, so that a
-# rerun gives the same route. The other CRAP keys and identity wait for the
-# later checks.
+# changed production file. A snapshot of another commit stops the check. The
+# check reads the exceptions file at HEAD; today is the committer date of
+# HEAD, so that a rerun gives the same route. The CRAP keys and identity wait
+# for the later check.
 ratchet:
   base_snapshot: ast-report/snapshot-base.json   # the default output of the snapshot command with --base
   head_snapshot: ast-report/snapshot.json        # the default output of the snapshot command without --base
@@ -402,14 +397,13 @@ ratchet:
     key: the function identity and move detection of script/code-quality/ast-metrics-crap.ts
     new_function: a function with no score at the merge base
     legacy_function: a function with a score at start_commit
-    start_commit: null               # set at adoption; until then the check treats each changed function as legacy
-    unknown_coverage_on_changed_function: FIX   # a bound can prove the goal first: p paths without a share give CRAP from p to p² + p
+    start_commit: null               # set at adoption
+    unknown_coverage_on_changed_function: FIX
   crap:
     unit: function
-    rows: ast-report/crap.json       # the default location of the JSON of ast-metrics-crap.ts --json; the check reads it with --crap
-    new_function_above: 15           # FIX for a new function or one of unknown identity; the check supports 15 only
-    changed_legacy_function_at_or_above: 30   # FIX for a changed function; the check supports 30 only
-    changed_function_above_goal_and_worse_than_base: later   # a later iteration, after the base is measured; the check ignores this key
+    new_function_above: 15           # FIX
+    changed_legacy_function_at_or_above: 30   # FIX
+    changed_function_above_goal_and_worse_than_base: FIX   # a function below its goal may get worse
   maintainability_index:
     unit: production file            # a test or support file has no rule
     new_file_below: 85               # FIX for a new file (status A) below this raw MI
@@ -417,9 +411,9 @@ ratchet:
     compare: raw values, no rounding
   exceptions:
     file: .code-quality-exceptions.yaml   # optional; a change is READ through read_paths
-    fields: [unit, metric, bound, reason, expires, predecessor]   # the check reads path (the unit of mi) or function (<file>#<function>, the unit of crap), metric, bound, reason and expires (YYYY-MM-DD)
+    fields: [unit, metric, bound, reason, expires, predecessor]   # the check reads path (the unit of mi), metric mi, bound, reason and expires (YYYY-MM-DD)
     predecessor: the function that a renamed or moved function continues, so it keeps the legacy goal
-    expired_entry: FIX for a pull request that changes the unit; other expiries go to the monthly review   # the check takes a change of the file of a function as a change of its unit
+    expired_entry: FIX for a pull request that changes the unit; other expiries go to the monthly review
 
 # Check 5. Lines are additions plus deletions in the diff against the merge base.
 size:
