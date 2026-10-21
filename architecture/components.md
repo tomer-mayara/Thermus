@@ -10,7 +10,256 @@ when a change affects this view. Git history and pull request diffs show its
 evolution. The [component structure proposal](../docs/design/component-structure-proposal.md)
 records the migration design; this page describes the resulting system.
 
+This baseline uses selected arc42 sections: context (3), building blocks (5),
+runtime (6), and deployment (7). It does not fill the complete template.
+[C4 notation](https://c4model.com/diagrams/notation) supplies element types,
+responsibilities, technologies, and labelled relationships. A
+[C4 container](https://c4model.com/diagrams/container) means an application,
+process, or datastore; it does not mean a Docker container or a source folder.
+The [arc42 building-block view](https://docs.arc42.org/section-5/) adds the
+static decomposition. Ordinary Mermaid expresses these views without special
+C4 syntax. Each heading gives the diagram type and scope.
+
+## Context
+
+C4 system context; scope: Thermus as one software system. Thermus converts
+public pages and Brave HTML search results to cleaned Markdown for MCP clients,
+and provides account and connection pages. External clients and websites are
+outside its trust boundary. Local Better Auth belongs inside Thermus.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  context_customer["Person: customer<br/>Uses tools and manages workspace access"]
+  context_operator["Person: operator<br/>Runs and administers Thermus"]
+  context_client["External software: MCP client<br/>Requests page fetch and search"]
+  context_thermus["Software system: Thermus<br/>Authorized web-to-Markdown tools and account UI"]
+  context_workos["External system: WorkOS / AuthKit<br/>Hosted identity and organizations"]
+  context_public["External systems: public websites<br/>Includes Brave HTML search"]
+  context_customer -->|uses tools through client| context_client
+  context_customer -->|opens account and connection pages| context_thermus
+  context_operator -->|configures installation / manages local accounts| context_thermus
+  context_client -->|requests page fetch and search| context_thermus
+  context_thermus -->|uses hosted identity and organizations| context_workos
+  context_thermus -->|fetches public content| context_public
+```
+
+## arc42 building-block view
+
+### C4 containers: hosted edition
+
+Scope: Thermus hosted system. The browser portal is a separate browser
+application. The Node server serves its assets and routes. Lightpanda is a
+short-lived process container even when it shares the server's Docker image.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  hosted_user["Person: customer<br/>Uses tools and manages access"]
+  hosted_client["External software: MCP client<br/>Calls Thermus tools"]
+  subgraph hosted_system["Software system: Thermus · hosted"]
+    hosted_portal["Container: user portal<br/>Browser JavaScript / HTML / CSS<br/>Connection instructions and account UI"]
+    hosted_server["Container: Thermus server<br/>Node.js / TypeScript<br/>MCP tools, account routes, authentication"]
+    hosted_renderer["Container: renderer child<br/>Lightpanda<br/>Renders one public page per fetch"]
+  end
+  hosted_workos["External system: WorkOS / AuthKit<br/>Identity and organization services"]
+  hosted_public["External systems: public websites<br/>Includes Brave HTML search"]
+  hosted_user -->|uses in browser| hosted_portal
+  hosted_client -->|MCP over HTTP / bearer token| hosted_server
+  hosted_portal -->|HTTP account routes| hosted_server
+  hosted_server -->|serves portal assets over HTTP| hosted_portal
+  hosted_server -->|SDK HTTPS / JWT key set| hosted_workos
+  hosted_server -->|execFile / stdout JSON| hosted_renderer
+  hosted_renderer -->|HTTP / HTTPS page requests| hosted_public
+```
+
+### C4 containers: local edition
+
+Scope: Thermus self-hosted system. Better Auth is built into the server;
+it is not an external service. Local authentication pages are server-generated
+HTML responses, not a second browser application. The operator runs CLI
+administration while the server is stopped, using the same installation data.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  local_operator["Person: operator<br/>Manages the local installation"]
+  local_browser["External software: browser<br/>Displays generated authentication pages"]
+  local_client["External software: MCP client<br/>Calls Thermus tools"]
+  subgraph local_system["Software system: Thermus · local"]
+    local_server["Container: Thermus server<br/>Node.js / TypeScript + Better Auth<br/>MCP tools and generated auth pages"]
+    local_cli["Container: administration CLI<br/>Node.js / TypeScript<br/>User and client commands"]
+    local_renderer["Container: renderer child<br/>Lightpanda<br/>Renders one public page per fetch"]
+    local_data["Container: installation datastore<br/>SQLite and files<br/>Accounts, keys, secret, installation identity"]
+  end
+  local_public["External systems: public websites<br/>Includes Brave HTML search"]
+  local_operator -->|runs terminal commands| local_cli
+  local_browser -->|HTTP auth requests / form submissions| local_server
+  local_server -->|HTTP generated HTML / cookies| local_browser
+  local_client -->|MCP over HTTP / bearer token| local_server
+  local_server -->|SQLite / filesystem, locked installation| local_data
+  local_cli -->|SQLite / filesystem, locked installation| local_data
+  local_server -->|execFile / stdout JSON| local_renderer
+  local_renderer -->|HTTP / HTTPS page requests| local_public
+```
+
+### Containers and source owners
+
+This mapping lists principal contributors from the 19 stable registry IDs
+without turning them into 19 containers. Owners are logical source boundaries;
+some contribute code to both server and CLI. The [Ownership](#ownership) table retains the full source
+roots, responsibilities, and public contracts.
+
+| Container or artifact | Registry owners that contribute |
+| --- | --- |
+| Both Node server editions | `app`, `config`, `http`, `logging`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
+| Hosted server additions | `organizations`, `billing`, `workos` |
+| Local server addition | `better-auth` |
+| Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `logging`, `identity`, `better-auth` |
+| Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
+| Renderer process | External Lightpanda binary, controlled by `website-fetcher`; no new source owner |
+| Local installation datastore | Opened and owned by `better-auth`; no new source owner |
+
+### Selected C4 components: tool processing in the Node server
+
+Scope: one Thermus Node server container, in either edition. Each component
+box gives its stable owner ID, responsibility, and technology. Solid arrows
+show selected collaborations through supplied roles or directly held objects;
+they do not assert source imports of the selected implementation. Thick arrows
+show app composition. The [review rules](../docs/implementation/pr-review-rules.yaml)
+remain the complete source-import policy. Supporting process containers and
+external systems sit outside the server boundary.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  subgraph tool_server["Container: Thermus Node server · either edition"]
+    tool_root["Component: app<br/>Construct and share tool collaborators<br/>TypeScript"]
+    tool_mcp["Component: mcp<br/>Adapt authorized tool requests and results<br/>TypeScript"]
+    tool_fetch["Component: page-fetch<br/>Check URL and permission, coordinate fetch<br/>TypeScript"]
+    tool_search["Component: search<br/>Check query and permission, coordinate search<br/>TypeScript"]
+    tool_execution["Component: execution<br/>Step roles, observation and execution records<br/>TypeScript"]
+    tool_html["Component: html-processing<br/>Clean HTML and produce Markdown<br/>TypeScript"]
+    tool_engine["Component: search-engine<br/>Build and validate Brave HTML search<br/>TypeScript"]
+    tool_fetcher["Component: website-fetcher<br/>Validate destinations and bound rendering<br/>TypeScript"]
+  end
+  tool_child["Container: renderer child<br/>Render one public page<br/>Lightpanda"]
+  tool_web["External systems: public websites<br/>Pages and Brave HTML search"]
+  tool_root ==>|constructs / supplies tool operations| tool_mcp
+  tool_root ==>|constructs / supplies fetch collaborators| tool_fetch
+  tool_root ==>|constructs / supplies search collaborators| tool_search
+  tool_mcp -->|calls supplied fetch operation| tool_fetch
+  tool_mcp -->|calls supplied search operation| tool_search
+  tool_fetch -->|uses outgoing observer / execution records| tool_execution
+  tool_search -->|uses outgoing observer / execution records| tool_execution
+  tool_fetch -->|calls supplied IncomingStep| tool_html
+  tool_search -->|calls supplied IncomingStep| tool_html
+  tool_fetch -->|calls supplied WebsiteFetcher| tool_fetcher
+  tool_search -->|calls supplied SearchEngine| tool_engine
+  tool_engine -->|calls supplied WebsiteFetcher| tool_fetcher
+  tool_fetcher -->|execFile / stdout JSON| tool_child
+  tool_child -->|HTTP / HTTPS page requests| tool_web
+```
+
+[Tool composition](../src/app/fetch-tool.ts) shares one fetcher, ad cleaner,
+sanitizer, observer, record sink, and renderer-report closures between both
+operations. Each tool has its own `ProcessHtmlStep`, HTML runner, and Markdown
+converter. Fetch uses ads → sanitizer → Markdown; search inserts Brave
+projection before Markdown. [PipelineStep](../src/pipelines/execution/pipeline-step.ts)
+and [HtmlTransformation](../src/pipelines/html-processing/html-to-markdown-pipeline.ts)
+are distinct protocols, not a generic pipeline engine. `ProcessHtmlStep`
+implements the execution-owned incoming role; callers need not import its
+concrete class. Each operation has fresh execution and HTML context. Hosted
+composition wraps fetch and search in one application-wide capacity slot.
+
+### Selected C4 components: hosted authentication in the Node server
+
+Scope: one hosted Node server container. The browser application and WorkOS
+service remain outside that boundary. Role use follows calls on supplied
+collaborators; it does not reverse the source dependency from provider
+implementations to neutral contracts.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  hosted_portal["Container: user portal<br/>Account and connection UI<br/>Browser JavaScript / HTML / CSS"]
+  subgraph account_server["Container: Thermus Node server · hosted"]
+    account_root["Component: app<br/>Select edition and bind account roles<br/>TypeScript"]
+    account_web["Component: web<br/>Account and provider-specific browser routes<br/>TypeScript"]
+    account_mcp["Component: mcp<br/>Authenticate and bind request access<br/>TypeScript"]
+    account_identity["Component: identity<br/>Trusted access records and neutral auth contracts<br/>TypeScript"]
+    account_org["Component: organizations<br/>Check customer roles, MFA and privileged changes<br/>TypeScript"]
+    account_billing["Component: billing<br/>Free-plan state and seat-update role<br/>TypeScript"]
+    account_workos["Component: workos<br/>Verify access, manage sessions and directory<br/>TypeScript / WorkOS SDK"]
+  end
+  hosted_workos["External system: WorkOS / AuthKit<br/>Remote identity and organization data"]
+  hosted_portal -->|HTTP account routes| account_web
+  account_root ==>|constructs / supplies session and account roles| account_web
+  account_root ==>|constructs / supplies verification roles| account_mcp
+  account_web -->|calls supplied BrowserSession / AccessResolver| account_workos
+  account_mcp -->|calls supplied IdentityVerifier / AccessResolver| account_workos
+  account_web -->|requests account administration| account_org
+  account_org -->|calls supplied OrganizationDirectory| account_workos
+  account_org -->|calls supplied Billing| account_billing
+  account_workos -->|creates trusted access records| account_identity
+  account_workos -->|SDK HTTPS / JWT key set| hosted_workos
+```
+
+[Hosted composition](../src/app/hosted-workos-application.ts) shares a WorkOS
+SDK client, key-set resolver, and directory and selects `BillingFree`.
+[WorkOSAuthProvider](../src/accounts/providers/workos/workos-auth-provider.ts)
+implements identity-owned verifier/resolver contracts;
+[WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
+implements the organizations-owned directory role. `WorkOSBrowserSession`
+implements `BrowserSession`; signup is a separate provider responsibility.
+WorkOS-specific web routes also use provider session, signup, cookie, and
+document contracts directly. Other account routes depend on neutral roles.
+
+### Selected C4 components: local authentication in the Node server
+
+Scope: one local Node server container. Offline CLI administration belongs to
+a separate process, shown in the container view and source-owner mapping.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  local_browser["External software: browser<br/>Displays generated authentication HTML"]
+  subgraph local_auth_server["Container: Thermus Node server · local"]
+    local_root["Component: app<br/>Open installation and supply authentication roles<br/>TypeScript"]
+    local_web["Component: web<br/>Generated sign-in and consent pages<br/>TypeScript"]
+    local_mcp["Component: mcp<br/>Authenticate and bind request access<br/>TypeScript"]
+    local_identity["Component: identity<br/>Trusted access records and neutral auth contracts<br/>TypeScript"]
+    local_better["Component: better-auth<br/>Local verification, provider handler and installation<br/>TypeScript / Better Auth"]
+  end
+  local_data["Container: installation datastore<br/>Accounts, keys and installation identity<br/>SQLite / filesystem"]
+  local_browser -->|HTTP auth requests / form submissions| local_web
+  local_root ==>|binds runtime handler to web ProviderHandler| local_web
+  local_root ==>|supplies verifier and resolver| local_mcp
+  local_web -->|calls supplied ProviderHandler| local_better
+  local_mcp -->|calls supplied IdentityVerifier / AccessResolver| local_better
+  local_better -->|creates trusted access records| local_identity
+  local_better -->|SQLite / filesystem reads and writes| local_data
+```
+
+[Application composition](../src/app/application.ts) uses edition-specific
+dynamic imports. It supplies `runtime.auth.handler` to
+[LocalAuthPages](../src/interfaces/web/auth/better-auth/local-auth-pages.ts)
+through the web-owned [ProviderHandler](../src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts)
+function contract. The collaboration arrow above is that supplied call, not a
+source import from web to Better Auth. The provider implements neutral
+identity contracts. Local composition does not construct hosted organization
+administration. The [Better Auth runtime](../src/accounts/providers/better-auth/better-auth-runtime.ts)
+owns its database and data-directory lock until app or offline CLI closure.
+App closes request work before provider resources. HTTP listener drain and
+logging sinks retain their responsibilities in the source-owner mapping.
+
 ## Runtime view
+
+arc42 section 6 describes runtime scenarios. The collaboration overview below
+keeps the broad map; the sequences show selected request and failure paths.
+They follow [arc42 runtime guidance](https://docs.arc42.org/section-6/).
+
+### Collaboration overview
 
 Arrows show selected runtime collaborations, not TypeScript imports. Each box
 can group several component IDs. These diagram groups are not source owners;
@@ -68,287 +317,201 @@ importing only neutral roles. The [review rules](../docs/implementation/pr-revie
 and generated metrics reports provide the complete import view; this diagram
 does not duplicate it.
 
-## arc42 building-block view
+### Scenario: MCP page fetch and renderer cancellation
 
-This section uses the static decomposition described by
-[arc42 section 5](https://docs.arc42.org/section-5/): a whole-system view and
-selected deeper views. The [Ownership](#ownership) table supplies each component's
-responsibility, public boundary, and source location. The diagrams add structure
-and selected dependencies; they are not a complete import graph.
-
-### Level 1: Thermus whitebox
-
-All 19 stable component IDs appear below. A subgraph contains logical building
-blocks; it does not add a source owner. The browser boundary separates browser
-code from server code. The server / command group locates source for alternative
-entry paths; its contents do not all run in one process. These groups do not
-prescribe separate deployments. `app` selects and constructs the server
-collaborators; the wide composition access is stated here instead of drawn as
-an arrow to every component.
-
-Solid arrows in this overview mean a selected source dependency, including type
-imports. They point from the importer to the owner of the imported module.
-Dependencies on injected roles point to the component that defines the role,
-not to the selected implementation. The labelled browser arrow is an HTTP
-contract, not a source import. The two refinements below separate role use,
-implementation, and composition in more detail. Omitted arrows do not imply
-that an import or collaboration is forbidden; the review rules give that check.
+Scope: one authenticated MCP fetch in either server edition. The hosted server
+adds a shared capacity slot after authentication and access resolution. Role
+participants can be implemented by either selected provider. The incoming HTML
+work runs only when rendering succeeds. Cancellation holds the hosted slot
+until renderer completion and cleanup settle.
 
 ```mermaid
-flowchart TB
-  subgraph arc_browser["Browser"]
-    arc_portal["user-portal"]
+%%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
+sequenceDiagram
+  actor Client as MCP client
+  participant MCP as mcp / request adapter
+  participant Auth as Auth provider / identity roles
+  participant Tools as app / tool operation
+  participant Adapter as mcp / fetch projection
+  participant Fetch as page-fetch / fetch operation
+  participant Renderer as website-fetcher / renderer adapter
+  participant Child as Lightpanda child process
+  participant HTML as html-processing / IncomingStep
+  Client->>MCP: HTTP MCP call with bearer token and URL
+  MCP->>Auth: Verify identity and resolve current access
+  alt Invalid token or access denied
+    Auth-->>MCP: Reject / deny
+    MCP-->>Client: Authentication or access error
+  else Trusted access context
+    MCP->>Tools: Fetch URL with context and AbortSignal
+    Note over Tools: Hosted: acquire shared fetch/search capacity or return busy
+    Tools->>Adapter: Invoke supplied fetch tool wrapper
+    Adapter->>Fetch: Run fetch operation
+    Fetch->>Fetch: Check permission and URL, run outgoing step
+    Fetch->>Renderer: Fetch validated destination with signal
+    Renderer->>Child: execFile fetch, capture JSON / HTML output
+    alt Request cancellation or server shutdown
+      MCP->>Renderer: Abort propagated through supplied signal
+      Renderer->>Renderer: Remove timers and abort listener
+      Renderer->>Child: Kill child with SIGKILL
+      Child-->>Renderer: Process completion callback
+      Renderer->>Renderer: Reject cancellation after callback
+      Renderer-->>Fetch: Cancellation
+      Fetch-->>Adapter: Cancellation
+      Adapter-->>Tools: Operation settles
+      Note over Tools: Hosted: release capacity in finally
+      Tools-->>MCP: Cancellation error
+      MCP->>MCP: Classify cancellation and record safe completion
+    else Render completes
+      Child-->>Renderer: Rendered page / completion callback
+      Renderer->>Renderer: Remove timers/listeners
+      Renderer-->>Fetch: WebsiteFetchResult
+      Fetch->>HTML: IncomingStep.execute(page, signal)
+      HTML-->>Fetch: Markdown or withheld outcome
+      Fetch-->>Adapter: Released Markdown or withheld outcome
+      Adapter->>Adapter: Map withheld to empty Markdown string
+      Adapter-->>Tools: Markdown string, possibly empty
+      Note over Tools: Hosted: release capacity in finally
+      Tools-->>MCP: Markdown string
+      MCP->>MCP: Record tool completion
+      MCP-->>Client: Text success, including empty text
+    end
   end
-  subgraph arc_server["Thermus server / local commands"]
-    subgraph arc_composition["Composition and support"]
-      arc_app["app"]
-      arc_config["config"]
-      arc_http["http"]
-      arc_logging["logging"]
-    end
-    subgraph arc_adapters["Request adapters"]
-      arc_mcp["mcp"]
-      arc_web["web"]
-      arc_cli["cli"]
-    end
-    subgraph arc_accounts["Account rules and roles"]
-      arc_identity["identity"]
-      arc_orgs["organizations"]
-      arc_billing["billing"]
-    end
-    subgraph arc_auth["Alternative authentication providers"]
-      arc_workos["workos · hosted"]
-      arc_better["better-auth · local"]
-    end
-    subgraph arc_tools["Tool operations and processing"]
-      arc_fetch["page-fetch"]
-      arc_search["search"]
-      arc_execution["execution"]
-      arc_html["html-processing"]
-    end
-    subgraph arc_content["Page and search adapters"]
-      arc_engine["search-engine"]
-      arc_fetcher["website-fetcher"]
-    end
-  end
-  arc_portal -->|HTTP routes| arc_web
-  arc_app --> arc_config
-  arc_app --> arc_http
-  arc_app --> arc_logging
-  arc_app --> arc_mcp
-  arc_app --> arc_web
-  arc_mcp --> arc_fetch
-  arc_mcp --> arc_search
-  arc_fetch --> arc_fetcher
-  arc_mcp --> arc_identity
-  arc_web --> arc_orgs
-  arc_cli --> arc_identity
-  arc_orgs --> arc_identity
-  arc_orgs --> arc_billing
-  arc_workos --> arc_identity
-  arc_workos --> arc_orgs
-  arc_better --> arc_identity
-  arc_fetch --> arc_execution
-  arc_search --> arc_execution
-  arc_search --> arc_engine
-  arc_html --> arc_execution
-  arc_engine --> arc_fetcher
 ```
 
-The browser portion of `user-portal` uses server routes through HTTP. Its Vite
-configuration is build-time Node code, not browser access to server modules.
-[HostedPortal](../src/app/hosted-portal.ts) loads the built assets. The overview
-shows selected dependencies across component boundaries, not every sibling
-relationship or external library.
+[Request authentication and shutdown](../src/interfaces/mcp/mcp-server.ts),
+[tool adaptation](../src/interfaces/mcp/fetch-tool-server.ts),
+[fetch ordering](../src/pipelines/page-fetch/fetch-page.ts), and
+[renderer cleanup](../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts)
+provide the contracts. HTTP disconnect handling and MCP shutdown propagate
+cancellation; a disconnected client cannot receive a final response. Ordinary
+failures, invalid inputs, blocked content, and cancellation remain distinct
+inside the pipeline. The MCP-owned fetch wrapper maps withheld content to empty
+Markdown text success. MCP records the safe completion status in its finalizer.
 
-### Level 2: refinement of tool operations and processing
+### Scenario: hosted member read
 
-This whitebox refines `page-fetch`, `search`, `execution`, `html-processing`,
-`search-engine`, and `website-fetcher`. Boxes within an owner are private parts
-or public contracts of that owner, not new component IDs. Solid arrows labelled
-`uses` mean dependency on a supplied role or a directly held collaborator.
-Dotted `implements` arrows point from an implementation to its contract.
-Thick `constructs / supplies` arrows are composition by `app`; they do not
-mean that the recipient imports app or the concrete provider.
+Scope: GET `/members` in the hosted Node server. The WorkOS adapter participant
+groups the session, access resolver, and shared directory; each return follows
+the request through that adapter. A signed-in session alone does not authorize
+the read. MFA is checked locally by organization administration before its
+first directory call. This groups remote reads, not a remote transaction.
 
 ```mermaid
-flowchart TB
-  tool_root["app / fetch-tool.ts<br/>shared tool composition"]
-  subgraph tool_fetch_owner["page-fetch"]
-    tool_fetch["createFetchPage<br/>permission · URL · outcomes"]
+%%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
+sequenceDiagram
+  actor Browser as Customer browser
+  participant Routes as web / account routes
+  participant Provider as workos / auth and directory
+  participant Admin as organizations / admin rules
+  participant Remote as WorkOS service
+  Browser->>Routes: GET /members with Cookie
+  Routes->>Provider: Authenticate cookie
+  Provider->>Remote: Session validation / refresh when needed
+  Remote-->>Provider: Session facts
+  alt Signed out
+    Provider-->>Routes: Signed-out state and cookie effects
+    Routes-->>Browser: Signed-out notice with cookie effects
+  else Signed-in session
+    Provider-->>Routes: User, MFA evidence and cookie effects
+    Routes->>Provider: Resolve current access
+    Provider->>Remote: Read current organization grants
+    Remote-->>Provider: Current membership and roles
+    alt Access denied
+      Provider-->>Routes: Deny
+      Routes-->>Browser: Access notice with cookie effects
+    else Access allowed
+      Provider-->>Routes: Trusted organization context
+      Routes->>Admin: memberOverview(actor, organization)
+      Admin->>Admin: Check MFA locally
+      alt MFA evidence missing
+        Admin-->>Routes: MFA required
+        Routes-->>Browser: MFA notice with cookie effects
+      else MFA present
+        Admin->>Provider: Read current memberships and managed roles
+        Provider->>Remote: Read current membership / role state
+        Remote-->>Provider: Current facts
+        Provider-->>Admin: Memberships and roles
+        alt Actor cannot manage organization
+          Admin-->>Routes: Denied
+          Routes-->>Browser: Refusal page with cookie effects
+        else Actor authorized
+          Admin->>Provider: Read member overview
+          Provider->>Remote: Read memberships, roles and users
+          Remote-->>Provider: Member data
+          Provider-->>Admin: Member overview data
+          Admin-->>Routes: Authorized overview
+          Routes-->>Browser: HTML member overview with cookie effects
+        end
+      end
+    end
   end
-  subgraph tool_search_owner["search"]
-    tool_search["SearchPipeline<br/>permission · query · outcomes"]
-  end
-  subgraph tool_execution_owner["execution"]
-    tool_steps["OutgoingStep / IncomingStep<br/>execute → allow or block"]
-    tool_observer["ObserveRequestStep"]
-    tool_records["ExecutionContext / StepRecordSink"]
-  end
-  subgraph tool_html_owner["html-processing"]
-    tool_process["ProcessHtmlStep"]
-    tool_runner["HtmlToMarkdownPipeline<br/>fresh HtmlProcessingContext"]
-    tool_transforms["HtmlTransformation.invoke<br/>ads · sanitizer · optional Brave projection<br/>Markdown converter"]
-  end
-  subgraph tool_engine_owner["search-engine"]
-    tool_engine_role["SearchEngine"]
-    tool_brave["SearchEngineBraveHttp"]
-  end
-  subgraph tool_fetcher_owner["website-fetcher"]
-    tool_fetch_role["WebsiteFetcher"]
-    tool_lightpanda["WebsiteFetcherLightpanda<br/>destination and process limits"]
-  end
-  tool_child["Lightpanda child<br/>one per fetch"]
-  tool_web(["Public pages / Brave HTML"])
-  tool_root ==>|constructs / supplies| tool_fetch
-  tool_root ==>|constructs / supplies| tool_search
-  tool_root ==>|constructs / supplies| tool_process
-  tool_fetch -->|uses| tool_steps
-  tool_search -->|uses| tool_steps
-  tool_fetch -->|uses| tool_records
-  tool_search -->|uses| tool_records
-  tool_observer -.->|implements OutgoingStep| tool_steps
-  tool_process -.->|implements IncomingStep| tool_steps
-  tool_process -->|uses| tool_runner
-  tool_runner -->|uses ordered transformations| tool_transforms
-  tool_fetch -->|uses| tool_fetch_role
-  tool_search -->|uses| tool_engine_role
-  tool_brave -.->|implements| tool_engine_role
-  tool_brave -->|uses| tool_fetch_role
-  tool_lightpanda -.->|implements| tool_fetch_role
-  tool_lightpanda -->|starts and bounds| tool_child
-  tool_child -->|loads pages| tool_web
 ```
 
-The last two arrows mark the adapter's external boundary, not TypeScript
-imports. [Tool composition](../src/app/fetch-tool.ts) constructs one fetcher,
-ad cleaner, sanitizer, observer, record sink, and renderer-report closures for
-both operations. It supplies these objects through the roles above. Each tool
-has its own `ProcessHtmlStep`, HTML runner, and Markdown converter. Fetch uses
-ads → sanitizer → Markdown; search adds Brave projection before Markdown.
-[PipelineStep](../src/pipelines/execution/pipeline-step.ts) and
-[HtmlTransformation](../src/pipelines/html-processing/html-to-markdown-pipeline.ts)
-are distinct contracts. There is no shared generic pipeline engine.
+[Account routes](../src/interfaces/web/account/account-routes.ts) authenticate
+before access resolution. Signed-in route failures are reported and become a
+request-failed page with the session cookie effects; a failure during initial
+session authentication follows the outer failure handler instead.
+[Administration routes](../src/interfaces/web/account/administration-routes.ts)
+permit GET/HEAD reads without a CSRF check.
+[OrganizationAdministration](../src/accounts/organizations/organization-administration.ts)
+checks MFA and current role authority before reading the overview. The
+[shared directory](../src/accounts/providers/workos/workos-organizations.ts)
+reads current remote state. Privileged mutations and their recording rules
+remain described under resource ownership and design choices below.
 
-Each operation has fresh execution and HTML context. Hosted composition wraps
-both operations in one application-wide capacity slot. The
-[Lightpanda adapter](../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts)
-owns each child until completion or cancellation. These lifetimes explain
-sharing inside this static decomposition; the Runtime view describes calls.
+## Deployment view
 
-### Level 2: refinement of accounts and browser authentication
-
-The two whiteboxes below refine the account/provider groups and their request
-adapters for the hosted and local authentication editions.
-Solid `uses` arrows name required contracts. Dotted `implements` arrows point
-from providers to neutral contracts; the contracts do not depend on providers.
-Thick composition arrows mark app's selection and binding of one edition.
-The direct WorkOS web dependency is explicit because browser authentication is
-only partly provider-neutral.
-
-#### Hosted edition
+C4 deployment view; scope: source-defined local topology and recorded hosted
+target. This is not a live cloud inventory. The
+[self-hosted Compose contract](../compose.yaml) runs one Docker container;
+its Node server and per-fetch Lightpanda child are two C4 process containers
+inside that same Docker boundary. An offline CLI uses the same image and data
+volume while the server is stopped. A data-directory lock prevents concurrent
+installation ownership.
 
 ```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
 flowchart TB
-  account_root["app<br/>hosted composition"]
-  subgraph account_identity_owner["identity"]
-    account_access["IdentityVerifier / AccessResolver<br/>trusted access records"]
-    account_browser["BrowserSession"]
+  subgraph deploy_local["Deployment alternative: self-hosted Compose"]
+    deploy_loopback["Host endpoint<br/>127.0.0.1:8080"]
+    subgraph deploy_local_docker["Docker container · Thermus image"]
+      deploy_local_node["Node server process<br/>HTTP :8080 / local edition"]
+      deploy_local_child["Lightpanda child process<br/>Per fetch / same image"]
+    end
+    deploy_volume["Named volume: thermus-data<br/>/var/lib/thermus · SQLite and secrets"]
+    deploy_rules["Read-only bind mount<br/>/etc/thermus/ad-rules.txt"]
+    deploy_loopback -->|published port| deploy_local_node
+    deploy_local_node -->|execFile / stdout JSON| deploy_local_child
+    deploy_local_node -->|SQLite / filesystem, locked directory| deploy_volume
+    deploy_rules -->|startup rules read| deploy_local_node
   end
-  subgraph account_org_owner["organizations"]
-    account_admin["OrganizationAdministration<br/>roles · MFA · changes · seat count"]
-    account_directory["OrganizationDirectory"]
+  subgraph deploy_hosted["Recorded target: hosted Render web service"]
+    deploy_edge["Render HTTPS edge<br/>Recorded ingress target"]
+    subgraph deploy_hosted_docker["Docker container · hosted image"]
+      deploy_hosted_node["Node server process<br/>HTTP :8080 / portal + account + MCP"]
+      deploy_hosted_child["Lightpanda child process<br/>Per fetch / same image"]
+    end
+    deploy_edge -->|HTTP forwarding to :8080| deploy_hosted_node
+    deploy_hosted_node -->|execFile / stdout JSON| deploy_hosted_child
   end
-  subgraph account_billing_owner["billing"]
-    account_billing_role["Billing / BillingFree"]
-  end
-  subgraph account_web_owner["web"]
-    account_routes["HostedAccountRoutes"]
-    account_workos_routes["WorkOS session / signup routes"]
-  end
-  account_mcp["mcp / MCPServer"]
-  subgraph account_workos_owner["workos · hosted alternative"]
-    account_workos_access["WorkOSAuthProvider"]
-    account_workos_directory["WorkOSOrganizations"]
-    account_workos_session["WorkOSBrowserSession"]
-    account_workos_signup["WorkOSSignup / signup contracts"]
-  end
-  account_workos_external(["WorkOS / AuthKit<br/>remote identity and organizations"])
-  account_root ==>|constructs / supplies hosted roles| account_workos_owner
-  account_mcp -->|uses| account_access
-  account_routes -->|uses| account_access
-  account_routes -->|uses| account_browser
-  account_routes -->|uses| account_admin
-  account_admin -->|uses| account_directory
-  account_admin -->|uses| account_billing_role
-  account_workos_access -.->|implements| account_access
-  account_workos_directory -.->|implements| account_directory
-  account_workos_session -.->|implements BrowserSession| account_browser
-  account_workos_routes -->|uses provider session roles| account_workos_session
-  account_workos_routes -->|uses signup contracts| account_workos_signup
-  account_workos_owner -->|SDK / key-set boundary| account_workos_external
+  deploy_workos["External system: WorkOS / AuthKit<br/>HTTPS identity / organization services"]
+  deploy_public["External systems: public websites<br/>HTTP / HTTPS pages and Brave HTML"]
+  deploy_hosted_node -->|HTTPS SDK / key set| deploy_workos
+  deploy_hosted_child -->|HTTP / HTTPS| deploy_public
+  deploy_local_child -->|HTTP / HTTPS| deploy_public
 ```
 
-#### Local edition
-
-The local alternative repeats the neutral identity roles. The web-owned
-`ProviderHandler` is a function contract; app supplies the runtime handler.
-This binding is not a source dependency from web to the provider.
-
-```mermaid
-flowchart TB
-  local_root["app / local composition and CLI entry"]
-  subgraph local_identity_owner["identity"]
-    local_access["IdentityVerifier / AccessResolver"]
-    local_admin_role["LocalUserAdministration"]
-  end
-  subgraph local_web_owner["web"]
-    account_local_pages["LocalAuthPages"]
-    account_local_handler["ProviderHandler<br/>Request → Promise of Response"]
-  end
-  account_cli["cli / local-auth-command.ts"]
-  local_mcp["mcp / MCPServer"]
-  subgraph account_better_owner["better-auth"]
-    account_better_access["BetterAuthProvider"]
-    account_better_admin["BetterAuthUserAdministration"]
-    account_better_runtime["Better Auth runtime / installation"]
-  end
-  account_local_data[("Local auth data<br/>SQLite · secret · client record")]
-  local_root ==>|opens / supplies local roles| account_better_owner
-  local_root ==>|binds local handler| account_local_handler
-  local_mcp -->|uses| local_access
-  account_cli -->|uses| local_admin_role
-  account_local_pages -->|uses| account_local_handler
-  account_better_access -.->|implements| local_access
-  account_better_admin -.->|implements| local_admin_role
-  account_better_runtime -->|owns open resources| account_local_data
-```
-
-The two external-boundary arrows describe service/storage access, not imports.
-[Hosted composition](../src/app/hosted-workos-application.ts) shares a WorkOS
-SDK client, key-set resolver, and directory. It supplies that directory to
-access resolution and account administration, and selects `BillingFree`.
-The [provider](../src/accounts/providers/workos/workos-auth-provider.ts)
-implements identity verification and access resolution;
-[WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
-implements the directory. Account administration depends on those neutral
-roles, not WorkOS classes. WorkOS-specific web routes use provider session,
-signup, cookie, and document contracts directly.
-[LocalAuthPages](../src/interfaces/web/auth/better-auth/local-auth-pages.ts)
-imports the web-owned `ProviderHandler` contract from
-[local-auth-provider-routes.ts](../src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts).
-It has no source dependency on the Better Auth runtime: app binds
-`runtime.auth.handler` to that function contract.
-
-[Application composition](../src/app/application.ts) uses edition-specific
-dynamic imports. The local edition supplies a Better Auth handler to local
-pages and a verifier/resolver to MCP; it does not construct hosted organization
-administration. Local CLI administration is a separate open/close path using
-the neutral administration role. The
-[Better Auth runtime](../src/accounts/providers/better-auth/better-auth-runtime.ts)
-owns its database and data-directory lock until app or CLI closure. App closes
-request work before provider resources. HTTP listener drain and logging sinks
-remain the support responsibilities shown at level 1.
+[Dockerfile](../Dockerfile) pins Node and Lightpanda, runs as the `node` user,
+and selects self-hosted operation. [Dockerfile.hosted](../Dockerfile.hosted)
+includes the built portal and trusted rules and selects hosted operation.
+The [recorded Render topology](../docs/implementation/render-hosted-docker-plan.md)
+describes one service/process target with no separate frontend, database,
+Redis, disk, or worker. The record is dated evidence, not current cloud
+verification; current replica count and cloud configuration are unknown here.
+Compose publishes only loopback HTTP. A different public address requires the
+HTTPS reverse proxy described by the installation contract; this diagram does
+not invent that infrastructure.
 
 ## Ownership
 
@@ -357,8 +520,8 @@ files recursively. `app` also owns exactly `src/index.ts`. The directories
 `accounts`, `accounts/providers`, `interfaces`, `pipelines`,
 `pipelines/providers`, and `runtime` group components; they do not own code.
 Private subdirectories below an owner are implementation areas, not separate
-components. Components here are logical boundaries within one application,
-not independently deployed services.
+components. These source owners are logical boundaries in the Thermus codebase.
+They do not define deployment units.
 
 Public boundaries use named modules, not a barrel. App has construction access
 to concrete implementations. That access does not make every implementation
@@ -403,7 +566,10 @@ converts completed HTML work to the step outcome and preserves scan withholding.
 `PipelineStep.execute` gives allow/block results; `HtmlTransformation.invoke`
 updates HTML context. These are distinct protocols, not a generic Pipeline/Step
 framework. Permission checks, invalid inputs, cancellation, withheld content,
-and ordinary failures stay separate observable outcomes.
+and ordinary failures are distinct pipeline contract outcomes. The MCP fetch
+[projection](../src/interfaces/mcp/get-url-as-markdown.ts) maps withheld content
+to empty Markdown text success; clients cannot distinguish it from an ordinary
+empty result. This baseline records that behavior; it does not change it.
 
 The [MCP server](../src/interfaces/mcp/mcp-server.ts) binds a copied, frozen access
 context to each authenticated request and tracks its work and cleanup. Shutdown
