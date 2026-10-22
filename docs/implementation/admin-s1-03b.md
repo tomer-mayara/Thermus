@@ -1,7 +1,7 @@
 # S1-03b implementation record
 
-Status: recovery characterization complete; complete-stack checks in progress,
-22 October 2026.
+Status: S1-03b acceptance complete; PR remains Draft because required metrics
+are blocked, 22 October 2026.
 
 ## Scope
 
@@ -142,16 +142,20 @@ redundant standalone `npm run check`.
 | `npm run build:user-portal` | Passed. |
 | `npm run test:container` | All 11 self-hosted cases passed. |
 | `npm run build:hosted` | All selected groups passed: 2,583 server unit, 25 portal unit, 18 portal acceptance, 1,033 integration, 118 selected acceptance/interface, and 13 renderer cases. |
-| `npm run test:container:hosted` | In progress. |
-| Unit and integration coverage | Pending the final complete-candidate capture. |
-| Metrics and review tier | Pending the final complete-candidate runs. |
+| `npm run test:container:hosted` | All 7 Linux AMD64 cases passed. |
+| Unit and integration coverage | Passed; verified coverage of 138 source files from 633 processes. |
+| Base and head snapshots | Completed with ast-metrics 0.43.1. |
+| Complete metrics process and standalone CRAP | Failed on omitted native source declarations; details below. |
+| Review tier | T2 Need architect; eligibility blocked by failed CRAP, unavailable Architecture, and missing CRAP rows. No undeclared fact or new cycle was found. |
 
 The final source and test content passed the focused and ordinary suites before
 commit. Manual review found no whitespace error or broken local file link. The
 registry and all ten diagram blocks match the parent. The final evidence changes
-add no source or test behavior.
+add no source or test behavior. Coverage was collected after the impact
+declaration was committed. Its source and input fingerprints match the final
+snapshot; later prose changes do not alter those inputs.
 
-## Quality review scope
+## Quality review and blocker
 
 The complete stack still needs production metrics against trusted `origin/main`.
 The production tree is byte-for-byte unchanged from S1-03a. Its retained MI
@@ -173,5 +177,42 @@ comment findings. Its comments explain issuer setup, route precedence, aborted
 body reads, and boundary behavior. The six-line exact-route interceptor belongs
 with its existing response dispatch and adds no new complexity finding.
 
-These are retained review findings, not passing tool results. The final native
-metrics and candidate-bound classifier still need to confirm their own outcomes.
+The final native review retains 14 high findings on changed production files
+and two on changed test files across the complete stack. The other 48 high
+findings concern unchanged files. None comes from the S1-03b increment. The
+parent record gives the individual reasons, including all 25 changed production
+files below MI 85. Test and support files have no MI goal.
+
+Both the complete process and standalone CRAP command fail because
+`get_file_metrics` omits source declarations in
+`src/accounts/organizations/organization-administration.ts`. The process records
+Delta and Review goal misses, failed CRAP, and unavailable Architecture. There
+is no valid CRAP report, completed function-goal assessment, or new metrics
+history record. No baseline, rule, or exception change hides this tool failure.
+
+The candidate-bound classifier reports **T2 Need architect**, with three
+blockers: failed CRAP, unavailable Architecture, and missing CRAP rows. Observable
+authorization, signup, persistence, and portal contracts in the complete stack
+require architecture review. The retained T1 reasons are protected policy,
+deployment/data and security paths; test-gate documentation; declared dependencies
+and public surfaces; production/total review size and test-count changes;
+retained MI and review findings; and declared component, internal-interface,
+sensitive-behavior and policy impact. The full report keeps each reason.
+
+These are retained findings and failed evidence, not passing tool results. An
+independent authorized human architect must approve the current candidate before
+merge. Agent review is not that approval. The required metrics assessment must
+also complete before Ready; this PR remains Draft.
+
+## Retained evidence and merge order
+
+Full reports and command logs are retained in this worktree at
+`/Users/tomermayara/.codex/worktrees/admin-s1-03b/Thermus/ast-report/README.md`.
+The bundle links the complete process and native review, base/head snapshots,
+verified coverage, stamped impact declaration, and candidate-bound tier result.
+These are local review artifacts, not uploaded CI results. There is no valid
+`crap.json` to link or approve.
+
+PR #222 must merge before this stacked PR. Preserve its workspace and reports.
+No merge or rollout is included in this request. The live WorkOS environment
+limit and the S1-05 legal and cutover checks remain as stated above.
