@@ -4,6 +4,7 @@ import { changesOf, numstatOf, type NumstatRow } from './changes.ts';
 import { isTypeScript } from './code-files.ts';
 import type { CrapRow } from './crap-rows.ts';
 import { exceptionsPath } from './exceptions.ts';
+import type { ArchitectureImpact } from './impact.ts';
 import type { MetricsFiles } from './metrics-files.ts';
 import type { SnapshotPair } from './snapshots.ts';
 import type { Change } from './types.ts';
@@ -34,6 +35,7 @@ export interface Candidate extends Revisions {
   readonly crap?: readonly CrapRow[];
   readonly metrics?: MetricsFiles;
   readonly dirty: boolean;
+  readonly impact?: ArchitectureImpact;
 }
 
 export function revisionsOf(root: string, base: string): Revisions {

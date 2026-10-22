@@ -93,6 +93,8 @@ run in `test/integration/mcp/` for the same reason. The direct auth import guard
 and rules D1 to D7 of the
 [test code layout](../testing/test-code-layout.md#dependency-rules) run through
 the existing ESLint configuration in `habit-hooks`.
+Review rule changes with lint and representative manual checks; tests under
+`test/` cover source behavior only.
 
 ## Focused commands
 
@@ -140,12 +142,12 @@ Apply these rules in order:
    prefix is exactly `src/`; a folder named `src` elsewhere does not count.
 2. **No `src/` path changed, but a repository `test/` path changed:** run
    only the affected test groups. Combine the groups when changes affect
-   more than one. For each other changed path, add its existing focused
-   tests. Do not replace this selection with `npm test` or `npm run check`.
-3. **Neither `src/` nor `test/` changed:** run only existing focused tests
-   for the changed paths. Do not run a full suite or a whole test group.
-   A documentation-only change outside those folders can have no applicable
-   executable test; record that result instead of adding an unrelated run.
+   more than one. For other changed paths, add relevant build, type, lint, or manual
+   checks. Do not replace this selection with `npm test` or `npm run check`.
+3. **Neither `src/` nor `test/` changed:** use relevant build, type, lint,
+   and manual checks. Do not add tests for scripts, documents, configuration,
+   or tooling. Check prose and links manually. Do not run a test suite solely
+   because a changed non-source file describes or invokes it.
 
 The full ordinary suite means the existing `npm test` command. It includes
 ordinary unit, integration, acceptance, interface, and portal tests. It
@@ -163,8 +165,8 @@ aggregate command, not an additional required run.
 | Portal unit or acceptance tests | The corresponding unit or acceptance group | `npm run test:unit` or `npm run test:acceptance`; do not add the other group through `test:user-portal`. |
 | Dedicated runtime, live, container, or manual work-slice files | Their own group, before the ordinary folder rule | Use their dedicated command from the suite table or the test's guide, subject to the nested-run limit below. |
 | `test/support/` or shared test fixture files | The union of their real consuming groups | Trace imports and run-time uses, including child processes and container mounts; then use the selected group commands. |
-| `script/`, build configuration, dependencies, migrations, Docker inputs, or other non-test paths | Existing focused tests for the changed files | Run only tests that exercise `src/` components; use build and configuration checks when no such test applies. |
-| Documents outside `src/` and `test/` | Relevant existing focused tests, if any | Check the changed instructions and links; a reference to a command does not select it. |
+| `script/`, build configuration, dependencies, migrations, Docker inputs, or other non-test paths | Relevant build, type, lint, or manual checks | Inspect affected commands and outputs without adding non-source tests. |
+| Documents outside `src/` and `test/` | Manual review | Check instructions and links; a reference to a command does not select it. |
 
 A shared support change does not select every suite because the file is
 under `test/support/`. Find its actual consumers and record the selected
@@ -181,9 +183,18 @@ Examples:
   integration tests selects those two groups.
 - A change to a support module used by integration and acceptance tests
   selects those two groups, including a use through another support module.
-- A change only to `.habit-hooks/` boundary rules runs `habit-hooks`.
+- A script helper change uses relevant type, lint, and manual command checks.
+- A change only to `.habit-hooks/` boundary rules uses lint and manual checks.
 - A move out of `src/` still selects rule 1 because its old path changed.
   A move between two test groups selects both groups.
+
+### Metrics tooling checks
+
+For metrics command or configuration changes, use relevant type, lint, command
+help, and manual report checks. Do not add or run tests under `test/` whose
+subject is the metrics tooling. Run the applicable process and review under
+AGENTS.md. Reuse compatible coverage or report its limits; a tooling change
+alone does not select source tests or coverage collection.
 
 ### ast-metrics coverage collection
 
@@ -203,18 +214,18 @@ unverified and cannot replace a valid report.
 ### Keep the selection through nested commands
 
 Check what each selected command runs, including child processes and image
-builds. Without a `src/` change, a command must not add test groups outside
-the selected union or turn focused tests into a complete suite. In
-particular, do not add `npm run check`, `npm run build:hosted`, or default
-ast-metrics coverage collection only because a changed file is one of
-their inputs. The default coverage command runs both complete parts of the unit
-suite: emitted Node tests and source portal tests. Use it only when both
-complete parts are already selected or rule 1 applies. Each additional `--suite`
-must also be selected independently. A focused unit file or package does not
-select both complete parts. The same limit applies to a live metrics test that
-starts coverage collection. Use an existing coverage file only when it is valid
-for the source, selected-suite, and build inputs, or report metrics without coverage
-as the review guide permits.
+builds. Without a `src/` change, a command must not add test groups outside the
+selected union or turn focused tests into a complete suite. In particular, do
+not add `npm run check`, `npm run build:hosted`, or default ast-metrics coverage
+collection only because a changed file is one of their inputs. The default
+coverage command runs both complete parts of the unit suite: emitted Node tests
+and source portal tests. Use it only when both complete parts are already
+selected or rule 1 applies. Each additional `--suite` must also be selected
+independently. A focused unit file or package does not select both complete
+parts. The same limit applies to a metrics command that starts coverage
+collection. Use an existing coverage file only when it is valid for the source,
+selected-suite, and build inputs, or report metrics without coverage as the
+review guide permits.
 
 Intentional crash children need the approved verified pre-crash flush/stop/seal
 protocol. Only known crash fixtures set `THERMUS_COVERAGE_CRASH=1` to install
@@ -271,6 +282,7 @@ changed source affects their behavior:
   affects the hosted application, its portal, or its offline checks. The
   image gate must pass on Linux AMD64; a host-only or ARM64 run is not a
   replacement.
+- Source signup behavior uses the applicable retained source acceptance tests.
 - `npm run test:hosted-live` for source that affects hosted authentication
   or WorkOS organization reads and changes, when the staging settings are
   available. If they are unavailable, record that the gate did not run.
@@ -321,10 +333,6 @@ AUTH-09 added the container acceptance suite
 - builds the image of the current candidate from `Dockerfile` two times. The
   second build has another revision label, so it is another image with the same
   content, for the image replacement case;
-- builds the image a third time with another file in place of the Lightpanda
-  download: a build context with the name `lightpanda-asset` replaces that
-  stage. The build must stop with `Lightpanda SHA256 check failed` and make no
-  image. This build needs no network access for the asset;
 - runs the server and the bundled commands in containers of that image, with the
   real provider and SQLite on Docker volumes;
 - copies the trusted rules fixture `test/support/fixtures/trusted-ad-rules.txt`
@@ -438,10 +446,11 @@ controlled renderer processes; the last phase checks actual rendering.
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
 excludes the Axiom tests, public-site renderer smoke test, live WorkOS gate,
-live Brave search proof, and Docker gates. The command needs the pinned Node and dependencies, Git and OpenSSL
-in `PATH`, a free local port 46443, local loopback connections, and the
-absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no live credential or
-public network access. When that aggregate gate is selected, a local command is:
+live Brave search proof, and Docker gates. The command needs the pinned Node and
+dependencies, Git and OpenSSL in `PATH`, a free local port 46443, local loopback
+connections, and the absolute `LIGHTPANDA_BIN` of Lightpanda 1.0.0. It needs no
+live credential or public network access. When that aggregate gate is selected,
+a local command is:
 
 ```sh
 LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" npm run build:hosted
@@ -717,44 +726,48 @@ Each command must exit with status 0 and show each required test as passed:
 5. `npm run build && node --test dist/test/interface/auth/better-auth.test.js`
 6. `npm run test:container`
 
-If an Actions job starts for the release commit, it must pass too. Then build the
-release image with `docker compose build`. The release notes must not claim
+Then build the release image with `docker compose build`. The release notes must not claim
 payment collection, hosted features, or migration between editions.
 
 ## Pull request steps
 
-1. Open a draft pull request first.
-2. Do the [required runs](#required-runs).
-3. Update the documents that the change affects in the same pull request.
-   Then run the process "Code quality review with ast-metrics" of AGENTS.md
-   on the complete candidate; the
-   [ast-metrics review guide](ast-metrics-review.md) gives the commands.
-4. Compute and record the review route as the section "Review route" of
-   AGENTS.md says.
-5. Mark the pull request Ready. Wait for every Actions job that starts for its
-   head to pass. A started job that is pending, skipped, cancelled, or failed is
-   not a pass.
-6. If you must make a fix after Ready, return the pull request to Draft first.
-   Then continue from step 2 with the new candidate.
-7. The review is manual. The manager reviews the work of each subagent. The
-   owner reviews the pull request with the depth that its route suggests. No
-   agent reviewer runs on it.
-8. Merge a clean pull request one time. The owner merges a pull request that
-   adds a decision record under `architecture/decisions/`.
+1. Open a draft pull request first. A request for a draft stops before Ready
+   and merge.
+2. Do the [required runs](#required-runs) on the complete candidate. Run
+   habit-hooks and resolve each enforced finding or record its permitted reason.
+3. Update affected documents. Check and record architecture impact for every
+   tier using the [registry workflow](component-registry-workflow.md).
+4. Select the applicable metrics under "Code quality review with ast-metrics"
+   in [AGENTS.md](../../AGENTS.md). Ordinary prose-only changes skip irrelevant
+   full metrics and record production metrics N/A. The new process paths are
+   `src/**`, `script/code-quality/**`, `.ast-metrics.yaml`,
+   `.ast-metrics-baseline.yaml`, and `.code-quality-exceptions.yaml`. Source-free
+   PR checker or policy scripts outside those paths need applicable checks
+   and habit-hooks, with production metrics N/A. Metric-tool or rule changes
+   need process/review and relevant build, type, lint, or manual checks. Historical base rules retain their
+   broader requirements for that candidate. Keep the existing test selection;
+   a metric command cannot start an unselected suite.
+5. Compute and record the tier, all reasons, blockers, current candidate SHA,
+   selected checks, and linked retained reports as "Review tier and merge
+   eligibility" in AGENTS.md says. The local result is preliminary.
+6. When the requested scope permits Ready, mark the pull request Ready after
+   the manager or Delamain session verifies the required local checks for the
+   complete current candidate. An intentional N/A needs selection evidence.
+7. Return a Ready pull request to Draft before any fix. Continue from step 2
+   and refresh evidence and affected approvals for the new candidate.
+8. The manager reviews subagent work. T1 Team review needs an independent
+   authorized human team member or owner; T2 Need architect needs an independent
+   authorized human architect. Approval covers the current head SHA and scope.
+   A label, an agent approval, or a request for review does not prove approval.
+9. Merge an eligible clean pull request one time, within the user's request.
+   The owner merges a pull request that adds an architecture decision record.
+   T0 Auto merge needs no human review. An authorized agent or session can
+   merge after all applicable checks and merge conditions pass.
 
-A Delamain worker run does the required runs and steps 1 to 4 of the review
-route, and none of the pull request steps.
-For a Delamain ticket, the session opens and merges the pull request one time
-each. A restart reuses the same pull request and merge result.
-
-## Actions jobs
-
-This repository has no workflow in `.github/workflows/` now. No Actions job
-starts for a pull request head. The required runs give all gate evidence.
-
-If a change adds a workflow, the AGENTS.md wait rule applies to every job that
-starts for the head. The required runs stay required. That change also updates
-this section.
+A Delamain worker does the required runs, classifies its part, resolves facts,
+and reports its evidence; it performs none of the pull request steps. For a
+Delamain ticket, the session opens and merges the pull request one time each,
+within the run's authority. A restart reuses the same pull request and result.
 
 ## Hosted live gate (AUTH-06)
 
@@ -884,9 +897,10 @@ The gate also needs:
 - One run at a time: a run deletes the staging users, organizations, and
   Connect applications that an earlier run left, by their name prefix.
 
-The historical Required-profile run took about 12 minutes: the third
-complete run of AUTH-08W run r3 ran its 77 tests in 688 seconds after the builds. One AUTH-06 case waits for the 300-second access
-tokens to expire, and the AUTH-07W expiry case after it uses the same wait.
+The historical Required-profile run took about 12 minutes: the third complete
+run of AUTH-08W run r3 ran its 77 tests in 688 seconds after the builds. One
+AUTH-06 case waits for the 300-second access tokens to expire, and the AUTH-07W
+expiry case after it uses the same wait.
 
 If a setting is missing, empty, or refused, the command fails with one setup
 error that names each such setting and the reason. The error shows no value.
@@ -1013,12 +1027,14 @@ A suite must not depend on another command that selects it silently.
 ### Paid billing gate (AUTH-11)
 
 AUTH-11 adds the paid billing suites after the owner chooses the payment
-provider. The [AUTH-11 specification](../design/billing-design.md#auth-11-implementation-specification)
-lists them. The provider contract file `test/interface/billing/<provider>.live.ts`
-and the live acceptance file `test/acceptance/billing/paid-billing.live.ts` run
-in the provider sandbox with a dedicated command. The `.live.ts` names do not
-match the `*.test.js` globs on purpose. If the sandbox credentials are missing,
-the command must fail with a clear setup error.
+provider. The [AUTH-11
+specification](../design/billing-design.md#auth-11-implementation-specification)
+lists them. The provider contract file
+`test/interface/billing/<provider>.live.ts` and the live acceptance file
+`test/acceptance/billing/paid-billing.live.ts` run in the provider sandbox with
+a dedicated command. The `.live.ts` names do not match the `*.test.js` globs on
+purpose. If the sandbox credentials are missing, the command must fail with a
+clear setup error.
 
 The paid billing gate passes only when the dedicated command runs with the
 sandbox credentials and every live test passes. Missing credentials, a setup

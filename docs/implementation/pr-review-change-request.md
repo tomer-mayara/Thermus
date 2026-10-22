@@ -1,5 +1,10 @@
 # Change request: adopt five pieces of PR #201 into the PR review process
 
+Historical record. This change request and its route names describe the earlier
+process. They are superseded for current work by the
+[PR review playbook](pr-review-playbook.md) and [AGENTS.md](../../AGENTS.md).
+The original proposal, outcomes, and commands below are retained as history.
+
 | Field | Value |
 | --- | --- |
 | Repository | `tomer-mayara/Thermus` |

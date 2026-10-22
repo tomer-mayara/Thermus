@@ -14,7 +14,8 @@ package suites. The default runs both complete unit parts. Only a change under
 `src/` selects the full ordinary suite
 (`npm test`) and the remaining checks in the
 [test gate policy](../../docs/implementation/test-gate-policy.md). Other
-changes select affected groups and existing focused tests. Do not add
+changes under `test/` select affected groups. Script, configuration, and
+documentation changes use relevant type, lint, and manual checks. Do not add
 `npm run check`, which repeats unit and portal tests. A command must not start a broader suite through a nested coverage call.
 
 Tool operations need `ast-metrics` on PATH (`brew install
@@ -24,7 +25,7 @@ results with `ast-metrics version`, and MCP results with initialization.
 child operations; a mismatch otherwise fails before results are consumed.
 Help, offline architecture rendering, and coverage collection need no
 installed ast-metrics. Delta and CRAP also need no tool for an empty default
-selection. Check tool compatibility when the pin changes.
+selection. A pin change needs manual checks against the installed tool and a review of its output.
 MCP operations start and stop their server within a deadline, also after a
 failure. Do not start or register a persistent server.
 
@@ -54,8 +55,7 @@ parsed imports, resolution, and checked snapshot dependency evidence.
 `review/layer-tree.ts` assembles Git/source evidence and move correspondence;
 `review/layers.ts` applies the approved path policy. Capture lifecycle propagation
 and parent signal observations live in `coverage/propagation.ts` and
-`coverage/signal-observations.ts`; `test/support/processes/crash-child.ts` owns
-the cooperating intentional-crash fixture protocol. `coverage/suite-capture.ts`
+`coverage/signal-observations.ts`. `coverage/suite-capture.ts`
 owns one suite's capture and archive lifecycle; `coverage/manifest-format.ts`
 checks manifest schema, version, comparison identity, and completion protocol.
 `coverage/loader-contract.ts` defines the loader handshake, `loader-runtime.ts`
@@ -66,19 +66,6 @@ coordinates its owner, and `loader-observer.ts` runs in the actual loader thread
 number calculations, and repository commands. JSON readers retain file-kind
 diagnostics; consumers check their schemas. Text ordering compares UTF-16
 code units and preserves ties. Locale-sensitive names keep their comparator.
-
-Tests put CLI or MCP doubles from `test/support/doubles/ast-metrics/` first
-on PATH. The CLI fake writes configured analysis, review, and baseline
-results and logs arguments and working directories. It delegates `mcp` to
-the MCP fake, which speaks line-based JSON-RPC, supplies configured metrics,
-and can simulate a timeout or an early exit. Its busy timeout mode sends no
-answer, but handles SIGTERM by releasing its timers and input so it exits
-normally. This preserves the timeout test and permits complete capture evidence.
-Their path helpers and the Git
-stub isolate tests from installed tools and repository state. They are test
-doubles, not real-tool checks. Shared process drivers live in
-`test/support/processes/`; fixtures, drivers, and isolation helpers follow
-the [test code layout](../../docs/testing/test-code-layout.md).
 
 ## CRAP scores and goals
 
@@ -121,7 +108,7 @@ Without a covered share, `p` paths bound CRAP from `p` to `p² + p`. The pure
 `atMost15` and `below30` from these bounds or from exact operands, as `PASS`,
 `MISS`, or `UNKNOWN`: three paths prove CRAP ≤ 15 without coverage, four paths
 give a range that crosses 15. The
-[review route check](../pr-review/README.md) applies it to the rows of
+[review tier check](../pr-review/README.md) applies it to the rows of
 `--json`; the
 [metrics guide](../../docs/implementation/ast-metrics-review.md#the-crap-goal)
 gives the details.
@@ -381,8 +368,7 @@ Options:
   --help, -h    Show this help
 ```
 
-Select tests before collection. Unit collection, including either full-unit
-live collector, is permitted only when `src/` changed or both complete unit
+Select tests before collection. Unit collection is permitted only when `src/` changed or both complete unit
 parts were independently selected: emitted Node tests and source portal tests.
 A focused unit package does not select both parts. Integration or acceptance
 collection also requires that complete package suite to be in the selected
@@ -429,8 +415,8 @@ PIDs unless a verified pre-crash seal supports SIGKILL. A later flush alone
 cannot turn such a signal exit into normal completion. Signals from native
 children with no captured Node identity do not invalidate Node coverage.
 
-The approved test helper `test/support/processes/crash-child.ts` requests a
-main-thread seal bound to the capture, process/thread, and nonce. IPC and an
+A cooperating crash process can request a main-thread seal bound to the
+capture, process/thread, and nonce. IPC and an
 explicit prepared nonce at a synchronous blocked fixture boundary use the same
 request and receipt checks. Only known crash fixtures set
 `THERMUS_COVERAGE_CRASH=1` to install the seal IPC listener. Ordinary captured
@@ -445,7 +431,7 @@ Default ESM file workers keep Node's normal argument filtering and have
 verified lifecycle coverage. A default CommonJS eval worker does not execute
 inherited `--import` and stays unverified unless it uses the explicit
 captured-argument adaptation.
-Real `pnpm` and `tsx` entries keep their loader and executable tests. For actual
+Real `pnpm` and `tsx` entries keep their loader and executable behavior. For actual
 asynchronous loaders, both import and require capture preloads register an
 observer with public `module.register()` in the actual loader thread. A persistent request, acknowledgement, and owner
 receipt bind the capture ID, PID, loader and owner thread IDs, and nonce under
@@ -598,7 +584,7 @@ the table gives one entry, in the order of the table, with `file`,
 are absent; without source identity, `identity` is absent. An empty selection
 gives `rows: []`. The command writes the file also for a goal miss; the table
 and the exit status do not change. After a diagnostic it writes no file, so an
-older file can stay. The [review route check](../pr-review/README.md) reads
+older file can stay. The [review tier check](../pr-review/README.md) reads
 the file with `--crap`. Write it under `ast-report/`, as
 `ast-report/crap.json`: a file in another folder of the repository can change
 the input identity of the coverage report.
@@ -763,7 +749,7 @@ remain unavailable, never inferred from rounded scores. Present malformed or
 nonfinite native MI for a `src/` file stops capture before publication;
 out-of-scope entries remain ignored. The existing
 architecture reader ignores this optional field; displays/trends/process retain
-rounded data. The review route check `script/pr-review/check.ts` reads the raw
+rounded data. The review tier check `script/pr-review/check.ts` reads the raw
 value for the MI rules of check 4.
 
 `tool` keeps the checked actual version, including an explicit override.
@@ -848,7 +834,7 @@ With `--json`, the command also writes one JSON object to `FILE`. It has
 `unavailable`. The command writes the file also after a goal miss or a failed
 stage. The Markdown, the exit status, and the history record do not change.
 After a diagnostic, it writes no file, so an older file can stay. The
-[review route check](../pr-review/README.md) reads the file with `--process`.
+[review tier check](../pr-review/README.md) reads the file with `--process`.
 Write it under `ast-report/`, as `ast-report/process.json`: a file in another
 folder of the repository can change the input identity of the coverage report.
 
@@ -901,3 +887,13 @@ and keep the `main` version in any metrics conflict.
 Exit 0 means all selected records exist. A failure exits 1 and retains
 records completed before the failure. Signals exit 130 or 143 after cleanup.
 A later run skips existing records and can continue the missing work.
+
+## Validate changes to these tools
+
+Tests under `test/` verify behavior whose subject is under `src/`. Do not add
+script, configuration, or documentation tests there. For code-quality tool
+changes, run the relevant type and lint checks. Run the affected command
+manually with representative inputs, then inspect its output and exit status.
+Use temporary repositories or report destinations when a command writes data.
+For documentation changes, check command names, options, and links against the
+current implementation. No automated prose test is required.

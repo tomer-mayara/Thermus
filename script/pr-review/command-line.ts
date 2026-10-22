@@ -4,61 +4,36 @@ import { checkBaseRef, parseCommandArguments } from '../code-quality/shared/comm
 import type { MetricsPaths } from './metrics-files.ts';
 import type { SnapshotPaths } from './snapshots.ts';
 
-export const help = `Usage: node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--crap FILE] [--process FILE --review FILE] [--json] [--help]
+export const help = `Usage: node script/pr-review/check.ts [--base REF] [--rules PATH] [--repo OWNER/NAME] [--impact FILE] [--allow-dirty] [--base-snapshot FILE --head-snapshot FILE] [--crap FILE] [--process FILE --review FILE] [--json] [--help]
 
-Compute the review route of the pull request candidate: the step "Run the
-check" of the section "Review route" of AGENTS.md. The candidate is the commit
-HEAD. The check compares it with the merge base of REF and HEAD, with rename
-detection, and reads all files from git. A working tree with uncommitted
-changes stops the check, unless you give --allow-dirty.
+Compute T0 Auto merge, T1 Team review, or T2 Need architect for committed HEAD.
+The highest review tier and local eligibility (eligible or blocked) are separate.
+All reasons are retained. A failure never hides the required review tier.
+The trusted merge-base policy governs; HEAD only declares candidate facts.
 
-The rules come from PATH at the merge base. If that file does not exist there,
-or is not valid, the file at HEAD applies. The rules file at HEAD lists the
-facts that the pull request declares. The report gives the route, every
-reason, the questions, the changed paths, the line and test counts, the MI
-comparison, the CRAP goals, the metrics step, the facts to declare, the
-declared facts, the modules to compare, and the label command. The steps
-"Declare or remove facts" and "Decision" stay with you.
-
-With --base-snapshot and --head-snapshot, the check applies the MI rules of
-check 4 to the changed production files. Make the two files with
-script/code-quality/ast-metrics-snapshot.ts: with --base REF for the merge
-base, and without --base for HEAD. The check also reads the exceptions file
-.code-quality-exceptions.yaml at HEAD, when it exists.
-
-With --crap, the check applies the CRAP goals of check 4 to the new, unknown,
-and changed functions of the changed production files. Make the file with
-script/code-quality/ast-metrics-crap.ts --json FILE, after the metrics process
-wrote its coverage report.
-
-With --process and --review, the check reads the step "Metrics" of the review
-route. Give the two files of the final metrics process:
-script/code-quality/ast-metrics-process.ts --json FILE writes the stage
-outcomes, and its review stage writes ast-report/review.json. A failed or
-unavailable stage is FIX. A high finding on a changed production file is ARCHITECT_REVIEW_NEEDED.
-A goal miss alone is no reason, and a finding on an unchanged file is no reason.
-Without the two options, the step "Metrics" stays with you.
+--impact is a JSON declaration bound to HEAD and the merge base, with every
+classification flag, architecture summary, checked views, and evidence.
+Missing impact blocks automatic merge and requires at least T1 Team review.
+The trusted policy selects required metrics; missing required files block.
+Local eligibility does not prove GitHub checks, holds, or human approvals.
 
 Options:
-  --base REF            Git ref to compare with (default: origin/main)
-  --rules PATH          Rules file, relative to the repository root
-                        (default: docs/implementation/pr-review-rules.yaml)
+  --base REF            Comparison ref (default: origin/main)
+  --rules PATH          Repository rules (default: docs/implementation/pr-review-rules.yaml)
   --repo OWNER/NAME     Repository for the printed label command
-                        (default: the repository of the current folder)
-  --allow-dirty         Check HEAD also when the working tree has uncommitted changes
-  --base-snapshot FILE  Snapshot of the merge base, relative to the current folder
-  --head-snapshot FILE  Snapshot of HEAD, relative to the current folder
-  --crap FILE           CRAP rows of HEAD, relative to the current folder
-  --process FILE        Stage outcomes of HEAD, relative to the current folder
-  --review FILE         Review findings of HEAD, relative to the current folder
+  --impact FILE         Architecture impact JSON for this candidate and merge base
+  --allow-dirty         Inspect committed HEAD alone despite uncommitted files
+  --base-snapshot FILE  MI snapshot of the merge base (give both snapshots)
+  --head-snapshot FILE  MI snapshot of HEAD
+  --crap FILE           CRAP rows of HEAD compared with the merge base
+  --process FILE        Final metrics stage outcomes (give --review too)
+  --review FILE         Final metrics review findings
   --json                Print one JSON object instead of Markdown
   --help, -h            Show this help
 
-Exit status 0: the check computed a route, also when the route is FIX.
-Exit status 1: an argument is not valid, the working tree is not clean, or the
-check could not compute a route, for example because the base ref is missing,
-the rules file at HEAD is missing or not valid, a snapshot, the CRAP file, or a
-metrics file is not of its commit, or the exceptions file is not valid.
+Exit 0: classification completed; inspect eligibility and blockers before merge.
+Exit 1: an input or tool error prevented classification; repair the diagnostic.
+See script/pr-review/README.md for the impact schema and evidence requirements.
 `;
 
 const shape = {
@@ -69,6 +44,7 @@ const shape = {
   'base-snapshot': { type: 'string' },
   'head-snapshot': { type: 'string' },
   crap: { type: 'string' },
+  impact: { type: 'string' },
   process: { type: 'string' },
   review: { type: 'string' },
   json: { type: 'boolean' },
@@ -83,6 +59,7 @@ export interface CheckOptions {
   readonly json: boolean;
   readonly snapshots?: SnapshotPaths;
   readonly crap?: string;
+  readonly impact?: string;
   readonly metrics?: MetricsPaths;
 }
 
@@ -93,7 +70,7 @@ export function optionsOf(args: readonly string[]): CheckOptions | { readonly he
   return {
     base: values.base, rules: rulesPathOf(values.rules), repository: repositoryOf(values.repo),
     allowDirty: values['allow-dirty'] === true, json: values.json === true,
-    snapshots: snapshotPathsOf(values['base-snapshot'], values['head-snapshot']), crap: values.crap,
+    snapshots: snapshotPathsOf(values['base-snapshot'], values['head-snapshot']), crap: values.crap, impact: values.impact,
     metrics: metricsPathsOf(values.process, values.review),
   };
 }

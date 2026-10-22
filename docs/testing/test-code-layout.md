@@ -19,6 +19,17 @@ reviewed or endorsed this document.
 Path abbreviations: `S/` = `test/support/`, `U/` = `test/unit/`,
 `I/` = `test/integration/`, `A/` = `test/acceptance/`.
 
+## Test subjects
+
+Tests under `test/` must exercise code under `src/`. They can reach that code
+through public compiled modules, commands, build output, servers, containers,
+or runtime paths. Choose the subject from the behavior that the test checks,
+not from the test folder name or a type-only import.
+
+Do not add tests here for scripts, documents, configuration, third-party
+packages alone, or test helpers alone. Keep support files that source behavior
+tests need. Remove support files when no remaining source behavior test uses them.
+
 ## Terms
 
 | Term | Definition | Farley or Meszaros term | File and class names | Where it lives |
@@ -191,6 +202,7 @@ home.
   does not run alone: it runs in the server process of the image and imports
   `src` as the image has it.
 - D7. No `*.test.ts` under `S/`. The suite globs select by test-type folder.
+  Support code is exercised through source behavior tests. It has no tests of its own.
 - D8. A run-time path from support code to another folder or to the repository
   root lives only in `S/processes/module-paths.ts`. A path to a sibling file
   may stay in its user. A test file may compute a path to a `src` module that it
@@ -200,3 +212,5 @@ The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 of the plan move the 13 borrowed
 files); unit → support stays, because `S/` is the shared base of all test
 types. ESLint enforces D1 to D7 through the existing `habit-hooks` configuration.
+These configuration rules do not have tests under `test/`: their subject is
+outside `src/`.

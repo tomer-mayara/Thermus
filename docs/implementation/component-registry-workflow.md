@@ -7,12 +7,15 @@ not a change log or a plan. Keep planned work separate and label it as planned.
 
 The registry does not authorize architecture changes. The
 [review rules](pr-review-rules.yaml) remain the authority for declared import
-edges, public surfaces, and review routes. This workflow has the same
+edges, public surfaces, and review tiers. This workflow has the same
 protected-path policy review as [AGENTS.md](../../AGENTS.md). Follow AGENTS.md
 for all test, metrics, review, approval, and merge requirements. This guide adds
-no automated gate and does not authorize automatic merge or agent approval of
-a change that needs a human decision. The owner decides whether a draft decision
-becomes a record under `architecture/decisions/`.
+no automated gate or merge authorization. All tiers, including T0 Auto merge,
+need an architecture impact check. T1 Team review needs independent authorized
+human team approval; T2 Need architect needs independent authorized human
+architect approval. A model edit or agent approval cannot supply that approval.
+Record lasting decisions under `architecture/decisions/` when the authorized
+decision maker requires it; T2 Need architect alone does not require a new ADR.
 
 ## Check the change
 
@@ -107,8 +110,9 @@ that you checked it. Do not copy the pull request history into it.
 
 After a later fix, check its architecture impact again and update the registry,
 diagrams, and pull request explanation when needed. Before Ready, requesting
-human review, or enabling any merge automation allowed by the existing policy,
-recheck the complete candidate against the registry. Complete the existing
-tests, metrics process, review route, and required human decisions as usual.
+human review, or merge under the existing policy,
+recheck the complete candidate against the registry. Complete the
+selected tests and metrics, review tier, eligibility checks, and required human
+decisions as usual.
 An updated map records facts; it cannot bless a forbidden dependency, waive a
 check, or serve as self-approval.

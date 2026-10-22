@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": true,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "Use local manager or Delamain checks and review for T0 Auto merge, T1 Team review, and T2 Need architect. Keep the src-only test scope merged in PR #217 and remove GitHub Actions from the proposed process. Product runtime, component boundaries, and deployment remain unchanged.",
+    "views": [
+      "context",
+      "containers",
+      "components",
+      "runtime",
+      "deployment"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "docs/implementation/pr-review-playbook.md",
+      "script/pr-review/check.ts"
+    ]
+  }
+}

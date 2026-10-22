@@ -162,12 +162,7 @@ lists all details. Hosted details require the updated server to be deployed;
 the script also accepts generic failures from older servers. Use the server
 logs for operator diagnostics. Run `pnpm exec node script/fetch-url/fetch-url.ts --help` for the options.
 
-Run the fetch failure acceptance test after a clean build:
-
-```sh
-pnpm run build
-pnpm exec node --test dist/test/acceptance/script/fetch-url-failure-details.test.js
-```
+Verify script changes with relevant type, lint, and manual command checks.
 
 # Search through MCP
 
@@ -225,13 +220,15 @@ for all options.
 errors. Search reuses the existing OAuth, browser, credential store, and error
 helpers under `fetch-url/helper/`.
 
+Verify search script changes with relevant type, lint, and manual command checks.
 
 # Measure and review code quality
 
 The ten ast-metrics commands and their helpers are in
 [`code-quality/`](code-quality/README.md). That guide explains CRAP before
 the command sections, which follow the review process order. It gives the
-source layout and Usage/Options contracts.
+source layout and Usage/Options contracts. Use relevant type, lint, help,
+and manual report checks for changes to these commands.
 The coverage command defaults to both complete unit parts: emitted Node tests
 and source portal tests. Repeat `--suite unit|integration|acceptance` for
 independently selected package suites. It builds once, preserves exact package
@@ -300,11 +297,15 @@ identity; the default coverage report stayed unchanged. This complete capture
 is separate from the protocol fixtures. The earlier `c620cf8f` run passed tests
 but remained unverified because four loaders had raw-only evidence.
 
-# Compute the review route
+# Compute the review tier and merge eligibility
 
-[`pr-review/check.ts`](pr-review/check.ts) computes the review route of a pull
-request candidate: `FIX`, `CLARIFICATION_NEEDED`,
-`ARCHITECT_REVIEW_NEEDED`, or `SHIPPED`. It reads the
-[rules file](../docs/implementation/pr-review-rules.yaml). It is the step "Run
-the check" of the section "Review route" of [AGENTS.md](../AGENTS.md). The
-[check guide](pr-review/README.md) gives its options, its output, and its tests.
+[`pr-review/check.ts`](pr-review/check.ts) reports T0 Auto merge, T1 Team review,
+or T2 Need architect, with every matching reason. Merge eligibility is separately
+`eligible` or `blocked`; blockers are not review tiers. The checker uses the
+trusted merge-base [rules](../docs/implementation/pr-review-rules.yaml), candidate
+facts, and base/head-bound impact evidence. Root `.pr-impact.json` holds the
+committed declaration; local checks use a copy stamped with actual base/head
+identities as the check guide specifies. Its local result is preliminary and
+does not prove completed local checks or human approval. Follow "Review tier and merge
+eligibility" in [AGENTS.md](../AGENTS.md). The
+[check guide](pr-review/README.md) gives options, evidence, output, and tests.

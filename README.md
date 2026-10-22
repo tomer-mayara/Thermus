@@ -572,7 +572,8 @@ request changes a file under `src/`, plus the remaining static and build checks
 in the test gate policy. Do not add `npm run check`, which would repeat unit
 and portal tests. For changes under `test/`, run only the affected test groups,
 including the groups that use changed helpers or fixtures. For
-other files, use the existing focused tests that cover the change. Combine
+scripts, documents, configuration, and tooling, use relevant build, type, lint,
+or manual checks. Tests under `test/` verify behavior whose subject is under `src/`. Combine
 these selections for mixed changes; a `src/` change requires the full ordinary
 suite. A selected command or test must not start a broader suite indirectly.
 Document changes alone need no executable tests added to check prose. Keep

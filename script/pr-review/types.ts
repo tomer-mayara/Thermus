@@ -1,9 +1,10 @@
-// SHIPPED has no reason: it applies when no other route has one.
-export type Route = 'FIX' | 'CLARIFICATION_NEEDED' | 'ARCHITECT_REVIEW_NEEDED' | 'SHIPPED';
-export const routes: readonly Route[] = ['FIX', 'CLARIFICATION_NEEDED', 'ARCHITECT_REVIEW_NEEDED', 'SHIPPED'];
+export type Tier = 'T0' | 'T1' | 'T2';
+export const tiers: readonly Tier[] = ['T2', 'T1', 'T0'];
+export const tierNames = { T0: 'T0 Auto merge', T1: 'T1 Team review', T2: 'T2 Need architect' } as const;
 
 export interface Reason {
-  readonly route: Exclude<Route, 'SHIPPED'>;
+  readonly tier?: Exclude<Tier, 'T0'>;
+  readonly blocking?: true;
   readonly key: string;
   readonly fact: string;
 }
@@ -34,7 +35,10 @@ export interface Fact {
 }
 
 export interface CheckResult {
-  readonly route: Route;
+  readonly tier: Tier;
+  readonly tierName: typeof tierNames[Tier];
+  readonly eligibility: 'eligible' | 'blocked';
+  readonly blockers: readonly Reason[];
   readonly candidate: string;
   readonly mergeBase: string;
   readonly reasons: readonly Reason[];

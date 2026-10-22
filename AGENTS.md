@@ -23,16 +23,20 @@ them in your review.
 
 Read the [coding principles](docs/coding-principles.md) for general design guidance.
 
-- Write the BDD acceptance test first: a Given-When-Then scenario or an
+- For behavior under `src/`, write the BDD acceptance test first: a Given-When-Then scenario or an
   equivalent executable specification. The test fails, because the feature
   does not exist yet.
-- Drop down into TDD to implement the pieces that the acceptance test
+- For that source behavior, drop down into TDD to implement the pieces that the acceptance test
   needs. For each small step: write a failing unit, interface, or
   integration test; make the test pass; refactor.
 - Continue until the acceptance test is green. Green is the signal that
   the specification is met.
 - Follow DRY3: make a shared function after the third copy, not before.
 - Make sure that the required checks are green before a merge.
+
+Tests under `test/` verify behavior whose subject is under `src/`. Do not add
+tests for scripts, documents, configuration, or tooling. Use relevant build,
+type, lint, and manual checks for those changes.
 
 ### Test types
 
@@ -70,7 +74,7 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
   the remaining check stages; do not add `npm run check`, which would repeat
   unit and portal tests.
   Otherwise, run only the affected test groups for changes under `test/`
-  and the existing focused tests for other changed files. Use the
+  and relevant build, type, lint, or manual checks for other changed files. Use the
   [test code layout](docs/testing/test-code-layout.md) to identify groups;
   follow shared helpers and fixtures to the groups that use them. Combine
   the selections for mixed changes; a `src/` change takes precedence.
@@ -88,114 +92,130 @@ Read the [coding principles](docs/coding-principles.md) for general design guida
 - Update the documents that the change affects in the same pull request.
 - Follow the [component registry workflow](docs/implementation/component-registry-workflow.md)
   to check architecture impact and maintain the registry before Ready or
-  requesting human review or merge automation allowed by this policy.
-- Run the ast-metrics review process (the section "Code quality review
-  with ast-metrics" below) on the complete candidate before Ready.
-- Compute and record the review route as the section "Review route" below
-  says: steps 1 and 2 when you open the draft, steps 3 to 6 before Ready.
-- Mark the pull request Ready and wait for every Actions job that starts
-  for its head to pass; a started job that is pending, skipped, cancelled,
-  or failed is not a pass. A fix after Ready returns the pull request to
-  Draft first. The details are in
-  [the test gate policy](docs/implementation/test-gate-policy.md).
-- The review is manual for now: you review the work of your subagents, and
-  the owner reviews the pull request with the depth that its route suggests.
-  No agent reviewer runs on it.
-- Merge a clean pull request one time. The owner merges a pull request that
-  adds a decision record under `architecture/decisions/`.
+  requesting human review or merge under this policy.
+- Select and run the applicable ast-metrics process as the section "Code
+  quality review with ast-metrics" below says. Ordinary prose-only changes
+  skip irrelevant production metrics.
+- Compute and record the review tier and blockers as the section "Review
+  tier and merge eligibility" below says. Refresh them after each change.
+- When the requested scope permits Ready, mark the pull request Ready after
+  the required local checks pass. The manager or Delamain session verifies
+  the complete candidate. Return a Ready pull request to Draft before a fix.
+- Review the work of your subagents. T1 Team review and T2 Need architect
+  need an independent authorized human approval of the current candidate.
+  An agent approval or a label alone is not human approval evidence.
+- Merge an eligible clean pull request one time, within the user's request.
+  An authorized agent or Delamain session can merge T0 Auto merge after
+  applicable checks pass and the requested scope permits merge.
+  The owner merges a pull request that adds a decision record under
+  `architecture/decisions/`. A request for a draft stops before Ready and merge.
 
-## Review route
+## Review tier and merge eligibility
 
-The [PR review playbook](docs/implementation/pr-review-playbook.md) and its
-[rules file](docs/implementation/pr-review-rules.yaml) define four routes in
-priority order:
-`FIX`, `CLARIFICATION_NEEDED`, `ARCHITECT_REVIEW_NEEDED`, `SHIPPED`. A route says
-which human action the pull request needs before merge. The owner can act as
-the architect. `SHIPPED` needs no route-specific human review or post-merge skim.
-The command `script/pr-review/check.ts` computes the route;
-the [check guide](script/pr-review/README.md) gives its options and its output.
-The route does not change who merges. Historical rules at the merge base
-keep their thresholds and protected paths; the check maps their old route
-names to the current names. The rules at HEAD use the current four routes.
+The [PR review playbook](docs/implementation/pr-review-playbook.md) and
+[rules file](docs/implementation/pr-review-rules.yaml) use these tiers:
 
-In this trial, this section governs where it differs from the rules file.
-The check applies the keys `protected_paths`, `read_paths`, `scopes`,
-`public_surface`, `dependency_graph`, `size`,
-`ratchet.maintainability_index`, the two goals of `ratchet.crap`, and
-`ratchet.review_findings`. It also reads the exceptions file and the stages of
-the metrics process. The keys `required_checks`, the other keys of `ratchet`,
-`calibration`, and the merge keys of `routes` wait for CI and the later
-checks; do not apply them by hand.
+| Tier | Required review |
+| --- | --- |
+| T0 Auto merge | No human approval; an authorized agent or session can merge an eligible candidate. |
+| T1 Team review | An independent authorized team member or owner approves. |
+| T2 Need architect | An independent authorized architect approves the candidate and architecture impact. The owner can act as architect. |
 
-Do steps 1 and 2 when you open the draft, and again after each change to the
-candidate. Do steps 3 to 6 after the final metrics report and before Ready.
-A subagent or a worker does steps 1 and 2 on its part and reports the output.
-The manager, or the Delamain session, does steps 3 to 6 on the complete
-candidate.
+Use the highest matching tier and keep every reason. Tier selects review;
+merge eligibility is separately `eligible` or `blocked`. A failed check is
+a blocker, not a fourth tier. A policy or quality-tool change requires
+at least T1 Team review. Architecture changes require T2 Need architect as
+the playbook defines. Static protected-path or public-surface touches set a
+conservative T1 Team review floor; they do not prove an architecture change.
+Team review resolves possible contract or topology changes and escalates actual
+architecture changes to T2 Need architect. Uncertain impact blocks eligibility
+and cannot use T0 Auto merge.
 
-1. **Run the check.** Commit every file first, so that `git status --porcelain`
-   prints nothing. Then take the two snapshots of the committed candidate.
+The checker uses the trusted merge-base policy and HEAD facts. A candidate
+cannot weaken its own requirements. The historical adapter preserves the
+higher review requirement of legacy base rules as T2 Need architect; this
+migration does not use the new HEAD policy to lower its own review. Legacy
+route names are input compatibility only, not active tiers.
+
+1. **Classify the committed candidate.** Update the root `.pr-impact.json`
+   declaration with `version`, `classification`, and `architecture`. It must
+   differ from the trusted base so stale declarations cannot be reused. Commit
+   it with the complete candidate so `git status --porcelain` is empty. For
+   local checks, stamp a copy with the actual base and head as the checker
+   guide says, then save it as `ast-report/impact.json`. Run
+   `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --impact ast-report/impact.json`.
+   The [check guide](script/pr-review/README.md) defines the base/head-bound
+   impact evidence, options, output, and labels. Supply every classification
+   field, architecture summary, checked views, and evidence. The manager or Delamain
+   session stamps the committed declaration with the actual base and head; mutable pull request prose cannot replace it. Missing impact
+   evidence blocks eligibility and requires at least T1 Team review. The
+   local result is preliminary: it does not prove completed local checks or human approval.
+2. **Resolve facts.** Remove an undeclared fact or declare it in the rules
+   file under the reported key. Update applicable count and date comments.
+   Remove forbidden imports, new cycles, and growth of known cycles; a
+   declaration cannot authorize them. The checker lists affected public-surface
+   modules; it does not emit or compare declaration snapshots. For each listed
+   module, compare the relevant exported declarations and behavior before and
+   after the change, then record whether an observable contract changes. Record
+   the guarantee and answer each applicable policy question. Reclassify
+   after each change. A lasting architecture decision needs a decision
+   record when the authorized decision maker requires it; T2 Need architect
+   alone does not require a new record. Records use
+   `architecture/decisions/YYYY-MM-DD-<topic>.md` with Context, Decision,
+   and Consequences headings.
+3. **Add applicable metrics.** When production files change, take the base
+   and head snapshots with
    `pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main`
-   writes `ast-report/snapshot-base.json`.
-   `pnpm exec node script/code-quality/ast-metrics-snapshot.ts` writes
-   `ast-report/snapshot.json`. The CRAP rows and the metrics step need the
-   metrics process (below). Run it with `--json ast-report/process.json`:
-   `pnpm exec node script/code-quality/ast-metrics-process.ts --base origin/main --json ast-report/process.json`,
-   with the coverage option of its step 2. It writes the stage outcomes to
-   `ast-report/process.json` and the review findings to
-   `ast-report/review.json`. After that process, run
+   and `pnpm exec node script/code-quality/ast-metrics-snapshot.ts`. Run the
+   process with `--base origin/main --json ast-report/process.json`, using
+   its permitted coverage selection. Then run
    `pnpm exec node script/code-quality/ast-metrics-crap.ts --base origin/main --json ast-report/crap.json`.
-   It exits 1 when a goal is missed or unknown, but it writes the file: the
-   check applies the goals. Then run
-   `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json --crap ast-report/crap.json --process ast-report/process.json --review ast-report/review.json`.
-   Before the metrics process, leave out `--crap`, `--process`, and
-   `--review`. The check compares HEAD with the merge base. It reads the
-   rules file of the merge base and the facts that HEAD declares. It prints
-   the route, every reason, the questions for `CLARIFICATION_NEEDED`, the
-   changed paths, the line counts, the test counts, the MI of the changed
-   production files, the CRAP goals of their new and changed functions, the
-   metrics step, the facts to declare, the modules to compare, and the label
-   command. Exit status 1 means that the check could not run: repair the cause.
-2. **Declare or remove facts.** For each entry under "Facts to declare",
-   remove the fact, for example by an import through a module that
-   `public_surface` lists, or declare it in the rules file in the same pull
-   request under the key that the entry names. Update the count and date
-   comments. That edit changes a protected path, so the route is
-   `CLARIFICATION_NEEDED`. A forbidden edge, a new cycle, or a known cycle
-   that grows has no entry: remove the import. For each module under
-   "Surface differences", compare its exported declarations before and after
-   the change, and describe the difference in the decision. Run the check again.
-3. **Metrics.** After the final metrics report, run the check of step 1 with
-   `--process` and `--review`. Read its reasons. A kept high finding on a
-   changed production file is `ARCHITECT_REVIEW_NEEDED`. A failed or
-   unavailable stage of the process is `FIX`. A finding with the reason
-   `unchanged by this PR` is not a reason. A goal miss alone is not a reason:
-   the check applies the MI rules and the CRAP goals.
-4. **Route.** A required check is a required run of the test gate policy, or
-   habit-hooks. While one fails, the route is `FIX`. Do not mark a `FIX`
-   pull request Ready: make the check pass, then run the check again. In
-   every other case, the route of the check of step 3 applies. Keep every
-   reason, not only the first.
-5. **Record.** Paste the output of the check of step 3 into a section "Review
-   route" of the pull request description. Set the label with the printed
-   command. Use the labels `route:fix`, `route:clarification_needed`,
-   `route:architect_review_needed`, and `route:shipped`. Update the section and
-   the label after each change to the candidate.
-6. **Decision.** For `CLARIFICATION_NEEDED`, write the draft decision in the
-   "Review route" section. Answer the question of each matching group of
-   `protected_paths`.
-   State the guarantee that holds after the change. The owner decides
-   whether the decision becomes a record under `architecture/decisions/`.
-   A record has the name `YYYY-MM-DD-<topic>.md` and the headings Context,
-   Decision, and Consequences. The owner merges a pull request that adds one.
+   Give the checker `--base-snapshot ast-report/snapshot-base.json
+   --head-snapshot ast-report/snapshot.json --crap ast-report/crap.json
+   --process ast-report/process.json --review ast-report/review.json`.
+   For a source-free metric-tool or rule change, run the applicable process
+   and review without irrelevant production snapshots or CRAP.
+   A goal miss can still produce valid reports; tool failure or missing
+   required evidence blocks eligibility. Retained high findings and permitted
+   metric exceptions require at least T1 Team review. Findings unchanged by
+   this pull request do not escalate its tier. Mark irrelevant production
+   metrics N/A under the selection below; do not create empty evidence.
+4. **Record the result.** In the pull request's Review tier section, record
+   the tier, all reasons, blockers, and current candidate SHA. Apply the
+   canonical tier label printed by the checker. Summarize relevant changed
+   file/function findings, check results, and N/A reasons. Link retained full
+   reports and exceptions. Do not paste unchanged full reports. Check and
+   record architecture impact for every tier, using the component registry
+   workflow. Update the explanation, evidence, and labels after each change.
+5. **Obtain review and eligibility.** T1 Team review needs an independent
+   authorized human team member or owner. T2 Need architect needs an
+   independent authorized human architect; one qualified reviewer can cover
+   both concerns. Approval must cover the current head SHA and scope.
+   Anyone can escalate. De-escalation needs a recorded reason and approval
+   from a reviewer authorized for the higher tier. De-escalation cannot waive blockers. Record its approval and retain the
+   previous tier and reasons in the review evidence.
+   An owner-account label or AI-generated approval is not proof of human
+   identity. All applicable checks and holds must be resolved before merge.
+
+A subagent or worker classifies its part, resolves facts, and reports evidence;
+the manager or Delamain session checks the complete candidate. No local tier
+result alone authorizes merge or changes the user's requested stopping point.
 
 ## Code quality review with ast-metrics
 
-Run this process on the complete candidate of each pull request, after the
-documents are updated and before Ready. Use the commands under
-`script/code-quality/`. The
-[ast-metrics review guide](docs/implementation/ast-metrics-review.md) gives
-the commands, their reports, the configuration, and the limits of the tool.
+Select this process from the complete candidate, after documents are updated and
+before Ready. Under the new rules, the process applies to `src/**`,
+`script/code-quality/**`, `.ast-metrics.yaml`, `.ast-metrics-baseline.yaml`, and
+`.code-quality-exceptions.yaml`. Source changes need the complete snapshots,
+CRAP, and process evidence. Metric-tool or configuration changes need the
+process/review and relevant build, type, lint, or manual checks. Other changes,
+including ordinary prose, PR checker and policy scripts, can mark production
+metrics N/A when no listed path changes. They still need applicable checks,
+habit-hooks, architecture impact, and review. The trusted base controls
+selection: a historical rule that requires metrics for every candidate remains
+in force for that candidate. Use the commands under `script/code-quality/`. The
+[ast-metrics review guide](docs/implementation/ast-metrics-review.md) gives the
+commands, their reports, the configuration, and the limits of the tool.
 
 1. Prepare. Update the branch from `origin/main`. Select the tests from the
    complete candidate, as the test gate policy says. A command of this process
@@ -203,7 +223,7 @@ the commands, their reports, the configuration, and the limits of the tool.
    every comparison.
 2. Run `pnpm exec node script/code-quality/ast-metrics-process.ts --json ast-report/process.json`
    and read `ast-report/process.md`. The report has four sections: delta,
-   review, CRAP, and architecture. The review route check reads
+   review, CRAP, and architecture. The review tier check reads
    `ast-report/process.json`. Choose the coverage option from the test
    selection:
    - A file under `src/` changed: add `--collect-coverage`, unless a
@@ -228,7 +248,7 @@ the commands, their reports, the configuration, and the limits of the tool.
    times. Record each remaining low score and its reason in the pull request
    description. For a new file below 85, also add an entry with its path,
    `metric: mi`, a bound, the reason, and an expiry date to
-   `.code-quality-exceptions.yaml`; the review route check reads it.
+   `.code-quality-exceptions.yaml`; the review tier check reads it.
 4. Review. Correct each finding of severity high, or record its reason in
    the pull request description. Refresh `.ast-metrics-baseline.yaml` with
    `pnpm exec node script/code-quality/ast-metrics-baseline.ts` only when
@@ -247,16 +267,22 @@ the commands, their reports, the configuration, and the limits of the tool.
    reason `unchanged by this PR`. For an added or changed function that
    misses its goal, also add an entry with `function: <file>#<function>`,
    `metric: crap`, a bound, the reason, and an expiry date to
-   `.code-quality-exceptions.yaml`; the review route check reads it. The
-   pull request can go Ready with these recorded exceptions; the command
-   still exits 1. A tool failure is not an
-   exception: correct it.
-6. Final report. After the last fix, run the process again on the complete
-   candidate. Paste `ast-report/process.md` into the pull request
-   description without change: all four sections, both `mermaid` graphs,
-   their legends, the import evidence, and notices such as
-   `The map did not change.` and `No production file changed.` This also
-   applies to a document-only pull request and to a report without coverage.
+   `.code-quality-exceptions.yaml`; the review tier check reads it. A
+   permitted exception needs T1 Team review, or T2 Need architect when
+   architecture independently requires it. Approval cannot waive an uncovered
+   failure. The command still exits 1 for a recorded goal miss. A tool failure
+   is not an exception: correct it.
+6. Final report. After the last fix, run the applicable process again on the
+   complete candidate. Summarize relevant changed files and functions, goals,
+   findings, exceptions, and evidence limits in the pull request. Retain and
+   link the complete `ast-report/process.md` and machine-readable reports as
+   review artifacts. Keep graphs, legends, import evidence, and notices in
+   those reports; do not copy the whole report into the pull request body.
+   Keep global dependency checks and the analysis context needed to detect
+   invalid edges and cycles. MI is a production-file measure and CRAP is a
+   function measure. Component summaries do not create a component CRAP
+   score or a new numeric escalation rule. A base CRAP value derived with
+   head coverage is an estimate, not measured base coverage.
 7. History. The first process run that completes all four sections writes
    the record of the base commit to `docs/metrics/`, if that record is
    missing. A goal miss does not prevent the record; a failed section or an
@@ -275,6 +301,6 @@ server.
 For a ticket from a Delamain board, follow the code prompt of your run.
 The prompt gives the order of the steps. The session opens and merges the
 pull request one time each. A worker run does neither: it runs the checks
-of "Pull requests", does steps 1 and 2 of the review route, and reports the
-results; it does none of the pull request steps. A restart reuses
-the same pull request and merge result.
+of "Pull requests", classifies its part and resolves facts under "Review tier
+and merge eligibility", and reports the results; it does none of the pull request
+steps. A restart reuses the same pull request and merge result.

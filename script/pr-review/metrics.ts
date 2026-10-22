@@ -32,7 +32,7 @@ function incomplete(outcome: StageOutcome): boolean {
 }
 
 function stageReason(outcome: StageOutcome): Reason {
-  return { route: 'FIX', key: 'required_checks', fact: `${outcome.name} ${outcome.status}` };
+  return { blocking: true, key: 'required_checks', fact: `${outcome.name} ${outcome.status}` };
 }
 
 function findingOutcome(findings: readonly ReviewFinding[], changed: readonly string[], production: readonly string[]): MetricsOutcome {
@@ -42,7 +42,7 @@ function findingOutcome(findings: readonly ReviewFinding[], changed: readonly st
   const text = (finding: ReviewFinding) => `${finding.file}: ${finding.message}`;
   const unchanged = high.length - own.length;
   return {
-    reasons: own.filter(ruled).map((finding) => ({ route: 'ARCHITECT_REVIEW_NEEDED', key: 'ratchet.review_findings', fact: text(finding) })),
+    reasons: own.filter(ruled).map((finding) => ({ tier: 'T1', key: 'ratchet.review_findings', fact: text(finding) })),
     lines: [
       ...own.filter((finding) => !ruled(finding)).map((finding) => `outside scopes.production: ${text(finding)}`),
       `${unchanged} ${unchanged === 1 ? 'finding' : 'findings'} on unchanged files, reason unchanged by this PR`,

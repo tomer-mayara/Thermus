@@ -1,11 +1,17 @@
-# Notes
+# Test inventory
 
-- Record the stated reason without scoring it or comparing it with page content.
-- Block/step up large files (or requests)
-- Step
-- Looks into AI caching support
+Tests under `test/` must exercise code under `src/`. A test can call a source
+module directly or reach it through a compiled module, CLI, HTTP server, browser,
+container, or runtime entry point. A test of a script, document, configuration,
+third-party package alone, or test helper alone does not belong here.
 
-# Tests
+Support files stay when a source behavior test needs them. The test type depends
+on the behavior and package collaboration, as [AGENTS.md](../../AGENTS.md) defines.
+The [layout guide](test-code-layout.md) defines support roles and dependencies.
+
+This inventory lists executable test files and compile-time interface checks.
+Live and runtime files need their dedicated gates and environment. Their presence
+in this list is not evidence that a gate passed.
 
 ## Execution records
 

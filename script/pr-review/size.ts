@@ -37,7 +37,7 @@ function linesOf(rows: readonly NumstatRow[]): number {
 
 function limitReasons(counts: LineCounts, limits: LineCounts): Reason[] {
   const reasons: Reason[] = [];
-  const read = (key: string, fact: string) => reasons.push({ route: 'ARCHITECT_REVIEW_NEEDED', key: `size.${key}`, fact });
+  const read = (key: string, fact: string) => reasons.push({ tier: 'T1', key: `size.${key}`, fact });
   if (counts.production > limits.production) read('production_lines_read_above', `${counts.production} production lines, above the limit of ${limits.production}`);
   if (counts.total > limits.total) read('total_lines_read_above', `${counts.total} lines without generated files, above the limit of ${limits.total}`);
   return reasons;
@@ -46,7 +46,7 @@ function limitReasons(counts: LineCounts, limits: LineCounts): Reason[] {
 // No snooze file is the same as an empty list.
 function snoozeReasons(text: string | undefined): Reason[] {
   if (text === undefined || isEmptyList(text)) return [];
-  return [{ route: 'FIX', key: 'size.habit_hooks_snooze_non_empty', fact: '.habit-hooks/snooze.json is not []' }];
+  return [{ blocking: true, key: 'size.habit_hooks_snooze_non_empty', fact: '.habit-hooks/snooze.json is not []' }];
 }
 
 function isEmptyList(text: string): boolean {
