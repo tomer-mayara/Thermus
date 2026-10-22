@@ -72,14 +72,18 @@ export class SearchEngineBraveHttp implements SearchEngine {
       throw new Error('Search failed');
     }
     const results = selectAll<HtmlNode, HtmlElement>('.snippet[data-type="web"]', main);
-    if (results.length === 0 || !results.every((result) => this.isWebResult(result))) throw new Error('Search failed');
+    if (results.length === 0) throw new Error('Search failed');
+    for (const result of results) {
+      if (!this.isWebResult(result)) throw new Error('Search failed');
+    }
     return 'results';
   }
 
   private isWebResult(result: HtmlElement): boolean {
     const title = selectOne<HtmlNode, HtmlElement>('.result-content > a.l1[href] > .title.search-snippet-title', result);
     const content = selectOne<HtmlNode, HtmlElement>('.generic-snippet .content, '
-      + '.result-content > .video-snippet[data-macro="video"] > .content > .desktop-default-regular.line-clamp-2', result);
+      + '.result-content > .video-snippet[data-macro="video"] > .content > .desktop-default-regular.line-clamp-2, '
+      + '.result-content > .inline-qa-question', result);
     const link = title?.parent;
     const href = link && 'attribs' in link ? link.attribs.href : undefined;
     return Boolean(title && DomUtils.textContent(title).trim() && href?.trim() && content && DomUtils.textContent(content).trim());
@@ -98,14 +102,22 @@ export class SearchEngineBraveHttp implements SearchEngine {
     const tips = selectAll<HtmlNode, HtmlElement>(':scope > li', lists[0]);
     if (queries.length !== 1 || !DomUtils.textContent(queries[0]).trim() || tips.length !== 2) return false;
     for (const [parent, children] of [[main, [wrapper]], [wrapper, [banner]], [banner, [header, lists[0]]], [lists[0], tips]] as const) {
-      const meaningful = parent.children.filter((node) => node.type !== 'comment' && (node.type !== 'text' || node.data.trim() !== ''));
-      if (meaningful.length !== children.length || !meaningful.every((node, index) => node === children[index])) return false;
+      let index = 0;
+      for (const node of parent.children) {
+        if (node.type === 'comment' || (node.type === 'text' && node.data.trim() === '')) continue;
+        if (node !== children[index]) return false;
+        index++;
+      }
+      if (index !== children.length) return false;
     }
     const expected = [header, queries[0], lists[0], ...tips];
     const descendants = selectAll<HtmlNode, HtmlElement>('*', banner);
     if (descendants.length !== expected.length) return false;
-    const label = header.children.filter((node) => node.type === 'text').map((node) => node.data).join('').trim();
-    return label === 'Not many great matches came back for your search:'
+    let label = '';
+    for (const node of header.children) {
+      if (node.type === 'text') label += node.data;
+    }
+    return label.trim() === 'Not many great matches came back for your search:'
       && DomUtils.textContent(tips[0]).trim() === 'Try more general keywords'
       && DomUtils.textContent(tips[1]).trim() === 'Try fewer keywords';
   }

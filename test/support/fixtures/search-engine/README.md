@@ -51,6 +51,42 @@ excerpts, and their order against `brave-results-video-expected.json`.
 
 This capture is provider data. It does not prove a successful live MCP call.
 
+## Captured results with an inline question
+
+`brave-results-inline-qa.html` is the complete, unchanged rendered response
+for `https://search.brave.com/search?q=consumer+laptop+2026+for+coding`.
+The diagnostic request through `WebsiteFetcherLightpanda` started on
+2026-10-21 at 15:25:53.719 UTC and took 2,440 ms. It used pinned Lightpanda
+**1.0.0** on macOS ARM64, with executable SHA256
+`955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d`.
+The request used the production fetcher options. No challenge bypass was used.
+
+The response has 396,040 UTF-8 bytes and SHA256
+`aef6be672fff0cc94f93555c1fb97bbb8793394738d7eadceda36a3e07ba4a5f`.
+`brave-results-inline-qa.json` records the capture metadata and confirms that
+no transformations were made. Keep the full document unchanged.
+
+The page has 20 web result cards. The seventeenth card is a Reddit result
+with a standard title and destination. Its direct
+`.result-content > .inline-qa-question` description contains a timestamp
+and question paragraphs. A separate `.inline-qa` widget contains answer
+cards, vote counts, and a top-answer label. Only the question is an organic
+description. The answer widget is excluded from output.
+
+The original classifier refused the whole page because it recognized only
+generic and video descriptions. The public MCP regression first reproduced
+that failure offline, then checked all 20 titles, destination links,
+description excerpts, and their order against
+`brave-results-inline-qa-expected.json`. It also checks that answer text and
+widget labels do not reach the client. Focused tests refuse a blank question,
+answer-only content, a misplaced question, or a missing title or destination.
+The integration safety case checks hidden text, ad targets, decoded controls,
+and safe links in a controlled inline question.
+
+This local capture reproduces the classifier failure. Hosted completion and
+stage records were consistent with that failure, but no hosted response HTML
+was captured. The fixture is provider data, not proof of a live MCP success.
+
 ## Derived no-results page
 
 `brave-no-results-derived.html` is a controlled variant, **not a captured

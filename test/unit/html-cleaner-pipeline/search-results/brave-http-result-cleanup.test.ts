@@ -75,6 +75,38 @@ test('Given a video description and an optional missing description, when cleanu
   assert.doesNotMatch(result.html, /CAROUSEL META/);
 });
 
+test('Given an inline question and a sibling answer widget, when cleanup copies the organic description, then it keeps question paragraphs and safe links without answers or votes', async () => {
+  const question = '<div class="inline-qa-question"><span>January 8, 2026 -</span><p>First question paragraph.</p><p>Second question with <a href="/details">details</a>.</p></div>';
+  const answer = '<div class="inline-qa"><a href="/answer"><div class="inline-qa-upvotes">42 votes</div><div class="inline-qa-answer">Top answer: excluded</div></a></div>';
+  const source = card().replace('<div class="generic-snippet"><div class="content">Useful <strong>description</strong>.</div></div>', question)
+    .replace('</div></div>', `</div>${answer}</div>`);
+
+  const result = await cleaner.invoke(createContext(page(source)));
+
+  const { document } = parseHTML(result.html);
+  assert.equal(document.querySelectorAll('li').length, 1);
+  assert.equal(document.querySelector('li > a')?.textContent, 'Safe title');
+  assert.match(document.body.textContent, /January 8, 2026 -.*First question paragraph\..*Second question with details\./s);
+  assert.equal(document.querySelector('p a')?.getAttribute('href'), 'https://example.com/details');
+  assert.doesNotMatch(result.html, /Top answer|42 votes|\/answer|inline-qa/);
+});
+
+test('Given unsafe and hidden inline question fields, when cleanup and conversion run, then only safe visible description text and destinations remain', async () => {
+  const question = '<div class="inline-qa-question"><p>Before&#x202e; <a href="javascript:alert(1)">unsafe link as text</a> and <a href="/details">safe details</a>.</p>'
+    + '<p>After<script>BAD SCRIPT</script><style>BAD STYLE</style><template>BAD TEMPLATE</template><span hidden>BAD HIDDEN</span><img src="/thumb"></p></div>';
+  const source = card().replace('<div class="generic-snippet"><div class="content">Useful <strong>description</strong>.</div></div>', question);
+
+  const result = await new HtmlToMarkdownPipeline([cleaner, new CleanHtmlToMarkdownDefuddle({ preserveSearchResults: true })]).process(createContext(page(source)));
+
+  const rendered = micromark(result.markdown ?? '');
+  const { document } = parseHTML(`<html><body>${rendered}</body></html>`);
+  assert.match(document.body.textContent, /Before unsafe link as text and safe details\./);
+  assert.match(document.body.textContent, /After/);
+  assert.deepEqual([...document.querySelectorAll('a')].map((anchor) => anchor.getAttribute('href')), ['https://example.com/guide', 'https://example.com/details']);
+  assert.doesNotMatch(rendered, /BAD|javascript:|\u202e|<script|<style|<template|<img/);
+  assert.ok(result.found?.includes('cf-format'));
+});
+
 for (const html of ['', page(''), page(card('&#x202e;'))]) {
   test('Given no eligible rows, when cleanup runs, then HTML is exactly empty', async () => {
     const result = await cleaner.invoke(createContext(html));

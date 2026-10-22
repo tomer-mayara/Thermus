@@ -21,6 +21,8 @@ const videoDescription = '<div class="desktop-default-regular line-clamp-2">Vide
 const videoMetadata = '<div class="item-attributes"><div class="attr"><strong>Published:</strong> <span>April 28, 2026</span></div></div>';
 const videoContent = `<div class="video-snippet" data-macro="video"><div class="content">${videoDescription}${videoMetadata}</div></div>`;
 const supportedVideoResults = supportedResults.replace('<div class="generic-snippet"><div class="content">Snippet</div></div>', videoContent);
+const inlineQuestion = '<div class="inline-qa-question"><span>January 8, 2026 -</span><p>Question description</p><p>More question text</p></div>';
+const supportedQuestionResults = supportedResults.replace('<div class="generic-snippet"><div class="content">Snippet</div></div>', inlineQuestion);
 
 const unknownPage: WebsiteFetchResult = {
   requestedUrl: 'https://search.brave.com/search?q=sources',
@@ -56,6 +58,33 @@ test('Given a supported video description without metadata, when classified, the
   assert.equal(result.kind, 'results');
   assert.equal(result.page, page);
 });
+
+test('Given a direct inline question without answer widgets, when classified, then its standard title and question description qualify the result', async () => {
+  const page = { ...capturedPage, html: supportedQuestionResults };
+  const engine = new SearchEngineBraveHttp({ fetchURL: async () => page });
+
+  const result = await engine.search('sources', new AbortController().signal);
+
+  assert.equal(result.kind, 'results');
+  assert.equal(result.page, page);
+});
+
+for (const [part, html] of [
+  ['blank question', supportedQuestionResults.replace(inlineQuestion, '<div class="inline-qa-question"> \n </div>')],
+  ['answer widget only', supportedQuestionResults.replace(inlineQuestion, '<div class="inline-qa"><div class="inline-qa-answer">Answer text</div></div>')],
+  ['blank question with answer text', supportedQuestionResults.replace(inlineQuestion, '<div class="inline-qa-question"> </div><div class="inline-qa"><div class="inline-qa-answer">Answer text</div></div>')],
+  ['question outside result content', supportedQuestionResults.replace(inlineQuestion, '').replace('</section>', `${inlineQuestion}</section>`)],
+  ['question nested in an unsupported wrapper', supportedQuestionResults.replace(inlineQuestion, `<article>${inlineQuestion}</article>`)],
+  ['missing title', supportedQuestionResults.replace('>Title</div>', '> </div>')],
+  ['missing destination', supportedQuestionResults.replace(' href="https://example.com"', '')],
+] as const) {
+  test(`Given an inline question result with ${part}, when classified, then the unsupported card fails without claiming absence`, async () => {
+    assert.notEqual(html, supportedQuestionResults);
+    const engine = new SearchEngineBraveHttp({ fetchURL: async () => ({ ...capturedPage, html }) });
+
+    await assert.rejects(engine.search('sources', new AbortController().signal), { message: 'Search failed' });
+  });
+}
 
 for (const [part, html] of [
   ['missing macro', supportedVideoResults.replace(' data-macro="video"', '')],
@@ -151,6 +180,7 @@ for (const [shape, html] of [
   ['a blank query span', noResultsPage.html.replace('<span class="desktop-default-semibold t-primary">"lightpanda browser"</span>', '<span> </span>')],
   ['a missing header', noResultsPage.html.replace('<span>Not many great matches came back for your search: <span class="desktop-default-semibold t-primary">"lightpanda browser"</span></span>', '')],
   ['conflicting headers', noResultsPage.html.replace('<span>Not many great matches came back for your search:', '<span>Unsupported error</span><span>Not many great matches came back for your search:')],
+  ['reordered header and tips', noResultsPage.html.replace(/(<span>Not many great matches came back for your search: <span[^>]*>"lightpanda browser"<\/span><\/span>) (<ul[^>]*>.*?<\/ul>)/u, '$2 $1')],
   ['a missing tips list', noResultsPage.html.replace('<ul class="t-tertiary svelte-6dkl6q"><li>Try more general keywords</li> <li>Try fewer keywords</li></ul>', '')],
   ['a missing search tip', noResultsPage.html.replace('<li>Try fewer keywords</li>', '')],
   ['an unsupported search tip', noResultsPage.html.replace('Try fewer keywords', 'Try again later')],
