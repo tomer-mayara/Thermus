@@ -32,6 +32,7 @@
       "src/pipelines/html-processing/search-results/brave-result-document.ts",
       "docs/reference/mcp-search-tool.md",
       "test/acceptance/mcp/search-pipeline.test.ts",
+      "test/acceptance/mcp/self-hosted-fetch-tool.test.ts",
       "test/integration/search-pipeline/brave-markdown.test.ts",
       "test/unit/search-engine/search-engine-brave-http.test.ts",
       "test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.ts",

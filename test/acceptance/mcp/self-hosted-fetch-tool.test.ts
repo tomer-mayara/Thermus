@@ -287,10 +287,10 @@ for (const era of mcpProtocolEras) {
     const searchUrl = 'https://search.brave.com/search?q=entry+wiring';
     const renderer = RendererProcessDouble.install(t);
     renderer.serve(searchUrl, { finalUrl: searchUrl, html: readFileSync(new URL('test/support/fixtures/search-engine/brave-results.html', repositoryRoot), 'utf8') });
+    const token = (await issuedGrants(setup.directory, setup.clientId, [alice])).get(alice.email)?.accessToken ?? '';
     const server = InProcessServer.open(t);
     await server.start(serverSettings(setup.directory));
-    const user = new LocalMcpUser(server.address, setup.clientId, alice);
-    const { client } = await user.connect(t, alice, era);
+    const client = await connectWithToken(t, { server: server.address, token: () => token, era });
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })), [
       { name: 'getURLAsMarkdown', description: fetchDescription, inputSchema: fetchToolInputSchema },
