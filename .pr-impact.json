@@ -10,12 +10,12 @@
     "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": true,
+    "policy": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Use local manager or Delamain checks and review for T0 Auto merge, T1 Team review, and T2 Need architect. Keep the src-only test scope merged in PR #217 and remove GitHub Actions from the proposed process. Product runtime, component boundaries, and deployment remain unchanged.",
+    "summary": "Fix the existing Brave HTML adapter and result projection so a direct, nonblank inline question is an organic result description. The supported DOM grammar now includes .result-content > .inline-qa-question. The existing Markdown contract still returns safe organic title links and descriptions in source order and excludes separate answer widgets. Public types, origin checks, full-page sanitation before projection, cancellation, resource limits, ownership, dependencies, container boundaries, and deployment stay the same. Equivalent parser loops preserve result validation and exact no-results structure checks. The context, container, component, runtime, and deployment views remain accurate; no registry edit or architecture decision is needed.",
     "views": [
       "context",
       "containers",
@@ -25,8 +25,17 @@
     ],
     "evidence": [
       "architecture/components.md",
-      "docs/implementation/pr-review-playbook.md",
-      "script/pr-review/check.ts"
+      "src/app/fetch-tool.ts",
+      "src/pipelines/providers/search-engine/search-engine.ts",
+      "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "src/pipelines/html-processing/html-to-markdown-pipeline.ts",
+      "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "docs/reference/mcp-search-tool.md",
+      "test/acceptance/mcp/search-pipeline.test.ts",
+      "test/integration/search-pipeline/brave-markdown.test.ts",
+      "test/unit/search-engine/search-engine-brave-http.test.ts",
+      "test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.ts",
+      "test/support/fixtures/search-engine/README.md"
     ]
   }
 }
