@@ -5,7 +5,7 @@ import { portalAccessOperation } from '../../../src/interfaces/web/account/porta
 
 const base = 'https://thermus.example/team';
 const user: RoleGrant = { role: 'user', permissions: ['product:access'] };
-const admin: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
+const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
 const member: RoleGrant = { role: 'member', permissions: [] };
 
 function contextWith(grants: readonly RoleGrant[]) {
@@ -23,15 +23,15 @@ async function access(grants: readonly RoleGrant[], path = '/team/portal/access'
 }
 
 describe('Product access of the portal with the real permission check', () => {
-  test('Given User and Admin grants, when the portal reads its product access, then it gets the organization and the roles that give a permission, without a highest role', async () => {
-    const { status, body, response } = await access([admin, user, member]);
+  test('Given User and synthetic user-manager grants, when the portal reads its product access, then it gets the organization and the roles that give a permission, without a highest role', async () => {
+    const { status, body, response } = await access([userManagerGrant, user, member]);
     assert.equal(status, 200);
-    assert.deepEqual(body, { organizationId: 'org_01ACME', roles: ['admin', 'user'], plan: 'free', mcpUrl: 'https://mcp.example/service/mcp' });
+    assert.deepEqual(body, { organizationId: 'org_01ACME', roles: ['test-user-manager', 'user'], plan: 'free', mcpUrl: 'https://mcp.example/service/mcp' });
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
   });
 
-  test('Given only Admin, or only the default role, when the portal reads its product access, then it gets 403 and no organization data', async () => {
-    for (const grants of [[admin], [member], []]) {
+  test('Given only a synthetic user-manager grant, only the default role, or no grant, when the portal reads its product access, then it gets 403 and no organization data', async () => {
+    for (const grants of [[userManagerGrant], [member], []]) {
       const { status, body } = await access(grants);
       assert.equal(status, 403);
       assert.deepEqual(body, { access: 'denied' });

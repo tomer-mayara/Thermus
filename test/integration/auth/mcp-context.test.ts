@@ -18,7 +18,7 @@ const resourceUrl = 'https://thermus.example/mcp';
 const authority = 'https://auth.thermus.example';
 const productAccess = ProtectedToolSpy.requiredPermission;
 const userGrant: RoleGrant = { role: 'user', permissions: [productAccess] };
-const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
+const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
 const nowSeconds = Math.floor(Date.now() / 1_000);
 const members = ['ann', 'ben', 'cy', 'dee'].map((name, index): AuthenticatedUser => ({
   authority,
@@ -108,16 +108,16 @@ describe('MCP access context with the real access contracts', () => {
     }
   });
 
-  test('Given a member whose User grant is revoked between two requests, when the member calls again with the same token, then the next request is checked again and its protected work is refused', { timeout: 10_000 }, async (t) => {
+  test('Given a member whose User grant is revoked while a synthetic user-manager grant remains, when the member calls again with the same token, then the next request is checked again and its protected work is refused', { timeout: 10_000 }, async (t) => {
     const [ann] = members as [AuthenticatedUser];
-    let grants: readonly RoleGrant[] = [userGrant, adminGrant];
+    let grants: readonly RoleGrant[] = [userGrant, userManagerGrant];
     const { server, resolver, probe } = serve(t, new Map([[ann.subject, async () => memberAccess(ann, grants)]]));
 
     const first = await toolJson<ProbeReport>(await server.fetch(callProbe(t, `${ann.subject}-token`)));
-    grants = [adminGrant];
+    grants = [userManagerGrant];
     const second = await rpcResult(await server.fetch(callProbe(t, `${ann.subject}-token`)));
 
-    assert.deepEqual(first.context.grants, [userGrant, adminGrant]);
+    assert.deepEqual(first.context.grants, [userGrant, userManagerGrant]);
     assert.equal(second.isError, true);
     assert.deepEqual(second.content, [{ type: 'text', text: 'Access denied' }]);
     assert.equal(resolver.calls.length, 2);
@@ -145,9 +145,9 @@ describe('MCP access context with the real access contracts', () => {
     });
   }
 
-  test('Given Admin without User, when the member calls the protected tool, then the permission check refuses before any fetch or clean step', { timeout: 10_000 }, async (t) => {
+  test('Given only a synthetic user-manager grant without product access, when the member calls the protected tool, then the permission check refuses before any fetch or clean step', { timeout: 10_000 }, async (t) => {
     const [ann] = members as [AuthenticatedUser];
-    const { server, probe } = serve(t, new Map([[ann.subject, memberAccess(ann, [adminGrant])]]));
+    const { server, probe } = serve(t, new Map([[ann.subject, memberAccess(ann, [userManagerGrant])]]));
 
     const result = await rpcResult(await server.fetch(callProbe(t, `${ann.subject}-token`)));
 

@@ -61,10 +61,10 @@ describe('OrganizationAdministration members and the product member count', () =
     assert.equal(overview.activeUserSeats, 4);
   });
 
-  test('Given memberships with only management permissions, a retired role, or the default role, and inactive or pending product members, when the overview is read, then no product member is counted', async () => {
+  test('Given memberships with a synthetic user-manager grant, a retired role, or the default role, and inactive or pending product members, when the overview is read, then no product member is counted', async () => {
     const { administration } = administrationWith([
       { subject: 'user-sam', organizationId: 'org-a', grants: [superAdminGrant] },
-      { subject: 'user-eve', organizationId: 'org-a', grants: [{ role: 'admin', permissions: ['user-grants:manage'] }] },
+      { subject: 'user-eve', organizationId: 'org-a', grants: [{ role: 'test-user-manager', permissions: ['user-grants:manage'] }] },
       { subject: 'user-ivy', organizationId: 'org-a', grants: [userGrant], status: 'inactive' },
       { subject: 'user-pia', organizationId: 'org-a', grants: [userGrant], status: 'pending' },
       { subject: 'user-dora', organizationId: 'org-a', grants: [{ role: 'member', permissions: [] }] },
