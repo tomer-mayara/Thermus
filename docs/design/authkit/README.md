@@ -17,8 +17,6 @@ active.
   400. Set `customCssElements.authkitGlobal.css` to its contents. Staging
   confirmed that these font rules load the Serif heading.
 - `manifest.json`: file mapping, prerequisites, and fields to preserve.
-- `test/acceptance/auth/authkit-branding.test.ts`: executable acceptance checks
-  for the copy and field scope.
 
 ## Apply
 
@@ -73,12 +71,6 @@ The panel CSS also omits the diagram at 960px or less. Check the provider's
 breakpoint so the form remains full width when the panel is hidden.
 
 ## Verify and roll back
-
-Run `node --import tsx --test test/acceptance/auth/authkit-branding.test.ts`
-before the commit.
-These checks first failed while the artifact files were absent, then passed.
-The actual input-selector check also failed before its correction. All three
-checks now pass.
 
 The manager verified the real hosted staging page with the complete CSS rules:
 

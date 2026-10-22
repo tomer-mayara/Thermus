@@ -23,8 +23,7 @@ its own Connect token, and monitors each fetch in Axiom.
   is missing, and goes to the repository root. Then it runs the entry point
   with the pinned Node runtime of pnpm, `pnpm exec node --import tsx …`, with
   the arguments of the launcher. A signal to the process of the launcher stops
-  the slice, as Ctrl+C does. Its unit test is
-  `test/unit/work-slice/auth-workos-mcp-url-fetch-script.test.ts`.
+  the slice, as Ctrl+C does.
 - stdout shows the instructions: the portal and the MCP endpoint, the trust
   command, the sign-in steps, the Claude Code commands, the
   Axiom link, the scope name of the run, and an APL filter. The log goes to

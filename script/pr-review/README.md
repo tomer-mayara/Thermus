@@ -173,14 +173,17 @@ these checks:
 The trusted rules select required metrics. Production changes require the
 snapshots, CRAP rows, and process/review files. `metrics.process_paths` also
 selects process/review for metrics tooling, configuration, baseline, and
-exceptions changes. Other source-free changes use their relevant tests and
-habit-hooks; production metrics are N/A. Historical policies still require
+exceptions changes. Other source-free changes use affected source test groups
+for changes under `test/`, or relevant build, type, lint, and manual checks for
+scripts, configuration, and documents, plus habit-hooks. Production metrics are
+N/A. Historical policies still require
 the complete process for every change. Required missing files block eligibility.
 Missing raw MI for a supported production implementation also blocks; a
 complete snapshot that explicitly reports no functions can establish N/A.
 
-Keep full metric artifacts available. The pull request description needs the
-tier, all relevant reasons, architecture impact, current check evidence, and
-any required decision or exception. It does not need unchanged metric findings.
+Retain and link the full metric reports. The pull request description needs
+the tier, all relevant reasons, architecture impact, current check evidence,
+and any required decision or exception. Summarize relevant changed file and
+function findings. Do not paste unchanged full reports.
 The label command uses exactly `T0 Auto merge`, `T1 Team review`, or
 `T2 Need architect`; labels select no approval authority.

@@ -9,7 +9,7 @@ request to grant or revoke Super Admin.
 The [authentication design](../design/authentication-design.md#organization-administration)
 gives the roles. The [hosted live gate](test-gate-policy.md#hosted-live-gate-auth-06)
 runs these steps against the WorkOS staging environment. The section
-[Provider proofs](#provider-proofs) gives the results.
+[Provider findings](#provider-findings) keeps the historical results.
 
 ## Authority and limits
 
@@ -274,13 +274,13 @@ For example:
 {"time":"2026-10-14T06:24:31.512Z","actor":"operator:Dana Example","organizationId":"org_01ACME","target":{"userId":"user_01SAM","email":"sam@acme.example"},"action":"grant-super-admin","rolesBefore":[],"rolesAfter":["super-admin"],"outcome":"applied"}
 ```
 
-## Provider proofs
+## Provider findings
 
-The hosted live gate runs these steps with the pinned SDK against the WorkOS
-staging environment: `test/support/hosted-live/operator-runbook.ts` gives the
-steps, and `test/acceptance/auth/hosted-live/operator-setup.ts` gives the
-proofs. The [test inventory](../testing/test-list.md) lists them. The proofs
-found:
+The hosted live gate uses `test/support/hosted-live/operator-runbook.ts` to set
+state and checks the production organization services in
+`test/acceptance/auth/hosted-live/operator-setup.ts`. The
+[test inventory](../testing/test-list.md) lists the current product cases.
+Earlier provider-only proofs recorded these findings:
 
 - WorkOS refuses a second organization with the same external ID with `400`
   `external_id_already_used`, also for a create with the `Idempotency-Key` of

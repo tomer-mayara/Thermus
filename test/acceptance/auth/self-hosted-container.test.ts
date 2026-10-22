@@ -503,5 +503,4 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(await probeImage(images.current, 'data-files', hostedVolume), []);
     await setup.site.assertNoOutboundRequests();
   });
-
 });

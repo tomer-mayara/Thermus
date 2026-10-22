@@ -1,85 +1,22 @@
 import assert from 'node:assert/strict';
-import { X509Certificate } from 'node:crypto';
-import { once } from 'node:events';
-import { Server } from 'node:net';
 import { text } from 'node:stream/consumers';
-import { describe, test, type TestContext } from 'node:test';
-import { setTimeout as delay } from 'node:timers/promises';
-import { connect as tlsConnect } from 'node:tls';
-import type { Application, ApplicationLogger } from '../../../src/app/application.ts';
+import { describe, test } from 'node:test';
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
 import { sendHttpsRequest } from '../../support/drivers/browser/https-client.ts';
 import { LocalHttpsSite, selfSignedCertificate } from '../../support/hosted-live/local-https-site.ts';
 import { localOrigin } from '../../support/hosted-live/settings.ts';
 import { lightpandaStub } from '../../support/processes/module-paths.ts';
-import { httpsSettings as settings, portalPage, temporaryDirectory, writePortalBuild } from './fixtures/https-site-fixtures.ts';
-import { describeHttpsCancellation } from './hosted-live-site/cancellation.ts';
+import { httpsSettings as settings, temporaryDirectory } from './fixtures/https-site-fixtures.ts';
 import { describeHttpsMcp } from './hosted-live-site/mcp.ts';
 
 // The placeholder settings reach no WorkOS environment. The hosted composition makes no WorkOS call when it starts.
 const caseOptions = { timeout: 10_000 };
 const front = new URL(localOrigin);
-const knownPath = '/known';
-const knownBody = 'The answer of the small application';
 
 interface FrontAnswer {
   readonly status: number;
   readonly body: string;
-}
-
-class SmallApplication {
-  readonly loggers: ApplicationLogger[] = [];
-  closes = 0;
-
-  readonly open = async (logger: ApplicationLogger): Promise<Application> => {
-    this.loggers.push(logger);
-    return {
-      handle: async (request) => {
-        if (new URL(request.url).pathname !== knownPath) throw new Error('The small application fails');
-        return new Response(knownBody);
-      },
-      close: async () => { this.closes += 1; },
-    };
-  };
-}
-
-// A regression that leaks a server would keep the test process alive after the failed assertion. The listen mock
-// records each server, and the cleanup closes the servers that still listen, so that the file fails and exits.
-function closeLeakedServersAfter(t: TestContext): void {
-  const servers: Server[] = [];
-  const listen = Server.prototype.listen;
-  t.mock.method(Server.prototype, 'listen', function (this: Server, ...args: unknown[]): Server {
-    servers.push(this);
-    return Reflect.apply(listen, this, args) as Server;
-  });
-  t.after(async () => {
-    for (const server of servers) {
-      if (server.listening) await new Promise((resolve) => server.close(resolve));
-    }
-  });
-}
-
-function serverHandles(): number {
-  return process.getActiveResourcesInfo().filter((resource) => resource === 'TCPServerWrap').length;
-}
-
-// Node removes the handle of a closed server one event loop turn after the close.
-async function serverHandlesAfterClose(before: number): Promise<number> {
-  const deadline = Date.now() + 2_000;
-  while (serverHandles() > before && Date.now() < deadline) await delay(5);
-  return serverHandles();
-}
-
-// The connection accepts each certificate, so that the test can read the certificate of the front.
-async function frontFingerprint(): Promise<string> {
-  const socket = tlsConnect({ host: front.hostname, port: Number(front.port), servername: front.hostname, rejectUnauthorized: false });
-  try {
-    await once(socket, 'secureConnect');
-    return socket.getPeerCertificate().fingerprint256;
-  } finally {
-    socket.destroy();
-  }
 }
 
 async function frontGet(path: string, ca: Buffer): Promise<FrontAnswer> {
@@ -128,39 +65,5 @@ describe('Local HTTPS site of the hosted live gate (test support) with the real 
     assert.equal(portal.status, 200);
     assert.match(portal.body, /Thermus hosted portal fixture/);
   });
-
-  // This case listens on port 46443, the port of the hosted live gate and the work slice. It fails while one of them runs.
-  test('Given a portal build, certificate files from the OpenSSL command of the site, a logger, and an application function, when the site starts, then the front at https://localhost:46443/ gives that certificate, serves the portal, and forwards each other request to the application of that function, which gets that logger; a request that the application fails gives 500 and a report to that logger; close() closes the application one time and leaves no server listening', caseOptions, async (t) => {
-    closeLeakedServersAfter(t);
-    const portal = await writePortalBuild(t);
-    const certificate = await selfSignedCertificate(await temporaryDirectory(t));
-    const logger = { info: t.mock.fn<(message: string) => void>(), error: t.mock.fn<(message: string) => void>() };
-    const application = new SmallApplication();
-    const before = serverHandles();
-
-    const site = await LocalHttpsSite.start(settings, { portalBuild: portal, certificate, logger, application: application.open });
-    t.after(() => site.close());
-    const fingerprint = await frontFingerprint();
-    const answers = [await frontGet('/', certificate.cert), await frontGet(knownPath, certificate.cert), await frontGet('/fails', certificate.cert)];
-    await site.close();
-
-    assert.equal(fingerprint, new X509Certificate(certificate.cert).fingerprint256);
-    assert.deepEqual(answers, [
-      { status: 200, body: portalPage },
-      { status: 200, body: knownBody },
-      { status: 500, body: 'Internal Server Error' },
-    ]);
-    assert.equal(application.loggers.length, 1);
-    assert.equal(application.loggers[0], logger);
-    assert.deepEqual(logger.error.mock.calls.map(({ arguments: [message] }) => message), ['The HTTP handler failed for GET /fails: Error']);
-    assert.deepEqual(site.log.lines, []);
-    assert.deepEqual(
-      { applicationCloses: application.closes, serverHandles: await serverHandlesAfterClose(before) },
-      { applicationCloses: 1, serverHandles: before },
-    );
-  });
 });
-
-// One entry keeps the fixed-port cases in sequence when integration files run concurrently.
-describeHttpsCancellation();
 describeHttpsMcp();

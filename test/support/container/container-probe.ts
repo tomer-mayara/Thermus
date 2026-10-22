@@ -1,12 +1,9 @@
-// Runs in a one-off container of an image under test. container-gate.ts sends it on standard
-// input, so the image needs no mounted test file. PROBE names one of the probes at the end of this file, and the script
-// prints the result as JSON.
+// Runs in a one-off container to read or reset the local installation data.
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
 const DATA_DIR = process.env.DATA_DIR ?? '/var/lib/thermus';
-
 function withDatabase<T>(work: (database: DatabaseSync) => T): T {
   const database = new DatabaseSync(join(DATA_DIR, 'auth.sqlite'));
   try {

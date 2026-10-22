@@ -236,7 +236,7 @@ selections, retains each capture identity, and unions compatible coverage. Neste
 or broader commands defer collection; missing shutdown evidence rejects capture.
 No option expands the selected test scope. Trend charts split at changes in
 suite set. Older D3 records without `captureProvenance` retain their historical
-unit-only schema; pre-D3 unknown records stay unknown. The report always includesThe report always includes community
+unit-only schema; pre-D3 unknown records stay unknown. The report always includes community
 and source-folder component graphs, their legends, and import evidence.
 Snapshots retain normalized source dependency pairs for offline reports;
 legacy missing evidence remains unavailable. Exploratory architecture is read-only;

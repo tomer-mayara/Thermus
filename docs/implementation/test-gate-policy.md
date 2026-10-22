@@ -23,13 +23,13 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 
 | Suite | Command | Selects | Needs |
 | --- | --- | --- | --- |
-| Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. Git in `PATH`. No renderer. |
+| Unit | `npm run test:unit` | `dist/test/unit/**/*.test.js` and `test/unit/user-portal/**/*.test.ts` | Offline. No renderer. |
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
-| All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Git in `PATH`, Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
+| All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
 | Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, Git and OpenSSL in `PATH`, free local port 46443, and local loopback access. The Docker build supplies Git and the renderer. |
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
@@ -37,19 +37,20 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
-`npm run check` runs `npm run typecheck`, `npm run test:unit`, the portal
-acceptance tests, and `npm run build:user-portal`. The compiled ordinary, unit,
-and acceptance commands use `node --test --test-concurrency=1` with their
-existing selections. They run one test file at a time, so other files do not
-compete with the child processes that check work deadlines. Test selection,
-process isolation, assertions, and deadlines stay unchanged. `npm run check`
-does not run the full integration, acceptance, interface, or container suites,
-the hosted image gate, or the renderer gate. Only `npm run test:hosted-live`
-runs the hosted live file. The ordinary `test` and `test:acceptance` commands
-use the quoted Node glob `**/!(hosted-image).test.js` to exclude the hosted
-image test by basename. Node 24.20.0 supports this exclusion. Only `npm run
-test:container:hosted` runs that gate; the ordinary commands do not register it
-as a skipped test.
+`npm run check` runs `npm run typecheck`, `npm run test:unit`,
+the portal acceptance tests, and `npm run build:user-portal`.
+The compiled ordinary, unit, and acceptance commands use
+`node --test --test-concurrency=1` with their existing selections. They run one
+test file at a time, so other files do not compete with the child processes
+that check work deadlines. Test selection, process isolation, assertions, and
+deadlines stay unchanged.
+`npm run check` does not run the full integration, acceptance, interface, or
+container suites, the hosted image gate, or the renderer gate.
+Only `npm run test:hosted-live` runs the hosted live file.
+The ordinary `test` and `test:acceptance` commands use the quoted Node glob
+`**/!(hosted-image).test.js` to exclude the hosted image test by basename.
+Node 24.20.0 supports this exclusion. Only `npm run test:container:hosted` runs
+that gate; the ordinary commands do not register it as a skipped test.
 
 `npm test` and `npm run test:acceptance` also select the container test file.
 Without `THERMUS_CONTAINER_GATE=1`, its suite is skipped and runs no test. Only
@@ -88,10 +89,12 @@ run the integration group only when the path rules below select it.
 
 Provider tests that execute shared context creation or the canonical auth
 rejection class run in `test/integration/auth/`. MCP rejection and access tests
-run in `test/integration/mcp/` for the same reason. The direct auth import
-guards and test dependency rules run through ESLint in `habit-hooks`. Review
-rule changes with lint and representative manual checks; tests under `test/`
-cover source behavior only.
+run in `test/integration/mcp/` for the same reason. The direct auth import guards
+and rules D1 to D7 of the
+[test code layout](../testing/test-code-layout.md#dependency-rules) run through
+the existing ESLint configuration in `habit-hooks`.
+Review rule changes with lint and representative manual checks; tests under
+`test/` cover source behavior only.
 
 ## Focused commands
 
@@ -116,7 +119,7 @@ Run one case in that file. The pattern is a regular expression:
 npm run build && node --test --test-name-pattern="<test name>" dist/test/<suite>/<path>.test.js
 ```
 
-Make sure the report shows the name of each test that you selected.
+Make sure that the report shows the name of each test that you selected.
 
 ## Required runs
 
@@ -134,8 +137,7 @@ the old and new paths of a rename or move.
 Apply these rules in order:
 
 1. **A path under the repository's `src/` changed:** run `npm test`,
-   `npm run typecheck`, and
-   `npm run build:user-portal`. Then run the applicable
+   `npm run typecheck`, and `npm run build:user-portal`. Then run the applicable
    [production gates](#production-gates-for-source-changes) below. The
    prefix is exactly `src/`; a folder named `src` elsewhere does not count.
 2. **No `src/` path changed, but a repository `test/` path changed:** run
@@ -194,6 +196,21 @@ subject is the metrics tooling. Run the applicable process and review under
 AGENTS.md. Reuse compatible coverage or report its limits; a tooling change
 alone does not select source tests or coverage collection.
 
+### ast-metrics coverage collection
+
+The metrics process follows the same test selection as other commands.
+`--collect-coverage` requests both complete unit parts: emitted Node tests
+and source portal tests. Use it only when a `src/` path changed or both parts
+were independently selected. The standalone collector accepts repeated
+`--suite unit|integration|acceptance`; each complete suite must already belong
+to the selected union. It builds once and captures each suite separately.
+
+Missing or stale coverage does not select more tests. Reuse a compatible report
+when available. Otherwise record the required assessment as deferred;
+`--skip-coverage` cannot make an unassessed required goal pass. Do not edit
+coverage reports. An interrupted child without flush evidence leaves capture
+unverified and cannot replace a valid report.
+
 ### Keep the selection through nested commands
 
 Check what each selected command runs, including child processes and image
@@ -225,8 +242,7 @@ These rules grant no additional suite selection.
 
 Dedicated tests keep their own commands: for example,
 `npm run test:mcp:renderer`, `npm run test:mcp:search:live`,
-`npm run test:hosted-live`,
-`npm run test:container`.
+`npm run test:hosted-live`, and `npm run test:container`.
 Their prerequisites and evidence rules still apply. Do not use
 `npm run build:hosted` to prepare a test-only renderer or hosted-live run;
 use the backend and portal builds that its dedicated command requires.
@@ -270,6 +286,9 @@ changed source affects their behavior:
 - `npm run test:hosted-live` for source that affects hosted authentication
   or WorkOS organization reads and changes, when the staging settings are
   available. If they are unavailable, record that the gate did not run.
+
+The ordinary full suite includes the offline Better Auth interface proofs.
+No separate whole interface run is needed after `npm test` passes.
 
 ### Common checks and evidence
 
@@ -448,10 +467,10 @@ inside the build. These checks supplement the pull request runs only when
 the hosted build gate is selected. Every real hosted image build still runs
 the complete checks; the path selection does not weaken the image.
 
-The check stage has Git for source tests that need temporary repositories.
-It has no checkout `.git` folder (`Dockerfile.hosted.dockerignore` excludes it)
-and no ast-metrics executable. Tests must not depend on either. Git stays out
-of the production-dependencies and runtime stages.
+The check stage has no checkout `.git` folder
+(`Dockerfile.hosted.dockerignore` excludes it) and no ast-metrics executable.
+Tests must not depend on either. Git stays out of the
+production-dependencies and runtime stages.
 
 ### Acceptance: hosted build with constrained CPU
 
@@ -491,17 +510,17 @@ used for those runs. Use the current dedicated command for a new run. The
 renderer and live gate names did not change.
 
 The gate must build and run the final `Dockerfile.hosted` image for
-`linux/amd64`. It needs Docker Engine with Buildx and a native or emulated AMD64
-builder and runtime. Downloading the pinned base images, packages, and
-Lightpanda asset needs network access unless those inputs are cached. The
-runtime test needs public HTTPS egress to `https://example.com/`. Tests need no
-live WorkOS or Axiom credential. The final-image run must prove real native
-cleaner loading, CA-backed HTTPS and JavaScript rendering, private network
-refusal, capacity refusal, cancellation, bounded shutdown, invalid startup
-refusal, the exact approved pre-sign-in notice with signup enabled only in an
-image test. The [RHD-03 record](rhd-03.md) tracks the case details and results.
-The gate allows 60 minutes for its build and runtime cases. This allowance does
-not change production readiness or shutdown limits.
+`linux/amd64`. It needs Docker Engine with Buildx and a native or emulated
+AMD64 builder and runtime. Downloading the pinned base images, packages, and
+Lightpanda asset needs network access unless those inputs are cached. The runtime test needs public HTTPS egress to
+`https://example.com/`. Tests need no live WorkOS or Axiom credential. The final-image run must prove real
+native cleaner loading, CA-backed HTTPS and JavaScript rendering, private
+network refusal, capacity refusal, cancellation, bounded shutdown, invalid
+startup refusal, the exact approved pre-sign-in notice with signup enabled only
+in an image test.
+The [RHD-03 record](rhd-03.md) tracks the case details and results.
+The gate allows 60 minutes for its build and image cases. This allowance
+does not change production readiness or shutdown limits.
 
 A successful build alone does not pass the runtime gate. A pass of the
 self-hosted container gate, host renderer gate, or ARM64 image does not prove
@@ -560,8 +579,9 @@ The real MCP SDK HTTP client calls `getURLAsMarkdown`. Its nine cases cover:
 
 Setup fails when `LIGHTPANDA_BIN` is unset or empty, is relative, does not run,
 or reports a version other than 1.0.0. Each setup message starts with
-`Renderer gate setup failed:` and points to the runtime guide. All three renderer files use
-`test/support/processes/pinned-renderer.ts` for setup validation.
+`Renderer gate setup failed:` and points to the runtime guide. The
+runtime and live files use `test/support/processes/pinned-renderer.ts`
+for setup validation.
 
 A run of `npm run test:mcp:renderer` that exits with status 0 and shows
 every case in both runtime files as passed is a renderer gate pass. The
@@ -791,8 +811,8 @@ mismatch fails the run. The command does not change provider MFA settings.
 The Optional profile proves normal browser/Connect flows with no application
 MFA evidence and explicit administration refusal. The Required profile keeps
 the positive administration proofs under the matched password-MFA contract.
-Each profile registers 79 cases, including the two FS-02 signup cases. Required
-keeps the eight positive application administration cases. Optional replaces
+Both profiles include the FS-02 signup cases. Required keeps the positive
+application administration cases. Optional replaces
 them with refusal and invitation-acceptance cases that preserve the MFA boundary.
 Operator/API administration contract proofs run in both profiles: those service-credential
 proofs do not give an Optional browser session administration authority.
@@ -823,13 +843,11 @@ The WorkOS API can save the redirect URI and the resource indicator. The
 Sign-out URI and the Initiate login URI are dashboard settings. The dashboard
 also keeps the sign-in methods and the social providers, under Authentication,
 and DCR and CIMD. The WorkOS connector can change these too, with its
-`updateAuthkitSettings` operation. The configuration proofs of the gate read
-back each setting that the API or the hosted pages show. The proof of the
-AuthKit metadata reads DCR and CIMD back: the `registration_endpoint` and
-`client_id_metadata_document_supported`. The session-end proofs follow the
-redirects of the WorkOS logout to the Sign-out URI and of a direct AuthKit
-visit to the Initiate login URI. A redirect is not a page, so these proofs
-watch the navigation requests of the browser.
+`updateAuthkitSettings` operation. Check the saved settings before the run.
+The gate preflight checks the selected MFA profile. The hosted application
+cases follow the WorkOS logout redirects to the Sign-out URI and a direct
+AuthKit visit to the Initiate login URI. A redirect is not a page, so those
+cases watch the navigation requests of the browser.
 
 The auth WorkOS MCP URL fetch work slice uses the same staging environment,
 the same origin `https://localhost:46443/`, and the same registered URIs. Thus
@@ -893,87 +911,34 @@ settings and every live test passes. Missing hosted credentials, a setup error,
 and skipped live tests can never count as a successful hosted gate. Do not put
 credentials in the repository, in logs, or in pull request notes.
 
-The Required profile has the six parts below. The Optional profile keeps
-the common browser, session, Connect, access, organization, and revocation
-proofs and replaces positive MFA/administration expectations with no-evidence
-and administration-refusal cases. Neither profile silently changes the
-provider setting. Counts and final candidate results belong in the
-[validation record](auth-workos-mcp-url-fetch-validation.md).
+The profiles exercise the following product behavior:
 
-The Required profile has these parts:
-
-- The provider proofs of AUTH-06: the AuthKit metadata and key sets, the saved
-  configuration, the browser sign-in with required MFA, sessions and their
-  end, Connect authorization and tokens, and the membership reads. The
-  [authentication plan](../design/authentication-design.md#live-provider-proofs)
-  lists them and records their results.
-- The AUTH-06 cases of the hosted live gate, in
-  `test/acceptance/auth/hosted-live/hosted-server.ts`. The local HTTPS test
-  server, `test/support/hosted-live/local-https-site.ts`, forwards all requests
-  at `https://localhost:46443/` to the production hosted application of Thermus
-  with the staging settings. The application serves the portal and assets. Playwright
-  drives the portal, the sign-in, and the sign-out; a test MCP client sends
-  Connect tokens to the MCP endpoint. The cases cover the sign-in with MFA and
-  the session cookie, the onboarding of a user without a membership, the
-  product access of User, Admin only, and the default role, Connect tokens at
-  the MCP endpoint, the refusal of browser and M2M tokens, the organization of
-  each credential, the external sign-in through `/login`, the sign-out, and
-  the revocation limits and cookie rotation after the 300-second token
-  lifetime.
-- The AUTH-07W provider proofs, in
-  `test/acceptance/auth/hosted-live/operator-setup.ts`. They run the steps of
-  the [operator runbook](hosted-organization-setup.md) with the pinned SDK
-  against the staging environment, through the test-support driver
-  `test/support/hosted-live/operator-runbook.ts`, and read the result with the
-  real `WorkOSOrganizations` and `OrganizationAdministration`. The proofs cover
-  the organization setup by external ID, the Super Admin grant, revocation,
-  replacement, and recovery, the inspection after an unknown outcome, and the
-  operator records. Each Super Admin change is one role assignment on the
-  authorization resource of the organization, or its removal. The proofs also
-  cover that resource, which has the external ID of the organization, and a
-  customer single-role change between the inspection of the runbook and its
-  write, which stays. The driver is test support only: the product has no
-  operator method or route. Review changes to this support driver with relevant type, lint, and manual checks.
-- The AUTH-07W cases of the hosted server, in
-  `test/acceptance/auth/hosted-live/organization-server.ts`, with the same
-  local HTTPS test server. The cases cover the onboarding of users without an
-  authorized organization, the organization page and the selection with the
-  WorkOS names, refused selections, a Super Admin of the operator organization
-  with the billing page, a refused customer grant of Super Admin and the
-  revocation by the operator, and a refused selection after the access token
-  of the session expired. `hosted.live.ts` registers the AUTH-07W cases before
-  the AUTH-06 cases and the expiry case after them, so that the 300-second
-  wait of the AUTH-06 cases also lets the access token of the selection
-  session expire.
-- The AUTH-08W provider proofs, in
-  `test/acceptance/auth/hosted-live/administration-proofs.ts`. They run the
-  single-role writes of WorkOS with the pinned SDK, and the grant changes,
-  member reads, User seat count, and invitation changes of the real
-  `WorkOSOrganizations`, against the staging environment. The proofs cover a
-  repeated write, concurrent writes of two roles, the removal of a role that
-  the membership does not have, a write on the resource of another
-  organization, retries on an old revision, the removal of the last role,
-  inactive and pending memberships, the member reads in pages of two with
-  each status filter, the User seat count, and the invitation send, its
-  refusals, the resend, and the revoke.
-- The AUTH-08W cases of the hosted server, in
-  `test/acceptance/auth/hosted-live/administration-server.ts`, with the same
-  local HTTPS test server. The cases cover a forged Admin grant of an
-  Admin-only member, the self-grants of a Super Admin with MFA and their
-  change records, the revoke and the regrant of its own Admin, the
-  revocation of Admin and then of User of a member with a browser session
-  and an MCP token, the removal of the last grant, forged posts and a post on
-  an old revision, the invitation forms, and the acceptance of two
-  invitations. For an acceptance, Playwright opens the invitation link.
-  AuthKit sends the browser through the Initiate login URI to `/login` of the
-  server, which starts a sign-in. AuthKit shows the invitation in that
-  sign-in and accepts it before the callback
-  (`acceptInvitationThroughPortal()` in
-  `test/support/hosted-live/portal-visit.ts`, with the `/invite` step of
-  `test/support/hosted-live/authkit-driver.ts`). `hosted.live.ts` registers
-  the AUTH-08W proofs after the AUTH-07W proofs, and the AUTH-08W cases after
-  the first four AUTH-07W cases and before the AUTH-06 cases. Thus the
-  AUTH-07W expiry case still comes after the 300-second wait.
+- AUTH-06 hosted application cases in
+  `test/acceptance/auth/hosted-live/hosted-server.ts` reach the production
+  application through the local HTTPS site. They check browser sign-in,
+  sessions, the portal, MCP token and access refusals, organization isolation,
+  sign-out, refresh, revocation, and cookie rotation.
+- AUTH-07W service cases in
+  `test/acceptance/auth/hosted-live/operator-setup.ts` use the operator driver
+  to set state and check real `WorkOSOrganizations` and
+  `OrganizationAdministration` results for grants, revocation, replacement,
+  and recovery.
+- AUTH-07W hosted cases in
+  `test/acceptance/auth/hosted-live/organization-server.ts` check onboarding,
+  organization pages and selection, current access, billing, refused changes,
+  and refreshed sessions. The expiry case runs after the AUTH-06 wait.
+- AUTH-08W service cases in
+  `test/acceptance/auth/hosted-live/administration-proofs.ts` execute the real
+  `WorkOSOrganizations` directory. They check revision refusals, removal of
+  the last application role, inactive and pending memberships, paged reads,
+  User seats, and invitation changes.
+- AUTH-08W hosted cases in
+  `test/acceptance/auth/hosted-live/administration-server.ts` check permitted
+  administration, forgery and stale-revision refusals, revocation, invitations,
+  and records. The Optional profile uses
+  `optional-administration-server.ts` for refusal and invitation cases.
+- Signup cases in `test/acceptance/auth/hosted-live/signup-server.ts` check
+  the production notice, agreement, callback, and access behavior.
 
 For the AUTH-07W proofs and cases, the run makes its own operator
 organization, `Thermus live <run ID> operator` with the external ID
@@ -995,19 +960,16 @@ Organization B of the staging fixtures holds the second membership of two of
 these users. The invitations of the proofs and cases go only to these
 existing users, because an invitation to a new address needs an email
 verification code at the acceptance. The run deletes them at the end with
-its other fixtures. They need no other setting or prerequisite. With them,
-the complete command has 77 tests: the 60 tests of AUTH-06 and AUTH-07W, with
-the three operator proofs of the ticket
-`9255ad59-3484-43bd-bdf5-e6e391e07bd6`, and the 17 AUTH-08W tests.
+its other fixtures. They need no other setting or prerequisite.
 
 Record the results of the AUTH-06 cases separately from the full hosted release
 gate. A pass of the AUTH-06 cases lets AUTH-06 complete its scope: identity
 verification, browser sessions, and read-only access resolution. It is not a
 pass of the full hosted gate. The first hosted release also needs the
 applicable AUTH-07W and AUTH-08W live cases, and the operator and customer
-changes that they prove stay unavailable until those cases pass. The
-AUTH-07W cases passed in run r2 of AUTH-07W, and the AUTH-08W cases in run
-r3 of AUTH-08W.
+changes that they prove stay unavailable until those cases pass. The dated
+runs below describe earlier candidates; their counts do not describe the
+current selection.
 
 Record the results of the AUTH-07W proofs and cases separately in the same
 way. Run r2 of AUTH-07W on 2026-10-14 passed them with the complete command:

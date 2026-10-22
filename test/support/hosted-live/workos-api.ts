@@ -20,14 +20,6 @@ async function jsonObject(response: Response, request: string): Promise<JsonObje
   return body;
 }
 
-// The pinned SDK has no method for these WorkOS endpoints, so the proofs call the REST API with the staging key.
-export async function readWorkOSList(settings: HostedLiveSettings, path: string): Promise<JsonObject[]> {
-  const response = await fetch(`${apiOrigin}${path}`, { headers: bearer(settings.apiKey), signal: AbortSignal.timeout(requestTimeout) });
-  const { data } = await jsonObject(response, `GET ${path}`);
-  assert.ok(Array.isArray(data) && data.every(isJsonObject), `GET ${path} gave no data list.`);
-  return data;
-}
-
 export async function deleteWorkOSResource(settings: HostedLiveSettings, path: string): Promise<number> {
   const response = await fetch(`${apiOrigin}${path}`, { method: 'DELETE', headers: bearer(settings.apiKey), signal: AbortSignal.timeout(requestTimeout) });
   await response.body?.cancel();

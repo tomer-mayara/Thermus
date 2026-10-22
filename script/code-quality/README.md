@@ -108,7 +108,7 @@ Without a covered share, `p` paths bound CRAP from `p` to `p² + p`. The pure
 `atMost15` and `below30` from these bounds or from exact operands, as `PASS`,
 `MISS`, or `UNKNOWN`: three paths prove CRAP ≤ 15 without coverage, four paths
 give a range that crosses 15. The
-[review route check](../pr-review/README.md) applies it to the rows of
+[review tier check](../pr-review/README.md) applies it to the rows of
 `--json`; the
 [metrics guide](../../docs/implementation/ast-metrics-review.md#the-crap-goal)
 gives the details.
@@ -584,7 +584,7 @@ the table gives one entry, in the order of the table, with `file`,
 are absent; without source identity, `identity` is absent. An empty selection
 gives `rows: []`. The command writes the file also for a goal miss; the table
 and the exit status do not change. After a diagnostic it writes no file, so an
-older file can stay. The [review route check](../pr-review/README.md) reads
+older file can stay. The [review tier check](../pr-review/README.md) reads
 the file with `--crap`. Write it under `ast-report/`, as
 `ast-report/crap.json`: a file in another folder of the repository can change
 the input identity of the coverage report.
@@ -749,7 +749,7 @@ remain unavailable, never inferred from rounded scores. Present malformed or
 nonfinite native MI for a `src/` file stops capture before publication;
 out-of-scope entries remain ignored. The existing
 architecture reader ignores this optional field; displays/trends/process retain
-rounded data. The review route check `script/pr-review/check.ts` reads the raw
+rounded data. The review tier check `script/pr-review/check.ts` reads the raw
 value for the MI rules of check 4.
 
 `tool` keeps the checked actual version, including an explicit override.
@@ -834,7 +834,7 @@ With `--json`, the command also writes one JSON object to `FILE`. It has
 `unavailable`. The command writes the file also after a goal miss or a failed
 stage. The Markdown, the exit status, and the history record do not change.
 After a diagnostic, it writes no file, so an older file can stay. The
-[review route check](../pr-review/README.md) reads the file with `--process`.
+[review tier check](../pr-review/README.md) reads the file with `--process`.
 Write it under `ast-report/`, as `ast-report/process.json`: a file in another
 folder of the repository can change the input identity of the coverage report.
 

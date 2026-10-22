@@ -1,5 +1,8 @@
 # Test code layout and terms
 
+Tests under `test/` exercise components under `src/`, directly or through
+public interfaces. Keep support files only when those tests require them.
+
 This document gives the terms for the auxiliary files under `test/`: the files
 that are not test cases. It also gives the layout of `test/support`, the rules
 that say where a file lives, and the rules that say what a file may import.
@@ -186,12 +189,7 @@ home.
 ### Dependency rules
 
 - D1. `S/**` imports only `src/**`, packages, and `S/**`.
-- D2. A file in `test/<type>/` imports no other test type. The first version
-  had one exception: the unit test of the work-slice fetch lines imported the
-  entry point of the basic slice. That exception is gone. The auth WorkOS MCP
-  URL fetch slice moved the fetch lines to test support. They are now the spy
-  `S/doubles/mcp/fetch-operation-spy.ts`, and the unit test imports them from
-  there.
+- D2. A file in `test/<type>/` imports no other test type.
 - D3. A unit test imports `fixtures/` only from its own package.
 - D4. `S/drivers/**` imports no `S/dsl/**`.
 - D5. `S/doubles/**` and `S/fixtures/**` import no `S/dsl/**` and no
@@ -213,5 +211,6 @@ home.
 The cross-layer imports: support → unit fixtures goes; integration and
 acceptance → unit fixtures goes (Steps 2 and 3 of the plan move the 13 borrowed
 files); unit → support stays, because `S/` is the shared base of all test
-types. ESLint enforces D1 to D7 (Steps 4 and 5i of the plan). These configuration
-rules do not have tests under `test/`: their subject is outside `src/`.
+types. ESLint enforces D1 to D7 through the existing `habit-hooks` configuration.
+These configuration rules do not have tests under `test/`: their subject is
+outside `src/`.

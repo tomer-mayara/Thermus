@@ -15,8 +15,7 @@ connect an LLM client to the tool, and monitor each fetch in Axiom.
   server, as Ctrl+C does. A setting with a value before the call keeps that
   value. The launcher writes the five settings to stderr before the start, but
   never `AXIOM_API_KEY`. If `AD_RULES_FILE` is not a file, the launcher stops
-  and shows the `touch` command that makes an empty file. Its unit test is
-  `test/unit/work-slice/basic-mcp-url-fetch-script.test.ts`.
+  and shows the `touch` command that makes an empty file.
 - Before you start the launcher, make sure that you have these items. The slice
   reads the settings of the server:
   - `PUBLIC_BASE_URL` with the address of the listener. Default:

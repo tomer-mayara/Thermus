@@ -138,5 +138,4 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.match(logs, /The hosted portal build is missing or invalid/);
     assert.doesNotMatch(logs, /Listening on http:\/\//);
   });
-
 });

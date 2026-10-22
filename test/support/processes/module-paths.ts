@@ -1,7 +1,8 @@
 import { fileURLToPath } from 'node:url';
 
 // The one module that computes run-time paths from the support code to other folders and to the repository root
-// (rule D8 of docs/testing/test-code-layout.md). The module runs from the source
+// (rule D8 of docs/testing/test-code-layout.md). Its consumers use these paths to start child processes and load
+// fixtures. The module runs from the source
 // tree (.ts) and from dist/ (.js), where it sits one folder deeper.
 const fromSource = import.meta.url.endsWith('.ts');
 const extension = fromSource ? 'ts' : 'js';
@@ -48,3 +49,7 @@ export const containerProbeScript = containerModule('container-probe');
 
 // The identity preload that the hosted-image gate mounts. It is not copied into the final image.
 export const hostedImageIdentity = containerModule('hosted-image-identity');
+
+// The debug command runs directly from source; no build copies the script.
+export const fetchPublicScriptEntry = fileURLToPath(siblingModule('fetch-public-script-entry'));
+export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.ts', repositoryRoot));

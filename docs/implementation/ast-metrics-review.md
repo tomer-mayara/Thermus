@@ -36,8 +36,7 @@ initialization must also match the checked CLI version, even with an
 override. A mismatch gives `ast-metrics <v> is not the pinned
 <p>; run with --allow-tool-version to continue.` Pass `--allow-tool-version`
 to the outer command to permit another actual version throughout that run.
-The override does not change the pin. A pin change needs the applicable live
-contracts and fixture review.
+The override does not change the pin. Check tool compatibility when the pin changes.
 
 Help and offline architecture rendering start no tool and check no installed
 version. Coverage collection does not invoke ast-metrics and has no tool
@@ -49,8 +48,7 @@ them from the repository root with `pnpm exec node`.
 The ten entry points and their helper folders are in
 [`script/code-quality/`](../../script/code-quality/README.md). That README explains
 CRAP before the command sections, which follow the review process order. It
-lists each command's synopsis, options and defaults, output, exits, and focused
-tests. Use these wrappers for the review process. The process wrapper composes
+lists each command's synopsis, options and defaults, output, and exits. Use these wrappers for the review process. The process wrapper composes
 the complete review.
 The baseline wrapper reports counts for an allowed refresh. Shared helpers
 handle repeated argument and limit checks, JSON file reads, and UTF-16 text
@@ -199,7 +197,7 @@ without a measurement:
 ```
   41.4  src/interfaces/user-portal/connection-guide.ts  below 85
   91.0  src/runtime/http/server.ts
-  42.9  test/unit/example.test.ts  no goal
+  42.9  test/acceptance/mcp/http-fetch.test.ts  no goal
   not measured  src/types.d.ts
 Result: 1 of 2 production files below 85. Goal: 85 or more for each production file. 1 other file without a goal. 1 file not measured.
 Comparison with origin/main: ast-report/compare.html
@@ -1231,8 +1229,10 @@ its D3 basis. Missing component data, a missing component, or a missing
 metric gives `–` for that measure. A missing legacy field never implies
 zero or that a component did not exist. If no displayed record or head has
 components, the section says `No component history in these records.`
-Community labels are not joined across history. The complete report in the pull request description includes
-these chart blocks, captions, and the component matrix with the numeric table.
+Community labels are not joined across history. Retain these chart blocks,
+captions, and the component matrix with the numeric table in the complete
+report. Link the report from the pull request description and summarize the
+relevant changes.
 
 The trend store of a repository is `docs/metrics/` of its root, and the pull
 requests commit its files (step 7 of the process). It holds one JSON file for

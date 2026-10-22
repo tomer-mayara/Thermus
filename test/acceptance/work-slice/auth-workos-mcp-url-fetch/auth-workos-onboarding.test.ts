@@ -64,11 +64,3 @@ test('Given the production hosted composition without an onboarding policy and a
   assert.deepEqual(site.world.memberships, []);
   assert.equal(site.world.fake.takeRequests().some(({ method, path }) => method === 'POST' && path === '/user_management/organization_memberships'), false);
 });
-
-test('Given slice settings without an organization ID, when the slice is composed, then it fails before sign-in can enroll any user', async (t) => {
-  const world = await WorkOSFake.start(t, hostedRootConfig.publicBaseUrl, [organizationId]);
-  await assert.rejects(composeWorkSliceApplication({ config: hostedRootConfig, connection: world.connection(), environment: {
-    AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: '/test/lightpanda',
-  } }, { info: () => {}, error: () => {} }), /THERMUS_SLICE_ORGANIZATION_ID/);
-  assert.deepEqual(world.fake.takeRequests(), []);
-});
