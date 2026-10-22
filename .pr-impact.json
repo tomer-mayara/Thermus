@@ -9,13 +9,13 @@
     "component": false,
     "internalInterface": false,
     "sensitiveBehavior": false,
-    "dependencyRisk": true,
-    "policy": true,
+    "dependencyRisk": false,
+    "policy": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Repair developer quality tooling: pin a local ast-metrics patch with complete function ranges and base-scoped review, bind native metrics and V8 coverage to exact source identities, and use the stricter new-function goal for unmatched declarations with complete inventories. No MI/CRAP threshold, lint baseline, human approval rule, application component, public application contract, runtime authority, lifetime, provider, or deployment changes. The five registry view groups remain accurate; no Mermaid block changes.",
+    "summary": "Add the initial S1-01 implementation record with scope, accepted retirement scenario, planned checks, and prospective architecture assessment. This candidate changes only that record and this declaration; source implementation and tests have not started. It changes no current runtime behavior, public contract, dependency, configuration, policy, or deployment. The context, container, component, runtime, and deployment views in architecture/components.md remain accurate and need no edit. Future removal of the external grant path and shared-contract changes must be classified from the complete source candidate; this document-only classification does not approve or classify those future changes.",
     "views": [
       "context",
       "containers",
@@ -24,12 +24,11 @@
       "deployment"
     ],
     "evidence": [
-      "docs/implementation/ast-metrics-function-repair.md",
-      "patches/ast-metrics/README.md",
-      "script/code-quality/identity/native.ts",
-      "script/code-quality/coverage/source-map.ts",
-      "script/code-quality/architecture/correspondence.ts",
-      "architecture/components.md"
+      "docs/implementation/admin-s1-01.md",
+      "docs/design/organization-admin-plan.md",
+      "architecture/components.md",
+      "docs/implementation/component-registry-workflow.md",
+      "docs/implementation/pr-review-playbook.md"
     ]
   }
 }
