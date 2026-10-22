@@ -47,19 +47,28 @@ WorkOS verified-email result for the sealed subject. Personal and company email
 addresses can qualify. Email verification does not verify age, employment, or
 business authority; the approved wording must cover the adult/business terms.
 
-A confirmed new personal-organization create permits one initial explicit User
-membership attempt. No Admin is granted. WorkOS retains the
-[signup record](hosted-signup-recovery.md#retained-personal-record). Freeze and
-retain exact bundle, terms, notice, and agreement bytes with their versions and
-hashes in the private store before use. Never reuse a version for changed bytes.
-The marker holds document hashes and an agreement version, not complete text.
+S1-03a accepts a valid organization name and one unchecked organization/authority
+agreement. Only a confirmed new organization create can attempt the first Admin
+membership. Success requires confirmed current Admin and product access. The
+browser then selects that organization through a current-membership check and
+opens its MCP guide with the persisted name.
 
-Existing product access offers Continue without another agreement or personal
-workspace. Admin-only access is product access and offers Continue without a separate
-personal workspace. Named creation and first Admin assignment wait for S1-03a. A retained marker with missing, pending, inactive, or
-inconsistent access requires support; it does not authorize a new grant. Use
-[signup inspection and recovery](hosted-signup-recovery.md), not the manual
-new-membership procedure below, for an incomplete signup.
+WorkOS retains the [signup record](hosted-signup-recovery.md#retained-personal-record).
+The v2 record keeps the creator subject, canonical document versions and hashes,
+server authority-acceptance time, and agreement hash. The organization and its
+reserved external ID bind its identity. Freeze and retain the exact approved
+bundle bytes before use. Never reuse a version for changed bytes. The marked
+organization test fixture is not production legal approval. The approved
+personal-User bundle remains unchanged and cannot authorize new Admin creation.
+Rollout waits for the exact approved organization/authority bundle and S1-05.
+
+Existing product access, including Admin alone, offers Continue without another
+agreement or organization. A retained v1 personal record remains a replay
+barrier, not organization consent or authority for an Admin upgrade. A retained
+record with missing, pending, inactive, or inconsistent access requires support;
+it does not authorize a new grant. Use [signup inspection and recovery](hosted-signup-recovery.md),
+not the manual new-membership procedure below, for an incomplete signup. Extended
+recovery and eligibility cases remain S1-03b work.
 
 ## Manual grants and invitations
 

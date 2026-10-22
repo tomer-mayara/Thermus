@@ -113,6 +113,12 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     return membership === undefined ? undefined : this.grantsOf(membership);
   }
 
+  // The current name of one active membership. The display read does not need any organization's role catalog.
+  async activeOrganizationName(user: AuthenticatedUser, organizationId: string): Promise<string | undefined> {
+    if (user.authority !== this.authority) return undefined;
+    return (await this.activeMembership(user.subject, organizationId))?.organizationName;
+  }
+
   // Each active membership of the user, from every page, with every current grant. The read names the status active,
   // so that no default filter of WorkOS decides. A user of another authority has no WorkOS membership, so its subject
   // is never sent to WorkOS.

@@ -26,6 +26,27 @@ function portal(answers: Answers) {
 
 const signedIn = async () => Response.json(session);
 
+test('Given named product access, when the guide opens, then it displays the name as text while retaining the selected organization ID', async () => {
+  const organizationName = '<img src=x onerror="alert(1)">';
+  const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({
+    organizationId: 'org_01A', organizationName, roles: ['admin'], plan: 'free', mcpUrl: 'https://thermus.example/mcp',
+  }) });
+  await initializePortal(options);
+  assert.equal(document.querySelector('.workspace-name')?.textContent, `Workspace: ${organizationName}`);
+  assert.equal(document.querySelector('.workspace-name')?.closest('details'), null);
+  assert.match(document.querySelector('details')?.textContent ?? '', /org_01A/);
+  assert.equal(document.querySelector('img[src="x"]'), null);
+});
+
+test('Given an unavailable organization name, when the portal cannot load its guide, then it offers a safe retry action', async () => {
+  const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ access: 'unavailable' }, { status: 503 }) });
+  await initializePortal(options);
+  assert.equal(document.querySelector('[role="alert"] h1')?.textContent, 'Workspace unavailable');
+  assert.match(document.body.textContent ?? '', /Your workspace is temporarily unavailable/);
+  assert.equal(document.querySelector('.retry-link')?.textContent, 'Try again');
+  assert.equal(document.querySelector('.connection-guide'), null);
+});
+
 test('A missing portal root makes no request', async () => {
   const { options, requests } = portal({});
   await initializePortal({ ...options, container: null });
@@ -62,7 +83,7 @@ test('Given a signed-in session, when the product access request fails, then the
 });
 
 test('Given the portal, when it reads the session and the product access, then it sends only same-origin JSON reads with the relative paths of the server', async () => {
-  const { options, requests } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_01A', roles: ['user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' }) });
+  const { options, requests } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_01A', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl: 'https://thermus.example/mcp' }) });
   await initializePortal(options);
   assert.deepEqual(requests.map(({ path, init }) => [path, init.method ?? 'GET', init.credentials, init.body]), [
     ['session', 'GET', 'same-origin', undefined],
@@ -72,7 +93,7 @@ test('Given the portal, when it reads the session and the product access, then i
 
 for (const mcpUrl of ['javascript:alert(1)', '<img src=x>', undefined]) {
   test(`Given an invalid MCP endpoint ${mcpUrl}, when access loads, then the portal shows a safe error`, async () => {
-    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', roles: ['user'], plan: 'free', mcpUrl }) });
+    const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({ organizationId: 'org_a', organizationName: 'Acme Labs', roles: ['user'], plan: 'free', mcpUrl }) });
     await initializePortal(options);
     assert.match(document.body.textContent ?? '', /Failed to load your session/);
     assert.equal(document.querySelector('a[href^="javascript:"]'), null);

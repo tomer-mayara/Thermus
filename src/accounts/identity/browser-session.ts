@@ -16,11 +16,11 @@ export interface SignedInBrowserSession {
   // It stays the same for the whole session, also after a refresh or a switch, so that a form shown before still posts.
   readonly csrfToken: string;
   // True only when the provider proved that the sign-in of this session completed a multi-factor challenge. An
-  // enrollment alone is no proof. Each administration operation needs it.
+  // enrollment alone is no proof. A role does not itself require this proof.
   readonly mfaCompleted: boolean;
   readonly cookies: CookieEffects;
-  // Only this call changes the organization of the session, and only for this browser. The account routes call it
-  // after OrganizationAdministration found an authorized active membership. A failure, such as an outage, throws.
+  // Only this call changes the organization of the session, and only for this browser. Account routes first confirm
+  // an authorized active membership. Signup first confirms active product access. A failure, such as an outage, throws.
   selectOrganization(organizationId: string): Promise<OrganizationSwitch>;
 }
 

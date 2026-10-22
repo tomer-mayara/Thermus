@@ -84,7 +84,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       assert.equal(switched.location, `${localOrigin}/portal/access`);
       assert.equal(sessionCookiesIn(switched).length, 1, 'The switch set no new session cookie.');
       assert.equal(portal.status, 200, portal.body);
-      assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationB.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
+      assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationB.id, organizationName: organizationB.name, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       const selectedSession = await sessionJson(page);
       assert.equal(selectedSession.organizationId, organizationB.id);
       assert.equal(selectedSession.mfaCompleted, false);
@@ -146,7 +146,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       assert.equal(billing.status, 200, billing.body);
       assert.match(billing.body, /Plan: Free/);
       assert.equal(portal.status, 200, portal.body);
-      assert.deepEqual(JSON.parse(portal.body), { organizationId: operatorOrganization.id, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
+      assert.deepEqual(JSON.parse(portal.body), { organizationId: operatorOrganization.id, organizationName: operatorOrganization.name, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
       assert.equal(customerGrant.status, 404, customerGrant.body);
       assert.deepEqual(membershipAfterCustomerGrant, membership, 'The refused customer grant changed the WorkOS membership.');
       assert.deepEqual(rolesAfterCustomerGrant, [adminRole]);

@@ -3,7 +3,7 @@ import { waitForRequest } from '../../../../runtime/http/request-cancellation.ts
 import { readForm } from '../../account/account-form.ts';
 import { noticePage, seeOther } from './workos-session-pages.ts';
 import { validateSignupDocuments } from '../../../../accounts/providers/workos/workos-signup-documents.ts';
-import { signupAgreementIn } from './workos-signup-form.ts';
+import { signupRequestIn } from './workos-signup-form.ts';
 import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupRequestNotice, signupSignInPage } from './workos-signup-pages.ts';
 import type { SignupActivation, SignupDocuments, SignupResult } from '../../../../accounts/organizations/signup-activation.ts';
 
@@ -32,6 +32,7 @@ export class WorkOSSignupRoutes {
   private readonly origin: string;
   private readonly path: string;
   private readonly destination: URL;
+  private readonly portal: URL;
   private readonly login: string;
   private readonly clock: () => number;
   private readonly attempts = new Map<string, { until: number; count: number }>();
@@ -41,10 +42,12 @@ export class WorkOSSignupRoutes {
     this.options = options;
     this.documents = options.documents === undefined ? undefined : validateSignupDocuments(options.documents);
     if (options.enabled && this.documents === undefined) throw new Error('Enabled signup requires approved documents.');
+    if (options.enabled && this.documents?.purpose !== 'organization-creation') throw new Error('Enabled organization creation requires organization-creation documents.');
     const base = new URL(options.publicBaseUrl);
     if (!base.pathname.endsWith('/')) base.pathname += '/';
     this.origin = base.origin;
     this.path = new URL('signup', base).pathname;
+    this.portal = base;
     this.destination = new URL('organizations', base);
     this.destination.searchParams.set('return_to', base.pathname);
     const login = new URL('login', base);
@@ -127,16 +130,25 @@ export class WorkOSSignupRoutes {
     const documents = this.requireDocuments();
     const form = await readForm(request);
     request.signal.throwIfAborted();
-    const agreement = typeof form === 'string' ? form : signupAgreementIn(form, state.csrfToken, documents.version);
-    if (agreement !== 'accepted') return signupRequestNotice(noticePage(agreement));
-    const result = await run(() => this.options.activation.activate({ user: state.user, documents, signal: request.signal }));
+    const creation = typeof form === 'string' ? form : signupRequestIn(form, state.csrfToken, documents.version);
+    if (typeof creation === 'string') return signupRequestNotice(noticePage(creation));
+    const result = await run(() => this.options.activation.activate({ user: state.user, organizationName: creation.organizationName, documents, signal: request.signal }));
     request.signal.throwIfAborted();
+    if (result.status === 'active') return this.openOrganization(request, state, result.organizationId, run);
     return this.activationAnswer(result);
+  }
+
+  private async openOrganization(request: Request, state: SignedInBrowserSession, organizationId: string, run: RequestOperation): Promise<Response> {
+    const selected = await run(() => state.selectOrganization(organizationId));
+    request.signal.throwIfAborted();
+    if (selected.status === 'switched') return seeOther(this.portal.href, selected.cookies);
+    const status = selected.status === 'signed-out' ? 401 : 403;
+    return withCookies(signupFailurePage(status, 'Your organization could not be opened. Sign in again to continue.'), selected.cookies);
   }
 
   private activationAnswer(result: SignupResult): Response {
     if (result.status === 'sign-in-required') return signupSignInPage(this.requireDocuments(), this.login, 401);
-    if (result.status === 'active' || result.status === 'existing-access') return seeOther(this.destination.href, []);
+    if (result.status === 'existing-access') return seeOther(this.destination.href, []);
     if (result.status === 'unverified') return signupFailurePage(403, 'Verify your email before you activate access.');
     if (result.status === 'support-required') return signupFailurePage(409, 'Contact support to review this activation.');
     return signupFailurePage(503, 'Activation is temporarily unavailable. Try again later.');
@@ -169,6 +181,7 @@ function limited(): Response {
 }
 
 function withCookies(answer: Response, cookies: CookieEffects): Response {
-  for (const cookie of cookies) answer.headers.append('Set-Cookie', cookie);
-  return answer;
+  const headers = new Headers([...answer.headers].filter(([name]) => name !== 'set-cookie'));
+  for (const cookie of [...cookies, ...answer.headers.getSetCookie()]) headers.append('Set-Cookie', cookie);
+  return new Response(answer.body, { status: answer.status, statusText: answer.statusText, headers });
 }

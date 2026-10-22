@@ -273,10 +273,10 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       }
       assert.deepEqual([userMembership.status, userMembership.roles], ['active', ['user']]);
       assert.equal(userPortal.status, 200, userPortal.body);
-      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
+      assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       assert.deepEqual([adminMembership.status, adminMembership.roles], ['active', ['admin']]);
       assert.equal(adminPortal.status, 200, adminPortal.body);
-      assert.deepEqual(JSON.parse(adminPortal.body), { organizationId: organizationC.id, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
+      assert.deepEqual(JSON.parse(adminPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
       assert.equal(adminMembers.status, 200, 'The Admin invitee cannot open the members page.');
       for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(userVisit.page, path));
       assert.ok(invitationsPage.body.includes(`${inviteeUser.email}: User invitation, accepted.`), 'The invitations page does not show the accepted User invitation.');

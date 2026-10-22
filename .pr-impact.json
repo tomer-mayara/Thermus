@@ -9,13 +9,13 @@
     "component": true,
     "internalInterface": true,
     "sensitiveBehavior": true,
-    "dependencyRisk": true,
+    "dependencyRisk": false,
     "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "This stacked candidate includes S1-01 and S1-02. S1-01 retires POST /members/grants and its parser, domain operation, provider writer, and member controls. It introduces narrow identity session/profile and organization signup contracts, with unchanged package edges and resource lifetimes. S1-02 changes the hosted authorization guarantee to two customer roles: User permits product/MCP access, and Admin includes that access, both invitation roles, and the existing free billing read. Current active memberships and validated organization role catalogs decide access; default, retired, unknown, inactive, missing, and foreign grants cannot authorize it. Administration no longer accepts an MFA precondition or refusal. WorkOS settings, constructor, and composition contracts remove MFA inference options. Shared session and cookie formats remain compatible, but old inferred MFA values normalize to false on reads, refreshes, and organization selection. Member counts include each active product-authorized membership once. Callback state/PKCE, CSRF/origin checks, cookie verification, logout, outages, native invitation acceptance, and browser/MCP organization separation remain. Registry component responsibilities and member-read runtime diagrams reflect these contracts. Context, containers, deployment, source ownership, and provider boundaries stay the same. No provider setting, database, SDK dependency, new infrastructure, or legal bundle changes. The deployment verifier only drops the unused MFA setting; live tests now require an explicitly checked password-only provider configuration without changing it. Existing gates and approval rules remain. T2 Need architect is required for these observable access and session guarantees; internal contracts, sensitive paths, declarations, and retained quality findings also require human review. No new decision record was requested. The stack includes the shared metrics repair from PR #230. This increment also separates the existing required-setting password and legacy-session specifications without changing their behavior. Application boundaries and review thresholds remain unchanged.",
+    "summary": "This stacked candidate includes S1-01 and S1-02. S1-01 retires POST /members/grants and its parser, domain operation, provider writer, and member controls. It introduces narrow identity session/profile and organization signup contracts, with unchanged package edges and resource lifetimes. S1-02 changes the hosted authorization guarantee to two customer roles: User permits product/MCP access, and Admin includes that access, both invitation roles, and the existing free billing read. Current active memberships and validated organization role catalogs decide access; default, retired, unknown, inactive, missing, and foreign grants cannot authorize it. Administration no longer accepts an MFA precondition or refusal. WorkOS settings, constructor, and composition contracts remove MFA inference options. Shared session and cookie formats remain compatible, but old inferred MFA values normalize to false on reads, refreshes, and organization selection. Member counts include each active product-authorized membership once. Callback state/PKCE, CSRF/origin checks, cookie verification, logout, outages, native invitation acceptance, and browser/MCP organization separation remain. Registry component responsibilities and member-read runtime diagrams reflect these contracts. Context, containers, deployment, source ownership, and provider boundaries stay the same. No provider setting, database, SDK dependency, new infrastructure, or legal bundle changes. The deployment verifier only drops the unused MFA setting; live tests now require an explicitly checked password-only provider configuration without changing it. Existing gates and approval rules remain. T2 Need architect is required for these observable access and session guarantees; internal contracts, sensitive paths, declarations, and retained quality findings also require human review. No new decision record was requested. S1-03a adds a required organization name and purpose-marked organization agreement to the shared signup contract. Confirmed new creation persists ten canonical v2 authority/legal metadata fields and gives only the verified creator an active Admin membership; matching returned membership and current product access are checked before success. Strict v1 records remain read-only replay barriers. The route selects the confirmed organization through current-session controls and opens the portal; refreshed cookies remain in chronological order. A narrow supplied callback adds the current organization name to portal access JSON. Missing names fail safely; the guide renders names as text while IDs remain the access boundary. The unchanged personal-User production bundle cannot enable this new flow. Production rollout needs exact approved organization wording and S1-05 checks. No new database, infrastructure, paid feature, MFA policy, provider configuration, or source-owner edge is introduced. Updated registry text covers these runtime and public-contract guarantees; its existing diagrams remain accurate. Signup adapter tests move to integration because they execute shared organizations validation. The existing web-to-organizations dependency is now declared as runtime instead of type-only because the form calls the public name validator. The owner pair and forbidden-edge rules stay unchanged; focused import lint passes.",
     "views": [
       "context",
       "containers",
@@ -45,8 +45,16 @@
       "test/acceptance/auth/hosted-workos-signup.test.ts",
       "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
       "docs/implementation/pr-review-rules.yaml",
-      "docs/implementation/ast-metrics-function-repair.md",
-      "test/acceptance/auth/hosted-workos-legacy-session.test.ts"
+      "docs/implementation/admin-s1-03a.md",
+      "src/accounts/providers/workos/workos-signup.ts",
+      "src/accounts/providers/workos/workos-signup-documents.ts",
+      "src/interfaces/web/auth/workos/workos-signup-form.ts",
+      "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "src/interfaces/web/account/portal-access.ts",
+      "src/interfaces/user-portal/portal.ts",
+      "test/integration/auth/workos-signup.test.ts",
+      "test/integration/auth/workos-signup-routes.test.ts",
+      "test/acceptance/user-portal/portal.test.ts"
     ]
   }
 }

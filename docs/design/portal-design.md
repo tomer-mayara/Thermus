@@ -50,9 +50,12 @@ narrow screens. Keep the profile, Sign Out, endpoint, and setup steps visible.
 Remove the organization page link from both access states. Keep the no-access
 message and Start free access recovery action visible.
 
-Signup is workspace activation after identity sign-in. Do not add account or
-payment fields. Keep all approved document text, versions, hashes, and the
-exact unchecked agreement. Keep the existing origin, CSRF, eligibility,
+Signup creates a named organization after identity sign-in. Show an editable
+organization name and one unchecked organization/authority agreement. Trim the
+name and accept 1 to 100 UTF-16 units of well-formed text without controls.
+Do not add account or payment fields. Keep all approved document text, versions,
+hashes, and the exact agreement. The approved personal-User bundle cannot
+authorize organization creation. The marked test bundle is not legal approval. Keep the existing origin, CSRF, eligibility,
 email verification, and activation checks.
 
 Render the full legal documents as readable text. On desktop, readers must
@@ -60,6 +63,13 @@ support keyboard scrolling. On mobile, use disclosures with the original
 opening text and the full document available in normal page flow. Do not
 require reading or scrolling before activation. Keep the agreement outside
 the disclosures. Give closed and failure states usable recovery actions.
+
+After confirmed creation, select the new organization through a current
+membership check and open its MCP guide. Display its persisted name. The
+selected browser organization and guide organization must match. The portal
+reads the name from the current active membership; an absent or blank name
+shows unavailable access rather than a guessed workspace name. A failed
+switch offers safe recovery and must not repeat the first-Admin grant.
 
 ## Organization selection
 

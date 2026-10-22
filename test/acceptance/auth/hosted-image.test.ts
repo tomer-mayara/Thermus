@@ -1,6 +1,4 @@
-import { parseHTML } from 'linkedom';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { HostedImageGate } from '../../support/container/hosted-image-gate.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
@@ -53,19 +51,11 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.equal((await server.stop()).code, 0);
   });
 
-  await t.test('Given placeholder settings and signup enabled only in this image test, when a visitor opens signup, then the exact approved notice appears before sign-in', { timeout: 45_000 }, async (step) => {
-    const server = await gate.server({ SELF_SERVE_SIGNUP_ENABLED: 'true' }, false, step.signal);
-    await server.started();
-    const response = await fetch(new URL('/signup', server.url), { signal: step.signal });
-    assert.equal(response.status, 200);
-    const document = parseHTML(await response.text()).document;
-    const notice = document.querySelector('#privacy-notice .document-reader')?.textContent ?? '';
-    assert.equal(Buffer.byteLength(notice, 'utf8'), 24591);
-    assert.equal(createHash('sha256').update(notice).digest('hex'), '2c285b8ae45a90dc355706f9728e8769e19b8174b4abefb8adf57ac9aa1d12f9');
-    assert.equal(document.querySelector('#privacy-notice details .document-text')?.textContent, notice);
-    assert.equal(document.querySelector('.primary-action')?.getAttribute('href'), '/login?return_to=%2Fsignup');
-    assert.equal(document.querySelectorAll('form, input').length, 0);
-    assert.equal((await server.stop()).code, 0);
+  await t.test('Given the unchanged personal signup bundle in the image, when organization creation is enabled, then startup rejects that bundle before listening', { timeout: 45_000 }, async (step) => {
+    const { code, logs } = await gate.rejectedStartup({ SELF_SERVE_SIGNUP_ENABLED: 'true' }, step.signal);
+    assert.equal(code, 1);
+    assert.match(logs, /organization-creation/);
+    assert.doesNotMatch(logs, /Listening on http:\/\//);
   });
 
   await t.test('Given a Connect User at the external-provider seam, when the image fetches public HTTPS and a controlled JavaScript page, then the real renderer verifies TLS and returns script output cleaned with the shipped native policy', { timeout: 180_000 }, async (step) => {

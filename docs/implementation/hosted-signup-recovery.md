@@ -4,7 +4,8 @@
 
 The signup pages use the approved Thermus portal design. Sign-in and activation
 remain separate steps. Page styles do not change signup eligibility, email
-verification, agreement checks, or the activation POST fields.
+verification, agreement checks, or the activation safeguards. S1-03a adds the
+organization name to the POST contract and uses one organization/authority agreement.
 
 Desktop legal readers support keyboard focus and scrolling. On mobile, each
 reader shows the original opening paragraph and a closed native disclosure.
@@ -81,13 +82,26 @@ WorkOS authority, one zero byte, and the subject. It has no email, but it remain
 pseudonymous personal data. WorkOS stores the user subject in metadata. Do not
 publish the marker or put it in JWT templates.
 
-The personal organization has no domains and exactly these nine metadata fields:
+A historical v1 personal organization has no domains and exactly these nine
+metadata fields:
 `schema`, `subject`, `accepted_at`, `documents_version`, `terms_version`,
 `terms_sha256`, `notice_version`, `notice_sha256`, and `agreement_version`.
 The schema is `thermus-signup-v1`; the timestamp is server-supplied. Match the
 subject, IDs, and document versions/hashes to trusted records. Match the agreement
 version to its retained exact wording. Do not edit metadata to make an invalid
 record pass inspection. It records initial acceptance, not later agreements.
+
+S1-03a uses `thermus-signup-v2` for named organization creation. It retains
+exactly ten fields: it replaces `accepted_at` with `authority_accepted_at`
+and adds `agreement_sha256`, the SHA-256 of the canonical agreement UTF-8 bytes.
+The server timestamp records acceptance of the organization/authority agreement.
+This fits the [WorkOS metadata limit](https://workos.com/docs/authkit/metadata)
+of ten pairs, ASCII keys up to 40 characters, and values up to 600 characters.
+The adapter keeps its stricter limit of 500 ASCII characters per value.
+The organization itself and the unchanged reserved external ID bind the
+organization identity. The adapter checks the created and reread name; it does
+not add a separate metadata update. A v1 record remains a read-only replay
+barrier. It supplies neither organization consent nor an Admin upgrade.
 
 The organization and reserved external ID prevent a later request from replaying
 the initial grant. Keep them after ordinary revocation, even when the membership
@@ -114,8 +128,8 @@ Account deletion needs the distinct decision in the deletion runbook.
    | Current-user read confirms the user is absent (404) | Offer fresh Sign in with the full notice; POST returns 401. Make no activation write. |
    | Valid personal marker and current active product access | Continue through the selector; no create or role update. |
    | Marker exists; membership absent, pending, inactive, or inconsistent | Support required. Keep the marker; no grant replay or repair. Other authorized workspaces remain available. |
-   | No marker and current product access elsewhere | Continue through the selector; no extra personal workspace. |
-   | No marker and no product access, with no uncertain earlier write | Normal signup may offer agreement when separately enabled; this is not an operator grant. Admin-only access does not give product access. |
+   | No marker and current product access elsewhere, including Admin alone | Continue through the selector; no extra organization. |
+   | No marker and no product access, with no uncertain earlier write | Normal signup may offer agreement when separately enabled; this is not an operator grant. |
    | Failed read, invalid marker, conflicting IDs, or uncertain earlier write | Stop the affected recovery and escalate. Preserve evidence; make no activation write. |
 
 3. After a timeout or lost create response, use reads of the exact known ID or
@@ -130,6 +144,11 @@ Account deletion needs the distinct decision in the deletion runbook.
    restoration. Establish that no grant occurred or obtain explicit authority
    to restore access; otherwise leave the activation blocked. This runbook
    supplies no automatic write recipe for a failed activation.
+
+After confirmed new creation, the browser switch must use current membership
+and select the same organization as the MCP guide. A refused or failed switch
+must not replay the initial grant. This procedure preserves the existing
+recovery boundary; extended recovery and eligibility cases remain S1-03b work.
 
 ## Coordinate an activation already in progress
 

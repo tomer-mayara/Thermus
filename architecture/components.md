@@ -212,10 +212,21 @@ implements identity-owned verifier/resolver contracts;
 [WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
 implements the organizations-owned directory role. `WorkOSBrowserSession`
 implements the identity-owned `BrowserSessionControls`, including profile data
-for display. Signup uses the organizations-owned `SignupActivation` contract.
+for display. Signup uses the organizations-owned `SignupActivation` contract,
+including the requested organization name and purpose-marked legal bundle. The
+signup form calls the public organizations name validator, so this dependency
+includes runtime behavior. The dependency rules declare that existing owner pair.
+The
+WorkOS adapter saves the canonical creator/authority record on the named
+organization and confirms active Admin/product access after a new create. The
+signup route uses supplied session controls to select that organization after
+a current-membership check, then opens its MCP guide. A failed switch does not
+repeat the grant. Existing records remain replay barriers.
 The web routes use these neutral contracts; WorkOS cookie and document-validation
 helpers remain provider-specific. Composition supplies the portal's allowed
-form destinations. Profile data does not grant access.
+form destinations. The portal uses a supplied current active-organization name
+read for workspace display; an absent or blank name returns unavailable rather
+than a fallback identity. Profile data does not grant access.
 
 ### Selected C4 components: local authentication in the Node server
 
@@ -604,7 +615,10 @@ Hosted [composition](../src/app/hosted-workos-application.ts) shares a WorkOS SD
 client, remote key-set resolver, and organization directory. WorkOS owns remote
 identity/organization data. Provider calls run during requests with a short
 timeout and no SDK retry. Self-serve signup follows configured enablement and
-approved documents. Google enrollment is an optional explicit composition;
+approved organization/authority documents. The production personal-User bundle
+does not authorize new named creation; a marked test bundle proves application
+behavior only. WorkOS organization metadata and the deterministic external ID
+retain creation/legal facts without a new application datastore. Google enrollment is an optional explicit composition;
 production does not supply its onboarding settings.
 
 ## Design choices and current soft spots

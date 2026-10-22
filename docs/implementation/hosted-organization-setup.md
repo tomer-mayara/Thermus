@@ -6,7 +6,10 @@
 S1-02 prepares the User/Admin password model. It does not change the WorkOS
 account or execute a rollout. Execute the scoped cutover only in S1-05 with the
 owner's intended environment and application confirmed. Named creation and the
-first Admin are S1-03a work. The older Super Admin procedure below is historical
+first Admin are implemented by S1-03a. Its marked test agreement is not
+production legal approval. The existing approved personal-User bundle cannot
+authorize new organization creation; rollout requires the exact revised
+organization/authority bundle. The older Super Admin procedure below is historical
 and must not be used as the current role setup procedure.
 
 ## Before you start
@@ -40,17 +43,22 @@ Do not copy a staging URL or role catalog into production without checking it.
    for that application. Use the [Initiate login URI guidance](https://workos.com/docs/authkit/vanilla/nodejs#configure-initiate-login-uri)
    and [Sign-out URI guidance](https://workos.com/docs/authkit/sessions#sign-out-uris).
    Do not guess dashboard paths or reuse another environment's URLs.
-5. Prove the real password flow, required email verification, password reset,
+5. Confirm approval and retained exact bytes for the organization/authority
+   bundle. Do not relabel the approved personal-User documents or use the marked
+   test fixture in production. Verify named creation, saved creator/legal facts,
+   confirmed first Admin, and a current-membership browser switch to the same
+   named organization's MCP guide.
+6. Prove the real password flow, required email verification, password reset,
    and invitation-origin sign-in with authorized staging identities. Check the
    trusted application landing and current membership after invitation
    acceptance. A local fake code exchange proves none of these provider flows.
-6. Check User and Admin product/MCP access; Admin member reads and both invite
+7. Check User and Admin product/MCP access; Admin member reads and both invite
    roles; User administration refusal; default, unknown, inactive, removed,
    and foreign-organization refusal; and unchanged authorized access in another
    organization. Check current grants again on the next browser and MCP
    request. Check protected cookies, callback state/PKCE, logout, and outage
    handling. Keep member rows read-only and the retired grant route unavailable.
-7. Record verified outcomes and unresolved failures without credentials. Stop
+8. Record verified outcomes and unresolved failures without credentials. Stop
    rollout if scope, role catalog, password behavior, or access cannot be
    established. Run the applicable existing gates; this checklist adds no gate.
 

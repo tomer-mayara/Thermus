@@ -265,7 +265,7 @@ dependency_graph:
     - { from: web, to: identity, kind: runtime }
     - { from: web, to: http, kind: runtime }
     - { from: web, to: workos, kind: runtime }
-    - { from: web, to: organizations, kind: type }
+    - { from: web, to: organizations, kind: runtime }
     - { from: web, to: billing, kind: type }
     - { from: cli, to: config, kind: runtime }
     - { from: cli, to: identity, kind: type }
@@ -281,7 +281,7 @@ dependency_graph:
     - { from: html-processing, to: website-fetcher, kind: type }
     - { from: search-engine, to: website-fetcher, kind: type }
     - { from: http, to: config, kind: type }
-    # 48 permitted owner edges on 2026-10-21; runtime includes public types.
+    # 48 permitted owner edges on 2026-10-22; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }

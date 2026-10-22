@@ -38,6 +38,8 @@ h1{font-size:56px;max-width:12ch;overflow-wrap:break-word}
 .task-card h2{font-size:36px;overflow-wrap:break-word}
 .step-caption{color:#B4BAC0;font-size:12px;margin:0 0 16px;letter-spacing:.04em}
 .task-copy{color:#B4BAC0;margin:16px 0 24px}
+.organization-name label{display:block;font-weight:600;margin-bottom:8px}
+.organization-name input{width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:16px/1.4 "IBM Plex Sans",system-ui,sans-serif}
 .legal-document{border:1px solid #43454E;border-radius:8px;overflow:hidden;margin:0 0 20px;background:#1C1D23;min-width:0;scroll-margin-top:20px}
 .document-heading{padding:16px 20px 12px;border-bottom:1px solid #2C2D34}
 .document-heading h3{font-size:19px;font-weight:600;margin:0}
