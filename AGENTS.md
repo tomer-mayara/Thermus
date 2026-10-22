@@ -110,6 +110,35 @@ type, lint, and manual checks for those changes.
   The owner merges a pull request that adds a decision record under
   `architecture/decisions/`. A request for a draft stops before Ready and merge.
 
+### Architecture diff comment
+
+For a T2 pull request, prepare one architecture comparison comment before
+requesting human review. Update that comment when the candidate changes.
+
+- Compare `architecture/components.md` at the PR merge base and current head.
+  For a stacked PR, use its parent branch. Record both commit SHAs.
+- Read the relevant code and architecture prose to understand the change.
+  Select only the affected diagram views.
+- Author the Mermaid comparison manually from those views. Preserve component
+  identities, boundaries, relationship meanings, and runtime order.
+- Use green for added elements, red for removed elements, and amber for changed
+  elements. Include text labels so color is not the only signal. Keep unchanged
+  elements neutral.
+- For component diagrams, use a combined comparison when it remains clear.
+  Retain removed elements and make the old and new meaning available.
+- For sequence diagrams, prefer separate Before and After drawings. Preserve
+  each version's conditions and message order. Removing a condition does not
+  make its surviving messages new or removed.
+- If no diagram changed, say so and explain the architecture impact. Add or
+  refine a registry view when it is needed to explain the change. Do not present
+  newly documented existing behavior as new behavior.
+- Check every highlighted element against both revisions. Verify that unchanged
+  elements remain unchanged, including steps moved out of a removed condition.
+- Parse, render, and visually inspect each comparison. Preserve relevant diagram
+  configuration. The manager reviews the result before posting.
+- Keep comparison colors and historical annotations in the PR comment. The
+  component registry continues to describe the current system.
+
 ## Review tier and merge eligibility
 
 The [PR review playbook](docs/implementation/pr-review-playbook.md) and

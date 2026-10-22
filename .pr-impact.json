@@ -10,12 +10,12 @@
     "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": false,
+    "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Add a prospective organization-administration design and implementation-ticket plan. The document is explicitly design for review, not implementation, and authorizes no account/provider action, cutover, or deployment. This candidate changes no source, runtime configuration, dependency, policy, or active public contract. The context, container, component, runtime, and deployment views in architecture/components.md still describe the current WorkOS/Better Auth editions, hosted account and MCP paths, operator logging, and recorded deployment. Planned Supabase storage, customer export, role changes, and portal MFA are not implemented or activated by this document. The current registry therefore remains unchanged; future implementation tickets must reassess their own architecture and review tier.",
+    "summary": "Add guidance for a manually authored T2 architecture comparison comment. The guidance defines merge-base and stacked-PR baselines, change colors and text labels, sequence handling, commit revision evidence, renderer checks, and manager review. This adds a human-readable review artifact requirement. It adds no automated gate and changes no human approval authority or test and metrics authority. No application source or runtime configuration changes. The context, container, component, runtime, and deployment views in architecture/components.md remain accurate because the guidance changes only the review workflow, not application boundaries, contracts, collaborations, runtime order, resource ownership, or deployment. No registry edit is needed.",
     "views": [
       "context",
       "containers",
@@ -24,14 +24,9 @@
       "deployment"
     ],
     "evidence": [
-      "docs/design/organization-admin-plan.md",
-      "architecture/components.md",
-      "src/app/hosted-workos-application.ts",
-      "src/accounts/organizations/organization-administration.ts",
-      "src/interfaces/mcp/protected-resource-endpoint.ts",
-      "src/interfaces/mcp/tool-completion-record.ts",
-      "Dockerfile.hosted",
-      "compose.yaml"
+      "AGENTS.md",
+      "docs/implementation/component-registry-workflow.md",
+      "architecture/components.md"
     ]
   }
 }
