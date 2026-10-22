@@ -174,7 +174,8 @@ S1-02.
 
 The final edits after these functional runs are documentation and impact
 evidence only. They change no source or test. The final metrics and declaration
-are bound to the committed candidate; compatible verified coverage is reused.
+are bound to the committed candidate. The impact JSON is a coverage input, so
+coverage must be collected again after that declaration is committed.
 The ten registry diagram blocks match the reviewed parent exactly. Its retained
 Mermaid CLI 12.0.0 renders remain valid for those unchanged diagrams.
 
