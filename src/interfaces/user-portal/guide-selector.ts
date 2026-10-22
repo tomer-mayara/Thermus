@@ -7,7 +7,7 @@ export function renderGuideSelector(document: Document, guides: readonly AgentGu
       <legend>Connect with</legend>
       <div class="guide-method-options">
         <label><input type="radio" name="connection-method" value="cli" aria-controls="ai-agent agent-instructions" checked><span>CLI</span></label>
-        <label><input type="radio" name="connection-method" value="desktop" aria-controls="ai-agent agent-instructions"><span>Desktop Apps</span></label>
+        <label><input type="radio" name="connection-method" value="desktop" aria-controls="ai-agent agent-instructions"><span>Desktop and Web Apps</span></label>
       </div>
     </fieldset>
   `;
