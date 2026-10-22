@@ -1,6 +1,6 @@
 # S1-03a implementation record
 
-Status: implementation complete; complete-candidate checks in progress,
+Status: implementation complete; application checks pass; required metrics blocked,
 22 October 2026.
 
 ## Scope
@@ -37,8 +37,8 @@ Before source edits, the two S1-03a acceptance tests both failed: the name input
 was absent and the named form POST returned 400 instead of 303. Focused provider
 tests also failed for the fixed name, missing authority facts, legacy bundle
 acceptance, and unconfirmed create or membership responses. These failures
-establish the missing behavior. Final focused and complete-candidate results
-will be recorded after implementation.
+establish the missing behavior. The results below record the later green runs
+and the complete-candidate evidence limits.
 
 The [WorkOS metadata contract](https://workos.com/docs/authkit/metadata) limits
 an organization to ten pairs. The v2 record therefore replaces `accepted_at`
@@ -106,7 +106,7 @@ name callback. No new container, datastore, provider, or resource lifetime is
 introduced. The existing diagrams remain accurate; this ticket changes none.
 
 The existing web-to-organizations dependency is now declared as runtime because
-the form calls the public name validator. The owner pair, public surfaces, and
+the form calls the public name validator. The owner pair, declared public-module list, and
 forbidden-edge rules remain the same. Focused import lint passes. Tests that
 execute the real WorkOS adapter and organizations validator moved from unit to
 integration; their fixture moved with them. No test-only validator injection
@@ -131,14 +131,52 @@ records describe the S1-01 and S1-02 contract changes included in this complete
 candidate. No new decision record was requested. Agent review is not the
 required independent human approval.
 
+The applicable policy questions have these answers:
+
+- Enforcement and decision makers: the new runtime dependency is declared under
+  the existing owner pair. Forbidden edges, test selection, tier definitions,
+  and human approval rules stay unchanged. The image test now checks refusal
+  of the legacy legal bundle; it does not skip the startup gate.
+- Image, runtime, and data: the image uses the new source and retains default
+  closed signup. New records use v2; old records remain barriers. Disable
+  creation to stop new signup without deleting records or memberships. An
+  older reader must not repair or replay an unfamiliar v2 record.
+- Admission and trust: only a verified creator, valid canonical documents,
+  confirmed new organization, and current matching Admin membership can finish
+  creation. Requests keep CSRF, origin, bounded work, and cancellation checks.
+  Metadata and names cannot authorize product or MCP access.
+- Observable promises: the contract table covers the new name input, first
+  Admin, persisted acceptance, direct landing, missing-name error, and legacy
+  bundle startup refusal. The parent records cover role, MFA, and retired-write
+  changes. Existing checks of removed behavior were replaced by refusal or
+  current-role checks; the test move changes classification, not coverage.
+
 ## Review and stack
 
-The complete ordinary suite passes: 4,124 server tests in 262 suites and 43
-portal tests. The dedicated container, hosted build/image, and metrics results
-will be recorded when those commands finish. The selected gates are the same
-source-change gates as the parent; the complete candidate is compared with
-`origin/main`, not only the stack parent. Live WorkOS remains unrun for the
-matching-staging configuration limit recorded in S1-02.
+The selected gates are the same source-change gates as the parent; the complete
+candidate is compared with `origin/main`, not only the stack parent. Live
+WorkOS remains unrun for the matching-staging configuration limit recorded in
+S1-02.
+
+| Check | Result |
+| --- | --- |
+| Compiled changed server tests | 213 passed. |
+| `npm test` | 4,124 server tests in 262 suites and 43 portal tests passed. |
+| `npm run typecheck` | Passed. |
+| `npm run build:user-portal` | Passed. |
+| `npm run test:container` | All 11 self-hosted cases passed. |
+| `npm run build:hosted` | All selected groups passed: 2,583 server unit, 25 portal unit, 18 portal acceptance, 1,033 integration, 118 selected acceptance/interface, and 13 renderer cases. |
+| `npm run test:container:hosted` | All 7 Linux AMD64 cases passed, including rejection of enabled creation with the legacy legal bundle. |
+| Unit and integration coverage | Passed; 138 source files and 633 processes. |
+| Base and head snapshots | Completed with ast-metrics 0.43.1. |
+| Complete metrics process and standalone CRAP | Failed on omitted native source declarations; details below. |
+| Review tier | T2 Need architect; eligibility blocked by failed CRAP, unavailable Architecture, and missing CRAP rows. No undeclared dependency fact or new cycle was found. |
+
+The final edits after these functional runs are documentation and impact
+evidence only. They change no source or test. The final metrics and declaration
+are bound to the committed candidate; compatible verified coverage is reused.
+The ten registry diagram blocks match the reviewed parent exactly. Its retained
+Mermaid CLI 12.0.0 renders remain valid for those unchanged diagrams.
 
 The final import-corrected habit run exits 1 with five complexity findings,
 one parameter-count finding, 637 comment findings, and 21 file-size findings.
@@ -174,3 +212,82 @@ omission remains a known evidence limit; new checks must report their actual
 results. Authorization and persistence contracts require architecture review.
 No human approval or live provider pass is claimed. Merge and rollout are not
 part of this implementation request.
+
+## Metrics review and blocker
+
+The pinned analyzer is ast-metrics 0.43.1. These are all 25 changed production
+files below MI 85 against trusted `origin/main`, including the parent tickets.
+They are retained goal misses, not passes. The added executable signup contract
+scores 87.9; `customer-roles.ts` scores 89.9 and `change-records.ts` scores 90.4.
+No new production file needs an MI exception.
+
+| File | Base → head MI | Reason to retain |
+| --- | ---: | --- |
+| `administration-overviews.ts` | 77.0 → 76.3 | Keep small frozen read projections together. Paths fall from 18  to 15; product-member counting has two paths. |
+| `organization-administration.ts` | 64.8 → 66.9 | Writer and MFA removal reduce paths from 57  to 42. Current authority, invitation state, and outcome recording remain necessary. |
+| `hosted-role-mapping.ts` | 73.1 → 73.3 | Validate the whole catalog before giving a grant. The same small mapper now checks two roles. |
+| `session-cookies.ts` | 66.3 → 66.3 | Compatibility comment only. Seal verification and cookie effects remain unchanged. |
+| `workos-auth-provider.ts` | 67.9 → 67.9 | Contract comment only. Existing verification and current-membership resolution remain unchanged. |
+| `workos-browser-session.ts` | 63.9 → 64.2 | Remove inferred MFA while keeping session refresh and cookie effects together; paths fall from 49  to 48. |
+| `workos-organizations.ts` | 53.1 → 53.5 | Keep exact membership validation and bounded provider reads. The new six-line display reader reuses them; complete-stack paths fall from 110  to 104. |
+| `workos-settings.ts` | 66.4 → 69.1 | Remove the MFA mode; paths fall from 37  to 33. Keep startup validation and safe diagnostics. |
+| `workos-sign-in.ts` | 66.8 → 66.6 | Remove inference; paths fall from 21  to 20. The remaining state, expiry, and callback checks belong to one sign-in operation. |
+| `workos-signup-documents.ts` | 72.3 → 70.2 | Keep purpose, version, canonical bytes, and hash validation at one boundary. The purpose discriminator adds three paths; it prevents personal terms from authorizing organization creation. |
+| `workos-signup.ts` | 36.3 → 32.5 | Keep confirmed creation, canonical metadata, reread, and grant checks in order. Native createOrganization has 12 paths and grantNewWorkspace has 6. A broad recovery split is S1-03b scope; thin wrappers would hide this authority boundary. |
+| `hosted-portal.ts` | 50.6 → 49.9 | Parent origin validation adds three required paths. Keep existing routing and build-output guards. Trivial wrappers would not simplify them. |
+| `hosted-workos-application.ts` | 63.0 → 62.2 | Keep provider construction and cleanup in one composition. The neutral name callback uses the existing directory; complete-stack paths stay 13. |
+| `portal.ts` | 50.2 → 48.2 | Keep display-contract checks and the safe retry view with portal rendering. Names use textContent; no new rendering framework or shared service is needed. |
+| `account-form.ts` | 61.2 → 61.6 | Parent grant-parser removal reduces paths from 49  to 45. Bounded-body and CSRF validation remain. |
+| `account-pages.ts` | 75.2 → 75.4 | Remove the unreachable MFA notice. Keep the small related notice renderers together. |
+| `account-routes.ts` | 61.2 → 61.2 | Parent boundary change preserves current access, selection, cookies, and failure behavior. |
+| `administration-pages.ts` | 69.1 → 70.6 | Parent grant forms are removed; the member summary now describes product access. No template framework is needed. |
+| `administration-routes.ts` | 61.3 → 62.8 | Writer and MFA-result removal reduce paths from 44  to 40. Remaining request guards are required. |
+| `portal-access.ts` | 79.7 → 72.3 | Keep permission, exact membership name, and response construction at one HTTP boundary. Missing names fail safely after permission is checked. |
+| `workos-session-routes.ts` | 61.6 → 61.8 | Parent contract extraction preserves callback, return-path, logout, and cookie behavior. |
+| `workos-signup-document-reader.ts` | 81.2 → 81.2 | Parent shared-type import only; bounded legal-document rendering stays the same. |
+| `workos-signup-form.ts` | 61.0 → 58.3 | Keep bounded single-field, CSRF, version, and agreement parsing together. Domain name validation is shared through its public interface. |
+| `workos-signup-pages.ts` | 52.4 → 52.4 | Reuse the existing legal readers and page layout for the name and single agreement. The provider-independent markup stays in one page module. |
+| `workos-signup-routes.ts` | 43.9 → 40.5 | Keep admission, CSRF, cancellation, and cookie effects with the signup request. The new private switch step isolates handoff from activation without duplicating grants. |
+
+The native review has 14 high findings on changed production files. The table
+above covers 13 of them. The other finding is the `ChangeRecording` class: keep
+its unchanged separation of authorization checks, the single provider write,
+and outcome recording. Its class score differs from the file score.
+
+Two high test findings concern the explicit retained-cookie MFA matrix and the
+portal-access contract cases. Their scenarios remain direct and independent;
+test files have no MI goal. The other 48 high findings concern files unchanged
+by the complete candidate. The native `new-violation` label does not prove that
+a source regression was introduced here.
+
+Verified coverage spans 138 source files from 633 processes, from the complete
+unit and integration selections. It was not edited. Both the process and the
+standalone CRAP command stop because `get_file_metrics` omits source declarations
+in `organization-administration.ts`. A read-only diagnostic finds eight changed
+files with 189 source declarations but only 142 native function rows, 121 of which
+have identities. This diagnostic is not substitute metrics.
+
+The process records Delta and Review goal misses, a failed CRAP stage, and an
+unavailable Architecture stage. There is no valid CRAP report, no completed
+function-goal assessment, and no new history record. No exception or coverage
+change can turn this native-tool failure into a pass. The required assessment
+remains blocked, as in the parent PRs, so this PR remains Draft.
+
+## Retained evidence and merge order
+
+Full reports are retained in this worktree at
+`/Users/tomermayara/.codex/worktrees/admin-s1-03a/Thermus/ast-report/README.md`.
+That local bundle links process and native review reports, base/head snapshots,
+verified coverage, source-omission diagnostics, the stamped declaration and full
+tier result, screenshots, and command logs. These are local review artifacts,
+not uploaded CI results. There is no valid `crap.json` to link or approve.
+
+The tier also retains all T1 reasons: policy/deployment/security paths, test-gate
+documentation, declared dependencies, public surfaces, complete-stack review
+size, changed test counts, retained metric findings, and declared component,
+internal-interface, sensitive-behavior, and policy impact. The full classifier
+report keeps every individual reason. No skipped or todo test was added.
+
+PR #221 must merge before this stacked PR. Preserve its workspace and reports.
+Independent authorized human architect approval must cover the current candidate;
+none is claimed. This implementation request includes neither merge nor rollout.

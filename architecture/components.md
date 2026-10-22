@@ -216,8 +216,7 @@ for display. Signup uses the organizations-owned `SignupActivation` contract,
 including the requested organization name and purpose-marked legal bundle. The
 signup form calls the public organizations name validator, so this dependency
 includes runtime behavior. The dependency rules declare that existing owner pair.
-The
-WorkOS adapter saves the canonical creator/authority record on the named
+The WorkOS adapter saves the canonical creator/authority record on the named
 organization and confirms active Admin/product access after a new create. The
 signup route uses supplied session controls to select that organization after
 a current-membership check, then opens its MCP guide. A failed switch does not
