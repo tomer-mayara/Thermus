@@ -98,7 +98,7 @@ test('Given a successful membership response is missing, when activation confirm
   }
 });
 
-test('Given a legacy personal creation record with current User access, when signup inspects or retries it, then it keeps that access without an Admin upgrade or acceptance overwrite', async () => {
+test('Given a legacy personal creation record with current User access, when signup retries with a new name and agreement, then it keeps User access and the saved facts without an Admin upgrade', async () => {
   const fake = new SignupClientFake();
   await activate(fake);
   assert.ok(fake.organization);
@@ -108,8 +108,10 @@ test('Given a legacy personal creation record with current User access, when sig
   const retained = structuredClone(fake.organization);
   const signup = new WorkOSSignup(fake.options());
   assert.deepEqual(await signup.inspect({ user, signal: new AbortController().signal }), { status: 'existing-access' });
-  assert.deepEqual(await activate(fake), { status: 'active', organizationId: 'org_personal' });
+  const replacementDocuments = { ...documents, version: 'replacement-bundle', agreement: { version: 'replacement-agreement', text: 'TEST ONLY. A different authority agreement.' } };
+  assert.deepEqual(await signup.activate({ user, organizationName: 'Replacement organization', documents: replacementDocuments, signal: new AbortController().signal }), { status: 'active', organizationId: 'org_personal' });
   assert.deepEqual(fake.organization, retained);
+  assert.deepEqual(fake.memberships[0].roles, [{ slug: 'user' }]);
   assert.equal(fake.organizationWrites.length, 1);
   assert.equal(fake.membershipWrites.length, 1);
 });
@@ -170,11 +172,13 @@ for (const state of ['absent', 'pending', 'inactive', 'non-product', 'directory-
   });
 }
 
-test('Given a retained creation record with current product access, when a new document version is shown, then existing access remains usable without a new acceptance write', async () => {
+test('Given a retained creation record with current product access, when a different name and new document version are submitted, then existing access remains usable without changing saved facts', async () => {
   const fake = new SignupClientFake();
   await activate(fake);
+  const retained = structuredClone(fake.organization);
   const next = { ...documents, version: 'bundle-v2', terms: { ...documents.terms, version: 'terms-v2' } };
-  assert.deepEqual(await new WorkOSSignup(fake.options()).activate({ user, organizationName, documents: next, signal: new AbortController().signal }), { status: 'active', organizationId: 'org_personal' });
+  assert.deepEqual(await new WorkOSSignup(fake.options()).activate({ user, organizationName: 'Replacement Labs', documents: next, signal: new AbortController().signal }), { status: 'active', organizationId: 'org_personal' });
+  assert.deepEqual(fake.organization, retained);
   assert.equal(fake.organizationWrites.length, 1);
   assert.equal(fake.membershipWrites.length, 1);
 });

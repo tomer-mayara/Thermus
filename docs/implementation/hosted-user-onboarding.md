@@ -53,7 +53,7 @@ membership. Success requires confirmed current Admin and product access. The
 browser then selects that organization through a current-membership check and
 opens its MCP guide with the persisted name.
 
-WorkOS retains the [signup record](hosted-signup-recovery.md#retained-personal-record).
+WorkOS retains the [signup record](hosted-signup-recovery.md#retained-signup-record).
 The v2 record keeps the creator subject, canonical document versions and hashes,
 server authority-acceptance time, and agreement hash. The organization and its
 reserved external ID bind its identity. Freeze and retain the exact approved

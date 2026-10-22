@@ -46,11 +46,15 @@ for (const state of ['absent', 'pending', 'inactive', 'non-product', 'directory-
       fake.organization = { ...fake.organization, metadata: { ...fake.organization.metadata, subject: 'someone-else' } };
     } else fake.memberships = [{ ...fake.memberships[0], ...(state === 'directory-managed' ? { directoryManaged: true }
       : state === 'non-product' ? { roles: [{ slug: 'member' }] } : { status: state }) }];
+    const retained = structuredClone(fake.organization);
+    const memberships = structuredClone(fake.memberships);
     fake.existingAccess = [{ ...otherAccess, organizationId: 'org_personal' }];
 
     assert.deepEqual(await inspect(fake), { status: 'support-required', canContinue: false });
     fake.existingAccess = [...fake.existingAccess, otherAccess];
     assert.deepEqual(await inspect(fake), { status: 'support-required', canContinue: true });
+    assert.deepEqual(fake.organization, retained);
+    assert.deepEqual(fake.memberships, memberships);
     assert.equal(fake.organizationWrites.length, 1);
     assert.equal(fake.membershipWrites.length, 1);
   });

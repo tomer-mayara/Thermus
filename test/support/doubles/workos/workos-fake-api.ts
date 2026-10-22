@@ -100,6 +100,12 @@ export class WorkOSFakeApi {
     this.#responders.set(methodAndPath, responder);
   }
 
+  intercept(methodAndPath: string, handler: (request: RecordedRequest, respond: () => Promise<FakeAnswer>) => FakeAnswer | Promise<FakeAnswer>): void {
+    const responder = this.#responders.get(methodAndPath);
+    if (responder === undefined) throw new Error(`No exact responder for ${methodAndPath}`);
+    this.answer(methodAndPath, (request) => handler(request, async () => typeof responder === 'function' ? responder(request) : responder));
+  }
+
   // Answers each request that fits a method and a path with one ":id" segment, for example
   // 'GET /user_management/users/:id'. A route of answer() for the exact path comes first.
   answerEach(methodAndPattern: string, responder: IdResponder): void {
