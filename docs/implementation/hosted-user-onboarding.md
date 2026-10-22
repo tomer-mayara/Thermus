@@ -24,13 +24,13 @@ granting User. The application does not check agreement on manual grants or on
 every product request. Self-serve activation does check explicit agreement and
 stores an initial acceptance marker in WorkOS. It is not an acceptance history.
 
-Initially, the operator controls User grants. Customer Admins can grant User,
-including to themselves; a Super Admin can grant itself Admin and then User.
-Direct WorkOS writes also bypass this procedure. The application does not
-prevent these paths. Before delegating grant authority, the owner must establish
-who checks and records each agreement and how the operator reviews compliance.
-If these controls cannot be maintained, stop new grants and escalate to the owner.
-Do not claim software enforces acceptance on these manual or delegated paths.
+Initially, the operator controls manual User grants. S1-01 retires customer
+grant forms, including self-grants. Native User invitations and direct WorkOS
+writes can still bypass this procedure. Before delegating invitation authority,
+the owner must establish who checks and records each agreement and how the
+operator reviews compliance. If these controls cannot be maintained, stop new
+grants and escalate to the owner. Do not claim software enforces acceptance on
+these manual or invitation paths.
 
 ## Self-serve activation and its record
 

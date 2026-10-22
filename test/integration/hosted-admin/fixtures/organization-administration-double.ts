@@ -7,7 +7,6 @@ import type {
   Actor,
   AdministrationRefusal,
   AuthorizedOrganization,
-  GrantChangeRequest,
   InvitationChangeRequest,
   InvitationSendRequest,
 } from '../../../../src/accounts/organizations/organization-administration.ts';
@@ -29,7 +28,7 @@ export interface AdministrationSetup {
 export interface AdministrationCall {
   readonly operation: string;
   readonly actor: Actor;
-  readonly request: string | GrantChangeRequest | InvitationSendRequest | InvitationChangeRequest;
+  readonly request: string | InvitationSendRequest | InvitationChangeRequest;
 }
 
 export class OrganizationAdministrationDouble implements OrganizationService {
@@ -60,10 +59,6 @@ export class OrganizationAdministrationDouble implements OrganizationService {
 
   async invitationOverview(actor: Actor, organizationId: string): Promise<InvitationOverview | AdministrationRefusal> {
     return this.answer({ operation: 'invitationOverview', actor, request: organizationId }, this.administration.invitations ?? 'denied');
-  }
-
-  async changeGrant(actor: Actor, request: GrantChangeRequest): Promise<ChangeResult> {
-    return this.answer({ operation: 'changeGrant', actor, request }, this.administration.change ?? 'applied');
   }
 
   async sendInvitation(actor: Actor, request: InvitationSendRequest): Promise<ChangeResult> {

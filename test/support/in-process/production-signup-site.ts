@@ -27,7 +27,7 @@ export async function openProductionSignupSite(t: TestContext, enabled?: boolean
     ...(organizationId === undefined ? {} : { org_id: organizationId }),
   }, { issuer: browserSessionIssuer(world.settings.clientId), expiresAtUnixSeconds: Math.floor(Date.now() / 1_000) + 300 }));
   const loadPortal = HostedPortal.load;
-  t.mock.method(HostedPortal, 'load', (issuer: string) => loadPortal(issuer, hostedPortalFixture));
+  t.mock.method(HostedPortal, 'load', (formActionOrigins: readonly string[]) => loadPortal(formActionOrigins, hostedPortalFixture));
   const logger = { info: (_message: string): void => {}, error: (_message: string): void => {} };
   const application = await openWorkOSApplication(config, logger, {
     ...hostedFetchSettings,

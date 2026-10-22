@@ -1,7 +1,5 @@
 import type { AuthenticatedUser } from '../../../../src/accounts/identity/access-context.ts';
 import type {
-  DirectoryChangeResult,
-  DirectoryGrantChange,
   InvitationIdentityPolicy,
   InvitationPageRequest,
   InvitationRequest,
@@ -15,18 +13,17 @@ import type {
   Page,
 } from '../../../../src/accounts/organizations/organization-directory.ts';
 import { ChangeAnswers } from './change-answers.ts';
-import { chunks, memberOf, pageAt, roleGrantOf, stateOf, withoutRole, withRole, type InvitationRecord, type InvitationSeed, type MemberSeed, type MemberState, type PageLayout } from './directory-double-records.ts';
+import { chunks, memberOf, pageAt, roleGrantOf, stateOf, withRole, type InvitationRecord, type InvitationSeed, type MemberSeed, type MemberState, type PageLayout } from './directory-double-records.ts';
 
 type ConfiguredMemberships = readonly OrganizationMembership[] | Error;
 
-// A stateful provider directory: changes take effect in the later reads, as in the provider. Each grant change needs
-// the current revision of the membership, and an acceptance activates only the role of the invitation. A test can lay
+// A stateful provider directory: invitation changes take effect in later reads. Acceptance activates the invited
+// role. A test can lay
 // out the pages of each read, make a read or a change fail, give a change another result, or hold the changes.
 export class OrganizationDirectoryDouble extends ChangeAnswers implements OrganizationDirectory {
   readonly membershipReads: AuthenticatedUser[] = [];
   readonly memberPageReads: MemberPageRequest[] = [];
   readonly memberReads: string[] = [];
-  readonly grantChanges: DirectoryGrantChange[] = [];
   readonly invitationPageReads: InvitationPageRequest[] = [];
   readonly invitationReads: string[] = [];
   readonly invitationChanges: string[] = [];
@@ -125,11 +122,6 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
     return state === undefined ? undefined : memberOf(state);
   }
 
-  async changeGrant(change: DirectoryGrantChange): Promise<DirectoryChangeResult> {
-    this.grantChanges.push(change);
-    return this.answer('changeGrant', () => this.applyGrantChange(change));
-  }
-
   async invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>> {
     this.invitationPageReads.push(request);
     const matching = this.invitations.filter((invitation) => invitation.organizationId === request.organizationId && request.states.includes(invitation.state));
@@ -164,15 +156,6 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
       invitation.state = 'revoked';
       return { outcome: 'applied' };
     });
-  }
-
-  private applyGrantChange(change: DirectoryGrantChange): DirectoryChangeResult {
-    const member = this.members.find((state) => state.membershipId === change.membershipId);
-    if (member === undefined) throw new Error(`No membership ${change.membershipId}`);
-    if (`r${member.revision}` !== change.revision) return { outcome: 'stale' };
-    member.grants = change.action === 'grant' ? withRole(member.grants, roleGrantOf(change.role)) : withoutRole(member.grants, change.role);
-    member.revision += 1;
-    return { outcome: 'applied' };
   }
 
   private invitationWithId(invitationId: string): InvitationRecord {

@@ -1,15 +1,9 @@
 import type { RoleGrant } from '../identity/access-context.ts';
-import type { AssignableRole, GrantAction, OrganizationMembership } from './organization-directory.ts';
-
-export interface RoleChange {
-  readonly role: AssignableRole;
-  readonly action: GrantAction;
-}
+import type { AssignableRole, OrganizationMembership } from './organization-directory.ts';
 
 const ASSIGNABLE_ROLES: readonly AssignableRole[] = Object.freeze(['user', 'admin']);
-const GRANT_ACTIONS: readonly GrantAction[] = Object.freeze(['grant', 'revoke']);
-// The permission that a member needs in the organization to grant, revoke, or invite each customer role. User gives
-// none of them, and no customer permission manages Super Admin.
+// The permission needed to invite each customer role. User gives neither permission. No customer invitation
+// permission manages Super Admin.
 const MANAGING_PERMISSION: Readonly<Record<AssignableRole, string>> = Object.freeze({ user: 'user-grants:manage', admin: 'admin-grants:manage' });
 const BILLING_PERMISSION = 'billing:manage';
 
@@ -27,14 +21,6 @@ export function managesBilling(memberships: readonly OrganizationMembership[], o
 function activePermissionsIn(memberships: readonly OrganizationMembership[], organizationId: string): ReadonlySet<string> {
   const membership = memberships.find((candidate) => candidate.organizationId === organizationId && candidate.active);
   return new Set(membership?.grants.flatMap((grant) => grant.permissions));
-}
-
-// The role and the action of a request, when the actor manages that role; otherwise undefined. Any other text, such as
-// 'super-admin' or 'deactivate', names no customer change.
-export function managedChange(managed: readonly AssignableRole[], requested: { readonly role: string; readonly action: string }): RoleChange | undefined {
-  const role = managed.find((candidate) => candidate === requested.role);
-  const action = GRANT_ACTIONS.find((candidate) => candidate === requested.action);
-  return role === undefined || action === undefined ? undefined : { role, action };
 }
 
 export function managedRole(managed: readonly AssignableRole[], role: string): AssignableRole | undefined {

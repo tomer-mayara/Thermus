@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { SignupDocuments } from '../../../src/accounts/providers/workos/workos-signup.ts';
+import type { SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
 
 const terms = 'TEST ONLY. Service terms for the signup acceptance test.';
 const notice = 'TEST ONLY. This service receives URLs and account details.';

@@ -5,14 +5,14 @@ import type {
   AdministrationRefusal,
   OrganizationAdministration,
 } from '../../../accounts/organizations/organization-administration.ts';
-import { grantChangeIn, invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
+import { invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
 import { accessDeniedPage, noticePage, seeOther, type NoticeName } from './account-pages.ts';
 import { billingPage, invitationsPage, membersPage } from './administration-pages.ts';
 import type { SignedInBrowserSession } from '../../../accounts/identity/browser-session.ts';
 
 export type AdministrationService = Pick<
   OrganizationAdministration,
-  'memberOverview' | 'changeGrant' | 'invitationOverview' | 'sendInvitation' | 'resendInvitation' | 'revokeInvitation' | 'billingState'
+  'memberOverview' | 'invitationOverview' | 'sendInvitation' | 'resendInvitation' | 'revokeInvitation' | 'billingState'
 >;
 
 export type AdministrationHandler = (request: Request, session: SignedInBrowserSession, context: RequestContext) => Promise<Response>;
@@ -40,7 +40,6 @@ interface ChangeRoute<Fields extends { readonly organizationId: string }> {
 
 interface AdministrationPaths {
   readonly members: string;
-  readonly grants: string;
   readonly invitations: string;
   readonly send: string;
   readonly resend: string;
@@ -74,7 +73,6 @@ export class AdministrationRoutes {
     const pathOf = (relative: string) => new URL(relative, options.publicBaseUrl).pathname;
     this.paths = {
       members: pathOf('members'),
-      grants: pathOf('members/grants'),
       invitations: pathOf('invitations'),
       send: pathOf('invitations/send'),
       resend: pathOf('invitations/resend'),
@@ -83,7 +81,6 @@ export class AdministrationRoutes {
     };
     this.routes = new Map<string, ScopedRoute>([
       [this.paths.members, (request, scope) => this.membersPage(request, scope)],
-      [this.paths.grants, (request, scope) => this.changeGrant(request, scope)],
       [this.paths.invitations, (request, scope) => this.invitationsPage(request, scope)],
       [this.paths.send, (request, scope) => this.sendInvitation(request, scope)],
       [this.paths.resend, (request, scope) => this.resendInvitation(request, scope)],
@@ -107,8 +104,6 @@ export class AdministrationRoutes {
   private membersPage(request: Request, scope: AdministrationScope): Promise<Response> {
     return this.page(request, () => this.organizations.memberOverview(scope.actor, scope.organizationId), (overview) => membersPage({
       overview,
-      csrfToken: scope.csrfToken,
-      grantAction: this.paths.grants,
       invitationsPage: this.paths.invitations,
     }));
   }
@@ -124,10 +119,6 @@ export class AdministrationRoutes {
 
   private billingPage(request: Request, scope: AdministrationScope): Promise<Response> {
     return this.page(request, () => this.organizations.billingState(scope.actor, scope.organizationId), (state) => billingPage(state));
-  }
-
-  private changeGrant(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: grantChangeIn, change: (actor, fields) => this.organizations.changeGrant(actor, fields), pageAfterChange: this.paths.members });
   }
 
   private sendInvitation(request: Request, scope: AdministrationScope): Promise<Response> {

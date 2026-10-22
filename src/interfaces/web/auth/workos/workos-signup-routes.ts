@@ -5,7 +5,7 @@ import { noticePage, seeOther } from './workos-session-pages.ts';
 import { validateSignupDocuments } from '../../../../accounts/providers/workos/workos-signup-documents.ts';
 import { signupAgreementIn } from './workos-signup-form.ts';
 import { signupClosedPage, signupContinuePage, signupFailurePage, signupFormPage, signupRequestNotice, signupSignInPage } from './workos-signup-pages.ts';
-import type { SignupActivation, SignupDocuments, SignupResult } from '../../../../accounts/providers/workos/workos-signup.ts';
+import type { SignupActivation, SignupDocuments, SignupResult } from '../../../../accounts/organizations/signup-activation.ts';
 
 export interface WorkOSSignupRoutesOptions {
   readonly publicBaseUrl: string;

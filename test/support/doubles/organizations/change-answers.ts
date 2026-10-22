@@ -1,4 +1,4 @@
-type ChangeOperation = 'changeGrant' | 'sendInvitation' | 'resendInvitation' | 'revokeInvitation';
+type ChangeOperation = 'sendInvitation' | 'resendInvitation' | 'revokeInvitation';
 
 // The next answer of a change: a result without a change, or a failure before or after the change.
 type Override = { readonly result: 'unsupported' | 'stale' | 'not-pending' | 'address-in-use' } | { readonly error: Error; readonly afterChange?: boolean };

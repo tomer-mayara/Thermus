@@ -878,6 +878,10 @@ logging, member reduction, role-change, or MFA feature.
 
 #### S1-01 — Shared boundary and retired grant writes
 
+Implementation and verification are tracked in the
+[S1-01 record](../implementation/admin-s1-01.md). The gap below describes the
+starting code; the record gives the current candidate's results and limits.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -888,7 +892,7 @@ Scenario: Retire a formerly authorized User-grant write
   Then the path is unavailable and no membership or role write occurs
 ```
 
-**Current gap / expected red, not run.** The path, grant forms, `changeGrant`
+**Gap at the start.** The path, grant forms, `changeGrant`
 service, and provider writer still exist. The retirement case should fail on that
 behavior. Moving types is separate: signup/session contracts and safe wire
 responses already work and must stay green during those moves.

@@ -13,7 +13,7 @@ import {
 import type { Billing } from '../accounts/billing/billing.ts';
 import type { GoogleOnboardingSettings } from '../accounts/providers/workos/workos-google-onboarding.ts';
 import type { WorkOSSettings } from '../accounts/providers/workos/workos-settings.ts';
-import type { SignupDocuments } from '../accounts/providers/workos/workos-signup.ts';
+import type { SignupDocuments } from '../accounts/organizations/signup-activation.ts';
 import { portalAccessOperation, PRODUCT_ACCESS } from '../interfaces/web/account/portal-access.ts';
 import { MCPServer, type RequestServerBuilder } from '../interfaces/mcp/mcp-server.ts';
 
@@ -54,7 +54,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: Applica
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);
   const { HostedPortal } = await import('./hosted-portal.ts');
-  const portal = await HostedPortal.load(connection.settings.authkitIssuer);
+  const portal = await HostedPortal.load(['https://api.workos.com', connection.settings.authkitIssuer]);
   const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operations, logger), signup });
   return portal.withApplication(application);
 }
@@ -105,7 +105,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const authority = workosAuthority(settings.clientId);
   // One directory gives the current grants to access resolution, and the organizations, members, and invitations and
   // their changes to the account routes.
-  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
+  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const { WorkOSGoogleOnboarding } = await import('../accounts/providers/workos/workos-google-onboarding.ts');
   const onboarding = parts.onboarding === undefined ? undefined : new WorkOSGoogleOnboarding({

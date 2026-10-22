@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { SignupDocuments } from './workos-signup.ts';
+import type { SignupDocuments } from '../../organizations/signup-activation.ts';
 
 const VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const DOCUMENT_BYTES = 128 * 1024;

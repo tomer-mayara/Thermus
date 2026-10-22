@@ -9,11 +9,9 @@ function headersWithoutCookies(response: Response): Record<string, string> {
   return Object.fromEntries([...response.headers].filter(([name]) => name !== 'set-cookie'));
 }
 
-const grantForm = (membershipId: string, revision: string, change: { role: string; action: string }) => ({ csrf_token: annToken, organization_id: 'org-a', membership_id: membershipId, revision, ...change });
-
 describe('HostedAccountRoutes member and invitation pages', () => {
   for (const method of ['GET', 'HEAD']) {
-    test(`Given allowed access and a member overview, when a ${method} request opens the members page with forged organization values, then the service gets the user of the decided context with the MFA evidence of the session and the organization of the context, and the page shows the seat count and one form for each change, with the session token, the organization, the membership, and its revision`, async () => {
+    test(`Given allowed access and a member overview, when a ${method} request opens the members page with forged organization values, then the service gets the user of the decided context with the MFA evidence of the session and the organization of the context, and the page shows the seat count without grant controls`, async () => {
       const { routes, organizations, resolver } = serveAdministration({ members: acmeMembers });
 
       const response = await routes.handle(accountRequest('/members?organizationId=org-b', 'session=ann', { method, headers: { 'X-Organization-Id': 'org-b' } }));
@@ -27,10 +25,7 @@ describe('HostedAccountRoutes member and invitation pages', () => {
       assert.match(body, /<p>dora@example\.com: active\. Roles: none\.<\/p>/);
       assert.match(body, /<p>ivy@example\.com: inactive\. Roles: User\.<\/p>/);
       assert.match(body, /<a href="\/invitations">Invitations<\/a>/);
-      assert.deepEqual(formsIn(body), [
-        { action: '/members/grants', fields: grantForm('membership-ann', 'r7', { role: 'user', action: 'revoke' }), label: 'Revoke User from ann@example.com' },
-        { action: '/members/grants', fields: grantForm('membership-dora', 'r2', { role: 'user', action: 'grant' }), label: 'Grant User to dora@example.com' },
-      ]);
+      assert.deepEqual(formsIn(body), []);
       assert.doesNotMatch(body, /<script|<link|<img|<style/i);
       assert.deepEqual(organizations.administrationCalls, [{ operation: 'memberOverview', actor: { user: ann, mfaCompleted: true }, request: 'org-a' }]);
       assert.deepEqual(resolver.calls, [ann]);
@@ -84,7 +79,7 @@ describe('HostedAccountRoutes member and invitation pages', () => {
     const members: MemberOverview = {
       organizationId: `org-${hostile}`,
       activeUserSeats: 1,
-      members: [{ membershipId: `membership-${hostile}`, email: `<b>eve</b>${hostile}@example.com`, status: 'active', roles: [`custom-${hostile}`, 'toString'], revision: `r${hostile}`, changes: [{ role: 'user', action: 'grant' }] }],
+      members: [{ membershipId: `membership-${hostile}`, email: `<b>eve</b>${hostile}@example.com`, status: 'active', roles: [`custom-${hostile}`, 'toString'], revision: `r${hostile}` }],
     };
     const invitations: InvitationOverview = {
       ...acmeInvitations,
@@ -100,9 +95,7 @@ describe('HostedAccountRoutes member and invitation pages', () => {
 
     for (const body of bodies) assert.doesNotMatch(body, /<script>|<b>|<i>/);
     assert.match(bodies[0] ?? '', /Roles: custom-&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;, toString\./);
-    assert.deepEqual(formsIn(bodies[0] ?? '').map(({ fields, label }) => [fields.organization_id, fields.membership_id, fields.revision, label]), [
-      [`org-${hostile}`, `membership-${hostile}`, `r${hostile}`, `Grant User to <b>eve</b>${hostile}@example.com`],
-    ]);
+    assert.deepEqual(formsIn(bodies[0] ?? ''), []);
     assert.deepEqual(formsIn(bodies[1] ?? '').map(({ fields, label }) => [fields.invitation_id, label]).at(-1), [`invitation-${hostile}`, `Revoke the invitation to <i>new</i>${hostile}@example.com`]);
   });
 
@@ -175,7 +168,7 @@ describe('HostedAccountRoutes member and invitation pages', () => {
     const members = await (await routes.handle(accountRequest('/team/members', 'session=ann'))).text();
     const invitations = await (await routes.handle(accountRequest('/team/invitations', 'session=ann'))).text();
 
-    assert.deepEqual([...new Set(formsIn(members).map(({ action }) => action))], ['/team/members/grants']);
+    assert.deepEqual(formsIn(members), []);
     assert.deepEqual([...new Set(formsIn(invitations).map(({ action }) => action))], ['/team/invitations/send', '/team/invitations/resend', '/team/invitations/revoke']);
     assert.match(members, /<a href="\/team\/invitations">Invitations<\/a>/);
     assert.match(invitations, /<a href="\/team\/members">Members<\/a>/);

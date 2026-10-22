@@ -87,7 +87,7 @@ describe('WorkOSSessionRoutes: the sign-in callback', () => {
 
   test('Given a refused callback, when it arrives, then it gets the 400 page "Sign-in did not complete" with a link to the sign-in path and the cleared sign-in cookie', async () => {
     const session = new SessionDouble();
-    session.completion = { status: 'refused', reason: 'state-mismatch', cookies: [clearedSignInCookie] };
+    session.completion = { status: 'refused', cookies: [clearedSignInCookie] };
     const { routes } = serve(session);
 
     const body = await assertPage(await routes.handle(browserRequest('/team/callback?code=code-1&state=other')), {
@@ -102,7 +102,7 @@ describe('WorkOSSessionRoutes: the sign-in callback', () => {
 
   test('Given a public path with HTML characters, when a callback is refused, then the link to the sign-in path is escaped', async () => {
     const session = new SessionDouble();
-    session.completion = { status: 'refused', reason: 'provider-error', cookies: [clearedSignInCookie] };
+    session.completion = { status: 'refused', cookies: [clearedSignInCookie] };
     const routes = new WorkOSSessionRoutes({
       session,
       publicBaseUrl: "https://thermus.example/a&b'c/",

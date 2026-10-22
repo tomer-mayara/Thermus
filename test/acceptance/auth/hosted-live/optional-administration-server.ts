@@ -48,33 +48,19 @@ export function describeOptionalAdministrationServerCases(run: LiveRun): void {
       assert.deepEqual(await organizationState(run, organizationC.id), before);
     });
 
-    test('Given Super Admin and Admin without MFA evidence, when a valid same-origin form grants Admin to the Super Admin, then the post is refused and every WorkOS role and revision stays unchanged', signInOptions, async () => {
-      const { memberships } = await run.administrationFixtures();
-      await refusedChange(run, (await administrator()).page, { path: 'members/grants', fields: { membership_id: memberships.superAdminInC, revision: 'live', role: 'admin', action: 'grant' } });
-    });
+    test('Given an Admin without inferred MFA proof, when it posts to the retired grant path, then the path is unavailable and provider memberships stay unchanged', signInOptions, async () => {
+      const { organizationC, memberships } = await run.administrationFixtures();
+      const before = await organizationState(run, organizationC.id);
+      const { page } = await administrator();
+      const session = await sessionJson(page);
 
-    test('Given Super Admin and Admin without MFA evidence, when a valid same-origin form grants User, then the post is refused and WorkOS creates no grant or User seat', signInOptions, async () => {
-      const { memberships } = await run.administrationFixtures();
-      await refusedChange(run, (await administrator()).page, { path: 'members/grants', fields: { membership_id: memberships.superAdminInC, revision: 'live', role: 'user', action: 'grant' } });
-    });
+      const answer = await serverPost(page, 'members/grants', { fields: {
+        csrf_token: String(session.csrfToken), organization_id: organizationC.id,
+        membership_id: memberships.targetInC, revision: 'live', role: 'user', action: 'grant',
+      } });
 
-    test('Given Super Admin and Admin without MFA evidence, when a valid same-origin form revokes its own Admin, then the post is refused and both roles stay in WorkOS', signInOptions, async () => {
-      const { memberships } = await run.administrationFixtures();
-      await refusedChange(run, (await administrator()).page, { path: 'members/grants', fields: { membership_id: memberships.administratorInC, revision: 'live', role: 'admin', action: 'revoke' } });
-    });
-
-    test('Given Super Admin and Admin without MFA evidence and a member with only User, when a valid same-origin form revokes User, then the post is refused and its current and second-organization memberships stay unchanged', signInOptions, async () => {
-      const { memberships } = await run.administrationFixtures();
-      const secondBefore = await run.workos.userManagement.getOrganizationMembership(memberships.lastUserInB);
-      await refusedChange(run, (await administrator()).page, { path: 'members/grants', fields: { membership_id: memberships.lastUserInC, revision: 'live', role: 'user', action: 'revoke' } });
-      assert.deepEqual(await run.workos.userManagement.getOrganizationMembership(memberships.lastUserInB), secondBefore);
-    });
-
-    test('Given Super Admin and Admin without MFA evidence, when forged forms request Super Admin or disable, deactivate, or reset-password, then every post is refused and WorkOS changes nothing', signInOptions, async () => {
-      const { memberships } = await run.administrationFixtures();
-      for (const change of [{ role: 'super-admin', action: 'grant' }, ...['disable', 'deactivate', 'reset-password'].map((action) => ({ role: 'user', action }))]) {
-        await refusedChange(run, (await administrator()).page, { path: 'members/grants', fields: { membership_id: memberships.targetInC, revision: 'live', ...change } });
-      }
+      assert.equal(answer.status, 404, answer.body);
+      assert.deepEqual(await organizationState(run, organizationC.id), before);
     });
 
     test('Given Super Admin and Admin without MFA evidence and a pending WorkOS invitation, when valid forms send, resend, and revoke invitations, then every post is refused and WorkOS keeps exactly the same invitations and membership revisions', signInOptions, async () => {

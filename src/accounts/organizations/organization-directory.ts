@@ -56,25 +56,8 @@ export interface InvitationPageRequest {
   readonly cursor?: string;
 }
 
-// The customer roles that a grant change or an invitation can give. Only the operator manages Super Admin.
+// The customer roles that an invitation can give. Only the operator manages Super Admin.
 export type AssignableRole = 'user' | 'admin';
-
-export type GrantAction = 'grant' | 'revoke';
-
-export interface DirectoryGrantChange {
-  readonly membershipId: string;
-  readonly role: AssignableRole;
-  readonly action: GrantAction;
-  // The directory makes the change only while the membership has this revision.
-  readonly revision: string;
-}
-
-// 'applied': the directory added or removed only this role, on the revision of the change. 'stale': the membership
-// has another revision now, so nothing changed. 'unsupported': the directory cannot make the change safely, so nothing
-// changed.
-export interface DirectoryChangeResult {
-  readonly outcome: 'applied' | 'stale' | 'unsupported';
-}
 
 export interface InvitationRequest {
   readonly organizationId: string;
@@ -104,7 +87,6 @@ export interface OrganizationDirectory {
   memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;
   // The membership with this ID in any organization, or undefined.
   member(membershipId: string): Promise<OrganizationMember | undefined>;
-  changeGrant(change: DirectoryGrantChange): Promise<DirectoryChangeResult>;
   invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;
   // The invitation with this ID in any organization, or undefined.
   invitation(invitationId: string): Promise<OrganizationInvitation | undefined>;

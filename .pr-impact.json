@@ -3,19 +3,19 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
+    "contract": true,
     "deployment": false,
     "crossCutting": false,
-    "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "component": true,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
-    "policy": false,
+    "policy": true,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Add the initial S1-01 implementation record with scope, accepted retirement scenario, planned checks, and prospective architecture assessment. This candidate changes only that record and this declaration; source implementation and tests have not started. It changes no current runtime behavior, public contract, dependency, configuration, policy, or deployment. The context, container, component, runtime, and deployment views in architecture/components.md remain accurate and need no edit. Future removal of the external grant path and shared-contract changes must be classified from the complete source candidate; this document-only classification does not approve or classify those future changes.",
+    "modelUpdated": true,
+    "summary": "S1-01 retires the customer POST /members/grants contract: a formerly authorized request returns 404 without a role change, and Members has no grant forms. The parser, administration operation, and provider writer are removed. Current invitations, role mapping, MFA checks, signup metadata and legal content, session cookies, CSRF, return paths, and provider failure behavior remain. Identity owns the narrow browser session/profile controls; organizations owns signup activation records and operations. WorkOS implements these roles, and composition supplies the portal's existing CSP origins. Public-module declarations add these two neutral modules without changing package edges, gate selection, or approval rules. Registry component ownership, runtime prose, and design limits reflect this reduced writer surface; context, containers, deployment, resource lifetimes, and existing diagrams remain accurate. No provider, database, runtime dependency, or new infrastructure is added. T2 Need architect is required for the changed browser/server contract; internal contracts, sensitive paths, policy declarations, and retained quality findings also require human review. No new decision record was requested.",
     "views": [
       "context",
       "containers",
@@ -27,8 +27,15 @@
       "docs/implementation/admin-s1-01.md",
       "docs/design/organization-admin-plan.md",
       "architecture/components.md",
-      "docs/implementation/component-registry-workflow.md",
-      "docs/implementation/pr-review-playbook.md"
+      "src/accounts/identity/browser-session-controls.ts",
+      "src/accounts/organizations/signup-activation.ts",
+      "src/accounts/organizations/organization-administration.ts",
+      "src/accounts/providers/workos/workos-organizations.ts",
+      "src/interfaces/web/account/administration-routes.ts",
+      "src/app/hosted-workos-application.ts",
+      "test/acceptance/auth/hosted-grant-retirement.test.ts",
+      "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+      "docs/implementation/pr-review-rules.yaml"
     ]
   }
 }

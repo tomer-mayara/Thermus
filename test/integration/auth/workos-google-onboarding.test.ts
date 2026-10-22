@@ -16,7 +16,7 @@ async function fixture(t: TestContext) {
   const { workos, settings } = world.connection();
   const records: ChangeRecord[] = [];
   const seats: number[] = [];
-  const directory = new WorkOSOrganizations({ authority: 'workos:client_test', userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
+  const directory = new WorkOSOrganizations({ authority: 'workos:client_test', userManagement: workos.userManagement, authorization: workos.authorization });
   const policy = new WorkOSGoogleOnboarding({ organizationId, authority: 'workos:client_test', workos, settings, directory,
     records: { record: (entry) => records.push(entry) }, billing: { stateOf: async () => ({ organizationId, plan: 'free', billedSeats: 0 }), updateSeats: async (_id, count) => {
       seats.push(count); return { organizationId, plan: 'free', billedSeats: 0 };

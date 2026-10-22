@@ -1,6 +1,7 @@
 import { decodeJwt, errors } from 'jose';
 import type { AuthenticatedUser } from '../../identity/access-context.ts';
-import type { BrowserSession, CookieEffects, OrganizationSwitch, SignedInBrowserSession } from '../../identity/browser-session.ts';
+import type { CookieEffects, OrganizationSwitch } from '../../identity/browser-session.ts';
+import type { BrowserProfile, BrowserSessionControls, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../identity/browser-session-controls.ts';
 import { sessionCookie, type SealedCookie, type SessionEnvelope } from './session-cookies.ts';
 import { isDamagedSeal, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
 import type { SealRefresh, SessionFacts, WorkOSSealedSession, WorkOSSessionClient } from './workos-session-client.ts';
@@ -18,32 +19,13 @@ export interface WorkOSBrowserSessionOptions {
   readonly clock?: () => number;
 }
 
-interface UserProfile {
-  readonly email: string;
-  readonly firstName?: string;
-  readonly lastName?: string;
-}
-
-// The portal shows the profile. It is display data only and never gives access.
-export interface WorkOSSignedInSession extends SignedInBrowserSession {
-  readonly profile: UserProfile;
-}
-
-export type WorkOSSessionState = WorkOSSignedInSession | { readonly status: 'signed-out'; readonly cookies: CookieEffects };
-
-export interface SessionEnd {
-  // Opening it ends the session at WorkOS. It is absent when the cookie holds no usable session.
-  readonly logoutUrl?: string;
-  readonly cookies: CookieEffects;
-}
-
-type SignedOut = Extract<WorkOSSessionState, { status: 'signed-out' }>;
+type SignedOut = Extract<ProfiledBrowserSessionState, { status: 'signed-out' }>;
 type RefreshFailure = Extract<SealRefresh, { authenticated: false }>;
 type RefreshSuccess = Extract<SealRefresh, { authenticated: true }>;
 
 // The hosted browser session of WorkOS AuthKit. The session cookie holds the sealed WorkOS session together with the
 // CSRF token and the MFA evidence of the sign-in, because the WorkOS seal changes at each refresh.
-export class WorkOSBrowserSession implements BrowserSession {
+export class WorkOSBrowserSession implements BrowserSessionControls {
   private readonly userManagement: WorkOSSessionClient['userManagement'];
   private readonly cookiePassword: string;
   private readonly authority: string;
@@ -61,7 +43,7 @@ export class WorkOSBrowserSession implements BrowserSession {
     this.signIn = new AuthKitSignIn({ userManagement: this.userManagement, settings: options.settings, clock, mfaEvidence: this.mfaEvidence, sessionCookie: this.sessionCookie, ...(options.onboarding === undefined ? {} : { onboarding: options.onboarding }) });
   }
 
-  async authenticate(cookieHeader: string | null): Promise<WorkOSSessionState> {
+  async authenticate(cookieHeader: string | null): Promise<ProfiledBrowserSessionState> {
     if (!this.sessionCookie.isSentIn(cookieHeader)) return { status: 'signed-out', cookies: [] };
     const stored = this.sessionCookie.contentOf(cookieHeader);
     if (stored === undefined) return this.signedOut();
@@ -111,7 +93,7 @@ export class WorkOSBrowserSession implements BrowserSession {
   }
 
   // The refresh stays in the organization of the session.
-  private async refreshed(envelope: SessionEnvelope): Promise<WorkOSSessionState> {
+  private async refreshed(envelope: SessionEnvelope): Promise<ProfiledBrowserSessionState> {
     const refresh = await this.sealedSession(envelope.seal).refresh();
     if (!refresh.authenticated) return this.signedOutAfter(refresh);
     const renewed = renewedEnvelope(envelope, refresh);
@@ -137,7 +119,7 @@ export class WorkOSBrowserSession implements BrowserSession {
     }
   }
 
-  private signedIn(envelope: SessionEnvelope, facts: SessionFacts, cookies: CookieEffects): WorkOSSignedInSession {
+  private signedIn(envelope: SessionEnvelope, facts: SessionFacts, cookies: CookieEffects): ProfiledSignedInBrowserSession {
     return {
       status: 'signed-in',
       user: this.userOf(facts),
@@ -186,7 +168,7 @@ function renewedEnvelope(envelope: SessionEnvelope, refresh: RefreshSuccess): Se
   return { ...envelope, seal: sealedSessionOf(refresh) };
 }
 
-function profileOf(user: SessionFacts['user']): UserProfile {
+function profileOf(user: SessionFacts['user']): BrowserProfile {
   return Object.freeze({
     email: user.email,
     ...(user.firstName ? { firstName: user.firstName } : {}),

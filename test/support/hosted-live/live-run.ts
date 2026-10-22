@@ -5,7 +5,7 @@ import { signInWithAuthKit, type BrowserSignIn } from './browser-session.ts';
 import { authorizeWithConnect, type ConnectGrant } from './connect-grant.ts';
 import { FixtureRegistry, type FixtureKind } from './fixture-registry.ts';
 import { LiveBrowser } from './live-browser.ts';
-import type { SignupDocuments } from '../../../src/accounts/providers/workos/workos-signup.ts';
+import type { SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
 import { createSignupFixtures } from './signup-fixtures.ts';
 import { LocalHttpsSite } from './local-https-site.ts';
 import { createOrganizationFixtures, type OrganizationFixtures } from './organization-fixtures.ts';

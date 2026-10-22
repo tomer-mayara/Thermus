@@ -1,4 +1,4 @@
-import { hasRole, type RoleChange } from './customer-roles.ts';
+import { hasRole } from './customer-roles.ts';
 import { invitationsOf, membersOf } from './directory-reads.ts';
 import type {
   AssignableRole,
@@ -10,15 +10,13 @@ import type {
   OrganizationMember,
 } from './organization-directory.ts';
 
-export interface MemberEntry {
+interface MemberEntry {
   readonly membershipId: string;
   readonly email: string;
   readonly status: MembershipStatus;
   // The roles of the grants that give an application permission.
   readonly roles: readonly string[];
   readonly revision: string;
-  // The changes that the actor can make now.
-  readonly changes: readonly RoleChange[];
 }
 
 export interface MemberOverview {
@@ -48,9 +46,9 @@ export interface InvitationOverview {
 
 const INVITATION_STATES: readonly InvitationState[] = Object.freeze(['pending', 'accepted', 'revoked', 'expired']);
 
-export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string, managed: readonly AssignableRole[]): Promise<MemberOverview> {
+export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string): Promise<MemberOverview> {
   const members = await membersOf(directory, organizationId);
-  const entries = members.map((member) => memberEntry(member, managed));
+  const entries = members.map(memberEntry);
   return Object.freeze({ organizationId, members: Object.freeze(entries), activeUserSeats: userSeatsOf(members) });
 }
 
@@ -79,12 +77,10 @@ function holdsUserSeat(member: OrganizationMember): boolean {
   return member.status === 'active' && hasRole(member.grants, 'user');
 }
 
-// Only an active membership can change, and only in the managed roles.
-function memberEntry(member: OrganizationMember, managed: readonly AssignableRole[]): MemberEntry {
+function memberEntry(member: OrganizationMember): MemberEntry {
   const { membershipId, email, status, revision } = member;
   const roles = [...new Set(member.grants.filter((grant) => grant.permissions.length > 0).map((grant) => grant.role))];
-  const changes = status === 'active' ? managed.map((role) => Object.freeze<RoleChange>({ role, action: hasRole(member.grants, role) ? 'revoke' : 'grant' })) : [];
-  return Object.freeze({ membershipId, email, status, roles: Object.freeze(roles), revision, changes: Object.freeze(changes) });
+  return Object.freeze({ membershipId, email, status, roles: Object.freeze(roles), revision });
 }
 
 // The entry copies only the fields of the contract, so that an invitation token of the provider stays out.

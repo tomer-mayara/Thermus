@@ -35,8 +35,7 @@ for (const method of ['Password', 'GoogleOAuth']) {
       organization_id: organizationId, membership_id: world.membershipId(user, organizationId), revision: 'irrelevant',
       role: 'user', action: 'revoke', csrf_token: JSON.parse(session.body).csrfToken,
     });
-    assert.equal(deniedChange.status, 403);
-    assert.match(deniedChange.body, /Administration needs a sign-in that completed multi-factor authentication/);
+    assert.equal(deniedChange.status, 404);
     assert.deepEqual(world.memberships, before);
   });
 }

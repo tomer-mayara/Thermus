@@ -211,9 +211,11 @@ SDK client, key-set resolver, and directory and selects `BillingFree`.
 implements identity-owned verifier/resolver contracts;
 [WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
 implements the organizations-owned directory role. `WorkOSBrowserSession`
-implements `BrowserSession`; signup is a separate provider responsibility.
-WorkOS-specific web routes also use provider session, signup, cookie, and
-document contracts directly. Other account routes depend on neutral roles.
+implements the identity-owned `BrowserSessionControls`, including profile data
+for display. Signup uses the organizations-owned `SignupActivation` contract.
+The web routes use these neutral contracts; WorkOS cookie and document-validation
+helpers remain provider-specific. Composition supplies the portal's allowed
+form destinations. Profile data does not grant access.
 
 ### Selected C4 components: local authentication in the Node server
 
@@ -459,6 +461,11 @@ checks MFA and current role authority before reading the overview. The
 [shared directory](../src/accounts/providers/workos/workos-organizations.ts)
 reads current remote state. Privileged mutations and their recording rules
 remain described under resource ownership and design choices below.
+The former POST `/members/grants` route is absent. A request with current account
+access reaches the existing 404 response after the session and access checks. The Members
+page has no grant forms, and neither administration nor the directory exposes
+a grant writer. Native invitations retain their current authorization and MFA
+checks. The current role mapping remains in use.
 
 ## Deployment view
 
@@ -531,10 +538,10 @@ surface and the narrower file-context restrictions.
 | Stable ID and source root | Responsibility and main parts | Boundary |
 | --- | --- | --- |
 | `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
-| `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions, and local administration roles. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, and local-user-administration contracts. No provider or UI implementation belongs here. |
-| `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory roles, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, and change-record modules. Directory-read helpers remain private. |
+| `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, and local-user-administration contracts. No provider or UI implementation belongs here. |
+| `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, and signup-activation modules. Directory-read helpers remain private. |
 | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
-| `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. | App constructs provider/SDK objects. Web's WorkOS auth area uses selected session/signup roles and cookie/document helpers; account routes use neutral supplied roles. |
+| `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
 | `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
 | `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, sign-in/out, signup, consent, forms, pages, escaping, and browser request protection. `account/` and `auth/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
@@ -636,8 +643,9 @@ The following limits affect architectural decisions today:
   review across both owners.
 - Browser authentication is only partly provider-neutral. Web's
   [WorkOS session routes](../src/interfaces/web/auth/workos/workos-session-routes.ts)
-  use selected provider roles/helpers, while local pages use a supplied
-  Response-returning handler. A provider change must preserve each browser
+  use neutral session controls but retain provider cookie helpers; signup uses
+  a neutral activation contract with provider document validation. Local pages
+  use a supplied Response-returning handler. A provider change must preserve each browser
   contract, cookie, Origin/CSRF, and return-path protection; a common provider
   interface alone does not cover this work.
 - The application-wide hosted capacity slot bounds this process only. It rejects

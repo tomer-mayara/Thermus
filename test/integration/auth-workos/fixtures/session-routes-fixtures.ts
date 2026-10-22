@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import type { CookieEffects } from '../../../../src/accounts/identity/browser-session.ts';
-import type { SessionEnd, WorkOSSessionState, WorkOSSignedInSession } from '../../../../src/accounts/providers/workos/workos-browser-session.ts';
-import type { SignInCallback, SignInCompletion, SignInStart } from '../../../../src/accounts/providers/workos/workos-sign-in.ts';
-import { WorkOSSessionRoutes, type SessionRouteFailure, type SessionRoutesSession } from '../../../../src/interfaces/web/auth/workos/workos-session-routes.ts';
+import type { BrowserSessionControls, BrowserSignInCompletion, BrowserSignInStart, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../../../src/accounts/identity/browser-session-controls.ts';
+import { WorkOSSessionRoutes, type SessionRouteFailure } from '../../../../src/interfaces/web/auth/workos/workos-session-routes.ts';
 
 export const publicBaseUrl = 'https://thermus.example/team/';
 export const publicOrigin = 'https://thermus.example';
@@ -24,7 +23,7 @@ export interface SessionCall {
   readonly input: unknown;
 }
 
-export function signedInState(changes: Partial<WorkOSSignedInSession> = {}): WorkOSSignedInSession {
+export function signedInState(changes: Partial<ProfiledSignedInBrowserSession> = {}): ProfiledSignedInBrowserSession {
   return {
     status: 'signed-in',
     user: { authority: 'workos:client_01TEST', subject: 'user_01ADA', selectedOrganizationId: 'org_01ACME' },
@@ -37,24 +36,24 @@ export function signedInState(changes: Partial<WorkOSSignedInSession> = {}): Wor
   };
 }
 
-// A double of the WorkOS browser session with configured answers. It records each call in order.
-export class SessionDouble implements SessionRoutesSession {
+// A double of the browser session controls with configured answers. It records each call in order.
+export class SessionDouble implements BrowserSessionControls {
   readonly calls: SessionCall[] = [];
-  state: Answer<WorkOSSessionState> = signedInState();
-  start: Answer<SignInStart> = { url: authKitUrl, cookies: [signInCookie] };
-  completion: Answer<SignInCompletion> = { status: 'signed-in', returnTo: '/team/members', cookies: [clearedSignInCookie, sessionCookie] };
+  state: Answer<ProfiledBrowserSessionState> = signedInState();
+  start: Answer<BrowserSignInStart> = { url: authKitUrl, cookies: [signInCookie] };
+  completion: Answer<BrowserSignInCompletion> = { status: 'signed-in', returnTo: '/team/members', cookies: [clearedSignInCookie, sessionCookie] };
   end: Answer<SessionEnd> = { logoutUrl, cookies: [clearedSessionCookie] };
   token: string | undefined = csrfToken;
 
-  async authenticate(cookieHeader: string | null): Promise<WorkOSSessionState> {
+  async authenticate(cookieHeader: string | null): Promise<ProfiledBrowserSessionState> {
     return this.answer('authenticate', cookieHeader, this.state);
   }
 
-  async startSignIn(request: { readonly returnTo: string }): Promise<SignInStart> {
+  async startSignIn(request: { readonly returnTo: string }): Promise<BrowserSignInStart> {
     return this.answer('startSignIn', request, this.start);
   }
 
-  async completeSignIn(callback: SignInCallback): Promise<SignInCompletion> {
+  async completeSignIn(callback: Parameters<BrowserSessionControls['completeSignIn']>[0]): Promise<BrowserSignInCompletion> {
     return this.answer('completeSignIn', { query: callback.query.toString(), cookieHeader: callback.cookieHeader }, this.completion);
   }
 

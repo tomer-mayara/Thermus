@@ -6,7 +6,6 @@ import { workosAuthority } from '../../../../src/accounts/providers/workos/worko
 import { activeUserSeatCount } from '../../../../src/accounts/organizations/administration-overviews.ts';
 import { invitationsOf } from '../../../../src/accounts/organizations/directory-reads.ts';
 import type {
-  DirectoryGrantChange,
   InvitationState,
   MembershipStatus,
   OrganizationDirectory,
@@ -94,14 +93,10 @@ export function describeAdministrationProofs(run: LiveRun): void {
   const { workos, settings } = run;
   const authority = workosAuthority(settings.clientId);
   // The directory of the hosted edition, as the composition makes it, against the staging environment.
-  const directory = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization, organizations: workos.organizations });
+  const directory = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
 
   function pagedDirectory(reads: MembershipListRead[]): WorkOSOrganizations {
-    return new WorkOSOrganizations({ authority, userManagement: withPagesOfTwo(workos.userManagement, reads), authorization: workos.authorization, organizations: workos.organizations });
-  }
-
-  async function membershipState(membershipId: string): Promise<MembershipState> {
-    return stateOf(await workos.userManagement.getOrganizationMembership(membershipId));
+    return new WorkOSOrganizations({ authority, userManagement: withPagesOfTwo(workos.userManagement, reads), authorization: workos.authorization });
   }
 
   async function membershipStateOfUser(userId: string, organizationId: string): Promise<MembershipState> {
@@ -132,17 +127,6 @@ export function describeAdministrationProofs(run: LiveRun): void {
     return { members, reads };
   }
 
-  // A grant of Admin and a revoke of User, each on the current revision of the membership.
-  async function grantAndRevokeOn(membershipId: string): Promise<string[]> {
-    const member = await directory.member(membershipId);
-    assert.ok(member, `The directory does not find the membership ${membershipId}.`);
-    const outcomes: string[] = [];
-    for (const change of [{ role: 'admin', action: 'grant' }, { role: 'user', action: 'revoke' }] as const) {
-      outcomes.push((await directory.changeGrant({ membershipId, ...change, revision: member.revision })).outcome);
-    }
-    return outcomes;
-  }
-
   async function pendingInvitationTo(organizationId: string, email: string): Promise<OrganizationInvitation> {
     const pending = (await invitationsOf(directory, organizationId, ['pending'])).filter((invitation) => invitation.email.toLowerCase() === email);
     const [invitation] = pending;
@@ -159,74 +143,6 @@ export function describeAdministrationProofs(run: LiveRun): void {
     }
     return listed;
   }
-
-  describe('Hosted live proofs (AUTH-08W): grant changes of the directory against WorkOS', () => {
-    test('Given a member with User in D and the revision of a page, when the directory grants Admin on it, the same request comes again, and after a later revoke of Admin the old request comes again, then the grant is applied and keeps User, each later request is stale without a write, and the revoked grant does not return', proofOptions, async (t) => {
-      const { memberships } = await run.administrationFixtures();
-      const id = memberships.retryInD;
-      const shown = await directory.member(id);
-      assert.ok(shown, 'The directory does not find the membership.');
-      const grant: DirectoryGrantChange = { membershipId: id, role: 'admin', action: 'grant', revision: shown.revision };
-
-      const granted = await directory.changeGrant(grant);
-      const afterGrant = await membershipState(id);
-      const retried = await directory.changeGrant(grant);
-      const afterRetry = await membershipState(id);
-      const current = await directory.member(id);
-      assert.ok(current, 'The directory does not find the membership after the grant.');
-      const revoked = await directory.changeGrant({ membershipId: id, role: 'admin', action: 'revoke', revision: current.revision });
-      const afterRevoke = await membershipState(id);
-      const lateRetry = await directory.changeGrant(grant);
-      const afterLateRetry = await membershipState(id);
-      const latest = await directory.member(id);
-      t.diagnostic(`outcomes: ${JSON.stringify([granted, retried, revoked, lateRetry].map(({ outcome }) => outcome))}; roles ${JSON.stringify(afterGrant.roles)} > ${JSON.stringify(afterRevoke.roles)}`);
-
-      assert.deepEqual([granted.outcome, retried.outcome, revoked.outcome, lateRetry.outcome], ['applied', 'stale', 'applied', 'stale']);
-      assert.deepEqual(afterGrant.roles, ['admin', 'user']);
-      assert.deepEqual(afterRetry, afterGrant, 'The retry changed the membership.');
-      assert.deepEqual([afterRevoke.status, afterRevoke.roles], ['active', ['user']]);
-      assert.deepEqual(afterLateRetry, afterRevoke, 'The old request changed the membership.');
-      // The roles and the status are the same as on the first page, but the update time is not.
-      assert.ok(latest !== undefined && latest.revision !== shown.revision, 'The membership has the revision of the first page again.');
-    });
-
-    test('Given a member whose only application role in D is User and who has User in B, when the directory revokes User in D, then the membership stays active with only the default role member, its grants in D give no permission, and its membership in B keeps User', proofOptions, async (t) => {
-      const { organizationB } = await run.fixtures();
-      const { organizationD, users, memberships } = await run.administrationFixtures();
-      const user = users['d-last-role'];
-      const inBBefore = await membershipState(memberships.lastRoleInB);
-      const shown = await directory.member(memberships.lastRoleInD);
-      assert.ok(shown, 'The directory does not find the membership.');
-
-      const revoked = await directory.changeGrant({ membershipId: shown.membershipId, role: 'user', action: 'revoke', revision: shown.revision });
-      const inD = await membershipState(memberships.lastRoleInD);
-      const grantsInD = await directory.activeGrants(user.id, organizationD.id);
-      const grantsInB = await directory.activeGrants(user.id, organizationB.id);
-      const inBAfter = await membershipState(memberships.lastRoleInB);
-      t.diagnostic(`revoke ${revoked.outcome}; D: ${inD.status} ${JSON.stringify(inD.roles)}; B: ${inBAfter.status} ${JSON.stringify(inBAfter.roles)}`);
-
-      assert.equal(revoked.outcome, 'applied');
-      assert.deepEqual([inD.status, inD.roles], ['active', ['member']]);
-      assert.deepEqual(grantsInD, [{ role: 'member', permissions: [] }]);
-      assert.deepEqual(grantsInB, [{ role: 'user', permissions: ['product:access'] }]);
-      assert.deepEqual(inBAfter, inBBefore);
-    });
-
-    test('Given an inactive membership and a pending membership from an invitation in D, when the directory grants Admin to each and revokes User from each on their current revisions, then each change is unsupported, and WorkOS keeps the status, the roles, and the update time of each', proofOptions, async (t) => {
-      const { memberships } = await run.administrationFixtures();
-      const ids = [memberships.inactiveInD, memberships.pendingInD];
-      const before = await Promise.all(ids.map((id) => membershipState(id)));
-
-      const outcomes: string[] = [];
-      for (const id of ids) outcomes.push(...await grantAndRevokeOn(id));
-      const after = await Promise.all(ids.map((id) => membershipState(id)));
-      t.diagnostic(`before: ${JSON.stringify(before.map(({ status, roles }) => [status, roles]))}; outcomes: ${JSON.stringify(outcomes)}`);
-
-      assert.deepEqual(before.map(({ status, roles }) => [status, roles]), [['inactive', ['user']], ['pending', ['user']]]);
-      assert.deepEqual(outcomes, ['unsupported', 'unsupported', 'unsupported', 'unsupported']);
-      assert.deepEqual(after, before);
-    });
-  });
 
   describe('Hosted live proofs (AUTH-08W): member reads, User seats, and invitations of the directory against WorkOS', () => {
     test('Given memberships of D in the statuses active, inactive, and pending, when the directory reads them in pages of two, then each status filter gives exactly the memberships of a direct WorkOS read with that filter, and the User seat count counts each active membership with User once: User and Admin is one seat, and Admin only, Super Admin only, the default role, pending, and inactive count zero', proofOptions, async (t) => {

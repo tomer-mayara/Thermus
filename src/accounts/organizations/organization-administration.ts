@@ -1,8 +1,8 @@
 import type { AuthenticatedUser } from '../identity/access-context.ts';
 import type { Billing, BillingState } from '../billing/billing.ts';
-import { activeUserSeatCount, readInvitationOverview, readMemberOverview, type InvitationChange, type InvitationOverview, type MemberOverview } from './administration-overviews.ts';
-import { ChangeRecording, type ChangeEntry, type ChangeRecorder, type ChangeResult, type DirectoryChange } from './change-records.ts';
-import { hasRole, managedChange, managedRole, managedRoles, managesBilling } from './customer-roles.ts';
+import { readInvitationOverview, readMemberOverview, type InvitationChange, type InvitationOverview, type MemberOverview } from './administration-overviews.ts';
+import { ChangeRecording, type ChangeEntry, type ChangeRecorder, type ChangeResult } from './change-records.ts';
+import { managedRole, managedRoles, managesBilling } from './customer-roles.ts';
 import { invitationsOf } from './directory-reads.ts';
 import type { AssignableRole, InvitationRequest, OrganizationDirectory, OrganizationMembership } from './organization-directory.ts';
 
@@ -11,17 +11,6 @@ export interface Actor {
   readonly user: AuthenticatedUser;
   // True only when the sign-in of the session completed a multi-factor challenge.
   readonly mfaCompleted: boolean;
-}
-
-// The role and the action come from a request, so the service checks them: only a grant or a revoke of User or Admin
-// is a customer change.
-export interface GrantChangeRequest {
-  readonly organizationId: string;
-  readonly membershipId: string;
-  readonly role: string;
-  readonly action: string;
-  // The revision of the membership that the actor saw.
-  readonly revision: string;
 }
 
 export interface InvitationSendRequest {
@@ -51,15 +40,13 @@ export interface OrganizationAdministrationOptions {
   readonly clock?: () => Date;
 }
 
-const GRANT_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'stale', 'unsupported']);
 const SEND_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'address-in-use', 'unsupported']);
 const UPDATE_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'not-pending', 'unsupported']);
 
 // Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user, and
-// the User and Admin grants, the invitations, and the User seats of an organization. Each operation reads the current
-// actor and target state for the organization of the request, and each change keeps a record. Billing gets the User
-// seat count after each applied User grant change, and a member with the billing permission reads its state. The
-// external operator sets up organizations and their Super Admins outside this service, so it has no method for them.
+// invitations and User seat reads. Each operation checks current actor and target state for its organization.
+// Each invitation change keeps a record. Billing reads require the current billing permission. The external operator
+// sets up organizations and their Super Admins outside this service.
 export class OrganizationAdministration {
   private readonly directory: OrganizationDirectory;
   private readonly changes: ChangeRecording;
@@ -90,7 +77,7 @@ export class OrganizationAdministration {
 
   async memberOverview(actor: Actor, organizationId: string): Promise<MemberOverview | AdministrationRefusal> {
     const managed = await this.managedBy(actor, organizationId);
-    return typeof managed === 'string' ? managed : readMemberOverview(this.directory, organizationId, managed);
+    return typeof managed === 'string' ? managed : readMemberOverview(this.directory, organizationId);
   }
 
   async invitationOverview(actor: Actor, organizationId: string): Promise<InvitationOverview | AdministrationRefusal> {
@@ -102,17 +89,6 @@ export class OrganizationAdministration {
     if (actor.mfaCompleted !== true) return 'mfa-required';
     const memberships = await this.directory.membershipsOf(actor.user);
     return managesBilling(memberships, organizationId) ? this.billing.stateOf(organizationId) : 'denied';
-  }
-
-  // A grant or a revoke of one customer role of one active membership of the organization. The actor needs the
-  // authority for that role there now, and the membership must still have the revision that the actor saw. The
-  // directory changes only that role, so that each grant outside the authority of the actor stays.
-  async changeGrant(actor: Actor, request: GrantChangeRequest): Promise<ChangeResult> {
-    const target = { membershipId: request.membershipId };
-    const entry: ChangeEntry = { actor: actor.user, organizationId: request.organizationId, target, action: request.action, role: request.role };
-    const result = await this.changes.run(entry, () => this.checkedGrantChange(actor, request));
-    if (result === 'applied' && request.role === 'user') await this.updateBillingSeats(request.organizationId);
-    return result;
   }
 
   // An invitation of the organization gives only the role that it names, so that an Admin invitation gives no User
@@ -136,25 +112,6 @@ export class OrganizationAdministration {
 
   async revokeInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult> {
     return this.changeInvitation(actor, request, 'revoke');
-  }
-
-  private async checkedGrantChange(actor: Actor, request: GrantChangeRequest): Promise<ChangeResult | DirectoryChange> {
-    const managed = await this.managedBy(actor, request.organizationId);
-    if (typeof managed === 'string') return managed;
-    const change = managedChange(managed, request);
-    if (change === undefined) return 'denied';
-    const target = await this.directory.member(request.membershipId);
-    if (target?.organizationId !== request.organizationId || target.status !== 'active') return 'denied';
-    if (target.revision !== request.revision) return 'stale';
-    if (hasRole(target.grants, change.role) === (change.action === 'grant')) return 'unchanged';
-    const directoryChange = { membershipId: target.membershipId, ...change, revision: target.revision };
-    return async () => explicitResult(await this.directory.changeGrant(directoryChange), GRANT_RESULTS);
-  }
-
-  // Billing gets the complete count, not a difference, so that a later update corrects a failed one. A failed count or
-  // update reaches the caller, and the applied change keeps its record.
-  private async updateBillingSeats(organizationId: string): Promise<void> {
-    await this.billing.updateSeats(organizationId, await activeUserSeatCount(this.directory, organizationId));
   }
 
   // A resend or a revoke of a pending invitation of the organization, for a role that the actor manages.

@@ -1,7 +1,7 @@
 import { micromark } from 'micromark';
 import { gfm, gfmHtml } from 'micromark-extension-gfm';
 import { escapeHtml } from '../../html-escape.ts';
-import type { SignupDocuments } from '../../../../accounts/providers/workos/workos-signup.ts';
+import type { SignupDocuments } from '../../../../accounts/organizations/signup-activation.ts';
 
 export function signupDocumentReader(id: 'terms' | 'privacy-notice', title: string, document: SignupDocuments['terms']): string {
   const label = id === 'terms' ? 'terms of service' : 'privacy notice';
