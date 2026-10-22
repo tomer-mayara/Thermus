@@ -1,0 +1,86 @@
+{
+  "candidate": "d5b4a051c589b55338cad9b6b002817b99fa22e3",
+  "base": "9127545cb49b63ab9fab9d0952190d5bb2a87021",
+  "files": [
+    {
+      "name": "process.md",
+      "bytes": 33697,
+      "sha256": "e384d91e6df97bfd75ab17461430a62a0d0cba39119f6724826336f247e11839"
+    },
+    {
+      "name": "process.json",
+      "bytes": 34584,
+      "sha256": "cfde9c827cf065f1b5066534a662abbb25044f0bff7495af8d9fd84ed3fe0050"
+    },
+    {
+      "name": "review.json",
+      "bytes": 55281,
+      "sha256": "75b7d0d33532ee1fb44c6a906d3282346cc060ce3118ee16c912926e9a350293"
+    },
+    {
+      "name": "crap.json",
+      "bytes": 8772,
+      "sha256": "36ef504481a8894cf50416950a3269fa114d1dac1637a45ee9cb4fc10a969b7f"
+    },
+    {
+      "name": "coverage.json",
+      "bytes": 233384,
+      "sha256": "4a47f36d3023975695c169b71ea58499513830961162dd8c1bb7f2e8aa6c872e"
+    },
+    {
+      "name": "snapshot-base.json",
+      "bytes": 696546,
+      "sha256": "f832c8c61efc5c79793fcb31e565f1441103c5bf020bc130767d5ea5829ce590"
+    },
+    {
+      "name": "snapshot.json",
+      "bytes": 696350,
+      "sha256": "bdc2628e4a78e049101b09dafec27cbeba9a30776a63f2e76cf4d5a3e2a79359"
+    },
+    {
+      "name": "impact.json",
+      "bytes": 2181,
+      "sha256": "3dcd84c992f027e419c2854f22c7d0dab8bf4af727978dd4cd750d585d335fe7"
+    },
+    {
+      "name": "review-tier.md",
+      "bytes": 3796,
+      "sha256": "553a49a1a3e9dc366414d5dcb451171e159bc845de6e096c6f0987c686ea860a"
+    },
+    {
+      "name": "manager-review.md",
+      "bytes": 8495,
+      "sha256": "dbe30d0552516caebddb2d3ec5b2912d2538e2bb9d370f4ea1fcaa24f70a034c"
+    },
+    {
+      "name": "habit-hooks.txt",
+      "bytes": 3508,
+      "sha256": "5b7642dc6a513fd92fd74f470d5e99216d69fd113f933a955ca8d1992ef787cd"
+    },
+    {
+      "name": "parser-inspection.txt",
+      "bytes": 707,
+      "sha256": "eb518e8804e89a004c778265d8a9ffa112851de05df3d1672ba0f99b22a56cbf"
+    },
+    {
+      "name": "projection-inspection.txt",
+      "bytes": 682,
+      "sha256": "f77895679f132c8c2cf8fc5f0a9648e6ba07b445aff1a8a5de227e434ce2a580"
+    },
+    {
+      "name": "validation.json",
+      "bytes": 13707,
+      "sha256": "f43c2306d2cc0aa9159e012a946617440db413a4086d02654ad20cc8eace28d8"
+    },
+    {
+      "name": "live-reproduction.json",
+      "bytes": 887,
+      "sha256": "45ae1a2338a6513308b610395c7ab9c63d9f59fe5f888eb7a5ff447049f46200"
+    },
+    {
+      "name": "focused-regression.json",
+      "bytes": 1127,
+      "sha256": "4a4dea894e1fc7685ed08b8a78744ff83a8a76dcfa33e3c55522f26337b1d6f3"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "base": "9127545cb49b63ab9fab9d0952190d5bb2a87021",
+  "head": "d5b4a051c589b55338cad9b6b002817b99fa22e3",
+  "rows": [
+    {
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "function": "search-engine-brave-http\\SearchEngineBraveHttp.isNoResults",
+      "change": "changed",
+      "paths": 21,
+      "share": 0.994,
+      "crap": 21.000095256,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:SearchEngineBraveHttp\",\"name\":\"isNoResults\",\"start\":4340,\"end\":6277,\"body\":\"89ffe0bf9224a658685ece1ac63ad97c7847275790a37c47c0baa1230f9ffab1\",\"signature\":\"4786c07f58fa37c3ec53dcded5089b7bbd8c6115e0827825af772597a159455b\"}"
+    },
+    {
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "function": "search-engine-brave-http\\SearchEngineBraveHttp.classify",
+      "change": "changed",
+      "paths": 10,
+      "share": 1,
+      "crap": 10,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:SearchEngineBraveHttp\",\"name\":\"classify\",\"start\":2566,\"end\":3658,\"body\":\"c89eeee52ecfc5b8d2d3d6974c1cbae325144414fe52c243612a368a0298aa25\",\"signature\":\"45d78ff3e35109dbd78039f47b2846d9db85cd6f9d647a7cf1c2943d5cb5e670\"}"
+    },
+    {
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "function": "search-engine-brave-http\\SearchEngineBraveHttp.assertDepth",
+      "change": "unchanged",
+      "paths": 8,
+      "share": 1,
+      "crap": 8,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:SearchEngineBraveHttp\",\"name\":\"assertDepth\",\"start\":1864,\"end\":2562,\"body\":\"df89595e702953f1c4169134a6b2443f68e1eeedcaf45cd67a9cbd45919dbbab\",\"signature\":\"10f59eb777eef43d27a9827a60c791e45cfb4e50f52fd07f4cfac38a287168b8\"}"
+    },
+    {
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "function": "search-engine-brave-http\\SearchEngineBraveHttp.isWebResult",
+      "change": "changed",
+      "paths": 7,
+      "share": 1,
+      "crap": 7,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:SearchEngineBraveHttp\",\"name\":\"isWebResult\",\"start\":3662,\"end\":4336,\"body\":\"cc1cea903315c34d562954e789d4eb3f4a1da1567bc4974f003160461b9cb626\",\"signature\":\"7b459c63c70bec605651bdd927ef39feb7fe4e1704f4a0085ab3770225757a3a\"}"
+    },
+    {
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "function": "brave-result-document\\BraveResultDocument.inlineElement",
+      "change": "unchanged",
+      "paths": 6,
+      "share": 0.987,
+      "crap": 6.000079092,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:BraveResultDocument\",\"name\":\"inlineElement\",\"start\":4131,\"end\":4538,\"body\":\"b5600d8de9e2eaf43d20c38a485268899c95877030819e3f46a8f5e446d28b8f\",\"signature\":\"1ea11eae41c699c5f630e58a8a01691440ed65eb27bd03523dc331cfa80f20aa\"}"
+    },
+    {
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "function": "brave-result-document\\BraveResultDocument.copyElement",
+      "change": "unchanged",
+      "paths": 6,
+      "share": 1,
+      "crap": 6,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:BraveResultDocument\",\"name\":\"copyElement\",\"start\":3594,\"end\":4127,\"body\":\"ec7250188c3a5c1b914bfc17b2fee5f6626076c0ee57f24ea16ffef0905a5962\",\"signature\":\"2556ed1da94cf138fe89f96dd51bfc6f164f830ee8283ddca2cacf468f2f0262\"}"
+    },
+    {
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "function": "brave-result-document\\BraveResultDocument.resultRow",
+      "change": "changed",
+      "paths": 5,
+      "share": 0.977,
+      "crap": 5.000304175,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:BraveResultDocument\",\"name\":\"resultRow\",\"start\":1755,\"end\":2863,\"body\":\"3410106b1b0c79993c074b8d39981b9fb10fd08bff62ae43c09fbb722a187109\",\"signature\":\"513910ce2c74a432960d005cac2962762959e80d0a43b3ae7102c5ebefb2a15e\"}"
+    },
+    {
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "function": "brave-result-document\\BraveResultDocument.copyInline",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 0.988,
+      "crap": 5.0000432,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:BraveResultDocument\",\"name\":\"copyInline\",\"start\":3159,\"end\":3590,\"body\":\"609a0e9eeb6a4d36826608ef8232aaa664ee5891929d6e31ed631d408738a94c\",\"signature\":\"fe6972e9cf634e9441baab216cef21fc386b584a40a46437816ac504a1372b68\"}"
+    },
+    {
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "function": "brave-result-document\\BraveResultDocument.project",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:BraveResultDocument\",\"name\":\"project\",\"start\":1019,\"end\":1751,\"body\":\"a7f939296cc153afce88acd8e2b35e19142c033a0b820356c36f7576a800bb69\",\"signature\":\"2370c1aff028dfca98c55b022a252a6934ce6d53a840e7c5e94c21ab206d93d1\"}"
+    },
+    {
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "function": "search-engine-brave-http\\SearchEngineBraveHttp.assertFinalUrl",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:SearchEngineBraveHttp\",\"name\":\"assertFinalUrl\",\"start\":1612,\"end\":1860,\"body\":\"349bd76e383da653ba31f8a5bc7009ad754a16001f88a3592d99cb2a8b2dbe8f\",\"signature\":\"0ab95b91a33fd80200222d5cbbde9d2784e9186c8574db7a9e78d306a1974057\"}"
+    },
+    {
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "function": "search-engine-brave-http\\SearchEngineBraveHttp.search",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:SearchEngineBraveHttp\",\"name\":\"search\",\"start\":696,\"end\":1608,\"body\":\"cd6c4c97bcbfc03948d67b48c80b12b19084a42533da229e65a27d8e51ad05ef\",\"signature\":\"30cece0c511e3755ee3fb73e32bdb301340eba7c8b6b0e5c53a2e485137bc12a\"}"
+    },
+    {
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "function": "brave-result-document\\BraveResultDocument.appendDescription",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:BraveResultDocument\",\"name\":\"appendDescription\",\"start\":2867,\"end\":3155,\"body\":\"d505eb2789463a8e4bb861596b5a49da255bfcfcad9b3800a13a46f54d40a9d2\",\"signature\":\"ca3c0c4db50766a2bae6dc0b0768e5a32c77aae363e299ae3adb4ed01a27f229\"}"
+    },
+    {
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "function": "brave-result-document\\BraveResultDocument.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:BraveResultDocument\",\"name\":\"constructor\",\"start\":792,\"end\":1015,\"body\":\"eeb759a670d35ba357f638435d54d4fe9c8a89be304cb9b77a7c7d54e2502bdc\",\"signature\":\"f9d062e6676b2d7ae6a154e6ea834abaa96c70b87d330103bbc25df7a959bf52\"}"
+    },
+    {
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "function": "search-engine-brave-http\\SearchEngineBraveHttp.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v1\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:SearchEngineBraveHttp\",\"name\":\"constructor\",\"start\":636,\"end\":692,\"body\":\"a61a86b4b038a85bc15a633d16dbe4b60bb86e15e3c4021983fdf212319cc185\",\"signature\":\"b36240cad19b7a31bb788d905f9d8e8e6ec00682d76c262e010cc8fc2f50a48a\"}"
+    }
+  ]
+}

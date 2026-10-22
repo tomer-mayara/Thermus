@@ -1,0 +1,9 @@
+src/pipelines/html-processing/search-results/brave-result-document.ts: score 42.6, 30 decision paths, 7 functions
+  score  paths  lines  name
+   54.8      5     19  brave-result-document\BraveResultDocument.resultRow
+   63.2      6      9  brave-result-document\BraveResultDocument.copyElement
+   63.7      5     14  brave-result-document\BraveResultDocument.project
+   67.3      6      7  brave-result-document\BraveResultDocument.inlineElement
+   69.7      5      7  brave-result-document\BraveResultDocument.copyInline
+   75.1      2      5  brave-result-document\BraveResultDocument.appendDescription
+   75.7      1      5  brave-result-document\BraveResultDocument.constructor

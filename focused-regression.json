@@ -1,0 +1,33 @@
+{
+  "head": "a22b6e7bf676cfa94160e599d082ab8facb43d1f",
+  "main": "9127545cb49b63ab9fab9d0952190d5bb2a87021",
+  "build": {
+    "command": "pnpm run build",
+    "exitStatus": 0
+  },
+  "focused": {
+    "command": "node --test dist/test/acceptance/mcp/search-pipeline.test.js dist/test/integration/search-pipeline/brave-markdown.test.js dist/test/unit/search-engine/search-engine-brave-http.test.js dist/test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.js",
+    "exitStatus": 0,
+    "tests": 160,
+    "passed": 160,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 5086.424875,
+    "groups": {
+      "publicMcp": 26,
+      "integration": 6,
+      "classifierUnit": 105,
+      "cleanupUnit": 23
+    }
+  },
+  "storedCaptureComparison": {
+    "htmlBytes": 396040,
+    "main": "Search failed",
+    "head": "results",
+    "webCards": 20
+  },
+  "freshCaptureMetadata": "metadata.json",
+  "note": "This file is an execution summary. Full build and test stdout was shown in tool sessions and was not saved as log files. One fresh public fetch was made with no retry."
+}

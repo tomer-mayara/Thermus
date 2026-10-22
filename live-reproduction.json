@@ -1,0 +1,31 @@
+{
+  "query": "consumer laptop 2026 for coding",
+  "requestedUrl": "https://search.brave.com/search?q=consumer+laptop+2026+for+coding",
+  "finalUrl": "https://search.brave.com/search?q=consumer+laptop+2026+for+coding",
+  "capturedAt": "2026-10-22T00:41:57.523Z",
+  "lightpandaVersion": "1.0.0",
+  "lightpandaSha256": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d",
+  "durationMs": 2279,
+  "htmlBytes": 396463,
+  "htmlSha256": "3a0f247e9679b2286292e3185236f88b5723c84d465a0a38540292c515130fdb",
+  "transformations": [],
+  "shape": {
+    "searchRoots": 1,
+    "resultsSections": 1,
+    "banners": 0,
+    "webCards": 20,
+    "inlineQuestions": 1
+  },
+  "outcomes": [
+    {
+      "ref": "origin/main",
+      "outcome": "failure",
+      "message": "Search failed"
+    },
+    {
+      "ref": "HEAD",
+      "outcome": "results",
+      "retainedOriginalPage": true
+    }
+  ]
+}

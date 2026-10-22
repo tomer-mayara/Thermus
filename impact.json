@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "Fix the existing Brave HTML adapter and result projection so a direct, nonblank inline question is an organic result description. The supported DOM grammar now includes .result-content > .inline-qa-question. The existing Markdown contract still returns safe organic title links and descriptions in source order and excludes separate answer widgets. Public types, origin checks, full-page sanitation before projection, cancellation, resource limits, ownership, dependencies, container boundaries, and deployment stay the same. Equivalent parser loops preserve result validation and exact no-results structure checks. The context, container, component, runtime, and deployment views remain accurate; no registry edit or architecture decision is needed.",
+    "views": [
+      "context",
+      "containers",
+      "components",
+      "runtime",
+      "deployment"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "src/app/fetch-tool.ts",
+      "src/pipelines/providers/search-engine/search-engine.ts",
+      "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "src/pipelines/html-processing/html-to-markdown-pipeline.ts",
+      "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "docs/reference/mcp-search-tool.md",
+      "test/acceptance/mcp/search-pipeline.test.ts",
+      "test/acceptance/mcp/self-hosted-fetch-tool.test.ts",
+      "test/integration/search-pipeline/brave-markdown.test.ts",
+      "test/unit/search-engine/search-engine-brave-http.test.ts",
+      "test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.ts",
+      "test/support/fixtures/search-engine/README.md"
+    ]
+  },
+  "base": "9127545cb49b63ab9fab9d0952190d5bb2a87021",
+  "head": "d5b4a051c589b55338cad9b6b002817b99fa22e3"
+}

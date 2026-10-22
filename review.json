@@ -1,0 +1,1765 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "9127545cb49b63ab9fab9d0952190d5bb2a87021",
+  "headSha": "d5b4a051c589b55338cad9b6b002817b99fa22e3",
+  "summary": {
+    "filesChanged": 7,
+    "filesAdded": 0,
+    "filesDeleted": 0,
+    "high": 62,
+    "medium": 81,
+    "low": 41,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/billing/billing-free.ts",
+      "line": 3,
+      "message": "Maintainability too low: got 68 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/identity/access-context.ts",
+      "line": 34,
+      "message": "Maintainability too low: got 79 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/organizations/change-records.ts",
+      "line": 46,
+      "message": "Maintainability too low: got 73 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/organizations/organization-administration.ts",
+      "line": 63,
+      "message": "Maintainability too low: got 65 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "line": 49,
+      "message": "Maintainability too low: got 73 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "line": 55,
+      "message": "Maintainability too low: got 82 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/better-auth/better-auth-user-administration.ts",
+      "line": 34,
+      "message": "Maintainability too low: got 76 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/better-auth/local-installation.ts",
+      "line": 32,
+      "message": "Maintainability too low: got 84 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "line": 9,
+      "message": "Maintainability too low: got 84 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "line": 58,
+      "message": "Maintainability too low: got 72 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 46,
+      "message": "Maintainability too low: got 62 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "line": 32,
+      "message": "Maintainability too low: got 48 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 107,
+      "message": "Maintainability too low: got 60 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/workos-settings.ts",
+      "line": 16,
+      "message": "Maintainability too low: got 80 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/workos-sign-in.ts",
+      "line": 49,
+      "message": "Maintainability too low: got 65 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/providers/workos/workos-signup.ts",
+      "line": 73,
+      "message": "Maintainability too low: got 38 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/app/hidden-line-input.ts",
+      "line": 11,
+      "message": "Maintainability too low: got 80 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/app/hosted-portal.ts",
+      "line": 26,
+      "message": "Maintainability too low: got 47 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/app/operation-capacity.ts",
+      "line": 6,
+      "message": "Maintainability too low: got 65 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/cli/local-auth-command-line.ts",
+      "line": 10,
+      "message": "Maintainability too low: got 84 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/cli/local-auth-command.ts",
+      "line": 29,
+      "message": "Maintainability too low: got 84 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/mcp/identity-verifier-sdk-adapter.ts",
+      "line": 20,
+      "message": "Maintainability too low: got 62 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/mcp/mcp-server.ts",
+      "line": 49,
+      "message": "Maintainability too low: got 43 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/mcp/protected-resource-endpoint.ts",
+      "line": 18,
+      "message": "Maintainability too low: got 64 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/user-portal/connection-guide.ts",
+      "line": 19,
+      "message": "Maintainability too low: got 42 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "line": 32,
+      "message": "Maintainability too low: got 61 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/web/account/administration-routes.ts",
+      "line": 63,
+      "message": "Maintainability too low: got 59 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "line": 41,
+      "message": "Maintainability too low: got 41 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts",
+      "line": 16,
+      "message": "Maintainability too low: got 67 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "line": 39,
+      "message": "Maintainability too low: got 62 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "line": 29,
+      "message": "Maintainability too low: got 39 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "line": 17,
+      "message": "Maintainability too low: got 37 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts",
+      "line": 15,
+      "message": "Maintainability too low: got 51 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts",
+      "line": 3,
+      "message": "Maintainability too low: got 84 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/html-to-markdown-pipeline.ts",
+      "line": 21,
+      "message": "Maintainability too low: got 69 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts",
+      "line": 8,
+      "message": "Maintainability too low: got 63 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts",
+      "line": 9,
+      "message": "Maintainability too low: got 59 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/process-html-step.ts",
+      "line": 6,
+      "message": "Maintainability too low: got 59 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts",
+      "line": 51,
+      "message": "Maintainability too low: got 68 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts",
+      "line": 10,
+      "message": "Maintainability too low: got 33 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+      "line": 86,
+      "message": "Maintainability too low: got 53 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts",
+      "line": 10,
+      "message": "Maintainability too low: got 55 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-counts.ts",
+      "line": 7,
+      "message": "Maintainability too low: got 61 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+      "line": 19,
+      "message": "Maintainability too low: got 63 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "line": 15,
+      "message": "Maintainability too low: got 34 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/html-text-source-ranges.ts",
+      "line": 6,
+      "message": "Maintainability too low: got 67 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "line": 10,
+      "message": "Maintainability too low: got 50 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+      "line": 7,
+      "message": "Maintainability too low: got 66 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts",
+      "line": 4,
+      "message": "Maintainability too low: got 74 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "line": 11,
+      "message": "Maintainability too low: got 43 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/html-processing/search-results/brave-result-fields.ts",
+      "line": 3,
+      "message": "Maintainability too low: got 58 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/page-fetch/fetch-failure.ts",
+      "line": 26,
+      "message": "Maintainability too low: got 71 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "line": 10,
+      "message": "Maintainability too low: got 33 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+      "line": 53,
+      "message": "Maintainability too low: got 81 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/providers/website-fetcher/network-policy.ts",
+      "line": 70,
+      "message": "Maintainability too low: got 61 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "line": 45,
+      "message": "Maintainability too low: got 71 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "line": 20,
+      "message": "Maintainability too low: got 80 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/search/search-failure.ts",
+      "line": 26,
+      "message": "Maintainability too low: got 71 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/search/search-pipeline.ts",
+      "line": 25,
+      "message": "Maintainability too low: got 47 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/pipelines/search/search-query.ts",
+      "line": 1,
+      "message": "Maintainability too low: got 65 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/runtime/config/ad-rules-file.ts",
+      "line": 7,
+      "message": "Maintainability too low: got 82 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/runtime/config/deployment-config.ts",
+      "line": 30,
+      "message": "Maintainability too low: got 84 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "script/fetch-url/fetch-url.ts",
+      "message": "Too many Lines of code (198 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "script/search/search.ts",
+      "message": "Cyclomatic complexity too high: got 80 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "script/search/search.ts",
+      "message": "Too many Lines of code (196 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/organizations/organization-administration.ts",
+      "message": "Cyclomatic complexity too high: got 57 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/organizations/organization-administration.ts",
+      "message": "Too many Lines of code (204 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "message": "Cyclomatic complexity too high: got 41 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "message": "Too many Lines of code (175 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "message": "Too many Lines of code (174 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "line": 62,
+      "message": "LOC too high in method localProviderOptions(): got 34 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/better-auth/better-auth-user-administration.ts",
+      "message": "Too many Lines of code (210 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/better-auth/local-installation.ts",
+      "message": "Cyclomatic complexity too high: got 57 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/better-auth/local-installation.ts",
+      "message": "Too many Lines of code (228 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/workos/session-cookies.ts",
+      "message": "Cyclomatic complexity too high: got 42 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/workos/session-cookies.ts",
+      "message": "Too many Lines of code (154 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/workos/workos-approved-signup-documents.ts",
+      "message": "Too many Lines of code (313 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "message": "Too many Lines of code (153 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/workos/workos-browser-session.ts",
+      "message": "Cyclomatic complexity too high: got 49 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/workos/workos-browser-session.ts",
+      "message": "Too many Lines of code (195 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "message": "Cyclomatic complexity too high: got 44 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "message": "Cyclomatic complexity too high: got 110 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "message": "Too many Lines of code (406 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/workos/workos-signup.ts",
+      "message": "Cyclomatic complexity too high: got 102 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/workos/workos-signup.ts",
+      "message": "Too many Lines of code (259 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/app/application.ts",
+      "message": "Too many Lines of code (215 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/app/application.ts",
+      "line": 80,
+      "message": "LOC too high in method createSelfHostedApplication(): got 33 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/app/hosted-workos-application.ts",
+      "line": 94,
+      "message": "LLOC too high in method workosProviderParts(): got 22 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/app/hosted-workos-application.ts",
+      "line": 94,
+      "message": "LOC too high in method workosProviderParts(): got 49 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "line": 23,
+      "message": "LLOC too high in method createFetchToolServer(): got 39 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "line": 23,
+      "message": "LOC too high in method createFetchToolServer(): got 61 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/mcp/mcp-server.ts",
+      "message": "Cyclomatic complexity too high: got 77 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/mcp/mcp-server.ts",
+      "message": "Too many Lines of code (274 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/interfaces/user-portal/agent-guides.ts",
+      "line": 16,
+      "message": "LOC too high in method agentGuides(): got 67 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/interfaces/user-portal/guide-selector.ts",
+      "line": 3,
+      "message": "LLOC too high in method renderGuideSelector(): got 33 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/interfaces/user-portal/guide-selector.ts",
+      "line": 3,
+      "message": "LOC too high in method renderGuideSelector(): got 49 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/interfaces/user-portal/portal.ts",
+      "line": 52,
+      "message": "LLOC too high in method showProductAccess(): got 23 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/user-portal/portal.ts",
+      "message": "Too many Lines of code (176 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/web/account/account-form.ts",
+      "message": "Cyclomatic complexity too high: got 49 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "message": "Too many Lines of code (169 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/web/account/administration-routes.ts",
+      "message": "Cyclomatic complexity too high: got 44 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/web/account/administration-routes.ts",
+      "message": "Too many Lines of code (166 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "message": "Cyclomatic complexity too high: got 60 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "message": "Too many Lines of code (155 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "message": "Cyclomatic complexity too high: got 48 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "message": "Too many Lines of code (159 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "message": "Cyclomatic complexity too high: got 61 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "message": "Too many Lines of code (174 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "message": "Too many Lines of code (171 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts",
+      "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts",
+      "message": "Too many Lines of code (185 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts",
+      "message": "Cyclomatic complexity too high: got 69 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts",
+      "message": "Too many Lines of code (223 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts",
+      "line": 18,
+      "message": "LLOC too high in method sanitizeHtmlDocument(): got 23 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts",
+      "line": 18,
+      "message": "LOC too high in method sanitizeHtmlDocument(): got 32 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts",
+      "message": "Cyclomatic complexity too high: got 54 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts",
+      "message": "Too many Lines of code (163 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+      "message": "Cyclomatic complexity too high: got 55 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+      "message": "Too many Lines of code (175 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+      "message": "Cyclomatic complexity too high: got 78 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+      "message": "Too many Lines of code (178 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "line": 46,
+      "message": "LOC too high in method boundedAdapter(): got 39 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "message": "Cyclomatic complexity too high: got 78 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "message": "Too many Lines of code (233 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts",
+      "message": "Cyclomatic complexity too high: got 54 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/pipelines/page-fetch/execute-incoming-step.ts",
+      "line": 7,
+      "message": "LLOC too high in method executeIncomingStep(): got 21 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/pipelines/page-fetch/execute-incoming-step.ts",
+      "line": 7,
+      "message": "LOC too high in method executeIncomingStep(): got 32 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/pipelines/page-fetch/fetch-page.ts",
+      "line": 17,
+      "message": "LOC too high in method createFetchPage(): got 31 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "message": "Cyclomatic complexity too high: got 56 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "line": 62,
+      "subject": "SearchEngineBraveHttp::classify",
+      "message": "Cyclomatic complexity: 9 -\u003e 10 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 9,
+      "after": 10
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "line": 92,
+      "subject": "SearchEngineBraveHttp::isNoResults",
+      "message": "Cyclomatic complexity: 15 -\u003e 21 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 15,
+      "after": 21
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/pipelines/providers/website-fetcher/network-policy.ts",
+      "line": 28,
+      "message": "LLOC too high in method lookupAddresses(): got 27 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/pipelines/providers/website-fetcher/network-policy.ts",
+      "line": 28,
+      "message": "LOC too high in method lookupAddresses(): got 41 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "message": "Cyclomatic complexity too high: got 45 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "line": 75,
+      "message": "LLOC too high in method render(): got 40 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "message": "Too many Lines of code (153 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "line": 75,
+      "message": "LOC too high in method render(): got 65 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/pipelines/search/execute-incoming-step.ts",
+      "line": 8,
+      "message": "LLOC too high in method executeIncomingStep(): got 22 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/pipelines/search/execute-incoming-step.ts",
+      "line": 8,
+      "message": "LOC too high in method executeIncomingStep(): got 32 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/pipelines/search/search-failure.ts",
+      "message": "Cyclomatic complexity too high: got 41 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/runtime/config/deployment-config.ts",
+      "message": "Cyclomatic complexity too high: got 42 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/runtime/config/deployment-config.ts",
+      "message": "Too many Lines of code (152 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/code-quality/review/layer-tree.ts",
+      "message": "Efferent coupling too high: got 14 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/code-quality/snapshot/build.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/code-quality/snapshot/tree.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/pr-review/analysis.ts",
+      "message": "Efferent coupling too high: got 15 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/pr-review/crap.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/pr-review/git-reads.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/pr-review/ratchet.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/pr-review/rules.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "script/pr-review/run.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/organizations/administration-overviews.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/organizations/organization-administration.ts",
+      "message": "Efferent coupling too high: got 24 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/better-auth/better-auth-user-administration.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/better-auth/local-installation.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/workos/workos-browser-session.ts",
+      "message": "Efferent coupling too high: got 25 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "message": "Efferent coupling too high: got 25 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/accounts/providers/workos/workos-sign-in.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/app/application.ts",
+      "message": "Efferent coupling too high: got 14 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/app/fetch-tool.ts",
+      "message": "Efferent coupling too high: got 22 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/app/hosted-workos-application.ts",
+      "message": "Efferent coupling too high: got 18 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/cli/local-auth-command.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "message": "Efferent coupling too high: got 20 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/mcp/mcp-server.ts",
+      "message": "Efferent coupling too high: got 17 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/web/account/account-routes.ts",
+      "message": "Efferent coupling too high: got 19 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/web/account/administration-routes.ts",
+      "message": "Efferent coupling too high: got 18 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "message": "Efferent coupling too high: got 18 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts",
+      "message": "Efferent coupling too high: got 14 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/page-fetch/fetch-page.ts",
+      "message": "Efferent coupling too high: got 15 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "message": "Efferent coupling too high: got 14 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/search/execute-incoming-step.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/pipelines/search/search-pipeline.ts",
+      "message": "Efferent coupling too high: got 18 (max: 10)",
+      "before": 0,
+      "after": 0
+    }
+  ],
+  "improvements": [],
+  "gate": "failed"
+}

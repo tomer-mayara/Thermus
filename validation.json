@@ -1,0 +1,443 @@
+{
+  "candidate": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+  "node": "v24.20.0",
+  "commands": [
+    {
+      "name": "install",
+      "command": "pnpm install --frozen-lockfile",
+      "head": "a22b6e7bf676cfa94160e599d082ab8facb43d1f",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:18:25.311Z",
+      "finishedAt": "2026-10-22T02:18:25.402Z",
+      "counts": []
+    },
+    {
+      "name": "ordinary",
+      "command": "pnpm exec npm test",
+      "head": "a22b6e7bf676cfa94160e599d082ab8facb43d1f",
+      "node": "v24.20.0",
+      "status": "failed",
+      "exitStatus": 1,
+      "startedAt": "2026-10-22T02:18:30.341Z",
+      "finishedAt": "2026-10-22T02:23:18.818Z",
+      "counts": [
+        "ℹ tests 4171",
+        "ℹ suites 269",
+        "ℹ pass 4167",
+        "ℹ fail 4",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 286843.300917"
+      ]
+    },
+    {
+      "name": "focused",
+      "command": "pnpm exec node --test dist/test/acceptance/logging/otel-logger.test.js dist/test/interface/logging/otel-logger.test.js dist/test/acceptance/mcp/self-hosted-fetch-tool.test.js",
+      "head": "5aed5fc5d5326a94a2c47b4dd5a9bd528b258c0f",
+      "node": "v24.20.0",
+      "status": "failed",
+      "exitStatus": 1,
+      "startedAt": "2026-10-22T02:28:02.966Z",
+      "finishedAt": "2026-10-22T02:28:17.744Z",
+      "counts": [
+        "ℹ tests 11",
+        "ℹ suites 1",
+        "ℹ pass 10",
+        "ℹ fail 1",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 14713.076791"
+      ]
+    },
+    {
+      "name": "build-fixture",
+      "command": "pnpm exec npm run build",
+      "head": "5aed5fc5d5326a94a2c47b4dd5a9bd528b258c0f",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:29:01.950Z",
+      "finishedAt": "2026-10-22T02:29:03.437Z",
+      "counts": []
+    },
+    {
+      "name": "focused-fixture",
+      "command": "pnpm exec node --test dist/test/acceptance/mcp/self-hosted-fetch-tool.test.js",
+      "head": "5aed5fc5d5326a94a2c47b4dd5a9bd528b258c0f",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:29:21.794Z",
+      "finishedAt": "2026-10-22T02:29:37.262Z",
+      "counts": [
+        "ℹ tests 8",
+        "ℹ suites 1",
+        "ℹ pass 8",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 15397.422584"
+      ]
+    },
+    {
+      "name": "ordinary-recovery",
+      "command": "pnpm exec npm test",
+      "head": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:32:11.656Z",
+      "finishedAt": "2026-10-22T02:37:14.418Z",
+      "counts": [
+        "ℹ tests 4171",
+        "ℹ suites 269",
+        "ℹ pass 4171",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 300614.476791",
+        "ℹ tests 41",
+        "ℹ suites 0",
+        "ℹ pass 41",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 277.307791"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm exec npm run typecheck",
+      "head": "5aed5fc5d5326a94a2c47b4dd5a9bd528b258c0f",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:24:42.647Z",
+      "finishedAt": "2026-10-22T02:24:44.253Z",
+      "counts": []
+    },
+    {
+      "name": "typecheck-final",
+      "command": "pnpm exec npm run typecheck",
+      "head": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:38:10.990Z",
+      "finishedAt": "2026-10-22T02:38:12.608Z",
+      "counts": []
+    },
+    {
+      "name": "portal",
+      "command": "pnpm exec npm run build:user-portal",
+      "head": "5aed5fc5d5326a94a2c47b4dd5a9bd528b258c0f",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:25:34.022Z",
+      "finishedAt": "2026-10-22T02:25:35.004Z",
+      "counts": []
+    },
+    {
+      "name": "renderer",
+      "command": "pnpm exec npm run test:mcp:renderer",
+      "head": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:38:12.700Z",
+      "finishedAt": "2026-10-22T02:38:51.803Z",
+      "counts": [
+        "ℹ tests 13",
+        "ℹ suites 2",
+        "ℹ pass 13",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 37706.458791"
+      ]
+    },
+    {
+      "name": "image",
+      "command": "pnpm exec npm run test:container:hosted",
+      "head": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+      "node": "v24.20.0",
+      "status": "failed",
+      "exitStatus": 1,
+      "startedAt": "2026-10-22T02:39:16.495Z",
+      "finishedAt": "2026-10-22T02:39:18.588Z",
+      "counts": [
+        "ℹ tests 1",
+        "ℹ suites 0",
+        "ℹ pass 0",
+        "ℹ fail 1",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 335.237375"
+      ]
+    },
+    {
+      "name": "colima-start",
+      "command": "colima start",
+      "head": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:40:23.159Z",
+      "finishedAt": "2026-10-22T02:40:46.259Z",
+      "counts": []
+    },
+    {
+      "name": "image-recovery",
+      "command": "pnpm exec npm run test:container:hosted",
+      "head": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+      "node": "v24.20.0",
+      "status": "passed",
+      "exitStatus": 0,
+      "startedAt": "2026-10-22T02:41:28.766Z",
+      "finishedAt": "2026-10-22T02:51:03.199Z",
+      "counts": [
+        "ℹ tests 7",
+        "ℹ suites 0",
+        "ℹ pass 7",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 572488.996834"
+      ]
+    }
+  ],
+  "offlineHostedBuild": {
+    "dockerfile": "Dockerfile.hosted",
+    "ref": "ygs37ilaovl7f0w0ctsd7p0cx",
+    "status": "completed",
+    "platform": [
+      "linux/amd64"
+    ],
+    "completedSteps": 36,
+    "totalSteps": 36,
+    "networkNoneCommandVerified": true,
+    "runtimeNetworkNoneVerification": true,
+    "nested": [
+      {
+        "stage": "backend unit",
+        "tests": 2714,
+        "duration_ms": 277192.112786,
+        "suites": 165,
+        "pass": 2714,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      {
+        "stage": "portal unit",
+        "tests": 23,
+        "duration_ms": 1967.570063,
+        "suites": 0,
+        "pass": 23,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      {
+        "stage": "portal acceptance",
+        "tests": 18,
+        "duration_ms": 1988.706374,
+        "suites": 0,
+        "pass": 18,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      {
+        "stage": "integration",
+        "tests": 951,
+        "duration_ms": 111229.01071,
+        "suites": 59,
+        "pass": 951,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      {
+        "stage": "hosted acceptance/interface",
+        "tests": 116,
+        "duration_ms": 49619.978567,
+        "suites": 6,
+        "pass": 116,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      {
+        "stage": "renderer runtime",
+        "tests": 13,
+        "duration_ms": 70617.446314,
+        "suites": 2,
+        "pass": 13,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    ],
+    "attachments": [
+      {
+        "Digest": "sha256:61318c1eba9cd109b9b6eec2b2de4c3aa561bf8a4b32eb7e4f206b4bf776ae32",
+        "Type": "application/vnd.oci.image.index.v1+json"
+      },
+      {
+        "Digest": "sha256:64da87c1425a5badd2a6e742e7d2b78ab4671b40c701be46e7a881a3e73c6d1e",
+        "Type": "https://slsa.dev/provenance/v1"
+      },
+      {
+        "Digest": "sha256:004a94ea9e1d34e4f1cd41c51be2e3a8c2c51e2a83bf94a6bd646faf339f11d6",
+        "Platform": "linux/amd64",
+        "Type": "application/vnd.oci.image.manifest.v1+json"
+      }
+    ]
+  },
+  "cleanup": {
+    "checkedAt": "2026-10-22T02:51:19.045Z",
+    "gateLabel": "thermus.hosted-image-gate=7ebb602bce3e",
+    "gateContainers": 0,
+    "gateImages": 0,
+    "allContainers": 11,
+    "runningContainers": 6,
+    "activeBuilds": 0,
+    "profileInitiallyStopped": true,
+    "profileStartedWithSavedSettings": true,
+    "profileLeftRunning": true,
+    "reason": "Other Docker workloads are running."
+  },
+  "initialFailures": [
+    {
+      "name": "ordinary",
+      "cause": "Three logging tests lacked approved Axiom test settings; one authorized-search acceptance fixture hit a shared browser sign-in rate-limit bucket."
+    },
+    {
+      "name": "focused",
+      "cause": "The same authorized-search fixture reproduced HTTP 429; all logging tests passed with approved Axiom test settings."
+    },
+    {
+      "name": "image",
+      "cause": "The existing Colima profile was stopped. No image build started."
+    }
+  ],
+  "recovery": "Parent reviewed and committed the narrow authorized-search fixture isolation fix in 4cb6bd0a. Final ordinary and image recovery logs remain separate from initial failures.",
+  "selection": {
+    "policy": "docs/implementation/test-gate-policy.md",
+    "sourceChanges": true,
+    "portalBuildRetained": "Portal build passed on 5aed5fc5. The later commit changes only the self-hosted acceptance fixture and impact declaration; portal inputs are unchanged. The final offline image build also builds the portal.",
+    "notApplicable": [
+      {
+        "command": "npm run test:container",
+        "reason": "Changed production source is limited to the search provider and HTML search-result cleaning. No self-hosted server, commands, account, runtime, interface, or logging production source changes select this gate."
+      },
+      {
+        "command": "npm run test:hosted-live",
+        "reason": "The change does not affect hosted authentication or WorkOS organization reads or changes."
+      }
+    ],
+    "suppliedByImageGate": [
+      {
+        "command": "npm run build:hosted",
+        "reason": "Dockerfile.hosted completed RUN --network=none npm run build:hosted for the final Linux AMD64 image on 4cb6bd0a."
+      }
+    ],
+    "noExtraCheck": "No standalone npm run check or npm run test:build was run. The hosted image build runs its policy-defined nested check.",
+    "noStandaloneInterfaceSuite": "The full ordinary suite includes the offline interface proofs."
+  },
+  "finalCandidate": "d5b4a051c589b55338cad9b6b002817b99fa22e3",
+  "base": "9127545cb49b63ab9fab9d0952190d5bb2a87021",
+  "validatedTreeIdentities": [
+    {
+      "path": "src",
+      "tested": "7dcd2c2e67a0194a09346c4e54be8725c5f4176d",
+      "final": "7dcd2c2e67a0194a09346c4e54be8725c5f4176d"
+    },
+    {
+      "path": "test",
+      "tested": "09aabd8aa773cf929a2f08fab1de7e1f0eecedf1",
+      "final": "09aabd8aa773cf929a2f08fab1de7e1f0eecedf1"
+    },
+    {
+      "path": "script",
+      "tested": "d5e341638ec35745b239ef2a83576e623048d73d",
+      "final": "d5e341638ec35745b239ef2a83576e623048d73d"
+    },
+    {
+      "path": "package.json",
+      "tested": "616da9bad69e419891a710cc1ba7bd1926df5b74",
+      "final": "616da9bad69e419891a710cc1ba7bd1926df5b74"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "tested": "089ba6a12f2012ece31471e09cb95f4665aa3c8f",
+      "final": "089ba6a12f2012ece31471e09cb95f4665aa3c8f"
+    },
+    {
+      "path": "Dockerfile.hosted",
+      "tested": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "final": "fa65a52dfce7e694a6a8c00c221964d5b1168e01"
+    }
+  ],
+  "laterChange": "The only later commit adds the immutable metrics record of the current main base. All executable inputs match the validated candidate.",
+  "coverage": {
+    "command": "pnpm exec node script/code-quality/ast-metrics-process.ts --base origin/main --collect-coverage --json ast-report/process.json",
+    "candidate": "4cb6bd0a6cf0d4f0b775c6f01a020ce660a1f10e",
+    "backendUnit": 2714,
+    "portalUnit": 23,
+    "failures": 0,
+    "skipped": 0,
+    "finalProcess": "Reused verified compatible unit coverage on the final candidate."
+  },
+  "quality": {
+    "process": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "crapExitStatus": 0,
+    "habitHooksExitStatus": 1,
+    "habitHooks": "Eight findings retained with reasons in manager-review.md; snooze remains [].",
+    "tierCheckExitStatus": 0,
+    "localEligibility": "eligible",
+    "tier": "T1 Team review",
+    "humanApproval": "pending",
+    "autoMerge": false
+  },
+  "manualChecks": {
+    "captureBytes": 396040,
+    "captureSha256": "aef6be672fff0cc94f93555c1fb97bbb8793394738d7eadceda36a3e07ba4a5f",
+    "whitespace": "Three warnings are retained in the unchanged captured provider HTML to preserve its verified bytes; see manager-review.md."
+  }
+}

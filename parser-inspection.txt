@@ -1,0 +1,9 @@
+src/pipelines/providers/search-engine/search-engine-brave-http.ts: score 33.0, 56 decision paths, 7 functions
+  score  paths  lines  name
+    0.0      1      1  search-engine-brave-http\SearchEngineBraveHttp.constructor
+   45.0     21     32  search-engine-brave-http\SearchEngineBraveHttp.isNoResults
+   52.3      4     26  search-engine-brave-http\SearchEngineBraveHttp.search
+   54.2     10     19  search-engine-brave-http\SearchEngineBraveHttp.classify
+   60.9      8     12  search-engine-brave-http\SearchEngineBraveHttp.assertDepth
+   67.3      7      9  search-engine-brave-http\SearchEngineBraveHttp.isWebResult
+   74.8      5      5  search-engine-brave-http\SearchEngineBraveHttp.assertFinalUrl
