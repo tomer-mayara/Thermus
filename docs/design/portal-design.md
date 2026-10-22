@@ -80,9 +80,9 @@ portal assets and a sample personal workspace.
 ## AI agent quick guide
 
 For a user with product access, show a native radio group labelled Connect
-with above the client selector. Offer CLI and Desktop Apps. Start with CLI
+with above the client selector. Offer CLI and Desktop and Web Apps. Start with CLI
 and Claude Code. CLI also offers Codex CLI. Label its selector Your AI agent.
-Desktop Apps starts with Claude (web / desktop). It also offers Codex app,
+Desktop and Web Apps starts with Claude (web / desktop). It also offers Codex app,
 ChatGPT (web setup), Cursor, VS Code, and Other MCP client. Label its selector
 Your desktop app. Keep the last selection for each method while the page is
 open. Native radio controls support keyboard navigation and show focus.

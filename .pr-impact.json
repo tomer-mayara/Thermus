@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Fix the existing Brave HTML adapter and result projection so a direct, nonblank inline question is an organic result description. The supported DOM grammar now includes .result-content > .inline-qa-question. The existing Markdown contract still returns safe organic title links and descriptions in source order and excludes separate answer widgets. Public types, origin checks, full-page sanitation before projection, cancellation, resource limits, ownership, dependencies, container boundaries, and deployment stay the same. Equivalent parser loops preserve result validation and exact no-results structure checks. The context, container, component, runtime, and deployment views remain accurate; no registry edit or architecture decision is needed.",
+    "summary": "Rename the Connect with radio label from Desktop Apps to Desktop and Web Apps. The desktop category value, exported declarations, app choices, selection state, events, and HTTP interactions stay the same. The existing acceptance scenario checks the new label and keeps its selection and request checks. User and design documentation use the new label. The context, container, component, runtime, and deployment views remain accurate: this copy change adds no owner, dependency, external integration, boundary, or contract guarantee. No registry edit or architecture decision is needed.",
     "views": [
       "context",
       "containers",
@@ -25,18 +25,10 @@
     ],
     "evidence": [
       "architecture/components.md",
-      "src/app/fetch-tool.ts",
-      "src/pipelines/providers/search-engine/search-engine.ts",
-      "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
-      "src/pipelines/html-processing/html-to-markdown-pipeline.ts",
-      "src/pipelines/html-processing/search-results/brave-result-document.ts",
-      "docs/reference/mcp-search-tool.md",
-      "test/acceptance/mcp/search-pipeline.test.ts",
-      "test/acceptance/mcp/self-hosted-fetch-tool.test.ts",
-      "test/integration/search-pipeline/brave-markdown.test.ts",
-      "test/unit/search-engine/search-engine-brave-http.test.ts",
-      "test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.ts",
-      "test/support/fixtures/search-engine/README.md"
+      "src/interfaces/user-portal/guide-selector.ts",
+      "test/acceptance/user-portal/portal.test.ts",
+      "docs/user-portal.md",
+      "docs/design/portal-design.md"
     ]
   }
 }

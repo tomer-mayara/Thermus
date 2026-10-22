@@ -169,7 +169,7 @@ for (const [method, value, expected, guideUrl] of clientGuides) {
   });
 }
 
-test('Given a signed-in user at a custom endpoint, when they choose Desktop Apps and return to CLI, then each setup method offers its own apps without another request', async () => {
+test('Given a signed-in user at a custom endpoint, when they choose Desktop and Web Apps and return to CLI, then each setup method offers its own apps without another request', async () => {
   const mcpUrl = 'https://gateway.example/team/thermus/mcp';
   const { document, requests } = await openPortal({ session: ada, productAccess: { organizationId: 'org_custom', roles: ['user'], plan: 'free', mcpUrl } });
   const view = document.defaultView;
@@ -177,7 +177,7 @@ test('Given a signed-in user at a custom endpoint, when they choose Desktop Apps
   const methods = document.querySelector('fieldset');
   assert.ok(methods);
   assert.equal(methods.querySelector('legend')?.textContent, 'Connect with');
-  assert.deepEqual([...methods.querySelectorAll('label')].map((label) => label.textContent), ['CLI', 'Desktop Apps']);
+  assert.deepEqual([...methods.querySelectorAll('label')].map((label) => label.textContent), ['CLI', 'Desktop and Web Apps']);
   const select = document.querySelector<HTMLSelectElement>('#ai-agent');
   assert.ok(select);
   assert.deepEqual([...select.querySelectorAll('option')].map((option) => option.textContent), ['Claude Code', 'Codex CLI']);

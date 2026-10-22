@@ -78,8 +78,8 @@ not change that token or move an existing client connection.
 
 ## MCP setup guides
 
-Choose CLI or Desktop Apps above the client list. CLI starts with Claude Code
-and also offers Codex CLI. Desktop Apps starts with Claude (web / desktop)
+Choose CLI or Desktop and Web Apps above the client list. CLI starts with Claude Code
+and also offers Codex CLI. Desktop and Web Apps starts with Claude (web / desktop)
 and also offers Codex app, ChatGPT (web setup), Cursor, VS Code, and Other MCP
 client. Each method keeps its last app selection while the page is open.
 Changing a method or app makes no server request.
