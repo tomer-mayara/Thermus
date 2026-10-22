@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Rename the Connect with radio label from Desktop Apps to Desktop and Web Apps. The desktop category value, exported declarations, app choices, selection state, events, and HTTP interactions stay the same. The existing acceptance scenario checks the new label and keeps its selection and request checks. User and design documentation use the new label. The context, container, component, runtime, and deployment views remain accurate: this copy change adds no owner, dependency, external integration, boundary, or contract guarantee. No registry edit or architecture decision is needed.",
+    "summary": "Add a prospective organization-administration design and implementation-ticket plan. The document is explicitly design for review, not implementation, and authorizes no account/provider action, cutover, or deployment. This candidate changes no source, runtime configuration, dependency, policy, or active public contract. The context, container, component, runtime, and deployment views in architecture/components.md still describe the current WorkOS/Better Auth editions, hosted account and MCP paths, operator logging, and recorded deployment. Planned Supabase storage, customer export, role changes, and portal MFA are not implemented or activated by this document. The current registry therefore remains unchanged; future implementation tickets must reassess their own architecture and review tier.",
     "views": [
       "context",
       "containers",
@@ -24,11 +24,14 @@
       "deployment"
     ],
     "evidence": [
+      "docs/design/organization-admin-plan.md",
       "architecture/components.md",
-      "src/interfaces/user-portal/guide-selector.ts",
-      "test/acceptance/user-portal/portal.test.ts",
-      "docs/user-portal.md",
-      "docs/design/portal-design.md"
+      "src/app/hosted-workos-application.ts",
+      "src/accounts/organizations/organization-administration.ts",
+      "src/interfaces/mcp/protected-resource-endpoint.ts",
+      "src/interfaces/mcp/tool-completion-record.ts",
+      "Dockerfile.hosted",
+      "compose.yaml"
     ]
   }
 }
