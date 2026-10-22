@@ -6,7 +6,6 @@ import { WorkOS } from '@workos-inc/node';
 import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify, type JWTPayload } from 'jose';
 import { completeAuthKit } from './authkit-driver.ts';
 import { LiveBrowser } from './live-browser.ts';
-import { TotpAuthenticator } from './totp.ts';
 import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 import { composeWorkOSApplication } from '../../../src/app/hosted-workos-application.ts';
 import { startHttpServer } from '../../../src/runtime/http/server.ts';
@@ -33,7 +32,7 @@ function stagingSettings() {
   assert.ok(apiKey.startsWith('sk_test_'), 'This proof requires a Staging key.');
   assert.equal(clientId, 'client_01M4VDKB7C7T2GV2NWPS84HADP', 'This proof requires the designated Staging environment.');
   assert.equal(authkitIssuer, 'https://reasonable-field-33-staging.authkit.app', 'This proof requires the designated Staging issuer.');
-  return { apiKey, clientId, authkitIssuer, mfaPolicy: 'optional' as const, redirectUri: 'https://localhost:46443/callback', cookiePassword: randomBytes(32).toString('base64url') };
+  return { apiKey, clientId, authkitIssuer, redirectUri: 'https://localhost:46443/callback', cookiePassword: randomBytes(32).toString('base64url') };
 }
 
 async function exchange(issuer: string, fields: Readonly<Record<string, string>>): Promise<Tokens> {
@@ -111,8 +110,8 @@ export async function proveFirstPartyConnect() {
       code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256' }).toString();
     const page = await browser.newPage();
     await page.goto(authorization.href, { waitUntil: 'commit' });
-    const pages = await completeAuthKit(page, { user: { ...user, password, authenticator: new TotpAuthenticator() }, organizationName: organization.name,
-      authkitHost: new URL(settings.authkitIssuer).host, mfaPolicy: 'optional' });
+    const pages = await completeAuthKit(page, { user: { ...user, password }, organizationName: organization.name,
+      authkitHost: new URL(settings.authkitIssuer).host });
     const code = await Promise.race([callback.code, new Promise<never>((_resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('The real callback timed out.')), 10_000); timer.unref();
     })]);

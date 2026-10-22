@@ -1,8 +1,6 @@
-import type { HostedMfaPolicy } from './mfa-profile.ts';
 import { WorkOS } from '@workos-inc/node';
 
 export interface HostedLiveSettings {
-  readonly mfaPolicy: HostedMfaPolicy;
   readonly apiKey: string;
   readonly clientId: string;
   readonly authkitIssuer: string;

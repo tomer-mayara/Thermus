@@ -38,10 +38,10 @@ Configure the WorkOS environment for this browser-first Google OAuth slice:
   WorkOS; its Google consent screen then shows the WorkOS name.
 - Enable Dynamic Client Registration (DCR) and Client ID Metadata Documents
   (CIMD), so that Claude Code can register itself at AuthKit.
-- Set provider MFA to Optional. The default runtime setting is
-  `WORKOS_MFA_POLICY=optional`. Password and Google sign-ins give no MFA
-  evidence to the application, and administration stays refused. The slice
-  always uses unproven MFA evidence, even with a `required` runtime setting.
+- Disable provider MFA for a new Slice 1 proof. The application has no MFA
+  setting or administration gate. Password and Google sign-ins give no MFA
+  evidence to the application. WorkOS setup is an owner action; the slice
+  does not change provider authentication settings.
 - Configure `THERMUS_SLICE_ORGANIZATION_ID` for an existing organization in
   that environment. The staging launcher default is
   `org_01M4YYEQ6V2ZBM3RQEEV8CKFEA`, external ID `thermus-work-slice`, currently
@@ -76,7 +76,6 @@ each value, and an exported value comes before the value in `.env.local`.
 | `PUBLIC_BASE_URL` | `https://localhost:46443` | The slice refuses another origin or a path: the HTTPS front listens at this origin, and WorkOS Staging has its URIs. |
 | `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `WORKOS_AUTHKIT_ISSUER` | None | Required. The staging launcher gives them. |
 | `WORKOS_REDIRECT_URI` | `<PUBLIC_BASE_URL>/callback` | The registered callback. |
-| `WORKOS_MFA_POLICY` | `optional` | Valid values are `optional` and `required`. Required is an explicit contract that the provider requires MFA for password sign-in. The slice always treats MFA as unproven, regardless of this value. |
 | `WORKOS_COOKIE_PASSWORD` | A new value of `openssl rand -base64 32` for each start | At least 32 characters. A new value ends the browser sessions of the start before. |
 | `AD_RULES_FILE` | `ad-rules.txt` at the repository root | It must be a file. An empty file gives no ad rules. |
 | `LIGHTPANDA_BIN` | `.cache/lightpanda/1.0.0/lightpanda` at the repository root | The pinned Lightpanda 1.0.0 of the [Lightpanda runtime guide](../../../../docs/lightpanda-runtime.md#install-the-pinned-release). The slice stops before the start if the version is different. |
@@ -180,11 +179,11 @@ it.
 8. Stop with Ctrl+C. Remove the client entry with
    `claude mcp remove thermus-hosted`.
 
-The slice gives no MFA evidence for any sign-in method. Product access and
-MCP remain available with a current User grant. Members, invitations, billing,
-and administration writes remain refused, even for an Admin or Super Admin.
-The slice also ignores prior cookie evidence and keeps replacement cookies
-without it. It has no step-up UI and does not prove that a user completed MFA.
+The slice gives no MFA evidence for any sign-in method. Current User and Admin
+grants allow product and MCP access. Admin also opens members, invitations,
+and billing and can manage User and Admin invitations. User cannot administer.
+The slice discards prior cookie MFA evidence and keeps replacement cookies
+without it. The retired member-grant route remains unavailable.
 
 ## Slice onboarding policy
 
@@ -202,10 +201,10 @@ automatic membership. The browser signs in before the client requests Connect
 authorization. A client-first flow does not run this callback policy.
 
 For the target organization, an absent membership can be created with the
-explicit role `user`. An active membership keeps its roles; Admin-only and
-members without User are not upgraded. Pending and inactive memberships are
-not changed. Removing User or deactivating the membership therefore keeps
-access refused. A hard-deleted membership is indistinguishable from a new
+explicit role `user`. An active membership keeps its roles; Admin already
+includes product access and receives no extra User role. Pending and inactive
+memberships are not changed. Removing every product role or deactivating the
+membership therefore keeps access refused. A hard-deleted membership is indistinguishable from a new
 user and can enroll again on an eligible sign-in. Use role removal or
 deactivation when access must stay revoked.
 
@@ -219,21 +218,27 @@ membership can reconcile a lost write response without repeating the write.
 
 ## Recorded validation
 
-Validation is complete and the candidate is prepared for owner review. The
+The earlier Google slice validation is historical evidence. The
 [validation record](../../../../docs/implementation/auth-workos-mcp-url-fetch-validation.md)
-gives the final checks, retained findings, provider read-backs, and manual
-proof. Offline tests use a WorkOS fake, a renderer double, and a recording
-logger to prove application behavior.
+gives that candidate's checks, findings, provider read-backs, and manual proof.
+It does not validate the current S1-02 password-only contract. Offline tests
+use a WorkOS fake, a renderer double, and a recording logger to prove
+application behavior. The fake exchange does not prove real password sign-in,
+email verification, or password reset.
 
-The real walk passed the Google callback, selected organization, automatic
+That real walk passed the Google callback, selected organization, automatic
 User membership, separate Connect flow, authenticated HTTPS MCP fetch, Axiom
 delivery, current-role refusal, renewal, and post-expiry consent refusal. The
 corrected launcher shutdown and its Axiom delivery passed. Both complete
-hosted-live MFA profiles and all requested final local gates passed. Shared
-Staging Optional was restored and verified. The record states the resumed
+hosted-live MFA profiles and the selected local gates passed for that older
+candidate. Shared Staging Optional was restored then. The record states the resumed
 fresh-account timeline and distinguishes client refresh from the separate
 automated exact-JWT proof. Record observations without secrets. This is not
-merge approval.
+merge approval. The current live gate has one password profile with MFA
+disabled. It remains unrun until matching staging credentials and an AuthKit
+issuer are available. Live fixture users have preverified email addresses;
+fresh email verification and password reset still need separate live or manual
+proofs.
 
 ## Log lines
 

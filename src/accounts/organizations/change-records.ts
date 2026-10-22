@@ -1,8 +1,8 @@
 import type { AuthenticatedUser } from '../identity/access-context.ts';
 
-// 'unchanged': the membership already had the requested grants, so no change was necessary. 'address-in-use': the
+// 'unchanged': the same invitation is already pending, so no change was necessary. 'address-in-use': the
 // directory sent no invitation, because the address belongs to a member or has a pending invitation.
-export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'mfa-required' | 'stale' | 'not-pending' | 'address-in-use' | 'unsupported';
+export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-pending' | 'address-in-use' | 'unsupported';
 
 // A record also keeps the outcome of a change that failed: 'failed' before the directory change started, so that
 // nothing changed, and 'unknown' during the directory change, so that its effect is not known.

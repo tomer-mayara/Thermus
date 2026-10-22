@@ -49,7 +49,6 @@ interface AdministrationPaths {
 
 const REFUSAL_NOTICES: Readonly<Record<Exclude<ChangeResult, 'applied' | 'unchanged'>, NoticeName>> = {
   denied: 'changeDenied',
-  'mfa-required': 'mfaRequired',
   stale: 'changeStale',
   'not-pending': 'invitationNotPending',
   'address-in-use': 'invitationAddressInUse',
@@ -94,11 +93,11 @@ export class AdministrationRoutes {
     return route === undefined ? undefined : (request, session, context) => this.withScope(request, { session, context }, route);
   }
 
-  // The organization comes from the decided context, and the MFA evidence from the browser session.
+  // The organization and user come from the decided context.
   private async withScope(request: Request, signedIn: { session: SignedInBrowserSession; context: RequestContext }, route: ScopedRoute): Promise<Response> {
     const { session, context } = signedIn;
     if (context.organizationId === undefined) return accessDeniedPage(this.organizationsPage);
-    return route(request, { actor: { user: context.user, mfaCompleted: session.mfaCompleted }, organizationId: context.organizationId, csrfToken: session.csrfToken });
+    return route(request, { actor: { user: context.user }, organizationId: context.organizationId, csrfToken: session.csrfToken });
   }
 
   private membersPage(request: Request, scope: AdministrationScope): Promise<Response> {
@@ -137,7 +136,7 @@ export class AdministrationRoutes {
     if (request.method !== 'GET' && request.method !== 'HEAD') return noticePage('methodNotAllowed', { Allow: 'GET, HEAD' });
     const overview = await read();
     if (typeof overview !== 'string') return render(overview);
-    return overview === 'denied' ? accessDeniedPage(this.organizationsPage) : noticePage('mfaRequired');
+    return accessDeniedPage(this.organizationsPage);
   }
 
   // The origin check comes before the body is read, so that the service reads no form and gets no change from another

@@ -1,13 +1,11 @@
 import { after, before, test } from 'node:test';
-import { hostedMfaPolicy } from '../../support/hosted-live/mfa-profile.ts';
 import { LiveRun } from '../../support/hosted-live/live-run.ts';
 import type { HostedLiveSettings } from '../../support/hosted-live/settings.ts';
 import { describeAdministrationProofs } from './hosted-live/administration-proofs.ts';
 import { describeAdministrationServerCases } from './hosted-live/administration-server.ts';
-import { assertMfaProfileBeforeLiveProofs } from './hosted-live/configuration.ts';
+import { assertPasswordProfileBeforeLiveProofs } from './hosted-live/configuration.ts';
 import { describeHostedServerCases } from './hosted-live/hosted-server.ts';
 import { describeOperatorSetupProofs } from './hosted-live/operator-setup.ts';
-import { describeOptionalAdministrationServerCases } from './hosted-live/optional-administration-server.ts';
 import { describeOrganizationServerCases } from './hosted-live/organization-server.ts';
 import { describeSignupServerCases } from './hosted-live/signup-server.ts';
 
@@ -50,13 +48,8 @@ function hostedLiveSetup(environment: Environment): HostedLiveSetup {
   const apiKey = read('WORKOS_API_KEY', stagingKeyRefusal);
   const clientId = read('WORKOS_CLIENT_ID');
   const authkitIssuer = read('WORKOS_AUTHKIT_ISSUER', issuerRefusal);
-  try {
-    const settings: HostedLiveSettings = { apiKey, clientId, authkitIssuer, mfaPolicy: hostedMfaPolicy(environment.WORKOS_MFA_POLICY) };
-    return problems.length === 0 ? { settings } : { problems };
-  } catch (error) {
-    problems.push(error instanceof Error ? error.message : 'WORKOS_MFA_POLICY is refused.');
-    return { problems };
-  }
+  const settings: HostedLiveSettings = { apiKey, clientId, authkitIssuer };
+  return problems.length === 0 ? { settings } : { problems };
 }
 
 function setupError(problems: readonly string[]): Error {
@@ -83,16 +76,15 @@ if ('problems' in setup) {
   const run = new LiveRun(setup.settings);
   after(() => run.end());
   before(async (t) => {
-    t.diagnostic(`Hosted live MFA profile: ${setup.settings.mfaPolicy}.`);
-    await assertMfaProfileBeforeLiveProofs(run);
+    t.diagnostic('Hosted live password profile: provider MFA must be disabled.');
+    await assertPasswordProfileBeforeLiveProofs(run);
   });
   describeOperatorSetupProofs(run);
   describeAdministrationProofs(run);
   // The AUTH-07W cases come before the AUTH-06 cases, so that the 300-second wait of the AUTH-06 cases also lets the
   // access token of the AUTH-07W selection session expire before its expiry case. The AUTH-08W cases come between them.
   const describeExpiredSelectionCase = describeOrganizationServerCases(run);
-  if (setup.settings.mfaPolicy === 'required') describeAdministrationServerCases(run);
-  else describeOptionalAdministrationServerCases(run);
+  describeAdministrationServerCases(run);
   describeHostedServerCases(run);
   describeExpiredSelectionCase();
   describeSignupServerCases(run);

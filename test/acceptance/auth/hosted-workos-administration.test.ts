@@ -30,12 +30,11 @@ const eve = person('eve');
 const gus = person('gus');
 const pia = person('pia');
 
-// Acme: Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only
-// User, Gus only the default role, and Eve an inactive membership that had User and Admin. Globex: Bea and Pia have
-// User. Thus Acme has three active User seats: Ada, Bea, and Hal.
+// Acme: Sam, Dan, and Cal have Admin; Ada and Hal have User and Admin; Bea has User. Gus has only the default role,
+// and Eve is inactive. Globex: Bea and Pia have User. Acme has six active product members.
 const memberships: readonly FakeMembership[] = [
-  { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
-  { userId: dan.id, organizationId: acme, roles: ['super-admin', 'admin'] },
+  { userId: sam.id, organizationId: acme, roles: ['admin'] },
+  { userId: dan.id, organizationId: acme, roles: ['admin'] },
   { userId: cal.id, organizationId: acme, roles: ['admin'] },
   { userId: ada.id, organizationId: acme, roles: ['user', 'admin'] },
   { userId: bea.id, organizationId: acme, roles: ['user'] },
@@ -54,7 +53,6 @@ interface WorkOSChange {
 
 const openSite = (t: TestContext) => serveWorkOSSite(t, {
   organizations: Object.keys(organizationNames),
-  mfaPolicy: 'required',
   setUp: (world) => {
     world.memberships = memberships;
     world.organizationNames = organizationNames;
@@ -90,7 +88,7 @@ async function formTokenOf(browser: HostedBrowser): Promise<string> {
 }
 
 function seatsIn(body: string): number {
-  const seats = /Active User seats: (\d+)/.exec(body)?.[1];
+  const seats = /Active product members: (\d+)/.exec(body)?.[1];
   assert.ok(seats !== undefined, `The members page shows no seat count: ${body}`);
   return Number(seats);
 }
@@ -144,8 +142,8 @@ function memberReadsIn(site: WorkOSSite): string[] {
     .filter((path) => path.startsWith('/user_management/organization_memberships?') && !path.includes('user_id='));
 }
 
-describe('Hosted WorkOS edition: independent grants and revocation at the next request', () => {
-  test('Given Ada and Hal with User and Admin, each with a browser session and an MCP token for Acme, when the provider removes Admin from Ada and User from Hal, then every other grant stays: the next Admin request of Ada and the next MCP request of Hal are refused, and Ada keeps MCP access and Hal its Admin pages', async (t) => {
+describe('Hosted WorkOS edition: current grants and revocation at the next request', () => {
+  test('Given Ada and Hal with User and Admin, each with a browser session and an MCP token for Acme, when the provider removes Admin from Ada and User from Hal, then Ada loses administration but keeps product access, and Hal keeps product and administration access with Admin alone', async (t) => {
     const site = await openSite(t);
     const adaBrowser = await signIn(site, ada);
     const halBrowser = await signIn(site, hal);
@@ -160,7 +158,7 @@ describe('Hosted WorkOS edition: independent grants and revocation at the next r
     assert.deepEqual(site.world.rolesOf(hal, acme), ['admin']);
     assert.equal((await adaBrowser.open('members')).status, 403);
     assert.equal(await mcpStatusWith(site, adaToken), 200);
-    assert.equal(await mcpStatusWith(site, halToken), 403);
+    assert.equal(await mcpStatusWith(site, halToken), 200);
     assert.equal((await halBrowser.open('members')).status, 200);
   });
 
@@ -179,7 +177,7 @@ describe('Hosted WorkOS edition: independent grants and revocation at the next r
     assert.deepEqual(site.world.rolesOf(bea, acme), ['member']);
     assert.equal(site.world.statusOf(bea, acme), 'active');
     assert.match(members.body, /bea@example\.com: active\. Roles: none\./);
-    assert.equal(seatsIn(members.body), 2);
+    assert.equal(seatsIn(members.body), 5);
     assert.equal((await beaBrowser.open('portal/access')).status, 403);
     assert.equal(await mcpStatusWith(site, acmeToken), 403);
     assert.equal(await mcpStatusWith(site, globexToken), 200);
@@ -189,11 +187,11 @@ describe('Hosted WorkOS edition: independent grants and revocation at the next r
 });
 
 describe('Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets', () => {
-  test('Given a session whose sign-in gave no MFA evidence, when Dan opens the members and invitations pages and sends an invitation with the form token of the session, then each gets the 403 MFA notice, and WorkOS gets no member, invitation, or role read or write', async (t) => {
+  test('Given Dan signed in as Admin and then changed to User in WorkOS, when Dan opens administration pages or sends an invitation with the existing form token, then current membership checks deny each request before reading members or invitations or making changes', async (t) => {
     const site = await openSite(t);
-    site.world.authenticationMethod = 'GoogleOAuth';
     const browser = await signIn(site, dan);
     const csrfToken = await formTokenOf(browser);
+    site.world.setRoles(dan, acme, ['user']);
     site.world.fake.takeRequests();
 
     const answers = [
@@ -204,13 +202,13 @@ describe('Hosted WorkOS edition: changes on stale, inactive, foreign, and forged
     const administrationRequests = site.world.fake.takeRequests()
       .filter(({ path }) => /role_assignments|\/invitations|\/users\/|organization_memberships\/om_/.test(path) || (path.includes('organization_id=') && !path.includes('user_id=')));
 
-    for (const answer of answers) assertNotice(answer, 403, /Administration needs a sign-in that completed multi-factor authentication\./);
+    for (const answer of answers) assert.equal(answer.status, 403, answer.body);
     assert.deepEqual(administrationRequests, []);
   });
 });
 
 describe('Hosted WorkOS edition: organization invitations', () => {
-  test('Given Dan with Admin and Super Admin, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link', async (t) => {
+  test('Given Dan with Admin alone, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, dan);
     const first = await pageOf(browser, 'invitations');
@@ -230,7 +228,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const after = await pageOf(browser, 'invitations');
     const invitation = site.world.invitations.find(({ email }) => email === 'new@example.com');
     assert.ok(invitation, 'WorkOS has no invitation for new@example.com.');
-    const { token, acceptInvitationUrl } = await site.world.connection('required').workos.userManagement.getInvitation(invitation.id);
+    const { token, acceptInvitationUrl } = await site.world.connection().workos.userManagement.getInvitation(invitation.id);
 
     assert.deepEqual(labelsOf(first.forms), ['Invite as User', 'Invite as Admin']);
     assert.match(first.body, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);
@@ -264,7 +262,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     }
   });
 
-  test('Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, the invitations page shows the acceptance, and the User seats count Eve', async (t) => {
+  test('Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, the invitations page shows the acceptance, and the active product members count Eve', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, hal);
     const form = formLabelled((await pageOf(browser, 'invitations')).forms, 'Invite as User');
@@ -278,16 +276,16 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const invitations = await pageOf(browser, 'invitations');
 
     assert.match(pendingMembers.body, /eve@example\.com: pending\. Roles: User\./);
-    assert.equal(seatsIn(pendingMembers.body), 3);
+    assert.equal(seatsIn(pendingMembers.body), 6);
     assert.deepEqual(site.world.rolesOf(eve, acme), ['user']);
     assert.equal(site.world.statusOf(eve, acme), 'active');
     assert.match(members.body, /eve@example\.com: active\. Roles: User\./);
-    assert.equal(seatsIn(members.body), 4);
+    assert.equal(seatsIn(members.body), 7);
     assert.match(invitations.body, /eve@example\.com: User invitation, accepted\./);
     assert.equal(await mcpStatus(site, eve, acme), 200);
   });
 
-  test('Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers only User invitations and shows the expired User invitation and the pending Admin invitation, and both posts are refused without a WorkOS change', async (t) => {
+  test('Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers both roles and changes for the pending Admin invitation, the new Admin invitation succeeds, and the expired resend is refused', async (t) => {
     const site = await openSite(t);
     site.world.invitations = [
       { id: 'invitation_01OLD', email: 'old@example.com', organizationId: acme, roleSlug: 'user', state: 'pending', expiresAt: '2099-01-01T00:00:00.000Z' },
@@ -302,17 +300,17 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const adminInvite = await browser.submit({ ...userForm, fields: { ...userForm.fields, role: 'admin', email: 'x@example.com' } });
     const resend = await browser.post('invitations/resend', { csrf_token: userForm.fields.csrf_token ?? '', organization_id: acme, invitation_id: 'invitation_01OLD' });
 
-    assert.deepEqual(labelsOf(page.forms), ['Invite as User']);
+    assert.deepEqual(labelsOf(page.forms), ['Invite as User', 'Invite as Admin', 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
     assert.match(page.body, /old@example\.com: User invitation, expired\./);
     assert.match(page.body, /boss@example\.com: Admin invitation, pending\./);
-    assertNotice(adminInvite, 403, /Your account cannot make this change in the selected organization\. Nothing changed\./);
+    assertRedirectTo(adminInvite, 'invitations');
     assertNotice(resend, 409, /The invitation is no longer pending/);
-    assert.deepEqual(changesIn(site), []);
+    assert.deepEqual(changesIn(site), [{ method: 'POST', path: '/user_management/invitations', body: { email: 'x@example.com', organization_id: acme, role_slug: 'admin' } }]);
   });
 });
 
-describe('Hosted WorkOS edition: the User seat summary from every WorkOS page', () => {
-  test('Given WorkOS pages of two memberships that repeat one membership on the next page, when Dan opens the members page, then each active User membership counts once — Ada, Bea, and Hal —, and Admin-only, Super-Admin-only, default-role, inactive, and pending memberships count zero', async (t) => {
+describe('Hosted WorkOS edition: the active product member count from every WorkOS page', () => {
+  test('Given WorkOS pages of two memberships that repeat one membership on the next page, when Dan opens the members page, then each active product membership counts once, including Admin-only and combined User/Admin memberships, and default-role, inactive, and pending memberships count zero', async (t) => {
     const site = await openSite(t);
     site.world.membershipPageSize = 2;
     site.world.membershipPageOverlap = 1;
@@ -325,7 +323,7 @@ describe('Hosted WorkOS edition: the User seat summary from every WorkOS page', 
     const page = await pageOf(browser, 'members');
     const pageReads = memberReadsIn(site);
 
-    assert.equal(seatsIn(page.body), 3);
+    assert.equal(seatsIn(page.body), 6);
     assert.ok(pageReads.length >= 5, `WorkOS gave the members on ${pageReads.length} pages.`);
     for (const path of pageReads) assert.match(path, new RegExp(`organization_id=${acme}.*statuses=active,inactive,pending|statuses=active,inactive,pending.*organization_id=${acme}`));
     assert.equal(page.body.split('ada@example.com: active').length, 2, 'A repeated membership is listed more than once.');
@@ -343,7 +341,7 @@ describe('Hosted WorkOS edition: the User seat summary from every WorkOS page', 
     for (const answer of [page]) {
       assert.equal(answer.status, 500, answer.body);
       assert.match(answer.body, /The request failed\. Try again later\./);
-      assert.doesNotMatch(answer.body, /Active User seats/);
+      assert.doesNotMatch(answer.body, /Active product members/);
     }
     assert.ok(site.log.lines.some((line) => line.startsWith('ERROR An account request failed unexpectedly for /team/members:')), site.log.lines.join('\n'));
     assert.deepEqual(site.world.rolesOf(gus, acme), ['member']);

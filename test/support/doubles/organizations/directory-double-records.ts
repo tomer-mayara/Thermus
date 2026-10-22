@@ -1,6 +1,6 @@
 import type { RoleGrant } from '../../../../src/accounts/identity/access-context.ts';
 import type { InvitationState, MembershipStatus, OrganizationMember, Page } from '../../../../src/accounts/organizations/organization-directory.ts';
-import { memberRole } from '../../fixtures/hosted-roles.ts';
+import { adminGrant, memberRole, userGrant } from '../../fixtures/hosted-roles.ts';
 
 export interface MemberSeed {
   readonly subject: string;
@@ -46,8 +46,8 @@ export interface InvitationRecord {
 export type PageLayout<T> = (records: readonly T[]) => ReadonlyArray<readonly T[] | Error>;
 
 const defaultRoleGrants: ReadonlyMap<string, RoleGrant> = new Map([
-  ['user', { role: 'user', permissions: ['product:access'] }],
-  ['admin', { role: 'admin', permissions: ['user-grants:manage'] }],
+  ['user', userGrant],
+  ['admin', adminGrant],
 ]);
 
 function emailOf(subject: string): string {

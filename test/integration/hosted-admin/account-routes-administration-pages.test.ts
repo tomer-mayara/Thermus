@@ -11,7 +11,7 @@ function headersWithoutCookies(response: Response): Record<string, string> {
 
 describe('HostedAccountRoutes member and invitation pages', () => {
   for (const method of ['GET', 'HEAD']) {
-    test(`Given allowed access and a member overview, when a ${method} request opens the members page with forged organization values, then the service gets the user of the decided context with the MFA evidence of the session and the organization of the context, and the page shows the seat count without grant controls`, async () => {
+    test(`Given allowed access and a member overview, when a ${method} request opens the members page with forged organization values, then the service gets the user and organization of the decided context, and the page shows the seat count without grant controls`, async () => {
       const { routes, organizations, resolver } = serveAdministration({ members: acmeMembers });
 
       const response = await routes.handle(accountRequest('/members?organizationId=org-b', 'session=ann', { method, headers: { 'X-Organization-Id': 'org-b' } }));
@@ -20,14 +20,14 @@ describe('HostedAccountRoutes member and invitation pages', () => {
       assert.equal(response.status, 200);
       assert.deepEqual(headersWithoutCookies(response), formPageHeaders);
       assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
-      assert.match(body, /<p>Active User seats: 2<\/p>/);
+      assert.match(body, /<p>Active product members: 1<\/p>/);
       assert.match(body, /<p>ann@example\.com: active\. Roles: User, Admin\.<\/p>/);
       assert.match(body, /<p>dora@example\.com: active\. Roles: none\.<\/p>/);
       assert.match(body, /<p>ivy@example\.com: inactive\. Roles: User\.<\/p>/);
       assert.match(body, /<a href="\/invitations">Invitations<\/a>/);
       assert.deepEqual(formsIn(body), []);
       assert.doesNotMatch(body, /<script|<link|<img|<style/i);
-      assert.deepEqual(organizations.administrationCalls, [{ operation: 'memberOverview', actor: { user: ann, mfaCompleted: true }, request: 'org-a' }]);
+      assert.deepEqual(organizations.administrationCalls, [{ operation: 'memberOverview', actor: { user: ann }, request: 'org-a' }]);
       assert.deepEqual(resolver.calls, [ann]);
     });
   }
@@ -43,8 +43,11 @@ describe('HostedAccountRoutes member and invitation pages', () => {
       assert.deepEqual(headersWithoutCookies(response), formPageHeaders);
       assert.deepEqual(formsIn(body), [
         { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user' }, label: 'Invite as User' },
+        { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'admin' }, label: 'Invite as Admin' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Resend the invitation to new@example.com' },
         { action: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Revoke the invitation to new@example.com' },
+        { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-2' }, label: 'Resend the invitation to boss@example.com' },
+        { action: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-2' }, label: 'Revoke the invitation to boss@example.com' },
       ]);
       assert.match(body, /<label>Email address <input type="email" name="email" required maxlength="254"><\/label>/);
       assert.match(body, /<p>new@example\.com: User invitation, pending\.<\/p>/);
@@ -108,14 +111,16 @@ describe('HostedAccountRoutes member and invitation pages', () => {
     assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite as User', 'Invite as Admin']);
   });
 
-  test('Given a session whose sign-in did not complete MFA, when the pages open and the service requires MFA, then the service gets that evidence and each page gets the MFA notice with the session cookies and no form', async () => {
-    const { routes, organizations } = serveAdministration({ members: 'mfa-required', invitations: 'mfa-required' }, { session: { mfaCompleted: false } });
+  test('Given a session without MFA and allowed current access, when administration pages open, then each renders normally and the service gets only the decided actor', async () => {
+    const { routes, organizations } = serveAdministration({ members: acmeMembers, invitations: acmeInvitations }, { session: { mfaCompleted: false } });
 
     for (const path of ['/members', '/invitations']) {
-      await assertPage(await routes.handle(accountRequest(path, 'session=ann')), { status: 403, text: /Administration needs a sign-in that completed multi-factor authentication\./, cookies: sessionCookies });
+      const response = await routes.handle(accountRequest(path, 'session=ann'));
+      assert.equal(response.status, 200);
+      assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
     }
 
-    assert.deepEqual(organizations.administrationCalls.map(({ actor }) => actor.mfaCompleted), [false, false]);
+    assert.deepEqual(organizations.administrationCalls.map(({ actor }) => actor), [{ user: ann }, { user: ann }]);
   });
 
   test('Given a service that denies the actor, when the pages open, then each gets 403 with a link to the organization page and the session cookies', async () => {

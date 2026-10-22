@@ -43,16 +43,15 @@ if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
 }
 
 // Production also composes the hosted edition with the fetch tool, in openWorkOSApplication. The slice has its own
-// composition root for three parts that only the slice has. The fetch operation spy logs the full URL and the
-// Markdown of each fetch. The onboarding policy is the fixed verified-Google policy of the slice organization. With
-// mfaEvidence 'unproven', the slice treats MFA as unproven, also when WORKOS_MFA_POLICY is required.
+// composition root for two parts that only the slice has. The fetch operation spy logs the full URL and the
+// Markdown of each fetch. The onboarding policy is the fixed verified-Google policy of the slice organization.
 export async function composeWorkSliceApplication(parts: WorkSliceParts, logger: ApplicationLogger): Promise<Application> {
   const { config, connection, environment } = parts;
   const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
   if (!organizationId) throw new Error('Set THERMUS_SLICE_ORGANIZATION_ID to the WorkOS organization of this slice');
   const operations = createToolOperations(environment, logger);
   const operation = fetchOperationSpy(operations.fetch, logger);
-  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers({ ...operations, fetch: operation }, logger), onboarding: { organizationId }, mfaEvidence: 'unproven' });
+  return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers({ ...operations, fetch: operation }, logger), onboarding: { organizationId } });
 }
 
 async function run(consoleLog: ConsoleLogger): Promise<number> {
@@ -76,8 +75,8 @@ async function serveWorkSlice(): Promise<void> {
   await using owned = new AsyncDisposableStack();
   const { logger } = owned.adopt(openAxiomLogging(axiomTestSettings(), scopeName), (opened) => opened.close());
   const connection = await openWorkOSConnection(config, logger, process.env);
-  const { apiKey, clientId, authkitIssuer, mfaPolicy } = connection.settings;
-  owned.adopt(await LocalHttpsSite.start({ apiKey, clientId, authkitIssuer, mfaPolicy }, {
+  const { apiKey, clientId, authkitIssuer } = connection.settings;
+  owned.adopt(await LocalHttpsSite.start({ apiKey, clientId, authkitIssuer }, {
     certificate: { key: tls.key, cert: tls.cert },
     logger,
     application: (applicationLogger) => composeWorkSliceApplication({ config, connection, environment: process.env }, applicationLogger),

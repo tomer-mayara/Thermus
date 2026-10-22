@@ -9,7 +9,7 @@ import { contextAt, destinationPaths, statusesOf } from '../../support/dsl/hoste
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { member, members, userOf } from '../../support/fixtures/hosted-members.ts';
 import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
-import { superAdminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
+import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import { openOrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 import type { ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 
@@ -103,7 +103,7 @@ describe('Hosted organization onboarding and selection with the real routes and 
     assert.deepEqual([ottoContext.organizationId, miaContext.organizationId], ['org-d', 'org-a']);
   });
 
-  test('Given Super Admin alone and User alone in the same organization, when each selects it and requests each destination and the MCP tool, then each destination and the tool check their own permission: Super Admin reaches only Admin-grant administration and billing, and User reaches only the product and the tool', async (t) => {
+  test('Given Admin alone and User alone in the same organization, when each selects it and requests each destination and the MCP tool, then Admin reaches product, both administration destinations, billing, and MCP, while User reaches only product and MCP', async (t) => {
     const { browserOf, callTool, tools } = open(t);
 
     const outcomes: Record<string, unknown> = {};
@@ -115,10 +115,10 @@ describe('Hosted organization onboarding and selection with the real routes and 
     }
 
     assert.deepEqual(outcomes, {
-      'user-sam': { portal: 403, 'administration/users': 403, 'administration/admins': 200, billing: 200, tool: 'refused' },
+      'user-sam': { portal: 200, 'administration/users': 200, 'administration/admins': 200, billing: 200, tool: 'done' },
       'user-una': { portal: 200, 'administration/users': 403, 'administration/admins': 403, billing: 403, tool: 'done' },
     });
-    assert.deepEqual(tools.contexts.map(({ user, grants }) => [user.subject, grants]), [['user-sam', [superAdminGrant]], ['user-una', [userGrant]]]);
+    assert.deepEqual(tools.contexts.map(({ user, grants }) => [user.subject, grants]), [['user-sam', [adminGrant]], ['user-una', [userGrant]]]);
   });
 
   test('Given an outage of the organization reads after the provider refreshed the session, when the organization page and a selection are requested, then each gets the failure page with the refreshed session cookie, the operator log names the path and the cause, no session switches, and the browser keeps its session', async (t) => {

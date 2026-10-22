@@ -45,12 +45,11 @@ const eve = person('eve');
 const gus = person('gus');
 const pia = person('pia');
 
-// Acme: Sam has only Super Admin, Dan Super Admin and Admin, Cal only Admin, Ada and Hal User and Admin, Bea only
-// User, Eve an inactive membership that had User and Admin, and Gus only the default role. Globex: Bea and Pia have
-// User. Thus Acme has three active User seats: Ada, Bea, and Hal.
+// Acme has six active product members: Sam, Dan, Cal, Ada, Bea, and Hal.
+// Eve is inactive; Gus has the default role. Globex has Bea and Pia as Users.
 const memberships: readonly FakeMembership[] = [
-  { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
-  { userId: dan.id, organizationId: acme, roles: ['super-admin', 'admin'] },
+  { userId: sam.id, organizationId: acme, roles: ['admin'] },
+  { userId: dan.id, organizationId: acme, roles: ['admin'] },
   { userId: cal.id, organizationId: acme, roles: ['admin'] },
   { userId: ada.id, organizationId: acme, roles: ['user', 'admin'] },
   { userId: bea.id, organizationId: acme, roles: ['user'] },
@@ -62,7 +61,7 @@ const memberships: readonly FakeMembership[] = [
 ];
 
 function actorOf(user: FakeUser): Actor {
-  return { user: { authority, subject: user.id, selectedOrganizationId: acme }, mfaCompleted: true };
+  return { user: { authority, subject: user.id, selectedOrganizationId: acme } };
 }
 
 const bySam = actorOf(sam);
@@ -177,15 +176,14 @@ describe('Forged and foreign targets and actors without authority', () => {
     assert.deepEqual(site.records.map(({ outcome }) => outcome), outcomes);
   });
 
-  test('Given Dan without a completed MFA step and an actor of another authority with the subject of Dan, when each asks for each administration operation in Acme, then the first gets mfa-required and the second denied, each change has its record, and WorkOS gets no request at all: no member, invitation, or role read, and no read of that subject', async (t) => {
+  test('Given an actor of another authority with the subject of an Admin, when it asks for administration in Acme, then each operation is denied with change records before any WorkOS read', async (t) => {
     const site = await openSite(t);
     const acmeInvitation = pendingInvitation('invitation_01ACME', acme);
     site.world.invitations = [acmeInvitation];
     const send = { organizationId: acme, email: 'newcomer@example.com', role: 'user' };
     const invitation = { organizationId: acme, invitationId: acmeInvitation.id };
     const refusals = [
-      { actor: { ...byDan, mfaCompleted: false }, refusal: 'mfa-required' as const },
-      { actor: { user: { authority: 'local:installation-1', subject: dan.id, selectedOrganizationId: acme }, mfaCompleted: true }, refusal: 'denied' as const },
+      { actor: { user: { authority: 'local:installation-1', subject: dan.id, selectedOrganizationId: acme } }, refusal: 'denied' as const },
     ];
     site.world.fake.takeRequests();
 
@@ -228,18 +226,18 @@ describe('Inactive memberships and invitations with the real WorkOS directory', 
     assert.equal(outcome, 'applied');
     assert.deepEqual([pending?.status, pending?.grants.map(({ role }) => role)], ['pending', ['admin']]);
     assert.deepEqual([active?.status, active?.grants.map(({ role }) => role)], ['active', ['admin']]);
-    assert.deepEqual(access, { roles: ['admin'], permissions: ['user-grants:manage'] });
+    assert.deepEqual(access, { roles: ['admin'], permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] });
     assert.deepEqual(invitations.invitations, [{ invitationId: invitation.id, email: eve.email, role: 'admin', state: 'accepted', changes: [] }]);
     assert.deepEqual(changesIn(site), [invitationSend(eve.email, 'admin')]);
     assert.deepEqual(site.records, [sendRecord(byDan, invite, 'applied')]);
   });
 
-  test('Given Cal with only Admin and Sam with only Super Admin, when each sends invitations, then Cal invites only User and Sam only Admin, the Admin invitation gives no User, a repeated send of the same address and role in another letter case sends nothing, and the WorkOS refusals of an invited address and of an active member give address-in-use', async (t) => {
+  test('Given Cal and Sam with Admin alone, when each sends invitations, then both manage either invitation role, duplicates change nothing, and invited addresses and active members give address-in-use', async (t) => {
     const site = await openSite(t);
     const invite = (email: string, role: string): InvitationSendRequest => ({ organizationId: acme, email, role });
     const sends: (readonly [Actor, InvitationSendRequest])[] = [
-      [byCal, invite('lee@example.com', 'admin')],
-      [bySam, invite('lee@example.com', 'user')],
+      [byCal, invite('lee@example.com', 'owner')],
+      [bySam, invite('lee@example.com', 'super-admin')],
       [bySam, invite('lee@example.com', 'admin')],
       [bySam, invite('LEE@Example.COM', 'admin')],
       [byCal, invite('lee@example.com', 'user')],
@@ -265,8 +263,8 @@ describe('Inactive memberships and invitations with the real WorkOS directory', 
       identityPolicy,
       invitations: invitations.map(({ email, role, state, changes }) => `${email}: ${role} ${state}, ${changes.join(' ') || 'no change'}`),
     })), [
-      { invitableRoles: ['user'], identityPolicy: 'provider-rules', invitations: ['lee@example.com: admin pending, no change', 'kim@example.com: user pending, resend revoke'] },
-      { invitableRoles: ['admin'], identityPolicy: 'provider-rules', invitations: ['lee@example.com: admin pending, resend revoke', 'kim@example.com: user pending, no change'] },
+      { invitableRoles: ['user', 'admin'], identityPolicy: 'provider-rules', invitations: ['lee@example.com: admin pending, resend revoke', 'kim@example.com: user pending, resend revoke'] },
+      { invitableRoles: ['user', 'admin'], identityPolicy: 'provider-rules', invitations: ['lee@example.com: admin pending, resend revoke', 'kim@example.com: user pending, resend revoke'] },
     ]);
     assert.deepEqual(site.records, sends.map(([actor, request], index) => sendRecord(actor, request, outcomes[index])));
   });
@@ -316,7 +314,7 @@ describe('Inactive memberships and invitations with the real WorkOS directory', 
 });
 
 describe('Member pages and WorkOS outages', () => {
-  test('Given WorkOS member pages of two that repeat one membership on the next page, when Dan reads the member overview, then each membership of Acme shows once with its status and application roles, the seats count each active User membership once, and Admin-only, Super-Admin-only, default-role, pending, and inactive memberships count zero', async (t) => {
+  test('Given WorkOS member pages of two that repeat one membership on the next page, when Dan reads the member overview, then each membership of Acme shows once with its status and application roles, the count includes each active product member once, including Admin alone, while default-role, pending, and inactive memberships count zero', async (t) => {
     const site = await openSite(t);
     site.world.membershipPageSize = 2;
     site.world.membershipPageOverlap = 1;
@@ -328,8 +326,8 @@ describe('Member pages and WorkOS outages', () => {
     const pageReads = memberPageReads(site);
 
     assert.deepEqual(overview.members.map(({ email, status, roles }) => `${email}: ${status}, ${roles.join(' ') || 'no role'}`), [
-      'sam@example.com: active, super-admin',
-      'dan@example.com: active, super-admin admin',
+      'sam@example.com: active, admin',
+      'dan@example.com: active, admin',
       'cal@example.com: active, admin',
       'ada@example.com: active, user admin',
       'bea@example.com: active, user',
@@ -338,7 +336,7 @@ describe('Member pages and WorkOS outages', () => {
       'gus@example.com: active, no role',
       'newcomer@example.com: pending, user',
     ]);
-    assert.equal(overview.activeUserSeats, 3);
+    assert.equal(overview.activeUserSeats, 6);
     assert.ok(pageReads.length >= 5, `WorkOS gave the members on ${pageReads.length} pages.`);
     for (const path of pageReads) {
       assert.match(path, new RegExp(`organization_id=${acme}&`));

@@ -1,6 +1,6 @@
 import type { AuthenticatedUser, RoleGrant } from '../../../src/accounts/identity/access-context.ts';
 import type { MembershipRecord } from '../doubles/organizations/membership-directory-double.ts';
-import { adminGrant, memberRole, superAdminGrant, userGrant } from './hosted-roles.ts';
+import { adminGrant, memberRole, userGrant } from './hosted-roles.ts';
 
 // The users and the memberships of the offline hosted organization and administration tests.
 
@@ -22,16 +22,16 @@ export const members: readonly MembershipRecord[] = [
   member('user-mia', 'org-a', [userGrant]),
   member('user-mia', 'org-b', [adminGrant]),
   { ...member('user-mia', 'org-c', [userGrant, adminGrant]), active: false },
-  member('user-otto', 'org-d', [userGrant, adminGrant, superAdminGrant]),
-  member('user-sam', 'org-a', [superAdminGrant]),
+  member('user-otto', 'org-d', [userGrant, adminGrant]),
+  member('user-sam', 'org-a', [adminGrant]),
   member('user-una', 'org-a', [userGrant]),
 ];
 
-// Acme (org-a) has 4 active memberships with User: otto, cy, fay, and una. The User grants of ivy, which is inactive,
-// and of pia, which is pending, do not count. Globex (org-b) has 3: cy, una, and ben.
+// Acme (org-a) has 6 active product members: sam, otto, cy, fay, eve, and una. Inactive ivy and pending pia do not
+// count. Globex (org-b) has 3: cy, una, and ben.
 export const administrationMembers: readonly MembershipRecord[] = [
-  member('user-sam', 'org-a', [superAdminGrant]),
-  member('user-otto', 'org-a', [userGrant, adminGrant, superAdminGrant]),
+  member('user-sam', 'org-a', [adminGrant]),
+  member('user-otto', 'org-a', [userGrant, adminGrant]),
   member('user-cy', 'org-a', [userGrant, adminGrant]),
   member('user-cy', 'org-b', [userGrant]),
   member('user-fay', 'org-a', [userGrant, adminGrant]),

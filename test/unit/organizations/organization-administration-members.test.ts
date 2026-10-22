@@ -9,16 +9,30 @@ function overviewOf(overview: MemberOverview | string): MemberOverview {
   return overview as MemberOverview;
 }
 
-describe('OrganizationAdministration members and the User seat summary', () => {
-  test('Given members on several pages, when an Admin asks for the overview, then it reads each page with explicit statuses, lists each member of the organization with its application roles, and counts each active membership with User once', async () => {
+describe('OrganizationAdministration members and the product member count', () => {
+  test('Given an Admin actor with no MFA evidence, when the actor reads members and invites either role, then current permission reads authorize each operation', async () => {
+    const { administration, directory } = administrationWith([
+      { subject: 'user-admin', organizationId: 'org-a', grants: [{ role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
+    ]);
+    const actor = { user: { authority: 'hosted-provider-double', subject: 'user-admin', selectedOrganizationId: 'org-a' } };
+
+    const overview = overviewOf(await administration.memberOverview(actor, 'org-a'));
+    assert.equal(overview.activeUserSeats, 1);
+    for (const role of ['user', 'admin']) {
+      assert.equal(await administration.sendInvitation(actor, { organizationId: 'org-a', email: `${role}@example.com`, role }), 'applied');
+    }
+    assert.deepEqual(directory.membershipReads, [actor.user, actor.user, actor.user]);
+  });
+
+  test('Given members on several pages, when an Admin asks for the overview, then it reads each page with explicit statuses, lists each member of the organization with its application roles, and counts each active product membership once', async () => {
     const { directory, administration } = administrationWith();
 
     const overview = overviewOf(await administration.memberOverview(actorOf('user-eve'), 'org-a'));
 
-    assert.equal(overview.activeUserSeats, 3);
+    assert.equal(overview.activeUserSeats, 5);
     assert.deepEqual(overview.members.map(({ email, status, roles }) => `${email} ${status} ${roles.join('+') || '-'}`), [
-      'sam@example.com active super-admin',
-      'otto@example.com active user+admin+super-admin',
+      'sam@example.com active admin',
+      'otto@example.com active user+admin',
       'cy@example.com active user+admin',
       'eve@example.com active admin',
       'una@example.com active user',
@@ -44,10 +58,10 @@ describe('OrganizationAdministration members and the User seat summary', () => {
     assert.deepEqual(overview.members.map(({ email }) => email).filter((email) => ['otto@example.com', 'cy@example.com'].includes(email)), ['otto@example.com', 'cy@example.com']);
     assert.equal(overview.members.length, 8);
     assert.equal(overview.members[1]?.status, 'inactive');
-    assert.equal(overview.activeUserSeats, 2);
+    assert.equal(overview.activeUserSeats, 4);
   });
 
-  test('Given only members with Admin, Super Admin, or the default role, and members with User that are inactive or pending, when the overview is read, then no seat is counted', async () => {
+  test('Given memberships with only management permissions, a retired role, or the default role, and inactive or pending product members, when the overview is read, then no product member is counted', async () => {
     const { administration } = administrationWith([
       { subject: 'user-sam', organizationId: 'org-a', grants: [superAdminGrant] },
       { subject: 'user-eve', organizationId: 'org-a', grants: [{ role: 'admin', permissions: ['user-grants:manage'] }] },
@@ -104,14 +118,13 @@ describe('OrganizationAdministration members and the User seat summary', () => {
 
     const overview = overviewOf(await administration.memberOverview(actorOf('user-eve'), 'org-a'));
 
-    assert.deepEqual([overview.members.length, overview.activeUserSeats], [8, 3]);
+    assert.deepEqual([overview.members.length, overview.activeUserSeats], [8, 5]);
   });
 
   for (const { label, actor, organizationId, refusal } of [
-    { label: 'a User without Admin or Super Admin', actor: actorOf('user-una'), organizationId: 'org-a', refusal: 'denied' },
+    { label: 'a User without Admin', actor: actorOf('user-una'), organizationId: 'org-a', refusal: 'denied' },
     { label: 'an Admin of another organization', actor: actorOf('user-ben'), organizationId: 'org-a', refusal: 'denied' },
     { label: 'an Admin with an inactive membership', actor: actorOf('user-ivy'), organizationId: 'org-a', refusal: 'denied' },
-    { label: 'an Admin whose sign-in did not complete MFA', actor: actorOf('user-eve', false), organizationId: 'org-a', refusal: 'mfa-required' },
   ]) {
     test(`Given ${label}, when it asks for the overview, then it is refused as ${refusal}, and no member page is read`, async () => {
       const { directory, records, administration } = administrationWith();

@@ -2,7 +2,6 @@ import { randomBytes } from 'node:crypto';
 import type { WorkOS } from '@workos-inc/node';
 import { fixtureEmailPrefix, fixtureNamePrefix, type FixtureRegistry } from './fixture-registry.ts';
 import { connectRedirectUri } from './settings.ts';
-import { TotpAuthenticator } from './totp.ts';
 
 export interface LiveOrganization {
   readonly id: string;
@@ -16,7 +15,6 @@ export interface LiveUser {
   readonly id: string;
   readonly email: string;
   readonly password: string;
-  readonly authenticator: TotpAuthenticator;
 }
 
 interface LiveApplication {
@@ -79,7 +77,7 @@ export class FixtureFactory {
     const password = `Tl-${randomBytes(18).toString('base64url')}-9a`;
     const { id } = await this.#workos.userManagement.createUser({ email, password, emailVerified: true, firstName: 'Thermus', lastName: 'Live' });
     this.#registry.record('user', id);
-    return { id, email, password, authenticator: new TotpAuthenticator() };
+    return { id, email, password };
   }
 
   async membership(user: LiveUser, organization: LiveOrganization, roleSlugs: string[]): Promise<string> {

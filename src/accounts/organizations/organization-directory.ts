@@ -56,7 +56,7 @@ export interface InvitationPageRequest {
   readonly cursor?: string;
 }
 
-// The customer roles that an invitation can give. Only the operator manages Super Admin.
+// The customer roles that an invitation can give. Admin includes product access.
 export type AssignableRole = 'user' | 'admin';
 
 export interface InvitationRequest {

@@ -237,15 +237,19 @@ describe('The auth WorkOS MCP URL fetch work slice with the WorkOS provider, the
     assert.deepEqual(metadata.authorization_servers, [world.fake.authkitIssuer]);
   });
 
-  test('Given Ben with Admin only in Acme, when his Connect token for Acme calls getURLAsMarkdown, then the call gets 403 access_denied, no renderer starts, and the log has no fetch line', { timeout: 60_000 }, async (t) => {
+  test('Given Ben with Admin only in Acme, when his Connect token calls getURLAsMarkdown, then it returns cleaned Markdown; after his Admin role is removed, the same token gets 403 without another renderer or fetch record', { timeout: 60_000 }, async (t) => {
     const site = await openSlice(t);
     const token = await site.world.connectToken(ben, { org_id: acme });
 
+    const served = await toolCall(site, token);
+    assert.equal(served.status, 200);
+    assertText(await rpcResult(served) as CallToolResult, expectedMarkdown);
+    site.world.memberships = site.world.memberships.map((membership) => membership.userId === ben.id ? { ...membership, roles: [] } : membership);
     const refused = await toolCall(site, token);
     await site.close();
 
     await assertAccessDenied(refused);
-    assert.deepEqual(site.renderer.launches, []);
-    assert.deepEqual(fetchLines(site.log), []);
+    assert.deepEqual(site.renderer.launches.map(({ executable }) => executable), [rendererExecutable]);
+    assertFetchLog(site.log, ben);
   });
 });

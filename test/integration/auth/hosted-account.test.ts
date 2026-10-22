@@ -11,8 +11,9 @@ import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 
 const authority = 'hosted-provider-double';
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
-const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
+// Synthetic roles test explicit permission sets without representing the customer role catalog.
+const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
+const accountManagerGrant: RoleGrant = { role: 'test-account-manager', permissions: ['admin-grants:manage', 'billing:manage'] };
 const operationPermissions = new Map([
   ['/team/account', 'product:access'],
   ['/team/organizations/grants', 'user-grants:manage'],
@@ -26,14 +27,14 @@ const sessions: ReadonlyArray<[string, string, string | undefined]> = [
 ];
 const memberships: readonly MembershipRecord[] = [
   member('user-ann', 'org-a', [userGrant]),
-  member('user-ben', 'org-b', [userGrant, adminGrant]),
-  member('user-cy', 'org-a', [userGrant, adminGrant]),
+  member('user-ben', 'org-b', [userGrant, userManagerGrant]),
+  member('user-cy', 'org-a', [userGrant, userManagerGrant]),
   member('user-cy', 'org-b', [userGrant]),
-  member('user-dee', 'org-a', [superAdminGrant]),
-  member('user-eve', 'org-a', [adminGrant]),
-  member('user-fay', 'org-a', [userGrant, adminGrant]),
+  member('user-dee', 'org-a', [accountManagerGrant]),
+  member('user-eve', 'org-a', [userManagerGrant]),
+  member('user-fay', 'org-a', [userGrant, userManagerGrant]),
   member('user-gus', 'org-a', [userGrant]),
-  { ...member('user-hal', 'org-a', [userGrant, adminGrant]), active: false },
+  { ...member('user-hal', 'org-a', [userGrant, userManagerGrant]), active: false },
 ];
 
 function member(subject: string, organizationId: string, grants: readonly RoleGrant[]): MembershipRecord {
@@ -103,8 +104,8 @@ describe('Hosted account routes with session and membership directory doubles an
     const annAnswer = application.handle(accountGet('ann', 'account?organizationId=org-b', { 'X-Organization-Id': 'org-b' }));
     const others = await Promise.all([
       application.handle(accountGet('ben')),
-      application.handle(formPost('cy-a', 'organizations/grants', { organizationId: 'org-b', userId: 'user-ben', role: 'admin' })),
-      application.handle(formPost('cy-b', 'organizations/grants', { organizationId: 'org-a', userId: 'user-ann', role: 'admin' })),
+      application.handle(formPost('cy-a', 'organizations/grants', { organizationId: 'org-b', userId: 'user-ben', role: 'test-user-manager' })),
+      application.handle(formPost('cy-b', 'organizations/grants', { organizationId: 'org-a', userId: 'user-ann', role: 'test-user-manager' })),
     ]);
     resumeAnn();
     const ann = await contextOf(await annAnswer);
@@ -113,7 +114,7 @@ describe('Hosted account routes with session and membership directory doubles an
     assert.deepEqual([ann.organizationId, ann.tenantId, ann.user], ['org-a', 'hosted:org-a', userOf('user-ann', 'org-a')]);
     assert.deepEqual([ben.organizationId, ben.tenantId], ['org-b', 'hosted:org-b']);
     assert.deepEqual([cyInA.organizationId, cyInA.permissions], ['org-a', ['product:access', 'user-grants:manage']]);
-    assert.equal(others[2]?.status, 403, 'cy has no Admin grant in the organization of its second session');
+    assert.equal(others[2]?.status, 403, 'cy has no user-management permission in the organization of its second session');
     assert.deepEqual(probe.work.slice(0, 2).sort((first, second) => first.subject.localeCompare(second.subject)), [
       { path: '/team/account', subject: 'user-ben', tenantId: 'hosted:org-b', organizationId: 'org-b' },
       { path: '/team/organizations/grants', subject: 'user-cy', tenantId: 'hosted:org-a', organizationId: 'org-a' },
@@ -121,7 +122,7 @@ describe('Hosted account routes with session and membership directory doubles an
     assert.deepEqual(probe.work.slice(2), [{ path: '/team/account', subject: 'user-ann', tenantId: 'hosted:org-a', organizationId: 'org-a' }]);
   });
 
-  test('Given independent Super Admin, Admin, and User plus Admin grants, when each user requests product, User-grant, and billing operations, then each context holds every grant and only the union of their explicit permissions, and each operation needs its own permission', async () => {
+  test('Given synthetic management grants with or without a User grant, when each user requests product, user-grant, and billing operations, then each context holds every grant and only the union of their explicit permissions, and each operation needs its own permission', async () => {
     const { application, probe } = serve();
     const requests = (session: string) => [
       accountGet(session),
@@ -138,7 +139,7 @@ describe('Hosted account routes with session and membership directory doubles an
 
     const refused = 'refused permission-required';
     assert.deepEqual(outcomes, { dee: [refused, refused, 'done'], eve: [refused, 'done', refused], fay: ['done', 'done', refused] });
-    assert.deepEqual(fay.grants, [userGrant, adminGrant]);
+    assert.deepEqual(fay.grants, [userGrant, userManagerGrant]);
     assert.deepEqual(fay.permissions, ['product:access', 'user-grants:manage']);
     assert.deepEqual(probe.work.map(({ subject, path }) => `${subject} ${path}`), [
       'user-dee /team/billing/seats',

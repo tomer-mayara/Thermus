@@ -11,7 +11,6 @@ export const httpsSettings: HostedLiveSettings = {
   apiKey: workOSSettings.WORKOS_API_KEY,
   clientId: workOSSettings.WORKOS_CLIENT_ID,
   authkitIssuer: workOSSettings.WORKOS_AUTHKIT_ISSUER,
-  mfaPolicy: 'optional',
 };
 export const portalPage = '<!doctype html><title>Portal</title>';
 

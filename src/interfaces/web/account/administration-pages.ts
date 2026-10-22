@@ -22,14 +22,14 @@ export interface InvitationsPageForm {
   readonly membersPage: string;
 }
 
-const ROLE_LABELS: ReadonlyMap<string, string> = new Map([['user', 'User'], ['admin', 'Admin'], ['super-admin', 'Super Admin']]);
+const ROLE_LABELS: ReadonlyMap<string, string> = new Map([['user', 'User'], ['admin', 'Admin']]);
 const PLAN_LABELS: Readonly<Record<BillingState['plan'], string>> = { free: 'Free' };
 
 // The page claims a strict address match only when the directory enforces it; any other policy gets the second text.
 const STRICT_ADDRESS_TEXT = 'Only a sign-in with the invited email address can accept the invitation.';
 const PROVIDER_RULES_TEXT = 'The sign-in service decides who can accept the invitation. It can accept a sign-in with another address, for example an address of the same domain.';
 
-const ROLE_HELP = 'User gives access to the product and to MCP. Admin manages User invitations. Super Admin manages Admin invitations and billing. Each role is separate: Admin and Super Admin give no User access. Only the operator of this service manages Super Admin.';
+const ROLE_HELP = 'User gives access to the product and to MCP. Admin also manages User and Admin invitations and can view billing.';
 
 // The provider gives the email addresses and roles, so the page escapes them. Member rows have no write controls.
 export function membersPage(form: MembersPageForm): Response {
@@ -40,8 +40,8 @@ export function membersPage(form: MembersPageForm): Response {
     '</li>',
   ]);
   const page = htmlDocument('Members', [
-    `<p>Active User seats: ${overview.activeUserSeats}</p>`,
-    '<p>Each active member with User counts as one seat, also with Admin or Super Admin. Members with only Admin or Super Admin, pending and inactive members, and invitations do not count. The count shows the current members; it is not a bill.</p>',
+    `<p>Active product members: ${overview.activeUserSeats}</p>`,
+    '<p>Each active member with product access counts once, including Admins. Pending and inactive members and invitations do not count. This count shows current access; it is not a bill.</p>',
     `<p>${ROLE_HELP}</p>`,
     `<p><a href="${escapeHtml(form.invitationsPage)}">Invitations</a></p>`,
     '<ul>',

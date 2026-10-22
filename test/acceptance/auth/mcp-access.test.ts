@@ -12,6 +12,7 @@ import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-sp
 import { IdentityVerifierSpy } from '../../support/doubles/auth/identity-verifier-spy.ts';
 import { ProtectedToolSpy, type ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
 import { connectMcpClient } from '../../support/drivers/mcp/mcp-sdk-client.ts';
+import { adminGrant, superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
 
 const resourceUrl = 'https://thermus.example/mcp';
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
@@ -62,8 +63,8 @@ describe('Trusted access context for MCP HTTP requests', () => {
       [alice.subject, allowed(alice, 'tenant-org-a', { user: [productAccess] })],
       [bob.subject, allowed(bob, 'tenant-org-b', { user: [productAccess] })],
       [dana.subject, { allowed: false, reason: 'membership-inactive' }],
-      [erin.subject, allowed(erin, 'tenant-org-a', { admin: ['user-grants:manage'], 'super-admin': ['admin-grants:manage', 'billing:manage'] })],
-      [owen.subject, allowed(owen, 'tenant-org-a', { 'super-admin': ['admin-grants:manage', 'billing:manage'], user: [productAccess] })],
+      [erin.subject, allowed(erin, 'tenant-org-a', { 'super-admin': superAdminGrant.permissions })],
+      [owen.subject, allowed(owen, 'tenant-org-a', { admin: adminGrant.permissions, user: [productAccess] })],
       [uma.subject, new Error('private membership lookup failure for user-uma')],
     ]));
     probe = new ProtectedToolSpy();
@@ -142,17 +143,17 @@ describe('Trusted access context for MCP HTTP requests', () => {
     assert.deepEqual(new Set(resolver.calls.map(({ subject }) => subject)), new Set([alice.subject, bob.subject]));
   });
 
-  test('Given a member with independent Super Admin and User grants, when the member calls the protected tool, then the context holds both grants and every permission they give', { timeout: 20_000 }, async (t) => {
+  test('Given a member with Admin and User grants, when the member calls the protected tool, then the context holds both grants and every permission they give', { timeout: 20_000 }, async (t) => {
     const client = await connect(t, 'user-owen-token');
 
     const report = await probeReport(client, { url: 'https://example.com/' });
 
-    assert.deepEqual(report.context.grants.map(({ role }) => role), ['super-admin', 'user']);
-    assert.deepEqual([...report.context.permissions].sort(), ['admin-grants:manage', 'billing:manage', productAccess].sort());
+    assert.deepEqual(report.context.grants.map(({ role }) => role), ['admin', 'user']);
+    assert.deepEqual([...report.context.permissions].sort(), [...adminGrant.permissions].sort());
     assert.equal(probe.work.length, 2);
   });
 
-  test('Given a member with Admin and Super Admin grants but no User grant, when the member calls the protected tool, then the tool refuses before any fetch or clean step', { timeout: 20_000 }, async (t) => {
+  test('Given a member with only the retired Super Admin role and no application permissions, when the member calls the protected tool, then the tool refuses before any fetch or clean step', { timeout: 20_000 }, async (t) => {
     const client = await connect(t, 'user-erin-token');
 
     const result = await callProbe(client, { url: 'https://example.com/' });

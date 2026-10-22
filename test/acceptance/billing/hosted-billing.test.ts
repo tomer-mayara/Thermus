@@ -6,7 +6,6 @@ import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { userOf } from '../../support/fixtures/hosted-members.ts';
 
 const failurePage = /The request failed\. Try again later\./;
-const mfaNotice = /Multi-factor authentication required/;
 
 function billedSeatsIn(body: string): number | undefined {
   const match = /Billed seats: (\d+)/.exec(body);
@@ -14,14 +13,14 @@ function billedSeatsIn(body: string): number | undefined {
 }
 
 // The administration site of the hosted acceptance tests, with BillingFree behind a recorder at the payment boundary.
-// Acme (org-a) has 4 active User seats: otto, cy, fay, and una.
+// Acme (org-a) has 6 active product members: sam, otto, cy, fay, eve, and una.
 async function serve(t: TestContext) {
   const billing = new BillingRecorder();
   return { ...(await serveAdministrationSite(t, { billing })), billing };
 }
 
 describe('Hosted billing with BillingFree through the public routes, with session, directory, and billing doubles', () => {
-  test('Given Super Admin alone and Super Admin with User and Admin, each with a sign-in that completed MFA, when each opens the billing page of Acme, then each sees the free plan with no billed seat and no payment form, and billing reads only Acme', { timeout: 20_000 }, async (t) => {
+  test('Given Admin alone and Admin with User, each after password sign-in, when each opens the billing page of Acme, then each sees the free plan with no billed seat and no payment form, and billing reads only Acme', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
 
     const pages = [await site.browserOf(userOf('user-sam', 'org-a')).open('billing'), await site.browserOf(userOf('user-otto', 'org-a')).open('billing')];
@@ -40,14 +39,11 @@ describe('Hosted billing with BillingFree through the public routes, with sessio
     assert.deepEqual(site.failures, []);
   });
 
-  test('Given User alone, Admin alone, User plus Admin, a default role, and members of Globex, when each opens the billing page, then each gets the access denial without a billing state, and billing reads nothing', { timeout: 20_000 }, async (t) => {
+  test('Given User alone, a default role, and a foreign organization request, when each opens the billing page, then each gets the access denial without a billing state, and billing reads nothing', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const visitors = [
       userOf('user-una', 'org-a'),
-      userOf('user-eve', 'org-a'),
-      userOf('user-cy', 'org-a'),
       userOf('user-dora', 'org-a'),
-      userOf('user-ben', 'org-b'),
       userOf('user-ben', 'org-a'),
     ];
 
@@ -60,18 +56,16 @@ describe('Hosted billing with BillingFree through the public routes, with sessio
     assert.deepEqual(site.billing.reads, []);
   });
 
-  test('Given a Super Admin whose sign-in did not complete MFA, when it opens the billing page, then it gets the MFA notice, and billing reads nothing', { timeout: 20_000 }, async (t) => {
+  test('Given Admin without completed MFA, when it opens billing, then it reads the current free state without a billing mutation', async (t) => {
     const site = await serve(t);
-
     const page = await site.browserOf(userOf('user-sam', 'org-a'), { mfaCompleted: false }).open('billing');
-
-    assert.equal(page.status, 403);
-    assert.match(page.body, mfaNotice);
-    assert.equal(billedSeatsIn(page.body), undefined);
-    assert.deepEqual(site.billing.reads, []);
+    assert.equal(page.status, 200, page.body);
+    assert.equal(billedSeatsIn(page.body), 0);
+    assert.deepEqual(site.billing.reads, ['org-a']);
+    assert.deepEqual([site.billing.updates, site.records], [[], []]);
   });
 
-  test('Given a Super Admin, when it posts a form to the billing page, then it gets 405 with the allowed methods, because the free plan has no billing change, and billing gets no call and nothing is recorded', { timeout: 20_000 }, async (t) => {
+  test('Given an Admin, when it posts a form to the billing page, then it gets 405 with the allowed methods, because the free plan has no billing change, and billing gets no call and nothing is recorded', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
 
     const answer = await site.browserOf(userOf('user-sam', 'org-a')).post('billing', { organization_id: 'org-a', seat_count: '5' });
@@ -81,7 +75,7 @@ describe('Hosted billing with BillingFree through the public routes, with sessio
     assert.deepEqual([site.billing.reads, site.billing.updates, site.records], [[], [], []]);
   });
 
-  test('Given overlapping member pages and pending invitations, when an Admin reads Members and billing, then each active User counts once and the free billing state stays unchanged', async (t) => {
+  test('Given overlapping member pages and pending invitations, when an Admin reads Members and billing, then each active product member counts once and the free billing state stays unchanged', async (t) => {
     const site = await serve(t);
     site.directory.addInvitations({ organizationId: 'org-a', email: 'pending.user@example.com', role: 'user' });
     site.directory.memberPageLayout = (members) => [members.slice(0, 3), members.slice(2, 6), members.slice(5)];
@@ -90,7 +84,7 @@ describe('Hosted billing with BillingFree through the public routes, with sessio
     const members = await browser.open('members');
     const billingPage = await browser.open('billing');
 
-    assert.equal(seatsIn(members.body), 4);
+    assert.equal(seatsIn(members.body), 6);
     assert.match(billingPage.body, /Plan: Free/);
     assert.equal(billedSeatsIn(billingPage.body), 0);
     assert.deepEqual(site.billing.updates, []);
@@ -111,7 +105,7 @@ describe('Hosted billing with BillingFree through the public routes, with sessio
     assert.match(failed.body, failurePage);
     assert.equal(seatsIn(failed.body), undefined);
     assert.equal(recovered.status, 200);
-    assert.equal(seatsIn(recovered.body), 4);
+    assert.equal(seatsIn(recovered.body), 6);
     assert.deepEqual(site.billing.updates, []);
     assert.deepEqual(site.records, []);
     assert.deepEqual(site.failures.map(({ path, cause }) => `${path}: ${String(cause)}`), ['/team/members: Error: member page 2 timed out']);

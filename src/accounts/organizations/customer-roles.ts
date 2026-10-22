@@ -1,14 +1,12 @@
-import type { RoleGrant } from '../identity/access-context.ts';
 import type { AssignableRole, OrganizationMembership } from './organization-directory.ts';
 
 const ASSIGNABLE_ROLES: readonly AssignableRole[] = Object.freeze(['user', 'admin']);
-// The permission needed to invite each customer role. User gives neither permission. No customer invitation
-// permission manages Super Admin.
+// The permission needed to invite each customer role. User gives neither permission; Admin gives both.
 const MANAGING_PERMISSION: Readonly<Record<AssignableRole, string>> = Object.freeze({ user: 'user-grants:manage', admin: 'admin-grants:manage' });
 const BILLING_PERMISSION = 'billing:manage';
 
 // The customer roles that the user of these memberships manages in the organization: only from an active membership
-// there, and only from the permissions of its current grants, so that no role inherits another.
+// there, and only from the permissions of its current grants.
 export function managedRoles(memberships: readonly OrganizationMembership[], organizationId: string): readonly AssignableRole[] {
   const permissions = activePermissionsIn(memberships, organizationId);
   return ASSIGNABLE_ROLES.filter((role) => permissions.has(MANAGING_PERMISSION[role]));
@@ -25,8 +23,4 @@ function activePermissionsIn(memberships: readonly OrganizationMembership[], org
 
 export function managedRole(managed: readonly AssignableRole[], role: string): AssignableRole | undefined {
   return managed.find((candidate) => candidate === role);
-}
-
-export function hasRole(grants: readonly RoleGrant[], role: string): boolean {
-  return grants.some((grant) => grant.role === role);
 }

@@ -77,8 +77,8 @@ export class WorkOSAuthProvider implements IdentityVerifier, AccessResolver {
     };
   }
 
-  // Each call reads the current grants, so a revoked membership or role stops access before the token expires. It does
-  // not require product:access: the administration pages also resolve the access of an Admin without it.
+  // Each call checks the current membership and grants before it builds the access context.
+  // Each operation checks its required permission against that context.
   async resolve(user: AuthenticatedUser): Promise<AccessDecision> {
     const { authority, grants } = this.options;
     if (user.authority !== authority) return ACCOUNT_INACTIVE;

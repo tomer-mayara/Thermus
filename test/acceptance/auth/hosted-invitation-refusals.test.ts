@@ -27,17 +27,14 @@ test('Given an Admin and a current invitation form, when role, origin, CSRF, or 
   assert.deepEqual(site.directory.invitationChanges, []);
 });
 
-test('Given an Admin without completed MFA, when it opens Members or sends a native invitation, then the existing MFA gate refuses both without changing provider state', async (t) => {
+test('Given a User without administration authority, when it opens Members or sends a native invitation, then current authority refuses both without changing provider state', async (t) => {
   const site = await serveAdministrationSite(t);
-  const browser = site.browserOf(userOf('user-eve', 'org-a'), { mfaCompleted: false });
+  const browser = site.browserOf(userOf('user-una', 'org-a'), { mfaCompleted: false });
   const organization = formLabelled((await shownPage(browser, 'organizations')).forms, 'Acme (selected)');
 
   const page = await browser.open('members');
   const invitation = await browser.post('invitations/send', { csrf_token: organization.fields.csrf_token ?? '', organization_id: 'org-a', email: 'new@example.com', role: 'user' });
 
-  for (const answer of [page, invitation]) {
-    assert.equal(answer.status, 403);
-    assert.match(answer.body, /Administration needs a sign-in that completed multi-factor authentication/);
-  }
+  for (const answer of [page, invitation]) assert.equal(answer.status, 403);
   assert.deepEqual(site.directory.invitationChanges, []);
 });

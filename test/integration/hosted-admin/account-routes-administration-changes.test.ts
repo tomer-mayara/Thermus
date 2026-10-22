@@ -21,7 +21,7 @@ describe('HostedAccountRoutes invitation changes', () => {
 
   for (const [name, { path, fields }] of changes) {
     for (const outcome of ['applied', 'unchanged'] as const) {
-      test(`Given a valid ${name} post from this site, when the service answers ${outcome}, then the service gets the actor with the MFA evidence of the session and only the fields of the change, and the browser gets 303 to the page with the session cookies`, async () => {
+      test(`Given a valid ${name} post from this site, when the service answers ${outcome}, then the service gets the decided actor and only the fields of the change, and the browser gets 303 to the page with the session cookies`, async () => {
         const { routes, organizations, resolver } = serveAdministration({ change: outcome });
 
         const response = await routes.handle(changePost(path, fields, { 'X-Organization-Id': 'org-b' }));
@@ -32,21 +32,23 @@ describe('HostedAccountRoutes invitation changes', () => {
         assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
         assert.equal(await response.text(), '');
         const [call] = organizations.administrationCalls;
-        assert.deepEqual(call?.actor, { user: ann, mfaCompleted: true });
+        assert.deepEqual(call?.actor, { user: ann });
         assert.doesNotMatch(JSON.stringify(call), new RegExp(`${annToken}|session=`));
         assert.deepEqual(resolver.calls, [ann]);
       });
     }
   }
 
-  test('Given a session whose sign-in did not complete MFA, when each change is posted and the service requires MFA, then the service gets that evidence, and each post gets the MFA notice with the session cookies', async () => {
-    const { routes, organizations } = serveAdministration({ change: 'mfa-required' }, { session: { mfaCompleted: false } });
+  test('Given a session without MFA and allowed current access, when each valid change is posted, then the change succeeds with the session cookies and the decided actor', async () => {
+    const { routes, organizations } = serveAdministration({ change: 'applied' }, { session: { mfaCompleted: false } });
 
     for (const [, { path, fields }] of changes) {
-      await assertPage(await routes.handle(changePost(path, fields)), { status: 403, text: /Administration needs a sign-in that completed multi-factor authentication\./, cookies: sessionCookies });
+      const response = await routes.handle(changePost(path, fields));
+      assert.equal(response.status, 303);
+      assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
     }
 
-    assert.deepEqual(organizations.administrationCalls.map(({ actor }) => actor), changes.map(() => ({ user: ann, mfaCompleted: false })));
+    assert.deepEqual(organizations.administrationCalls.map(({ actor }) => actor), changes.map(() => ({ user: ann })));
   });
 
   test('Given valid posts, when they reach the service, then each change gets exactly the fields of its form', async () => {
@@ -63,7 +65,6 @@ describe('HostedAccountRoutes invitation changes', () => {
 
   for (const [outcome, status, text] of [
     ['denied', 403, /Your account cannot make this change in the selected organization\. Nothing changed\./],
-    ['mfa-required', 403, /Administration needs a sign-in that completed multi-factor authentication\./],
     ['stale', 409, /changed after the page was shown\. Nothing changed\./],
     ['not-pending', 409, /The invitation is no longer pending/],
     ['address-in-use', 409, /This email address already belongs to a member of the organization, or it has a pending invitation\. Nothing changed\./],

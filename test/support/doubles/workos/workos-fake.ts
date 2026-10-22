@@ -1,7 +1,7 @@
 import type { TestContext } from 'node:test';
 import { createRemoteJWKSet } from 'jose';
 import type { WorkOSConnection } from '../../../../src/app/hosted-workos-application.ts';
-import type { WorkOSSettings, WorkOSMfaPolicy } from '../../../../src/accounts/providers/workos/workos-settings.ts';
+import type { WorkOSSettings } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { SigningKey } from './jwt-signing-key.ts';
 import { cookiePassword, fakeApiKey, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from './workos-fake-api.ts';
 import { answerDirectoryRoutes, changeMembership, currentStatus, effectiveRoles, grantState, indexOfUser, membershipIdAt, type DirectoryView } from './workos-fake-directory.ts';
@@ -65,7 +65,7 @@ export class WorkOSFake implements DirectoryView, InvitationView, SessionView {
   // Each next membership page starts with this many records from the end of the page before, as WorkOS can give
   // during concurrent changes.
   membershipPageOverlap = 0;
-  // The authentication method of each new sign-in. Only the explicit Required profile treats Password as MFA evidence.
+  // The authentication method of each new sign-in.
   authenticationMethod = 'Password';
   // Set to an answer, such as a 500, to make reads fail: each membership read, only the membership pages after the
   // first, each invitation read, or the refreshes.
@@ -86,7 +86,7 @@ export class WorkOSFake implements DirectoryView, InvitationView, SessionView {
     this.authkitKey = parts.authkitKey;
     this.mcpResourceUrl = new URL('mcp', parts.publicBaseUrl).href;
     this.settings = Object.freeze({
-      mfaPolicy: 'optional', apiKey: fakeApiKey, clientId: fakeClientId, authkitIssuer: parts.fake.authkitIssuer,
+      apiKey: fakeApiKey, clientId: fakeClientId, authkitIssuer: parts.fake.authkitIssuer,
       redirectUri: new URL('callback', parts.publicBaseUrl).href, cookiePassword,
     });
     answerDirectoryRoutes(this.fake, this, parts.organizations);
@@ -116,11 +116,11 @@ export class WorkOSFake implements DirectoryView, InvitationView, SessionView {
     this.#memberships = memberships;
   }
 
-  connection(mfaPolicy: WorkOSMfaPolicy = this.settings.mfaPolicy): WorkOSConnection {
-    return { settings: { ...this.settings, mfaPolicy }, workos: workosClientFor(this.fake), authkitKeySet: createRemoteJWKSet(this.fake.authkitKeySetUrl) };
+  connection(): WorkOSConnection {
+    return { settings: this.settings, workos: workosClientFor(this.fake), authkitKeySet: createRemoteJWKSet(this.fake.authkitKeySetUrl) };
   }
 
-  // Makes an authorization code as AuthKit gives it after sign-in, any required MFA step, and the organization choice.
+  // Makes an authorization code as AuthKit gives it after sign-in and the organization choice.
   codeFor(user: FakeUser, organizationId?: string): string {
     return this.#sessions.codeFor(user, organizationId);
   }

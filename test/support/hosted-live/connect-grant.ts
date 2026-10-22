@@ -26,7 +26,7 @@ export async function authorizeWithConnect(services: SignInServices, request: Co
   const page = await browser.newPage();
   try {
     const authkitHost = new URL(settings.authkitIssuer).host;
-    const visit = await visitAuthKit(page, authorization.url, { user: request.user, organizationName: request.organizationName, authkitHost, callback: connectRedirectUri, mfaPolicy: settings.mfaPolicy });
+    const visit = await visitAuthKit(page, authorization.url, { user: request.user, organizationName: request.organizationName, authkitHost, callback: connectRedirectUri });
     const code = visit.callback.searchParams.get('code');
     assert.ok(code, `The Connect callback has no authorization code. It has: ${[...visit.callback.searchParams.keys()].join(', ')}.`);
     const answer = await exchangeConnectCode(settings.authkitIssuer, request.clientId, { code, verifier: authorization.verifier, resource: mcpResource });

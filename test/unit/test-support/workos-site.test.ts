@@ -5,7 +5,6 @@ import { ContextReportToolSpy } from '../../support/doubles/mcp/context-report-t
 import type { FakeUser, WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 import { HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { mcpRequest, rpcResult } from '../../support/drivers/mcp/mcp-http-request.ts';
-import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { hostedConfig, hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { signupDocuments } from '../../support/fixtures/signup-documents.ts';
 import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
@@ -24,7 +23,7 @@ async function listTools(site: WorkOSSite): Promise<Response> {
 }
 
 describe('Hosted WorkOS site of the offline hosted WorkOS specifications', () => {
-  test('Given a site with Acme, where Ada has User and Ben has only Admin, when server/discover reaches the MCP endpoint without a token and with the Connect token of each in Acme, then the answers are 401, 200, and 403, and the operator log of the site has no ERROR line', async (t) => {
+  test('Given a site with Acme, where Ada has User and Ben has Admin, when server/discover reaches the MCP endpoint without a token and with the Connect token of each in Acme, then the answers are 401, 200, and 200, and the operator log of the site has no ERROR line', async (t) => {
     const site = await serveWorkOSSite(t, {
       organizations: [acme],
       setUp: (world) => {
@@ -41,7 +40,7 @@ describe('Hosted WorkOS site of the offline hosted WorkOS specifications', () =>
       (await site.discover(await site.world.connectToken(ben, { org_id: acme }))).status,
     ];
 
-    assert.deepEqual(statuses, [401, 200, 403]);
+    assert.deepEqual(statuses, [401, 200, 200]);
     assert.ok(site.log instanceof OperatorLogSpy);
     assert.ok(site.log.lines.every((line) => !line.startsWith('ERROR')), site.log.lines.join('\n'));
   });
@@ -70,23 +69,6 @@ describe('Hosted WorkOS site of the offline hosted WorkOS specifications', () =>
     assert.deepEqual(tools.map(({ name }) => name), [ContextReportToolSpy.reportTool]);
     assert.equal(withoutTool.status, 404);
     assert.deepEqual((await withoutTool.json() as { error: unknown }).error, { code: -32601, message: 'Method not found' });
-  });
-
-  test('Given a site with the Required MFA policy and a site without an MFA policy, when Ada signs in through each server with Password, then only the session of the first has the MFA evidence, because the fake gives its Optional policy to the second', async (t) => {
-    const sites = [
-      await serveWorkOSSite(t, { organizations: [acme], mfaPolicy: 'required', setUp: adaAsUser }),
-      await serveWorkOSSite(t, { organizations: [acme], setUp: adaAsUser }),
-    ];
-
-    const evidence: unknown[] = [];
-    for (const site of sites) {
-      const { browser, callback } = await signInThroughServer(site, ada, acme);
-      assert.equal(callback.status, 303, callback.body);
-      const session = await browser.open('session', { Accept: 'application/json' });
-      evidence.push((JSON.parse(session.body) as { readonly mfaCompleted?: unknown }).mfaCompleted);
-    }
-
-    assert.deepEqual(evidence, [true, false]);
   });
 
   test('Given a site with the signup fake and signup with the test documents, when a visitor opens the signup page, then the answer is 200 with the full notice, and the signup fake has no personal organization', async (t) => {

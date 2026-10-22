@@ -25,7 +25,7 @@ import {
 describe('WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session checks, and refresh', () => {
   allowOnlyLoopbackRequests();
 
-  test('Given a sign-in that AuthKit completed under an explicit Required MFA policy, when the callback brings the code and the state, then the SDK exchanges the code with the verifier of the AuthKit URL for a sealed session, and the new session cookie authenticates as the WorkOS user with the MFA evidence of the password sign-in', async (t) => {
+  test('Given a password sign-in that AuthKit completed, when the callback brings the code and the state, then the SDK exchanges the code with the verifier of the AuthKit URL for a sealed session, and the new session cookie authenticates as the WorkOS user without MFA evidence', async (t) => {
     const world = await startSessionFixture(t);
     const start = await world.session.startSignIn({ returnTo: '/team/members' });
     const authKitUrl = new URL(start.url);
@@ -48,7 +48,7 @@ describe('WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session chec
     const session = signedIn(await world.session.authenticate(cookieHeaderOf(completion.cookies.slice(1))));
     assert.deepEqual(
       { user: session.user, profile: session.profile, mfaCompleted: session.mfaCompleted, cookies: session.cookies },
-      { user: { authority, subject: ada.id, selectedOrganizationId: 'org_01ACME' }, profile: { email: ada.email, firstName: 'Ada', lastName: 'Lovelace' }, mfaCompleted: true, cookies: [] },
+      { user: { authority, subject: ada.id, selectedOrganizationId: 'org_01ACME' }, profile: { email: ada.email, firstName: 'Ada', lastName: 'Lovelace' }, mfaCompleted: false, cookies: [] },
     );
   });
 
@@ -81,7 +81,7 @@ describe('WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session chec
     }]);
     assert.equal(refreshed.cookies.length, 1);
     assert.match(csrfToken ?? '', /^[\w-]{43}$/);
-    assert.deepEqual([refreshed.csrfToken, again.csrfToken, again.mfaCompleted], [csrfToken, csrfToken, true]);
+    assert.deepEqual([refreshed.csrfToken, again.csrfToken, again.mfaCompleted], [csrfToken, csrfToken, false]);
     assert.deepEqual(again.cookies, []);
     assert.deepEqual(grantsSent(world.fake), []);
   });

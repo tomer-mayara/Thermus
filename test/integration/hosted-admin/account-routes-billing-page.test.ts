@@ -19,7 +19,7 @@ function mainOf(body: string): readonly string[] {
 
 describe('HostedAccountRoutes billing page', () => {
   for (const method of ['GET', 'HEAD']) {
-    test(`Given allowed access and the free billing state, when a ${method} request opens the billing page with forged organization values in the query and the headers, then the service gets the user of the decided context with the MFA evidence of the session and the organization of the context, and the page shows only the free plan, no billed seat, and the payment text, without a form, with the notice headers and the session cookies`, async () => {
+    test(`Given allowed access and the free billing state, when a ${method} request opens the billing page with forged organization values in the query and the headers, then the service gets the user and organization of the decided context, and the page shows only the free plan, no billed seat, and the payment text, without a form, with the notice headers and the session cookies`, async () => {
       const { routes, organizations, resolver } = serveAdministration({ billing: freeState });
 
       const response = await routes.handle(accountRequest('/billing?organizationId=org-b&organization_id=org-b', 'session=ann', { method, headers: { 'X-Organization-Id': 'org-b' } }));
@@ -27,7 +27,7 @@ describe('HostedAccountRoutes billing page', () => {
 
       await assertPage(response, { status: 200, text: /<title>Billing<\/title>/, cookies: sessionCookies });
       assert.deepEqual(mainOf(body), freePage);
-      assert.deepEqual(organizations.administrationCalls, [{ operation: 'billingState', actor: { user: ann, mfaCompleted: true }, request: 'org-a' }]);
+      assert.deepEqual(organizations.administrationCalls, [{ operation: 'billingState', actor: { user: ann }, request: 'org-a' }]);
       assert.deepEqual(resolver.calls, [ann]);
     });
   }
@@ -55,13 +55,13 @@ describe('HostedAccountRoutes billing page', () => {
     assert.doesNotMatch(body, /Plan:|Billed seats/);
   });
 
-  test('Given a session whose sign-in did not complete MFA, when the billing page opens and the service requires MFA, then the service gets that evidence, and the page is the MFA notice with the session cookies', async () => {
-    const { routes, organizations } = serveAdministration({ billing: 'mfa-required' }, { session: { mfaCompleted: false } });
+  test('Given a session without MFA and allowed current access, when the billing page opens, then it shows the existing free state with the session cookies', async () => {
+    const { routes, organizations } = serveAdministration({ billing: freeState }, { session: { mfaCompleted: false } });
 
     const response = await routes.handle(accountRequest('/billing', 'session=ann'));
 
-    await assertPage(response, { status: 403, text: /Administration needs a sign-in that completed multi-factor authentication\./, cookies: sessionCookies });
-    assert.deepEqual(organizations.administrationCalls, [{ operation: 'billingState', actor: { user: ann, mfaCompleted: false }, request: 'org-a' }]);
+    await assertPage(response, { status: 200, text: /Plan: Free/, cookies: sessionCookies });
+    assert.deepEqual(organizations.administrationCalls, [{ operation: 'billingState', actor: { user: ann }, request: 'org-a' }]);
   });
 
   test('Given a decided context without an organization, when the billing page opens, then it gets the 403 access denial, and the service is not asked', async () => {

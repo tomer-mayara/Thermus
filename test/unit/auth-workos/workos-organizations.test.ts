@@ -91,6 +91,16 @@ async function assertConfigurationError(read: Promise<unknown>, ...parts: RegExp
 }
 
 describe('WorkOSOrganizations active grants', () => {
+  test('Given only the User and Admin customer roles, when an Admin-only membership is read, then its one grant includes product and both invitation permissions and existing billing access', async () => {
+    const permissions = ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'];
+    const { grants } = grantsWith({
+      memberships: [activeMembership(['admin'])],
+      roles: [{ slug: 'user', permissions: ['product:access'] }, { slug: 'admin', permissions }],
+    });
+
+    assert.deepEqual(await grants(), [{ role: 'admin', permissions }]);
+  });
+
   test('Given an active membership with the roles user and admin, when its grants are read, then each role gives one frozen grant with its application permissions in the order of the membership, after one exact membership read and one role read', async () => {
     const { reads, grants } = grantsWith({ memberships: [activeMembership(['user', 'admin'])] });
 
@@ -98,7 +108,7 @@ describe('WorkOSOrganizations active grants', () => {
 
     assert.deepEqual(result, [
       { role: 'user', permissions: ['product:access'] },
-      { role: 'admin', permissions: ['user-grants:manage'] },
+      { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] },
     ]);
     assert.ok(result !== undefined && Object.isFrozen(result));
     assert.ok(result.every((grant) => Object.isFrozen(grant) && Object.isFrozen(grant.permissions)));
@@ -106,11 +116,11 @@ describe('WorkOSOrganizations active grants', () => {
     assert.deepEqual(reads.roleReads, [acme]);
   });
 
-  test('Given the roles super-admin, member, and user, when the grants are read, then each role stays an independent grant and no highest role replaces the others', async () => {
+  test('Given a retired super-admin role, the default role, and User, when the grants are read, then only User gives application permissions', async () => {
     const { grants } = grantsWith({ memberships: [activeMembership(['super-admin', 'member', 'user'])] });
 
     assert.deepEqual(await grants(), [
-      { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] },
+      { role: 'super-admin', permissions: [] },
       { role: 'member', permissions: [] },
       { role: 'user', permissions: ['product:access'] },
     ]);
@@ -145,8 +155,7 @@ describe('WorkOSOrganizations active grants', () => {
     const roles = [
       { slug: 'member', permissions: ['widgets:read'] },
       { slug: 'user', permissions: ['widgets:read', 'product:access'] },
-      { slug: 'admin', permissions: ['user-grants:manage'] },
-      { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage', 'widgets:write'] },
+      { slug: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage', 'widgets:write'] },
     ];
     const { grants } = grantsWith({ memberships: [activeMembership(['user', 'member'])], roles });
 
@@ -156,11 +165,11 @@ describe('WorkOSOrganizations active grants', () => {
     ]);
   });
 
-  test('Given the permissions of super-admin in another order, when the grants are read, then the mapping is valid', async () => {
-    const roles = rolesWith('super-admin', ['billing:manage', 'admin-grants:manage']);
-    const { grants } = grantsWith({ memberships: [activeMembership(['super-admin'])], roles });
+  test('Given the permissions of admin in another order, when the grants are read, then the mapping is valid', async () => {
+    const roles = rolesWith('admin', ['billing:manage', 'admin-grants:manage', 'user-grants:manage', 'product:access']);
+    const { grants } = grantsWith({ memberships: [activeMembership(['admin'])], roles });
 
-    assert.deepEqual(await grants(), [{ role: 'super-admin', permissions: ['billing:manage', 'admin-grants:manage'] }]);
+    assert.deepEqual(await grants(), [{ role: 'admin', permissions: ['billing:manage', 'admin-grants:manage', 'user-grants:manage', 'product:access'] }]);
   });
 
   for (const { label, answers, parts } of [
@@ -175,6 +184,11 @@ describe('WorkOSOrganizations active grants', () => {
       parts: [/\bauditor\b/, /no application permission/],
     },
     {
+      label: 'a retired super-admin role with its old application permissions',
+      answers: { memberships: [activeMembership(['user'])], roles: rolesWith('super-admin', ['admin-grants:manage', 'billing:manage']) },
+      parts: [/\bsuper-admin\b/, /no application permission/],
+    },
+    {
       label: 'no admin role',
       answers: { memberships: [activeMembership(['user'])], roles: stagingRoles().filter((role) => role.slug !== 'admin') },
       parts: [/\badmin\b/, /does not exist/],
@@ -185,9 +199,9 @@ describe('WorkOSOrganizations active grants', () => {
       parts: [/\buser\b/, /exactly the application permissions product:access/],
     },
     {
-      label: 'an admin role that also gives admin-grants:manage',
+      label: 'an admin role that lacks product and billing access',
       answers: { memberships: [activeMembership(['admin'])], roles: rolesWith('admin', ['user-grants:manage', 'admin-grants:manage']) },
-      parts: [/\badmin\b/, /exactly the application permissions user-grants:manage/],
+      parts: [/\badmin\b/, /exactly the application permissions product:access, user-grants:manage/],
     },
     {
       label: 'a membership role that the organization does not have',

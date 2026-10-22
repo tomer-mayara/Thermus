@@ -20,7 +20,7 @@ const signIn: SignInEnvelope = { state: 'state-of-the-sign-in', codeVerifier: 'v
 const signInHeader = signInCookieHeader(signIn);
 
 function browserSession(client: WorkOSSessionClientDouble, now = startedAt): WorkOSBrowserSession {
-  return new WorkOSBrowserSession({ workos: client, settings, authority, mfaEvidence: 'password-mfa-required', clock: () => now });
+  return new WorkOSBrowserSession({ workos: client, settings, authority, clock: () => now });
 }
 
 function callback(query: string, cookieHeader: string | null = signInHeader) {
@@ -45,7 +45,7 @@ describe('WorkOSBrowserSession: the start of a sign-in', () => {
 });
 
 describe('WorkOSBrowserSession: the sign-in callback', () => {
-  test('Given a started sign-in under an explicit Required MFA policy, when the callback brings a code and the same state, then the code is exchanged with the verifier for a sealed session, and the browser gets the cleared sign-in cookie and then a session cookie with the seal, a new CSRF token, and the MFA evidence of the password sign-in', async () => {
+  test('Given a started password sign-in, when the callback brings a code and the same state, then the code is exchanged with the verifier for a sealed session, and the browser gets the cleared sign-in cookie and then a session cookie with the seal, a new CSRF token, and no MFA evidence', async () => {
     const client = new WorkOSSessionClientDouble();
 
     const completion = await browserSession(client).completeSignIn(callback(`code=code-1&state=${signIn.state}&ignored=value`));
@@ -60,11 +60,11 @@ describe('WorkOSBrowserSession: the sign-in callback', () => {
     assert.equal(completion.cookies[0], clearedSignInCookie);
     const session = sessionEnvelopeIn(completion.cookies[1]);
     assert.equal(session?.seal, 'seal-1');
-    assert.equal(session?.mfa, true);
+    assert.equal(session?.mfa, false);
     assert.match(session?.csrf ?? '', /^[\w-]{43}$/);
   });
 
-  test('Given an explicit Required MFA policy and a sign-in with any method other than Password, when the code is exchanged, then the session has no MFA evidence, because WorkOS gives no MFA claim', async () => {
+  test('Given a sign-in with a method other than Password, when the code is exchanged, then the session has no MFA evidence', async () => {
     for (const authenticationMethod of ['GoogleOAuth', 'SSO', 'MagicAuth', 'Passkey', 'Impersonation', undefined]) {
       const client = new WorkOSSessionClientDouble();
       client.exchange = { sealedSession: 'seal-1', user: ada, ...(authenticationMethod === undefined ? {} : { authenticationMethod }) };

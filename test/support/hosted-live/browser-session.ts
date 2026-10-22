@@ -65,7 +65,7 @@ export async function signInWithAuthKit(services: SignInServices, request: SignI
   const { url, state, codeVerifier } = await workos.userManagement.getAuthorizationUrlWithPKCE({ provider: 'authkit', redirectUri: browserRedirectUri, clientId: settings.clientId });
   const page = await browser.newPage();
   const authkitHost = new URL(settings.authkitIssuer).host;
-  const visit = await visitAuthKit(page, url, { ...request, authkitHost, callback: browserRedirectUri, mfaPolicy: settings.mfaPolicy });
+  const visit = await visitAuthKit(page, url, { ...request, authkitHost, callback: browserRedirectUri });
   const code = visit.callback.searchParams.get('code');
   assert.ok(code, `The callback has no authorization code. It has: ${[...visit.callback.searchParams.keys()].join(', ')}.`);
   const cookiePassword = randomBytes(32).toString('base64url');

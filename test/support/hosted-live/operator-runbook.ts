@@ -15,7 +15,7 @@ import { statusOf } from './sdk-errors.ts';
 // proofs run these steps against the staging environment, so that each rule of the runbook rests on WorkOS behavior.
 // They are test support only: the product has no operator method or route.
 
-type OperatorAction = 'locate-or-create-organization' | 'grant-super-admin' | 'revoke-super-admin' | 'inspect-after-unknown-outcome';
+type OperatorAction = 'locate-or-create-organization' | 'grant-admin' | 'revoke-admin' | 'inspect-after-unknown-outcome';
 // applied: the change is in WorkOS now. unchanged: no change was necessary. stopped: the runbook needs a decision of
 // a person before any write. unknown: the effect of the write is not known, so the next step is an inspection.
 type OperatorOutcome = 'applied' | 'unchanged' | 'stopped' | 'unknown';
@@ -40,7 +40,7 @@ export interface OrganizationRequest {
   readonly name: string;
 }
 
-interface SuperAdminRequest {
+interface AdminRequest {
   readonly organizationId: string;
   readonly email: string;
 }
@@ -70,7 +70,7 @@ interface MembershipState {
   readonly roles: readonly string[];
 }
 
-interface SuperAdminAssignment {
+interface AdminAssignment {
   readonly organizationMembershipId: string;
   readonly roleSlug: string;
   readonly resourceTypeSlug: 'organization';
@@ -79,19 +79,19 @@ interface SuperAdminAssignment {
 
 type RecordFacts = Omit<OperatorRecord, 'time' | 'actor'>;
 
-export const superAdminRole = 'super-admin';
+export const adminRole = 'admin';
 
 export function rolesOf(membership: OrganizationMembership | undefined): string[] {
   if (membership === undefined) return [];
   return (membership.roles ?? [membership.role]).map(({ slug }) => slug).toSorted();
 }
 
-function withSuperAdmin(roles: readonly string[]): boolean {
-  return roles.includes(superAdminRole);
+function withAdmin(roles: readonly string[]): boolean {
+  return roles.includes(adminRole);
 }
 
-function withoutSuperAdmin(roles: readonly string[]): boolean {
-  return !withSuperAdmin(roles);
+function withoutAdmin(roles: readonly string[]): boolean {
+  return !withAdmin(roles);
 }
 
 export class OperatorRunbook {
@@ -147,67 +147,67 @@ export class OperatorRunbook {
     return data[0];
   }
 
-  // Step 4: add only the explicit Super Admin grant, with one role assignment. Each other role stays, also a change of
+  // Step 4: add only the explicit Admin grant, with one role assignment. Each other role stays, also a change of
   // a customer at the same time. An inactive or pending membership stops the runbook: a create would activate it, and
   // a reactivation would restore its earlier roles.
-  async grantSuperAdmin(request: SuperAdminRequest): Promise<OperatorRecord> {
+  async grantAdmin(request: AdminRequest): Promise<OperatorRecord> {
     const state = await this.stateOf(request);
-    const facts = this.factsOf(request, state, 'grant-super-admin');
+    const facts = this.factsOf(request, state, 'grant-admin');
     const { membership, roles } = state;
     if (membership === undefined) {
-      return this.written(facts, withSuperAdmin, () => this.#workos.userManagement.createOrganizationMembership({ organizationId: request.organizationId, userId: state.user.id, roleSlugs: [superAdminRole] }));
+      return this.written(facts, withAdmin, () => this.#workos.userManagement.createOrganizationMembership({ organizationId: request.organizationId, userId: state.user.id, roleSlugs: [adminRole] }));
     }
     if (membership.status !== 'active') return this.record({ ...facts, outcome: 'stopped', reason: `the membership is ${membership.status}: no create and no reactivation without a decision` });
-    if (roles.includes(superAdminRole)) return this.record({ ...facts, rolesAfter: roles, outcome: 'unchanged' });
-    const assignment = await this.superAdminAssignment(membership);
-    return this.written(facts, withSuperAdmin, () => this.#workos.authorization.assignRole(assignment));
+    if (roles.includes(adminRole)) return this.record({ ...facts, rolesAfter: roles, outcome: 'unchanged' });
+    const assignment = await this.adminAssignment(membership);
+    return this.written(facts, withAdmin, () => this.#workos.authorization.assignRole(assignment));
   }
 
-  // Remove only Super Admin, with the removal of its one role assignment. Each other role, the identity, and the other
+  // Remove only Admin, with the removal of its one role assignment. Each other role, the identity, and the other
   // memberships stay. Without another role, WorkOS gives the membership the default role, which gives no application
   // permission.
-  async revokeSuperAdmin(request: SuperAdminRequest): Promise<OperatorRecord> {
+  async revokeAdmin(request: AdminRequest): Promise<OperatorRecord> {
     const state = await this.stateOf(request);
-    const facts = this.factsOf(request, state, 'revoke-super-admin');
+    const facts = this.factsOf(request, state, 'revoke-admin');
     const { membership, roles } = state;
-    if (membership === undefined || !roles.includes(superAdminRole)) return this.record({ ...facts, rolesAfter: roles, outcome: 'unchanged' });
+    if (membership === undefined || !roles.includes(adminRole)) return this.record({ ...facts, rolesAfter: roles, outcome: 'unchanged' });
     if (membership.status !== 'active') return this.record({ ...facts, outcome: 'stopped', reason: `the membership is ${membership.status}: no change without a decision` });
-    const assignment = await this.superAdminAssignment(membership);
-    return this.written(facts, withoutSuperAdmin, () => this.#workos.authorization.removeRole(assignment));
+    const assignment = await this.adminAssignment(membership);
+    return this.written(facts, withoutAdmin, () => this.#workos.authorization.removeRole(assignment));
   }
 
-  // After an unknown outcome of a Super Admin grant, the operator inspects and writes nothing. A grant in place needs no
+  // After an unknown outcome of an Admin grant, the operator inspects and writes nothing. A grant in place needs no
   // second write. An absent grant can be a later removal, so only a new decision can start a new setup.
-  async inspectAfterUnknownOutcome(request: SuperAdminRequest): Promise<OperatorRecord> {
+  async inspectAfterUnknownOutcome(request: AdminRequest): Promise<OperatorRecord> {
     const state = await this.stateOf(request);
     const facts = { ...this.factsOf(request, state, 'inspect-after-unknown-outcome'), rolesAfter: state.roles };
     const { membership, roles } = state;
     if (membership !== undefined && membership.status !== 'active') {
       return this.record({ ...facts, outcome: 'stopped', reason: `the membership is ${membership.status}: no reactivation on a retry` });
     }
-    if (roles.includes(superAdminRole)) return this.record({ ...facts, outcome: 'applied', reason: 'the earlier grant is in place' });
+    if (roles.includes(adminRole)) return this.record({ ...facts, outcome: 'applied', reason: 'the earlier grant is in place' });
     return this.record({ ...facts, outcome: 'stopped', reason: 'the grant is absent: it was not applied, or it was removed later' });
   }
 
-  private async stateOf(request: SuperAdminRequest): Promise<MembershipState> {
+  private async stateOf(request: AdminRequest): Promise<MembershipState> {
     const user = await this.identity(request.email);
     const membership = await this.membership(user.id, request.organizationId);
     return { user, membership, roles: rolesOf(membership) };
   }
 
-  private factsOf(request: SuperAdminRequest, state: MembershipState, action: OperatorAction): RecordFacts {
+  private factsOf(request: AdminRequest, state: MembershipState, action: OperatorAction): RecordFacts {
     return { organizationId: request.organizationId, target: { userId: state.user.id, email: request.email }, action, rolesBefore: state.roles, outcome: 'unknown' };
   }
 
   // The authorization resource of a runbook organization has the external ID of the operator. WorkOS refuses the
   // organization ID of an organization with an external ID.
-  private async superAdminAssignment(membership: OrganizationMembership): Promise<SuperAdminAssignment> {
+  private async adminAssignment(membership: OrganizationMembership): Promise<AdminAssignment> {
     const { externalId } = await this.#workos.organizations.getOrganization(membership.organizationId);
     if (externalId === null) throw new Error('The organization has no external ID. Locate it by the external ID of the operator with step 1.');
-    return { organizationMembershipId: membership.id, roleSlug: superAdminRole, resourceTypeSlug: 'organization', resourceExternalId: externalId };
+    return { organizationMembershipId: membership.id, roleSlug: adminRole, resourceTypeSlug: 'organization', resourceExternalId: externalId };
   }
 
-  // Step 5: read the membership again. Only an active membership whose Super Admin role matches the change counts as
+  // Step 5: read the membership again. Only an active membership whose Admin role matches the change counts as
   // applied. Its other roles can differ from the inspection: a customer can change them at the same time, and the role
   // assignment keeps that change. A failed write leaves its effect unknown, so the record says unknown before the
   // failure reaches the caller.

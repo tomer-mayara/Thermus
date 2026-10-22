@@ -275,37 +275,40 @@ describe('Hosted self-service signup with a test legal bundle', () => {
     assert.deepEqual(site.world.memberships, []);
   });
 
-  test('Given existing Admin access, when signup is submitted, then a separate personal workspace gets only User access', async (t) => {
+  test('Given existing Admin-only access, when signup opens, then Continue preserves existing access without agreement, organization creation, or a new User membership', async (t) => {
     const site = await openSignupSite(t, true);
-    const user = { id: 'user_EXISTING_ADMIN', email: 'person@company.example', firstName: 'Person' };
+    const user = { id: 'user_ADMIN', email: 'admin@company.example', firstName: 'Admin' };
     site.world.users = [user];
     site.world.memberships = [{ userId: user.id, organizationId: 'org_INTERNAL', roles: ['admin'], status: 'active' }];
     const { browser } = await signInThroughServer(site, user);
-    const form = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
-    assert.ok(form);
-    const answer = await browser.post('signup', { ...form.fields, agreement: 'accepted' });
-    assert.equal(answer.status, 303, answer.body);
-    assert.equal(answer.location?.pathname, '/organizations');
+    site.world.fake.takeRequests();
+
+    const page = await browser.open('signup');
+
+    assert.equal(page.status, 200, page.body);
+    assert.match(page.body, /href="\/organizations\?return_to=%2F">Continue<\/a>/);
+    assert.deepEqual(formsIn(page.body), []);
     assert.deepEqual(site.world.rolesOf(user, 'org_INTERNAL'), ['admin']);
-    assert.equal(site.signupFake.organizations.length, 1);
-    assert.deepEqual(site.world.rolesOf(user, String(site.signupFake.organizations[0]?.id)), ['user']);
+    assert.deepEqual(site.signupFake.organizations, []);
+    assert.equal(site.world.memberships.length, 1);
+    assert.deepEqual(site.world.fake.takeRequests().filter(({ method }) => method !== 'GET'), []);
   });
 
-  test('Given a signup form opened before User access was granted, when the old form is submitted, then existing access is used without another organization or grant', async (t) => {
+  test('Given a signup form opened before Admin access was granted, when the old form is submitted, then existing access is used without another organization or grant', async (t) => {
     const site = await openSignupSite(t, true);
     const user = { id: 'user_STALE_FORM', email: 'person@company.example', firstName: 'Person' };
     site.world.users = [user];
     const { browser } = await signInThroughServer(site, user);
     const form = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
     assert.ok(form);
-    site.world.memberships = [{ userId: user.id, organizationId: 'org_INTERNAL', roles: ['user'], status: 'active' }];
+    site.world.memberships = [{ userId: user.id, organizationId: 'org_INTERNAL', roles: ['admin'], status: 'active' }];
     site.world.fake.takeRequests();
 
     const answer = await browser.post('signup', { ...form.fields, agreement: 'accepted' });
 
     assert.equal(answer.status, 303, answer.body);
     assert.equal(answer.location?.searchParams.get('return_to'), '/');
-    assert.deepEqual(site.world.rolesOf(user, 'org_INTERNAL'), ['user']);
+    assert.deepEqual(site.world.rolesOf(user, 'org_INTERNAL'), ['admin']);
     assert.deepEqual(site.signupFake.organizations, []);
     assert.deepEqual(site.world.fake.takeRequests().filter(({ method }) => method !== 'GET'), []);
   });

@@ -45,7 +45,7 @@ const invitationStates: readonly InvitationState[] = ['pending', 'accepted', 're
 const seatMemberships: readonly (readonly [AdministrationMembershipName, string])[] = [
   ['seatUserAdminInD', 'active admin,user'],
   ['seatAdminInD', 'active admin'],
-  ['seatSuperAdminInD', 'active super-admin'],
+  ['seatUserInD', 'active user'],
   ['seatDefaultInD', 'active member'],
   ['seatInactiveInD', 'inactive user'],
   ['seatPendingInD', 'pending user'],
@@ -144,17 +144,17 @@ export function describeAdministrationProofs(run: LiveRun): void {
     return listed;
   }
 
-  describe('Hosted live proofs (AUTH-08W): member reads, User seats, and invitations of the directory against WorkOS', () => {
-    test('Given memberships of D in the statuses active, inactive, and pending, when the directory reads them in pages of two, then each status filter gives exactly the memberships of a direct WorkOS read with that filter, and the User seat count counts each active membership with User once: User and Admin is one seat, and Admin only, Super Admin only, the default role, pending, and inactive count zero', proofOptions, async (t) => {
+  describe('Hosted live proofs (AUTH-08W): member reads, product member count, and invitations of the directory against WorkOS', () => {
+    test('Given memberships of D in the statuses active, inactive, and pending, when the directory reads them in pages of two, then each status filter gives exactly the memberships of a direct WorkOS read with that filter, and the product member count counts each active User or Admin once; the default role, pending, and inactive count zero', proofOptions, async (t) => {
       const { organizationD, memberships } = await run.administrationFixtures();
       for (const statuses of singleStatuses) await checkedPagedRead(t, organizationD.id, statuses);
       const every = await checkedPagedRead(t, organizationD.id, everyStatus);
 
       const seatReads: MembershipListRead[] = [];
       const seats = await activeUserSeatCount(pagedDirectory(seatReads), organizationD.id);
-      const seatHolders = (await membershipsInWorkOS(organizationD.id, ['active'])).filter((membership) => rolesOf(membership).includes('user'));
+      const seatHolders = (await membershipsInWorkOS(organizationD.id, ['active'])).filter((membership) => rolesOf(membership).some((role) => role === 'user' || role === 'admin'));
       const summaries = seatMemberships.map(([name]) => memberSummary(every.members.find(({ membershipId }) => membershipId === memberships[name])));
-      t.diagnostic(`User seats: ${seats} from ${seatReads.length} pages; direct WorkOS read: ${seatHolders.length}; seat proof memberships: ${JSON.stringify(summaries)}`);
+      t.diagnostic(`Product members: ${seats} from ${seatReads.length} pages; direct WorkOS read: ${seatHolders.length}; fixture memberships: ${JSON.stringify(summaries)}`);
 
       assert.ok(every.reads.length > 2, `The read of every status had ${every.reads.length} pages.`);
       assert.deepEqual(summaries, seatMemberships.map(([, summary]) => summary));

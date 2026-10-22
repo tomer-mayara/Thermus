@@ -7,6 +7,11 @@ the frozen FS-03 document bundle in production composition under the separate
 owner approval for implementation. The original review manifest remains unchanged.
 These procedures publish no policy, send no notice, and change no access.
 
+The manual steps below retain the earlier provider API procedure. S1-02 does
+not execute them. Confirm a current approved provider procedure and scope before
+using the historical numbered setup references. Admin authority can also lead to
+product access; its invitations need the same agreement controls as User access.
+
 ## Control and limits
 
 Tomer is the operator. The restricted `~/.codex/operator-records` directory is
@@ -25,7 +30,7 @@ every product request. Self-serve activation does check explicit agreement and
 stores an initial acceptance marker in WorkOS. It is not an acceptance history.
 
 Initially, the operator controls manual User grants. S1-01 retires customer
-grant forms, including self-grants. Native User invitations and direct WorkOS
+grant forms, including self-grants. Native User and Admin invitations and direct WorkOS
 writes can still bypass this procedure. Before delegating invitation authority,
 the owner must establish who checks and records each agreement and how the
 operator reviews compliance. If these controls cannot be maintained, stop new
@@ -43,15 +48,15 @@ addresses can qualify. Email verification does not verify age, employment, or
 business authority; the approved wording must cover the adult/business terms.
 
 A confirmed new personal-organization create permits one initial explicit User
-membership attempt. No Admin or Super Admin is granted. WorkOS retains the
+membership attempt. No Admin is granted. WorkOS retains the
 [signup record](hosted-signup-recovery.md#retained-personal-record). Freeze and
 retain exact bundle, terms, notice, and agreement bytes with their versions and
 hashes in the private store before use. Never reuse a version for changed bytes.
 The marker holds document hashes and an agreement version, not complete text.
 
 Existing product access offers Continue without another agreement or personal
-workspace. Admin-only access is not product access and can qualify for a separate
-personal workspace. A retained marker with missing, pending, inactive, or
+workspace. Admin-only access is product access and offers Continue without a separate
+personal workspace. Named creation and first Admin assignment wait for S1-03a. A retained marker with missing, pending, inactive, or
 inconsistent access requires support; it does not authorize a new grant. Use
 [signup inspection and recovery](hosted-signup-recovery.md), not the manual
 new-membership procedure below, for an incomplete signup.
@@ -68,7 +73,7 @@ and Connect consent are not terms acceptance.
 ## Before requesting agreement
 
 1. Confirm the WorkOS environment, application, and organization with the owner.
-   Use the operator MFA and secret-handling requirements in
+   Use the scope and secret-handling requirements in
    [organization setup](hosted-organization-setup.md#before-you-start) before
    each provider write. Never copy API keys into the record.
 2. Freeze the exact, complete terms and privacy notice in the private store.
@@ -108,7 +113,7 @@ the organization's effective configuration.
 Serialize this work with every operator and other membership writer for this
 user and organization. Confirm no directory or other automation manages the
 membership. Immediately reread all three membership statuses. Continue only
-if none exists and no concurrent writer is possible. Recheck operator MFA and
+if none exists and no concurrent writer is possible. Recheck the approved scope and
 the environment, then use the `api` helper from organization setup with the
 verified IDs substituted in this example:
 
@@ -121,7 +126,7 @@ The [WorkOS create contract](https://workos.com/docs/reference/authkit/organizat
 creates an active membership but can reactivate an inactive one. It supplies no
 absence precondition; serialization and rereads are manual controls, not an
 atomic guarantee. Never use this create for a known pending, inactive, or
-directory-managed membership. Never bootstrap with User, Admin, or Super Admin.
+directory-managed membership. Never bootstrap with User or Admin.
 
 Read all statuses again. Require exactly one active, non-directory-managed
 membership for the same user and organization, with only the verified
@@ -156,7 +161,10 @@ A native MCP user follows these same steps without a portal visit.
 
 ## Grant only User and verify the result
 
-1. Recheck the environment, operator MFA, agreement evidence, and current
+This manual User procedure does not authorize Admin assignment or the S1-05
+role cutover. Use a separately approved operator procedure for those changes.
+
+1. Recheck the environment, approved scope, agreement evidence, and current
    identity and active membership immediately before the write. Stop if any
    target or state differs from the approved record. Record current roles.
 2. If User is already present, record `unchanged`. Use the existing-user
@@ -166,7 +174,7 @@ A native MCP user follows these same steps without a portal visit.
    organization's authorization resource: type `organization`, with its
    external ID. For an organization without an external ID, confirm its
    resource identifier before proceeding; do not guess. Never replace the
-   complete role set, activate a membership, or grant Admin or Super Admin.
+   complete role set, activate a membership, or grant Admin.
 4. Read the membership again in all statuses. Verify the same user,
    organization, and membership, active with User. Record the time, operator,
    action, roles before and after, and `applied`, `unchanged`, `stopped`, or

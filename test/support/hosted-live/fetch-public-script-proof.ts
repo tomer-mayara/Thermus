@@ -7,8 +7,7 @@ import { WorkOS } from '@workos-inc/node';
 import { decodeJwt } from 'jose';
 import { LiveBrowser } from './live-browser.ts';
 import { LocalHttpsSite, selfSignedCertificate } from './local-https-site.ts';
-import { assertProviderMfaProfile } from './mfa-profile.ts';
-import { TotpAuthenticator } from './totp.ts';
+import { assertProviderPasswordProfile } from './password-profile.ts';
 import { field, queryWidgetGraph } from './workos-api.ts';
 import { mcpRequest } from '../drivers/mcp/mcp-http-request.ts';
 import { runPublicFetchCommand } from './fetch-public-script-client.ts';
@@ -18,7 +17,7 @@ const command = ['--endpoint', profile.endpoint];
 const fetchArguments = [...command, '--url', 'https://example.com/', '--reason', 'Prove the Staging public OAuth fetch command'];
 
 interface OwnedFixture {
-  readonly user: { readonly id: string; readonly email: string; readonly password: string; readonly authenticator: TotpAuthenticator };
+  readonly user: { readonly id: string; readonly email: string; readonly password: string };
   readonly organizations: readonly { readonly id: string; readonly name: string }[];
   readonly memberships: readonly { readonly id: string }[];
 }
@@ -37,9 +36,9 @@ async function createFixture(workos: WorkOS, owned: Array<() => Promise<unknown>
   const memberships = [];
   for (const organization of organizations) memberships.push(await workos.userManagement.createOrganizationMembership({ organizationId: organization.id, userId: user.id, roleSlugs: ['user', 'admin'] }));
   const { token } = await workos.widgets.createToken({ userId: user.id, organizationId: organizations[0].id, scopes: ['widgets:users-table:manage'] });
-  const data = await queryWidgetGraph(token, 'query { authenticationSettings { mfaEnabled mfaRequired } }');
-  assertProviderMfaProfile('optional', field(data, 'authenticationSettings'));
-  return { user: { ...user, password, authenticator: new TotpAuthenticator() }, organizations, memberships };
+  const data = await queryWidgetGraph(token, 'query { authenticationSettings { passwordAuthEnabled mfaEnabled mfaRequired } }');
+  assertProviderPasswordProfile(field(data, 'authenticationSettings'));
+  return { user: { ...user, password }, organizations, memberships };
 }
 
 interface PrivateGrant {
@@ -148,7 +147,7 @@ export async function proveFirstPartyFetchScript(diagnostic: (message: string) =
   const apiKey = process.env.WORKOS_API_KEY ?? '';
   assert.ok(apiKey.startsWith('sk_test_'), 'The actual-script proof requires Staging credentials.');
   assert.equal(process.env.WORKOS_CLIENT_ID, 'client_01M4VDKB7C7T2GV2NWPS84HADP', 'The proof requires the designated Staging environment.');
-  const settings = { apiKey, clientId: process.env.WORKOS_CLIENT_ID, authkitIssuer: profile.issuer, mfaPolicy: 'optional' as const };
+  const settings = { apiKey, clientId: process.env.WORKOS_CLIENT_ID, authkitIssuer: profile.issuer };
   const workos = new WorkOS({ apiKey, clientId: settings.clientId, maxRetries: 0, timeout: 15_000 });
   const owned: Array<() => Promise<unknown>> = [];
   const directory = await realpath(await mkdtemp(join(tmpdir(), 'thermus-fetch-script-proof-')));

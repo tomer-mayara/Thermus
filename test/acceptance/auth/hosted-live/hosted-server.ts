@@ -23,7 +23,6 @@ const tokenLifetimeWait = 305_000;
 
 export function describeHostedServerCases(run: LiveRun): void {
   const { settings } = run;
-  const requiredMfa = settings.mfaPolicy === 'required';
   const authkitHost = new URL(settings.authkitIssuer).host;
 
   async function mcpStatus(token: string | undefined): Promise<{ status: number; challenge: string | null; body: string }> {
@@ -42,7 +41,7 @@ export function describeHostedServerCases(run: LiveRun): void {
   });
 
   describe('Hosted live gate (AUTH-06): the hosted server at https://localhost:46443/ with WorkOS', () => {
-    test(`Given a member with User and Admin in organization A and the ${requiredMfa ? 'Required' : 'Optional'} MFA profile, when the member signs in and chooses A, then ${requiredMfa ? 'MFA completes' : 'no MFA is demanded'} before the callback, the sealed cookie is HttpOnly, Secure, and SameSite=Lax, the session has MFA evidence ${requiredMfa}, and the portal shows current product access in A`, signInOptions, async (t) => {
+    test('Given a member with User and Admin in organization A, when the member signs in with a password and chooses A, then no MFA is demanded, the sealed cookie is HttpOnly, Secure, and SameSite=Lax, the session has no MFA evidence, and the portal shows current product access in A', signInOptions, async (t) => {
       const { organizationA } = await run.fixtures();
       const { page, pages } = await admin();
       const cookies = await page.context().cookies(localOrigin);
@@ -50,13 +49,14 @@ export function describeHostedServerCases(run: LiveRun): void {
       t.diagnostic(`AuthKit pages: ${pages.join(' > ')}`);
       t.diagnostic(`cookies: ${cookies.map(({ name, httpOnly, secure, sameSite, path, value }) => `${name} (${value.length} characters, HttpOnly ${httpOnly}, Secure ${secure}, SameSite ${sameSite}, Path ${path})`).join(', ')}`);
 
-      assert.equal(pages.some((path) => path.startsWith('/mfa/')), requiredMfa, 'AuthKit MFA pages do not match the selected profile.');
+      assert.ok(pages.some((path) => path.startsWith('/password')), 'The live sign-in did not complete a password page.');
+      assert.equal(pages.some((path) => path.startsWith('/mfa/')), false, 'Password sign-in reached an MFA page.');
       assert.ok(session, 'The server set no session cookie.');
       assert.deepEqual([session.httpOnly, session.secure, session.sameSite, session.path], [true, true, 'Lax', '/']);
       assert.equal(cookies.some(({ name }) => name === signInCookie), false, 'The sign-in cookie stayed after the callback.');
       assert.match(await page.locator('.product-access').textContent() ?? '', new RegExp(`You have product access in organization ${organizationA.id}\\. Roles: admin, user\\.`));
       const json = await sessionJson(page);
-      assert.equal(json.mfaCompleted, requiredMfa, 'The password session MFA evidence does not match the configured and read-back policy.');
+      assert.equal(json.mfaCompleted, false, 'The password session must not infer MFA evidence.');
       assert.equal(json.organizationId, organizationA.id);
     });
 
@@ -72,12 +72,12 @@ export function describeHostedServerCases(run: LiveRun): void {
       await page.context().close();
     });
 
-    test('Given an Admin-only member and a default-role member of organization A, when each signs in, then the protected portal request gives 403 for both: Admin alone gives no product access, and the default role gives no permission', signInOptions, async () => {
+    test('Given an Admin-only member and a default-role member of organization A, when each signs in, then Admin has product access and the default role is refused', signInOptions, async () => {
       const { adminOnlyUser, defaultRoleUser } = await run.fixtures();
-      for (const user of [adminOnlyUser, defaultRoleUser]) {
+      for (const [user, expected] of [[adminOnlyUser, 200], [defaultRoleUser, 403]] as const) {
         const { page } = await signInThroughPortal(run, user);
-        assert.equal((await serverGet(page, 'portal/access')).status, 403, `${user.email.split('@')[0]} got product access.`);
-        assert.match(await page.locator('.product-access').innerText(), /no product access/);
+        assert.equal((await serverGet(page, 'portal/access')).status, expected);
+        assert.match(await page.locator('.product-access').innerText(), expected === 200 ? /You have product access/ : /no product access/);
         await page.context().close();
       }
     });
@@ -113,26 +113,31 @@ export function describeHostedServerCases(run: LiveRun): void {
       assert.equal((await mcpStatus(machine.accessToken)).status, 401);
     });
 
-    test('Given a member with Admin only in organization A and User in organization B, when the browser session is in A and the MCP grant is in B, then the portal has no product access while the MCP grant works: each credential keeps its own organization', signInOptions, async (t) => {
-      const { mixedUser, organizationA, organizationB } = await run.fixtures();
+    test('Given a member with Admin only in organization A and User in organization B, when the browser session is in A and the MCP grant is in B, then each opens in its own organization; deactivating the A membership closes portal access while MCP in B still works', signInOptions, async (t) => {
+      const { mixedUser, organizationA, organizationB, memberships } = await run.fixtures();
       const grant = await mixedGrantInB();
       const browser = await signInThroughPortal(run, mixedUser, organizationA.name);
       t.diagnostic(`Connect grant pages: ${grant.visit.pages.join(' > ')}; token org_id is B: ${String(readToken(grant.tokens.accessToken).claims.org_id === organizationB.id)}`);
 
       assert.equal(readToken(grant.tokens.accessToken).claims.org_id, organizationB.id);
       assert.equal((await sessionJson(browser.page)).organizationId, organizationA.id);
+      const portal = await serverGet(browser.page, 'portal/access');
+      assert.equal(portal.status, 200, portal.body);
+      assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationA.id, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
+      assert.equal((await mcpStatus(grant.tokens.accessToken)).status, 200);
+      await run.workos.userManagement.deactivateOrganizationMembership(memberships.mixedAdminInA);
       assert.equal((await serverGet(browser.page, 'portal/access')).status, 403);
+      assert.equal((await sessionJson(browser.page)).organizationId, organizationA.id);
       assert.equal((await mcpStatus(grant.tokens.accessToken)).status, 200);
       await browser.page.context().close();
     });
 
-    test('Given an Admin-only member of organization A with a Connect grant, when its MCP client calls the MCP endpoint, then it gets 403 access_denied: MCP needs User', signInOptions, async () => {
+    test('Given an Admin-only member of organization A with a Connect grant, when its MCP client calls the MCP endpoint, then it succeeds because Admin includes product access', signInOptions, async () => {
       const { adminOnlyUser, organizationA, oauthApplication } = await run.fixtures();
       const grant = await authorizeWithConnect(run, { user: adminOnlyUser, organizationName: organizationA.name, clientId: oauthApplication.clientId });
       const answer = await mcpStatus(grant.tokens.accessToken);
 
-      assert.equal(answer.status, 403);
-      assert.match(answer.body, /access_denied/);
+      assert.equal(answer.status, 200, answer.body);
     });
 
     test('Given an external sign-in, when a browser opens the AuthKit domain directly, then AuthKit sends it to the Initiate login URI /login of the server, which starts the sign-in, and the user ends signed in on the portal', signInOptions, async (t) => {
@@ -148,7 +153,7 @@ export function describeHostedServerCases(run: LiveRun): void {
         `A direct visit to ${settings.authkitIssuer}/ did not reach the Initiate login URI ${initiateLoginUri}.`,
         `The owner must set the Initiate login URI of the staging environment to ${initiateLoginUri} in the WorkOS dashboard.`,
       ].join(' '));
-      await completeAuthKit(page, { user: connectUser, authkitHost, mfaPolicy: settings.mfaPolicy });
+      await completeAuthKit(page, { user: connectUser, authkitHost });
       await page.waitForURL(`${localOrigin}/`);
       await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
       await page.context().close();
@@ -211,7 +216,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       assert.equal(refreshed.status, 200);
       assert.equal(refreshed.setCookies.filter((cookie) => cookie.startsWith(`${sessionCookie}=`) && !/Max-Age=0/i.test(cookie)).length, 1, 'The refresh sent no new session cookie.');
       assert.equal(afterExpiry.csrfToken, before.csrfToken, 'The form token changed at the refresh.');
-      assert.equal(afterExpiry.mfaCompleted, requiredMfa, 'A refresh changed the selected MFA evidence policy.');
+      assert.equal(afterExpiry.mfaCompleted, false, 'A refresh must not infer MFA evidence.');
       assert.equal(endedAfterExpiry.status, 401);
       assert.ok(endedAfterExpiry.setCookies.some((cookie) => cookie.startsWith(`${sessionCookie}=`) && /Max-Age=0/i.test(cookie)), 'The ended session kept its cookie.');
       assert.equal(revokedAfterExpiry.status, 401);

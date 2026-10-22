@@ -23,7 +23,7 @@ import {
 } from './fixtures/workos-session-client-double.ts';
 
 describe('WorkOSBrowserSession: the refresh of a session check', () => {
-  test('Given an access token that does not verify (invalid_jwt), when the session authenticates, then one refresh in the organization of the session decides, and the signed-in result has one new session cookie with the new seal and the same CSRF token and MFA evidence', async () => {
+  test('Given an access token that does not verify (invalid_jwt), when the session authenticates, then one refresh in the organization of the session decides, and the signed-in result has one new session cookie with the new seal, the same CSRF token, and no MFA evidence', async () => {
     for (const mfa of [true, false]) {
       const client = new WorkOSSessionClientDouble();
       client.check = () => ({ authenticated: false, reason: 'invalid_jwt' });
@@ -33,10 +33,10 @@ describe('WorkOSBrowserSession: the refresh of a session check', () => {
 
       assert.deepEqual(client.calls, [{ method: 'authenticate', input: sealOptions }, { method: 'refresh', input: sealOptions }]);
       assert.equal(session.cookies.length, 1);
-      assert.deepEqual(sessionEnvelopeIn(session.cookies[0]), { seal: 'seal-2', csrf: envelope.csrf, mfa });
+      assert.deepEqual(sessionEnvelopeIn(session.cookies[0]), { seal: 'seal-2', csrf: envelope.csrf, mfa: false });
       assert.deepEqual(
         [session.user, session.profile.email, session.csrfToken, session.mfaCompleted],
-        [{ authority, subject: ada.id, selectedOrganizationId: 'org_01ACME' }, 'ada@new.example', envelope.csrf, mfa],
+        [{ authority, subject: ada.id, selectedOrganizationId: 'org_01ACME' }, 'ada@new.example', envelope.csrf, false],
       );
     }
   });
@@ -93,7 +93,7 @@ describe('WorkOSBrowserSession: the refresh of a session check', () => {
 });
 
 describe('WorkOSBrowserSession: the organization switch', () => {
-  test('Given a signed-in session, when it selects another organization and WorkOS refreshes into it, then the switch sends one session cookie with the new seal and the same CSRF token and MFA evidence', async () => {
+  test('Given a signed-in session, when it selects another organization and WorkOS refreshes into it, then the switch sends one session cookie with the new seal, the same CSRF token, and no MFA evidence', async () => {
     const client = new WorkOSSessionClientDouble();
     const session = signedIn(await browserSession(client).authenticate(cookieHeader));
 
@@ -101,7 +101,7 @@ describe('WorkOSBrowserSession: the organization switch', () => {
 
     assert.equal(change.status, 'switched');
     assert.equal(change.cookies.length, 1);
-    assert.deepEqual(sessionEnvelopeIn(change.cookies[0]), { seal: 'seal-2', csrf: envelope.csrf, mfa: true });
+    assert.deepEqual(sessionEnvelopeIn(change.cookies[0]), { seal: 'seal-2', csrf: envelope.csrf, mfa: false });
     assert.deepEqual(client.calls.at(-1), { method: 'refresh', input: { ...sealOptions, organizationId: 'org_02GLOBEX' } });
   });
 
@@ -135,7 +135,7 @@ describe('WorkOSBrowserSession: the organization switch', () => {
     const change = await session.selectOrganization('org_02GLOBEX');
 
     assert.equal(change.status, 'refused');
-    assert.deepEqual(change.cookies.map(sessionEnvelopeIn), [{ seal: 'seal-2', csrf: envelope.csrf, mfa: true }]);
+    assert.deepEqual(change.cookies.map(sessionEnvelopeIn), [{ seal: 'seal-2', csrf: envelope.csrf, mfa: false }]);
   });
 
   test('Given WorkOS ended the session, when the session selects an organization, then the switch signs out with the cleared cookie', async () => {
