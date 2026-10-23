@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Add optional L4 detail to the existing L3 architecture comparison guide only when a callable contract is added, removed, or materially changed and L3 with behavior notes is insufficient. Record a brief include/omit rationale: state when no callable contract changed; otherwise name the strongest changed contract, concrete review question, and whether L3 plus notes answers it. Keep each L3 view within one container and show supporting containers as named L2 peers. Scope L4 to one component and container, use actual selected code elements and calls, explain shorthand, collapsed delegation and material omitted recovery or remote work, and exclude internal refactors that preserve caller-visible behavior. Distinguish source-contract changes from concrete runtime effects and state changed conditions at their owner while surviving calls stay neutral. A manager may request a separate evaluation-only alternative when useful; it is not required for every PR and enters the report only if it answers that question more clearly than L3 plus notes. L3 remains the main comparison. This changes manual reporting guidance only, with no new automated gates or fixed prose limit. Human approval, test, metrics, review-tier, and merge rules remain unchanged. The context, container, component, runtime, and deployment views remain accurate because this candidate changes no application source, contracts, runtime configuration, responsibilities, collaborations, external systems, resource ownership, or deployment placement. Production architecture metrics are not applicable; no registry edit is needed.",
+    "summary": "Refine the manual architecture comparison guidance in AGENTS.md. Prefer one clear combined L3 comparison with only needed unchanged neighbors. Identify new runtime use at its caller or context, trace shared-contract effects through callers including unchanged files, and name material effects outside the focused view. Identify the failed operation and phase when they affect authority, recovery, or retries. Limit the L4 trigger to changed production callable contracts; test-helper APIs do not trigger it. State when production architecture is unchanged; tests or documents alone do not establish runtime behavior. Inspect diagrams at normal PR width, about 800 pixels, without zoom, and simplify small labels. This changes reporting guidance only and adds no automated gate or approval authority. The context, hosted/local containers, components, runtime, and deployment views remain accurate because no application source, callable contract, configuration, responsibility, collaboration, resource lifetime, external system, or deployment placement changes. No registry edit or Mermaid render is needed.",
     "views": [
       "context",
       "containers",
@@ -26,7 +26,9 @@
     "evidence": [
       "AGENTS.md",
       "docs/implementation/component-registry-workflow.md",
-      "architecture/components.md"
+      "architecture/components.md",
+      "docs/implementation/test-gate-policy.md",
+      "docs/implementation/pr-review-rules.yaml"
     ]
   }
 }
