@@ -120,16 +120,21 @@ requesting human review. Update that comment when the candidate changes.
   block in `architecture/components.md` and list the changed views.
 - Read the relevant architecture prose, code, contracts, and tests at both
   revisions. Use the actual parent behavior; do not include changes from a later
-  PR in the stack. Select only the affected views for the comment.
+  PR in the stack. Reconstruct the pinned delta before consulting old comments;
+  treat earlier drawings as drafts. Select only the affected views.
 - Author the Mermaid comparison manually. If no registry diagram changed, say
   so and explain the impact. Clearly label supplementary comparisons derived
   from the prose and code. Add or refine a registry view when needed to keep
   the current map accurate; do not present newly documented behavior as new.
-- Preserve component and container identities and boundaries. A removed
+- Preserve component and container identities and boundaries. Show each
+  revision's responsibilities and useful collaboration edges faithfully. Put
+  detailed policy beside the drawing, not in place of its structure. A removed
   operation does not remove its owner. A new call does not create a component.
   A moved contract changes ownership; it does not add a runtime capability.
   Separate source dependencies and implements edges from runtime calls. Give
-  each implementation only its own contract edges.
+  each implementation only its own contract edges. Find new runtime use of
+  existing contracts, including dependencies that were previously type-only.
+  Show shared validation at its rule owner, not only as a caller self-call.
 - Use green for added elements, red for removed elements, and amber for changed
   meaning. Add text labels so color is not the only signal. Keep unchanged
   elements and boundaries neutral. For component diagrams, use a combined
@@ -137,22 +142,28 @@ requesting human review. Update that comment when the candidate changes.
 - For sequence diagrams, prefer separate Before and After drawings. Preserve
   each version's conditions and message order. Removing a condition does not
   make surviving messages new or removed. Check policy and payload changes even
-  when message labels stay the same.
+  when message labels stay the same. Show these changes at their owners while
+  keeping surviving calls neutral.
 - Place local validation at its owner and separate it from remote reads. Name
   grouped participants and keep supplied-role grouping consistent across
-  versions. Do not hide a remote operation in a self-call without explaining it.
+  versions. Preserve local gates between remote reads; do not combine work
+  across a decision that can stop the next read. Label condensed remote work
+  and identify possible remote work in omitted authentication details. Do not
+  hide a remote operation in a self-call without explaining it. Name retained
+  dependencies locally when their unchanged edges are omitted for clarity.
 - Keep success and failure paths clear; an error return must not lead to a
   success response. A focused success path can state other outcomes in a short
   note. Preserve important authority, replay, and lifetime rules.
 - Check each highlighted element against both revisions, including calls moved
   out of a removed condition. Link before and after registry and code evidence
-  at pinned revisions. State evidence limits, such as source review versus
-  observed live behavior.
+  at pinned revisions; verify each path and line bound. State evidence limits,
+  such as source review versus observed live behavior.
 - Save versioned comment drafts, standalone Mermaid sources, render outputs,
   and review notes. Parse, render, and visually inspect each drawing. Preserve
   relevant diagram configuration. Check labels, boundaries, arrow targets, and
-  lines through unrelated boxes at normal PR comment width. Simplify wide views
-  when labels become too small. Embed the exact sources that were rendered.
+  lines through labels or unrelated boxes at normal PR comment width. Simplify
+  wide views when labels become too small. Verify that embedded Mermaid matches
+  the rendered standalone sources byte-for-byte.
 - Apply the manager's feedback in a new draft, rerender changed drawings, and
   record how findings were resolved. After manager sign-off, recheck the current
   PR revisions. If they changed, refresh the comparison and obtain manager
