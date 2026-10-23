@@ -548,8 +548,8 @@ source file and line enrichment. Existing account change records in this output
 remain internal. S2-03a will add separate customer audit events.
 
 Audit logs are the customer organization Admin feature. `src/logs/audit/` owns
-the destination store/runtime and the distinct event-specific `AuditLog` and
-`AuditLogger` API foundation implemented in this change. Its unwired
+destination validation, credential protection, the settings service/store/runtime,
+and the distinct event-specific `AuditLog` and `AuditLogger` API foundation. Its unwired
 `toolCompleted` and `administrationChanged` methods accept metadata only.
 S2-03a must extend tool events with redacted, bounded input and result before
 production capture or export. Add administration event methods only as the
@@ -559,8 +559,9 @@ audit delivery. Shared classes under `src/logs/` are appropriate only for real
 common behavior; these roles require no shared base class.
 
 Slice 2 gives customers access through their configured organization Collector.
-It promises no in-app log viewer. This change ships no Audit logs UI or delivery;
-S2-03a still owns production MCP/admin capture, redaction, and truncation.
+It promises no in-app log viewer. S2-01b adds the Audit logs settings UI and Save.
+Delivery remains planned; S2-03a still owns production MCP/admin capture,
+redaction, and truncation.
 The technical database, role, SQL table, and environment names remain compatible,
 including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
 
@@ -1508,7 +1509,8 @@ documents, and manual rollout proofs need no tests of file text or prose.
 **Implementation record.** S2-01a adds the server store contract, plain `pg`
 adapter, bounded runtime, hosted configuration/lifecycle integration, and reviewed
 scoped schema/role setup. See [scope and verification limits](../implementation/admin-s2-01a.md).
-S2-01b and later Slice 2 behavior remains planned. Actual Supabase setup and
+S2-01b adds the Admin settings behavior described below; later Slice 2 behavior
+remains planned. Actual Supabase setup and
 TLS/grant/backup/restore/$0 proof remain S2-04 owner gates.
 
 **Acceptance specification first:**
@@ -1586,6 +1588,19 @@ source/configuration completion does not pass that gate.
 
 #### S2-01b — Admin settings, encrypted credential, and atomic Save
 
+**Implementation record.** The stacked S2-01b candidate adds an Audit logs read/Save
+service and native Admin page. The service protects the Bearer token with
+AES-256-GCM and tenant authenticated data, returns token presence only, and
+preserves ciphertext and revision for a semantic no-op. Web derives the tenant
+and Admin permission from current trusted context and checks origin and CSRF.
+The native unconfirmed response offers only a GET saved-state link, with no Save
+form or automatic retry. No server-wide or session write hold is added. Every
+later Save, including manual old-form submissions and late commits, remains
+subject to the store's atomic revision check. See [implementation and verification status](../implementation/admin-s2-01b.md).
+Collector delivery, optional Test, capture, MFA, and live database proof remain
+outside this ticket. The specifications and steps below record the required
+behavior; they do not claim that the complete candidate's gates have passed.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -1598,12 +1613,13 @@ Scenario: Save one protected destination
 Scenario: Show an uncertain Save honestly
   Given a Save whose SQL commit result is unknown
   When the browser receives the outcome
-  Then it shows an unconfirmed result and requires a saved-state read before a write
+  Then it shows an unconfirmed result with only a saved-state read link and no Save form
   And it neither claims nothing changed nor blindly repeats the Save
 ```
 
-**Gap / expected red.** Audit logs settings, encrypted credentials, and their native page do
-not exist. Save and protected reread should be red. Keep current password, Admin permission,
+**Initial gap / expected red.** Audit logs settings, encrypted credentials, and their
+native page did not exist before this ticket. Save and protected reread were the
+required initial red cases. Keep current password, Admin permission,
 selected-org, origin/CSRF, escaping, and no-cache outcomes green. Do not require MFA or the
 later membership-reduction coordinator.
 
@@ -1625,7 +1641,9 @@ later membership-reduction coordinator.
    token and other settings are unchanged; randomized encryption alone must not create a
    settings change. Preserve 01a's atomic revision/write contract and preserve existing
    ciphertext on a semantic no-op. Distinguish definite refusal from unconfirmed outcome and
-   require reload before another write. A stale write must not overwrite the newer commit.
+   require a saved-state reload before the native page offers another Save form. Manually
+   submitted old forms still face atomic revision checks; no server write hold is needed.
+   A stale write must not overwrite the newer commit.
    Do not add automatic write retry, a second settings history, or a member-operation log.
    Refactor errors without echoing endpoint credentials, tokens, or SQL values.
 4. Red: web-boundary cases submit valid and forged forms, changed current roles, and tenant A
@@ -1647,7 +1665,7 @@ checks start at
 [`organization-administration.ts`](../../src/accounts/organizations/organization-administration.ts).
 Navigation exists in `src/interfaces/user-portal/portal.ts` and
 `src/interfaces/web/account/members-page-layout.ts`. The destination service, credential
-codec, and Audit logs page are proposed, not existing APIs. Reuse
+codec, and Audit logs page are added by this candidate. Reuse
 `test/integration/hosted-admin/` form/change patterns and
 `test/acceptance/auth/hosted-admin-journey.test.ts` browser/site patterns. Place focused new
 destination unit tests with that package, not in WorkOS tests.

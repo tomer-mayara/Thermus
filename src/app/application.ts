@@ -3,7 +3,7 @@ import type { LocalAuthPages } from '../interfaces/web/auth/better-auth/local-au
 import type { AccessResolver } from '../accounts/identity/access-context.ts';
 import type { Billing } from '../accounts/billing/billing.ts';
 import type { DeploymentConfig } from '../runtime/config/deployment-config.ts';
-import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation } from '../interfaces/web/account/account-routes.ts';
+import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation, type HostedAccountRoutesOptions } from '../interfaces/web/account/account-routes.ts';
 import type { BrowserSession } from '../accounts/identity/browser-session.ts';
 import type { FetchHandler } from '../runtime/http/server.ts';
 import { MCPServer, type FailureReporter } from '../interfaces/mcp/mcp-server.ts';
@@ -143,7 +143,7 @@ export function accountChangeRecorder(logger: SystemLog): ChangeRecorder {
   return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 
-export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void> }): Application {
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging'] }): Application {
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
     session: parts.session,
@@ -152,6 +152,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     reportFailure: account.reportFailure,
     operation: account.operation,
     signupUrl: account.signupUrl,
+    logging: loggingStorage?.service,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
   const shutdown = new AbortController();

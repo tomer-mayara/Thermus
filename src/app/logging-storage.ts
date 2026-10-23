@@ -1,3 +1,4 @@
+import { DestinationSettingsService } from '../logs/audit/destination-settings-service.ts';
 import { loadLoggingStorageConfig } from '../runtime/config/logging-storage-config.ts';
 import type { SystemLog } from '../logs/system/system-log.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
@@ -5,6 +6,7 @@ import type { DestinationSettingsStore } from '../logs/audit/destination-setting
 // Stores customer audit destination settings, not system log output or audit history.
 export interface HostedLoggingStorage {
   readonly store: DestinationSettingsStore;
+  readonly service?: DestinationSettingsService;
   close(): Promise<void>;
 }
 
@@ -16,7 +18,8 @@ export async function openLoggingStorage(environment: Readonly<Record<string, st
   }
   try {
     const { openDestinationSettingsRuntime } = await import('../logs/audit/pg-destination-settings-store.ts');
-    return openDestinationSettingsRuntime(config);
+    const runtime = await openDestinationSettingsRuntime(config);
+    return { store: runtime.store, service: new DestinationSettingsService(runtime.store, config.encryptionKey), close: () => runtime.close() };
   } catch {
     logger.error('Logging storage is unavailable: DATABASE_URL and DATABASE_CA_CERT_PATH must permit a verified TLS connection.');
     return undefined;

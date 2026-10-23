@@ -21,6 +21,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.equal(forms[0]?.fields.organization_id, 'org-a');
     assert.match(answer.body, /href="\/team\/">Product \/ Connect<\/a>/);
     assert.match(answer.body, /href="\/team\/members" aria-current="page">Members<\/a>/);
+    assert.match(answer.body, /href="\/team\/logging"[^>]*>Logging<\/a>/);
     assert.match(answer.body, /href="\/team\/organizations">Switch workspace<\/a>/);
     assert.match(answer.body, /eve@example\.com[\s\S]*?You/);
     assert.match(answer.body, /new@example\.com: User invitation, pending\./);
@@ -28,7 +29,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.doesNotMatch(answer.body, /old@example\.com|other@example\.com|ivy@example\.com|pia@example\.com/);
     assert.deepEqual(forms.map(({ label }) => label), ['Invite', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
     assert.equal(forms[0]?.fields.role, 'user');
-    assert.doesNotMatch(answer.body, /Change role|Remove member|Logging|Security|<script/);
+    assert.doesNotMatch(answer.body, /Change role|Remove member|Security|MFA|<script/);
     assert.equal((await site.browserOf(userOf('user-una', 'org-a')).open('members')).status, 403);
   });
 

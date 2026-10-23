@@ -167,6 +167,7 @@ public_surface:
     system-logs:
       - src/logs/system/system-log.ts
     audit-logs:
+      - src/logs/audit/destination-settings-service.ts
       - src/logs/audit/audit-log.ts
     identity:
       - src/accounts/identity/access-context.ts
@@ -268,6 +269,7 @@ dependency_graph:
     - { from: mcp, to: search, kind: runtime }
     - { from: mcp, to: execution, kind: type }
     - { from: web, to: identity, kind: runtime }
+    - { from: web, to: audit-logs, kind: type }
     - { from: web, to: http, kind: runtime }
     - { from: web, to: workos, kind: runtime }
     - { from: web, to: organizations, kind: runtime }
@@ -347,7 +349,7 @@ dependency_graph:
     html-processing: [ node:crypto ]
     http: [ node:events, node:http, node:net ]
     system-logs: [ node:path, node:stream, node:url ]
-    audit-logs: [ node:crypto ]
+    audit-logs: [ node:crypto, node:net ]
     mcp: [ node:crypto ]
     page-fetch: [ node:os ]
     search: [ node:os ]

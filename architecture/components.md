@@ -234,39 +234,54 @@ form destinations. The portal uses a supplied current active-organization name
 read for workspace display; an absent or blank name returns unavailable rather
 than a fallback identity. Profile data does not grant access.
 
-### Selected C4 components: hosted settings storage in the Node server
+### Selected C4 components: hosted Audit logs settings in the Node server
 
-Scope: one hosted Node server container. This optional foundation has no browser
-Save route or customer export caller. The PostgreSQL datastore is a supporting
-Level 2 container; WorkOS remains the authority for identity and organizations.
+Scope: one hosted Node server container. Current Admins read and save their
+organization's destination through web routes. PostgreSQL is a supporting Level 2
+container. WorkOS remains the identity and organization authority.
 
 ```mermaid
-flowchart TB
+flowchart LR
   subgraph storage_server["Container: Thermus Node server · hosted"]
-    storage_app["Component: app<br/>Open optional settings runtime<br/>Own shutdown / TypeScript"]
-    storage_config["Component: config<br/>Validate URI, key and optional CA<br/>TypeScript / Node crypto and filesystem"]
-    storage_logging["Component: audit-logs<br/>Tenant settings, atomic revision Save<br/>Bound SQL work / TypeScript and pg"]
+    storage_app["app · TypeScript<br/>Compose service<br/>Own SQL lifetime"]
+    storage_web["web · TypeScript<br/>Audit logs read / Save<br/>Admin and request checks"]
+    storage_identity["identity · TypeScript<br/>Access contracts"]
+    storage_logging["audit-logs · TypeScript / pg<br/>Validate and protect token<br/>Atomic revision Save"]
   end
-  storage_data[("Container: settings datastore<br/>PostgreSQL private schema<br/>Destination settings and opaque credential")]
-  storage_app -->|reads startup settings| storage_config
-  storage_app ==>|constructs and closes optional runtime| storage_logging
-  storage_logging -->|parameterized SQL / verified TLS| storage_data
+  storage_data[("L2: PostgreSQL<br/>Private tenant settings")]
+  storage_app -.->|supplies| storage_web
+  storage_app -.->|service / lifetime| storage_logging
+  storage_web -.->|source dependency| storage_identity
+  storage_web -->|tenant read / Save| storage_logging
+  storage_logging -->|SQL / verified TLS| storage_data
+  style storage_server fill:#fafafa,stroke:#777777,color:#222
 ```
 
-[Audit settings storage composition](../src/app/logging-storage.ts) returns unavailable
-when settings are absent or invalid. [Config](../src/runtime/config/logging-storage-config.ts)
-validates the PostgreSQL URI, independent 32-byte base64 key and optional PEM CA
-bundle. URI query parameters cannot override TLS or connection options. The
-[SQL adapter](../src/logs/audit/pg-destination-settings-store.ts) uses the
-[neutral settings contract](../src/logs/audit/destination-settings-store.ts).
-It stores an opaque credential; encryption and destination decisions are not
-implemented here. No provider SDK types enter that contract.
+[Audit settings composition](../src/app/logging-storage.ts) supplies the settings store
+and server key only when hosted storage configuration is available.
+[Config](../src/runtime/config/logging-storage-config.ts) validates the URI,
+independent 32-byte base64 key, and optional PEM CA bundle. URI query parameters
+cannot override TLS or connection options. Dotted arrows show labelled composition
+or source dependencies; solid arrows show runtime collaboration through supplied roles.
 
-The store selects by tenant ID and compares the expected revision in one SQL
-statement. First-save races and stale writes return conflict. An identical row
-keeps its revision; an actual change gets a new revision. A write whose outcome
-cannot be confirmed returns unconfirmed. The future caller must supply the
-trusted tenant ID and preserve ciphertext for semantic no-op decisions.
+The [settings service](../src/logs/audit/destination-settings-service.ts) validates
+settings and exposes token presence, never the token. The
+[credential codec](../src/logs/audit/destination-credential-codec.ts) uses AES-256-GCM
+with tenant ID as authenticated data. Wrong keys, changed ciphertext, and tenant
+mismatch fail closed. Blank Bearer input retains the saved token only when
+endpoint and auth are unchanged. None clears it. A semantic no-op preserves
+ciphertext and revision, including when the same token is entered again.
+
+The [SQL adapter](../src/logs/audit/pg-destination-settings-store.ts) enforces tenant
+selection and expected revision in one SQL statement. Stale writes and first-save
+races return conflict. A write with an unknown commit result returns unconfirmed.
+The native browser response offers only a GET saved-state link, with no Save
+form or automatic retry. It adds no server-wide or session write hold. Every
+later Save, including a manual old-form submission and a late commit, remains
+subject to the atomic expected-revision rule.
+Endpoint validation checks syntax and literal addresses; actual-connection egress
+checks and Collector delivery belong to later work. No provider SDK enters the
+[store contract](../src/logs/audit/destination-settings-store.ts).
 
 ### Selected C4 components: system and audit logs in the Node server
 
@@ -389,6 +404,7 @@ flowchart TB
   tools --> fetching
   fetching --> external_web
   runtime -.->|construct, serve, record, close| interfaces
+  interfaces -->|web reads and saves tenant settings| runtime
   runtime -->|audit destination settings SQL| settings_data
 ```
 
@@ -404,9 +420,9 @@ fetcher. Both search and page fetch reach external pages through Lightpanda;
 search uses Brave HTML rather than a separate external API. Within the runtime
 group, app owns composition and lifetimes, config validates settings, HTTP serves
 the composed handler, and system-logs formats internal engineering diagnostics.
-Audit-logs owns the optional hosted settings store and bounded SQL runtime. Its
-separate event API has no production capture or export caller yet. No tool or
-browser route calls the store in this foundation.
+Audit-logs owns the optional hosted settings service, credential protection,
+store, and bounded SQL runtime. Web calls the service for the trusted current
+tenant. The separate audit event API has no production capture or export caller.
 
 An **import dependency** points from an importer to the component whose module
 it imports. The rules count runtime and whole-statement type-only imports
@@ -758,7 +774,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; SystemLogger/LogLevel and ConsoleSystemLogger/OtelSystemLogger implementations selected at composition. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection and tenant destination settings with atomic revisions and bounded SQL work. | AuditLog event methods and AuditEventSink; neutral settings store, private pg adapter and SQL runtime. The metadata-only event API is unwired. No browser Save or customer export caller yet. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, tenant destination validation, credential protection, atomic revisions, and bounded PostgreSQL work. | AuditLog event methods and AuditEventSink; public destination-settings service and neutral store contract; private credential codec, pg adapter and SQL runtime. Web reads and saves settings. The metadata-only event API has no production capture or export caller. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
