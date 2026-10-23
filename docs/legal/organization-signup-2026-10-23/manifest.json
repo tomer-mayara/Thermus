@@ -1,0 +1,51 @@
+{
+  "status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+  "prepared_on": "2026-10-23",
+  "bundle_version": "s105-organization-proposal-2026-10-23-v2",
+  "purpose": "organization-creation",
+  "proposed_effective_date": "2026-10-23",
+  "publication_date": null,
+  "date_condition": "Proposed effective date requires owner approval and publication/opening on 23 October 2026. If delayed, revise the date, versions and hashes and obtain approval again.",
+  "approval": null,
+  "hash_status": "Review hashes only; not approved hashes. Any byte change requires new versions, hashes, and approval.",
+  "provenance": {
+    "frozen_bundle": "fs03-review-2026-10-16-v1",
+    "source": "src/accounts/providers/workos/workos-approved-signup-documents.ts",
+    "source_sha256": "e1b1a90a8c58663fcba85af693f8551a7093cb3348a3344d327d96eea6d5c0b2",
+    "proposal": "docs/implementation/admin-s1-05-legal-proposal.md",
+    "proposal_sha256": "89e942186dc578d8919ccd6e4fa6e67d05f358dee876e77ce3b66f40c47600b8",
+    "replacement_check": "15 specified Terms/Privacy replacements and exact checkbox replacement; reversing those replacements restores original bytes before the explicit additional domain, date, search-fact and marketing-contact changes.",
+    "marketing_source": {
+      "repository": "tomer-mayara/Thermus-Marketing",
+      "commit": "1c025d8a51707a0b5130cdb72f796f51ef22ec64",
+      "file": "src/pages/privacy.astro",
+      "sha256": "8e82ec4df6b908fb27c45421cc9d9ab9625c0a42551fbb38d3ee791e6ff38436",
+      "retained_disclosures": "Contact fields, Netlify submission and mailbox notification, no implicit marketing subscription, form input restriction, draft memory/browser storage/analytics/log limits, and retention/deletion of both copies."
+    },
+    "additional_changes": "Terms section 1 and Privacy section 1 add app.thermus.ai portal/MCP coverage and retain the legacy service URLs. Both documents add a proposed 23 October 2026 effective date. Version 2 also corrects current search-tool input, Brave Search recipient, returned Markdown, permissions, restrictions, and scoped completion/pipeline logging facts. Privacy also retains current marketing contact-form disclosures. Terms uses plural endpoints for both service URLs.",
+    "line_endings": "LF",
+    "encoding": "UTF-8",
+    "final_newline": true
+  },
+  "documents": [
+    {
+      "file": "terms.md",
+      "version": "hosted-terms-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 18896,
+      "sha256": "625010f6b3fd118c13a29cca29cfb066d5511d7d91d0c29e0e430ac0bdc14d0e"
+    },
+    {
+      "file": "privacy.md",
+      "version": "hosted-privacy-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 29125,
+      "sha256": "d44db6099b758534e8d17f34bcda7096e02775ffccb40972ea1429093c1396ac"
+    },
+    {
+      "file": "agreement.txt",
+      "version": "hosted-agreement-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 378,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a"
+    }
+  ],
+  "open_decisions": "../../implementation/organization-signup-approval-2026-10-23.md"
+}

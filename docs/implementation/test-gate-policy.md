@@ -516,11 +516,13 @@ Lightpanda asset needs network access unless those inputs are cached. The runtim
 `https://example.com/`. Tests need no live WorkOS or Axiom credential. The final-image run must prove real
 native cleaner loading, CA-backed HTTPS and JavaScript rendering, private
 network refusal, capacity refusal, cancellation, bounded shutdown, invalid
-startup refusal, default-closed signup, and startup refusal when the unchanged
-personal-User legal bundle is used to enable organization creation. S1-03a
-replaces the earlier enabled-personal-signup notice case with that refusal.
-Exact organization wording and the corresponding enabled-image proof belong
-to the S1-05 rollout; test documents do not approve production wording.
+startup refusal, default-closed signup, and successful enabled startup with the
+approved purpose-marked organization bundle. The enabled image must show the
+complete approved privacy notice before sign-in. The source acceptance suite
+still proves that explicitly supplying the unchanged personal-User bundle
+refuses organization creation before provider access. S1-05 supplies the approved
+organization wording; test documents do not approve production wording. This
+updates the expected bundle behavior without changing gate selection or scope.
 The [RHD-03 record](rhd-03.md) tracks the case details and results.
 The gate allows 60 minutes for its build and image cases. This allowance
 does not change production readiness or shutdown limits.

@@ -1,13 +1,40 @@
 # Slice 1 Staging release verification
 
-Status: results reviewed on 23 October 2026. The full hosted journey passed.
-Release remains held for the unresolved native invitation flows, the deferred
-mailbox checks, and organization legal approval and implementation. Production
-was not changed; signup was not opened.
+Status: reviewed on 23 October 2026. The owner approved the complete organization
+legal package at 19:45:23 UTC, and its public policy pages are published and
+verified. The runtime candidate passes its source, image, and Staging journey
+checks. The complete metrics process and manager review are recorded separately;
+the current committed candidate still needs human review and a release decision
+on the native invitation limitations and deferred mailbox checks. Production
+signup remains closed.
 
-## Staging evidence
+## Current runtime candidate
 
-The production source candidate is `9de610e8b75dfa041dcf18c5380ccf80feb9f797`.
+The approved-bundle runtime candidate on `codex/invitation-release-fixes` passed
+the complete hosted live command: **28/28 tests**, eight suites, zero failures,
+cancellations, skips, or todos. The log finished at 20:21:58 UTC and has SHA-256
+`84e20f940a7deddb8c62129eafa55f3c737e5526a9763c5cb5764cfdf90c5af8`.
+It is retained as `ast-report/invitation-fixes-2026-10-23/gate-hosted-live-runtime.log`.
+The command rebuilt the backend and portal with Node 24.20.0 and used only the
+Staging Keychain launcher. No production setting changed.
+
+This run proves current password sessions, permissions, invitation administration,
+MCP isolation, expiry and refresh, organization creation, first Admin, and revoked
+activation replay. Its creation cases use marked test agreements. The separate
+[production composition and Linux AMD64 image checks](admin-s1-approved-organization-runtime.md)
+prove the approved bytes, readable documents, one unchecked creator checkbox,
+saved versions/hashes, and enabled startup. Keep those evidence scopes distinct.
+
+Fresh complete inventories before and after the live run contain exactly the
+two original users and two original organizations. Full records are unchanged,
+and both pagination cursors are null. The sanitized comparison is retained as
+`ast-report/invitation-fixes-2026-10-23/runtime-live-inventory-comparison.json`.
+The runtime source and changed test/build-context hashes match the worker gate
+record; the final PR records the committed candidate and quality reports.
+
+## Historical Staging evidence
+
+The historical production source candidate is `9de610e8b75dfa041dcf18c5380ccf80feb9f797`.
 The live run uses four corrected test files. Their diff SHA-256 is
 `38818a810ab9e1ab3b46f130ae8d5c0d1845449735d75dd09f0f11c4495664df`.
 The retained result also has the hash of each test file. No production source
@@ -21,7 +48,7 @@ changed for this verification.
 | Named organization creation and first Admin | Passed with explicitly test-only agreement documents. Saved metadata, creator authority facts, portal connection guide, and a real MCP page fetch were checked. This does not approve production terms. |
 | Ordinary native invitations | Passed for User and Admin. Send, duplicate refusal, resend, revoke, terminal-state refusal, inactive reactivation, native acceptance, and current application access were checked. |
 | Native role preservation and lifecycle edge cases | Nine sequential cases and one concurrent resend attempt passed. The concurrent revoke attempt preserved access controls but did not complete a verified native flow. An alternate-address new join did not create the target membership. See the [proof matrix](../testing/workos-invitation-proof-matrix.md). |
-| Mailbox-dependent checks | **Pending by owner choice:** fresh email verification, password reset, and consumer exact-address acceptance/refusal. No uncontrolled consumer address was used. |
+| Mailbox-dependent checks | **Pending by owner choice:** mail delivery, password reset, and consumer exact-address acceptance/refusal. The later API-assisted verification challenge below does not close these checks. No uncontrolled consumer address was used. |
 | Fixture cleanup | Passed. At 19:12 UTC, complete fresh listings contained exactly the two original users and two original organizations, with unchanged records and no further pages. All native run-owned users and organizations were confirmed absent. |
 
 The verified target is WorkOS Staging
@@ -63,21 +90,20 @@ uploaded CI results. The failed first run remains intact.
 `final-cleanup-comparison.json` records the complete inventory comparison;
 `final-configuration-readback.json` retains the final non-secret settings.
 
-The remaining native work is specific: verify the refusal or recovery UI when
-revocation overlaps native sign-in, and resolve alternate-address joining for
-an existing accepting identity with no target membership. A focused revoke
-diagnostic shows “Something went wrong” on AuthKit's password page with target
-access still denied. The alternate-address diagnostic reaches the unrelated
-organization only. These observations do not prove a provider defect or justify
-a new application-side grant. Keep both limitations visible before release.
+The follow-up diagnostics below add a verified ordinary-login recovery for the
+revocation error and test new-user alternate signup through email verification.
+They do not repair the native generic error or establish alternate target access.
+These observations do not prove a provider defect or justify a new
+application-side grant. Keep both limitations visible before release.
 
-Only the hosted live group consumes the changed test helper. Its full gate and
+For that historical test-only candidate, only the hosted live group consumes the
+changed test helper. Its full gate and
 backend/portal builds passed; type checking passed with Node 24.20.0. Ordinary
 suites, container gates, production metrics, and new layout checks are not
 selected by these test-only changes. This run does not claim a separate manual
 review of all desktop and mobile layouts.
 
-The complete-candidate habit-hooks review retained one parameter-count finding,
+The historical complete-candidate habit-hooks review retained one parameter-count finding,
 23 existing comment findings, and one existing large test file. The fourth
 helper parameter states an explicit expected landing; it keeps the test oracle
 separate from the observed response and preserves existing callers. The comments
@@ -87,74 +113,101 @@ snooze, rule, goal, or assertion was relaxed. Source metrics are N/A under the
 path selection policy. All 11 registry diagrams remain unchanged; no production
 callable contract or architecture changed.
 
-## Legal package for opening signup
+## Follow-up native diagnostics
 
-The [current source bundle](../../src/accounts/providers/workos/workos-approved-signup-documents.ts)
-is the personal-workspace/User bundle `fs03-review-2026-10-16-v1`.
-[FS-04](fs-04.md) records approval of those exact bytes for implementation only.
-That approval does not cover organization creation, publication, or signup
-opening. Do not relabel the old bundle as organization approval.
+Follow-up probes pin `285f5f044409775c864556c335ca17f9d7f64c1f` and the same
+Staging environment. They use fresh run-owned reserved-domain fixtures and
+native AuthKit UI. Their sanitized local artifacts remain under
+`ast-report/invitation-fixes-2026-10-23/`; original evidence is not rewritten.
+The [proof matrix](../testing/workos-invitation-proof-matrix.md#follow-up-diagnostics-on-23-october)
+names the artifacts and their limits.
 
-The [organization terms proposal](admin-s1-05-legal-proposal.md) contains exact
-replacement wording for owner review. It is unapproved and unpublished. It has
-proposed version IDs, but no approved hashes or effective dates.
+| Check | Reviewed observation |
+| --- | --- |
+| Existing alternate-address joining | The target grant is absent with either existing or initially absent invited B. Login as A reaches only A's unrelated organization. The invitation is revoked with accepted A and no current role; unrelated membership and access remain unchanged. |
+| New exact-address signup control | Native name/password signup succeeds: correct verified identity, one active User membership, selected target, and product access. |
+| New alternate-address signup through verification | Both A and B start absent. A completes native signup and the actual verification challenge with a code from a matching current owned Events API event and `getEmailVerification`. The code stays in memory. Native verification POST is 200 and fresh A is verified, but the application opens “No organization access”; target memberships are empty and portal is 403. Alternate joining remains a release hold. |
+| New exact-address reinvitation | After the alternate failure, a new invitation to A's exact address activates one User membership and correct target access. Unrelated membership ID, roles, and access remain unchanged. This verifies a recovery procedure, not alternate-address acceptance. |
+| Concurrent revoke recovery | One 93 ms overlap of the observed password request and SDK revoke reproduces the native generic error. Fresh state remains revoked with no active target membership. Ordinary `/login` in a new browser context restores unrelated access only; the target is unlisted and selection is 403. AuthKit's generic error remains. |
+| Owned-fixture cleanup | Each follow-up artifact confirms removal of its own resources. A complete Staging comparison at 19:59:48 UTC confirms exactly the original two users and two organizations, with unchanged IDs and full records and null before/after cursors. |
 
-The [accepted Slice 1 behavior](../design/organization-admin-plan.md#creation-and-joining--slice-1)
-is that the creator agrees for the organization and confirms authority. Invited
-Users and Admins receive readable Terms/Privacy links and have no separate
-agreement checkbox or acceptance record. These product decisions do not prove
-that the proposed legal wording is approved or that each invited person agreed.
+The local `final-native-cleanup-comparison.json` retains that complete Staging
+comparison against the original baseline. It is separate from per-run cleanup
+reads and does not monitor later changes.
 
-The proposal's exact checkbox wording is:
+The manager and an independent agent reviewed these observations. They establish
+client request overlap, not provider transaction order. A pending membership
+under a revoked invitation is not an active grant. An invitation's current role
+may reflect a later membership: after exact reinvitation succeeds, the older
+revoked invitation reports User. Keep original intended roles separately.
 
-> By checking this box and selecting Create organization, I agree to the Terms of Service shown above for the organization I am creating and acknowledge that I received and read the Privacy Notice shown above. I confirm that I am at least 18 years old, am legally able to enter this agreement, will use Thermus for business purposes, and have authority to bind this organization.
+The verification-code API proves that the actual owned challenge completes; it
+does not prove mailbox delivery. WorkOS silently drops mail to the reserved
+example domains used here. Personal mailbox and controlled consumer cases remain
+pending by owner choice. No uncontrolled address, direct verified-flag update,
+custom activation, or application grant fallback was used.
 
-The smallest owner approval package must resolve and record these items:
+For recovery, invite the exact address that the member uses to sign in. After an
+alternate failure, an administrator checks current state and, if still intended,
+sends a new exact-address invitation with the intended role. After a revoked-link
+error, leave that flow and open ordinary application `/login` in a new browser
+context for existing workspaces; ask the administrator about target access.
+These steps do not revive a revoked link, silently alter recipient policy, or
+waive any release hold.
 
-- Confirm the complete organization terms, notice, and checkbox wording. Confirm
-  the organization contracting party and creator authority, including personal
-  email and own-business cases. Resolve how adult/business-use obligations apply
-  to invited members under the organization agreement.
-- Confirm that the processing permissions, privacy legal roles, lawful bases,
-  and international-transfer provisions fit organization use. Confirm treatment
-  of retained historical personal-workspace agreements and records. The
-  23 October production cutover found no current users, memberships, or pending
-  invitations, so no current user transition is required. Preserve old records;
-  do not convert personal consent into organization authority.
-- Approve the final complete UTF-8 bytes, readable presentation, new bundle and
-  document versions, hashes, and effective/publication dates. Keep the old frozen
-  manifest and existing acceptance records unchanged.
-- State the approved scopes separately: runtime use, policy publication,
-  and signup opening. If the inventory changes or a transition is proposed,
-  approve that scope separately before execution. Approval for one scope does
-  not authorize the others.
+## Approved legal package and remaining release work
 
-The repository assigns these decisions to the owner. No approval is recorded by
-this note.
+The owner approved the complete version 2 bundle and publication scope at
+`2026-10-23T19:45:23Z`, for `https://app.thermus.ai`. The
+[approval record](organization-signup-approval-2026-10-23.md) records the actual
+response, approved scope, and restricted exact-byte evidence. The
+[canonical manifest](../legal/organization-signup-2026-10-23/manifest.json)
+pins bundle `s105-organization-proposal-2026-10-23-v2`, complete Terms, Privacy,
+checkbox versions and hashes, and the effective date. The historical proposal
+and its unapproved review manifest remain historical; they are not the approval.
 
-## Work after the legal decision
+The approved basis is one organization agreement and creator authority statement.
+Invited Users and Admins receive readable Terms/Privacy links without a separate
+checkbox or acceptance record. Invitation acceptance, sign-in, and MCP approval
+do not become each person's express terms acceptance. Preserve the old frozen
+personal bundle and existing records unchanged.
 
-Approval alone does not make the current deployment ready to open signup.
-After final approval, update the source bundle with the complete approved text,
-new versions and hashes, and `purpose: 'organization-creation'`. The
-[startup guard](../../src/interfaces/web/auth/workos/workos-signup-routes.ts)
-rejects enabled signup with the current personal bundle. Update the affected
-tests and documents, verify rendered text and saved acceptance facts, and run
-the required source checks and review before deployment.
+Runtime wiring on `codex/invitation-release-fixes` is implemented; see
+[approved organization runtime](admin-s1-approved-organization-runtime.md).
+The historical 28/28 hosted gate and nine native cases above do not validate
+those new source changes. The current runtime checks above supply separate
+evidence. The quality record retains the unchanged MI goal miss and justified
+Habit Hooks findings. Current-candidate human approval, release disposition, and
+the scoped deployment verification remain necessary.
 
-Reconcile two document conflicts as part of that work:
+Marketing PR 24 was merged as `4afdad5c8869296b3bbf8b376ee98c6fcdc4d01a`.
+Netlify deploy `6adbbde44eb3dfaaa5af6abb` published that exact merge at
+20:05:18 UTC. Public verification passed for `/terms`, `/terms/`, `/privacy`,
+and `/privacy/`: complete approved semantics, punctuation, links, all ten table
+rows, effective date, versions, and hashes match. Same-host 301 redirects end at
+200. Eight JavaScript-disabled visits at widths 375 and 1280 confirm direct
+mailto links, no email obfuscation, and no horizontal overflow. The marketing
+repository retains `reports/legal-publication/production/verification.md`, JSON,
+and screenshots. This closes public policy verification, not runtime release.
+Local production composition now verifies complete readable runtime presentation,
+one initially unchecked creator checkbox, and saved versions/hashes. Publication
+in the production application still needs deployment verification. Changed text or a delayed
+effective date needs a new version, hashes, and approval as the approval record
+specifies.
 
-- [Hosted User onboarding](hosted-user-onboarding.md#manual-grants-and-invitations)
-  still prohibits sending or resending User invitations and requires per-person
-  agreement controls before delegated invitation authority. Align this text with
-  the approved organization-agreement basis for invited use. Do not describe
-  sign-in or invitation acceptance as individual terms acceptance.
-- The [acceptance template](templates/hosted-terms-acceptance.md) still lists
-  backup/restore readiness as required before opening. The owner removed that
-  prerequisite, as [FS-03](fs-03.md) and
-  [onboarding controls](hosted-user-onboarding.md#control-and-limits) record.
-  Correct the stale template; do not introduce a new backup gate.
-
-These are document fixes, not new release requirements. Provider evidence,
-manual checks, required review, and scoped cutover remain subject to the
-[S1-05 release plan](../design/organization-admin-plan.md#s1-05--complete-journey-verification-and-cutover).
+The read-only production inventory completed at 19:57:44 UTC found zero users
+across Active, Inactive, and Pending status, zero memberships across those
+statuses in each of seven organizations, and zero pending invitations. Every
+list was complete; `production-inventory.json` retains the scoped result.
+Historical organizations and records were untouched. This point-in-time read
+needs refresh if later changes affect cutover. Preserve existing agreements and
+records; a newly required transition needs its own approved scope. Resolve or
+explicitly disposition the remaining native-flow and mailbox holds under the
+[S1-05 release plan](../design/organization-admin-plan.md#s1-05--complete-journey-verification-and-cutover)
+before opening. The Thermus runtime candidate is not merged or deployed, and
+production signup remains closed. After required checks, the owner must decide
+whether the verified exact-address reinvitation and ordinary-login recovery are
+sufficient for release, or whether the failed alternate join and native generic
+error need repair first. No release exception or recipient-policy change is
+recorded here. Deferred mailbox checks are not silently treated as passes. No
+backup gate is added: the owner already removed that prerequisite.

@@ -259,8 +259,15 @@ test('Given a typed search failure with a changed message, when dispatched, then
   failure.message = 'PRIVATE failure';
   const site = await connect(t, { search: async () => { throw failure; } });
   assert.deepEqual(await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE', reason: 'PRIVATE' } }), { content: [{ type: 'text', text: 'Search failed: HTTP 429' }], isError: true });
-  assert.equal(JSON.parse(site.info[0]).status, 'search_failed');
-  assert.doesNotMatch(site.info[0], /PRIVATE|429/);
+  assert.equal(site.info.length, 1);
+  const { operationId, durationMs, ...completion } = JSON.parse(site.info[0]);
+  assert.match(operationId, generatedOperationIdPattern);
+  assert.equal(typeof durationMs, 'number');
+  assert.ok(Number.isFinite(durationMs) && durationMs >= 0);
+  assert.deepEqual(completion, {
+    event: 'mcp.tool.completed', authority: context.user.authority, subject: context.user.subject,
+    tenantId: context.tenantId, tool: 'search', status: 'search_failed',
+  });
 });
 
 for (const args of [{ query: 'PRIVATE' }, { query: 'PRIVATE', reason: 'PRIVATE', url: 'https://PRIVATE' }, { query: 7, reason: 'PRIVATE' }]) {

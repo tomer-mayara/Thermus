@@ -5,7 +5,7 @@ private store, outside this repository. Empty fields are not evidence of agreeme
 
 - Record ID:
 - Assigned operator (Tomer) and restricted operator-records location:
-- Evidence path: manual grant / initial self-serve marker / later agreement:
+- Evidence path: organization creator / historical manual grant / later agreement:
 - Bundle version, immutable byte-copy reference, SHA-256, and approval status:
 - Agreement wording version, immutable byte-copy reference, and SHA-256:
 - WorkOS environment and application ID:
@@ -20,8 +20,8 @@ private store, outside this repository. Empty fields are not evidence of agreeme
 - Self-serve organization/external ID and marker observation time, if applicable:
 - Marker document versions/hashes matched to retained bytes; initial record only:
 - Express agreement evidence reference and response time:
-- Business use and age 18 or older statement verified:
-- Organization authority statement and check, if relevant:
+- Creator business-use and age 18 or older statement recorded (no application age verification):
+- Organization creator authority statement and evidence reference:
 - Privacy notice receipt/read acknowledgment verified (not privacy-law consent):
 - Operator evidence check and time:
 - Grant actor, action, environment, and time:
@@ -32,7 +32,13 @@ private store, outside this repository. Empty fields are not evidence of agreeme
 - Unknown-outcome reconciliation or escalation:
 - Existing-user gap and owner-approved transition reference, if relevant:
 - Retention purpose, access owner, review/deletion date, and retained exception:
-- Durable restricted backup and restore readiness reference (required before opening):
+- Restricted local record location, access owner, and exact-byte retention check:
 
-For manual onboarding, use the exact request wording in the [onboarding runbook](../hosted-user-onboarding.md).
+The owner removed the durable backup/restore prerequisite on 16 October 2026.
+No off-device backup or restore proof is required; retain exact bytes, versions,
+hashes, and local access restrictions.
+
+Use this record for the organization creator or separately approved historical
+manual/transition work. Normal invited Users and Admins have no individual
+checkbox or acceptance record. Follow the [onboarding runbook](../hosted-user-onboarding.md).
 Do not record secrets, invitation links, fetched content, or unrelated personal data.

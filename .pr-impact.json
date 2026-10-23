@@ -8,14 +8,14 @@
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
-    "sensitiveBehavior": false,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
-    "policy": false,
+    "policy": true,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "This candidate repairs live acceptance expectations for the existing Slice 1 portal. No production file changes. Unassigned and unauthorized accounts must reach the exact organization selector with a signed-in session; tests still check the root portal refusal and protected 403 responses. Successful product details must be opened before visible text is read. No authorization, runtime contract, provider adapter, persistence, composition, dependency, or deployment behavior changes. The Staging release record describes the authorized password-only test profile and observations of the unchanged production candidate; it does not define new product behavior or approve legal wording or signup opening. All 11 component registry diagrams remain byte-for-byte unchanged. Context, hosted and local containers/components, runtime landing/member/tool scenarios, and deployment views remain accurate. Source metrics are not selected because only live tests, their support, ordinary documentation, and this declaration change. No production callable contract changed; no L4 drawing or decision record is needed.",
+    "modelUpdated": true,
+    "summary": "Production composition selects the owner-approved, purpose-marked version 2 organization legal bundle instead of the preserved historical personal bundle. Terms, privacy, and agreement bytes are frozen and retain their approved hashes. Enabled production startup can satisfy the existing organization-creation document requirement; default signup remains false. Existing creator-record metadata fields carry the new document versions and hashes; payload field names, schema, authority, recipient, write ordering, replay barriers, session binding, and current-membership checks do not change. SignupDocuments, SignupActivation, SignupResult, WorkOSApplicationParts, and the production callable signatures are unchanged. The new provider-owned immutable bundle export is a composition input, not a new cross-container contract. No new component responsibility, external integration, container, datastore, resource lifetime, dependency, trust boundary, or deployment topology is introduced. Documentation records actual complete-bundle approval separately from the frozen review manifest and corrects onboarding to the approved organization-agreement basis; it records verified marketing publication but neither approves a later code candidate nor claims production application publication or signup opening completed. Review tier is T1 for sensitive local composition/legal admission and protected provider paths; all complete-candidate source checks and metrics are required. All 11 registry diagrams were reviewed and remain byte-for-byte unchanged: context, hosted/local containers, tool/hosted/local components, collaboration, fetch cancellation, default landing, member read, and deployment. Registry prose now names the approved production bundle and unchanged metadata shape. No production callable contract changed; no L4 comparison or new architecture decision is needed. The hosted-image gate description now matches the approved enabled-startup/notice expectation; explicit old-bundle refusal stays in source acceptance. Gate selection, required checks, and limits are not weakened. This policy description change independently requires T1 Team review. The hosted Docker build context now includes exactly the three public approved canonical legal byte files required by embedded acceptance/unit checks; no private approval evidence is added and deployment topology is unchanged. An unrelated existing search-completion test false positive was corrected to validate generated identity/duration separately and require the exact safe deterministic completion shape; the client HTTP 429 result remains asserted. No search production behavior changed.",
     "views": [
       "context",
       "containers",
@@ -25,14 +25,26 @@
     ],
     "evidence": [
       "architecture/components.md",
-      "src/interfaces/web/auth/workos/workos-session-routes.ts",
-      "src/interfaces/user-portal/portal.ts",
-      "test/support/hosted-live/portal-visit.ts",
-      "test/acceptance/auth/hosted-live/organization-server.ts",
-      "test/acceptance/auth/hosted-live/hosted-server.ts",
-      "test/acceptance/auth/hosted-live/signup-server.ts",
+      "src/app/hosted-workos-application.ts",
+      "src/accounts/providers/workos/workos-approved-organization-documents.ts",
+      "src/accounts/providers/workos/workos-approved-signup-documents.ts",
+      "src/accounts/organizations/signup-activation.ts",
+      "src/accounts/providers/workos/workos-signup.ts",
+      "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+      "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "test/acceptance/auth/hosted-image.test.ts",
+      "test/unit/auth-workos/workos-approved-organization-documents.test.ts",
+      "docs/implementation/admin-s1-approved-organization-runtime.md",
+      "docs/implementation/organization-signup-approval-2026-10-23.md",
+      "docs/legal/organization-signup-2026-10-23/manifest.json",
+      "docs/implementation/hosted-user-onboarding.md",
+      "docs/implementation/templates/hosted-terms-acceptance.md",
+      "docs/testing/workos-invitation-proof-matrix.md",
       "docs/implementation/admin-s1-staging-release-verification.md",
-      "docs/testing/workos-invitation-proof-matrix.md"
+      "docs/implementation/test-gate-policy.md",
+      "Dockerfile.hosted.dockerignore",
+      "test/integration/mcp/fetch-tool-server.test.ts"
     ]
   }
 }

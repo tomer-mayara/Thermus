@@ -1,16 +1,13 @@
 # Hosted User onboarding
 
-This runbook covers manual User grants and the proposal to transition existing
-users. [Self-serve activation](fs-01.md) and [portal/MCP handoff](fs-02.md)
-have a separate implemented path. Signup remains off. [FS-04](fs-04.md) supplies
-the frozen FS-03 document bundle in production composition under the separate
-owner approval for implementation. The original review manifest remains unchanged.
-These procedures publish no policy, send no notice, and change no access.
-
-The manual steps below retain the earlier provider API procedure. S1-02 does
-not execute them. Confirm a current approved provider procedure and scope before
-using the historical numbered setup references. Admin authority can also lead to
-product access; its invitations need the same agreement controls as User access.
+This runbook describes the approved organization-agreement model and retains the
+earlier individual/manual procedure as history. The owner approved the complete
+version 2 organization package and publication scope on 23 October 2026; see
+[the approval record](organization-signup-approval-2026-10-23.md) and
+[runtime wiring](admin-s1-approved-organization-runtime.md). This document alone
+sends no notice, publishes no policy, opens no signup, and changes no access.
+The [release record](admin-s1-staging-release-verification.md) owns operational
+results and remaining holds.
 
 ## Control and limits
 
@@ -24,18 +21,20 @@ Do not include credentials, invitation tokens, or fetched pages. On October 16,
 this restricted local folder alone. Keep exact document bytes, versions, hashes,
 and access restrictions; no off-device backup or restore proof is required.
 
-For a manual grant, the operator checks and records express agreement before
-granting User. The application does not check agreement on manual grants or on
-every product request. Self-serve activation does check explicit agreement and
-stores an initial acceptance marker in WorkOS. It is not an acceptance history.
+The current organization creator expressly accepts the approved terms on behalf
+of the organization and confirms authority to bind it. Invited Users and Admins
+use that workspace under the organization agreement; they have readable Terms and
+Privacy links, with no individual agreement checkbox or acceptance write. Sign-in,
+an invitation, a role, and MCP consent are not individual express agreement.
+The approved adult/business-use obligations still apply; the application does not
+verify age, employment, or authority. Follow the approved agreement wording.
 
-Initially, the operator controls manual User grants. S1-01 retires customer
-grant forms, including self-grants. Native User and Admin invitations and direct WorkOS
-writes can still bypass this procedure. Before delegating invitation authority,
-the owner must establish who checks and records each agreement and how the
-operator reviews compliance. If these controls cannot be maintained, stop new
-grants and escalate to the owner. Do not claim software enforces acceptance on
-these manual or invitation paths.
+The operator retains the organization's agreement evidence and its creator facts.
+The application records an initial creator marker, not an agreement history. Do
+not invent individual acceptance records for invited members or backdate earlier
+personal agreements. Later transition or manual bootstrap needs its own reviewed
+scope; the historical individual procedure below is not the normal invitation
+workflow.
 
 ## Self-serve activation and its record
 
@@ -60,7 +59,8 @@ reserved external ID bind its identity. Freeze and retain the exact approved
 bundle bytes before use. Never reuse a version for changed bytes. The marked
 organization test fixture is not production legal approval. The approved
 personal-User bundle remains unchanged and cannot authorize new Admin creation.
-Rollout waits for the exact approved organization/authority bundle and S1-05.
+The exact version 2 organization/authority bundle is approved and wired.
+Publication and opening remain subject to the recorded operational release checks.
 
 Existing product access, including Admin alone, offers Continue without another
 agreement or organization. A retained v1 personal record remains a replay
@@ -71,14 +71,32 @@ not the manual new-membership procedure below, for an incomplete signup. The
 [S1-03b record](admin-s1-03b.md) records the offline recovery and eligibility
 cases. These cases do not prove live provider behavior.
 
-## Manual grants and invitations
+## Current invitations
 
-Do not send or resend User invitations. WorkOS may allow a different address in
-the invited domain to accept, so evidence for the invited address does not prove
-agreement by the actual recipient. Inspect existing pending User invitations in
-the reconciliation below. Do not enable automatic Google enrollment; production
-composition currently omits it. Google sign-in, AuthKit invitation acceptance,
-and Connect consent are not terms acceptance.
+An authorized current Admin can use the existing native User/Admin invitation
+workflow under the organization agreement after applicable release holds pass.
+No extra invited-member agreement is collected. Invite the exact intended actual
+account address; do not rely on alternate-address first joining while that case
+remains unproven. See the [native proof matrix](../testing/workos-invitation-proof-matrix.md)
+for results and limits. Check current invitation and membership state before
+repeating a failed or uncertain action. Do not recreate a membership automatically.
+Automatic Google enrollment is not part of the production composition.
+
+If a revoked invitation leaves AuthKit on a generic error, leave the old flow and
+start ordinary application sign-in in a fresh browser context for existing
+workspaces. This scoped Staging recovery preserves unrelated access and does not
+grant the revoked target. It does not remove the provider error or make the old
+invitation usable. A later invitation needs a fresh authorized decision.
+
+## Historical individual/manual procedure
+
+Everything below this heading records the earlier personal-User agreement and
+manual grant model, including its earlier invitation prohibition and acceptance
+scenarios. It does not apply an individual acceptance requirement to normal
+current organization invitations, authorize a new grant writer, or execute an
+existing-user transition. Preserve old evidence and replay barriers. Use the
+current organization model above and a separately approved scope for exceptional
+manual onboarding or transition.
 
 ## Before requesting agreement
 
@@ -242,7 +260,7 @@ metadata is not an agreement history. Set review/deletion dates for transition
 records and retained exceptions. Check the retained exact bytes, versions, hashes,
 and local access restrictions before execution. This task prepares the proposal only.
 
-## Acceptance scenarios
+## Historical acceptance scenarios
 
 - Given no express acceptance for the actual verified identity and terms
   version, when an operator considers User access, the operator stops before

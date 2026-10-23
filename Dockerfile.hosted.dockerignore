@@ -5,6 +5,9 @@
 !docker/
 !docs/lightpanda-runtime.md
 !docs/implementation/pr-review-rules.yaml
+!docs/legal/organization-signup-2026-10-23/terms.md
+!docs/legal/organization-signup-2026-10-23/privacy.md
+!docs/legal/organization-signup-2026-10-23/agreement.txt
 !migrations/
 !package.json
 !patches/

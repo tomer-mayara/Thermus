@@ -1,3 +1,7 @@
+import { parseHTML } from 'linkedom';
+import { micromark } from 'micromark';
+import { gfm, gfmHtml } from 'micromark-extension-gfm';
+import { approvedOrganizationDocuments } from '../../../src/accounts/providers/workos/workos-approved-organization-documents.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { HostedImageGate } from '../../support/container/hosted-image-gate.ts';
@@ -51,11 +55,17 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.equal((await server.stop()).code, 0);
   });
 
-  await t.test('Given the unchanged personal signup bundle in the image, when organization creation is enabled, then startup rejects that bundle before listening', { timeout: 45_000 }, async (step) => {
-    const { code, logs } = await gate.rejectedStartup({ SELF_SERVE_SIGNUP_ENABLED: 'true' }, step.signal);
-    assert.equal(code, 1);
-    assert.match(logs, /organization-creation/);
-    assert.doesNotMatch(logs, /Listening on http:\/\//);
+  await t.test('Given the approved organization bundle in the image, when signup is enabled, then startup succeeds and the exact approved notice is readable before sign-in', { timeout: 45_000 }, async (step) => {
+    const server = await gate.server({ SELF_SERVE_SIGNUP_ENABLED: 'true' }, false, step.signal);
+    await server.started();
+    const answer = await fetch(new URL('/signup', server.url), { signal: step.signal });
+    assert.equal(answer.status, 200);
+    const document = parseHTML(await answer.text()).document;
+    const expected = parseHTML(`<div id=expected>${micromark(approvedOrganizationDocuments.notice.text, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
+    assert.equal(document.querySelector('#privacy-notice .document-reader')?.textContent, expected);
+    assert.equal(document.querySelector('#privacy-notice')?.getAttribute('data-document-version'), approvedOrganizationDocuments.notice.version);
+    assert.equal(document.querySelectorAll('form').length, 0);
+    assert.equal((await server.stop()).code, 0);
   });
 
   await t.test('Given a Connect User at the external-provider seam, when the image fetches public HTTPS and a controlled JavaScript page, then the real renderer verifies TLS and returns script output cleaned with the shipped native policy', { timeout: 180_000 }, async (step) => {

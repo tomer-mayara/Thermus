@@ -44,8 +44,8 @@ const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
 export async function openWorkOSApplication(config: RouteConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
   const { loadSelfServeSignupEnabled } = await import('../accounts/providers/workos/workos-signup-settings.ts');
-  const { approvedSignupDocuments } = await import('../accounts/providers/workos/workos-approved-signup-documents.ts');
-  const signup = { enabled: loadSelfServeSignupEnabled(environment), documents: approvedSignupDocuments };
+  const { approvedOrganizationDocuments } = await import('../accounts/providers/workos/workos-approved-organization-documents.ts');
+  const signup = { enabled: loadSelfServeSignupEnabled(environment), documents: approvedOrganizationDocuments };
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createHostedToolOperations, fetchToolServers } = await import('./fetch-tool.ts');
   const operations = createHostedToolOperations(environment, logger);
