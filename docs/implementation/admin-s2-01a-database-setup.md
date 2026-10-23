@@ -1,9 +1,12 @@
 # S2-01a database owner setup
 
-This runbook prepares the selected existing Supabase project for hosted logging
-settings. It does not authorize a new project, plan upgrade, or unrelated data
+This runbook prepares the selected existing Supabase project for hosted Audit logs
+destination settings. It does not authorize a new project, plan upgrade, or unrelated data
 change. The deployment operator performs setup. Customer Admins do not receive
-database credentials. S2-04 must complete the live rollout and recovery proof.
+database credentials. System logs remain internal engineering output. Slice 2
+customers receive audit events through their configured organization Collector;
+this setup adds no delivery or in-app viewer. The existing SQL role/table and
+environment names stay compatible. S2-04 must complete the live rollout and recovery proof.
 
 ## Review scope before applying SQL
 

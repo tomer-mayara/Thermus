@@ -1,22 +1,30 @@
-# OTel logger tests
+# OTel system logger tests
 
-These tests verify `OtelLogger` in `src/logging/otel-logger.ts`. The adapter sends
-each accepted message to a supplied OpenTelemetry logger.
+These tests verify `OtelSystemLogger` in
+`src/logs/system/otel-system-logger.ts`. The adapter sends
+each accepted internal engineering message to a supplied OpenTelemetry logger.
+Customers have no access to this stream. These tests do not verify customer
+Audit logs, whose event-specific API and destination runtime are owned by
+`src/logs/audit/`. Production audit capture and content safety remain
+[S2-03a](../design/organization-admin-plan.md#s2-03a--customer-capture-and-operator-content-isolation);
+never reuse this adapter or stream for audit delivery.
 
 ## Contract
 
-`OtelLogger` extends `BaseLogger`. Its constructor takes an OpenTelemetry logger
+`OtelSystemLogger` extends `SystemLogger`. Source file and line enrichment belongs
+only to the system logger; audit events add no automatic source or stack metadata.
+Its constructor takes an OpenTelemetry logger
 that supports `emit`, followed by an optional `LogLevel` that defaults to INFO:
 
 ```ts
-const logger = new OtelLogger(provider.getLogger('thermus'), LogLevel.INFO);
+const logger = new OtelSystemLogger(provider.getLogger('thermus'), LogLevel.INFO);
 logger.info('The server started.');
 ```
 
 It keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. `error`
-and `fatal` accept a message or a failure. `BaseLogger` renders an `Error` as
+and `fatal` accept a message or a failure. `SystemLogger` renders an `Error` as
 its message, a `SuppressedError` as both messages, and another value as its
-text; `BaseLogger.messageOf()` gives the same text to a caller that composes a
+text; `SystemLogger.messageOf()` gives the same text to a caller that composes a
 longer line. Each accepted call emits one plain log body with the caller file,
 line, and original message. The caller owns the SDK provider, exporter, flush,
 and shutdown. The adapter does not read Axiom settings or install a global
@@ -72,7 +80,7 @@ values take precedence. Keep the file and its credentials out of version
 control and test reports.
 
 The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
-uses the production `OtelLogger` through `openAxiomLogging()` in
+uses the production `OtelSystemLogger` through `openAxiomLogging()` in
 `test/support/in-process/axiom-test-export.ts`. It reads the same settings with the same
 reader and exports to the same test dataset. The log lines go to Axiom only.
 The console gets only the export failure lines: one line for each refused or

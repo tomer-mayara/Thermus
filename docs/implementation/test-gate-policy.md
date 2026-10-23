@@ -277,7 +277,7 @@ changed source affects their behavior:
 - `npm run test:container` for the self-hosted server and commands, including
   `src/index.ts`, `src/app/`, `src/accounts/`, `src/runtime/`,
   `src/interfaces/cli/`, `src/interfaces/mcp/`, `src/interfaces/web/`, and
-  `src/logging/`. During a move, select by both the deleted old path and the new
+  `src/logs/`. During a move, select by both the deleted old path and the new
   path; moving a provider or browser route does not remove its gate.
 - `npm run build:hosted` and `npm run test:container:hosted` for source that
   affects the hosted application, its portal, or its offline checks. The

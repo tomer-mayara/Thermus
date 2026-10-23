@@ -73,7 +73,7 @@ export function describeHttpsMcp(): void {
             started.resolve();
             await Promise.race([aborted.promise, release.promise]);
             return 'A late result';
-          }, search: async () => { throw new Error('Unexpected search call'); } }, { info: (record) => records.push(record), error: (record) => records.push(record) }),
+          }, search: async () => { throw new Error('Unexpected search call'); } }, { info: (record) => records.push(record), error: (record) => records.push(String(record)) }),
         }),
       });
       t.after(() => site.close());

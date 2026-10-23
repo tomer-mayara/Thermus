@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { OtelLogger } from '../../../src/logging/otel-logger.ts';
+import { OtelSystemLogger } from '../../../src/logs/system/otel-system-logger.ts';
 import { createOtlpFixture, logRecordsOf } from '../../support/doubles/logging/otel-log-receiver.ts';
 
-test('Given a default OtelLogger and Axiom system-log-test, when DEBUG and INFO are logged and flushed, then Axiom accepts the export and the HTTP body contains only INFO with its source', { timeout: 20_000 }, async (t) => {
+test('Given a default OtelSystemLogger and Axiom system-log-test, when DEBUG and INFO are logged and flushed, then Axiom accepts the export and the HTTP body contains only INFO with its source', { timeout: 20_000 }, async (t) => {
   const { provider, requests, flush, scopeName } = await createOtlpFixture(t);
-  const logger = new OtelLogger(provider.getLogger(scopeName));
+  const logger = new OtelSystemLogger(provider.getLogger(scopeName));
 
   logger.debug('hidden debug event');
   logger.info('system log event');

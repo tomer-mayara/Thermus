@@ -1,3 +1,4 @@
+import type { SystemLog } from '../logs/system/system-log.ts';
 import type { LocalAuthPages } from '../interfaces/web/auth/better-auth/local-auth-pages.ts';
 import type { AccessResolver } from '../accounts/identity/access-context.ts';
 import type { Billing } from '../accounts/billing/billing.ts';
@@ -62,22 +63,17 @@ export interface Application {
   close(listenerDrain?: Promise<void>): Promise<void>;
 }
 
-export interface ApplicationLogger {
-  info(message: string): void;
-  error(message: string): void;
-}
-
 // The hosted provider reads its own settings from the environment, so no common setting turns it on.
-export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+export async function createApplication(config: DeploymentConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   if (config.deployment === 'hosted') return createHostedApplication(config, logger, environment);
   return createSelfHostedApplication(config, logger, environment);
 }
 
-export function operatorFailureReporter(logger: ApplicationLogger): FailureReporter {
+export function operatorFailureReporter(logger: SystemLog): FailureReporter {
   return ({ step, cause }) => logger.error(`An MCP request failed unexpectedly in ${step}: ${String(cause)}`);
 }
 
-async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+async function createSelfHostedApplication(config: SelfHostedConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   // The rules load before the data directory opens, so a rules failure holds no resource and changes no data.
   const { createToolOperations, fetchToolServers } = await import('./fetch-tool.ts');
   const buildServer = fetchToolServers(createToolOperations(environment, logger), logger);
@@ -133,17 +129,17 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
 }
 
 // The hosted edition loads its provider only here, as the self-hosted edition does.
-async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+async function createHostedApplication(config: HostedConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   const { openWorkOSApplication } = await import('./hosted-workos-application.ts');
   return openWorkOSApplication(config, logger, environment);
 }
 
-export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {
+export function accountFailureReporter(logger: SystemLog): AccountFailureReporter {
   return ({ path, cause }) => logger.error(`An account request failed unexpectedly for ${path}: ${String(cause)}`);
 }
 
-// The operator log keeps the change records until hosted storage exists. JSON keeps each record on one line.
-export function accountChangeRecorder(logger: ApplicationLogger): ChangeRecorder {
+// These privileged changes are internal system diagnostics only. JSON keeps each record on one line.
+export function accountChangeRecorder(logger: SystemLog): ChangeRecorder {
   return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { LogLevel } from '../../../src/logging/base-logger.ts';
-import { OtelLogger } from '../../../src/logging/otel-logger.ts';
+import { LogLevel } from '../../../src/logs/system/system-logger.ts';
+import { OtelSystemLogger } from '../../../src/logs/system/otel-system-logger.ts';
 import { createOtlpFixture, logRecordsOf } from '../../support/doubles/logging/otel-log-receiver.ts';
 
 const testDataset = 'system-log-test';
@@ -10,7 +10,7 @@ test('Given the official OTLP HTTP exporter with Axiom headers, when each level 
   const { provider, requests, flush, scopeName } = await createOtlpFixture(t, {
     Authorization: 'Bearer test-token', 'X-Axiom-Dataset': testDataset,
   });
-  const logger = new OtelLogger(provider.getLogger(scopeName), LogLevel.DEBUG);
+  const logger = new OtelSystemLogger(provider.getLogger(scopeName), LogLevel.DEBUG);
 
   const before = Date.now();
   logger.debug('debug event');
@@ -42,7 +42,7 @@ test('Given the official OTLP HTTP exporter with Axiom headers, when each level 
 
 test('Given empty and Unicode multiline messages, when the official exporter serializes them, then the OTLP bodies preserve the source and text', { timeout: 20_000 }, async (t) => {
   const { provider, requests, flush, scopeName } = await createOtlpFixture(t);
-  const logger = new OtelLogger(provider.getLogger(scopeName));
+  const logger = new OtelSystemLogger(provider.getLogger(scopeName));
   const messages = ['', 'Hello 🌡️\nsecond line'];
 
   for (const message of messages) logger.info(message);

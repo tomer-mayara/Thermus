@@ -4,8 +4,8 @@ import { Writable } from 'node:stream';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
-import { BaseLogger, LogLevel } from '../../../src/logging/base-logger.ts';
-import { ConsoleLogger } from '../../../src/logging/console-logger.ts';
+import { SystemLogger, LogLevel } from '../../../src/logs/system/system-logger.ts';
+import { ConsoleSystemLogger } from '../../../src/logs/system/console-system-logger.ts';
 
 const ansi = '\u001b';
 const testFile = basename(fileURLToPath(import.meta.url));
@@ -19,7 +19,7 @@ const levels = [
 ] as const;
 
 function capture(level?: LogLevel): {
-  logger: ConsoleLogger;
+  logger: ConsoleSystemLogger;
   written: string[];
 } {
   const written: string[] = [];
@@ -29,10 +29,10 @@ function capture(level?: LogLevel): {
       done();
     },
   });
-  return { logger: new ConsoleLogger(level, output), written };
+  return { logger: new ConsoleSystemLogger(level, output), written };
 }
 
-function logAll(logger: ConsoleLogger): void {
+function logAll(logger: ConsoleSystemLogger): void {
   for (const { method } of levels) logger[method](`${method} message`);
 }
 
@@ -51,7 +51,7 @@ test('Given a default logger, when INFO is logged, then stderr receives one form
     written.push(String(chunk));
     return true;
   });
-  const logger = new ConsoleLogger();
+  const logger = new ConsoleSystemLogger();
 
   logger.debug('hidden message');
   logger.info('This is a test log message');
@@ -81,15 +81,15 @@ test('Given a caller filename with parentheses, when INFO is logged, then the fu
   assert.ok(written[0].includes('[caller(logger).js:1]: the call site\n'));
 });
 
-test('Given a caller beside the logging directory, when INFO is logged, then its location is emitted', () => {
+test('Given a caller beside the system logging directory, when INFO is logged, then its location is emitted', () => {
   const { logger, written } = capture();
   // The VM caller checks the directory prefix; it is not a built production script.
-  const filename = fileURLToPath(new URL('../../../src/logging-caller.fixture', import.meta.url));
+  const filename = fileURLToPath(new URL('../../../src/logs/system-caller.fixture', import.meta.url));
 
   runInNewContext('logger.info("the call site")', { logger }, { filename });
 
   assert.equal(written.length, 1);
-  assert.ok(written[0].includes('[logging-caller.fixture:1]: the call site\n'));
+  assert.ok(written[0].includes('[system-caller.fixture:1]: the call site\n'));
 });
 
 test('Given DEBUG threshold, when each method is called, then each level has its label and color', () => {
@@ -184,7 +184,7 @@ for (const { kind, failure, gives, text } of failures) {
     assert.ok(written[1].endsWith(`[${testFile}:${fatalLine}]: ${text}\n`));
   });
 
-  test(`Given ${kind}, when BaseLogger.messageOf() renders it, then it gives ${gives}`, () => {
-    assert.equal(BaseLogger.messageOf(failure), text);
+  test(`Given ${kind}, when SystemLogger.messageOf() renders it, then it gives ${gives}`, () => {
+    assert.equal(SystemLogger.messageOf(failure), text);
   });
 }

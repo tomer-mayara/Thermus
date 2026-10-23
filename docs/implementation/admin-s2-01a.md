@@ -1,13 +1,26 @@
-# S2-01a private logging settings storage
+# S2-01a private audit destination settings storage
 
 S2-01a adds a private PostgreSQL settings store and a bounded SQL runtime to the
-hosted application. It does not add the Logging UI, credential encryption,
+hosted application. It does not add the Audit logs UI, credential encryption,
 Collector requests, or export dispatch. Those remain later Slice 2 work.
 WorkOS remains the source of user and organization access.
 
+The store and runtime belong to `src/logs/audit/`, alongside the distinct
+event-specific `AuditLog`/`AuditLogger` API foundation. This foundation adds no
+production MCP/admin audit capture, redaction, truncation, UI, or delivery. Its
+`toolCompleted` and `administrationChanged` methods accept metadata only. S2-03a
+must extend tool events with redacted, bounded input and result before runtime
+capture or export.
+[S2-03a](../design/organization-admin-plan.md#s2-03a--customer-capture-and-operator-content-isolation)
+owns capture and content safety. System logs in `src/logs/system/` remain
+internal engineering output, including current account change records; they
+give customers no access. Slice 2 access is through the configured organization
+Collector, with no in-app log viewer promised. SQL and environment names stay
+compatible.
+
 ## Store contract
 
-`src/logging/destination-settings-store.ts` defines the public server contract.
+`src/logs/audit/destination-settings-store.ts` defines the public server contract.
 The caller supplies a tenant ID from current trusted organization access.
 `read` returns found settings, absence, or unavailable storage. `save` compares
 an expected revision atomically; null expects an absent row. Competing first
@@ -114,8 +127,8 @@ score would make these guarantees harder to trace.
 | File | Base MI | Candidate MI | Retained reason |
 | --- | --- | --- | --- |
 | `src/app/logging-storage.ts` | New | 63.5 | One optional startup boundary owns validation, safe failure and lazy loading. |
-| `src/logging/bounded-sql-runtime.ts` | New | 41.9 | One owner keeps admission, deadlines, late-work accounting and disposal together. |
-| `src/logging/pg-destination-settings-store.ts` | New | 54.2 | Atomic SQL, revision outcomes and row mapping implement one storage invariant. |
+| `src/logs/audit/bounded-sql-runtime.ts` | New | 41.9 | One owner keeps admission, deadlines, late-work accounting and disposal together. |
+| `src/logs/audit/pg-destination-settings-store.ts` | New | 54.2 | Atomic SQL, revision outcomes and row mapping implement one storage invariant. |
 | `src/runtime/config/logging-storage-config.ts` | New | 60.0 | Required URI, key and CA rules stay with safe diagnostics. |
 | `src/app/application.ts` | 56.2 | 54.5 | Concurrent MCP/SQL cleanup keeps both failures visible. |
 | `src/app/hosted-workos-application.ts` | 62.2 | 60.3 | Resource acquisition, startup failure disposal and lifetime transfer stay visible. |
@@ -153,10 +166,14 @@ to complete-candidate checks and independent architect approval.
 
 ## Contract, policy, and recovery review
 
-The public-surface check identifies `src/index.ts` and `src/app/fetch-tool.ts`
-because they import `application.ts`. Both files and their exported declarations
-are unchanged. `Application`, `ApplicationLogger`, routing, and tool contracts
-remain unchanged. `composeHostedApplication` gains an optional fourth resource
+The S2-01a public-surface check identified `src/index.ts` and
+`src/app/fetch-tool.ts` because they import `application.ts`. This change updates
+their system logger dependencies. The former `ApplicationLogger` contract is
+replaced by `SystemLog` from `src/logs/system/system-log.ts`. Its diagnostic
+`error` input accepts `unknown`, which broadens the previous string input;
+existing diagnostic output and failure rendering are preserved. `Application`,
+routing, and tool behavior remain unchanged. In S2-01a,
+`composeHostedApplication` gains an optional fourth resource
 for cleanup; `WorkOSApplicationParts` gains optional storage. Production hosted
 composition now owns this resource. Existing callers remain valid. Hosted close
 now preserves all cleanup failures in an `AggregateError`; the unchanged process
@@ -170,7 +187,7 @@ exceptions require review; the candidate cannot approve its own exceptions.
 
 The new production dependency is pinned `pg` 8.23.1, maintained by the
 node-postgres project. Its matching types are a development dependency. The
-logging owner uses the driver directly for verified TLS and atomic SQL; no ORM
+audit destination owner uses the driver directly for verified TLS and atomic SQL; no ORM
 or provider SDK is introduced. The lockfile also resolves the existing optional
 Better Auth PostgreSQL peer against this version.
 

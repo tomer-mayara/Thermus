@@ -1,7 +1,7 @@
+import type { SystemLog } from '../../../../src/logs/system/system-log.ts';
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { StreamableHTTPClientTransport, type CallToolResult, type Client } from '@modelcontextprotocol/client';
-import type { ApplicationLogger } from '../../../../src/app/application.ts';
 import { startHttpServer } from '../../../../src/runtime/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/interfaces/mcp/fetch-tool-schema.ts';
 import { searchToolInputSchema } from '../../../../src/interfaces/mcp/search-tool-schema.ts';
@@ -28,7 +28,7 @@ const expectedMarkdown = '## Rendered story\n\nThe rendered article has a first 
   + 'Related [article](https://news.example/related) and [root](https://news.example/root).';
 const environment = { PUBLIC_BASE_URL: 'http://127.0.0.1:8080', AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: rendererExecutable };
 
-interface RecordingLog extends ApplicationLogger {
+interface RecordingLog extends SystemLog {
   readonly lines: string[];
 }
 

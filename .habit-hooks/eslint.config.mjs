@@ -35,7 +35,7 @@ const pageFetchImports = [
   '@modelcontextprotocol/(?:server|client)(?:/|$)',
   '(?:adblock-rs|agent-input-sanitizer|defuddle)(?:/|$)',
   '@opentelemetry/(?:sdk-logs|exporter-logs-otlp-http)(?:/|$)',
-  '(?:\\.\\./)+(?:mcp/|http/|hosted-admin/|html-cleaner-pipeline/|logging/)',
+  '(?:\\.\\./)+(?:mcp/|http/|hosted-admin/|html-cleaner-pipeline/|logging/|logs/)',
   '(?:\\.\\./)+(?:application|fetch-tool|hosted-workos-application|hosted-renderer-startup|hosted-portal|index)(?:\\.[jt]s)?$',
   '(?:\\.\\./)+website-fetcher/(?!website-fetcher(?:\\.[jt]s)?$)',
 ];

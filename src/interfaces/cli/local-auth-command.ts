@@ -1,3 +1,4 @@
+import type { SystemLog } from '../../logs/system/system-log.ts';
 import { loadDeploymentConfig } from '../../runtime/config/deployment-config.ts';
 import type { LocalUserAdministration, LocalAccount, LocalAuthSettings, OpenedLocalAdministration, PasswordSource, RegisteredClient } from '../../accounts/identity/local-user-administration.ts';
 import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';
@@ -15,7 +16,7 @@ export interface LocalAuthCommandContext {
   readonly environment: Environment;
   readonly input: HiddenInput;
   readonly output: { write(text: string): void };
-  readonly logger: { error(failure: unknown): void };
+  readonly logger: Pick<SystemLog, 'error'>;
   readonly openAdministration: OpenAdministration;
 }
 

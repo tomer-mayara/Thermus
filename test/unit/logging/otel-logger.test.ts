@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import type { Logger, LogRecord } from '@opentelemetry/api-logs';
-import { LogLevel } from '../../../src/logging/base-logger.ts';
-import { OtelLogger } from '../../../src/logging/otel-logger.ts';
+import { LogLevel } from '../../../src/logs/system/system-logger.ts';
+import { OtelSystemLogger } from '../../../src/logs/system/otel-system-logger.ts';
 
 const levels = [
   { level: LogLevel.DEBUG, method: 'debug', severity: 5, label: 'DEBUG' },
@@ -14,13 +14,13 @@ const levels = [
   { level: LogLevel.FATAL, method: 'fatal', severity: 21, label: 'FATAL' },
 ] as const;
 
-function capture(level?: LogLevel): { logger: OtelLogger; records: LogRecord[] } {
+function capture(level?: LogLevel): { logger: OtelSystemLogger; records: LogRecord[] } {
   const records: LogRecord[] = [];
   const output: Pick<Logger, 'emit'> = { emit(record) { records.push(record); } };
-  return { logger: new OtelLogger(output, level), records };
+  return { logger: new OtelSystemLogger(output, level), records };
 }
 
-function logAll(logger: OtelLogger): void {
+function logAll(logger: OtelSystemLogger): void {
   for (const { method } of levels) logger[method](`${method} message`);
 }
 

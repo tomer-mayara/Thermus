@@ -1,3 +1,4 @@
+import type { SystemLog } from './system-log.ts';
 import { basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,7 +11,7 @@ export enum LogLevel {
   NONE,
 }
 
-export abstract class BaseLogger {
+export abstract class SystemLogger implements SystemLog {
   private level: LogLevel;
   private readonly loggerDirectory: string = import.meta.dirname;
 
@@ -46,7 +47,7 @@ export abstract class BaseLogger {
   // A caller that makes a longer line uses the same rule.
   public static messageOf(failure: unknown): string {
     if (failure instanceof SuppressedError) {
-      return `${BaseLogger.messageOf(failure.suppressed)} The cleanup after this failure also failed: ${BaseLogger.messageOf(failure.error)}`;
+      return `${SystemLogger.messageOf(failure.suppressed)} The cleanup after this failure also failed: ${SystemLogger.messageOf(failure.error)}`;
     }
     return failure instanceof Error ? failure.message : String(failure);
   }
@@ -56,7 +57,7 @@ export abstract class BaseLogger {
     this.write(
       level,
       this.formatTimestamp(new Date()),
-      this.withCallSite(BaseLogger.messageOf(message)),
+      this.withCallSite(SystemLogger.messageOf(message)),
     );
   }
 

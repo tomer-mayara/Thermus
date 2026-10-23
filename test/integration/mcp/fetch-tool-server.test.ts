@@ -33,7 +33,7 @@ async function connect(t: TestContext, options: { search?: SearchOperation; oper
     } },
     logger: {
       info: (entry) => { info.push(entry); if (completionLinesIn(entry).length === 1) completed.resolve(entry); if (options.infoFails) throw new Error('secret-info-error'); },
-      error: (entry) => { errors.push(entry); if (options.errorFails) throw new Error('secret-log-error'); },
+      error: (entry) => { errors.push(String(entry)); if (options.errorFails) throw new Error('secret-log-error'); },
     },
   }, options.lifetime);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();

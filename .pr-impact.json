@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "S2-01a adds an optional hosted PostgreSQL datastore and its tenant-scoped settings contract to the existing logging owner. The pg adapter uses atomic expected-revision writes, preserves exact no-op revisions, and reports uncertain writes without retry. A bounded runtime owns lazy verified-TLS connections, active and pending work, acquisition and query deadlines, and local socket cleanup. Hosted composition reads separate server-only database/key/CA settings, keeps unavailable storage outside MCP admission and health, and starts SQL and MCP cleanup together. PostgreSQL can complete already-submitted work after local socket close, bounded by its server statement timeout. Local edition composition does not load the hosted SQL adapter. The SQL migration defines a restricted server role and private forced-RLS table, but no live project migration or rollout occurs. Logging UI, credential encryption and export remain later tickets. Existing WorkOS identity authority, browser/MCP organization binding, and provider contract behavior stay unchanged. Registry container, component and deployment views now show this optional boundary and lifetime; all other views were checked. Exact pg and Node builtin facts and a dedicated local PostgreSQL gate are declared without weaker thresholds or test selection. The durable contract and resource lifetime require T2 architect review. No architecture decision record is introduced. The final hosted image probe uses synthetic storage settings under disabled networking to verify packaged adapter loading and lazy cleanup; its strict error logger remains unchanged.",
+    "summary": "The complete candidate keeps the optional hosted PostgreSQL settings boundary from S2-01a and separates it from internal diagnostics. System logs now belong to src/logs/system, with SystemLog at application, MCP, HTTP and CLI boundaries; ConsoleSystemLogger and OtelSystemLogger retain source location, severity and output behavior. Audit logs belong to src/logs/audit: the moved private settings store/runtime keep their SQL, revision and lifetime behavior. A new AuditLog/AuditLogger foundation exposes only toolCompleted and administrationChanged, projects named nested fields, adds no source location/stack and catches synchronous sink failures. Its metadata-only API has no production caller/exporter; S2-03a must add redacted bounded tool inputs/results before capture. No system stream is exposed to customers and no log viewer is added. Component rules split the former logging owner into system-logs and audit-logs, declare their exact imports and forbid dependencies between them. The registry shows current wiring versus the unwired audit API. No external auth/MCP/SQL behavior or deployment topology changes beyond parent S2-01a; no live migration or rollout. T2 review covers the new component and event contract, plus the retained parent datastore boundary. No ADR is added.",
     "views": [
       "context",
       "containers",
@@ -25,9 +25,9 @@
     ],
     "evidence": [
       "architecture/components.md",
-      "src/logging/destination-settings-store.ts",
-      "src/logging/pg-destination-settings-store.ts",
-      "src/logging/bounded-sql-runtime.ts",
+      "src/logs/audit/destination-settings-store.ts",
+      "src/logs/audit/pg-destination-settings-store.ts",
+      "src/logs/audit/bounded-sql-runtime.ts",
       "src/runtime/config/logging-storage-config.ts",
       "src/app/logging-storage.ts",
       "src/app/hosted-workos-application.ts",
@@ -44,7 +44,16 @@
       "docs/implementation/admin-s2-01a.md",
       "docs/implementation/admin-s2-01a-database-setup.md",
       "docs/implementation/test-gate-policy.md",
-      "docker/verify-hosted-runtime.mjs"
+      "docker/verify-hosted-runtime.mjs",
+      "src/logs/system/system-log.ts",
+      "src/logs/system/system-logger.ts",
+      "src/logs/system/console-system-logger.ts",
+      "src/logs/system/otel-system-logger.ts",
+      "src/logs/audit/audit-log.ts",
+      "src/logs/audit/audit-logger.ts",
+      "test/acceptance/logging/audit-log.test.ts",
+      "test/unit/logging/audit-logger.test.ts",
+      "docs/design/organization-admin-plan.md"
     ]
   }
 }

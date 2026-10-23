@@ -1,3 +1,4 @@
+import type { SystemLog } from '../../logs/system/system-log.ts';
 import { randomUUID } from 'node:crypto';
 import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../../accounts/identity/access-context.ts';
@@ -10,11 +11,6 @@ import { formatToolCompletion, type CompletionStatus } from './tool-completion-r
 import type { McpRequestLifetime } from './mcp-server.ts';
 import { PageFetchFailure } from '../../pipelines/page-fetch/fetch-failure.ts';
 
-interface CompletionLogger {
-  info(record: string): void;
-  error(record: string): void;
-}
-
 export interface ToolOperations {
   readonly fetch: FetchOperation;
   readonly search: SearchOperation;
@@ -22,7 +18,7 @@ export interface ToolOperations {
 
 export function createFetchToolServer(context: RequestContext, dependencies: {
   operations: ToolOperations;
-  logger: CompletionLogger;
+  logger: SystemLog;
 }, lifetime?: McpRequestLifetime): Server {
   const server = new Server({ name: 'thermus', version: '0.0.0' }, { capabilities: { tools: {} } });
   server.setRequestHandler('tools/list', () => ({ tools: [{
@@ -126,7 +122,7 @@ function safeSearchFailure(error: unknown, signal: AbortSignal): { status: Compl
   return signal.aborted ? { status: 'cancelled', message: 'Request cancelled' } : failure;
 }
 
-function emitCompletion(logger: CompletionLogger, record: string): void {
+function emitCompletion(logger: SystemLog, record: string): void {
   try {
     logger.info(record);
   } catch {

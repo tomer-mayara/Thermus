@@ -1,3 +1,4 @@
+import type { SystemLog } from '../logs/system/system-log.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
@@ -7,7 +8,6 @@ import {
   composeHostedApplication,
   operatorFailureReporter,
   type Application,
-  type ApplicationLogger,
   type HostedProviderParts,
   type RouteConfig,
 } from './application.ts';
@@ -32,7 +32,7 @@ export interface WorkOSConnection {
 // The parts of the hosted application that a composition root chooses. Production supplies the shared fetch
 // operation; a development composition can supply another request-scoped tool server.
 export interface WorkOSApplicationParts {
-  readonly logger: ApplicationLogger;
+  readonly logger: SystemLog;
   readonly loggingStorage?: HostedLoggingStorage;
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
@@ -44,7 +44,7 @@ export interface WorkOSApplicationParts {
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
 const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
-export async function openWorkOSApplication(config: RouteConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+export async function openWorkOSApplication(config: RouteConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   const { loadSelfServeSignupEnabled } = await import('../accounts/providers/workos/workos-signup-settings.ts');
   const { approvedOrganizationDocuments } = await import('../accounts/providers/workos/workos-approved-organization-documents.ts');
   const signup = { enabled: loadSelfServeSignupEnabled(environment), documents: approvedOrganizationDocuments };
@@ -67,7 +67,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: Applica
 
 // Invalid or missing WorkOS settings stop the start before the server listens. There is no fallback to local or
 // anonymous access. The connection makes no WorkOS call: the key set loads at the first check of a Connect token.
-export async function openWorkOSConnection(config: RouteConfig, logger: ApplicationLogger, environment: Environment): Promise<WorkOSConnection> {
+export async function openWorkOSConnection(config: RouteConfig, logger: SystemLog, environment: Environment): Promise<WorkOSConnection> {
   const { browserSessionIssuer, loadWorkOSSettings } = await import('../accounts/providers/workos/workos-settings.ts');
   const settings = loadWorkOSSettings(environment, config.publicBaseUrl);
   const { WorkOS } = await import('@workos-inc/node');

@@ -1,4 +1,4 @@
-import type { ApplicationLogger } from './application.ts';
+import type { SystemLog } from '../logs/system/system-log.ts';
 import { AdRulesFileError, readAdRulesFile } from '../runtime/config/ad-rules-file.ts';
 import { CleanHtmlAdsAdblockRs } from '../pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { HtmlToMarkdownPipeline } from '../pipelines/html-processing/html-to-markdown-pipeline.ts';
@@ -23,7 +23,7 @@ type Environment = Readonly<Record<string, string | undefined>>;
 export type { ToolOperations } from '../interfaces/mcp/fetch-tool-server.ts';
 
 // One application owns the renderer, rules, compatible cleaners, and setup reports for both tools.
-export function createToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations {
+export function createToolOperations(environment: Environment, logger: SystemLog): ToolOperations {
   const ads = adCleaner(readAdRulesFile(environment));
   const sanitizer = new PromptInjectionRemoverSanitizer();
   const fetcher = new WebsiteFetcherLightpanda(environment.LIGHTPANDA_BIN);
@@ -48,18 +48,18 @@ export function createToolOperations(environment: Environment, logger: Applicati
   return { fetch, search: (query, context, execution) => search.search(query, context, execution) };
 }
 
-export function createHostedToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations {
+export function createHostedToolOperations(environment: Environment, logger: SystemLog): ToolOperations {
   const operations = createToolOperations(environment, logger);
   const capacity = new OperationCapacity();
   return { fetch: capacity.wrap(operations.fetch), search: capacity.wrap(operations.search) };
 }
 
-export function fetchToolServers(operations: ToolOperations, logger: ApplicationLogger): RequestServerBuilder {
+export function fetchToolServers(operations: ToolOperations, logger: SystemLog): RequestServerBuilder {
   return (context, lifetime) => createFetchToolServer(context, { operations, logger }, lifetime);
 }
 
 // One line for each code in the life of the server keeps the log short when the renderer stays missing.
-function rendererSetupReporter(logger: ApplicationLogger): (failure: RendererSetupFailure) => void {
+function rendererSetupReporter(logger: SystemLog): (failure: RendererSetupFailure) => void {
   const reported = new Set<string>();
   return ({ failure, code }) => {
     if (reported.has(code)) return;

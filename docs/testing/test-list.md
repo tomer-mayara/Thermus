@@ -955,11 +955,11 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Applies threshold changes, hides all levels at NONE, and resumes when the threshold is lowered
 [V] Writes the message of an `Error`, a string as it is, and the text of another value, such as a number or a plain object, from `error()` and `fatal()` after the caller file and line
 [V] Writes both messages of a `SuppressedError` from `error()` and `fatal()`: first the failure, then the cleanup failure; also for a nested `SuppressedError`
-[V] Gives the same text from `BaseLogger.messageOf()`, for a caller that composes a longer line
+[V] Gives the same text from `SystemLogger.messageOf()`, for a caller that composes a longer line
 
 **OTel logger** ([test contract and commands](otel-logger.md))
 
-[V] Preserves the log methods, default INFO level, thresholds, and caller location of `BaseLogger`
+[V] Preserves the log methods, default INFO level, thresholds, and caller location of `SystemLogger`
 [V] Maps each accepted level to an OpenTelemetry severity and preserves the message body
 [V] Exports OTLP log records through the SDK to a loopback receiver with the Axiom headers
 [V] Sends acceptance and interface log records to Axiom's `system-log-test` dataset on every run and checks the exporter result
@@ -1927,7 +1927,7 @@ npm run build && node --test dist/test/interface/website-fetcher-cancellation.te
 
 **Axiom logging** (`test/interface/logging/axiom-logging.test.ts`)
 
-`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
+`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelSystemLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
 
 [V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets no line
 

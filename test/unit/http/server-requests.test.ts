@@ -38,7 +38,7 @@ describe('HTTP server request method', () => {
   test('Given a TRACE request, which Fetch cannot represent, when it arrives, then the client gets 501, the handler is not called, and nothing is logged', { timeout: 5_000 }, async (t) => {
     const urls: string[] = [];
     const messages: string[] = [];
-    const server = await serve(t, recordUrls(urls), { logger: { error: (message) => messages.push(message) } });
+    const server = await serve(t, recordUrls(urls), { logger: { error: (message) => messages.push(String(message)) } });
 
     const response = await RawConnection.open(t, server).send(['TRACE /x HTTP/1.1', 'Host: localhost:8080', 'Connection: close']).ended;
 
@@ -112,7 +112,7 @@ describe('HTTP server request body', () => {
       assert.equal(first.done, false);
       await reader.cancel();
       return new Response(null, { status: 413 });
-    }, { logger: { error: (message) => messages.push(message) } });
+    }, { logger: { error: (message) => messages.push(String(message)) } });
     const body = 'x'.repeat(5 * 1024 * 1024);
 
     const connection = RawConnection.open(t, server).send([

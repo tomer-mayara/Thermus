@@ -1,5 +1,5 @@
 import type { Writable } from 'node:stream';
-import { BaseLogger, LogLevel } from './base-logger.ts';
+import { SystemLogger, LogLevel } from './system-logger.ts';
 
 const reset = '\u001b[0m';
 
@@ -19,7 +19,7 @@ function paint(level: LogLevel, text: string): string {
 }
 
 // Stderr keeps stdout free for command output.
-export class ConsoleLogger extends BaseLogger {
+export class ConsoleSystemLogger extends SystemLogger {
   constructor(
     level: LogLevel = LogLevel.INFO,
     private readonly output: Writable = process.stderr,

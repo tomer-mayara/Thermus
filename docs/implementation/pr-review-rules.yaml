@@ -164,6 +164,10 @@ public_surface:
     - src/runtime/config/deployment-config.ts
     - src/runtime/config/ad-rules-file.ts
   between_packages:
+    system-logs:
+      - src/logs/system/system-log.ts
+    audit-logs:
+      - src/logs/audit/audit-log.ts
     identity:
       - src/accounts/identity/access-context.ts
       - src/accounts/identity/browser-session.ts
@@ -240,7 +244,8 @@ dependency_graph:
     - { from: app, to: execution, kind: runtime }
     - { from: app, to: html-processing, kind: runtime }
     - { from: app, to: http, kind: runtime }
-    - { from: app, to: logging, kind: runtime }
+    - { from: app, to: system-logs, kind: runtime }
+    - { from: app, to: audit-logs, kind: runtime }
     - { from: app, to: mcp, kind: runtime }
     - { from: app, to: organizations, kind: runtime }
     - { from: app, to: page-fetch, kind: runtime }
@@ -281,7 +286,11 @@ dependency_graph:
     - { from: html-processing, to: website-fetcher, kind: type }
     - { from: search-engine, to: website-fetcher, kind: type }
     - { from: http, to: config, kind: type }
-    # 48 permitted owner edges on 2026-10-22; runtime includes public types.
+    - { from: mcp, to: system-logs, kind: type }
+    - { from: http, to: system-logs, kind: type }
+    - { from: cli, to: system-logs, kind: type }
+    - { from: audit-logs, to: organizations, kind: type }
+    # 53 permitted owner edges on 2026-10-23; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }
@@ -290,7 +299,9 @@ dependency_graph:
     - { from: better-auth, to: mcp }
     - { from: web, to: mcp }
     - { from: cli, to: mcp }
-    - { from: page-fetch, to: [ mcp, http, web, app, html-processing, logging ] }
+    - { from: page-fetch, to: [ mcp, http, web, app, html-processing, system-logs, audit-logs ] }
+    - { from: system-logs, to: audit-logs }
+    - { from: audit-logs, to: system-logs }
     - { from: identity, to: app }
     - { from: organizations, to: app }
     - { from: billing, to: app }
@@ -306,7 +317,8 @@ dependency_graph:
     - { from: html-processing, to: app }
     - { from: website-fetcher, to: app }
     - { from: search-engine, to: app }
-    - { from: logging, to: app }
+    - { from: system-logs, to: app }
+    - { from: audit-logs, to: app }
     - { from: http, to: app }
     - { from: config, to: app }
   file_guards: keep # the eslint import rules in .habit-hooks continue to apply
@@ -319,7 +331,8 @@ dependency_graph:
     config: [ "@modelcontextprotocol/server" ]
     app: [ "@workos-inc/node", jose, linkedom ]
     html-processing: [ adblock-rs, agent-input-sanitizer, css-select, css-tree, defuddle, htmlparser2, linkedom, parse5, parse5-htmlparser2-tree-adapter ]
-    logging: [ "@opentelemetry/api-logs", pg ]
+    system-logs: [ "@opentelemetry/api-logs" ]
+    audit-logs: [ pg ]
     mcp: [ "@modelcontextprotocol/server" ]
     search-engine: [ css-select, htmlparser2 ]
     user-portal: [ vite ]
@@ -333,7 +346,8 @@ dependency_graph:
     app: [ node:child_process, node:fs/promises, node:path, node:readline, node:stream, node:url ]
     html-processing: [ node:crypto ]
     http: [ node:events, node:http, node:net ]
-    logging: [ node:crypto, node:path, node:stream, node:url ]
+    system-logs: [ node:path, node:stream, node:url ]
+    audit-logs: [ node:crypto ]
     mcp: [ node:crypto ]
     page-fetch: [ node:os ]
     search: [ node:os ]
@@ -357,7 +371,8 @@ dependency_graph:
     html-processing: { roots: [ src/pipelines/html-processing/ ] }
     website-fetcher: { roots: [ src/pipelines/providers/website-fetcher/ ] }
     search-engine: { roots: [ src/pipelines/providers/search-engine/ ] }
-    logging: { roots: [ src/logging/ ] }
+    system-logs: { roots: [ src/logs/system/ ] }
+    audit-logs: { roots: [ src/logs/audit/ ] }
     http: { roots: [ src/runtime/http/ ] }
     config: { roots: [ src/runtime/config/ ] }
 

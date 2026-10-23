@@ -1,5 +1,5 @@
 import { SeverityNumber, type Logger } from '@opentelemetry/api-logs';
-import { BaseLogger, LogLevel } from './base-logger.ts';
+import { SystemLogger, LogLevel } from './system-logger.ts';
 
 const severity: Record<LogLevel, SeverityNumber> = {
   [LogLevel.DEBUG]: SeverityNumber.DEBUG,
@@ -10,7 +10,7 @@ const severity: Record<LogLevel, SeverityNumber> = {
   [LogLevel.NONE]: SeverityNumber.UNSPECIFIED,
 };
 
-export class OtelLogger extends BaseLogger {
+export class OtelSystemLogger extends SystemLogger {
   constructor(
     private readonly output: Pick<Logger, 'emit'>,
     level: LogLevel = LogLevel.INFO,

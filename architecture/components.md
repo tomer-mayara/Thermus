@@ -107,21 +107,21 @@ flowchart TB
 
 ### Containers and source owners
 
-This mapping lists principal contributors from the 19 stable registry IDs
-without turning them into 19 containers. Owners are logical source boundaries;
+This mapping lists principal contributors from the 20 registry IDs
+without turning them into 20 containers. Owners are logical source boundaries;
 some contribute code to both server and CLI. The [Ownership](#ownership) table retains the full source
 roots, responsibilities, and public contracts.
 
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
-| Both Node server editions | `app`, `config`, `http`, `logging`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos` |
+| Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
+| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (settings runtime only) |
 | Local server addition | `better-auth` |
-| Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `logging`, `identity`, `better-auth` |
+| Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
 | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
 | Renderer process | External Lightpanda binary, controlled by `website-fetcher`; no new source owner |
 | Local installation datastore | Opened and owned by `better-auth`; no new source owner |
-| Optional hosted settings datastore | `logging` owns SQL access; `app` owns its runtime lifetime; no new source owner |
+| Optional hosted settings datastore | `audit-logs` owns SQL access; `app` owns its runtime lifetime; no new source owner |
 
 ### Selected C4 components: tool processing in the Node server
 
@@ -245,7 +245,7 @@ flowchart TB
   subgraph storage_server["Container: Thermus Node server · hosted"]
     storage_app["Component: app<br/>Open optional settings runtime<br/>Own shutdown / TypeScript"]
     storage_config["Component: config<br/>Validate URI, key and optional CA<br/>TypeScript / Node crypto and filesystem"]
-    storage_logging["Component: logging<br/>Tenant settings, atomic revision Save<br/>Bound SQL work / TypeScript and pg"]
+    storage_logging["Component: audit-logs<br/>Tenant settings, atomic revision Save<br/>Bound SQL work / TypeScript and pg"]
   end
   storage_data[("Container: settings datastore<br/>PostgreSQL private schema<br/>Destination settings and opaque credential")]
   storage_app -->|reads startup settings| storage_config
@@ -253,12 +253,12 @@ flowchart TB
   storage_logging -->|parameterized SQL / verified TLS| storage_data
 ```
 
-[Logging storage composition](../src/app/logging-storage.ts) returns unavailable
+[Audit settings storage composition](../src/app/logging-storage.ts) returns unavailable
 when settings are absent or invalid. [Config](../src/runtime/config/logging-storage-config.ts)
 validates the PostgreSQL URI, independent 32-byte base64 key and optional PEM CA
 bundle. URI query parameters cannot override TLS or connection options. The
-[SQL adapter](../src/logging/pg-destination-settings-store.ts) uses the
-[neutral settings contract](../src/logging/destination-settings-store.ts).
+[SQL adapter](../src/logs/audit/pg-destination-settings-store.ts) uses the
+[neutral settings contract](../src/logs/audit/destination-settings-store.ts).
 It stores an opaque credential; encryption and destination decisions are not
 implemented here. No provider SDK types enter that contract.
 
@@ -267,6 +267,49 @@ statement. First-save races and stale writes return conflict. An identical row
 keeps its revision; an actual change gets a new revision. A write whose outcome
 cannot be confirmed returns unconfirmed. The future caller must supply the
 trusted tenant ID and preserve ciphertext for semantic no-op decisions.
+
+### Selected C4 components: system and audit logs in the Node server
+
+Scope: one Thermus Node server container. Solid arrows show runtime calls or
+composition. Dashed arrows show type-only source dependencies. Audit event
+projection is implemented but has no production caller or exporter.
+
+```mermaid
+flowchart TB
+  subgraph logs_server["Container: Thermus Node server"]
+    logs_app["Component: app<br/>Compose system diagnostics<br/>Open hosted audit settings / TypeScript"]
+    logs_mcp["Component: mcp<br/>Tool completion diagnostics / TypeScript"]
+    logs_system["Component: system-logs<br/>Internal diagnostics with caller location<br/>Console and OTel adapters / TypeScript"]
+    logs_audit["Component: audit-logs<br/>Explicit audit event projection - unwired<br/>Hosted destination settings / TypeScript and pg"]
+    logs_org["Component: organizations<br/>Administration change outcomes / TypeScript"]
+  end
+  logs_app -->|constructs and calls internal logger| logs_system
+  logs_mcp -->|calls supplied SystemLog| logs_system
+  logs_app ==>|opens and closes hosted settings runtime| logs_audit
+  logs_audit -.->|ChangeOutcome type only| logs_org
+```
+
+HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-log.ts)
+contract for errors. The production entry selects
+[ConsoleSystemLogger](../src/logs/system/console-system-logger.ts) on stderr;
+[OtelSystemLogger](../src/logs/system/otel-system-logger.ts) remains an internal
+adapter, with no production exporter configured here. Both inherit caller
+location and severity behavior from SystemLogger. Existing account and tool
+completion diagnostics remain internal.
+
+The separate [AuditLog](../src/logs/audit/audit-log.ts) methods are
+`toolCompleted` and `administrationChanged`.
+[AuditLogger](../src/logs/audit/audit-logger.ts) copies named event fields,
+including nested actor and target fields, to a supplied AuditEventSink.
+It adds no source location or exception stack, has no generic message method,
+and catches a synchronous sink failure. It imports no system logger. There is
+no shared base class or forwarding path between these owners.
+
+The event API currently carries metadata only. S2-03a must add bounded, redacted
+MCP inputs and final public results before production capture. The customer
+feature will export to the organization's Collector configured by its Admins;
+there is no in-app event viewer in Slice 2. Storage and event projection share
+the audit owner, but neither calls the other in this foundation.
 
 ### Selected C4 components: local authentication in the Node server
 
@@ -333,7 +376,7 @@ flowchart TB
   processing["Steps and HTML processing<br/>execution · html-processing"]
   fetching["Search and page providers<br/>search-engine · website-fetcher"]
   external_web(["Lightpanda → public web / Brave HTML"])
-  runtime["Composition and runtime<br/>app · config · http · logging"]
+  runtime["Composition and runtime<br/>app · config · http · system-logs · audit-logs"]
   settings_data[("Optional hosted PostgreSQL<br/>Destination settings")]
   clients --> interfaces
   interfaces -->|supplied account roles| accounts
@@ -346,7 +389,7 @@ flowchart TB
   tools --> fetching
   fetching --> external_web
   runtime -.->|construct, serve, record, close| interfaces
-  runtime -->|logging settings SQL when configured| settings_data
+  runtime -->|audit destination settings SQL| settings_data
 ```
 
 App constructs the collaborators and selects one authentication edition. The
@@ -360,9 +403,10 @@ Within the provider group, the Brave search engine calls the supplied website
 fetcher. Both search and page fetch reach external pages through Lightpanda;
 search uses Brave HTML rather than a separate external API. Within the runtime
 group, app owns composition and lifetimes, config validates settings, HTTP serves
-the composed handler, and logging receives supplied record/report sinks. Logging
-also owns the optional hosted settings store and bounded SQL runtime. No tool or
-browser route calls that store in this foundation.
+the composed handler, and system-logs formats internal engineering diagnostics.
+Audit-logs owns the optional hosted settings store and bounded SQL runtime. Its
+separate event API has no production capture or export caller yet. No tool or
+browser route calls the store in this foundation.
 
 An **import dependency** points from an importer to the component whose module
 it imports. The rules count runtime and whole-statement type-only imports
@@ -713,7 +757,8 @@ surface and the narrower file-context restrictions.
 | `html-processing` — [`src/pipelines/html-processing/`](../src/pipelines/html-processing/) | Input/depth limits; ad removal; hidden-content/control sanitation; Brave result projection; Markdown conversion. Transformer subdirectories remain inside one owner. | ProcessHtmlStep and documented [HTML runner](../src/pipelines/html-processing/html-to-markdown-pipeline.ts); documented ad-cleaner construction and depth-limit error. App selects concrete transformations. |
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
-| `logging` — [`src/logging/`](../src/logging/) | Format and emit operator logs; own tenant destination settings, atomic revisions, and bounded PostgreSQL work. | BaseLogger/LogLevel and concrete logger modules selected at composition; neutral destination-settings store contract, private pg adapter and SQL runtime. No browser Save or export caller yet. |
+| `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; SystemLogger/LogLevel and ConsoleSystemLogger/OtelSystemLogger implementations selected at composition. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection and tenant destination settings with atomic revisions and bounded SQL work. | AuditLog event methods and AuditEventSink; neutral settings store, private pg adapter and SQL runtime. The metadata-only event API is unwired. No browser Save or customer export caller yet. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
@@ -774,7 +819,7 @@ fields. WorkOS organization metadata and the deterministic external ID retain
 creation/legal facts independently of the optional logging-settings datastore. Google enrollment is an optional explicit composition;
 production does not supply its onboarding settings.
 
-The hosted [logging runtime](../src/logging/bounded-sql-runtime.ts) bounds active
+The hosted [audit settings runtime](../src/logs/audit/bounded-sql-runtime.ts) bounds active
 and pending work, acquisition, caller duration and PostgreSQL statements. Caller
 timeout does not free unsettled work from accounting. Late clients are destroyed;
 late results cannot complete an expired caller. Idle-pool errors are observed.
@@ -807,10 +852,11 @@ The following limits affect architectural decisions today:
   Dependency upgrades must preserve deletion ranges, extraction checks, joiner
   handling, and attribute escaping. Use the existing affected interface and
   acceptance contracts described in the [README](../README.md) to verify them.
-- Privileged account changes go to the operator log through
+- Privileged account changes still go to the internal system log through
   [accountChangeRecorder](../src/app/application.ts). Step records are explicitly
-  [best effort](../src/pipelines/execution/step-record.ts). Neither is a durable
-  application audit store; log retention and delivery determine later evidence.
+  [best effort](../src/pipelines/execution/step-record.ts). These streams provide
+  no customer audit access. The separate audit API is unwired; the planned
+  customer export is best effort, and Thermus does not store audit event history.
 - [BillingFree](../src/accounts/billing/billing-free.ts) returns a free plan and
   zero billed seats, including after seat updates. The billing role is a seam,
   but there is no paid-plan implementation or durable seat billing here.

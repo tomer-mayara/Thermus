@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { PgDestinationSettingsStore } from '../../../src/logging/pg-destination-settings-store.ts';
-import { createPgSettingsRuntime } from '../../../src/logging/bounded-sql-runtime.ts';
+import { PgDestinationSettingsStore } from '../../../src/logs/audit/pg-destination-settings-store.ts';
+import { createPgSettingsRuntime } from '../../../src/logs/audit/bounded-sql-runtime.ts';
 import { postgresSettingsSite } from '../../support/in-process/postgres-settings-site.ts';
 
 const desired = { endpoint: 'https://collector.example/v1/logs', auth: 'bearer' as const, enabled: true, encryptedCredential: 'opaque-ciphertext' };

@@ -3,7 +3,8 @@
 Plan reviewed: 23 October 2026. Status: design with merged Slice 1 implementation
 recorded under its tickets. Release prerequisites remain; merged does not mean
 released or cut over. This revision reviews and refines expanded Slice 2 planning;
-it does not execute those tickets.
+it records the audit API foundation and leaves capture, UI, and delivery tickets
+planned.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -20,7 +21,7 @@ transition, without a legacy customer migration or customer Super Admin role.
 | Slice | Shipped scope |
 |---|---|
 | 1 — Basic Admin portal | Narrow provider boundary, User/Admin roles, named organization and first Admin, creator agreement, active-member list, native invitations/acceptance, and workspace selection. Product + Members navigation; no member removal, role changes, MFA gate, flags, factors, or policy UI/state. |
-| 2 — Collector export | Slice 1 plus Logging settings, safe content capture, and bounded best-effort export. Password only; no MFA dependency or member-reduction coordinator. |
+| 2 — Collector export | Slice 1 plus Audit logs settings, safe content capture, and bounded best-effort export. Password only; no MFA dependency or member-reduction coordinator. |
 | 2.5 — Member removal | Slice 2 plus Remove, including self-removal, with durable last-active-Admin protection. Password only; no role changes or MFA features. |
 | 3 — Role changes and MFA | Change role reuses the Slice 2.5 coordinator and may ship independently of MFA. The separate MFA branch adds organization Security and personal factor controls after its free-entitlement/behavior gate passes. |
 
@@ -48,8 +49,8 @@ Account pages managed grants/invitations; administration required MFA, with proo
 limited to Required-policy Password sign-in. The merged Slice 1 implementation
 now retires those grant writes and inferred MFA checks, uses User/Admin, and adds
 named creation plus the combined Members page. The ticket records give its
-checks and remaining release holds. Customer destination storage/export routing
-do not exist. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
+checks and remaining release holds. The private audit destination store and bounded SQL runtime are implemented in
+S2-01a. Customer audit capture, settings UI, and export delivery remain planned. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 include URL origin/path and reason in operator output; Slice 2 must remove that
 content from operator completion records.
 
@@ -66,7 +67,8 @@ Keep permission checks, origin/CSRF protection, escaping, and non-cacheable resp
 | WorkOS adapter | Provider translation, callbacks/session sealing, and provider facts. WorkOS remains identity/membership truth and owns identities, organizations, memberships, roles, invitation delivery, and factor secrets. |
 | Web/account | Native forms, browser sessions, selected organization, safe responses, and Slice 3 browser MFA proof. |
 | Destination settings | Slice 2 tenant settings, revisions, and encrypted credential references. |
-| Logging/app lifecycle | Customer capture, bounded delivery, and shutdown. |
+| System logs | Internal engineering diagnostics in `src/logs/system/`; no customer access. |
+| Audit logs/app lifecycle | Customer audit events, destination storage in `src/logs/audit/`, and planned bounded delivery and shutdown. |
 
 Reuse [identity/access](../../src/accounts/identity/access-context.ts),
 [BrowserSession](../../src/accounts/identity/browser-session.ts), and
@@ -123,7 +125,7 @@ implement no local features here.
 ## Journeys and native UI
 
 Follow [portal design](portal-design.md): existing assets, local IBM Plex fonts,
-and approved palette. Members, Logging, and later Security are Admin navigation.
+and approved palette. Members, Audit logs, and later Security are Admin navigation.
 Account security adds MFA only in Slice 3. Browser workspace selection does not
 change an existing MCP client's workspace.
 
@@ -186,7 +188,7 @@ Pending invitations
 nia@example.com          Admin    3 days left    [Resend] [Revoke]
 ```
 
-Slice 2 adds Logging navigation. Slice 2.5 adds `[Remove]` on member rows.
+Slice 2 adds Audit logs navigation. Slice 2.5 adds `[Remove]` on member rows.
 Slice 3 adds `[Change role]`; Security navigation appears with the MFA branch.
 Add security to the Admin role description only when that branch ships.
 
@@ -218,7 +220,7 @@ Unknown result: We could not confirm the removal. [Check current status]
 After self-removal: [Choose workspace] [Sign out]
 
 Slice 3 — Change jo@example.com's role · Current role: User
-( ) Admin — product/MCP, members, and logging
+( ) Admin — product/MCP, members, and Audit logs
 (*) User — product/MCP
 [Cancel]                                                   [Save role]
 Last Admin: Another Admin must join before you change to User.
@@ -230,7 +232,7 @@ Unknown result: We could not confirm the role change. [Check current status]
 
 ```text
 Thermus       Workspace [Acme Labs v]             Alex  [Sign out]
-Connect your agent | Members | Security | Logging
+Connect your agent | Members | Security | Audit logs
                                --------
 Security for Acme Labs
 [ ] Require MFA for all Admins
@@ -269,13 +271,15 @@ Recovery: Replace and verify your authenticator before continuing.
 Explain blocked removal without naming other organizations. A failed requirement
 read shows an error and refuses removal. Replacement reuses setup/verification.
 
-### Logging — Slice 2
+### Audit logs UI — Slice 2
+
+The [audit log rules](#audit-logs--slice-2) define customer access and event safety.
 
 ```text
 Thermus       Workspace [Acme Labs v]             Alex  [Sign out]
-Connect your agent | Members | Logging
+Connect your agent | Members | Audit logs
                                -------
-Logging destination
+Audit logs destination
 [ ] Enable export
 Collector endpoint [ https://collector.example.com/v1/logs       ]
 Connection: HTTPS · OTLP/HTTP JSON
@@ -535,7 +539,30 @@ binding, consent registry, or reset-related MCP sign-out. Keep valid-token,
 organization, current active membership/role, and permission checks. Gate web
 paths, not the shared `AccessResolver`; the browser MCP guide follows portal rules.
 
-### Customer logging — Slice 2
+### Audit logs — Slice 2
+
+System logs are the current Thermus engineering diagnostics. Only Thermus
+operators use them; customers have no access. `src/logs/system/` owns
+`SystemLogger`, `ConsoleSystemLogger`, and `OtelSystemLogger`, including automatic
+source file and line enrichment. Existing account change records in this output
+remain internal until S2-03a wires separate audit events.
+
+Audit logs are the customer organization Admin feature. `src/logs/audit/` owns
+the destination store/runtime and the distinct event-specific `AuditLog` and
+`AuditLogger` API foundation implemented in this change. Its unwired
+`toolCompleted` and `administrationChanged` methods accept metadata only.
+S2-03a must extend tool events with redacted, bounded input and result before
+production capture or export. Add administration event methods only as the
+actions ship. Audit events have no generic `info`/`error` API and no automatic source or stack metadata. Never
+repurpose a system logger or its OTel adapter, or share their output stream with
+audit delivery. Shared classes under `src/logs/` are appropriate only for real
+common behavior; these roles require no shared base class.
+
+Slice 2 gives customers access through their configured organization Collector.
+It promises no in-app log viewer. This change ships no Audit logs UI or delivery;
+S2-03a still owns production MCP/admin capture, redaction, and truncation.
+The technical database, role, SQL table, and environment names remain compatible,
+including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
 
 Current Admin permission and password authentication authorize settings/Test.
 The later MFA branch adds its portal session gate without changing this export
@@ -562,7 +589,7 @@ customer sink, not operator/Render diagnostics or export-error feedback. This is
 a focused completion-record change, not a system-logger rewrite.
 
 Administration events cover Thermus-handled member, role, invitation, organization
-MFA-policy, and logging actions as each ships. Use independently trusted tenant/
+MFA-policy, and audit destination actions as each ships. Use independently trusted tenant/
 actor context; a request-supplied organization ID is not routing authority. A denied
 request from Org A naming Org B must not send metadata to B's Collector without
 independently established B context. Unattributable attempts stay in sanitized
@@ -603,7 +630,7 @@ Customer sink failure cannot change tool results or fail/replay completed admin
 actions. Isolate it from throwing post-write `ChangeRecorder.record()` calls made
 by `ChangeRecording.keep()` and from tool execution; capture/enqueue remains bounded.
 Exclude sender responses, retries, and settings-read diagnostics from customer
-capture. A Logging action may record one administration event; the labelled
+capture. An Audit logs action may record one administration event; the labelled
 synthetic Test record is separate. Export work must not capture itself.
 
 **Settings and Test.** Use one public HTTPS Collector endpoint, None or one Bearer
@@ -634,7 +661,7 @@ prerequisite to enable.
 **Egress and revisions.** At actual connection, enforce public HTTPS/IP, allow
 Collector paths, reject userinfo/fragments/all queries, and follow zero redirects.
 Prevent private/loopback/metadata-service access and credential forwarding. Isolate
-customer TLS/headers from platform OTEL defaults; the pinned SDK can merge headers.
+customer TLS/headers from system OTel defaults; the pinned SDK can merge headers.
 Other protocols/query-auth are deferred.
 
 Async dispatch/retries read enabled/current revision across instances only when
@@ -708,7 +735,7 @@ data. WorkOS owns accounts/memberships; PostgreSQL holds only application facts:
 
 | Slice | Durable facts |
 |---|---|
-| 1 | No new app database: existing provider metadata/external IDs hold creation/legal recovery. No logging or MFA prerequisite. |
+| 1 | No new app database: existing provider metadata/external IDs hold creation/legal recovery. No Audit logs or MFA prerequisite. |
 | 2 | Collector endpoint/auth/enabled state, revision, and encrypted optional Bearer credential. No member-reduction coordinator yet. |
 | 2.5 | Per-org serialized-operation and unknown external-write records that survive crashes/restarts. |
 | 3 | Role changes reuse those records; MFA adds role-policy flags, factor associations, and scoped recovery state, never TOTP secrets. |
@@ -769,7 +796,7 @@ Update deployment/pause/quota/reconnect/recovery runbooks during implementation.
 ### Owner setup for Supabase — Slice 2
 
 Owner means the Thermus deployment operator with Supabase/Render access. This is
-platform setup; customer Admins use Logging for Collector settings. S2-01a implements these server variables with validation and `.env.example`
+platform setup; customer Admins use Audit logs for Collector settings. S2-01a implements these server variables with validation and `.env.example`
 placeholders. See the [implementation](../implementation/admin-s2-01a.md) and
 [database owner runbook](../implementation/admin-s2-01a-database-setup.md). Missing values disable Slice 2 storage/export;
 preserve MCP and already-admitted portal product access under the outage rule
@@ -865,7 +892,7 @@ provider outages, and safe errors. Maintain the component registry when affected
 Update [onboarding](../implementation/hosted-user-onboarding.md),
 [organization setup](../implementation/hosted-organization-setup.md),
 [signup recovery](../implementation/hosted-signup-recovery.md), and portal design
-with the relevant slice. Before Slice 2 export, approved privacy notice/Logging
+with the relevant slice. Before Slice 2 export, approved privacy notice/Audit logs
 help must explain input/result export. Slice 2.5 documents removal/uncertain-write
 recovery; Slice 3 role changes extend those procedures, while MFA separately needs
 validated identity/recovery steps and proof of retained-factor MCP safety.
@@ -920,7 +947,7 @@ Do not repeat full checks for each substep. Add no redundant
 `npm run check`. Follow [AGENTS.md](../../AGENTS.md) for habit-hooks, component
 registry, architecture/quality review, and review eligibility. No checks described
 here have run for this plan revision. Slice 1 adds no database or later-slice
-logging, member reduction, role-change, or MFA feature.
+Audit logs, member reduction, role-change, or MFA feature.
 
 #### S1-01 — Shared boundary and retired grant writes
 
@@ -1274,7 +1301,7 @@ Existing native send/resend/revoke safeguards stay characterized.
 
 1. Add navigation and Members projection acceptance. Compose Product/Connect,
    Members, and the existing selector for Admin; User gets product navigation.
-   Keep Logging/Security and Remove/Change role absent. Extend needed directory/view
+   Keep Audit logs/Security and Remove/Change role absent. Extend needed directory/view
    facts for trusted You and expiry. Build a bounded complete paginated projection
    of active members and pending invitations. Failed/incomplete reads show safe
    failure, never partial/empty success.
@@ -1438,7 +1465,7 @@ cutover verifies before reopening. Release only Slice 1.
 
 ### Slice 2 — Collector settings and export
 
-The [customer logging rules](#customer-logging--slice-2), [storage
+The [audit log rules](#audit-logs--slice-2), [storage
 rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supabase--slice-2)
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
@@ -1449,7 +1476,7 @@ completed scope and verification limits; the remaining tickets stay planned.
 |---|---|---|---|
 | S2-01a | Merged Slice 1 identity/account implementation | Private settings store, bounded SQL runtime, and configuration. | Atomic tenant/revision contract and storage failure/lifecycle cases pass. |
 | S2-01b | S2-01a, S1-02, S1-04a | Current-Admin destination settings, encrypted credential, and Save UI. | Save, secret, authorization, and uncertain-result cases pass. |
-| S2-02a | Existing logging/runtime contracts | Narrow safe OTLP/HTTP JSON sender. | Actual-connection egress and bounded protocol outcomes pass. |
+| S2-02a | Audit API foundation and existing runtime contracts | Narrow safe OTLP/HTTP JSON sender. | Actual-connection egress and bounded protocol outcomes pass. |
 | S2-02b | S2-01b, S2-02a | Optional Test of the saved destination. | Saved-revision, disabled Test, and late-result cases pass. |
 | S2-03a | S2-01b | Safe customer events and operator-content removal. | Final public content and shipped admin events have correct isolation and byte bounds. |
 | S2-03b | S2-01a, S2-03a | Activity-driven settings snapshots. | Cold start, remote Enable, read recovery, and no idle reads pass. |
@@ -1544,7 +1571,7 @@ public contract; browser Save acceptance arrives in 01b.
 [`application.ts`](../../src/app/application.ts); configuration starts at
 [`deployment-config.ts`](../../src/runtime/config/deployment-config.ts). `src/index.ts` owns
 the existing shutdown deadline. The destination settings contract, SQL adapter, and bounded
-runtime now live in `src/logging/`; the settings reader is
+runtime now live in `src/logs/audit/`; the settings reader is
 `src/runtime/config/logging-storage-config.ts`, composed by `src/app/logging-storage.ts`.
 The initial characterization anchors are `test/unit/config/deployment-config.test.ts`,
 `test/unit/application-lifecycle.test.ts`, and
@@ -1575,7 +1602,7 @@ Scenario: Show an uncertain Save honestly
   And it neither claims nothing changed nor blindly repeats the Save
 ```
 
-**Gap / expected red.** Logging settings, encrypted credentials, and their native page do
+**Gap / expected red.** Audit logs settings, encrypted credentials, and their native page do
 not exist. Save and protected reread should be red. Keep current password, Admin permission,
 selected-org, origin/CSRF, escaping, and no-cache outcomes green. Do not require MFA or the
 later membership-reduction coordinator.
@@ -1605,10 +1632,10 @@ later membership-reduction coordinator.
    requests naming B. Green: derive authority from current trusted context and current Admin
    permission, retain password access, check origin/CSRF, and reject stale revisions. Reuse
    the existing neutral User/Admin access boundary; add no WorkOS permission/catalog change
-   for Logging. Use a double for a cross-package collaborator in unit cases; use integration
+   for Audit logs. Use a double for a cross-package collaborator in unit cases; use integration
    for real web/settings/account collaboration.
 5. Red: browser acceptance saves and rereads the new page. Green: add native None/ Bearer
-   radios, write-only Token, saved-token presence, Enable, Save, and Logging navigation for
+   radios, write-only Token, saved-token presence, Enable, Save, and Audit logs navigation for
    Admins. Preserve root/nested paths, escaping, cookies, no-cache, and safe errors. Refactor
    only after secret absence and atomic Save cases pass.
 
@@ -1620,7 +1647,7 @@ checks start at
 [`organization-administration.ts`](../../src/accounts/organizations/organization-administration.ts).
 Navigation exists in `src/interfaces/user-portal/portal.ts` and
 `src/interfaces/web/account/members-page-layout.ts`. The destination service, credential
-codec, and Logging page are proposed, not existing APIs. Reuse
+codec, and Audit logs page are proposed, not existing APIs. Reuse
 `test/integration/hosted-admin/` form/change patterns and
 `test/acceptance/auth/hosted-admin-journey.test.ts` browser/site patterns. Place focused new
 destination unit tests with that package, not in WorkOS tests.
@@ -1647,9 +1674,9 @@ Scenario: Refuse an unsafe actual connection
   Then no event or credential is sent to that address or a redirect target
 ```
 
-**Gap / expected red.** Existing platform OTEL logging does not supply this customer sender,
+**Gap / expected red.** Existing `OtelSystemLogger` does not supply this audit sender,
 actual-connection policy, or complete response interpretation. New sender acceptance is red.
-Existing platform logging remains characterization; local HTTP receiver passes do not prove
+Existing system logging remains characterization; local HTTP receiver passes do not prove
 production public-HTTPS egress.
 
 **Ordered TDD steps:**
@@ -1668,7 +1695,7 @@ production public-HTTPS egress.
 3. Red: protocol cases inspect POST, `application/json`, lowerCamelCase fields, decimal-string
    64-bit timestamps, None/Bearer, and request/payload limits,
    timeout/cancellation, response size/parse limits, and sanitized errors. Green: implement
-   those bounds and isolate customer TLS/headers from platform OTEL environment defaults.
+   those bounds and isolate customer TLS/headers from system OTel environment defaults.
    Refactor with distinctive platform headers/tokens proving they never merge into a customer
    request. Bound connection/agent resources without per-tenant exporter pools.
 4. Red: response cases cover HTTP 200 with matching JSON content type and valid `{}`,
@@ -1686,8 +1713,8 @@ production public-HTTPS egress.
    public-address network/TLS fixture or equivalent permitted endpoint, plus an actual
    endpoint smoke check before release. Add no allow-private/test bypass or paid receiver.
 
-**Homes and anchors.** The customer sender is a proposed logging owner, separate from
-[`otel-logger.ts`](../../src/logging/otel-logger.ts). Inspect
+**Homes and anchors.** The customer sender is a proposed audit owner in `src/logs/audit/`, separate from
+[`otel-system-logger.ts`](../../src/logs/system/otel-system-logger.ts). Inspect
 [`network-policy.ts`](../../src/pipelines/providers/website-fetcher/network-policy.ts) for
 existing DNS preflight, not proof of connected-address safety. Existing
 `test/interface/logging/otel-logger.test.ts` and
@@ -1746,7 +1773,7 @@ characterization. A successful Test is never an Enable prerequisite.
    does not prove production egress. Retain 02a's separate unchanged-guard address/TLS proof;
    add no allow-private/test bypass.
 
-**Homes and anchors.** Extend the proposed 01b destination operation and Logging page, using
+**Homes and anchors.** Extend the proposed 01b destination operation and Audit logs page, using
 02a's public sender contract. Existing route/form cases under
 `test/integration/hosted-admin/` supply security patterns. Use destination-package unit
 tests, a small Test contract where needed, and public browser acceptance under
@@ -1777,11 +1804,13 @@ Scenario Outline: Capture only final public tool content for the trusted tenant
 
 Scenario: Preserve a completed administration action when capture fails
   Given a current Admin and a customer sink that throws or refuses work
-  When a shipped invitation or Logging action completes
+  When a shipped invitation or Audit logs action completes
   Then its public outcome stays complete and the action is not replayed
 ```
 
-**Gap / expected red.** Customer completion capture is absent. Fetch completion records
+**Gap / expected red.** The audit API foundation exists, but production customer
+completion capture is absent. Existing account change records still use the
+internal system output and do not establish a customer audit stream. Fetch completion records
 currently expose URL origin/path and reason; the privacy case should be red there. Search
 already omits content from operator completion output and must stay green.
 `ChangeRecorder.record()`, invoked by `ChangeRecording.keep()`, can currently throw
@@ -1808,12 +1837,12 @@ blanket logger rewrite.
    operation/tool/status/duration and opaque identity metadata while removing
    URL/query/reason/result. Keep existing search privacy green. Refactor and verify
    Render/operator/export-error paths contain none of that content.
-5. Red: shipped invitation send/resend/revoke and Logging actions capture metadata with
+5. Red: shipped invitation send/resend/revoke and Audit logs actions capture metadata with
    independently trusted org/actor context; denied A naming B must not route to B. Green: add
    those events only. Unattributable attempts stay in sanitized operator diagnostics. Refactor
    without adding future removal/MFA or global personal-factor/support events. Exclude
    sender responses, retry work, and settings-read diagnostics from capture to prevent
-   recursion. One Logging action may yield one admin event; its synthetic Test is separate.
+   recursion. One Audit logs action may yield one admin event; its synthetic Test is separate.
 6. Red: sink throw, full admission, and failed post-write recording affect a completed action
    or tool result. Green: make customer capture/enqueue bounded and non-throwing and isolate
    it from synchronous post-write `ChangeRecording` failures. Refactor while proving no
@@ -1824,11 +1853,14 @@ blanket logger rewrite.
 [`fetch-tool-server.ts`](../../src/interfaces/mcp/fetch-tool-server.ts),
 [`tool-completion-record.ts`](../../src/interfaces/mcp/tool-completion-record.ts),
 [`change-records.ts`](../../src/accounts/organizations/change-records.ts), and
-`src/app/application.ts` record composition. Event schema/budget and customer sink are
-proposed logging owners. Reuse `test/unit/mcp/tool-completion-record.test.ts`,
+`src/app/application.ts` record composition. The event-specific `AuditLog`/`AuditLogger` API foundation lives in
+`src/logs/audit/`. Its current metadata-only `toolCompleted` contract must gain
+redacted, bounded input and result before runtime capture or export. Production
+capture, event redaction, truncation, and sink wiring
+remain this ticket's work; the API alone does not deliver events. Reuse `test/unit/mcp/tool-completion-record.test.ts`,
 `test/integration/mcp/tool-completion-record.test.ts`,
 `test/integration/mcp/fetch-tool-server.test.ts`, and organization-change cases. Real
-MCP/logging or organization/logging collaboration is integration; acceptance checks
+MCP/audit or organization/audit collaboration is integration; acceptance checks
 observable customer versus operator outputs through shared support drivers.
 
 **Done.** Final-content, redaction, UTF-8, operator-isolation, trusted-routing, and
@@ -1887,7 +1919,7 @@ contract and product response isolation stay green.
 **Homes and anchors.** Add the proposed narrow snapshot owner beside customer capture,
 consuming the 01a public store contract and 03a sink boundary. Existing
 `test/support/in-process/` sites and `test/support/doubles/logging/` show support roles.
-Keep owner units with logging, real cross-package collaboration under `test/integration/`,
+Keep owner units with audit, real cross-package collaboration under `test/integration/`,
 and public cold/recovery acceptance under `test/acceptance/`. Snapshot freshness is not
 authority to dispatch; 03c owns current store checks.
 
@@ -1951,7 +1983,7 @@ and 03a/b capture/loading outcomes green.
    outage and shutdown integration. Do not extend the global deadline or make a healthy
    process fail health checks.
 
-**Homes and anchors.** Queue/dispatcher are proposed logging owners composed via
+**Homes and anchors.** Queue/dispatcher are proposed audit owners in `src/logs/audit/` composed via
 `src/app/hosted-workos-application.ts` and `src/app/application.ts`; use `src/index.ts`'s
 existing deadline. Build from 01a/02a/03b public contracts, not WorkOS or `pg` internals.
 Put queue units under `test/unit/logging/`, real collaboration under `test/integration/`,
@@ -1967,7 +1999,7 @@ recorded. Product results stay complete and independent of export.
 **Acceptance specification first:**
 
 ```gherkin
-Scenario: Use Logging while the product stays available
+Scenario: Use Audit logs while the product stays available
   Given configured Slice 1 implementation and completed Slice 2 implementation groups
   And a current password-authenticated Admin, reachable Collector, and available capacity
   When the Admin saves a disabled destination, Tests it once, and enables it
@@ -2008,7 +2040,7 @@ revision claims none of those proofs ran.
    realistic bounded load. Keep added ongoing cost $0; no new project, upgrade, trial, paid
    add-on, artificial keepalive, or backup framework. Update deployment, outage/pause/quota,
    reconnect, key-loss, and restore runbooks.
-5. Obtain approved privacy notice and Logging help explaining input/result export, recognized
+5. Obtain approved privacy notice and Audit logs help explaining input/result export, recognized
    redaction limits, truncation, best-effort loss/duplicates, and Test's limited meaning.
    Verify native desktop/mobile/accessibility, role navigation, and secret-free errors. Update
    affected setup/portal/operations documents.
@@ -2020,14 +2052,14 @@ revision claims none of those proofs ran.
 **Homes and anchors.** Extend public acceptance under `test/acceptance/` with shared
 DSL/browser/MCP/Collector drivers and in-process/process sites under `test/support`. Use
 existing hosted-live commands only for applicable provider proof. The canonical owner-setup,
-storage, logging, and release sections own manual obligations; update linked
+storage, audit log, and release sections own manual obligations; update linked
 implementation/runbook/portal documents in the implementation candidates. No tests of
 prose/configuration or new general verification framework are needed.
 
 **Done.** All three ticket groups and the integrated journey are green; actual
 SQL/TLS/isolation/persistence/restore/key/$0 and Collector proof, approved privacy help,
 manual checks, required gates, and approvals are complete. Slice 1 is actually released.
-Ship Product/Members/Logging only: no member removal, role changes, MFA, Supabase Auth/REST,
+Ship Product/Members/Audit logs only: no member removal, role changes, MFA, Supabase Auth/REST,
 identity mirror, or membership-reduction coordinator.
 
 ### Slice 2.5 — Password-only membership removal
