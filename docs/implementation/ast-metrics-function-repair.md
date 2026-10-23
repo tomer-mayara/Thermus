@@ -101,5 +101,7 @@ validation inputs and the bounded MCP lifecycle. Splitting their guards across
 callers would weaken the evidence check. Comments state units, provenance,
 failure behavior, and lifecycle limits. The installer is registered as a real
 CLI entry in `knip.json`; no ignore or snooze hides it. The unused local type
-export was removed. The snooze file remains empty. These are documented review
+export was removed. The runtime manifest path and install instruction stay private
+because only the runtime lookup uses them. No unused export remains in that module.
+The snooze file remains empty. These are documented review
 findings, not a claim that habit-hooks exits successfully.

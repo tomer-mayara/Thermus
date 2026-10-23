@@ -12,8 +12,8 @@ export const toolRoot = fileURLToPath(new URL('../../../', import.meta.url));
 export const patchPath = join(toolRoot, 'patches/ast-metrics', `${pinnedToolVersion}.patch`);
 export const runtimeDirectory = join(toolRoot, '.cache/ast-metrics', pinnedToolVersion, `${process.platform}-${process.arch}`);
 export const runtimeBinary = join(runtimeDirectory, process.platform === 'win32' ? 'ast-metrics.exe' : 'ast-metrics');
-export const runtimeManifest = join(runtimeDirectory, 'install.json');
-export const installInstruction = 'Run pnpm exec node script/code-quality/ast-metrics-install.ts.';
+const runtimeManifest = join(runtimeDirectory, 'install.json');
+const installInstruction = 'Run pnpm exec node script/code-quality/ast-metrics-install.ts.';
 
 export function fileSha256(path: string): string {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
