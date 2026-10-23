@@ -27,7 +27,7 @@ export function signupClosedPage(status = 200): Response {
 export function signupSignInPage(documents: SignupDocuments, loginUrl: string, status = 200): Response {
   return answer({ title: 'Start free access', heading: 'Start free access.', description: 'Connect your AI assistant to Thermus in two steps.', current: 1, content: [
     '<p class="step-caption">STEP 1 OF 2</p><h2>Sign in to continue</h2>',
-    '<p class="task-copy">After sign-in, you will return here to review the terms and activate access.</p>',
+    '<p class="task-copy">After sign-in, you will return here to name your organization and review the terms.</p>',
     signupDocumentReader('privacy-notice', 'Privacy Notice', documents.notice),
     link(loginUrl, 'Sign in to continue', 'primary-action'),
     `<p class="task-copy">${FREE_ACCESS}</p>`,
@@ -35,15 +35,17 @@ export function signupSignInPage(documents: SignupDocuments, loginUrl: string, s
 }
 
 export function signupFormPage(documents: SignupDocuments, csrfToken: string, action: string): Response {
-  return answer({ title: 'Activate free access', heading: 'One step to your workspace.', description: 'Review the terms, then activate your free access.', current: 2, content: [
-    '<p class="step-caption">STEP 2 OF 2</p><h2>Activate free access</h2>',
+  return answer({ title: 'Create organization', heading: 'Create your organization.', description: 'Name your organization, then review and accept the terms.', current: 2, content: [
+    '<p class="step-caption">STEP 2 OF 2</p><h2>Create organization</h2>',
     `<p class="task-copy">${FREE_ACCESS}</p>`,
-    signupDocumentReader('terms', 'Terms of Service', documents.terms),
-    signupDocumentReader('privacy-notice', 'Privacy Notice', documents.notice),
     ...postForm(action, [hiddenField('csrf_token', csrfToken), hiddenField('document_version', documents.version),
+      '<div class="organization-name"><label for="organization-name">Organization name</label><input id="organization-name" type="text" name="organization_name" maxlength="100" autocomplete="organization" required></div>',
+      '<p class="task-copy">You will be the first Admin of this organization.</p>',
+      signupDocumentReader('terms', 'Terms of Service', documents.terms),
+      signupDocumentReader('privacy-notice', 'Privacy Notice', documents.notice),
       `<label class="agreement"><input type="checkbox" name="agreement" value="accepted" required><span class="agreement-text">${escapeHtml(documents.agreement.text)}</span></label>`,
       '<p class="agreement-links"><a href="#terms">Terms</a> · <a href="#privacy-notice">Privacy notice</a></p>',
-    ], 'Activate free access'),
+    ], 'Create organization'),
   ], response: { status: 200, headers: FORM_HEADERS } });
 }
 
@@ -79,8 +81,8 @@ function link(destination: string, label: string, className: string): string {
 
 function steps(current: 1 | 2): string {
   return `<ol class="steps" aria-label="Free access steps">
-    <li${current === 1 ? ' aria-current="step"' : ''}><span class="step-number" aria-hidden="true">${current === 2 ? '✓' : '1'}</span><span><span class="step-name">${current === 2 ? 'Signed in' : 'Sign in'}</span><span class="step-description">Use your email or Google account.</span></span></li>
-    <li${current === 2 ? ' aria-current="step"' : ''}><span class="step-number" aria-hidden="true">2</span><span><span class="step-name">Activate access</span><span class="step-description">Review the terms and open your workspace.</span></span></li>
+    <li${current === 1 ? ' aria-current="step"' : ''}><span class="step-number" aria-hidden="true">${current === 2 ? '✓' : '1'}</span><span><span class="step-name">${current === 2 ? 'Signed in' : 'Sign in'}</span><span class="step-description">Use your email and password.</span></span></li>
+    <li${current === 2 ? ' aria-current="step"' : ''}><span class="step-number" aria-hidden="true">2</span><span><span class="step-name">Create organization</span><span class="step-description">Review the terms and open your workspace.</span></span></li>
   </ol><p class="free-note">No card required.<br>No automatic charge.</p>`;
 }
 

@@ -13,6 +13,7 @@ import {
 import type { Billing } from '../accounts/billing/billing.ts';
 import type { GoogleOnboardingSettings } from '../accounts/providers/workos/workos-google-onboarding.ts';
 import type { WorkOSSettings } from '../accounts/providers/workos/workos-settings.ts';
+import type { WorkOSOrganizations } from '../accounts/providers/workos/workos-organizations.ts';
 import type { SignupDocuments } from '../accounts/organizations/signup-activation.ts';
 import { portalAccessOperation, PRODUCT_ACCESS } from '../interfaces/web/account/portal-access.ts';
 import { MCPServer, type RequestServerBuilder } from '../interfaces/mcp/mcp-server.ts';
@@ -84,12 +85,12 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
     billing,
-    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl),
+    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
   });
 }
 
-async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts> {
+async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
   const { WorkOSOrganizations } = await import('../accounts/providers/workos/workos-organizations.ts');
   const { WorkOSAuthProvider } = await import('../accounts/providers/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('../accounts/providers/workos/workos-browser-session.ts');

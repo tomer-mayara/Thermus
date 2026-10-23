@@ -16,19 +16,17 @@ test('Given a retained activation, when the application restarts with signup off
   const { browser } = await signInThroughServer(site, user);
   const agreement = formsIn((await browser.open('signup')).body).find(({ action }) => action === '/signup');
   assert.ok(agreement);
-  const fields = { ...agreement.fields, agreement: 'accepted' };
+  const fields = { ...agreement.fields, organization_name: 'Acme Labs', agreement: 'accepted' };
   const activated = await browser.post('signup', fields);
   assert.equal(activated.status, 303, activated.body);
   assert.equal(site.signupFake.organizations.length, 1);
   const marker = structuredClone(site.signupFake.organizations[0]);
-  const personalId = String(marker.id);
-  assert.deepEqual(site.world.rolesOf(user, personalId), ['user']);
-  const personalSelection = formsIn((await browser.follow(activated)).body)
-    .find(({ fields: selection }) => selection.organization_id === personalId);
-  assert.ok(personalSelection);
-  assert.equal((await browser.submit(personalSelection)).status, 303);
+  const organizationId = String(marker.id);
+  assert.deepEqual(site.world.rolesOf(user, organizationId), ['admin']);
+  assert.equal(activated.location?.pathname, '/');
+  assert.equal((JSON.parse((await browser.open('session')).body) as { organizationId: string }).organizationId, organizationId);
   site.world.memberships = [...site.world.memberships, { userId: user.id, organizationId: 'org_OTHER', roles: ['user'], status: 'active' }];
-  const personalToken = await site.world.connectToken(user, { org_id: personalId });
+  const createdToken = await site.world.connectToken(user, { org_id: organizationId });
   const otherToken = await site.world.connectToken(user, { org_id: 'org_OTHER' });
 
   await site.close();
@@ -48,12 +46,12 @@ test('Given a retained activation, when the application restarts with signup off
   assert.deepEqual(site.world.fake.takeRequests(), []);
   const retainedAccess = await closedBrowser.open('portal/access');
   assert.equal(retainedAccess.status, 200, retainedAccess.body);
-  assert.equal((JSON.parse(retainedAccess.body) as { organizationId: string }).organizationId, personalId);
-  assert.equal((await closedSite.discover(personalToken)).status, 200);
+  assert.equal((JSON.parse(retainedAccess.body) as { organizationId: string }).organizationId, organizationId);
+  assert.equal((await closedSite.discover(createdToken)).status, 200);
   assert.deepEqual(site.signupFake.organizations, [marker]);
 
   await closedSite.close();
-  site.world.setStatus(user, personalId, 'inactive');
+  site.world.setStatus(user, organizationId, 'inactive');
   const reopenedSite = await serveWorkOSSite(t, {
     config: hostedRootConfig, organizations: [], world: site.world, signup: enabled,
   });
@@ -69,7 +67,7 @@ test('Given a retained activation, when the application restarts with signup off
   assert.match(replayed.body, /support|contact/i);
   assert.deepEqual(site.world.fake.takeRequests().filter(({ method }) => method !== 'GET'), []);
   assert.equal((await reopenedBrowser.open('portal/access')).status, 403);
-  assert.equal((await reopenedSite.discover(personalToken)).status, 403);
+  assert.equal((await reopenedSite.discover(createdToken)).status, 403);
   assert.equal((await reopenedSite.discover(otherToken)).status, 200);
   const otherSelection = formsIn((await reopenedBrowser.open('organizations?return_to=%2F')).body)
     .find(({ fields: selection }) => selection.organization_id === 'org_OTHER');
@@ -79,7 +77,7 @@ test('Given a retained activation, when the application restarts with signup off
   assert.equal(otherAccess.status, 200, otherAccess.body);
   assert.equal((JSON.parse(otherAccess.body) as { organizationId: string }).organizationId, 'org_OTHER');
   assert.deepEqual(site.signupFake.organizations, [marker]);
-  assert.equal(site.world.statusOf(user, personalId), 'inactive');
+  assert.equal(site.world.statusOf(user, organizationId), 'inactive');
   assert.deepEqual(site.world.fake.takeRequests().filter(({ method, path }) => method === 'POST'
     && (path === '/organizations' || path === '/user_management/organization_memberships')), []);
 });

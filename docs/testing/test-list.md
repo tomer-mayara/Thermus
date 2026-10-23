@@ -1,5 +1,50 @@
 # Test inventory
 
+## Current S1-03a inventory scope
+
+S1-03a adds named organization creation, one initially unchecked organization/authority
+agreement, confirmed first Admin, and the matching named-organization MCP guide.
+The marked organization test bundle supplies application test data only. The
+approved production personal-User bundle stays unchanged and cannot authorize
+this new flow. Legal approval and S1-05 cutover remain separate requirements.
+
+The selected source tests cover the following behavior. The
+[S1-03a record](../implementation/admin-s1-03a.md) records actual runs and limits;
+this inventory does not claim a successful test run.
+
+- Signup presentation and route cases cover editable name, one unchecked
+  agreement, full readable documents, strict field counts, invalid names,
+  unchecked agreement, stale versions, and no provider write on refused input.
+- `test/integration/auth/workos-signup.test.ts` and
+  `test/integration/auth/workos-signup-inspection.test.ts` exercise the real
+  WorkOS adapter with the shared organizations name contract. Their
+  `fixtures/signup-client-fake.ts` stays local to that integration group.
+  Document validation remains in the auth-workos unit group.
+- Signup adapter cases cover canonical creator/legal facts, the strict v2
+  metadata record, the persisted name, and a confirmed new organization before
+  the first Admin membership. Current Admin and product access must be confirmed
+  before success. The test bundle is marked for organization creation; the old
+  personal bundle cannot authorize this grant.
+- Hosted signup acceptance and route cases cover current-membership browser
+  selection, the created name in workspace context, and matching created,
+  selected-session, and guide organization IDs. A refused or failed switch keeps
+  safe recovery and does not repeat the grant.
+- Existing eligibility, revocation, cancellation, bounded admission, origin,
+  CSRF, no-cache, and retained-record cases remain. Historical v1 records stay
+  replay barriers, with no inferred organization consent or Admin upgrade.
+  Extended recovery combinations remain S1-03b work.
+- The hosted live signup source uses the TEST ONLY organization agreement,
+  named first Admin, the ten-field v2 record, and matching browser/MCP token
+  organization checks. Fixture cleanup accepts v1 or v2 only with the existing
+  deterministic external ID and fixture-owned subject guards. The enabled
+  hosted image case expects startup rejection for the legacy production bundle;
+  the default closed-image case remains. These changed sources do not establish
+  a live or container pass; use the implementation record for actual results.
+
+The S1-02 overlay and earlier FS personal/User entries below retain their stated
+historical scope. S1-03a replaces their creation-name, initial-role, record, and
+new-activation landing expectations only where described above.
+
 ## Current S1-02 inventory scope
 
 S1-02 changes the current hosted role/password expectations. User and Admin
@@ -15,7 +60,7 @@ Session regressions cover fresh password callbacks and retained encrypted
 `mfa:true` values across read, refresh, and organization selection: all report
 `mfaCompleted: false`. Application MFA policy modes and MFA refusals are removed.
 Admin-only existing signup access offers Continue. Named creation and first
-Admin remain S1-03a work. The live fixture has one password-only profile with
+Admin are covered by the S1-03a overlay above. The live fixture has one password-only profile with
 provider read-back `mfaEnabled: false`, `mfaRequired: false`; it writes no settings.
 Live API-created users have verified email already. A future passing password
 case can prove their sign-in, but not verification of a fresh email or reset.
@@ -1548,14 +1593,21 @@ npm run build && node --test dist/test/integration/auth/workos-provider-administ
 
 **Protected portal request** (`test/integration/auth/portal-access.test.ts`)
 
-[V] User plus Admin gives the organization and the roles that give a permission, without a highest role, and `Cache-Control: no-store`
-[V] Admin only, the default role only, and no grant give 403 `{"access":"denied"}` without organization data
+[V] User plus a synthetic user-manager grant gives the organization and the roles that give a permission, without a highest role, and `Cache-Control: no-store`
+[V] A synthetic user-manager grant only, the default role only, and no grant give 403 `{"access":"denied"}` without organization data
 [V] Another path gives 404, and another method gives 405 with `Allow: GET, HEAD`
+
+**Portal organization display name** (`test/integration/auth/portal-organization-name.test.ts`)
+
+[V] The lookup uses the trusted subject and selected organization
+[V] Denied product access causes no name lookup
+[V] Missing, empty, and whitespace names give a retryable 503 without organization data
+[V] Cancellation stays effective when the provider read later completes
 
 Run only these tests:
 
 ```sh
-npm run build && node --test dist/test/integration/auth/workos-provider-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/integration/auth/portal-access.test.js
+npm run build && node --test dist/test/integration/auth/workos-provider-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/integration/auth/portal-access.test.js dist/test/integration/auth/portal-organization-name.test.js
 ```
 
 **Local command dispatch and lifecycle** (`test/integration/auth/local-auth-command-lifecycle.test.ts`, `local-auth-command-users.test.ts`, `local-auth-command-clients.test.ts`)

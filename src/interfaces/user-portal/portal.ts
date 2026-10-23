@@ -20,6 +20,7 @@ interface SessionView {
 
 interface ProductAccess {
   readonly organizationId: string;
+  readonly organizationName: string;
   readonly roles: readonly string[];
   readonly plan: 'free';
   readonly mcpUrl: string;
@@ -68,6 +69,7 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
     container.querySelector('.auth-container section')?.append(details);
     return;
   }
+  if (answer.status === 503) return renderError(container, 'Your workspace is temporarily unavailable. Please try again.', 'Workspace unavailable');
   if (answer.status !== 403) throw new Error('The product access request failed');
   status.textContent = 'Your account has no product access in the selected organization. ';
   const link = container.ownerDocument.createElement('a');
@@ -77,11 +79,12 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
 }
 
 function productAccess(body: unknown): ProductAccess {
-  const { organizationId, roles, plan, mcpUrl } = (body ?? {}) as Partial<Record<keyof ProductAccess, unknown>>;
-  if (typeof organizationId !== 'string' || !Array.isArray(roles) || plan !== 'free' || typeof mcpUrl !== 'string') throw new Error('The product access answer is not valid');
+  const { organizationId, organizationName, roles, plan, mcpUrl } = (body ?? {}) as Partial<Record<keyof ProductAccess, unknown>>;
+  if (typeof organizationId !== 'string' || typeof organizationName !== 'string' || organizationName.trim() === ''
+    || !Array.isArray(roles) || plan !== 'free' || typeof mcpUrl !== 'string') throw new Error('The product access answer is not valid');
   const endpoint = new URL(mcpUrl);
   if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) throw new Error('The MCP endpoint is not valid');
-  return { organizationId, roles: roles.map(String), plan, mcpUrl };
+  return { organizationId, organizationName, roles: roles.map(String), plan, mcpUrl };
 }
 
 function showConnection(container: HTMLElement, access: ProductAccess): void {
@@ -89,9 +92,12 @@ function showConnection(container: HTMLElement, access: ProductAccess): void {
   const section = document.createElement('section');
   const heading = document.createElement('h2');
   heading.textContent = 'Connect your MCP client';
+  const workspace = document.createElement('p');
+  workspace.className = 'workspace-name';
+  workspace.textContent = `Workspace: ${access.organizationName}`;
   const plan = document.createElement('p');
   plan.textContent = 'Free access. No card is required and there is no automatic charge.';
-  section.append(heading, plan, renderConnectionGuide(document, access.mcpUrl));
+  section.append(heading, workspace, plan, renderConnectionGuide(document, access.mcpUrl));
   container.querySelector('.auth-container')?.append(section);
 }
 
@@ -150,8 +156,10 @@ function renderSignedOut(container: HTMLElement): void {
   `, 'entry-page');
 }
 
-function renderError(container: HTMLElement, message: string): void {
-  renderPage(container, '<div class="error" role="alert"><h1>Authentication Error</h1><p></p><a class="retry-link" href="./">Try again</a></div>', 'notice-page');
+function renderError(container: HTMLElement, message: string, title = 'Authentication Error'): void {
+  renderPage(container, '<div class="error" role="alert"><h1></h1><p></p><a class="retry-link" href="./">Try again</a></div>', 'notice-page');
+  const heading = container.querySelector('main h1');
+  if (heading) heading.textContent = title;
   const paragraph = container.querySelector('main p');
   if (paragraph) paragraph.textContent = message;
 }

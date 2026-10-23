@@ -107,7 +107,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
     const access = await json(browser, 'portal/access');
 
     assert.deepEqual(results, [['Ada', 200], ['Ben', 200], ['Cid', 403], ['Dee', 403]]);
-    assert.deepEqual(access.body, { organizationId: organizationA, roles: ['user', 'admin'], plan: 'free', mcpUrl: hostedConfig.mcpResourceUrl });
+    assert.deepEqual(access.body, { organizationId: organizationA, organizationName: organizationA, roles: ['user', 'admin'], plan: 'free', mcpUrl: hostedConfig.mcpResourceUrl });
     site.world.memberships = site.world.memberships.filter(({ userId, organizationId }) => !(userId === ada.id && organizationId === organizationA));
     assert.equal((await json(browser, 'portal/access')).status, 403, 'A removed membership still gave access to an existing session.');
   });

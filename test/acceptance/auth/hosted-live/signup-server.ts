@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { after, before, describe, test, type TestContext } from 'node:test';
 import { SdkHttpError, StreamableHTTPClientTransport, type Client } from '@modelcontextprotocol/client';
 import { formLabelled, formsIn } from '../../../support/drivers/browser/hosted-browser.ts';
@@ -44,38 +45,38 @@ export function describeSignupServerCases(previous: LiveRun): void {
     assert.equal(await agreement.isChecked(), false);
     const originalForm = formsIn((await serverGet(visit.page, 'signup')).body).find(({ action }) => action === '/signup');
     assert.ok(originalForm);
+    await visit.page.getByRole('textbox', { name: 'Organization name', exact: true }).fill('Acme Labs');
     await agreement.check();
-    await visit.page.getByRole('button', { name: 'Activate free access' }).click();
-    const destination = new URL('/organizations', localOrigin);
-    destination.searchParams.set('return_to', '/');
+    await visit.page.getByRole('button', { name: 'Create organization', exact: true }).click();
+    const destination = new URL('/', localOrigin);
     await visit.page.waitForURL(destination.href);
     assert.equal(visit.page.url(), destination.href);
     const organization = await run.workos.organizations.getOrganizationByExternalId(personalExternalId(run.settings.clientId, user.id));
     run.recordFixture('organization', organization.id);
-    const acceptedFields: Readonly<Record<string, string>> = { ...originalForm.fields, agreement: 'accepted' };
+    const acceptedFields: Readonly<Record<string, string>> = { ...originalForm.fields, organization_name: 'Acme Labs', agreement: 'accepted' };
     return { ...visit, user, organization, acceptedFields };
   });
 
-  describe('Hosted live gate (FS-02): free activation and native MCP handoff', () => {
+  describe('Hosted live gate: organization creation and native MCP handoff', () => {
     before(() => previous.stopSite());
     after(() => run.end());
 
-    test('Given a verified new Staging user without memberships, when the user accepts the unchecked test agreement and selects the personal workspace, then the saved record has nine exact fields, access is User only, and a real MCP client fetches a public page with a token for that workspace', options, async (t) => {
+    test('Given a verified new Staging user without memberships, when the user names Acme Labs and accepts the unchecked test authority agreement, then the saved record has ten exact fields, access is Admin, and a real MCP client fetches a public page with a token for that organization', options, async (t) => {
       const { user, organization, page } = await activated();
       const record = organization.metadata;
-      assert.deepEqual(Object.keys(record).toSorted(), ['schema', 'subject', 'accepted_at', 'documents_version', 'terms_version', 'terms_sha256', 'notice_version', 'notice_sha256', 'agreement_version'].toSorted());
-      assert.deepEqual(record, { schema: 'thermus-signup-v1', subject: user.id, accepted_at: record.accepted_at, documents_version: signupDocuments.version, terms_version: signupDocuments.terms.version, terms_sha256: signupDocuments.terms.sha256, notice_version: signupDocuments.notice.version, notice_sha256: signupDocuments.notice.sha256, agreement_version: signupDocuments.agreement.version });
-      assert.equal(new Date(record.accepted_at).toISOString(), record.accepted_at);
+      assert.deepEqual(Object.keys(record).toSorted(), ['schema', 'subject', 'authority_accepted_at', 'documents_version', 'terms_version', 'terms_sha256', 'notice_version', 'notice_sha256', 'agreement_version', 'agreement_sha256'].toSorted());
+      assert.deepEqual(record, { schema: 'thermus-signup-v2', subject: user.id, authority_accepted_at: record.authority_accepted_at, documents_version: signupDocuments.version, terms_version: signupDocuments.terms.version, terms_sha256: signupDocuments.terms.sha256, notice_version: signupDocuments.notice.version, notice_sha256: signupDocuments.notice.sha256, agreement_version: signupDocuments.agreement.version, agreement_sha256: createHash('sha256').update(signupDocuments.agreement.text).digest('hex') });
+      assert.equal(new Date(record.authority_accepted_at).toISOString(), record.authority_accepted_at);
+      assert.equal(organization.name, 'Acme Labs');
       assert.deepEqual(organization.domains, []);
       const memberships = await (await run.workos.userManagement.listOrganizationMemberships({ userId: user.id })).autoPagination();
       assert.equal(memberships.length, 1);
       assert.equal(memberships[0]?.organizationId, organization.id);
       assert.equal(memberships[0]?.status, 'active');
       assert.equal(memberships[0]?.directoryManaged, false);
-      assert.deepEqual(memberships[0]?.roles?.map(({ slug }) => slug), ['user']);
-      await page.getByRole('button', { name: organization.name, exact: true }).click();
-      await page.waitForURL(`${localOrigin}/`);
+      assert.deepEqual(memberships[0]?.roles?.map(({ slug }) => slug), ['admin']);
       await page.getByRole('heading', { name: 'Connect your MCP client' }).waitFor();
+      await page.getByText('Workspace: Acme Labs', { exact: true }).waitFor();
       await page.getByText('Free access. No card is required and there is no automatic charge.', { exact: true }).waitFor();
       await page.getByText(`MCP endpoint: ${localOrigin}/mcp`, { exact: true }).waitFor();
       const agent = page.getByRole('combobox', { name: 'Your AI agent', exact: true });

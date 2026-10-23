@@ -516,8 +516,11 @@ Lightpanda asset needs network access unless those inputs are cached. The runtim
 `https://example.com/`. Tests need no live WorkOS or Axiom credential. The final-image run must prove real
 native cleaner loading, CA-backed HTTPS and JavaScript rendering, private
 network refusal, capacity refusal, cancellation, bounded shutdown, invalid
-startup refusal, the exact approved pre-sign-in notice with signup enabled only
-in an image test.
+startup refusal, default-closed signup, and startup refusal when the unchanged
+personal-User legal bundle is used to enable organization creation. S1-03a
+replaces the earlier enabled-personal-signup notice case with that refusal.
+Exact organization wording and the corresponding enabled-image proof belong
+to the S1-05 rollout; test documents do not approve production wording.
 The [RHD-03 record](rhd-03.md) tracks the case details and results.
 The gate allows 60 minutes for its build and image cases. This allowance
 does not change production readiness or shutdown limits.
@@ -662,6 +665,7 @@ They are in the existing suites:
   `test/integration/auth/hosted-administration.test.ts`,
   `test/integration/auth/local-installation.test.ts`,
   `test/integration/auth/portal-access.test.ts`,
+  `test/integration/auth/portal-organization-name.test.ts`,
   `test/integration/auth/workos-provider-verification.test.ts`,
   `test/integration/auth/workos-provider-access.test.ts`,
   `test/integration/auth/workos-provider-directory.test.ts`,
@@ -850,10 +854,10 @@ The final FS-02 cases stop that site and start a test composition with clearly
 marked test documents and signup enabled. It retains the production portal,
 fetch tool, renderer checks, and cleanup. The default composition stays closed.
 The two cases reuse the original fixture workspaces and Connect application.
-Their registry owns only their new signup user and personal organization.
-Cleanup recovers a lost personal-organization response through the deterministic
+Their registry owns only their new signup user and named organization.
+Cleanup recovers a lost signup-organization response through the deterministic
 external ID of a fixture-owned user; it never sweeps all signup organizations.
-These cases prove activation, selector-to-portal navigation, and real MCP fetches
+These cases check named first-Admin creation, direct portal navigation, and real MCP fetches
 for the verified token workspace. Revoking workspace A denies the same token
 while browser B and a fresh B token still work. A repeat activation cannot
 restore A. No production setting or policy page changes.

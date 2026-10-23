@@ -1026,6 +1026,10 @@ remains. Rollout/cutover waits for S1-05.
 
 #### S1-03a — Named creation, agreement, and first Admin
 
+Implementation and verification status: [S1-03a record](../implementation/admin-s1-03a.md).
+The gap below describes the starting point; the record keeps observed test results
+and the remaining rollout limits.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -1045,8 +1049,9 @@ Scenario: Create the agreed organization and open its guide
   And the selected-session and guide organization IDs match the created organization
 ```
 
-**Current gap / expected red, not run.** Signup uses a fixed personal-workspace
-name and grants User. Its existing agreement/recovery behavior is useful but does
+**Original gap / observed red.** Before source changes, both S1-03a acceptance
+tests failed: the name input was absent and the named POST returned 400. Signup
+used a fixed personal-workspace name and granted User. Its agreement/recovery behavior is useful but does
 not implement named organization creation, the revised authority agreement, and
 first Admin. The current approved personal-User terms cannot serve as the revised
 organization bundle. These are the new behavior gaps, not failed legal approval.
@@ -1064,6 +1069,9 @@ organization/authority bundle before rollout.
 2. Extend the shared signup request and adapter to carry the valid name and
    canonical legal/authority facts. Save the creator subject, organization,
    versions, hashes where required, and time under the existing creation rules.
+   Fit the record within WorkOS's ten-pair metadata limit: use an explicit
+   `authority_accepted_at` timestamp and the canonical agreement hash in the v2
+   record. The provider organization ID and reserved external ID bind its identity.
    Preserve readable full documents and mobile controls; add no separate consent
    checkbox or invited-member agreement flow.
 3. Test the confirmed new-create response before adding first-Admin creation.
@@ -1079,7 +1087,7 @@ organization/authority bundle before rollout.
 [routes](../../src/interfaces/web/auth/workos/workos-signup-routes.ts), and
 [adapter](../../src/accounts/providers/workos/workos-signup.ts). Reuse
 `test/integration/auth/workos-signup-routes.test.ts`, signup-page cases,
-`test/unit/auth-workos/workos-signup.test.ts`, and
+`test/integration/auth/workos-signup.test.ts`, and
 `test/acceptance/auth/hosted-workos-signup.test.ts` plus presentation cases.
 
 **Done.** Named, agreed, verified creation produces the confirmed first Admin and

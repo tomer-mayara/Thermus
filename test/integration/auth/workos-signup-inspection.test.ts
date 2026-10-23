@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { adminGrant, memberRole, superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
 import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
-import { SignupClientFake, documents, user } from './fixtures/signup-client-fake.ts';
+import { SignupClientFake, documents, organizationName, user } from './fixtures/signup-client-fake.ts';
 
 const inspect = (fake: SignupClientFake, signal = new AbortController().signal) => new WorkOSSignup(fake.options()).inspect({ user, signal });
-const activate = (fake: SignupClientFake) => new WorkOSSignup(fake.options()).activate({ user, documents, signal: new AbortController().signal });
+const activate = (fake: SignupClientFake) => new WorkOSSignup(fake.options()).activate({ user, organizationName, documents, signal: new AbortController().signal });
 const otherAccess = { organizationId: 'org_other', organizationName: 'Other workspace', active: true, grants: [{ role: 'user', permissions: ['product:access' as const] }] };
 
-test('Given no personal record or product access, when signup state is inspected, then it is eligible after a current-user read without a provider write', async () => {
+test('Given no creation record or product access, when signup state is inspected, then it is eligible after a current-user read without a provider write', async () => {
   const fake = new SignupClientFake();
 
   assert.deepEqual(await inspect(fake), { status: 'eligible' });
@@ -26,7 +26,7 @@ test('Given current product access and an unverified email, when signup state is
   assert.deepEqual(fake.membershipWrites, []);
 });
 
-test('Given an active personal workspace, when signup state is inspected without documents, then existing access remains usable without another write', async () => {
+test('Given an active created organization, when signup state is inspected without documents, then existing access remains usable without another write', async () => {
   const fake = new SignupClientFake();
   assert.equal((await activate(fake)).status, 'active');
 
@@ -36,7 +36,7 @@ test('Given an active personal workspace, when signup state is inspected without
 });
 
 for (const state of ['absent', 'pending', 'inactive', 'non-product', 'directory-managed', 'duplicate', 'invalid-record'] as const) {
-  test(`Given a retained personal record with ${state} state, when inspected, then support is required and another workspace remains usable without repair`, async () => {
+  test(`Given a retained creation record with ${state} state, when inspected, then support is required and another workspace remains usable without repair`, async () => {
     const fake = new SignupClientFake();
     assert.equal((await activate(fake)).status, 'active');
     if (state === 'absent') fake.memberships = [];
@@ -90,7 +90,7 @@ test('Given membership discovery fails, when signup state is inspected, then the
   assert.deepEqual(fake.organizationWrites, []);
 });
 
-test('Given a request is cancelled during a personal-record lookup, when the read returns, then no next provider call starts', async () => {
+test('Given a request is cancelled during a creation-record lookup, when the read returns, then no next provider call starts', async () => {
   const fake = new SignupClientFake();
   const controller = new AbortController();
   const options = fake.options();
@@ -137,7 +137,7 @@ for (const operation of ['inspect', 'activate'] as const) {
     const options = fake.options();
     options.directory.membershipsOf = async () => { throw Object.assign(new Error('membership read failed'), { status: 404 }); };
     const signup = new WorkOSSignup(options);
-    const request = { user, documents, signal: new AbortController().signal };
+    const request = { user, organizationName, documents, signal: new AbortController().signal };
     assert.deepEqual(await signup[operation](request), { status: 'unavailable' });
     assert.deepEqual(fake.organizationWrites, []);
     assert.deepEqual(fake.membershipWrites, []);

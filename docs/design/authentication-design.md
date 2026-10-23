@@ -87,8 +87,9 @@ No factor, MFA UI, or admission marker is added.
 Member rows remain read-only. The retired `POST <base>/members/grants` path
 returns `404` after the session and current-access checks, with no membership
 write or change record. Removal and role changes are later work. Admin product
-access means existing signup access offers Continue; named organization creation
-and the first Admin belong to S1-03a. Billing stays free and read-only.
+access means existing signup access offers Continue. S1-03a adds named
+organization creation and confirmed first Admin through the separate signup
+route. Billing stays free and read-only.
 
 The [operator preparation](../implementation/hosted-organization-setup.md)
 reserves role/password cutover for S1-05. S1-02 changes no WorkOS account setting.
@@ -110,8 +111,10 @@ or password reset. See the implementation record for current verification limits
 | Paid capabilities in the local edition | Disabled. No organizations, invitations, seat management, billing, or remote entitlement checks. |
 | Account or data migration between editions | Separate future work. Changing configuration does not migrate either. |
 
-Named organization creation and first Admin assignment are S1-03a work. The
-external platform operator controls provider setup and cutover. An authenticated user without an authorized organization receives
+S1-03a adds named organization creation and confirmed first Admin. Production
+rollout still requires the exact approved organization/authority bundle; the
+approved personal-User documents cannot authorize that flow. The external
+platform operator controls provider setup and cutover. An authenticated user without an authorized organization receives
 guidance to contact the operator or accept an invitation. Until membership is
 active and grants the required permission, tenant operations remain unavailable.
 Onboarding never grants access through a default tenant or role.
@@ -1538,6 +1541,17 @@ Only the activation POST can create a workspace or grant. It still requires a
 fresh verified-email read. Both successful activation and Continue use the
 existing organization selector with a server-built return path to the portal.
 See the [FS-02 record](../implementation/fs-02.md).
+
+S1-03a extends that historical signup flow with an editable organization name
+and one organization/authority agreement. The supplied bundle must identify
+organization creation. The provider stores the creator and canonical legal
+facts in a strict v2 record on the named organization. Only a confirmed new
+create with current Admin and product access can report active creation. The
+browser then selects that organization through a current-membership check and
+opens its MCP guide. A retained v1 record remains a replay barrier; it is not
+organization consent or authority to upgrade a grant. Existing Continue and
+recovery keep their boundaries. See the [S1-03a record](../implementation/admin-s1-03a.md)
+for checks and rollout limits.
 
 The owner selected a server-owned session on 2026-10-14: the server signs in,
 keeps the session, and signs out, and the portal is on the same origin.

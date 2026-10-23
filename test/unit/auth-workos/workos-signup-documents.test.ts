@@ -30,3 +30,13 @@ test('Given altered bytes or invalid versions, when documents are validated, the
   assert.throws(() => validateSignupDocuments({ ...input, version: '' }));
   assert.throws(() => validateSignupDocuments({ ...input, notice: { ...input.notice, sha256: input.notice.sha256.toUpperCase() } }));
 });
+
+test('Given an organization creation bundle, when documents are validated, then its purpose is retained without changing the agreement bytes', () => {
+  const input = { purpose: 'organization-creation' as const, version: 'organization-1', terms: document('Organization terms'), notice: document('Notice'), agreement: { version: 'authority-1', text: 'TEST ONLY. I have authority to accept for this organization.\r\n' } };
+  assert.deepEqual(validateSignupDocuments(input), input);
+});
+
+test('Given an unknown document purpose, when documents are validated, then validation refuses it', () => {
+  const input = { purpose: 'unrecognized' as 'organization-creation', version: 'organization-1', terms: document('Organization terms'), notice: document('Notice'), agreement: { version: 'authority-1', text: 'TEST ONLY. I have authority.' } };
+  assert.throws(() => validateSignupDocuments(input));
+});

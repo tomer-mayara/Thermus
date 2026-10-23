@@ -1,4 +1,5 @@
-import { AccessDeniedError, requirePermission } from '../../../accounts/identity/access-context.ts';
+import { AccessDeniedError, requirePermission, type AuthenticatedUser } from '../../../accounts/identity/access-context.ts';
+import { waitForRequest } from '../../../runtime/http/request-cancellation.ts';
 import type { AccountOperation } from './account-routes.ts';
 import { noticePage } from './account-pages.ts';
 
@@ -12,7 +13,11 @@ const JSON_HEADERS: Readonly<Record<string, string>> = {
 
 // The protected request of the portal: it shows the product access that the current grants of the selected
 // organization give. The account routes checked the session and the current access first.
-export function portalAccessOperation(publicBaseUrl: string, mcpResourceUrl: string): AccountOperation {
+export function portalAccessOperation(
+  publicBaseUrl: string,
+  mcpResourceUrl: string,
+  organizationNameOf: (user: AuthenticatedUser, organizationId: string) => Promise<string | undefined>,
+): AccountOperation {
   const path = new URL('portal/access', publicBaseUrl.endsWith('/') ? publicBaseUrl : `${publicBaseUrl}/`).pathname;
   return async (request, context) => {
     if (new URL(request.url).pathname !== path) return noticePage('notFound');
@@ -23,7 +28,11 @@ export function portalAccessOperation(publicBaseUrl: string, mcpResourceUrl: str
       if (error instanceof AccessDeniedError) return Response.json({ access: 'denied' }, { status: 403, headers: JSON_HEADERS });
       throw error;
     }
+    const organizationId = context.organizationId;
+    const organizationName = organizationId === undefined ? undefined : await waitForRequest(request.signal, () => organizationNameOf(context.user, organizationId));
+    request.signal.throwIfAborted();
+    if (typeof organizationName !== 'string' || organizationName.trim() === '') return Response.json({ access: 'unavailable' }, { status: 503, headers: JSON_HEADERS });
     const roles = context.grants.filter((grant) => grant.permissions.length > 0).map((grant) => grant.role);
-    return Response.json({ organizationId: context.organizationId, roles, plan: 'free', mcpUrl: mcpResourceUrl }, { headers: JSON_HEADERS });
+    return Response.json({ organizationId, organizationName, roles, plan: 'free', mcpUrl: mcpResourceUrl }, { headers: JSON_HEADERS });
   };
 }

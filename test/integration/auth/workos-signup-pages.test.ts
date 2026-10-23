@@ -55,21 +55,31 @@ test('Given a signup document, when desktop and mobile readers are built, then k
   assert.equal(page.querySelectorAll('script, form').length, 0);
 });
 
-test('Given the activation page, when it is rendered, then the exact required agreement and existing form fields stay outside the document disclosures', async () => {
+test('Given the creation page, when it is rendered, then an editable name and one unchecked authority agreement stay outside the document disclosures', async () => {
   const page = parseHTML(await signupFormPage(documents, 'csrf<&', '/signup').text()).document;
   const form = page.querySelector('form');
   assert.equal(form?.getAttribute('method'), 'post');
   assert.equal(form?.getAttribute('action'), '/signup');
   assert.deepEqual([...page.querySelectorAll('input')].map((input) => [input.getAttribute('name'), input.getAttribute('value')]), [
-    ['csrf_token', 'csrf<&'], ['document_version', 'bundle-v1'], ['agreement', 'accepted'],
+    ['csrf_token', 'csrf<&'], ['document_version', 'bundle-v1'], ['organization_name', null], ['agreement', 'accepted'],
   ]);
+  const name = page.querySelector('input[name="organization_name"]');
+  assert.ok(name);
+  assert.equal(name.getAttribute('type'), 'text');
+  assert.equal(name.getAttribute('maxlength'), '100');
+  assert.equal(name.getAttribute('autocomplete'), 'organization');
+  assert.equal(name.hasAttribute('required'), true);
+  assert.equal(name.hasAttribute('readonly'), false);
+  assert.equal(name.closest('details'), null);
+  assert.equal(page.querySelector(`label[for="${name.id}"]`)?.textContent, 'Organization name');
+  assert.equal(page.querySelectorAll('input[type="checkbox"]').length, 1);
   const agreement = page.querySelector('input[type="checkbox"]');
   assert.ok(agreement);
   assert.equal(agreement.hasAttribute('required'), true);
   assert.equal(agreement.hasAttribute('checked'), false);
   assert.equal(agreement.closest('details'), null);
   assert.equal(page.querySelector('.agreement-text')?.textContent, documents.agreement.text);
-  assert.equal(page.querySelector('button[type="submit"]')?.textContent, 'Activate free access');
+  assert.equal(page.querySelector('button[type="submit"]')?.textContent, 'Create organization');
   assert.equal(page.querySelector('button[type="submit"]')?.hasAttribute('disabled'), false);
 });
 

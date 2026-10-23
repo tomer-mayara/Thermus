@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { hostedRolePermissions } from '../../../support/fixtures/hosted-roles.ts';
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions } from '@workos-inc/node';
 import type { OrganizationMembership } from '../../../../src/accounts/organizations/organization-directory.ts';
@@ -9,8 +10,10 @@ type Membership = Awaited<ReturnType<WorkOSSignupOptions['workos']['userManageme
 type Roles = Awaited<ReturnType<WorkOSSignupOptions['workos']['authorization']['listOrganizationRoles']>>['data'];
 
 export const user = { authority: 'workos:staging', subject: 'user_verified' };
-export const documents: SignupDocuments = { version: 'bundle-v1', terms: { version: 'terms-v1', sha256: 'a'.repeat(64), text: 'Terms' },
-  notice: { version: 'notice-v1', sha256: 'b'.repeat(64), text: 'Notice' }, agreement: { version: 'agreement-v1', text: 'I agree.' } };
+export const organizationName = 'Acme Labs';
+export const documents: SignupDocuments = { purpose: 'organization-creation', version: 'bundle-v1', terms: { version: 'terms-v1', sha256: createHash('sha256').update('Terms').digest('hex'), text: 'Terms' },
+  notice: { version: 'notice-v1', sha256: createHash('sha256').update('Notice').digest('hex'), text: 'Notice' },
+  agreement: { version: 'agreement-v1', text: 'TEST ONLY. I have authority to accept these terms for this organization.' } };
 
 // A fake of the narrow SDK client that WorkOSSignup needs: the workos option of WorkOSSignupOptions.
 export class SignupClientFake {
@@ -51,7 +54,7 @@ export class SignupClientFake {
       this.organizationWrites.push(options);
       if (this.organizationFailure === 'before') throw new Error('provider secret');
       if (this.organization !== undefined) throw Object.assign(new Error('conflict'), { status: 400 });
-      this.organization = { id: 'org_personal', externalId: options.externalId ?? null, metadata: { ...options.metadata }, domains: [] };
+      this.organization = { id: 'org_personal', name: options.name, externalId: options.externalId ?? null, metadata: { ...options.metadata }, domains: [] };
       this.afterOrganizationCreate?.();
       if (this.organizationFailure === 'after') throw new Error('lost organization response');
       return this.organization;

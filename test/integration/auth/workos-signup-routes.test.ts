@@ -2,27 +2,31 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
-import type { BrowserSession, BrowserSessionState } from '../../../src/accounts/identity/browser-session.ts';
+import type { BrowserSession, BrowserSessionState, SignedInBrowserSession } from '../../../src/accounts/identity/browser-session.ts';
 import { WorkOSSignupRoutes } from '../../../src/interfaces/web/auth/workos/workos-signup-routes.ts';
 import type { SignupActivation, SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
 
 const document = (text: string) => ({ version: 'v1', text, sha256: createHash('sha256').update(text).digest('hex') });
-const documents: SignupDocuments = { version: 'v1', terms: document('Test <terms>'), notice: document('Test <notice>'), agreement: { version: 'v1', text: 'I agree as an adult for business use.' } };
+const documents: SignupDocuments = { purpose: 'organization-creation', version: 'v1', terms: document('Test <terms>'), notice: document('Test <notice>'), agreement: { version: 'v1', text: 'TEST ONLY. I accept the test terms and have authority to act for this organization.' } };
 
 function setup(enabled = true, signedIn = true, publicBaseUrl = 'https://thermus.example/') {
   let calls = 0;
   let inspections = 0;
   let sessions = 0;
   const failures: string[] = [];
+  const names: string[] = [];
+  const selections: string[] = [];
   const state: BrowserSessionState = signedIn ? { status: 'signed-in', user: { authority: 'workos:test', subject: 'user_test' }, csrfToken: 'secret', mfaCompleted: false,
-    cookies: ['renewed=session; Secure'], selectOrganization: async () => { throw new Error('No switch'); } } : { status: 'signed-out', cookies: [] };
+    cookies: ['renewed=session; Secure'], selectOrganization: async (id) => { selections.push(id); return { status: 'switched', cookies: ['renewed=selected; Secure'] }; } } : { status: 'signed-out', cookies: [] };
   const session: BrowserSession = { authenticate: async () => { sessions++; return state; } };
-  const activation: SignupActivation = { inspect: async () => { inspections++; return { status: 'eligible' }; }, activate: async () => { calls++; return { status: 'active', organizationId: 'org_new' }; } };
+  const activation: SignupActivation = { inspect: async () => { inspections++; return { status: 'eligible' }; }, activate: async (request) => { calls++; names.push(request.organizationName); return { status: 'active', organizationId: 'org_new' }; } };
   const routes = new WorkOSSignupRoutes({ publicBaseUrl, enabled, documents, session, activation, reportFailure: (message) => failures.push(message) });
-  return { routes, activation, session, failures, calls: () => calls, sessions: () => sessions, inspections: () => inspections };
+  return { routes, activation, session, state, failures, names, selections, calls: () => calls, sessions: () => sessions, inspections: () => inspections };
 }
 
-function post(body = 'csrf_token=secret&document_version=v1&agreement=accepted', origin = 'https://thermus.example'): Request {
+const acceptedForm = 'csrf_token=secret&document_version=v1&organization_name=Acme+Labs&agreement=accepted';
+
+function post(body = acceptedForm, origin = 'https://thermus.example'): Request {
   return new Request('https://thermus.example/signup', { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/x-www-form-urlencoded' }, body });
 }
 
@@ -40,6 +44,13 @@ test('Given enabled signup without approved documents, when composed, then start
   assert.throws(() => new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, session: world.session, activation: world.activation, reportFailure: () => {} }));
 });
 
+test('Given legacy personal-access documents, when organization creation is enabled, then composition refuses the old agreement', () => {
+  const world = setup();
+  const { purpose: _purpose, ...legacyDocuments } = documents;
+  assert.throws(() => new WorkOSSignupRoutes({ publicBaseUrl: 'https://thermus.example/', enabled: true, documents: legacyDocuments,
+    session: world.session, activation: world.activation, reportFailure: () => {} }), /organization.*documents/i);
+});
+
 test('Given signed-out signup, when opened, then the full escaped notice appears before the sign-in action', async () => {
   const world = setup(true, false);
   const answer = await world.routes.handle(new Request('https://thermus.example/signup'));
@@ -50,17 +61,20 @@ test('Given signed-out signup, when opened, then the full escaped notice appears
   assert.equal(world.inspections(), 0);
 });
 
-test('Given signed-in signup and exact fields with the current document version, when opened then posted with express agreement, then it redirects to organizations and keeps session cookies', async () => {
+test('Given signed-in signup and the current agreement, when a valid name is posted, then it switches to the confirmed organization and opens the portal with the latest cookie', async () => {
   const world = setup();
   const form = await (await world.routes.handle(new Request('https://thermus.example/signup'))).text();
   assert.match(form, /type="checkbox" name="agreement" value="accepted" required/);
   assert.equal(parseHTML(form).document.querySelector('input[name="agreement"]')?.hasAttribute('checked'), false);
   assert.doesNotMatch(form, /return_to/);
   assert.match(form, /Test &lt;terms&gt;/);
-  const answer = await world.routes.handle(post());
+  const answer = await world.routes.handle(post(acceptedForm.replace('Acme+Labs', '+Acme+Labs+')));
   assert.equal(answer.status, 303);
-  assert.equal(answer.headers.get('Location'), 'https://thermus.example/organizations?return_to=%2F');
-  assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
+  assert.equal(answer.headers.get('Location'), 'https://thermus.example/');
+  assert.equal(answer.headers.get('Cache-Control'), 'no-store');
+  assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure', 'renewed=selected; Secure']);
+  assert.deepEqual(world.names, ['Acme Labs']);
+  assert.deepEqual(world.selections, ['org_new']);
   assert.equal(world.calls(), 1);
   assert.equal(world.inspections(), 1);
 });
@@ -104,7 +118,7 @@ for (const failure of ['result', 'exception']) {
   });
 }
 
-test('Given a public-base path, when existing access continues or activation succeeds, then both selector destinations return to that server-owned portal path', async () => {
+test('Given a public-base path, when existing access continues or creation succeeds, then the selector and direct landing use that server-owned portal path', async () => {
   const world = setup(true, true, 'https://thermus.example/app/');
   world.activation.inspect = async () => ({ status: 'existing-access' });
   const page = await world.routes.handle(new Request('https://thermus.example/app/signup?return_to=/other'));
@@ -112,23 +126,34 @@ test('Given a public-base path, when existing access continues or activation suc
   const activation = new Request('https://thermus.example/app/signup', post());
   const answer = await world.routes.handle(activation);
   assert.equal(answer.status, 303);
-  assert.equal(answer.headers.get('Location'), 'https://thermus.example/app/organizations?return_to=%2Fapp%2F');
+  assert.equal(answer.headers.get('Location'), 'https://thermus.example/app/');
 });
 
-test('Given unchecked, stale, forged, repeated, or extra signup fields, when posted, then the public route refuses the form without activation', async () => {
+test('Given unchecked, stale, forged, repeated, missing, or invalid creation fields, when posted, then the route refuses them without activation or switching', async () => {
   const cases = [
-    { body: 'csrf_token=secret&document_version=v1', status: 400 },
-    { body: 'csrf_token=secret&document_version=old&agreement=accepted', status: 400 },
-    { body: 'csrf_token=wrong&document_version=v1&agreement=accepted', status: 403 },
-    { body: 'csrf_token=secret&document_version=v1&agreement=accepted&agreement=accepted', status: 400 },
-    { body: 'csrf_token=secret&document_version=v1&agreement=accepted&subject=user', status: 400 },
-    { body: 'csrf_token=secret&document_version=v1&agreement=false', status: 400 },
+    { body: acceptedForm.replace('&agreement=accepted', ''), status: 400 },
+    { body: acceptedForm.replace('document_version=v1', 'document_version=old'), status: 400 },
+    { body: acceptedForm.replace('&document_version=v1', ''), status: 400 },
+    { body: acceptedForm.replace('csrf_token=secret', 'csrf_token=wrong'), status: 403 },
+    { body: acceptedForm.replace('csrf_token=secret&', ''), status: 403 },
+    { body: acceptedForm.replace('&organization_name=Acme+Labs', ''), status: 400 },
+    { body: acceptedForm.replace('Acme+Labs', ''), status: 400 },
+    { body: acceptedForm.replace('Acme+Labs', '+%09+'), status: 400 },
+    { body: acceptedForm.replace('Acme+Labs', 'Acme%00Labs'), status: 400 },
+    { body: acceptedForm.replace('Acme+Labs', 'A'.repeat(101)), status: 400 },
+    { body: `${acceptedForm}&organization_name=Other`, status: 400 },
+    { body: `${acceptedForm}&agreement=accepted`, status: 400 },
+    { body: `${acceptedForm}&document_version=v1`, status: 400 },
+    { body: `${acceptedForm}&csrf_token=secret`, status: 403 },
+    { body: `${acceptedForm}&subject=user`, status: 400 },
+    { body: acceptedForm.replace('agreement=accepted', 'agreement=false'), status: 400 },
   ];
   for (const { body, status } of cases) {
     const world = setup();
     const answer = await world.routes.handle(post(body));
     assert.equal(answer.status, status, body);
     assert.equal(world.calls(), 0, body);
+    assert.deepEqual(world.selections, [], body);
     assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
     assert.deepEqual(world.failures, []);
   }
@@ -190,6 +215,55 @@ test('Given an activation outage after session refresh, when posted, then the co
   assert.deepEqual(answer.headers.getSetCookie(), ['renewed=session; Secure']);
   assert.deepEqual(world.failures, ['Hosted signup request failed.']);
   assert.doesNotMatch(await answer.text(), /secret/);
+});
+
+for (const outcome of ['refused', 'signed-out', 'outage'] as const) {
+  test(`Given confirmed creation and a ${outcome} session switch, when the form is posted, then it offers recovery without repeating activation`, async () => {
+    const world = setup();
+    const state = world.state as SignedInBrowserSession;
+    state.selectOrganization = async (id) => {
+      world.selections.push(id);
+      if (outcome === 'outage') throw new Error('secret switch failure');
+      return { status: outcome, cookies: ['renewed=refused; Secure'] };
+    };
+    const response = await world.routes.handle(post());
+    assert.equal(response.status, outcome === 'signed-out' ? 401 : outcome === 'refused' ? 403 : 503);
+    assert.equal(response.headers.get('Location'), null);
+    assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    assert.deepEqual(response.headers.getSetCookie(), outcome === 'outage'
+      ? ['renewed=session; Secure'] : ['renewed=session; Secure', 'renewed=refused; Secure']);
+    const page = parseHTML(await response.text()).document;
+    assert.ok(page.querySelector('a.primary-action'));
+    assert.doesNotMatch(page.body.textContent, /secret switch failure/);
+    assert.equal(world.calls(), 1);
+    assert.deepEqual(world.selections, ['org_new']);
+  });
+}
+
+test('Given existing access returned during creation, when the form is posted, then the selector handles that access without switching to a new organization', async () => {
+  const world = setup();
+  world.activation.activate = async () => ({ status: 'existing-access' });
+  const response = await world.routes.handle(post());
+  assert.equal(response.status, 303);
+  assert.equal(response.headers.get('Location'), 'https://thermus.example/organizations?return_to=%2F');
+  assert.deepEqual(world.selections, []);
+});
+
+test('Given a cancelled organization switch, when it later completes, then no new activation starts and no failure detail is logged', async () => {
+  const world = setup();
+  const state = world.state as SignedInBrowserSession;
+  let complete!: (value: { status: 'switched'; cookies: string[] }) => void;
+  let started!: () => void;
+  const switching = new Promise<void>((resolve) => { started = resolve; });
+  state.selectOrganization = () => new Promise((resolve) => { complete = resolve; started(); });
+  const cancellation = new AbortController();
+  const response = world.routes.handle(new Request(post(), { signal: cancellation.signal }));
+  await switching;
+  cancellation.abort(new Error('cancelled'));
+  await assert.rejects(response, /cancelled/);
+  complete({ status: 'switched', cookies: [] });
+  assert.equal(world.calls(), 1);
+  assert.deepEqual(world.failures, []);
 });
 
 test('Given activation requires support, when posted, then a conflict page offers Contact and does not retry activation', async () => {

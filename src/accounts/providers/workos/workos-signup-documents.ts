@@ -6,11 +6,13 @@ const DOCUMENT_BYTES = 128 * 1024;
 
 // Hash the exact bytes, including line endings. No trimming or Unicode normalization is permitted.
 export function validateSignupDocuments(input: SignupDocuments): SignupDocuments {
+  if (input.purpose !== undefined && input.purpose !== 'organization-creation') throw new Error('The signup bundle purpose is not valid.');
   if (!validVersion(input.version)) throw new Error('The signup bundle version is not valid.');
   const terms = checkedDocument(input.terms);
   const notice = checkedDocument(input.notice);
   if (!validVersion(input.agreement.version) || !validText(input.agreement.text, 4096)) throw new Error('The signup agreement is not valid.');
-  return Object.freeze({ version: input.version, terms, notice, agreement: Object.freeze({ ...input.agreement }) });
+  return Object.freeze({ ...(input.purpose === undefined ? {} : { purpose: input.purpose }),
+    version: input.version, terms, notice, agreement: Object.freeze({ ...input.agreement }) });
 }
 
 function checkedDocument(document: SignupDocuments['terms']): SignupDocuments['terms'] {

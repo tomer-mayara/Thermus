@@ -84,7 +84,8 @@ async function personalOrganizations(workos: WorkOS, clientId: string | undefine
   for (const subject of users) {
     try {
       const organization = await workos.organizations.getOrganizationByExternalId(personalExternalId(clientId, subject));
-      if (organization.metadata.schema !== 'thermus-signup-v1' || organization.metadata.subject !== subject) throw new Error('A test-owned personal organization has an unexpected acceptance record.');
+      const knownSchema = organization.metadata.schema === 'thermus-signup-v1' || organization.metadata.schema === 'thermus-signup-v2';
+      if (!knownSchema || organization.metadata.subject !== subject) throw new Error('A test-owned signup organization has an unexpected acceptance record.');
       ids.push(organization.id);
     } catch (error) {
       if (statusOf(error) !== 404) throw error;
