@@ -124,24 +124,35 @@ before requesting human review. Update it when the candidate changes.
   in the heading or boundary. Show each revision's responsibilities and useful
   relationships faithfully, with enough unchanged neighbors to explain them.
   Use real component owners; methods, fields, contracts, and internal steps
-  belong inside their owners or in prose, not as separate components.
+  belong inside their owners or in prose, not as separate components. Keep each
+  view within one container; show supporting containers as named L2 peers.
 - Distinguish runtime calls, source or implements dependencies, and composition.
-  Show new runtime use of existing contracts. Mark additions green, removals
-  red, and changed meaning amber, with text labels. Keep stable relationships
-  and boundaries neutral. A removed operation does not remove its owner; a
-  moved contract does not create a runtime capability.
+  Separate declared contract changes from concrete runtime effects; one does
+  not prove the other. Show new runtime use of existing contracts. Mark
+  additions green, removals red, and changed meaning amber, with text labels.
+  Keep stable relationships and boundaries neutral. A removed operation does
+  not remove its owner; a moved contract does not create a runtime capability.
 - Aim for one drawing and three or four short before/after behavior notes.
   Preserve material authority, payload, order, outcome, replay, and lifetime
-  rules that the map cannot show. Put validation at its rule owner, separate
-  local gates from remote work, and keep stopping outcomes clear. Surviving
-  calls stay neutral even when their policy or payload changes. Name condensed
-  remote work and retained dependencies omitted for clarity.
+  rules that the map cannot show. State changed before/after conditions at
+  their owner. Put validation at its rule owner, separate local gates from
+  remote work, and keep stopping outcomes clear. Surviving calls stay neutral
+  even when their policy or payload changes. Name condensed remote work and
+  retained dependencies omitted for clarity.
 - Add a focused L4 detail only when a callable contract is added, removed, or
   materially changed and the L3 drawing with behavior notes is insufficient.
-  Scope it to one component; name that owner and its container. Show only the
-  relevant code elements and relationships, with the same change colors and
-  text labels. Keep internal refactors that preserve caller-visible behavior
-  out of this detail. L3 remains the main comparison.
+  Record a brief include/omit rationale in the review artifacts. If no callable
+  contract changed, say so; otherwise name the strongest changed contract and
+  concrete review question, and state whether L3 plus notes answers it.
+  Scope L4 to one component; name that owner and its container. Use selected
+  actual functions, contracts, and calls, with the same change colors and text
+  labels. Explain parameter shorthand,
+  collapsed delegation, and material omitted recovery or remote work. Exclude
+  internal refactors that preserve caller-visible behavior. L3 remains the
+  main comparison. The manager may request a separate evaluation-only
+  alternative when useful; retain it as review evidence and include it in the
+  report only if it answers that question more clearly than L3 plus notes.
+  Do not require an alternative for every PR.
 - State whether registry drawings changed. Label supplementary views derived
   from prose and code; do not present newly documented behavior as new. Name
   Level 2 container or deployment changes and flag any that the focused view
