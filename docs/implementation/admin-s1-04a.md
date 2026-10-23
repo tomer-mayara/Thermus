@@ -1,6 +1,6 @@
 # S1-04a implementation record
 
-Status: implemented; final quality classification in progress, 22 October 2026.
+Status: implemented; Draft because required metrics remain blocked, 22 October 2026.
 
 ## Scope
 
@@ -143,7 +143,8 @@ Do not add a redundant standalone `npm run check`. The live limit above remains.
 | Browser and registry review | Passed within the limits described above. |
 | Hosted Linux AMD64 image | 7/7 passed, including the image build and real runtime/renderer checks. |
 | Coverage | Verified unit and integration capture: 139 source files from 633 processes. |
-| Native metrics and review tier | Final assessment pending on the committed candidate. |
+| Native metrics | Delta and Review have retained goal misses. CRAP fails on omitted native declarations; Architecture is unavailable. |
+| Review tier | T2 Need architect; eligibility blocked by failed CRAP, unavailable Architecture, and missing CRAP rows. No undeclared fact or new cycle was found. |
 | Hosted live | Not run: the staging environment hold above remains. |
 
 The final habit-hooks run reports five complexity, one parameter-count, 654
@@ -201,11 +202,15 @@ snapshot confirms zero source declarations, so its MI and CRAP are N/A.
 `change-records.ts` scores 89.8; the existing added signup contract scores 87.9
 and `customer-roles.ts` scores 89.9. No new production file needs an MI exception.
 
-The native review reports 14 high findings on changed production files. Thirteen
+The native review reports 15 high findings on changed production files. Fourteen
 are covered by the table. The other is the class measure in `change-records.ts`:
 keep the small typed failure and the separation of preflight, one write, and
-outcome recording. The file measure passes. The remaining 48 high findings
-concern files unchanged by this complete candidate. Test files have no MI goal.
+outcome recording. The file measure passes. The Members template's MI drop from
+69.1 to 63.9 is included in those findings and has its reason in the table.
+Two high test findings retain the explicit session-MFA matrix and portal-access
+contract cases from the parent; their independent scenarios keep each outcome
+visible. The remaining 48 high findings concern files unchanged by this complete
+candidate. Test files have no MI goal.
 These retained reasons do not authorize a merge.
 
 Coverage was captured after the complete source, tests, and impact declaration
@@ -215,4 +220,34 @@ declarations in `src/accounts/organizations/organization-administration.ts`.
 There is no valid CRAP report or completed function-goal assessment. This is a
 tool failure, not a permitted metric exception.
 
-Final process and candidate-bound tier results follow after measurement.
+The complete process reports Delta and Review goal misses, failed CRAP, and
+unavailable Architecture. No metrics history record was created because all four
+sections did not complete. No baseline, rules, exception, or coverage edit hides
+the native-tool failure. Coverage remains verified and matches the final source
+and input fingerprints; it does not replace the missing function assessment.
+
+## Review tier and retained evidence
+
+The candidate-bound classifier reports **T2 Need architect**, with three
+blockers: failed CRAP, unavailable Architecture, and missing CRAP rows.
+Observable authorization, signup, persistence, and portal contracts in the full
+stack require architecture review. Retained T1 reasons are protected policy,
+deployment/data and security paths; test-gate documentation; declared dependencies
+and public surfaces; production/total review size and test-count changes; MI
+drops and retained high findings; and declared component, internal-interface,
+sensitive-behavior and policy impact. The full report records each reason.
+
+Required metrics must complete before Ready. Independent authorized human
+architect approval must cover the current candidate before merge. Agent review
+and the tier label are not that approval. This PR remains Draft.
+
+Full reports and command logs are retained in this worktree at
+`/Users/tomermayara/.codex/worktrees/admin-s1-04a/Thermus/ast-report/README.md`.
+The bundle links the process and native review, base/head snapshots, verified
+coverage, stamped impact, final tier result, browser screenshots, and the rendered
+registry diagram. These are local review artifacts, not uploaded CI results.
+There is no valid `crap.json` to link or approve.
+
+PR #223 must merge before this stacked PR. Preserve its workspace and reports.
+This request includes neither merge nor rollout. Native acceptance proof remains
+S1-04b; the live environment and S1-05 legal/cutover holds remain as stated above.
