@@ -63,7 +63,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       const { defaultRoleUser } = await run.fixtures();
       const { users } = await run.organizationFixtures();
       for (const user of [users['inactive-only'], defaultRoleUser]) {
-        const { page } = await signInThroughPortal(run, user);
+        const { page } = await signInThroughPortal(run, user, undefined, 'organizations');
         assertOnboarding(await serverGet(page, 'organizations'), labelOf(user));
         assert.equal((await serverGet(page, 'billing')).status, 403, labelOf(user));
         assert.equal((await serverGet(page, 'portal/access')).status, 403, labelOf(user));

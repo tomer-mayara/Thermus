@@ -21,14 +21,22 @@ export interface ServerAnswer {
 
 // A sign-in through the portal of the local HTTPS site: the Sign in link, /login, the AuthKit pages, and the
 // callback of the server. The browser keeps the cookies of the server, as a user's browser does.
-export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string): Promise<PortalVisit> {
+export async function signInThroughPortal(run: LiveRun, user: LiveUser, organizationName?: string, expectedLanding: 'portal' | 'organizations' = 'portal'): Promise<PortalVisit> {
   await run.site();
   const authkitHost = new URL(run.settings.authkitIssuer).host;
   const page = await run.browser.newPage();
   await page.goto(`${localOrigin}/`);
   await page.getByRole('link', { name: 'Sign in', exact: true }).click();
   const pages = await completeAuthKit(page, { user, authkitHost, ...(organizationName === undefined ? {} : { organizationName }) });
-  await waitForPortal(page);
+  if (expectedLanding === 'organizations') {
+    const destination = new URL('/organizations', localOrigin);
+    destination.searchParams.set('return_to', '/');
+    await page.waitForURL(destination.href);
+    assert.equal(page.url(), destination.href);
+    assert.equal((await sessionJson(page)).signedIn, true);
+  } else {
+    await waitForPortal(page);
+  }
   return { page, pages, signedInAt: Date.now() };
 }
 
@@ -67,7 +75,7 @@ function setCookiesOf(headers: readonly { readonly name: string; readonly value:
   return headers.filter(({ name }) => name.toLowerCase() === 'set-cookie').map(({ value }) => value);
 }
 
-async function waitForPortal(page: Page): Promise<void> {
+export async function waitForPortal(page: Page): Promise<void> {
   await page.waitForURL(`${localOrigin}/`);
   await page.getByRole('heading', { name: /^Welcome, / }).waitFor();
   await page.locator('.product-access').filter({ hasNotText: 'Checking' }).waitFor({ state: 'attached' });

@@ -1,5 +1,12 @@
 # S1-05 implementation record
-Current validation: all seven Slice 1 branches are rebased onto the shared
+
+For verification of merged source `9de610e8b75dfa041dcf18c5380ccf80feb9f797`,
+see the [23 October Staging release record](admin-s1-staging-release-verification.md).
+It records the live results, remaining invitation and mailbox checks, and legal
+approval needed before signup opens. The sections below retain their earlier
+candidate evidence; they do not state the current release status.
+
+Pre-merge validation: all seven Slice 1 branches were rebased onto the shared
 [metrics repair](ast-metrics-function-repair.md),
 [PR #230](https://github.com/tomer-mayara/Thermus/pull/230), above trusted main
 `53da7ac40149ed8e5bc67fa208d8701474fff284`. The dated results below describe
