@@ -1,5 +1,37 @@
 # Test inventory
 
+## Current S1-05 inventory scope
+
+The combined Slice 1 journey is in
+`test/acceptance/auth/hosted-admin-journey.test.ts`. It uses the hosted HTTP
+application, public browser/MCP interfaces, and a local provider fake. The
+[S1-05 record](../implementation/admin-s1-05.md) records actual runs and limits;
+this inventory does not claim a successful test run.
+
+- Given an eligible creator, create a named organization with one agreement and
+  confirm first-Admin product/MCP and Members access.
+- Invite a recipient as Admin or User, model native acceptance at the provider
+  boundary, select the joined workspace, and check its current name and access.
+  Admin has product/MCP and Members access. User has product/MCP access and
+  cannot administer members.
+- Confirm MCP context for both identities in the created workspace, including
+  organization, tenant, subject, and grants. Keep one organization create, one
+  first-Admin membership write, and the creator's agreement facts. Add no grant
+  form or application MFA gate on the inspected server pages. Confirm no second
+  agreement write. This case does not render the static portal client; its
+  separate acceptance and build gates retain that coverage.
+
+These offline cases do not prove native invitation acceptance or preservation,
+real password sign-in, email verification/reset, or live provider configuration.
+The native proof matrix and applicable live/manual checks remain separate.
+Organization legal approval and scoped cutover are still required before release.
+
+Run the combined case after a build:
+
+```sh
+node --test dist/test/acceptance/auth/hosted-admin-journey.test.js
+```
+
 ## Current S1-04b inventory scope
 
 S1-04b adds default sign-in landing from trusted identity and current access.

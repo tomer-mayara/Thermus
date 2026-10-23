@@ -830,8 +830,8 @@ help must explain input/result export. Slice 2.5 documents removal/uncertain-wri
 recovery; Slice 3 role changes extend those procedures, while MFA separately needs
 validated identity/recovery steps and proof of retained-factor MCP safety.
 
-This plan-only revision needs manual document/link/mock checks, no source tests,
-provider actions, runbook/legal-source edits, commit, or PR.
+Implementation follows the ticket checks below. A plan update alone needs manual
+document, link, and mock checks; it does not execute provider changes or cutover.
 
 ## Appendix — implementation tickets
 
@@ -1327,7 +1327,18 @@ provider evidence settles the named cases safely without changing ordinary retur
 
 #### S1-05 — Complete journey, verification, and cutover
 
-**Acceptance specification first — add/reuse the executable case after dependencies:**
+Implementation and verification status: [S1-05 record](../implementation/admin-s1-05.md).
+The combined offline journey checks the implemented S1-03/S1-04 behavior. Native
+invitation proof, real password sign-in and verification/reset, Staging profile
+validation, approved organization legal text, and scoped cutover remain holds.
+Local doubles cannot close these holds. No provider mutation or cutover is part
+of this verification candidate.
+
+The [organization terms proposal](../implementation/admin-s1-05-legal-proposal.md)
+contains exact replacement wording for review. It is unapproved and unpublished;
+the existing legal bundle and release hold remain in force.
+
+**Acceptance specification:**
 
 ```gherkin
 Scenario Outline: Create, invite, and join under password authentication
@@ -1344,11 +1355,15 @@ Scenario Outline: Create, invite, and join under password authentication
     | User  | product/MCP without administration |
 ```
 
-**Integration evidence, not run.** The journey is specified here before work,
-but its executable case waits until the prerequisite behaviors are ready. It may
-already pass; retain that evidence without manufacturing a failure. If integration
-exposes missing source behavior, specify it red in the owning ticket before its
-focused TDD fix. S1-04b retains ambiguous-return, selector, and MCP-binding proof.
+**Integration evidence.** The combined offline case uses public browser/MCP
+interfaces with a local provider fake. It covers named creation, first Admin,
+invitation and acceptance for each role, current workspace selection, and
+role-specific access. The implementation record owns actual run results. An
+already-correct journey is characterization; do not manufacture a failure. If
+integration exposes missing source behavior, specify it red in the owning ticket
+before its focused TDD fix. S1-04b retains ambiguous-return, selector, and
+MCP-binding proof. Native acceptance and real password behavior remain unproven
+until the applicable live/manual checks pass.
 
 **Ordered verification and TDD steps:**
 
