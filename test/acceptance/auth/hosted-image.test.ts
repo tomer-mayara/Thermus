@@ -11,7 +11,7 @@ const renderedParagraph = 'JavaScript produced this article with enough words to
 function call(url: URL, page: string, signal: AbortSignal): Promise<Record<string, unknown>> {
   return fetch(mcpRequest({ url: new URL('/mcp', url).href, method: 'tools/call', token: 'hosted-image-user', signal,
     params: { name: 'getURLAsMarkdown', arguments: { url: page, reason: 'Verify the packaged hosted image' } },
-  })).then(rpcResult);
+  }), { signal }).then(rpcResult);
 }
 
 // This explicit gate requires Docker and a Linux AMD64 builder. It never uses live identity credentials.
@@ -88,7 +88,7 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.match(refusedLogs, /Image renderer started http:\/\/localhost:8090\/blocked/);
     assert.doesNotMatch(refusedLogs, /Image page connection|Image page request \/blocked/);
     const controller = new AbortController();
-    const pending = call(server.url, slow, AbortSignal.any([step.signal, controller.signal])).catch(() => undefined);
+    const pending: Promise<unknown> = call(server.url, slow, AbortSignal.any([step.signal, controller.signal])).catch((error: unknown) => error);
     await server.waitForLog('Image page request /slow');
     const busyStarted = performance.now();
     const busy = await call(server.url, story, step.signal);
@@ -96,7 +96,9 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.deepEqual(busy.content, [{ type: 'text', text: 'Server busy. Try again later.' }]);
     assert.ok(performance.now() - busyStarted < 3_000, 'The overloaded call did not fail promptly');
     controller.abort();
-    await pending;
+    const outcome = await pending;
+    assert.ok(outcome instanceof Error, 'The disconnected client call did not reject with an Error');
+    assert.equal(outcome.name, 'AbortError');
     await server.waitForLog(`Image renderer settled ${slow}`);
     await server.waitForLog('"status":"cancelled"');
     const recovered = await call(server.url, story, step.signal);

@@ -211,3 +211,27 @@ Full local reports, original coverage captures, inspection output, diagrams,
 logs, and the manual architecture comparison remain in `ast-report/README.md`
 in this worktree. They are local artifacts, not uploaded CI results. The final
 candidate SHA and report links are recorded on the PR.
+
+## Hosted image client cancellation correction
+
+The fresh image gate at `a6c1c24fad6f34d73a84a88b2c577d627cad4a49`
+failed: five cases passed and two failed, including the parent case. The
+cancellation/shutdown case reached a 30-second log-poll timeout. The log does
+not identify the missing sentinel, so it does not prove which step stalled.
+
+This correction brings the existing S1-05 image-test change into S1-04b. The
+client passes its signal directly to `fetch`, in addition to the temporary
+Request. Prior Node 24.20.0 probes reproduced lost cancellation when that
+Request was collected. The direct signal kept cancellation working. These
+probes show a possible client cause; they do not prove that garbage collection
+caused this image failure or establish server behavior after Request collection.
+
+The test handles rejection immediately and requires the intentional disconnect
+to reject with `Error` and `AbortError`. All 49 earlier assertions and all
+timeouts remain; two assertions are added. Capacity refusal, renderer settlement,
+cancelled completion, recovery, and shutdown checks remain. No product code,
+contract, provider setting, or runtime architecture changes. The failed run
+remains failed evidence. Before commit, the corrected image gate passed all
+seven tests with zero failures, cancellations, skips, or todos. The test-file
+bytes remained unchanged during that run. Final committed-candidate checks
+and review evidence remain recorded on PR #226.
