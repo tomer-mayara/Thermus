@@ -5,7 +5,7 @@ This runbook covers the provider proofs required by
 and [Native invitations — Slice 1](../design/organization-admin-plan.md#native-invitations--slice-1).
 This record separates the completed native checks from the checks that remain
 unproven. See [Staging release verification](../implementation/admin-s1-staging-release-verification.md)
-for the full hosted journey and the legal approval needed before signup opens.
+for the full hosted journey, the approved legal package, and the remaining release gates.
 
 ## Verified target and remaining holds
 
@@ -24,9 +24,11 @@ enabled; Google, SSO, and MFA disabled. Admin has the four Thermus permissions;
 User has product access; default and retired roles have none. The release record
 describes the configuration changes. Production was not changed.
 
-The full hosted gate passed 28 tests. The owner asked to leave mailbox-dependent
-checks pending: fresh email verification, password reset, and consumer
-exact-address acceptance/refusal. No consumer mailbox was invented or used.
+The historical full hosted gate passed 28 tests. Mail delivery, password reset,
+and consumer exact-address acceptance/refusal remain pending by owner choice.
+A later owned reserved-domain probe completed an actual email-verification
+challenge with a code read through the documented provider API; it does not prove
+mail delivery. No consumer mailbox was invented or used.
 An unresolved native proof remains a release hold; a passing ordinary invitation
 test does not substitute for that proof.
 
@@ -38,7 +40,9 @@ and `Thermus live ` prefixes, so two runs must not overlap. Do not start its
 fixture setup until the environment holds are resolved and its cleanup scope is
 confirmed.
 
-Use fresh, run-owned organizations, verified password identities, and invitations.
+Use fresh, run-owned organizations, identities, and invitations. Use verified
+password identities for existing-user cases; new-user signup controls must prove
+that both planned addresses are absent before sending the invitation.
 Keep each case independent. Use separate fixtures for each role direction,
 acceptance order, and race attempt. Record fixture IDs in a run-owned inventory.
 Never use a customer membership or an existing person's account. Corporate
@@ -141,13 +145,17 @@ agreement checkbox or acceptance write.
 | Concurrent acceptance/resend | PASS for one measured attempt | Browser password request and SDK resend overlap by 310 ms. Resend returns pending; fresh state is accepted with one active User membership and correct native target access. |
 | Accept then revoke | PASS | HTTP 400; fresh invitation still accepted. The accepted membership and access remain. |
 | Revoke then attempt acceptance | PASS | Matching revoked response; native page shows “Invalid invitation”; no active target membership or access. Unrelated access remains. |
-| Concurrent acceptance/revoke | INCONCLUSIVE native flow; final-state safety observed | Requests overlap by 83 ms. Revoke returns revoked; fresh state is revoked with no accepted identity or active target membership. Target selection is 403; unrelated access remains. AuthKit stays on the password page, so the native outcome is not verified. |
-| Alternate-address new join diagnostic | UNPROVEN; release hold | Existing identity A follows a User invitation addressed to existing same-domain B. Native login succeeds into A's unrelated organization, but no target membership is created. |
+| Concurrent acceptance/revoke | Native error remains; ordinary-login recovery verified separately | The historical attempt overlaps by 83 ms and preserves access controls. A later independent attempt overlaps by 93 ms, reproduces the generic native error, then signs in normally in a fresh browser context. Only the unrelated authorized workspace is available; the revoked target remains denied. |
+| Alternate-address new join diagnostic | Required target activation not observed; release hold | Existing A with existing or absent B, and new A with absent B, all fail to gain target membership. New A completes actual email verification, but reaches “No organization access” with portal 403. The invitation is revoked with accepted A and no current role. |
+| New exact-address signup control | PASS for one User invitation | Both addresses start absent. Native name/password signup creates the intended verified identity, activates one User membership, and selects the target with product access. |
+| Fresh exact-address reinvitation recovery | PASS for one existing User identity | After alternate acceptance leaves no target access, an administrator sends one new invitation to A's exact address. Native acceptance activates one User membership with correct target access; unrelated membership and access remain unchanged. This does not fix alternate acceptance. |
 | Consumer exact address | PENDING by owner choice | Controlled consumer mailboxes are not authorized for this run. |
 
-These results use production source
-`9de610e8b75dfa041dcf18c5380ccf80feb9f797` and the four live-test corrections
-identified in the release record. All native probes use fresh `example.net`
+The historical nine-case sequential run and initial race probes use production
+source `9de610e8b75dfa041dcf18c5380ccf80feb9f797` and the four live-test corrections
+identified in the release record. The follow-up diagnostics below pin
+`285f5f044409775c864556c335ca17f9d7f64c1f`. Neither set proves the checks for
+the current runtime changes in progress. All native probes use fresh `example.net`
 identities, not controlled consumer mailboxes. The results do not establish a
 general provider classification for all email domains.
 
@@ -200,16 +208,73 @@ configuration readback are retained beside the probe results. No known
 invitation credential or password was found in the inspected application pages
 and server logs; this is a scoped check, not a claim about all provider logs.
 
-The alternate-address diagnostic reproduces the missing target grant. Its two
-password POSTs are separate native fetches with HTTP 200, not a redirect chain;
-the trace does not establish why AuthKit sent them. The invitation reports the
-accepting identity but is revoked with no current role, and target membership
-is empty. The exact-address control passes. The
-[WorkOS invitation guide](https://workos.com/docs/authkit/invitations) describes
-alternate corporate addresses in the signup case; it does not clearly promise
-this existing-A/existing-B combination. Resolve that provider/fixture behavior
-before claiming this join works. Do not infer a WorkOS defect, grant access in
-Thermus to compensate, or silently change the accepted recipient policy.
+### Follow-up diagnostics on 23 October
+
+Local, ignored evidence for the follow-up work is retained in
+`ast-report/invitation-fixes-2026-10-23/`. The manager and an independent agent
+reviewed the fresh membership, identity, application access, and cleanup facts:
+
+| Artifact | Observed result and limit |
+| --- | --- |
+| `alternate-address-addr-mvlddumf-73de24.json` and `alternate-address-addr-mvldeuld-8897fa.json` | Existing A fails to join whether invited B was absent or already existed. Send creates pending B when needed. Alternate acceptance leaves no target membership, removes B's pending membership, and preserves A's unrelated access. |
+| `new-user-password-newpw-mvldpkvm-33660e.json` | New exact-recipient signup succeeds with one active User membership and correct native target access. Both identities were absent before invitation creation. |
+| `new-user-password-newpw-mvldrtqs-b82bd8.json` | New alternate A reaches email verification with no target membership. This intermediate stop alone does not establish the final outcome. |
+| `new-user-verification-verify-mvle5rq3-115964.json` | A fresh alternate signup completes the actual email-verification challenge: matching current owned event/client and verification record, code held in memory, observed visible code control, and native POST 200. Fresh A is verified, but the callback opens “No organization access”; portal is 403 and target memberships remain empty. All three owned resources are confirmed absent. |
+| `exact-reinvite-recovery-recover-mvldy2rl-f9041a.json` | Initial alternate failure is reproduced. A new exact-address invitation then activates one User membership for the same A and correct target access. The unrelated membership ID, roles, and access remain unchanged. All four owned resources are confirmed absent. |
+| `revoke-recovery-recovery-mvldgi46-b38076.json` | One measured 93 ms client-request overlap reproduces “Something went wrong” on native password sign-in. Revoke returns the matching revoked invitation; no active target membership appears. A new browser context starts ordinary application login and restores only existing unrelated access. All three owned resources are confirmed absent. |
+
+At 19:59:48 UTC, complete Staging user and organization listings again contain
+exactly the original two users and two organizations. Canonical comparison with
+the original baseline confirms the same IDs and full records, with null before
+and after cursors. `final-native-cleanup-comparison.json` retains the result in
+the follow-up artifact directory. This is a point-in-time comparison, not a
+continuing monitor.
+
+A separate read-only production inventory at 19:57:44 UTC found zero users across
+Active, Inactive, and Pending status, zero memberships across those statuses in
+each of seven organizations, and zero pending invitations. All list pages were
+complete. `production-inventory.json` retains that result; historical organizations
+and records were not deleted or changed. These facts do not open signup or
+resolve the native-flow holds.
+
+The verification code came from the documented
+[Events API](https://workos.com/docs/events#email-verification-events) and
+[get email verification operation](https://workos.com/docs/reference/authkit/email-verification).
+No verified flag or authentication policy was changed directly. WorkOS accepts
+[reserved example domains](https://workos.com/docs/email#testing-with-example-domains)
+without delivering their email. This proves challenge completion, not mail
+delivery, password reset, or consumer-domain behavior. The fresh alternate case
+has no unrelated membership because it starts with a new identity; the existing
+identity diagnostics and recovery check preserve an unrelated membership.
+
+The two password POSTs in the existing-identity diagnostics are separate native
+fetches with HTTP 200, not a redirect chain. The first begins before the observed
+invitation response finishes and before the driver types the password. Waiting
+for that response does not restore target activation. The trace does not explain
+why AuthKit sends them. A provider HTTP 200 alone does not prove sign-in or a grant.
+
+The [WorkOS invitation guide](https://workos.com/docs/authkit/invitations)
+describes alternate corporate addresses in signup. The new-user follow-up tests
+that distinction and completes verification; target activation still is not
+observed. This establishes a release limitation in the tested configuration,
+not a proven third-party root cause or a repaired native flow. Do not grant access
+in Thermus to compensate or silently change the accepted recipient policy.
+
+### Recovery instructions
+
+Use the email address that the member will actually use to sign in. If alternate
+acceptance leaves no target access, the inviting administrator must check the
+current membership and invitation state. If a grant is still intended, send a
+new invitation to that exact address with the intended role. The tested recovery
+uses a new invitation; retrying the old revoked link is not the same operation.
+Do not automatically resend or create a grant from an accepted identity field.
+
+If a revoked link leaves “Something went wrong” on native sign-in, stop retrying
+that link. Open the application's ordinary `/login` in a new browser context and
+sign in for existing authorized workspaces. Ask the inviting administrator to
+check target access separately. This recovery restores existing access only; it
+does not revive the revoked invitation or remove AuthKit's generic error. Both
+native limitations and the remaining release holds stay visible.
 
 For each completed row, record candidate SHA, date, verified environment identity,
 fixture IDs, operation order, sanitized results, before/after membership roles,
@@ -230,5 +295,5 @@ hide it by deleting resources whose ownership is uncertain.
 - [WorkOS invitation guide](https://workos.com/docs/authkit/invitations).
 - [Pinned WorkOS OpenAPI contract](https://github.com/workos/openapi-spec/blob/1cfae382eda055174703010c77b4d58f6ed59603/spec/open-api-spec.yaml).
 
-These references describe ordinary lifecycle behavior. They do not close the
-unproven active-role, overlapping invitation, or race cases.
+These references describe supported behavior; documentation alone does not
+close an unproven native outcome or override the observed release limitations.

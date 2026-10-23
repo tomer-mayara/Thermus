@@ -716,10 +716,13 @@ Hosted [composition](../src/app/hosted-workos-application.ts) shares a WorkOS SD
 client, remote key-set resolver, and organization directory. WorkOS owns remote
 identity/organization data. Provider calls run during requests with a short
 timeout and no SDK retry. Self-serve signup follows configured enablement and
-approved organization/authority documents. The production personal-User bundle
-does not authorize new named creation; a marked test bundle proves application
-behavior only. WorkOS organization metadata and the deterministic external ID
-retain creation/legal facts without a new application datastore. Google enrollment is an optional explicit composition;
+approved organization/authority documents. Production supplies the approved
+[purpose-marked organization bundle](../src/accounts/providers/workos/workos-approved-organization-documents.ts).
+Signup remains false by default. The unchanged historical personal-User bundle
+does not authorize new named creation; marked test documents prove behavior only.
+The approved document versions and hashes use the existing WorkOS creator-record
+fields. WorkOS organization metadata and the deterministic external ID retain
+creation/legal facts without a new application datastore. Google enrollment is an optional explicit composition;
 production does not supply its onboarding settings.
 
 ## Design choices and current soft spots

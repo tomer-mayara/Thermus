@@ -1,3 +1,7 @@
+import { approvedOrganizationDocuments } from '../../../src/accounts/providers/workos/workos-approved-organization-documents.ts';
+import { micromark } from 'micromark';
+import { gfm, gfmHtml } from 'micromark-extension-gfm';
+import { readFile } from 'node:fs/promises';
 import { approvedSignupDocuments } from '../../../src/accounts/providers/workos/workos-approved-signup-documents.ts';
 import { createHash } from 'node:crypto';
 import { parseHTML } from 'linkedom';
@@ -450,28 +454,75 @@ describe('FS-04 production signup documents', () => {
     assert.deepEqual(site.world.fake.takeRequests(), []);
   });
 
-  test('Given the unchanged production bundle covers personal signup, when organization creation is enabled, then startup refuses it before provider reads or writes', async (t) => {
-    const start = WorkOSFake.start;
-    let world: WorkOSFake | undefined;
-    t.mock.method(WorkOSFake, 'start', async (...args: Parameters<typeof WorkOSFake.start>) => {
-      world = await start(...args);
-      return world;
-    });
-
-    await assert.rejects(openProductionSignupSite(t, true), /organization-creation/);
-
-    assert.ok(world);
-    assert.deepEqual(world.fake.takeRequests(), []);
+  test('Given the approved organization bundle in production and an eligible creator, when signup opens and its one agreement is accepted, then exact approved documents are shown and the first Admin retains their legal versions and hashes', async (t) => {
+    const site = await openProductionSignupSite(t, true);
+    const expected = {
+      version: 's105-organization-proposal-2026-10-23-v2',
+      terms: { version: 'hosted-terms-organization-proposal-2026-10-23-v2', sha256: '625010f6b3fd118c13a29cca29cfb066d5511d7d91d0c29e0e430ac0bdc14d0e' },
+      notice: { version: 'hosted-privacy-organization-proposal-2026-10-23-v2', sha256: 'd44db6099b758534e8d17f34bcda7096e02775ffccb40972ea1429093c1396ac' },
+      agreement: { version: 'hosted-agreement-organization-proposal-2026-10-23-v2', sha256: '279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a' },
+    };
+    const user = { id: 'user_APPROVED_CREATOR', email: 'creator@example.com', firstName: 'Creator', emailVerified: true };
+    site.world.users = [user];
+    const { browser } = await signInThroughServer(site, user);
+    const answer = await browser.open('signup');
+    assert.equal(answer.status, 200, answer.body);
+    const document = parseHTML(answer.body).document;
+    for (const [id, file, hash] of [
+      ['terms', 'terms.md', expected.terms.sha256],
+      ['privacy-notice', 'privacy.md', expected.notice.sha256],
+    ]) {
+      const source = await readFile(`docs/legal/organization-signup-2026-10-23/${file}`, 'utf8');
+      assert.equal(createHash('sha256').update(source).digest('hex'), hash);
+      const expectedText = parseHTML(`<div id=expected>${micromark(source, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
+      assert.equal(document.querySelector(`#${id} .document-reader`)?.textContent, expectedText);
+      assert.equal(document.querySelector(`#${id}`)?.getAttribute('data-document-version'), id === 'terms' ? expected.terms.version : expected.notice.version);
+    }
+    const checkbox = document.querySelector('input[name="agreement"]');
+    assert.equal(document.querySelectorAll('input[type="checkbox"]').length, 1);
+    assert.ok(checkbox);
+    assert.equal(checkbox.hasAttribute('checked'), false);
+    const agreement = document.querySelector('.agreement-text')?.textContent;
+    assert.equal(agreement, await readFile('docs/legal/organization-signup-2026-10-23/agreement.txt', 'utf8'));
+    assert.equal(createHash('sha256').update(agreement ?? '').digest('hex'), expected.agreement.sha256);
+    const form = formsIn(answer.body).find(({ action }) => action === '/signup');
+    assert.ok(form);
+    assert.equal(form.fields.document_version, expected.version);
+    const created = await browser.post('signup', { ...form.fields, organization_name: 'Approved Organization', agreement: 'accepted' });
+    assert.equal(created.status, 303, created.body);
+    assert.equal(site.signupFake.organizations.length, 1);
+    const organization = site.signupFake.organizations[0];
+    assert.ok(organization);
+    const metadata = organization.metadata as Record<string, string>;
+    assert.equal(metadata.documents_version, expected.version);
+    for (const part of ['terms', 'notice', 'agreement'] as const) {
+      assert.equal(metadata[`${part}_version`], expected[part].version);
+      assert.equal(metadata[`${part}_sha256`], expected[part].sha256);
+    }
+    assert.deepEqual(site.world.rolesOf(user, String(organization.id)), ['admin']);
+    assert.equal((await browser.open('portal/access')).status, 200);
   });
+
+});
+
+
+test('Given the earlier personal bundle, when an explicit composition enables organization creation, then startup still refuses it before provider access', async (t) => {
+  let world: WorkOSFake | undefined;
+  await assert.rejects(serveWorkOSSite(t, {
+    config: hostedRootConfig, organizations: [], signup: { enabled: true, documents: approvedSignupDocuments },
+    setUp: (started) => { world = started; },
+  }), /organization-creation/);
+  assert.ok(world);
+  assert.deepEqual(world.fake.takeRequests(), []);
 });
 
 
 for (const part of ['terms', 'notice'] as const) {
   for (const corruption of ['bytes', 'hash'] as const) {
     test(`Given the approved ${part} with corrupt ${corruption}, when signup is composed, then it fails before any provider read or write`, async (t) => {
-      const original = approvedSignupDocuments[part];
+      const original = approvedOrganizationDocuments[part];
       const changed = corruption === 'bytes' ? { ...original, text: original.text + ' ' } : { ...original, sha256: '0'.repeat(64) };
-      const documents = { ...approvedSignupDocuments, [part]: changed };
+      const documents = { ...approvedOrganizationDocuments, [part]: changed };
       // The site starts the fake before it composes the application, so the fake can show that no request reached it.
       let world: WorkOSFake | undefined;
       await assert.rejects(serveWorkOSSite(t, {
