@@ -1,4 +1,7 @@
 # S1-03b implementation record
+Current validation: this branch includes the shared [metrics repair](ast-metrics-function-repair.md) from [PR #230](https://github.com/tomer-mayara/Thermus/pull/230). The dated results below describe the earlier candidate and analyzer. Current SHA-bound checks, retained goals, and blockers are recorded in [PR #223](https://github.com/tomer-mayara/Thermus/pull/223). Earlier passes do not certify the rebased commit.
+
+## Earlier implementation and verification record
 
 Status: S1-03b acceptance complete; PR remains Draft because required metrics
 are blocked, 22 October 2026.
