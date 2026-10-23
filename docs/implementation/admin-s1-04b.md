@@ -1,4 +1,7 @@
 # S1-04b implementation record
+Current validation: this branch includes the shared [metrics repair](ast-metrics-function-repair.md) from [PR #230](https://github.com/tomer-mayara/Thermus/pull/230). The dated results below describe the earlier candidate and analyzer. Current SHA-bound checks, retained goals, and blockers are recorded in [PR #226](https://github.com/tomer-mayara/Thermus/pull/226). Earlier passes do not certify the rebased commit. Direct-session and landing cancellation cases now have separate files. Each proves the exact abort result before the provider settles and checks a later failure. All five focused cases passed before this commit.
+
+## Earlier implementation and verification record
 
 Status: source implemented and local functional gates passed, 22 October 2026.
 Draft: required native metrics and live invitation verification remain blocked.

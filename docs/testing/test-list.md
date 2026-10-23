@@ -1987,6 +1987,7 @@ are not WorkOS, real-renderer, image, or Render deployment proofs.
 [V] `test/unit/app/operation-capacity.test.ts`: one owner shares capacity across fetch and search, refuses overlap without queuing, checks cancellation before busy, and returns capacity only after settlement
 [V] `test/unit/website-fetcher/website-fetcher-dns-wait.test.ts`: the five-second wait, abort, late completion, residual lookup ownership, and recovery do not change the resolver policy or start late rendering
 [V] `test/unit/http/request-cancellation.test.ts`, `test/integration/auth-workos/workos-session-routes-cancellation.test.ts`, and `test/integration/hosted-admin/account-routes-cancellation.test.ts`: request waits release their listeners and do not advance after cancellation
+[V] `test/integration/auth-workos/workos-session-landing-cancellation.test.ts`: cancellation after code exchange stops the landing-access wait before the provider settles, with no recovery response or operator report after a late failure
 
 The [RHD-01 record](../implementation/rhd-01.md#verification) gives focused
 commands, recorded red steps, and the gate results.
