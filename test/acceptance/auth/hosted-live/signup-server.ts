@@ -39,7 +39,7 @@ export function describeSignupServerCases(previous: LiveRun): void {
   const activated = once(async () => {
     const { user } = await run.signupFixtures();
     assert.equal((await (await run.workos.userManagement.listOrganizationMemberships({ userId: user.id })).autoPagination()).length, 0);
-    const visit = await signInThroughPortal(run, user);
+    const visit = await signInThroughPortal(run, user, undefined, 'organizations');
     await visit.page.goto(`${localOrigin}/signup`);
     const agreement = visit.page.getByRole('checkbox');
     assert.equal(await agreement.isChecked(), false);

@@ -3,12 +3,13 @@
 This runbook covers the provider proofs required by
 [S1-04b](../design/organization-admin-plan.md#s1-04b--invitation-acceptance-and-trusted-landing)
 and [Native invitations — Slice 1](../design/organization-admin-plan.md#native-invitations--slice-1).
-The matrix is **NOT RUN**. It is not evidence that WorkOS preserves an active
-member's role.
+This record separates the completed native checks from the checks that remain
+unproven. See [Staging release verification](../implementation/admin-s1-staging-release-verification.md)
+for the full hosted journey and the legal approval needed before signup opens.
 
-## Current holds
+## Verified target and remaining holds
 
-Read-only review on 23 October 2026 confirmed the matching Staging configuration:
+The authorized verification on 23 October 2026 used this Staging configuration:
 
 - Environment: `environment_01M4VDKATD5PXZT4H01EHCMR2A`.
 - Client: `client_01M4VDKB7C7T2GV2NWPS84HADP`.
@@ -16,27 +17,18 @@ Read-only review on 23 October 2026 confirmed the matching Staging configuration
 - Login, callback, and sign-out URLs: `https://localhost:46443/login`,
   `https://localhost:46443/callback`, and `https://localhost:46443/`.
 
-The saved `.env.local` differs. The existing
-`~/.config/thermus/with-workos-staging.cjs` launcher supplies the matching client
-and issuer and reads the available Staging API key from Keychain. Missing local
-keys or an issuer are not current blockers, and no new keys are required from
-the owner. Provider readback shows password and email verification enabled;
-Google and SSO are also enabled. No settings were changed.
+The existing `~/.config/thermus/with-workos-staging.cjs` launcher supplies the
+matching client and issuer and reads the test key from Keychain. No new key was
+needed. Staging was aligned before the run: password and email verification
+enabled; Google, SSO, and MFA disabled. Admin has the four Thermus permissions;
+User has product access; default and retired roles have none. The release record
+describes the configuration changes. Production was not changed.
 
-Do not start fixture creation or acceptance while the provider profile remains
-incompatible: Staging MFA is Optional; Slice 1 requires Disabled. A matching
-client, issuer, and callback do not resolve this mismatch.
-
-The consumer case also needs controlled, authorized consumer-domain identities.
-Their mailbox control, provider classification, and cleanup ownership remain
-unconfirmed. That fixture requirement applies to the consumer case only.
-
-The native matrix remains **NOT RUN**. Real password sign-in, verification/reset,
-and native invitation behavior still need the applicable live/manual proof.
-Resolve the profile and fixture holds through the authorized environment review.
-Record settings without keys or other credentials. Do not change shared provider
-settings as part of this proof. An unresolved proof or an acceptance that changes
-an active role blocks release.
+The full hosted gate passed 28 tests. The owner asked to leave mailbox-dependent
+checks pending: fresh email verification, password reset, and consumer
+exact-address acceptance/refusal. No consumer mailbox was invented or used.
+An unresolved native proof remains a release hold; a passing ordinary invitation
+test does not substitute for that proof.
 
 ## Prerequisites and safety
 
@@ -74,6 +66,13 @@ invitation's `role_slug` reflects its current membership role; it is not immutab
 proof of the role originally invited. Record each invitation's intended role
 before acceptance separately from its later representation.
 
+For a new join, require exactly one active membership for the accepting identity
+in the intended organization, with the intended role. Portal arrival, an
+`acceptedUserId`, or a revoked invitation alone does not prove activation.
+Check the authenticated identity and selected organization, then check current
+application access. For an existing member, require the same active membership
+ID and roles after each attempt.
+
 After an ambiguous response or a race, wait for both operations to settle and
 make fresh reads of the invitation and membership. Record each operation's
 sanitized result, the observed terminal state, and access in the intended and
@@ -108,17 +107,17 @@ The live
 [administration server cases](../../test/acceptance/auth/hosted-live/administration-server.ts)
 cover exact-recipient User/Admin acceptance and inactive membership reactivation
 through AuthKit. These cases also check application access and credential
-exclusion. Their prior results do not cover the matrix above, and this runbook
-claims no new execution.
+exclusion. They passed in the 23 October full hosted gate; they do not by
+themselves cover the matrix above.
 
 The current
 [invitation browser driver](../../test/support/hosted-live/portal-visit.ts)
 waits for successful portal arrival. The
 [AuthKit driver](../../test/support/hosted-live/authkit-driver.ts)
-does not define all refusal or controlled race outcomes. The matrix therefore
-remains a manual, blocked verification plan until the actual flow and safe
-observations are established. Do not replace missing native proof with fake or
-SDK request-test behavior.
+does not define all refusal or controlled race outcomes. Disposable probes add
+observations of the actual native flow, strict membership checks, and fresh
+application access checks. An unfamiliar UI or unresolved write stays unproven.
+Do not replace missing native proof with fake or SDK request-test behavior.
 
 Retain the browser/MCP separation proof in
 [organization integration tests](../../test/integration/auth/hosted-organizations.test.ts)
@@ -132,13 +131,85 @@ agreement checkbox or acceptance write.
 
 | Case | Status | Evidence / limit |
 | --- | --- | --- |
-| Corporate User preservation | NOT RUN | Environment holds above. |
-| Corporate Admin preservation | NOT RUN | Environment holds above. |
-| Overlap, User first | NOT RUN | Environment holds above. |
-| Overlap, Admin first | NOT RUN | Environment holds above. |
-| Acceptance/resend, all three orderings | NOT RUN | Environment holds above; controlled observation needed. |
-| Acceptance/revoke, all three orderings | NOT RUN | Environment holds above; controlled observation needed. |
-| Consumer exact address | NOT RUN | Environment holds above; controlled consumer recipients needed. |
+| Exact-address new join control | PASS | One active User membership, matching native identity and selected target, and product access. |
+| Corporate User preservation | PASS for the tested same-domain identities | The original active User membership ID and role remain. Admin access stays denied. |
+| Corporate Admin preservation | PASS for the tested same-domain identities | The original active Admin membership ID and role remain. Admin and product access remain. |
+| Overlap, User first | PASS | Exact-address User invitation accepted first; second invitation addresses another same-domain identity. The second attempt keeps the same active User membership. |
+| Overlap, Admin first | PASS | Independent fixtures accept exact-address Admin first, then attempt the alternate User invitation. The same active Admin membership remains. |
+| Accept then resend | PASS | HTTP 400; fresh invitation still accepted, with the same active User membership. The error cause is not inferred. |
+| Resend then accept | PASS | Matching pending resend response, then native acceptance and one active User membership. |
+| Concurrent acceptance/resend | PASS for one measured attempt | Browser password request and SDK resend overlap by 310 ms. Resend returns pending; fresh state is accepted with one active User membership and correct native target access. |
+| Accept then revoke | PASS | HTTP 400; fresh invitation still accepted. The accepted membership and access remain. |
+| Revoke then attempt acceptance | PASS | Matching revoked response; native page shows “Invalid invitation”; no active target membership or access. Unrelated access remains. |
+| Concurrent acceptance/revoke | INCONCLUSIVE native flow; final-state safety observed | Requests overlap by 83 ms. Revoke returns revoked; fresh state is revoked with no accepted identity or active target membership. Target selection is 403; unrelated access remains. AuthKit stays on the password page, so the native outcome is not verified. |
+| Alternate-address new join diagnostic | UNPROVEN; release hold | Existing identity A follows a User invitation addressed to existing same-domain B. Native login succeeds into A's unrelated organization, but no target membership is created. |
+| Consumer exact address | PENDING by owner choice | Controlled consumer mailboxes are not authorized for this run. |
+
+These results use production source
+`9de610e8b75dfa041dcf18c5380ccf80feb9f797` and the four live-test corrections
+identified in the release record. All native probes use fresh `example.net`
+identities, not controlled consumer mailboxes. The results do not establish a
+general provider classification for all email domains.
+
+The corrected sequential run completed nine cases between 18:59:23 and 19:04:40
+UTC on 23 October. The manager and an independent agent checked the raw
+intermediate and final states, not only the probe's status labels. The first
+active membership ID is stable in both overlap orders. Both preservation cases
+end with an invitation reported as revoked and an accepted identity; its current
+role follows the preserved membership, not the originally invited role.
+
+The concurrent probes measure client request overlap. They do not establish
+WorkOS's internal transaction order or prove every possible interleaving.
+
+### Retained native evidence and limits
+
+Local, ignored evidence is retained in
+`ast-report/staging-release-2026-10-23/`:
+
+- `native-invitations-corrected-fixed-mvlc3cl8-a7efad.json`: nine sequential
+  cases, operation results, fixture IDs, membership snapshots, native identity,
+  target and unrelated access, and cleanup of all 31 owned resources.
+- `native-invitations-races-race-mvlcadw9-45d863.json`: both concurrent attempts
+  and cleanup of all six owned resources. Its overall exit 1 remains valid.
+- `native-invitations-alternate-diagnostic-diag-mvlcd0xt-5325cf.json`: isolated
+  alternate-address new join, safe request trace, and cleanup of all four owned
+  resources. Its exit 1 remains valid.
+- `native-invitations-revoke-race-diagnostic-revdiag-mvlchixq-1de470.json`:
+  focused revoke attempt with 102 ms of request overlap. Native rendered text
+  shows “Something went wrong” on the password page. Fresh state is revoked,
+  with no accepted identity or active target membership; unrelated access
+  remains. All three owned resources were removed. This confirms safe final
+  state, but the generic error does not close the native-flow hold; exit 1 is
+  retained.
+- `native-sequential-independent-review.md` and
+  `native-races-independent-review.md`: independent review of the observations
+  and the limits of each result.
+
+Earlier exploratory results are retained, not counted as passes. The first
+probe checked organization deletion too soon; a later read confirmed removal.
+A later probe expected 200 from the legacy Admin invitations route, whose
+correct response is 303 to Members. It also failed to require first activation
+when WorkOS reported a revoked invitation. The corrected checks require the
+intended active membership and native target access. No original report was
+rewritten to hide these errors.
+
+The final complete Staging listings at 19:12 UTC contain exactly the two
+original users and two original organizations, with unchanged records. Both
+pagination cursors are null. The inventory comparison and final non-secret
+configuration readback are retained beside the probe results. No known
+invitation credential or password was found in the inspected application pages
+and server logs; this is a scoped check, not a claim about all provider logs.
+
+The alternate-address diagnostic reproduces the missing target grant. Its two
+password POSTs are separate native fetches with HTTP 200, not a redirect chain;
+the trace does not establish why AuthKit sent them. The invitation reports the
+accepting identity but is revoked with no current role, and target membership
+is empty. The exact-address control passes. The
+[WorkOS invitation guide](https://workos.com/docs/authkit/invitations) describes
+alternate corporate addresses in the signup case; it does not clearly promise
+this existing-A/existing-B combination. Resolve that provider/fixture behavior
+before claiming this join works. Do not infer a WorkOS defect, grant access in
+Thermus to compensate, or silently change the accepted recipient policy.
 
 For each completed row, record candidate SHA, date, verified environment identity,
 fixture IDs, operation order, sanitized results, before/after membership roles,
