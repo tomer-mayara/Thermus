@@ -1470,8 +1470,8 @@ The [audit log rules](#audit-logs--slice-2), [storage
 rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supabase--slice-2)
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
-another slice names a group. The S2-01a implementation record below states its
-completed scope and verification limits; the remaining tickets stay planned.
+another slice names a group. The S2-01a and S2-01b implementation records below
+state their completed scope and verification limits; later tickets stay planned.
 
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
