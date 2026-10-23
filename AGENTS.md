@@ -115,29 +115,52 @@ type, lint, and manual checks for those changes.
 For a T2 pull request, prepare one architecture comparison comment before
 requesting human review. Update that comment when the candidate changes.
 
-- Compare `architecture/components.md` at the PR merge base and current head.
-  For a stacked PR, use its parent branch. Record both commit SHAs.
-- Read the relevant code and architecture prose to understand the change.
-  Select only the affected diagram views.
-- Author the Mermaid comparison manually from those views. Preserve component
-  identities, boundaries, relationship meanings, and runtime order.
+- Pin the current PR head and merge base. For a stacked PR, find the merge base
+  with its parent branch. Record both full commit SHAs. Compare every Mermaid
+  block in `architecture/components.md` and list the changed views.
+- Read the relevant architecture prose, code, contracts, and tests at both
+  revisions. Use the actual parent behavior; do not include changes from a later
+  PR in the stack. Select only the affected views for the comment.
+- Author the Mermaid comparison manually. If no registry diagram changed, say
+  so and explain the impact. Clearly label supplementary comparisons derived
+  from the prose and code. Add or refine a registry view when needed to keep
+  the current map accurate; do not present newly documented behavior as new.
+- Preserve component and container identities and boundaries. A removed
+  operation does not remove its owner. A new call does not create a component.
+  A moved contract changes ownership; it does not add a runtime capability.
+  Separate source dependencies and implements edges from runtime calls. Give
+  each implementation only its own contract edges.
 - Use green for added elements, red for removed elements, and amber for changed
-  elements. Include text labels so color is not the only signal. Keep unchanged
-  elements neutral.
-- For component diagrams, use a combined comparison when it remains clear.
-  Retain removed elements and make the old and new meaning available.
+  meaning. Add text labels so color is not the only signal. Keep unchanged
+  elements and boundaries neutral. For component diagrams, use a combined
+  comparison when clear; retain removed elements and show old and new meaning.
 - For sequence diagrams, prefer separate Before and After drawings. Preserve
   each version's conditions and message order. Removing a condition does not
-  make its surviving messages new or removed.
-- If no diagram changed, say so and explain the architecture impact. Add or
-  refine a registry view when it is needed to explain the change. Do not present
-  newly documented existing behavior as new behavior.
-- Check every highlighted element against both revisions. Verify that unchanged
-  elements remain unchanged, including steps moved out of a removed condition.
-- Parse, render, and visually inspect each comparison. Preserve relevant diagram
-  configuration. The manager reviews the result before posting.
+  make surviving messages new or removed. Check policy and payload changes even
+  when message labels stay the same.
+- Place local validation at its owner and separate it from remote reads. Name
+  grouped participants and keep supplied-role grouping consistent across
+  versions. Do not hide a remote operation in a self-call without explaining it.
+- Keep success and failure paths clear; an error return must not lead to a
+  success response. A focused success path can state other outcomes in a short
+  note. Preserve important authority, replay, and lifetime rules.
+- Check each highlighted element against both revisions, including calls moved
+  out of a removed condition. Link before and after registry and code evidence
+  at pinned revisions. State evidence limits, such as source review versus
+  observed live behavior.
+- Save versioned comment drafts, standalone Mermaid sources, render outputs,
+  and review notes. Parse, render, and visually inspect each drawing. Preserve
+  relevant diagram configuration. Check labels, boundaries, arrow targets, and
+  lines through unrelated boxes at normal PR comment width. Simplify wide views
+  when labels become too small. Embed the exact sources that were rendered.
+- Apply the manager's feedback in a new draft, rerender changed drawings, and
+  record how findings were resolved. After manager sign-off, recheck the current
+  PR revisions. If they changed, refresh the comparison and obtain manager
+  review before publication. Publish or update the one comment, then read it
+  back to verify its body.
 - Keep comparison colors and historical annotations in the PR comment. The
-  component registry continues to describe the current system.
+  registry continues to describe the current system. The comparison does not
+  supply human approval, test evidence, or permission to merge.
 
 ## Review tier and merge eligibility
 
