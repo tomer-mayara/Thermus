@@ -3,7 +3,6 @@ import { coverageOfRepository } from '../architecture/coverage.ts';
 import { withAstMetricsServer } from '../mcp/session.ts';
 import { inputIdentityOf } from '../provenance/inputs.ts';
 import { CommandError } from '../shared/repository.ts';
-import { measuredFunctionsOf } from './metrics.ts';
 import { goalFunctionsOf } from './classification.ts';
 import * as sourceTree from './source-tree.ts';
 import type { Selection } from './selection.ts';
@@ -20,8 +19,7 @@ export async function goalRowsOf(command: { readonly coverage?: string; readonly
   const measured = await withAstMetricsServer({ root, folder: 'src', allowToolVersion: command.allowToolVersion }, 60_000, async (server) => {
     const answers = new Map();
     for (const path of paths) {
-      const declarations = files.head.find((file) => file.path === path)?.functions?.length ?? 0;
-      answers.set(path, sourceTree.measuredSourceFile(root, path, measuredFunctionsOf(path, await server.tool('get_file_metrics', { path }), declarations, root)));
+      answers.set(path, sourceTree.measuredSourceFile(root, path, await server.tool('get_file_metrics', { path })));
     }
     return answers;
   });

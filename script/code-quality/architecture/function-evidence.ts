@@ -19,7 +19,7 @@ export function declarationKey({ identity }: MapFunction): string | undefined {
 
 export function bodyKey(fn: MapFunction): string | undefined {
   const { identity } = fn;
-  if (declarationKey(fn) === undefined) return undefined;
+  if (identity === undefined) return undefined;
   return JSON.stringify([identity?.version, identity?.body, identity?.signature]);
 }
 
@@ -40,6 +40,10 @@ export function completeSource(file: TableFile): boolean {
 }
 
 export function uniqueDeclaration(entry: LocatedFunction, entries: readonly LocatedFunction[]): boolean {
+  if (entry.fn.identity?.version === 'typescript-tokens-v2') {
+    const { start, end } = entry.fn.identity;
+    return entries.filter(({ file, fn }) => file.path === entry.file.path && fn.identity?.start === start && fn.identity.end === end).length === 1;
+  }
   const key = declarationKey(entry.fn);
   return key !== undefined && entries.filter(({ file, fn }) => file.path === entry.file.path && declarationKey(fn) === key).length === 1;
 }

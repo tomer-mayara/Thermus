@@ -3,7 +3,8 @@
 // See docs/implementation/ast-metrics-review.md, "Show the architecture delta".
 // The base estimate uses the head share; no base coverage is measured.
 import type { CoverageFunction } from './coverage.ts';
-import type { TableFile } from './types.ts';
+import type { TableFile, MapFunction } from './types.ts';
+import type { FunctionIdentity } from '../identity/types.ts';
 import { compareCrap, crapValueOf } from './crap-score.ts';
 
 // A function at this CRAP or above is over the limit.
@@ -25,20 +26,18 @@ export interface FileCrap {
 }
 
 // Gives the covered share, or undefined when it cannot be measured.
-type ShareRule = (name: string, key: string) => number | undefined;
+type ShareRule = (fn: MapFunction, index: number) => number | undefined;
 
 export function isOver(entry: FunctionCrap): boolean {
   return compareCrap(entry, crapLimit) >= 0;
 }
 
-// A duplicate key gives no unique covered share. Keep each function and its lower bound.
+// Keep each metric row. Source identities can distinguish repeated names.
 export function fileCrapOf(file: TableFile, shareOf: ShareRule): FileCrap {
   const functions = file.functions ?? [];
-  const keys = functions.map(({ name }) => keyOf(name));
-  const crap = functions.map(({ name, paths }, index): FunctionCrap => {
-    const key = keys[index];
-    const share = key !== undefined && keys.indexOf(key) === keys.lastIndexOf(key) ? shareOf(name, key) : undefined;
-    return { name, paths, share, crap: share === undefined ? paths : crapValueOf(paths, share) };
+  const crap = functions.map((fn, index): FunctionCrap => {
+    const share = shareOf(fn, index);
+    return { name: fn.name, paths: fn.paths, share, crap: share === undefined ? fn.paths : crapValueOf(fn.paths, share) };
   });
   return { functions: crap, unmatched: crap.filter(({ share }) => share === undefined).length, ...(file.functions === undefined ? { incomplete: true as const } : {}) };
 }
@@ -54,12 +53,25 @@ function keyOf(name: string): string | undefined {
   return member === '' ? undefined : member;
 }
 
-// A file that the report does not have is uncovered: no unit test loaded it. A key that the report has twice or not at
-// all names no single function of the report.
-export function coverageShareOf(covered: readonly CoverageFunction[] | undefined): ShareRule {
-  return (_name, key) => {
+// A file absent from the capture is uncovered. A loaded file needs exact source
+// evidence when either side has it. Legacy unique names remain a limited fallback.
+export function coverageShareOf(covered: readonly CoverageFunction[] | undefined, file?: TableFile): ShareRule {
+  return (fn) => {
     if (covered === undefined) return 0;
+    const identity = fn.identity;
+    if (identity) {
+      const partners = covered.filter((entry) => entry.sourceIdentity && sameIdentity(entry.sourceIdentity, identity));
+      return partners.length === 1 ? partners[0].coveredShare : undefined;
+    }
+    if (file?.sourceEvidence !== undefined || covered.some((entry) => entry.identityRequired || entry.sourceIdentity !== undefined)) return undefined;
+    const key = keyOf(fn.name);
+    if (key === undefined || (file?.functions ?? [fn]).filter((entry) => keyOf(entry.name) === key).length !== 1) return undefined;
     const partners = covered.filter((entry) => entry.name === key);
     return partners.length === 1 ? partners[0].coveredShare : undefined;
   };
+}
+
+function sameIdentity(first: FunctionIdentity, second: FunctionIdentity): boolean {
+  return first.version === second.version && first.kind === second.kind && first.owner === second.owner && first.name === second.name &&
+    first.start === second.start && first.end === second.end && first.body === second.body && first.signature === second.signature;
 }

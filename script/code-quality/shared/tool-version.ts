@@ -1,8 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { CommandError } from './repository.ts';
 import { checkAstMetricsStarted } from './subprocess.ts';
-
-const pinnedToolVersion = '0.43.1';
+import { astMetricsBinary, pinnedToolVersion } from './tool-runtime.ts';
 
 export interface CheckedToolVersion {
   readonly actual: string;
@@ -23,7 +22,7 @@ function checkedToolVersion(actual: string | undefined, allowToolVersion = false
 }
 
 export function cliToolVersion(root: string, allowToolVersion = false): CheckedToolVersion {
-  const run = spawnSync('ast-metrics', ['version'], { cwd: root, encoding: 'utf8', timeout: 60_000, maxBuffer: 64 * 1024 });
+  const run = spawnSync(astMetricsBinary(), ['version'], { cwd: root, encoding: 'utf8', timeout: 60_000, maxBuffer: 64 * 1024 });
   checkAstMetricsStarted(run.error);
   if (run.status !== 0) throw new CommandError('ast-metrics version failed.');
   return checkedToolVersion(/^\s*Current version\s+(\S+)\s*$/mu.exec(run.stdout)?.[1], allowToolVersion);

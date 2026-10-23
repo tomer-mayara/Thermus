@@ -1,12 +1,11 @@
 import type { SourceScript } from './input.ts';
 import { addFunctionRuns, type MergedFunction } from './execution.ts';
 export type { MergedFunction } from './execution.ts';
-import type { ScriptIdentity } from './identity.ts';
 import { validateScript } from './ranges.ts';
 import { applyOwnership } from './ownership.ts';
 import { CommandError } from '../shared/repository.ts';
 
-export type MergedScript = ScriptIdentity & { readonly functions: Map<string, MergedFunction> };
+export type MergedScript = Omit<SourceScript, 'functions'> & { readonly functions: Map<string, MergedFunction> };
 export type MergedCoverage = { readonly processes: number; readonly scripts: ReadonlyMap<string, MergedScript> };
 
 // A child absent from one process must still leave every parent mask.

@@ -17,8 +17,8 @@ function failureOf(error: unknown): CommandError {
 export type AnalyzedTree = string | ({ readonly root: string; readonly folder?: string } & ToolVersionPolicy);
 
 // Each failure, also the end of the deadline, becomes a CommandError.
-export async function withAstMetricsServer<T>(tree: AnalyzedTree, timeoutMs: number, work: AstMetricsWork<T>): Promise<T> {
-  const server = typeof tree === 'string' ? new ServerProcess(tree) : new ServerProcess(tree.root, tree.folder);
+export async function withAstMetricsServer<T>(tree: AnalyzedTree, timeoutMs: number, work: AstMetricsWork<T>, candidateBinary?: string): Promise<T> {
+  const server = typeof tree === 'string' ? new ServerProcess(tree, undefined, candidateBinary) : new ServerProcess(tree.root, tree.folder, candidateBinary);
   const timeout = new CommandError(`The call timed out after ${timeoutMs} ms. Increase --timeout-ms if needed.`);
   const controller = new AbortController();
   const deadline = setTimeout(() => controller.abort(timeout), timeoutMs);

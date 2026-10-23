@@ -83,8 +83,8 @@ export interface SnapshotFile {
   readonly functions: readonly SnapshotFunction[];
 }
 
-// A function in the order of get_file_metrics. ast-metrics gives no line numbers, and an anonymous function, such as a
-// callback, has the name (anonymous).
+// A function in the order of get_file_metrics. Source identity comes from the
+// checked native byte range; native names alone cannot identify callbacks.
 export interface SnapshotFunction {
   readonly identity?: FunctionIdentity;
   readonly name: string;

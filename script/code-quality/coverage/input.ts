@@ -4,13 +4,16 @@ import { join } from 'node:path';
 import { scriptIdentityOf, type ScriptIdentity } from './identity.ts';
 import { jsonOf, objectOf } from '../shared/json.ts';
 import { CommandError } from '../shared/repository.ts';
+import type { FunctionIdentity } from '../identity/types.ts';
+import { coverageSourceFunctions } from './source-functions.ts';
 
-export type SourceScript = ScriptIdentity & { readonly functions: readonly V8Function[] };
+export type SourceScript = ScriptIdentity & { readonly sourceContentIdentity?: string; readonly sourceIdentities?: ReadonlyMap<string, FunctionIdentity>; readonly functions: readonly V8Function[] };
 
 export function* sourceScriptsIn(folder: string, root: string): Generator<readonly SourceScript[]> {
   let sourceScripts = 0;
+  const identities = coverageSourceFunctions(root);
   for (const name of coverageFileNames(folder)) {
-    const scripts = sourceScriptsOf(join(folder, name), root);
+    const scripts = sourceScriptsOf(join(folder, name), root, identities);
     sourceScripts += scripts.length;
     yield scripts;
   }
@@ -30,12 +33,12 @@ function coverageFileNames(folder: string): string[] {
   return coverage;
 }
 
-function sourceScriptsOf(file: string, root: string): SourceScript[] {
+function sourceScriptsOf(file: string, root: string, identities: ReturnType<typeof coverageSourceFunctions>): SourceScript[] {
   const scripts = v8ScriptsOf(readFileSync(file, 'utf8'));
   if (scripts === undefined) throw new CommandError(`${file} is not a V8 coverage file.`);
   return scripts.flatMap(({ url, functions }) => {
     const identity = scriptIdentityOf(url, root);
-    return identity === undefined ? [] : [{ ...identity, functions }];
+    return identity === undefined ? [] : [{ ...identity, ...identities.forScript(identity), functions }];
   });
 }
 

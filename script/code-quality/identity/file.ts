@@ -11,7 +11,13 @@ export function fileEvidenceIn(value: unknown, functions: readonly FunctionEvide
   if (new Set(ranges).size !== ranges.length) {
     throw new CommandError('The snapshot binds more than one metric to the same source range.');
   }
-  if (evidence?.complete && (!functions || identities.length !== functions.length || !uniqueDeclarations(identities))) {
+  if (evidence && identities.some(({ version }) => version !== evidence.version)) {
+    throw new CommandError('The snapshot mixes source identity normalization versions.');
+  }
+  if (evidence?.complete && evidence.version === 'typescript-tokens-v1' && !uniqueDeclarations(identities)) {
+    throw new CommandError('The legacy snapshot claims complete evidence for ambiguous declaration names.');
+  }
+  if (evidence?.complete && (!functions || identities.length !== functions.length)) {
     throw new CommandError('The snapshot claims complete source evidence for an unknown function.');
   }
   return evidence;

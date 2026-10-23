@@ -16,7 +16,7 @@ export function goalFunctionsOf(selection: Selection, files: SourceFiles, covera
   const selected = new Set(selection.paths);
   const covered = new Map(coverage.files.map((file) => [file.path, file.functions]));
   return files.head.filter(({ path }) => selected.has(path)).flatMap((file) => {
-    const measured = fileCrapOf(file, coverageShareOf(covered.get(file.path)));
+    const measured = fileCrapOf(file, coverageShareOf(covered.get(file.path), file));
     return measured.functions.map((fn, index): GoalFunction => {
       const source = file.functions?.[index];
       return { ...fn, file: file.path, change: source === undefined ? 'unknown' : correspondence.head.get(source)?.classification ?? 'unknown', identity: source?.identity === undefined ? `${placeholder}${index}` : JSON.stringify(source.identity) };

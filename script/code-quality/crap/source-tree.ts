@@ -4,7 +4,7 @@ import type { TableFile } from '../architecture/types.ts';
 import { supportedPath } from '../delta/changes.ts';
 import { treeEntries } from '../provenance/tree.ts';
 import * as repository from '../shared/repository.ts';
-import type { SnapshotFunction } from '../snapshot/types.ts';
+import { nativeFunctionsOf } from '../identity/native.ts';
 import type { Selection } from './selection.ts';
 import { sourceFileOf } from './source-evidence.ts';
 
@@ -28,6 +28,7 @@ function currentText(root: string, path: string): string {
   catch { throw new repository.CommandError(`Cannot read source evidence for ${path}.`); }
 }
 
-export function measuredSourceFile(root: string, path: string, functions: readonly SnapshotFunction[]): TableFile {
-  return sourceFileOf(path, currentText(root, path), functions);
+export function measuredSourceFile(root: string, path: string, answer: string): TableFile {
+  const source = currentText(root, path);
+  return sourceFileOf(path, source, nativeFunctionsOf(root, path, answer, source));
 }

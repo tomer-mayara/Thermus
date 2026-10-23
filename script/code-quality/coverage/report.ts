@@ -3,28 +3,33 @@ import { textOrder } from '../shared/order.ts';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname } from 'node:path';
+import type { FunctionIdentity } from '../identity/types.ts';
 import type { CoverageProvenance, CoverageSuite } from '../provenance/types.ts';
 import type { MergedCoverage, MergedFunction, MergedScript } from './merge.ts';
 import { CommandError } from '../shared/repository.ts';
 
-type FunctionCoverage = { readonly name: string; readonly start: number; readonly end: number; readonly called: number; readonly coveredShare: number };
-type FileCoverage = { readonly path: string; readonly representation: MergedScript['representation']; readonly contentIdentity: string; readonly functions: readonly FunctionCoverage[] };
-type UnmeasuredFunction = { readonly path: string; readonly name: string; readonly start: number; readonly end: number; readonly reason: 'no-own-characters' };
+type FunctionCoverage = { readonly name: string; readonly start: number; readonly end: number; readonly called: number; readonly coveredShare: number; readonly sourceIdentity?: FunctionIdentity };
+type FileCoverage = { readonly path: string; readonly representation: MergedScript['representation']; readonly contentIdentity: string; readonly sourceContentIdentity?: string; readonly functions: readonly FunctionCoverage[] };
+type UnmeasuredFunction = { readonly path: string; readonly name: string; readonly start: number; readonly end: number; readonly reason: 'no-own-characters'; readonly sourceIdentity?: FunctionIdentity };
 
 // suite: the suite whose run gave the coverage. processes: the coverage files that the command read. scripts: the
 // scripts of the build of src/ in them.
 type CoverageReport = {
-  readonly version: 2; readonly measurementVersion: 'own-characters-1'; readonly unmeasuredFunctions: readonly UnmeasuredFunction[]; readonly suite: CoverageSuite | readonly CoverageSuite[]; readonly commit: string | null; readonly provenance: CoverageProvenance;
+  readonly version: 3; readonly measurementVersion: 'own-characters-1'; readonly unmeasuredFunctions: readonly UnmeasuredFunction[]; readonly suite: CoverageSuite | readonly CoverageSuite[]; readonly commit: string | null; readonly provenance: CoverageProvenance;
   readonly processes: number; readonly scripts: number; readonly files: readonly FileCoverage[];
 };
 
 // The files come in the order of their paths and the functions in the order of their start, so that two reports
 // of one tree are equal and two reports of two trees give a short diff.
 export function writeCoverageReport(file: string, origin: { commit: string | null; provenance: CoverageProvenance; suite?: CoverageSuite | readonly CoverageSuite[] }, { processes, scripts }: MergedCoverage): CoverageReport {
-  const files = [...scripts].map(([path, script]) => fileCoverageOf(path, script)).sort((first, second) => textOrder(first.path, second.path));
-  const unmeasuredFunctions = [...scripts].sort(([first], [second]) => textOrder(first, second)).flatMap(([path, script]) => orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters === 0).map(({ name, start, end }): UnmeasuredFunction => ({ path, name: name || '(anonymous)', start, end, reason: 'no-own-characters' })));
+  const files = [...scripts].map(([path, script]) => fileCoverageOf(path, script, origin.provenance.status === 'verified')).sort((first, second) => textOrder(first.path, second.path));
+  const unmeasuredFunctions = [...scripts].sort(([first], [second]) => textOrder(first, second)).flatMap(([path, script]) =>
+    orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters === 0).map((entry): UnmeasuredFunction => ({
+      path, name: entry.name || '(anonymous)', start: entry.start, end: entry.end, reason: 'no-own-characters',
+      sourceIdentity: sourceIdentityOf(script, entry, origin.provenance.status === 'verified'),
+    })));
   const suite = origin.provenance.status === 'verified' ? origin.provenance.suite : origin.suite ?? 'unit';
-  const report: CoverageReport = { version: 2, measurementVersion: 'own-characters-1', unmeasuredFunctions, ...origin, suite, processes, scripts: scripts.size, files };
+  const report: CoverageReport = { version: 3, measurementVersion: 'own-characters-1', unmeasuredFunctions, ...origin, suite, processes, scripts: scripts.size, files };
   const temporary = `${file}.${randomUUID()}.tmp`;
   try {
     fs.mkdirSync(dirname(file), { recursive: true });
@@ -42,11 +47,19 @@ function orderedFunctions({ functions }: MergedScript): MergedFunction[] {
   return [...functions.values()].sort((first, second) => first.start - second.start || second.end - first.end || first.name.localeCompare(second.name));
 }
 
-function fileCoverageOf(path: string, script: MergedScript): FileCoverage {
-  return { path, representation: script.representation, contentIdentity: script.contentIdentity, functions: orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters > 0).map(functionCoverageOf) };
+function fileCoverageOf(path: string, script: MergedScript, verified: boolean): FileCoverage {
+  const functions = orderedFunctions(script).filter(({ ownCharacters }) => ownCharacters > 0).map((entry) => ({
+    ...functionCoverageOf(entry), sourceIdentity: sourceIdentityOf(script, entry, verified),
+  }));
+  return { path, representation: script.representation, contentIdentity: script.contentIdentity, sourceContentIdentity: verified ? script.sourceContentIdentity : undefined, functions };
 }
 
 function functionCoverageOf({ name, start, end, called, covered, ownCharacters }: MergedFunction): FunctionCoverage {
   const ran = covered.reduce((sum, value) => sum + value, 0);
   return { name: name || '(anonymous)', start, end, called, coveredShare: Math.round((ran / ownCharacters) * 1000) / 1000 };
+}
+
+function sourceIdentityOf(script: MergedScript, entry: MergedFunction, verified: boolean): FunctionIdentity | undefined {
+  if (!verified || (entry.start === 0 && entry.end === script.length)) return undefined;
+  return script.sourceIdentities?.get(`${entry.start}:${entry.end}`);
 }
