@@ -115,7 +115,24 @@ score would make these guarantees harder to trace.
 The four new files have bounded, dated exceptions in
 [the exception file](../../.code-quality-exceptions.yaml). These are reviewed
 goal misses, not passing MI scores. They require human review under the
-repository policy. Function CRAP and the complete process must still be checked.
+repository policy. Review also retains two high maintainability findings on the
+new runtime and adapter, and three medium findings for aggregate complexity and
+runtime length, for the same ownership reasons. No function has more than eight
+decision paths. No baseline or threshold is changed.
+
+Verified unit coverage gives zero numeric CRAP goal misses for added or changed
+functions; the largest measured value is 12. Three callbacks classified as new
+have no measured share, but each has one path, which bounds CRAP to [1, 2].
+These are the existing local runtime close callback in `application.ts`, the
+hosted startup guard's close callback, and the SQL factory's returned close
+callback. The local callback's source is unchanged; the comparison still marks
+it new. The process reports unknown coverage honestly; the review checker can
+prove the numeric goals from the bounds. No CRAP exception is needed.
+
+The architecture report retains an existing unresolved CSS import on both
+revisions. Its dependency-delta view is therefore incomplete. Manual comparison
+and the separate declared-owner checker cover the changed imports. The existing
+coarse community cycle is unchanged; no owner edge or owner cycle is added.
 
 The habit-hooks findings are retained with these reasons: the fourth hosted
 composition parameter is a separate lifetime resource, not an account input;
@@ -125,3 +142,42 @@ credentials, SQL outcome uncertainty, and work that outlives its caller.
 Existing comments retain their prior reasons. No snooze or lint threshold is
 changed. Manager review accepts the implementation and these reasons subject
 to complete-candidate checks and independent architect approval.
+
+## Contract, policy, and recovery review
+
+The public-surface check identifies `src/index.ts` and `src/app/fetch-tool.ts`
+because they import `application.ts`. Both files and their exported declarations
+are unchanged. `Application`, `ApplicationLogger`, routing, and tool contracts
+remain unchanged. `composeHostedApplication` gains an optional fourth resource
+for cleanup; `WorkOSApplicationParts` gains optional storage. Production hosted
+composition now owns this resource. Existing callers remain valid. Hosted close
+now preserves all cleanup failures in an `AggregateError`; the unchanged process
+owner still reports failure and enforces its shared shutdown deadline.
+
+The policy changes declare four exact import facts: `pg` for logging,
+`node:crypto` for logging and config, and `node:fs/promises` for config. The test
+policy adds the real PostgreSQL gate for affected storage source. These changes
+do not lower check thresholds or change review authority. The four dated MI
+exceptions require review; the candidate cannot approve its own exceptions.
+
+The new production dependency is pinned `pg` 8.23.1, maintained by the
+node-postgres project. Its matching types are a development dependency. The
+logging owner uses the driver directly for verified TLS and atomic SQL; no ORM
+or provider SDK is introduced. The lockfile also resolves the existing optional
+Better Auth PostgreSQL peer against this version.
+
+Admission, current WorkOS membership checks, and browser/MCP organization binding
+stay unchanged. Only trusted server code can call the settings store. Its SQL
+binds tenant and expected revision, while the restricted database role and
+private schema prevent browser API access. Configuration errors expose no
+credential values. Missing configuration leaves hosted storage unavailable and
+adds one safe startup diagnostic. Self-hosted startup does not load the adapter.
+
+The new deployment inputs and data are optional hosted configuration and one
+private settings table. No live migration is applied by this PR. An application
+rollback can stop use of the store while preserving its table and key for later
+recovery; do not drop shared-project objects or rotate away the only key. If
+owner setup fails, the migration transaction rolls back. Any later rollback of
+an applied schema requires the owner to stop dependent work and preserve its
+data first. The [owner runbook](admin-s2-01a-database-setup.md) keeps actual
+Supabase grants, TLS, capacity, backup/restore, and $0 rollout as S2-04 gates.
