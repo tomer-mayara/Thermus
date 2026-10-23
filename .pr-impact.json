@@ -9,13 +9,13 @@
     "component": true,
     "internalInterface": true,
     "sensitiveBehavior": true,
-    "dependencyRisk": false,
+    "dependencyRisk": true,
     "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "This stacked candidate includes S1-01 and S1-02. S1-01 retires POST /members/grants and its parser, domain operation, provider writer, and member controls. It introduces narrow identity session/profile and organization signup contracts, with unchanged package edges and resource lifetimes. S1-02 changes the hosted authorization guarantee to two customer roles: User permits product/MCP access, and Admin includes that access, both invitation roles, and the existing free billing read. Current active memberships and validated organization role catalogs decide access; default, retired, unknown, inactive, missing, and foreign grants cannot authorize it. Administration no longer accepts an MFA precondition or refusal. WorkOS settings, constructor, and composition contracts remove MFA inference options. Shared session and cookie formats remain compatible, but old inferred MFA values normalize to false on reads, refreshes, and organization selection. Member counts include each active product-authorized membership once. Callback state/PKCE, CSRF/origin checks, cookie verification, logout, outages, native invitation acceptance, and browser/MCP organization separation remain. Registry component responsibilities and member-read runtime diagrams reflect these contracts. Context, containers, deployment, source ownership, and provider boundaries stay the same. No provider setting, database, SDK dependency, new infrastructure, or legal bundle changes. The deployment verifier only drops the unused MFA setting; live tests now require an explicitly checked password-only provider configuration without changing it. Existing gates and approval rules remain. T2 Need architect is required for these observable access and session guarantees; internal contracts, sensitive paths, declarations, and retained quality findings also require human review. No new decision record was requested.",
+    "summary": "This stacked candidate includes S1-01 and S1-02. S1-01 retires POST /members/grants and its parser, domain operation, provider writer, and member controls. It introduces narrow identity session/profile and organization signup contracts, with unchanged package edges and resource lifetimes. S1-02 changes the hosted authorization guarantee to two customer roles: User permits product/MCP access, and Admin includes that access, both invitation roles, and the existing free billing read. Current active memberships and validated organization role catalogs decide access; default, retired, unknown, inactive, missing, and foreign grants cannot authorize it. Administration no longer accepts an MFA precondition or refusal. WorkOS settings, constructor, and composition contracts remove MFA inference options. Shared session and cookie formats remain compatible, but old inferred MFA values normalize to false on reads, refreshes, and organization selection. Member counts include each active product-authorized membership once. Callback state/PKCE, CSRF/origin checks, cookie verification, logout, outages, native invitation acceptance, and browser/MCP organization separation remain. Registry component responsibilities and member-read runtime diagrams reflect these contracts. Context, containers, deployment, source ownership, and provider boundaries stay the same. No provider setting, database, SDK dependency, new infrastructure, or legal bundle changes. The deployment verifier only drops the unused MFA setting; live tests now require an explicitly checked password-only provider configuration without changing it. Existing gates and approval rules remain. T2 Need architect is required for these observable access and session guarantees; internal contracts, sensitive paths, declarations, and retained quality findings also require human review. No new decision record was requested. The stack includes the shared metrics repair from PR #230. This increment also separates the existing required-setting password and legacy-session specifications without changing their behavior. Application boundaries and review thresholds remain unchanged.",
     "views": [
       "context",
       "containers",
@@ -44,7 +44,9 @@
       "test/acceptance/auth/hosted-workos-mfa-policy.test.ts",
       "test/acceptance/auth/hosted-workos-signup.test.ts",
       "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
-      "docs/implementation/pr-review-rules.yaml"
+      "docs/implementation/pr-review-rules.yaml",
+      "docs/implementation/ast-metrics-function-repair.md",
+      "test/acceptance/auth/hosted-workos-legacy-session.test.ts"
     ]
   }
 }

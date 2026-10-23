@@ -2035,15 +2035,19 @@ These are application-side cases, not live password or provider-setting proof.
 pnpm exec node --import tsx --test test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-admin-access.test.ts
 ```
 
-**Hosted WorkOS Optional and Required MFA contracts** (`test/acceptance/auth/hosted-workos-mfa-policy.test.ts`)
+**Hosted WorkOS Required MFA setting** (`test/acceptance/auth/hosted-workos-mfa-policy.test.ts`)
 
-These three offline acceptance cases verify the provider setting through normal hosted composition. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` serves it behind the real HTTP server on a loopback port. The Optional behavior is the default; only explicit Required settings can use the password-MFA contract. These cases passed in the final complete acceptance command.
+This offline acceptance case uses the normal hosted composition and a WorkOS API fake behind real loopback HTTP.
 
-[V] Omitted and explicit Optional policy give Password sessions no MFA evidence and refuse the members page
-[V] Explicit Required policy preserves positive administration behavior for the password-MFA contract
+[V] A retained Required provider setting does not turn a Password callback into MFA proof; the signed-in portal reports `mfaCompleted: false`
+
+**Hosted WorkOS retained legacy session** (`test/acceptance/auth/hosted-workos-legacy-session.test.ts`)
+
+[V] Reading, refreshing, and switching the organization of a retained cookie with inferred MFA proof keep the user signed in and remove the unsupported MFA proof
+[V] Read and refresh retain the selected organization; switching uses the newly selected organization
 
 ```sh
-npm run build && node --test dist/test/acceptance/auth/hosted-workos-mfa-policy.test.js
+npm run build && node --test dist/test/acceptance/auth/hosted-workos-mfa-policy.test.js dist/test/acceptance/auth/hosted-workos-legacy-session.test.js
 ```
 
 **Automatic slice Google onboarding** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts`)
