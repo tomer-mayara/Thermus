@@ -47,6 +47,8 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .expiry{font-size:13px;color:#B4BAC0;padding-top:8px}
 .invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
 .invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}
+.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
+.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}
 .site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}
 @media(max-width:860px){.members-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";max-width:650px;padding-top:32px}.header-content{gap:12px}nav{gap:20px}h1{font-size:40px}}
 @media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}nav{gap:12px}nav a{font-size:13px}.invite-card,.members-card{padding:20px}h1{font-size:36px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
