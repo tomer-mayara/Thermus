@@ -1,4 +1,9 @@
 # S1-05 implementation record
+Current validation: all seven Slice 1 branches are rebased onto the shared [metrics repair](ast-metrics-function-repair.md), [PR #230](https://github.com/tomer-mayara/Thermus/pull/230), above main `9b6f7cac13aba6084f771413714f6bbfba11dd7a`. The dated results below describe the earlier candidates and analyzer. Current SHA-bound checks, retained goals, and blockers are recorded in [PR #229](https://github.com/tomer-mayara/Thermus/pull/229) and each parent PR. Earlier passes do not certify a rebased commit. Each candidate needs its own compatible evidence.
+
+The repair restores complete native function inventory, exact metric/coverage source identity, and base-scoped Review. Small parent changes keep Members HTML/status/headers and test assertions intact. The owner chose to retain justified existing low-MI file goals and fix tool failures and new regressions. No threshold, baseline, or snooze was relaxed. Human architecture approval and the provider, legal, manual UI, and cutover holds remain separate from local quality validation.
+
+## Earlier implementation and verification record
 
 Status: offline journey implemented and local functional gates passed;
 quality and release holds remain. 23 October 2026.
