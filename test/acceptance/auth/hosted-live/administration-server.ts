@@ -160,17 +160,16 @@ export function describeAdministrationServerCases(run: LiveRun): void {
         membership_id: target.membershipId, revision: target.revision, role: 'user', action: 'revoke',
       } });
       const members = await shownPage(run, page, 'members');
-      const invitations = await shownPage(run, page, 'invitations');
       await shownPage(run, page, 'billing');
 
       assert.ok(pages.some((path) => path.startsWith('/password')), 'The Admin did not complete a password page.');
       assert.equal(pages.some((path) => path.startsWith('/mfa/')), false);
       assert.equal(session.mfaCompleted, false);
       assert.equal((await serverGet(page, 'portal/access')).status, 200);
-      assert.ok(labelsOf(invitations.forms).includes('Invite as User'));
-      assert.ok(labelsOf(invitations.forms).includes('Invite as Admin'));
+      assert.ok(labelsOf(members.forms).includes('Invite'));
+      assert.match(members.body, /type="radio" name="role" value="admin"/);
       assert.equal(answer.status, 404, answer.body);
-      assert.deepEqual(members.forms, []);
+      assert.ok(members.forms.every(({ action }) => action.includes('/invitations/')));
       assert.deepEqual(await membershipState(target.membershipId), before);
       assert.deepEqual(await changeRecordsOf(users['c-admin-only']), []);
       await page.context().close();
@@ -178,21 +177,21 @@ export function describeAdministrationServerCases(run: LiveRun): void {
   });
 
   describe('Hosted live gate (AUTH-08W): invitations of organization C at https://localhost:46443/ with WorkOS and AuthKit', () => {
-    test('Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, the invitations page shows each state with forms only for pending invitations, each change has its record, and no page or log line holds an invitation token or link', signInOptions, async (t) => {
+    test('Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link', signInOptions, async (t) => {
       const { organizationC, users, memberships } = await run.administrationFixtures();
       const actor = users['c-administrator'];
       const [inviteeUser, inviteeAdmin, inviteeRevoked] = [users['c-invitee-user'], users['c-invitee-admin'], users['c-invitee-revoked']];
       const { page } = await administrator();
-      const first = await shownPage(run, page, 'invitations');
-      const invite = (role: 'User' | 'Admin', email: string) => submit(page, formLabelled(first.forms, `Invite as ${role}`), { email });
+      const first = await shownPage(run, page, 'members');
+      const invite = (role: 'User' | 'Admin', email: string) => submit(page, formLabelled(first.forms, 'Invite'), { email, role: role.toLowerCase() });
 
       const sent = [await invite('User', inviteeUser.email), await invite('Admin', inviteeAdmin.email), await invite('User', inviteeUser.email)];
       const refused = [await invite('Admin', inviteeUser.email), await invite('User', actor.email)];
-      const pending = await shownPage(run, page, 'invitations');
+      const pending = await shownPage(run, page, 'members');
       const resent = await submit(page, formLabelled(pending.forms, `Resend the invitation to ${inviteeUser.email}`));
       const third = await invite('User', inviteeRevoked.email);
-      const revoked = await submitFrom(page, 'invitations', `Revoke the invitation to ${inviteeRevoked.email}`);
-      const after = await shownPage(run, page, 'invitations');
+      const revoked = await submitFrom(page, 'members', `Revoke the invitation to ${inviteeRevoked.email}`);
+      const after = await shownPage(run, page, 'members');
       const invitations = await invitationsInWorkOS(organizationC.id);
       const idOf = (invitee: LiveUser) => invitations.find(({ email }) => email === invitee.email)?.id ?? 'absent';
       const adminInvitee = await membershipState(memberships.inviteeAdminInC);
@@ -203,14 +202,14 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       t.diagnostic(`sends ${JSON.stringify(sent.map(({ status }) => status))}; refused sends ${JSON.stringify(refused.map(({ status }) => status))}; resend ${resent.status}; third send ${third.status}; revoke ${revoked.status}`);
       t.diagnostic(`WorkOS invitations: ${JSON.stringify(invitations.map(({ roleSlug, state }) => `${String(roleSlug)} ${state}`))}; membership of the Admin invitee: ${adminInvitee.status} ${JSON.stringify(adminInvitee.roles)}`);
 
-      for (const answer of [...sent, resent, third, revoked]) assertSeeOther(answer, 'invitations');
+      for (const answer of [...sent, resent, third, revoked]) assertSeeOther(answer, 'members');
       for (const answer of refused) assertNotice(answer, 409, addressInUse);
       assert.ok(pending.body.includes(`${inviteeUser.email}: User invitation, pending.`), 'The invitations page does not show the pending User invitation.');
       assert.ok(pending.body.includes(`${inviteeAdmin.email}: Admin invitation, pending.`), 'The invitations page does not show the pending Admin invitation.');
       assert.ok(pendingChanges.every((label) => labelsOf(pending.forms).includes(label)), `A pending invitation has no resend or revoke form: ${JSON.stringify(labelsOf(pending.forms))}`);
       assert.deepEqual([inviteeUser, inviteeAdmin, inviteeRevoked].map(({ email }) => invitations.filter((invitation) => invitation.email === email).length), [1, 1, 1]);
       assert.deepEqual([adminInvitee.status, adminInvitee.roles], ['pending', ['admin']]);
-      assert.ok(after.body.includes(`${inviteeRevoked.email}: User invitation, revoked.`), 'The invitations page does not show the revoked invitation.');
+      assert.ok(!after.body.includes(`${inviteeRevoked.email}: User invitation`), 'Members still shows the revoked invitation.');
       assert.ok(labelsOf(after.forms).every((label) => !label.endsWith(inviteeRevoked.email)), 'The revoked invitation has a change form.');
       assert.deepEqual(records, [
         `invite user for ${inviteeUser.email}: applied`,
@@ -259,7 +258,6 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const userMembership = await membershipStateOfUser(inviteeUser.id, organizationC.id);
       const adminMembership = await membershipState(memberships.inviteeAdminInC);
       const { page } = await administrator();
-      const invitationsPage = await shownPage(run, page, 'invitations');
       const membersPage = await shownPage(run, page, 'members');
       const seats = await activeProductMembersInWorkOS(organizationC.id);
       const log = (await run.site()).log.lines;
@@ -279,10 +277,10 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       assert.deepEqual(JSON.parse(adminPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
       assert.equal(adminMembers.status, 200, 'The Admin invitee cannot open the members page.');
       for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(userVisit.page, path));
-      assert.ok(invitationsPage.body.includes(`${inviteeUser.email}: User invitation, accepted.`), 'The invitations page does not show the accepted User invitation.');
-      assert.ok(invitationsPage.body.includes(`${inviteeAdmin.email}: Admin invitation, accepted.`), 'The invitations page does not show the accepted Admin invitation.');
+      assert.ok(!membersPage.body.includes(`${inviteeUser.email}: User invitation`), 'Members still shows the accepted User invitation.');
+      assert.ok(!membersPage.body.includes(`${inviteeAdmin.email}: Admin invitation`), 'Members still shows the accepted Admin invitation.');
       assert.equal(seatCount(membersPage), seats);
-      assert.ok(!holdsAny([invitationsPage.body, membersPage.body, adminMembers.body, ...log], credentials), 'An invitation token or link reached a page or the operator log.');
+      assert.ok(!holdsAny([membersPage.body, adminMembers.body, ...log], credentials), 'An invitation token or link reached a page or the operator log.');
       await userVisit.page.context().close();
       await adminVisit.page.context().close();
     });

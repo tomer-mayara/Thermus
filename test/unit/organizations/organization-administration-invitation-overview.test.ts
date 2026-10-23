@@ -10,6 +10,17 @@ function overviewOf(overview: InvitationOverview | string): InvitationOverview {
 }
 
 describe('OrganizationAdministration invitation overview', () => {
+  test('Given a pending invitation with a provider expiry time, when an Admin reads the overview, then the expiry is retained without a token or link', async () => {
+    const { administration } = invitationsWith();
+
+    const overview = overviewOf(await administration.invitationOverview(actorOf('user-eve'), 'org-a'));
+
+    assert.deepEqual(overview.invitations[0], {
+      invitationId: 'invitation-1', email: 'pending.user@example.com', role: 'user', state: 'pending',
+      expiresAt: '2099-01-01T00:00:00.000Z', changes: ['resend', 'revoke'],
+    });
+  });
+
   test('Given invitations in each state on several pages, with one repeated, when an Admin asks for the overview, then it reads each state explicitly, lists each invitation of the organization once with its state, offers changes only for pending invitations of its authority, and copies no invitation token', async () => {
     const { directory, administration } = invitationsWith();
     directory.invitationPageLayout = (invitations) => [invitations.slice(0, 3), invitations.slice(2)];

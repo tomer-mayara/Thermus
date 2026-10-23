@@ -115,13 +115,14 @@ export function listenerTransport(listenUrl: URL): BrowserTransport {
   };
 }
 
-// Reads each form of a page, with its hidden fields and its button text. The pages write each element on one line.
+// Reads the submitted hidden fields and checked radios, with the button text. Visible fields are filled by the caller.
 export function formsIn(html: string): PageForm[] {
   const forms = html.matchAll(/<form method="post" action="([^"]*)">([\s\S]*?)<\/form>/g);
   return [...forms].map(([, action = '', content = '']) => ({
     action: decodeHtml(action),
-    fields: Object.fromEntries([...content.matchAll(/<input type="hidden" name="([^"]*)" value="([^"]*)">/g)]
-      .map(([, name = '', value = '']) => [decodeHtml(name), decodeHtml(value)])),
+    fields: Object.fromEntries([...content.matchAll(/<input type="(hidden|radio)" name="([^"]*)" value="([^"]*)"([^>]*)>/g)]
+      .filter(([, type, , , attributes = '']) => type === 'hidden' || /\bchecked\b/.test(attributes))
+      .map(([, , name = '', value = '']) => [decodeHtml(name), decodeHtml(value)])),
     label: decodeHtml(/<button type="submit">([^<]*)<\/button>/.exec(content)?.[1] ?? ''),
   }));
 }

@@ -44,9 +44,9 @@ describe('WorkOSOrganizations member pages', () => {
       { method: 'getUser', input: 'user_03CAROL' },
     ]);
     assert.deepEqual(page.items.map(({ revision: _revision, ...member }) => member), [
-      { membershipId: 'om_01ALICE', organizationId: acme, email: 'alice@example.com', status: 'active', grants: [{ role: 'user', permissions: ['product:access'] }, { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
-      { membershipId: 'om_02BOB', organizationId: acme, email: 'bob@example.com', status: 'inactive', grants: [{ role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
-      { membershipId: 'om_03CAROL', organizationId: acme, email: 'carol@example.com', status: 'pending', grants: [{ role: 'user', permissions: ['product:access'] }] },
+      { membershipId: 'om_01ALICE', subject: 'user_01ALICE', organizationId: acme, email: 'alice@example.com', status: 'active', grants: [{ role: 'user', permissions: ['product:access'] }, { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
+      { membershipId: 'om_02BOB', subject: 'user_02BOB', organizationId: acme, email: 'bob@example.com', status: 'inactive', grants: [{ role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
+      { membershipId: 'om_03CAROL', subject: 'user_03CAROL', organizationId: acme, email: 'carol@example.com', status: 'pending', grants: [{ role: 'user', permissions: ['product:access'] }] },
     ]);
     assert.equal(page.next, 'om_03CAROL');
     assert.ok(Object.isFrozen(page) && Object.isFrozen(page.items));
@@ -151,7 +151,7 @@ describe('WorkOSOrganizations member', () => {
 
     assert.ok(member !== undefined);
     const { revision, ...rest } = member;
-    assert.deepEqual(rest, { membershipId: 'om_05GLOBEX', organizationId: globex, email: 'alice@example.com', status: 'active', grants: [{ role: 'super-admin', permissions: [] }] });
+    assert.deepEqual(rest, { membershipId: 'om_05GLOBEX', subject: 'user_01ALICE', organizationId: globex, email: 'alice@example.com', status: 'active', grants: [{ role: 'super-admin', permissions: [] }] });
     assert.match(revision, /^[A-Za-z0-9_-]{43}$/);
     assert.ok(Object.isFrozen(member) && Object.isFrozen(member.grants));
     assert.deepEqual(double.calls, [

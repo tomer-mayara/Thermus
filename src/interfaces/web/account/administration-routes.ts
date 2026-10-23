@@ -1,13 +1,13 @@
 import type { RequestContext } from '../../../accounts/identity/access-context.ts';
-import type { ChangeResult } from '../../../accounts/organizations/change-records.ts';
+import { UnconfirmedChangeError, type ChangeResult } from '../../../accounts/organizations/change-records.ts';
 import type {
   Actor,
   AdministrationRefusal,
   OrganizationAdministration,
 } from '../../../accounts/organizations/organization-administration.ts';
 import { invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
-import { accessDeniedPage, noticePage, seeOther, type NoticeName } from './account-pages.ts';
-import { billingPage, invitationsPage, membersPage } from './administration-pages.ts';
+import { accessDeniedPage, noticePage, seeOther, unconfirmedInvitationPage, type NoticeName } from './account-pages.ts';
+import { billingPage, membersPage } from './administration-pages.ts';
 import type { SignedInBrowserSession } from '../../../accounts/identity/browser-session.ts';
 
 export type AdministrationService = Pick<
@@ -35,10 +35,10 @@ type ScopedRoute = (request: Request, scope: AdministrationScope) => Promise<Res
 interface ChangeRoute<Fields extends { readonly organizationId: string }> {
   readonly parse: (form: URLSearchParams, csrfToken: string) => Fields | FormRefusal;
   readonly change: (actor: Actor, fields: Fields) => Promise<ChangeResult>;
-  readonly pageAfterChange: string;
 }
 
 interface AdministrationPaths {
+  readonly product: string;
   readonly members: string;
   readonly invitations: string;
   readonly send: string;
@@ -71,6 +71,7 @@ export class AdministrationRoutes {
     this.publicOrigin = new URL(options.publicBaseUrl).origin;
     const pathOf = (relative: string) => new URL(relative, options.publicBaseUrl).pathname;
     this.paths = {
+      product: pathOf(''),
       members: pathOf('members'),
       invitations: pathOf('invitations'),
       send: pathOf('invitations/send'),
@@ -101,19 +102,20 @@ export class AdministrationRoutes {
   }
 
   private membersPage(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.page(request, () => this.organizations.memberOverview(scope.actor, scope.organizationId), (overview) => membersPage({
-      overview,
-      invitationsPage: this.paths.invitations,
+    return this.page(request, async () => {
+      const members = await this.organizations.memberOverview(scope.actor, scope.organizationId);
+      if (typeof members === 'string') return members;
+      const invitations = await this.organizations.invitationOverview(scope.actor, scope.organizationId);
+      return typeof invitations === 'string' ? invitations : { members, invitations };
+    }, (overview) => membersPage({
+      ...overview, subject: scope.actor.user.subject, csrfToken: scope.csrfToken,
+      actions: { send: this.paths.send, resend: this.paths.resend, revoke: this.paths.revoke },
+      navigation: { product: this.paths.product, members: this.paths.members, organizations: this.organizationsPage },
     }));
   }
 
   private invitationsPage(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.page(request, () => this.organizations.invitationOverview(scope.actor, scope.organizationId), (overview) => invitationsPage({
-      overview,
-      csrfToken: scope.csrfToken,
-      actions: { send: this.paths.send, resend: this.paths.resend, revoke: this.paths.revoke },
-      membersPage: this.paths.members,
-    }));
+    return this.page(request, () => this.organizations.memberOverview(scope.actor, scope.organizationId), () => seeOther(new URL(this.paths.members, this.publicOrigin).href));
   }
 
   private billingPage(request: Request, scope: AdministrationScope): Promise<Response> {
@@ -121,15 +123,15 @@ export class AdministrationRoutes {
   }
 
   private sendInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationIn, change: (actor, fields) => this.organizations.sendInvitation(actor, fields), pageAfterChange: this.paths.invitations });
+    return this.changeOnPost(request, scope, { parse: invitationIn, change: (actor, fields) => this.organizations.sendInvitation(actor, fields) });
   }
 
   private resendInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.resendInvitation(actor, fields), pageAfterChange: this.paths.invitations });
+    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.resendInvitation(actor, fields) });
   }
 
   private revokeInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields), pageAfterChange: this.paths.invitations });
+    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields) });
   }
 
   private async page<Overview extends object>(request: Request, read: () => Promise<Overview | AdministrationRefusal>, render: (overview: Overview) => Response): Promise<Response> {
@@ -149,8 +151,14 @@ export class AdministrationRoutes {
     const fields = typeof form === 'string' ? form : route.parse(form, scope.csrfToken);
     if (typeof fields === 'string') return noticePage(fields);
     if (fields.organizationId !== scope.organizationId) return noticePage('changeStale');
-    const outcome = await route.change(scope.actor, fields);
-    if (outcome === 'applied' || outcome === 'unchanged') return seeOther(new URL(route.pageAfterChange, this.publicOrigin).href);
+    let outcome: ChangeResult;
+    try {
+      outcome = await route.change(scope.actor, fields);
+    } catch (cause) {
+      if (cause instanceof UnconfirmedChangeError) return unconfirmedInvitationPage(this.paths.members);
+      throw cause;
+    }
+    if (outcome === 'applied' || outcome === 'unchanged') return seeOther(new URL(this.paths.members, this.publicOrigin).href);
     return noticePage(REFUSAL_NOTICES[outcome]);
   }
 }

@@ -70,6 +70,17 @@ export function noticePage(name: NoticeName, headers: Readonly<Record<string, st
   return noticeResponse(NOTICES[name], [], headers);
 }
 
+export function unconfirmedInvitationPage(membersPage: string): Response {
+  return noticeResponse({
+    status: 503,
+    title: 'Invitation change not confirmed',
+    paragraphs: [
+      'The invitation change is not confirmed. It may have taken effect. Check the current status before making another change.',
+      'A pending invitation does not confirm email delivery.',
+    ],
+  }, [`<p><a href="${escapeHtml(membersPage)}">Check status</a></p>`]);
+}
+
 export function noOrganizationPage(signupUrl?: string): Response {
   if (signupUrl === undefined) return noticePage('noOrganization');
   return noticeResponse({

@@ -57,6 +57,7 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
   if (answer.status === 200) {
     const access = productAccess(await answer.json());
     status.textContent = `You have product access in organization ${access.organizationId}. Roles: ${access.roles.join(', ')}.`;
+    showWorkspaceNavigation(container, access.roles);
     showConnection(container, access);
     status.removeAttribute('role');
     const details = container.ownerDocument.createElement('details');
@@ -85,6 +86,16 @@ function productAccess(body: unknown): ProductAccess {
   const endpoint = new URL(mcpUrl);
   if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) throw new Error('The MCP endpoint is not valid');
   return { organizationId, organizationName, roles: roles.map(String), plan, mcpUrl };
+}
+
+function showWorkspaceNavigation(container: HTMLElement, roles: readonly string[]): void {
+  const navigation = container.ownerDocument.createElement('nav');
+  navigation.className = 'workspace-navigation';
+  navigation.setAttribute('aria-label', 'Workspace');
+  navigation.innerHTML = `<a href="./" aria-current="page">Product / Connect</a>
+    ${roles.includes('admin') ? '<a href="members">Members</a>' : ''}
+    <a href="organizations">Switch workspace</a>`;
+  container.querySelector('.auth-container')?.prepend(navigation);
 }
 
 function showConnection(container: HTMLElement, access: ProductAccess): void {

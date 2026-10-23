@@ -240,10 +240,10 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   // A WorkOS membership has no email, and the user list of an organization gives only the users with an active
   // membership. Thus each member read also reads its user.
   private async memberOf(record: MembershipRecord, organizationRoles: readonly RoleRecord[]): Promise<OrganizationMember> {
-    const { id: membershipId, organizationId, status } = record;
+    const { id: membershipId, userId: subject, organizationId, status } = record;
     const grants = grantsOfRoles(roleListOf(record), organizationRoles, organizationId);
     const { email } = await this.userManagement.getUser(record.userId);
-    return Object.freeze({ membershipId, organizationId, email, status, grants, revision: revisionOf(record) });
+    return Object.freeze({ membershipId, subject, organizationId, email, status, grants, revision: revisionOf(record) });
   }
 
   // The membership with this ID in any organization. A WorkOS 404 gives undefined.
@@ -331,7 +331,7 @@ function invitationStateOf(record: InvitationRecord, now: Date): InvitationState
 function invitationOf(record: InvitationRecord, organizationId: string, state: InvitationState): OrganizationInvitation {
   const role = record.roleSlug;
   if (!role) throw new Error('WorkOS answered an organization invitation without a role');
-  return Object.freeze({ invitationId: record.id, organizationId, email: record.email, role, state });
+  return Object.freeze({ invitationId: record.id, organizationId, email: record.email, role, state, expiresAt: record.expiresAt });
 }
 
 // WorkOS compares addresses without letter case.

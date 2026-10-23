@@ -24,14 +24,15 @@ describe('The hosted active product member count through the public routes, with
     assert.deepEqual(site.failures, []);
   });
 
-  test('Given a member page or an invitation page that fails to load, when the members page or the invitations page opens, then each gives the failure page without a partial number or list, and the operator gets the path and the cause', { timeout: 20_000 }, async (t) => {
+  test('Given a member page or an invitation page that fails to load, when Members opens, then each gives the failure page without a partial number or list, and the operator gets the path and the cause', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     site.directory.memberPageLayout = (members) => [members.slice(0, 2), new Error('member page 2 timed out'), members.slice(4)];
     site.directory.invitationPageLayout = () => [new Error('invitation page 1 timed out')];
     const otto = site.browserOf(userOf('user-otto', 'org-a'));
 
     const members = await otto.open('members');
-    const invitations = await otto.open('invitations');
+    site.directory.memberPageLayout = undefined;
+    const invitations = await otto.open('members');
 
     for (const answer of [members, invitations]) {
       assert.equal(answer.status, 500);
@@ -41,7 +42,7 @@ describe('The hosted active product member count through the public routes, with
     assert.equal(seatsIn(members.body), undefined);
     assert.deepEqual(site.failures.map(({ path, cause }) => `${path}: ${String(cause)}`), [
       '/team/members: Error: member page 2 timed out',
-      '/team/invitations: Error: invitation page 1 timed out',
+      '/team/members: Error: invitation page 1 timed out',
     ]);
   });
 });

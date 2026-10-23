@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import type { ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
+import { UnconfirmedChangeError, type ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
+import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { ann, assertPage, postForm } from './fixtures/account-routes-fixtures.ts';
 import { annToken, changePost, serveAdministration, sessionCookies, validChanges } from './fixtures/administration-routes-fixtures.ts';
 
@@ -27,7 +28,7 @@ describe('HostedAccountRoutes invitation changes', () => {
         const response = await routes.handle(changePost(path, fields, { 'X-Organization-Id': 'org-b' }));
 
         assert.equal(response.status, 303);
-        assert.equal(response.headers.get('Location'), `https://thermus.example/invitations`);
+        assert.equal(response.headers.get('Location'), `https://thermus.example/members`);
         assert.equal(response.headers.get('Cache-Control'), 'no-store');
         assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
         assert.equal(await response.text(), '');
@@ -86,6 +87,21 @@ describe('HostedAccountRoutes invitation changes', () => {
     }
 
     assert.deepEqual(failures, changes.map(([, { path }]) => ({ path, cause: outage })));
+  });
+
+  test('Given an unconfirmed write, when any invitation form is posted, then the only next action is a safe status read', async () => {
+    const { routes, failures } = serveAdministration({ change: new UnconfirmedChangeError(new Error('secret-token provider detail')) });
+    for (const [, { path, fields }] of changes) {
+      const response = await routes.handle(changePost(path, fields));
+      const body = await response.text();
+      assert.equal(response.status, 503);
+      assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
+      assert.match(body, /href="\/members">Check status<\/a>/);
+      assert.match(body, /A pending invitation does not confirm email delivery/);
+      assert.deepEqual(formsIn(body), []);
+      assert.doesNotMatch(body, /secret-token|Nothing changed|Try again|Retry/);
+    }
+    assert.deepEqual(failures, []);
   });
 
   test('Given a signed-out session or access that the resolver denies, when a change is posted, then it gets 401 or 403 before any form check, and the service is not asked', async () => {

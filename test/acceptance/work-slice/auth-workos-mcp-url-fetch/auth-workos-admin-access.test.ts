@@ -25,10 +25,13 @@ for (const method of ['Password', 'GoogleOAuth']) {
     const access = await browser.open('portal/access', { Accept: 'application/json' });
     assert.equal(JSON.parse(session.body).mfaCompleted, false);
     assert.equal(access.status, 200);
-    for (const path of ['members', 'invitations', 'billing']) {
+    for (const path of ['members', 'billing']) {
       const allowed = await browser.open(path);
       assert.equal(allowed.status, 200, path);
     }
+    const invitations = await browser.open('invitations');
+    assert.equal(invitations.status, 303);
+    assert.equal(invitations.location?.pathname, '/members');
     const before = world.memberships;
     const deniedChange = await browser.post('members/grants', {
       organization_id: organizationId, membership_id: world.membershipId(user, organizationId), revision: 'irrelevant',

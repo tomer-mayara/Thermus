@@ -138,6 +138,9 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
   async sendInvitation(request: InvitationRequest): Promise<InvitationSendResult> {
     this.invitationChanges.push(`send ${request.organizationId} ${request.role} ${request.email}`);
     return this.answer('sendInvitation', () => {
+      const sameAddress = (record: { readonly organizationId: string; readonly email: string }) => record.organizationId === request.organizationId && record.email.toLowerCase() === request.email.toLowerCase();
+      if (this.members.some((member) => member.status === 'active' && sameAddress(member))
+        || this.invitations.some((invitation) => invitation.state === 'pending' && sameAddress(invitation))) return { outcome: 'address-in-use' };
       this.invitations.push(this.invitationOf(request));
       return { outcome: 'applied' };
     });
@@ -166,6 +169,7 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
 
   private invitationOf(seed: InvitationSeed): InvitationRecord {
     const invitationId = seed.invitationId ?? `invitation-${this.invitations.length + 1}`;
-    return { invitationId, organizationId: seed.organizationId, email: seed.email, role: seed.role, state: seed.state ?? 'pending', token: `${invitationId}-secret-token` };
+    const expiresAt = seed.expiresAt ?? '2099-01-01T00:00:00.000Z';
+    return { invitationId, organizationId: seed.organizationId, email: seed.email, role: seed.role, state: seed.state ?? 'pending', expiresAt, token: `${invitationId}-secret-token` };
   }
 }

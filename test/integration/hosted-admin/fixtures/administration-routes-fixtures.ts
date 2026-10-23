@@ -6,21 +6,14 @@ import type { AdministrationSetup } from './organization-administration-double.t
 export const sessionCookies = ['session=refreshed; Path=/; Secure; HttpOnly; SameSite=Lax'];
 export const annToken = 'csrf-token-of-user-ann';
 export const annContext = contextOf(ann, [userGrant, adminGrant], adminGrant.permissions);
-export const formPageHeaders = {
-  'content-type': 'text/html; charset=utf-8',
-  'cache-control': 'no-store',
-  'content-security-policy': "default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
-  'x-content-type-options': 'nosniff',
-  'x-frame-options': 'DENY',
-};
-
 export const acmeMembers: MemberOverview = {
   organizationId: 'org-a',
+  organizationName: 'Acme',
   activeUserSeats: 1,
   members: [
-    { membershipId: 'membership-ann', email: 'ann@example.com', status: 'active', roles: ['user', 'admin'], revision: 'r7' },
-    { membershipId: 'membership-dora', email: 'dora@example.com', status: 'active', roles: [], revision: 'r2' },
-    { membershipId: 'membership-ivy', email: 'ivy@example.com', status: 'inactive', roles: ['user'], revision: 'r3' },
+    { membershipId: 'membership-ann', subject: 'user-ann', email: 'ann@example.com', status: 'active', roles: ['user', 'admin'], revision: 'r7' },
+    { membershipId: 'membership-dora', subject: 'user-dora', email: 'dora@example.com', status: 'active', roles: [], revision: 'r2' },
+    { membershipId: 'membership-ivy', subject: 'user-ivy', email: 'ivy@example.com', status: 'inactive', roles: ['user'], revision: 'r3' },
   ],
 };
 
@@ -29,9 +22,9 @@ export const acmeInvitations: InvitationOverview = {
   invitableRoles: ['user', 'admin'],
   identityPolicy: 'invited-address',
   invitations: [
-    { invitationId: 'invitation-1', email: 'new@example.com', role: 'user', state: 'pending', changes: ['resend', 'revoke'] },
-    { invitationId: 'invitation-2', email: 'boss@example.com', role: 'admin', state: 'pending', changes: ['resend', 'revoke'] },
-    { invitationId: 'invitation-3', email: 'old@example.com', role: 'user', state: 'expired', changes: [] },
+    { invitationId: 'invitation-1', expiresAt: '2099-01-01T00:00:00.000Z', email: 'new@example.com', role: 'user', state: 'pending', changes: ['resend', 'revoke'] },
+    { invitationId: 'invitation-2', expiresAt: '2099-01-02T00:00:00.000Z', email: 'boss@example.com', role: 'admin', state: 'pending', changes: ['resend', 'revoke'] },
+    { invitationId: 'invitation-3', expiresAt: '2020-01-01T00:00:00.000Z', email: 'old@example.com', role: 'user', state: 'expired', changes: [] },
   ],
 };
 

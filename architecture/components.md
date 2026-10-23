@@ -434,8 +434,8 @@ sequenceDiagram
       Routes-->>Browser: Access notice with cookie effects
     else Access allowed
       Provider-->>Routes: Trusted organization context
-      Routes->>Admin: memberOverview(actor, organization)
-      Admin->>Provider: Read current memberships and managed roles
+      Routes->>Admin: Member and invitation overviews, in order
+      Admin->>Provider: Recheck current Admin before each overview
       Provider->>Remote: Read current membership / role state
       Remote-->>Provider: Current facts
       Provider-->>Admin: Memberships and roles
@@ -443,12 +443,12 @@ sequenceDiagram
         Admin-->>Routes: Denied
         Routes-->>Browser: Refusal page with cookie effects
       else Actor authorized
-        Admin->>Provider: Read member overview
-        Provider->>Remote: Read memberships, roles and users
-        Remote-->>Provider: Member data
-        Provider-->>Admin: Member overview data
-        Admin-->>Routes: Authorized overview
-        Routes-->>Browser: HTML member overview with cookie effects
+        Admin->>Provider: Read each complete overview
+        Provider->>Remote: Read member data, then invitation data
+        Remote-->>Provider: Current data pages
+        Provider-->>Admin: Safe overview fields
+        Admin-->>Routes: Authorized complete overviews
+        Routes-->>Browser: Combined Members HTML with cookie effects
       end
     end
   end
@@ -461,9 +461,16 @@ session authentication follows the outer failure handler instead.
 [Administration routes](../src/interfaces/web/account/administration-routes.ts)
 permit GET/HEAD reads without a CSRF check.
 [OrganizationAdministration](../src/accounts/organizations/organization-administration.ts)
-checks current Admin authority before reading the overview. The
+checks current Admin authority separately before each overview. The
 [shared directory](../src/accounts/providers/workos/workos-organizations.ts)
-reads current remote state. Privileged mutations and their recording rules
+reads current remote state with bounded complete pagination. The route renders
+only after both reads succeed; a denial or failed read cannot produce a partial
+page. These are separate remote reads, not a transaction. The member overview
+includes the organization name from the same current membership read that
+authorizes it. Trusted member subjects supply the You label; safe invitation
+fields supply expiry. The page shows only active members and pending invitations.
+The old `/invitations` page checks current authority and redirects to Members.
+Privileged mutations and their recording rules
 remain described under resource ownership and design choices below.
 The former POST `/members/grants` route is absent. A request with current account
 access reaches the existing 404 response after the session and access checks. The Members
@@ -475,6 +482,14 @@ grants give no access; invalid role catalogs fail closed. Browser sessions repor
 The member overview counts each active product-authorized membership once,
 including Admin alone, and labels the count Active product members. These access
 changes add no provider, process, datastore, or component boundary.
+
+The portal uses the current access response to show Product / Connect and
+workspace selection, plus Members for Admin. Link visibility gives no authority.
+Invitation POST routes retain origin, CSRF, selected-organization, current-role,
+and pending-target checks. A failure after a directory write starts raises the
+neutral `UnconfirmedChangeError` and keeps an unknown change record. The route
+returns a fixed notice with a read-only Check status link. It does not repeat the
+write, show its private cause, or claim that a pending read proves email delivery.
 
 ## Deployment view
 
