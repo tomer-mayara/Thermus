@@ -292,7 +292,7 @@ dependency_graph:
     - { from: http, to: system-logs, kind: type }
     - { from: cli, to: system-logs, kind: type }
     - { from: audit-logs, to: organizations, kind: type }
-    # 53 permitted owner edges on 2026-10-23; runtime includes public types.
+    # 54 permitted owner edges on 2026-10-23; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }

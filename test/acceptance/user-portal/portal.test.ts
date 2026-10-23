@@ -215,7 +215,7 @@ for (const role of ['admin', 'user']) {
     assert.equal(navigation.querySelector('a[aria-current="page"]')?.getAttribute('href'), './');
     assert.equal(navigation.querySelector('a[href="organizations"]')?.textContent, 'Switch workspace');
     assert.equal(navigation.querySelector('a[href="members"]')?.textContent ?? null, role === 'admin' ? 'Members' : null);
-    assert.equal(navigation.querySelector('a[href="logging"]')?.textContent ?? null, role === 'admin' ? 'Logging' : null);
+    assert.equal(navigation.querySelector('a[href="logging"]')?.textContent ?? null, role === 'admin' ? 'Audit logs' : null);
     assert.doesNotMatch(navigation.textContent ?? '', /Security|Remove|Change role|MFA/);
     assert.equal(document.querySelector('footer a[href="https://thermus.ai/privacy"]')?.textContent, 'Privacy Notice');
     assert.equal(document.querySelector('footer a[href="https://thermus.ai/terms"]')?.textContent, 'Terms of Service');

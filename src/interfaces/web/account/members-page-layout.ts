@@ -23,7 +23,7 @@ export function membersPageLayout(navigation: Navigation, content: string, optio
 <title>${escapeHtml(options.title)} · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>${MEMBERS_STYLE}</style></head>
 <body><a class="skip-link" href="#main-content">Skip to content</a>
 <header class="site-header"><div class="header-content"><a class="brand" href="${escapeHtml(navigation.product)}" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>
-<nav aria-label="Workspace"><a href="${escapeHtml(navigation.product)}">Product / Connect</a><a href="${escapeHtml(navigation.members)}" ${options.current === 'members' ? 'aria-current="page"' : ''}>Members</a>${navigation.logging === undefined ? '' : `<a href="${escapeHtml(navigation.logging)}" ${options.current === 'logging' ? 'aria-current="page"' : ''}>Logging</a>`}<a href="${escapeHtml(navigation.organizations)}">Switch workspace</a></nav></div></header>
+<nav aria-label="Workspace"><a href="${escapeHtml(navigation.product)}">Product / Connect</a><a href="${escapeHtml(navigation.members)}" ${options.current === 'members' ? 'aria-current="page"' : ''}>Members</a>${navigation.logging === undefined ? '' : `<a href="${escapeHtml(navigation.logging)}" ${options.current === 'logging' ? 'aria-current="page"' : ''}>Audit logs</a>`}<a href="${escapeHtml(navigation.organizations)}">Switch workspace</a></nav></div></header>
 <main id="main-content" class="members-layout${options.current === 'logging' ? ' logging-layout' : ''}">${content}</main><footer class="site-footer">Thermus AI Inc.</footer></body></html>`;
   return new Response(page, { status: 200, headers: memberHeaders });
 }

@@ -66,6 +66,6 @@ export class LoggingRoutes {
   }
 
   private unavailable(): Response {
-    return loggingNotice('Logging unavailable', 'Logging settings are unavailable. Read saved settings before making another change.', 503, this.paths.logging);
+    return loggingNotice('Audit logs unavailable', 'Audit logs settings are unavailable. Read saved settings before making another change.', 503, this.paths.logging);
   }
 }

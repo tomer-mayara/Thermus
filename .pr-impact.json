@@ -1,21 +1,21 @@
 {
   "version": 1,
   "classification": {
-    "container": false,
-    "external": false,
+    "container": true,
+    "external": true,
     "contract": true,
-    "deployment": false,
+    "deployment": true,
     "component": true,
     "internalInterface": true,
     "sensitiveBehavior": true,
-    "dependencyRisk": false,
+    "dependencyRisk": true,
     "policy": true,
     "crossCutting": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "S2-01b adds the native Audit logs settings read/Save contract for current Admins on PR239 and S2-01a. The settings service, credential encryption and endpoint validation belong only to src/logs/audit. SystemLog remains the distinct internal engineering diagnostic contract in src/logs/system; customer settings cannot configure or expose that stream. AuditLog retains only its named toolCompleted and administrationChanged methods and explicit projection without source file, line or stack fields. No production audit capture caller, sink wiring, sender or export is added here. Web resolves current trusted Admin access, tenant, origin and CSRF before bounded exact-form Save. The audit settings service exposes only token presence, uses AES-256-GCM with tenant binding and preserves ciphertext/revision for semantic no-ops. The SQL store retains atomic tenant/expected-revision authority. Unconfirmed native responses offer only a saved-state read; manual and late writes still face CAS, with no server/session write hold. App supplies the service and key within the existing optional hosted runtime. SQL schema, lifetime, WorkOS authority, MCP behavior, system logger configuration and deployment topology remain unchanged. Customer navigation and page names say Audit logs; /logging URLs remain stable. Endpoint checks cover syntax/literals, not future DNS/socket egress proof. Registry settings/collaboration views and owner prose are updated; web-to-audit type and node:net facts are declared while both system/audit dependency prohibitions stay intact. T2 is required for the browser/server contract and credentials. No live migration, paid resource or ADR is added.",
+    "summary": "The complete candidate against main includes S2-01a optional hosted PostgreSQL storage and PR239 system/audit ownership and typed event contracts. Those parent container, external dependency, deployment and component facts remain. The S2-01b architecture comparison uses its actual stack parent PR239. S2-01b adds the native Audit logs settings read/Save contract for current Admins on PR239 and S2-01a. The settings service, credential encryption and endpoint validation belong only to src/logs/audit. SystemLog remains the distinct internal engineering diagnostic contract in src/logs/system; customer settings cannot configure or expose that stream. AuditLog retains only its named toolCompleted and administrationChanged methods and explicit projection without source file, line or stack fields. No production audit capture caller, sink wiring, sender or export is added here. Web resolves current trusted Admin access, tenant, origin and CSRF before bounded exact-form Save. The audit settings service exposes only token presence, uses AES-256-GCM with tenant binding and preserves ciphertext/revision for semantic no-ops. The SQL store retains atomic tenant/expected-revision authority. Unconfirmed native responses offer only a saved-state read; manual and late writes still face CAS, with no server/session write hold. App supplies the service and key within the existing optional hosted runtime. SQL schema, lifetime, WorkOS authority, MCP behavior, system logger configuration and deployment topology remain unchanged. Customer navigation and page names say Audit logs; /logging URLs remain stable. Endpoint checks cover syntax/literals, not future DNS/socket egress proof. Registry settings/collaboration views and owner prose are updated; web-to-audit type and node:net facts are declared while both system/audit dependency prohibitions stay intact. T2 is required for the browser/server contract and credentials. No live migration, paid resource or ADR is added.",
     "views": [
       "context",
       "containers",
@@ -50,7 +50,27 @@
       "test/acceptance/logging/audit-log.test.ts",
       "test/unit/logging/audit-logger.test.ts",
       "docs/implementation/system-audit-log-separation.md",
-      "docs/design/organization-admin-plan.md"
+      "docs/design/organization-admin-plan.md",
+      "src/logs/audit/pg-destination-settings-store.ts",
+      "src/logs/audit/bounded-sql-runtime.ts",
+      "src/runtime/config/logging-storage-config.ts",
+      "src/app/hosted-workos-application.ts",
+      "sql/migrations/20261023211956_logging_destination_settings.sql",
+      "test/acceptance/logging/destination-settings.runtime.ts",
+      "test/acceptance/logging/hosted-storage-failure.runtime.ts",
+      "test/acceptance/logging/hosted-storage-startup.test.ts",
+      "test/integration/logging/destination-settings.runtime.ts",
+      "test/integration/auth/hosted-storage-lifecycle.test.ts",
+      "test/interface/logging/destination-settings-store.test.ts",
+      "test/unit/logging/bounded-sql-runtime.test.ts",
+      "test/unit/config/logging-storage-config.test.ts",
+      "docs/implementation/admin-s2-01a.md",
+      "docs/implementation/admin-s2-01a-database-setup.md",
+      "docs/implementation/test-gate-policy.md",
+      "docker/verify-hosted-runtime.mjs",
+      "src/logs/system/system-logger.ts",
+      "src/logs/system/console-system-logger.ts",
+      "src/logs/system/otel-system-logger.ts"
     ]
   }
 }

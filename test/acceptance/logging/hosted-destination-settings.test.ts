@@ -10,17 +10,22 @@ import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 const organizationId = 'org_LOGGING_A';
 const admin = { id: 'user_LOGGING_ADMIN', email: 'admin@example.com', firstName: 'Admin' };
 
-test('Given a password-authenticated current Admin, when the Admin opens Logging, then a protected Save form is available', async (t) => {
+test('Given a password-authenticated current Admin, when the Admin opens Audit logs, then a protected Save form is available', async (t) => {
   const { browser } = await loggingSite(t);
   const page = await browser.open('logging');
   assert.equal(page.status, 200);
+  assert.match(page.body, /<title>Audit logs · Thermus<\/title>/);
+  assert.match(page.body, /<h1>Audit logs<\/h1>/);
+  assert.match(page.body, /<h2[^>]*>Audit log destination<\/h2>/);
+  assert.match(page.body, /organization.s audit logs/);
+  assert.match(page.body, /Thermus system logs are internal/);
   assert.match(page.body, /Save/);
   const members = await browser.open('members');
-  assert.match(members.body, /href="[^"]*logging"[^>]*>Logging/);
+  assert.match(members.body, /href="[^"]*logging"[^>]*>Audit logs/);
 });
 
 for (const role of ['user', 'revoked-admin'] as const) {
-  test(`Given ${role} access, when a browser opens Logging or submits its Save operation, then current Admin access is required`, async (t) => {
+  test(`Given ${role} access, when a browser opens Audit logs or submits its Save operation, then current Admin access is required`, async (t) => {
     const site = await serveWorkOSSite(t, {
       organizations: [organizationId],
       setUp: (world) => {

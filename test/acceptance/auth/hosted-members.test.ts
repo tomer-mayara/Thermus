@@ -21,7 +21,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.equal(forms[0]?.fields.organization_id, 'org-a');
     assert.match(answer.body, /href="\/team\/">Product \/ Connect<\/a>/);
     assert.match(answer.body, /href="\/team\/members" aria-current="page">Members<\/a>/);
-    assert.match(answer.body, /href="\/team\/logging"[^>]*>Logging<\/a>/);
+    assert.match(answer.body, /href="\/team\/logging"[^>]*>Audit logs<\/a>/);
     assert.match(answer.body, /href="\/team\/organizations">Switch workspace<\/a>/);
     assert.match(answer.body, /eve@example\.com[\s\S]*?You/);
     assert.match(answer.body, /new@example\.com: User invitation, pending\./);

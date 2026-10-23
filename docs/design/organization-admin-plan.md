@@ -50,7 +50,8 @@ limited to Required-policy Password sign-in. The merged Slice 1 implementation
 now retires those grant writes and inferred MFA checks, uses User/Admin, and adds
 named creation plus the combined Members page. The ticket records give its
 checks and remaining release holds. The private audit destination store and bounded SQL runtime are implemented in
-S2-01a. Customer audit capture, settings UI, and export delivery remain planned. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
+S2-01a. The rebased S2-01b candidate adds the Audit logs settings UI and Save. Customer
+audit capture and export delivery remain planned; final candidate gates are pending. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 include URL origin/path and reason in operator output; Slice 2 must remove that
 content from operator completion records.
 
@@ -1471,7 +1472,8 @@ rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supaba
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
 another slice names a group. The S2-01a and S2-01b implementation records below
-state their completed scope and verification limits; later tickets stay planned.
+state their implementation scope and verification limits. S2-01b final gates
+are pending after its PR239 rebase; later tickets stay planned.
 
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
@@ -1588,7 +1590,9 @@ source/configuration completion does not pass that gate.
 
 #### S2-01b — Admin settings, encrypted credential, and atomic Save
 
-**Implementation record.** The stacked S2-01b candidate adds an Audit logs read/Save
+**Implementation record.** S2-01b is stacked on PR239, after PR237. PR239
+separates internal System logs (`src/logs/system/`) from customer Audit logs
+(`src/logs/audit/`). The rebased candidate adds an Audit logs read/Save
 service and native Admin page. The service protects the Bearer token with
 AES-256-GCM and tenant authenticated data, returns token presence only, and
 preserves ciphertext and revision for a semantic no-op. Web derives the tenant
@@ -1597,8 +1601,10 @@ The native unconfirmed response offers only a GET saved-state link, with no Save
 form or automatic retry. No server-wide or session write hold is added. Every
 later Save, including manual old-form submissions and late commits, remains
 subject to the store's atomic revision check. See [implementation and verification status](../implementation/admin-s2-01b.md).
-Collector delivery, optional Test, capture, MFA, and live database proof remain
-outside this ticket. The specifications and steps below record the required
+The existing `/logging` URLs remain. The settings service is wired to web, but
+AuditLogger's metadata-only named event methods remain unwired. They add no source
+file/line fields and do not forward to System logs. Collector delivery, optional
+Test, capture, an event viewer, MFA, and live database proof remain outside this ticket. The specifications and steps below record the required
 behavior; they do not claim that the complete candidate's gates have passed.
 
 **Acceptance specification first:**

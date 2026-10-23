@@ -128,7 +128,7 @@ test('Given a session failure, when the error appears, then the brand header and
 });
 
 for (const roles of [['admin'], ['user'], ['Admin'], ['superadmin']]) {
-  test(`Given current roles ${roles}, when navigation renders under a public base path, then only the exact Admin grant shows Members and Logging`, async () => {
+  test(`Given current roles ${roles}, when navigation renders under a public base path, then only the exact Admin grant shows Members and Audit logs`, async () => {
     const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({
       organizationId: 'org_01A', organizationName: 'Acme Labs', roles, plan: 'free', mcpUrl: 'https://thermus.example/team/mcp',
     }) });
@@ -139,6 +139,7 @@ for (const roles of [['admin'], ['user'], ['Admin'], ['superadmin']]) {
     const links = [...navigation.querySelectorAll('a')];
     assert.deepEqual(links.map((link) => link.getAttribute('href')), roles.includes('admin')
       ? ['./', 'members', 'logging', 'organizations'] : ['./', 'organizations']);
+    assert.equal(navigation.querySelector('a[href="logging"]')?.textContent ?? null, roles.includes('admin') ? 'Audit logs' : null);
     for (const link of links) assert.equal(link.getAttribute('tabindex'), null);
   });
 }

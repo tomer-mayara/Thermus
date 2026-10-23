@@ -115,7 +115,7 @@ roots, responsibilities, and public contracts.
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (settings runtime only) |
+| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (settings service and runtime) |
 | Local server addition | `better-auth` |
 | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
 | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
@@ -292,15 +292,15 @@ projection is implemented but has no production caller or exporter.
 ```mermaid
 flowchart TB
   subgraph logs_server["Container: Thermus Node server"]
-    logs_app["Component: app<br/>Compose system diagnostics<br/>Open hosted audit settings / TypeScript"]
+    logs_app["Component: app<br/>Compose system diagnostics<br/>Compose hosted audit settings / TypeScript"]
     logs_mcp["Component: mcp<br/>Tool completion diagnostics / TypeScript"]
     logs_system["Component: system-logs<br/>Internal diagnostics with caller location<br/>Console and OTel adapters / TypeScript"]
-    logs_audit["Component: audit-logs<br/>Explicit audit event projection - unwired<br/>Hosted destination settings / TypeScript and pg"]
+    logs_audit["Component: audit-logs<br/>Explicit audit event projection - unwired<br/>Destination service and store / TypeScript and pg"]
     logs_org["Component: organizations<br/>Administration change outcomes / TypeScript"]
   end
   logs_app -->|constructs and calls internal logger| logs_system
   logs_mcp -->|calls supplied SystemLog| logs_system
-  logs_app ==>|opens and closes hosted settings runtime| logs_audit
+  logs_app ==>|supplies settings service; owns runtime| logs_audit
   logs_audit -.->|ChangeOutcome type only| logs_org
 ```
 
@@ -323,8 +323,10 @@ no shared base class or forwarding path between these owners.
 The event API currently carries metadata only. S2-03a must add bounded, redacted
 MCP inputs and final public results before production capture. The customer
 feature will export to the organization's Collector configured by its Admins;
-there is no in-app event viewer in Slice 2. Storage and event projection share
-the audit owner, but neither calls the other in this foundation.
+there is no in-app event viewer in Slice 2. The browser calls the destination service in this same audit owner. That service
+and the metadata-only event projection do not call each other. Audit event
+capture, export, and a viewer are not implemented. Internal SystemLog wiring is
+unchanged; no Audit log event is forwarded to a System log sink.
 
 ### Selected C4 components: local authentication in the Node server
 

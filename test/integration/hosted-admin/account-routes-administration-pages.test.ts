@@ -162,7 +162,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.deepEqual([...new Set(formsIn(body).map(({ action }) => action))], ['/team/invitations/send', '/team/invitations/resend', '/team/invitations/revoke']);
     assert.match(body, /href="\/team\/">Product \/ Connect<\/a>/);
     assert.match(body, /href="\/team\/members" aria-current="page">Members<\/a>/);
-    assert.match(body, /href="\/team\/logging" >Logging<\/a>/);
+    assert.match(body, /href="\/team\/logging" >Audit logs<\/a>/);
     assert.match(body, /href="\/team\/organizations">Switch workspace<\/a>/);
     assert.equal((await routes.handle(accountRequest('/team/invitations', 'session=ann'))).headers.get('Location'), 'https://thermus.example/team/members');
   });

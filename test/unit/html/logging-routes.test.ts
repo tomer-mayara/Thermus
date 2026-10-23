@@ -13,10 +13,13 @@ function fixture() {
   const request = (fields: Record<string, string> = {}, origin = 'https://example.test') => new Request('https://example.test/nested/logging/save', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ csrf_token: 'csrf', organization_id: 'trusted:a', expected_revision: '', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', ...fields }) });
   return { routes, writes, request };
 }
-test('Given a password Admin, when Logging is read, then the disabled native form has no stored token', async () => {
+test('Given a password Admin, when Audit logs is read, then the disabled native form has no stored token', async () => {
   const { routes } = fixture();
   const response = await routes.handlerFor('/nested/logging')!(new Request('https://example.test/nested/logging'), session, context);
   const html = await response.text();
+  assert.match(html, /<title>Audit logs · Thermus<\/title>/);
+  assert.match(html, /<h1>Audit logs<\/h1>/);
+  assert.match(html, /Audit log destination/);
   assert.equal(response.status, 200); assert.match(html, /name="token"/); assert.match(html, /name="expected_revision"/); assert.doesNotMatch(html, /name="enabled"[^>]*checked/);
 });
 test('Given a valid form, when Save runs, then only the trusted tenant and settings reach the service', async () => {
@@ -30,7 +33,7 @@ test('Given a forged, stale or extra-field form, when Save runs, then there is n
     assert.ok((await routes.handlerFor('/nested/logging/save')!(request(fields), session, context)).status >= 400); assert.deepEqual(writes, []);
   }
 });
-test('Given removed Admin permission, when Logging is read or saved, then no settings are returned or changed', async () => {
+test('Given removed Admin permission, when Audit logs is read or saved, then no settings are returned or changed', async () => {
   const { routes, request, writes } = fixture();
   assert.equal((await routes.handlerFor('/nested/logging/save')!(request(), session, { ...context, permissions: [] })).status, 403); assert.deepEqual(writes, []);
 });
@@ -43,14 +46,17 @@ test('Given an unconfirmed or throwing Save, when the browser gets its answer, t
     assert.equal(response.status, 503); assert.match(html, /unconfirmed/i); assert.match(html, /href="\/nested\/logging"/); assert.doesNotMatch(html, /<form|secret-token/); assert.equal(response.headers.get('Cache-Control'), 'no-store');
   }
 });
-test('Given an unavailable or throwing read, when Logging opens, then its safe page contains no cause or settings', async () => {
+test('Given an unavailable or throwing read, when Audit logs opens, then its safe page contains no cause or settings', async () => {
   for (const read of [async () => ({ status: 'unavailable' as const }), async () => { throw new Error('https://secret:credential@bad.example'); }]) {
     const routes = new LoggingRoutes({ publicBaseUrl: 'https://example.test/', organizationsPage: '/organizations', service: { read, save: async () => ({ status: 'unavailable' }) } });
     const response = await routes.handlerFor('/logging')!(new Request('https://example.test/logging'), session, context);
-    assert.equal(response.status, 503); assert.doesNotMatch(await response.text(), /secret|credential|bad.example|<form/);
+    const html = await response.text();
+    assert.match(html, /Audit logs unavailable/);
+    assert.match(html, /Audit logs settings are unavailable/);
+    assert.equal(response.status, 503); assert.doesNotMatch(html, /secret|credential|bad.example|<form/);
   }
 });
-test('Given a hostile saved endpoint, when Logging renders, then values are escaped and the saved token stays write-only', async () => {
+test('Given a hostile saved endpoint, when Audit logs renders, then values are escaped and the saved token stays write-only', async () => {
   const routes = new LoggingRoutes({ publicBaseUrl: 'https://example.test/', organizationsPage: '/organizations', service: { read: async () => ({ status: 'found', settings: { ...empty, revision: 'r1', endpoint: '\"><script>bad</script>', auth: 'bearer', tokenPresent: true } }), save: async () => ({ status: 'unavailable' }) } });
   const response = await routes.handlerFor('/logging')!(new Request('https://example.test/logging'), session, context);
   const html = await response.text();
