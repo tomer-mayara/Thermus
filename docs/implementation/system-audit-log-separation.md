@@ -1,8 +1,10 @@
 # System and audit log separation review
 
 Review scope: the log-separation candidate against parent S2-01a commit
-`82f3d6049a23fe10fa9827379fd48863b584dbe3` (PR #237). The manager must refresh
-the final candidate SHA, check results, and review tier before Ready.
+`82f3d6049a23fe10fa9827379fd48863b584dbe3` (PR #237). The PR description and
+local review artifacts bind these results to the final committed candidate.
+The complete-candidate policy and metrics comparison uses main at
+`bb19a9887f3e58776278e516cce9e7aa18efee5c`, so it also includes parent S2-01a.
 
 ## Implemented scope and limits
 
@@ -26,7 +28,7 @@ Save/Test UI, and an in-app log viewer do not ship in this change. See the
 
 ## Public contracts and architecture
 
-The preliminary checker identifies `src/index.ts` and its imported application
+The complete-candidate checker identifies `src/index.ts` and its imported application
 boundary, `src/app/fetch-tool.ts`, and the new SystemLog/AuditLog contracts.
 SystemLog replaces local structural logger declarations. Its `error(unknown)`
 widens the old application, MCP, and HTTP declaration from `string`; the concrete
@@ -86,12 +88,27 @@ on system output, nested field projection, and sink failure isolation.
 The full ordinary suite passed: 4,239 backend tests and 49 portal tests, with
 zero failures, cancellations, skips, or todo cases. `npm run typecheck` and
 `npm run build:user-portal` also passed. `npm run build:hosted` passed, including
-its 13 renderer checks. Container gates, the final metrics process, and CRAP
-assessment are pending.
+its 13 renderer checks. The self-hosted image gate passed 11 tests. The first
+Linux AMD64 hosted-image build timed out during startup of the existing
+`/session` shutdown case, before
+its SIGTERM assertion. The full host suite and host build passed that case. The
+failed build log is retained. The complete image retry passed all seven checks,
+including all 119 build-time acceptance tests and the same startup case. The
+source, timeout, and assertions were unchanged. No other suite ran in this
+worktree during the retry; another workspace shared the local Docker builder.
+The cause of the first startup timeout is not proved.
+
+Hosted-live is not selected: identity, membership, invitation, and authentication
+behavior stay the same. This change replaces their diagnostic type/import only.
+The real internal OTel/Axiom interface check passed. Local PostgreSQL results do
+not prove a deployed Supabase migration, grants, or backup/restore. Those remain
+the owner rollout gates in the plan. Later commits change prose only; the local
+input-match record verifies that the tested source, tests, and build inputs stay
+identical to the final candidate.
 
 ## Quality review
 
-The available head snapshot gives AuditLogger MI **88.19**, above the 85 goal.
+The head snapshot gives AuditLogger MI **88.19**, above the 85 goal.
 Contract-only files have no executable MI. Changed or moved files below 85 are:
 
 | Files | Head MI | Retained reason |
@@ -106,8 +123,35 @@ Contract-only files have no executable MI. Changed or moved files below 85 are:
 
 These are reasons to retain reviewed code, not claims that the numeric goal
 passes. The parent MI exceptions move with their source paths and keep their
-bounds and expiry dates. The final process must determine applicable findings
-against its pinned base. No final CRAP score or coverage claim is made here.
+bounds and expiry dates. All four metrics process sections completed against
+main base `bb19a988`.
+Delta and Review report goal misses, CRAP reports unchanged-function misses,
+and Architecture passed. These are completed assessments, not tool failures.
+
+The five high MI findings are the two parent SQL classes and three moved system
+logger classes listed above. Retain them for those stated ownership reasons.
+The three medium aggregate complexity/length findings concern application
+composition and the bounded SQL runtime; those responsibilities and control flow
+are preserved from the parent. A low coupling finding in HTTP server rises to 11
+because it now imports the SystemLog type. Keep that explicit boundary instead of
+an anonymous duplicate. No baseline is refreshed.
+
+Every new or changed function meets its numeric CRAP goal. AuditLogger methods
+have 100% unit coverage and scores at most 4. The largest changed score is 20
+(`src/index.ts#run`, four paths, zero unit coverage), below its 30 goal. The full
+ordinary and container gates exercise this process boundary; a unit-only report
+does not measure those runs. The largest new score is 12.
+
+Four unchanged functions retain known misses: MCP `callTool` and
+`safeSearchFailure` score 110, `safeFailure` scores 72, and CLI `perform` scores
+42, each with zero unit coverage. Their reason is unchanged by this PR; their
+integration/acceptance tests pass but are not part of this coverage report.
+Thirteen rows have unknown coverage. Three new callbacks have one path each,
+which proves a CRAP bound of 1 to 2; the other ten are unchanged, including the
+two-path `arm` callback with a bound of 2 to 6. No new CRAP exception is required.
+The report keeps these limits and the unchanged unresolved CSS import in its
+global dependency view. The exact owner/import checker reports no undeclared
+facts, forbidden edges, or new owner cycles.
 
 Habit-hooks reports are retained for review, with these scoped dispositions:
 
@@ -117,7 +161,7 @@ Habit-hooks reports are retained for review, with these scoped dispositions:
   collaborators. A new parameter bag would hide those roles.
 - One unused-variable finding: the `using deadline` binding in the entry point
   registers required disposal behavior. Removing it changes resource lifetime.
-- 148 comment findings: new comments state boundary, sink, and deferred-capture
+- 149 comment findings: new comments state boundary, sink, and deferred-capture
   invariants; retained source and characterization comments explain lifetime,
   security, or test constraints. Review these by file group; this is no global
   exemption for future comments.
@@ -126,26 +170,38 @@ Habit-hooks reports are retained for review, with these scoped dispositions:
   integration cases retain their existing responsibilities. The slice changes
   types/imports or one guard, without adding a new responsibility to these files.
 
-The snooze file remains empty. The manager owns the final complete-candidate
-habit-hooks disposition and all mandatory metric evidence.
+The snooze file remains empty. The manager reviewed and retained these scoped
+dispositions and the complete-candidate metrics evidence.
 
 ## Review status and local evidence
 
 Independent code/docs review found no concrete blocker in the reviewed scope.
 This agent review is not the independent human approval required for T2.
-Final classification, eligibility, current-head approval, and pending checks
-remain manager gates. The preliminary checker reports T2 Need architect and
-blocks eligibility until required metric evidence exists; it is not a final
-merge decision.
+The complete-candidate local checker reports T2 Need architect, eligible with
+no evidence blockers or undeclared facts. T2 reasons include the component/event
+contract change, the retained parent datastore boundary, protected policy and
+public surfaces, candidate size, existing exceptions, and retained high findings.
+The full reasons are retained in the machine-readable report. All selected local
+functional, type, and build gates pass. Merge remains blocked pending independent
+authorized human architect approval of the current candidate and retained
+quality findings. An agent review or label does not supply that approval. This
+task does not request merge.
 
 The following are **local workspace artifacts**, not GitHub download links:
 
 - [Base snapshot](../../ast-report/snapshot-base.json) and
   [head snapshot](../../ast-report/snapshot.json).
-- [Habit-hooks findings](../../ast-report/log-separation/habit-hooks.log).
+- [Habit-hooks findings](../../ast-report/log-separation/habit-hooks-final.log).
 - [PostgreSQL gate log](../../ast-report/log-separation/postgres-focused.log).
-- [Preliminary review result](../../ast-report/log-separation/preliminary-review.json).
+- [Review tier result](../../ast-report/log-separation/review-tier.json).
+- [Complete metrics process](../../ast-report/process.md), [process outcomes](../../ast-report/process.json),
+  [CRAP rows](../../ast-report/crap.json), and [review findings](../../ast-report/review.json).
+- [First hosted-image failure](../../ast-report/log-separation/hosted-container-first.log).
+- [Passing hosted-image retry](../../ast-report/log-separation/hosted-container.log).
+- [Complete check results](../../ast-report/log-separation/checks.json) and
+  [tested input match](../../ast-report/log-separation/input-match.json).
 - [Architecture review artifacts](../../ast-report/log-separation/architecture/).
 
-The manager must retain final process/CRAP reports and check logs, update this
-record with their results, and bind review evidence to the committed candidate.
+The PR description gives the final candidate SHA and the pinned architecture
+comparison. The complete reports and first failed image run remain available
+with their evidence limits; a passing retry does not erase the earlier failure.

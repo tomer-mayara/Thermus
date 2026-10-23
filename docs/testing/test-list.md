@@ -941,12 +941,16 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Accepts 0 seats and `Number.MAX_SAFE_INTEGER` seats and confirms the free plan with no billed seat
 [V] Gives frozen state records that keep the free state
 
-**Audit Trail**
+**Customer audit logs — API foundation** (`test/acceptance/logging/audit-log.test.ts`, `test/unit/logging/audit-logger.test.ts`)
 
-[] Support OTLP protocol
-[] Generate a user token we can use in audit trail
+[V] Emits named tool and invitation events to a separate audit sink
+[V] Projects explicit actor and target fields and excludes extra source, line, stack, and message fields
+[V] Keeps caller location in system output; an audit event does not enter that stream
+[V] Preserves the completed action when a synchronous audit sink throws
+[V] Type checking rejects substitution between AuditLog and SystemLog
+[] Add production capture with redacted, bounded tool inputs and results, then OTLP delivery under the [Slice 2 plan](../design/organization-admin-plan.md)
 
-**Console logger** (`test/unit/logging/console-logger.test.ts`)
+**System console logger** (`test/unit/logging/console-logger.test.ts`)
 
 [V] Writes one line to stderr by default or to a supplied writable stream
 [V] Includes the timestamp, level label, level color, message, and final newline
@@ -957,7 +961,7 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Writes both messages of a `SuppressedError` from `error()` and `fatal()`: first the failure, then the cleanup failure; also for a nested `SuppressedError`
 [V] Gives the same text from `SystemLogger.messageOf()`, for a caller that composes a longer line
 
-**OTel logger** ([test contract and commands](otel-logger.md))
+**System OTel logger** ([test contract and commands](otel-logger.md))
 
 [V] Preserves the log methods, default INFO level, thresholds, and caller location of `SystemLogger`
 [V] Maps each accepted level to an OpenTelemetry severity and preserves the message body
