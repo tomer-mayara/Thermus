@@ -434,21 +434,38 @@ sequenceDiagram
       Routes-->>Browser: Access notice with cookie effects
     else Access allowed
       Provider-->>Routes: Trusted organization context
-      Routes->>Admin: Member and invitation overviews, in order
-      Admin->>Provider: Recheck current Admin before each overview
-      Provider->>Remote: Read current membership / role state
+      Routes->>Admin: memberOverview(actor, organization)
+      Admin->>Provider: Read current actor memberships and roles
+      Provider->>Remote: Current membership and catalog reads (condensed)
       Remote-->>Provider: Current facts
-      Provider-->>Admin: Memberships and roles
-      alt Actor cannot manage organization
+      Provider-->>Admin: Validated memberships and grants
+      Note over Admin: Check current authority and organization name
+      alt Member overview denied
         Admin-->>Routes: Denied
         Routes-->>Browser: Refusal page with cookie effects
-      else Actor authorized
-        Admin->>Provider: Read each complete overview
-        Provider->>Remote: Read member data, then invitation data
-        Remote-->>Provider: Current data pages
-        Provider-->>Admin: Safe overview fields
-        Admin-->>Routes: Authorized complete overviews
-        Routes-->>Browser: Combined Members HTML with cookie effects
+      else Member overview authorized
+        Admin->>Provider: Read complete member pages
+        Provider->>Remote: Member, catalog and user reads (condensed)
+        Remote-->>Provider: Member data
+        Provider-->>Admin: Safe member fields
+        Admin-->>Routes: Complete member overview and organization name
+        Routes->>Admin: invitationOverview(actor, organization)
+        Admin->>Provider: Read current actor memberships and roles again
+        Provider->>Remote: Current membership and catalog reads (condensed)
+        Remote-->>Provider: Current facts
+        Provider-->>Admin: Validated memberships and grants
+        Note over Admin: Recheck current authority and organization name
+        alt Invitation overview denied
+          Admin-->>Routes: Denied
+          Routes-->>Browser: Refusal page, no partial Members page
+        else Invitation overview authorized
+          Admin->>Provider: Read complete invitation pages
+          Provider->>Remote: Invitation pages (condensed)
+          Remote-->>Provider: Invitation data
+          Provider-->>Admin: Safe invitation fields
+          Admin-->>Routes: Complete invitation overview
+          Routes-->>Browser: Combined Members HTML with cookie effects
+        end
       end
     end
   end

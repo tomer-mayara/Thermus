@@ -3,6 +3,8 @@ Current validation: this branch includes the shared [metrics repair](ast-metrics
 
 The Members layout now owns its document navigation, embedded style, and matching CSP hash. Billing rendering has its own module. Members content and forms retain their owner. The existing exports and complete HTML, status, and headers remain unchanged in four response comparisons; the 39 focused page, billing, and Members cases pass. The two new source files meet MI 85 (86.1 and 100.4). The existing Members content file remains below 85 at 64.9, with its reduction from base 69.1 now below the five-point regression threshold. This is a retained file goal miss, not an exception for a new file. Context, containers, owners, runtime authority/order, and deployment remain unchanged by this refactor.
 
+The registry sequence now shows the actual order: complete member authorization and read, then independent invitation authorization and read. Either refusal stops rendering. This corrects the documentation of existing behavior. The neutral diagram was parsed, rendered, and visually checked with Mermaid CLI 12.0.0.
+
 ## Earlier implementation and verification record
 
 Status: implemented; Draft because required metrics remain blocked, 22 October 2026.
