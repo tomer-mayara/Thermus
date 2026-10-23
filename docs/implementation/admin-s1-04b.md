@@ -1,6 +1,8 @@
 # S1-04b implementation record
 Current validation: this branch includes the shared [metrics repair](ast-metrics-function-repair.md) from [PR #230](https://github.com/tomer-mayara/Thermus/pull/230). The dated results below describe the earlier candidate and analyzer. Current SHA-bound checks, retained goals, and blockers are recorded in [PR #226](https://github.com/tomer-mayara/Thermus/pull/226). Earlier passes do not certify the rebased commit. Direct-session and landing cancellation cases now have separate files. Each proves the exact abort result before the provider settles and checks a later failure. All five focused cases passed before this commit.
 
+The current callback diagram separates provider facts, local validation, and the web-owned landing gate. It shows the ordered membership and catalog reads. The inherited Members diagram also shows its two overview calls in order. These corrections describe existing behavior. The manager checked the source and rendered diagrams with Mermaid CLI 12; no application behavior changed.
+
 ## Earlier implementation and verification record
 
 Status: source implemented and local functional gates passed, 22 October 2026.

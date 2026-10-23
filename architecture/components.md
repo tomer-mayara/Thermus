@@ -418,13 +418,14 @@ sequenceDiagram
   actor Browser as Customer browser
   participant Routes as web / session routes
   participant Session as workos / browser session
-  participant Access as workos / access resolver
+  participant Access as workos / access and directory
   participant Remote as WorkOS service
   Browser->>Routes: Callback code and state, sealed sign-in cookie
   Routes->>Session: Complete sign-in
-  Session->>Session: Validate state and pending sign-in
+  Note over Session: Validate pending sign-in, expiry and state
   Session->>Remote: Exchange code with PKCE
-  Remote-->>Session: Validated identity, selection, sealed session
+  Remote-->>Session: Identity, selection, sealed session
+  Note over Session: Validate seal and map trusted identity
   Session-->>Routes: Trusted user, optional destination, cookie effects
   alt Explicit safe destination
     Routes-->>Browser: Redirect to destination with cookie effects
@@ -432,17 +433,27 @@ sequenceDiagram
     Routes-->>Browser: Redirect to workspace selector with cookie effects
   else Default landing with a selected organization
     Routes->>Access: Resolve current access for trusted identity
-    Access->>Remote: Read current membership and roles
-    alt Matching organization with product access
-      Remote-->>Access: Current eligible membership
-      Access-->>Routes: Allowed organization context
-      Routes-->>Browser: Redirect to portal with cookie effects
-    else Selection no longer eligible
-      Remote-->>Access: Current ineligible membership
-      Access-->>Routes: Denied
-      Routes-->>Browser: Redirect to selector with cookie effects
-    else Access read fails
-      Remote-->>Access: Failure
+    alt Resolution completes
+      Note over Access: Check authority and selected organization locally
+      Access->>Remote: Read selected active membership
+      Remote-->>Access: Current membership or absence
+      Note over Access: Validate query match and membership uniqueness
+      alt No active membership
+        Access-->>Routes: Denied
+      else Active matching membership
+        Note over Access: Validate role shape before reading its catalog
+        Access->>Remote: Read organization role catalog
+        Remote-->>Access: Catalog
+        Note over Access: Shared grantsOfRoles validates catalog and maps grants
+        Access-->>Routes: Allowed context with current permissions
+      end
+      Note over Routes: Require allowed context, matching organization and product permission
+      alt Local landing gate permits portal
+        Routes-->>Browser: Redirect to portal with cookie effects
+      else Local landing gate refuses portal
+        Routes-->>Browser: Redirect to selector with cookie effects
+      end
+    else Remote read or local validation fails
       Access-->>Routes: Failure
       Routes-->>Browser: Recovery page and selector link with cookie effects
     end
