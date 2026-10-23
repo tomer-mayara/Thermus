@@ -7,7 +7,8 @@ const { createApplication } = await import(pathToFileURL(resolve('dist/src/app/a
 const { loadDeploymentConfig } = await import(pathToFileURL(resolve('dist/src/runtime/config/deployment-config.js')));
 const { readAdRulesFile } = await import(pathToFileURL(resolve('dist/src/runtime/config/ad-rules-file.js')));
 
-// These values pass local settings checks. The build has no network and makes no provider request.
+// These probe-only values pass local settings checks. The build has no network
+// and makes no provider or database request.
 const environment = {
   DEPLOYMENT: process.env.DEPLOYMENT,
   AD_RULES_FILE: process.env.AD_RULES_FILE,
@@ -18,6 +19,8 @@ const environment = {
   WORKOS_AUTHKIT_ISSUER: 'https://thermus-test.authkit.app',
   WORKOS_REDIRECT_URI: 'https://thermus.example/callback',
   WORKOS_COOKIE_PASSWORD: 'hosted-image-check-cookie-password-0032',
+  DATABASE_URL: 'postgresql://image_probe:probe_only_password@127.0.0.1:5432/image_probe',
+  LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
 };
 assert.ok(readAdRulesFile(environment).trim().length > 0, 'The hosted image needs a nonempty production rules policy.');
 for (const name of ['hosted-ad-rules.SOURCE.md', 'hosted-ad-rules.LICENSE.txt']) {

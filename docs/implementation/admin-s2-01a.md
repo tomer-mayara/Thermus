@@ -95,6 +95,14 @@ the new diagnostic. The affected integration tests now expect that safe line
 and keep every original access, ordering, error, and cleanup assertion. They do
 not filter unexpected logs. The shared expected line is fixture data.
 
+The first final-image gate exposed the same new diagnostic in the image's
+strict startup probe. That probe now supplies valid synthetic database settings
+and a test-only key, while keeping its error logger and assertions strict.
+Docker runs the probe with network access disabled. This checks that the
+production image can load the SQL adapter and close its lazy pool without a
+provider or database request. These values are not image environment defaults
+or real credentials. The image gate is rerun after this probe change.
+
 ## Quality review
 
 The new store contract contains types only and has no executable MI value.
