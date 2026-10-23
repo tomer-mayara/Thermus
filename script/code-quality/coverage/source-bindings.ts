@@ -7,7 +7,7 @@ import type { CoverageSourceFiles } from './source-files.ts';
 
 type ParsedScript = { readonly tree: ts.SourceFile; readonly declarations: readonly Candidate[] };
 export type SourceBindings = { readonly sourceContentIdentity: string; readonly sourceIdentities: ReadonlyMap<string, FunctionIdentity> };
-const strippedModifiers = new Set([ts.SyntaxKind.ExportKeyword, ts.SyntaxKind.DefaultKeyword, ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword, ts.SyntaxKind.AbstractKeyword, ts.SyntaxKind.OverrideKeyword, ts.SyntaxKind.DeclareKeyword]);
+const omittedRangeModifiers = new Set([ts.SyntaxKind.ExportKeyword, ts.SyntaxKind.DefaultKeyword, ts.SyntaxKind.StaticKeyword, ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.ReadonlyKeyword, ts.SyntaxKind.AbstractKeyword, ts.SyntaxKind.OverrideKeyword, ts.SyntaxKind.DeclareKeyword]);
 
 // Mapping is a calculation over the identified files; invalid syntax remains unknown.
 export function sourceBindingsOf(files: CoverageSourceFiles): SourceBindings | undefined {
@@ -42,13 +42,13 @@ function identitiesOf(source: ParsedScript, emitted: ParsedScript, mapping: { ma
   return new Map([...candidates].filter(([, matches]) => matches.length === 1).map(([key, matches]) => [key, matches[0]]));
 }
 
-// V8 omits export/default and stripped TypeScript modifiers from the function range.
+// V8 omits static and export/default prefixes; TypeScript-only modifiers also precede the runtime range.
 // It must still start at an exact declaration token and end at that declaration's end.
 function coverageStartsOf({ node }: Candidate): readonly number[] {
   const starts = new Set([node.getStart()]);
   const children = node.getChildren().flatMap((child) => child.kind === ts.SyntaxKind.SyntaxList && child.getChildren().every(ts.isModifier) ? child.getChildren() : [child]);
   for (const child of children) {
-    if (strippedModifiers.has(child.kind)) continue;
+    if (omittedRangeModifiers.has(child.kind)) continue;
     starts.add(child.getStart());
     break;
   }

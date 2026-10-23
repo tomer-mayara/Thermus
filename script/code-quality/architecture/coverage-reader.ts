@@ -24,4 +24,3 @@ export function coverageInFile(path: string): CoverageReport {
 function invalid(path: string): never {
   throw new CommandError(`The file ${path} is not a valid coverage report of version 1, 2, or 3.`);
 }
-

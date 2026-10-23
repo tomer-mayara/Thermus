@@ -73,6 +73,16 @@ Manual evidence covers:
 - Native Review with unchanged debt, a new violation, a genuine regression,
   and a conservative rename comparison.
 
+A real V8 capture exposed one further range mismatch: a static method starts after
+`static`, while its TypeScript and emitted AST declarations include that modifier.
+Coverage binding now permits the next exact declaration token after `static`.
+The source-map boundary proof, declaration end, and unique identity check still
+apply. Async, generator, get/set, computed, and keyword-named methods keep their
+runtime tokens. Real emitted JavaScript and stripped TypeScript fixtures check
+these forms, repeated names across classes and instances, rejection of shifted
+ranges, and rejection of ambiguous source declarations. Compiler-generated
+functions with no source declaration remain unbound.
+
 The native Review command still compares functions by name and files by path.
 Its report alone does not prove anonymous-function or rename correspondence.
 The wrapper's source identities and complete CRAP inventory supply that evidence.
