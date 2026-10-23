@@ -665,6 +665,7 @@ They are in the existing suites:
   `test/integration/auth/hosted-administration.test.ts`,
   `test/integration/auth/local-installation.test.ts`,
   `test/integration/auth/portal-access.test.ts`,
+  `test/integration/auth/portal-organization-name.test.ts`,
   `test/integration/auth/workos-provider-verification.test.ts`,
   `test/integration/auth/workos-provider-access.test.ts`,
   `test/integration/auth/workos-provider-directory.test.ts`,

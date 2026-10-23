@@ -1593,14 +1593,21 @@ npm run build && node --test dist/test/integration/auth/workos-provider-administ
 
 **Protected portal request** (`test/integration/auth/portal-access.test.ts`)
 
-[V] User plus Admin gives the organization and the roles that give a permission, without a highest role, and `Cache-Control: no-store`
-[V] Admin only, the default role only, and no grant give 403 `{"access":"denied"}` without organization data
+[V] User plus a synthetic user-manager grant gives the organization and the roles that give a permission, without a highest role, and `Cache-Control: no-store`
+[V] A synthetic user-manager grant only, the default role only, and no grant give 403 `{"access":"denied"}` without organization data
 [V] Another path gives 404, and another method gives 405 with `Allow: GET, HEAD`
+
+**Portal organization display name** (`test/integration/auth/portal-organization-name.test.ts`)
+
+[V] The lookup uses the trusted subject and selected organization
+[V] Denied product access causes no name lookup
+[V] Missing, empty, and whitespace names give a retryable 503 without organization data
+[V] Cancellation stays effective when the provider read later completes
 
 Run only these tests:
 
 ```sh
-npm run build && node --test dist/test/integration/auth/workos-provider-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/integration/auth/portal-access.test.js
+npm run build && node --test dist/test/integration/auth/workos-provider-*.test.js dist/test/integration/mcp/required-permission.test.js dist/test/integration/auth/portal-access.test.js dist/test/integration/auth/portal-organization-name.test.js
 ```
 
 **Local command dispatch and lifecycle** (`test/integration/auth/local-auth-command-lifecycle.test.ts`, `local-auth-command-users.test.ts`, `local-auth-command-clients.test.ts`)
