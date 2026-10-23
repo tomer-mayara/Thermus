@@ -1,7 +1,7 @@
 # S1-05 implementation record
 
-Status: offline journey implemented; complete-candidate verification in progress,
-23 October 2026.
+Status: offline journey implemented and local functional gates passed;
+quality and release holds remain. 23 October 2026.
 
 ## Scope
 
@@ -47,8 +47,10 @@ Run build commands sequentially. The manager reviews the complete candidate.
 Native invitation proof, the password-only provider profile, the approved organization
 legal bundle, and scoped cutover remain release holds. Current production legal
 documents still block creation. No provider setting, live membership, legal
-approval, deployment, or cutover changes are part of this PR. The existing
-metrics-tool failure remains unresolved until a valid rerun proves otherwise.
+approval, deployment, or cutover changes are part of this PR. The
+[organization terms proposal](admin-s1-05-legal-proposal.md) supplies exact
+replacement wording and open owner decisions. It is not an approved bundle.
+The fresh metrics run reproduced the existing tool failure.
 This record does not mark S1-03, S1-04, S1-05, or Slice 1 complete.
 
 ## Read-only staging verification
@@ -59,6 +61,9 @@ boolean checks; no credential was printed or copied. The connected WorkOS
 readback confirmed `https://localhost:46443/login`, its `/callback`, and `/` as
 the sign-out destination. The differing root `.env.local` is not a blocker when
 this launcher is used. Earlier implementation records did not check that path.
+After the owner reported a local-file update, another values-hidden check of
+the available checkout files still found a different client and missing issuer.
+The launcher remains the matching configuration; no additional key is needed.
 
 Shared staging still has MFA Optional. The live Slice 1 profile requires Disabled.
 Password and email verification are enabled; Google and SSO are also enabled.
@@ -88,8 +93,20 @@ independent human approval of the complete authorization/signup stack.
 - Initial and final focused journey runs: 2/2 passed after a backend build.
 - `npm test`: 4,180 server and 49 portal tests passed, with no failures or skips.
   The final assertion-only review edits passed in the rebuilt focused run.
-- Type checking, portal build, container gates, and metrics: pending below.
-- Manual documentation review: 491 local file links checked; none missing.
+- `npm run typecheck` and `npm run build:user-portal`: passed.
+- Self-hosted container gate: 11/11 passed.
+- Hosted offline build: 2,596 server unit, 29 portal unit, 20 portal acceptance,
+  1,045 integration, 118 explicit acceptance/interface, and 13 renderer tests
+  passed. The build's own required checks are included in this result.
+- Linux AMD64 hosted image gate: 7/7 passed.
+- Unit/integration coverage: 139 source files from 635 processes; collection
+  completed. The metrics process reused this compatible report.
+- Documentation links, exact proposal anchors, whitespace, and diff were checked
+  manually. No executable test was added for documentation.
+- Hosted live, native invitation matrix, and new manual desktop/mobile checks:
+  not run. Existing portal automated cases passed; they do not close these holds.
+- Remote CI: unverified. The checks connector denied access to this workspace;
+  local passes do not assert a remote CI result.
 
 The complete-candidate habit-hooks run exits 1 with six complexity, one
 parameter-count, 664 comment, and 24 file-size findings. The snooze file is empty.
@@ -99,3 +116,35 @@ single-use test abstractions. Its one comment marks the provider substitution,
 which matters to the evidence limit. Inherited findings retain the
 [S1-04b reasons](admin-s1-04b.md#quality-review). No unsafe cast or dependency
 finding remains. This is a reviewed retained-finding result, not a clean lint pass.
+
+## Quality evidence and review tier
+
+Fresh base and head snapshots cover 148 and 151 production files. The complete
+stack retains 26 changed production files below the MI goal of 85. No added
+production file is below 85. The full table is in the local
+`ast-report/mi-review.md`; the design reasons remain in
+[S1-04a](admin-s1-04a.md) and [S1-04b](admin-s1-04b.md#quality-review).
+This increment changes no source. That fact does not waive the complete-stack
+goals. No baseline or exception was changed.
+
+The review reports 18 high findings on changed files: 15 production findings
+and three test findings. Keep the owning validation, state transitions, and
+route cases together for the reasons recorded in S1-04b. Test MI has no numeric
+goal. The other 48 high findings concern files unchanged by the complete stack;
+they remain in the full report and do not raise this candidate's tier.
+
+The process completed Delta and Review with goal misses. CRAP failed because
+the native tool omitted source declarations in
+`src/accounts/organizations/organization-administration.ts`. The standalone
+CRAP command reproduced this failure. Architecture could not complete without
+the required CRAP evidence. Do not invent a CRAP report, waive the failure with
+an exception, or create a history record for an incomplete process.
+
+The complete candidate remains **T2 Need architect, blocked**. It inherits the
+signup, authorization, and portal contract changes, protected/public surfaces,
+and retained quality findings from the stack. Required CRAP/process evidence,
+live/provider/legal/manual/cutover holds, and independent human architect
+approval remain open. The final SHA-bound checker output, detailed reasons,
+blockers, architecture comparison, and logs are retained under local
+`ast-report/` and linked from the PR. The reports are local review artifacts;
+they are not uploaded CI results. Keep this PR Draft.

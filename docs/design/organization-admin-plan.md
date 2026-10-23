@@ -1334,6 +1334,10 @@ validation, approved organization legal text, and scoped cutover remain holds.
 Local doubles cannot close these holds. No provider mutation or cutover is part
 of this verification candidate.
 
+The [organization terms proposal](../implementation/admin-s1-05-legal-proposal.md)
+contains exact replacement wording for review. It is unapproved and unpublished;
+the existing legal bundle and release hold remain in force.
+
 **Acceptance specification:**
 
 ```gherkin
