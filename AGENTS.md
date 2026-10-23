@@ -136,6 +136,12 @@ before requesting human review. Update it when the candidate changes.
   local gates from remote work, and keep stopping outcomes clear. Surviving
   calls stay neutral even when their policy or payload changes. Name condensed
   remote work and retained dependencies omitted for clarity.
+- Add a focused L4 detail only when a callable contract is added, removed, or
+  materially changed and the L3 drawing with behavior notes is insufficient.
+  Scope it to one component; name that owner and its container. Show only the
+  relevant code elements and relationships, with the same change colors and
+  text labels. Keep internal refactors that preserve caller-visible behavior
+  out of this detail. L3 remains the main comparison.
 - State whether registry drawings changed. Label supplementary views derived
   from prose and code; do not present newly documented behavior as new. Name
   Level 2 container or deployment changes and flag any that the focused view
