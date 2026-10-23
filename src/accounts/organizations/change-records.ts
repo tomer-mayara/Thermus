@@ -8,6 +8,14 @@ export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-p
 // nothing changed, and 'unknown' during the directory change, so that its effect is not known.
 export type ChangeOutcome = ChangeResult | 'failed' | 'unknown';
 
+// The provider write started, but its result is not confirmed. A caller can offer a current read, not a blind retry.
+export class UnconfirmedChangeError extends Error {
+  constructor(cause: unknown) {
+    super('The outcome of the organization change is unconfirmed.', { cause });
+    this.name = 'UnconfirmedChangeError';
+  }
+}
+
 type ChangeTarget = { readonly membershipId: string } | { readonly invitationId: string } | { readonly email: string };
 
 // A basic record of a privileged change. It holds no credential.
@@ -64,7 +72,7 @@ export class ChangeRecording {
       return await work();
     } catch (cause) {
       this.keep(entry, outcome);
-      throw cause;
+      throw outcome === 'unknown' ? new UnconfirmedChangeError(cause) : cause;
     }
   }
 

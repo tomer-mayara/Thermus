@@ -6,7 +6,7 @@ import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-brow
 import { userOf } from '../../support/fixtures/hosted-members.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 
-const invitationsPage = 'https://thermus.example/team/invitations';
+const membersPage = 'https://thermus.example/team/members';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
 
 function invitationLines(body: string): readonly string[] {
@@ -18,13 +18,13 @@ describe('Hosted invitations through the public routes, with session and directo
     const site = await serve(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const sam = site.browserOf(userOf('user-sam', 'org-a'));
-    const evePage = await shownPage(eve, 'invitations');
-    const samPage = await shownPage(sam, 'invitations');
+    const evePage = await shownPage(eve, 'members');
+    const samPage = await shownPage(sam, 'members');
 
-    const userInvitation = await submitOnPage(eve, 'invitations', { label: 'Invite as User', filled: { email: 'new.user@example.com' } });
-    const adminInvitation = await submitOnPage(sam, 'invitations', { label: 'Invite as Admin', filled: { email: 'new.admin@example.com' } });
-    const inviteUser = formLabelled(evePage.forms, 'Invite as User');
-    const inviteAdmin = formLabelled(samPage.forms, 'Invite as Admin');
+    const userInvitation = await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new.user@example.com' } });
+    const adminInvitation = await submitOnPage(sam, 'members', { label: 'Invite', filled: { email: 'new.admin@example.com', role: 'admin' } });
+    const inviteUser = formLabelled(evePage.forms, 'Invite');
+    const inviteAdmin = formLabelled(samPage.forms, 'Invite');
     const forged = [
       await eve.submit({ ...inviteUser, fields: { ...inviteUser.fields, email: 'forged@example.com', role: 'owner' } }),
       await eve.submit({ ...inviteUser, fields: { ...inviteUser.fields, email: 'forged@example.com', role: 'super-admin' } }),
@@ -32,11 +32,11 @@ describe('Hosted invitations through the public routes, with session and directo
     ];
     site.directory.acceptInvitation(site.directory.invitationTo('new.admin@example.com')?.invitationId ?? '', 'user-nia');
     const nia = await statusesOf(site.browserOf(userOf('user-nia', 'org-a')), ['members', 'portal']);
-    const shown = invitationLines((await eve.open('invitations')).body);
+    const shown = invitationLines((await eve.open('members')).body);
 
-    assert.deepEqual([labelsOf(evePage.forms), labelsOf(samPage.forms)], [['Invite as User', 'Invite as Admin'], ['Invite as User', 'Invite as Admin']]);
-    assert.deepEqual([userInvitation.status, userInvitation.location?.href], [303, invitationsPage]);
-    assert.deepEqual([adminInvitation.status, adminInvitation.location?.href], [303, invitationsPage]);
+    assert.deepEqual([labelsOf(evePage.forms), labelsOf(samPage.forms)], [['Invite'], ['Invite']]);
+    assert.deepEqual([userInvitation.status, userInvitation.location?.href], [303, membersPage]);
+    assert.deepEqual([adminInvitation.status, adminInvitation.location?.href], [303, membersPage]);
     for (const answer of forged) {
       assert.equal(answer.status, 403, answer.body);
       assert.match(answer.body, deniedChange);
@@ -44,7 +44,7 @@ describe('Hosted invitations through the public routes, with session and directo
     assert.deepEqual(site.directory.invitationChanges, ['send org-a user new.user@example.com', 'send org-a admin new.admin@example.com']);
     assert.deepEqual(rolesOf(site, 'user-nia', 'org-a'), ['admin']);
     assert.deepEqual(nia, { members: 200, portal: 200 });
-    assert.deepEqual(shown, ['new.user@example.com: User invitation, pending.', 'new.admin@example.com: Admin invitation, accepted.']);
+    assert.deepEqual(shown, ['new.user@example.com: User invitation, pending.']);
     assert.deepEqual(recordLines(site.records), [
       'user-eve in org-a: invite user for new.user@example.com: applied',
       'user-sam in org-a: invite admin for new.admin@example.com: applied',
@@ -54,7 +54,7 @@ describe('Hosted invitations through the public routes, with session and directo
     ]);
   });
 
-  test('Given pending, accepted, revoked, and expired invitations, when an Admin resends and revokes them, then each state shows as the directory gives it, only pending invitations of its organization change, and no invitation token reaches a page or a record', { timeout: 20_000 }, async (t) => {
+  test('Given pending, accepted, revoked, and expired invitations, when an Admin resends and revokes them, then only pending invitations appear and only pending invitations of its organization change, and no invitation token reaches a page or a record', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     site.directory.addInvitations(
       { organizationId: 'org-a', email: 'pending.user@example.com', role: 'user' },
@@ -65,7 +65,7 @@ describe('Hosted invitations through the public routes, with session and directo
       { organizationId: 'org-b', email: 'globex.user@example.com', role: 'user' },
     );
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const page = await shownPage(eve, 'invitations');
+    const page = await shownPage(eve, 'members');
     const resend = formLabelled(page.forms, 'Resend the invitation to pending.user@example.com');
 
     const resent = await eve.submit(resend);
@@ -76,20 +76,17 @@ describe('Hosted invitations through the public routes, with session and directo
       await eve.post('invitations/revoke', { ...resend.fields, invitation_id: 'invitation-6' }),
       await eve.post('invitations/revoke', { ...resend.fields, invitation_id: 'invitation-2' }),
     ];
-    const after = await eve.open('invitations');
+    const after = await eve.open('members');
 
     assert.deepEqual(invitationLines(page.answer.body), [
       'pending.user@example.com: User invitation, pending.',
-      'accepted.user@example.com: User invitation, accepted.',
-      'revoked.user@example.com: User invitation, revoked.',
-      'expired.user@example.com: User invitation, expired.',
       'pending.admin@example.com: Admin invitation, pending.',
     ]);
-    assert.deepEqual(labelsOf(page.forms), ['Invite as User', 'Invite as Admin', 'Resend the invitation to pending.user@example.com', 'Revoke the invitation to pending.user@example.com', 'Resend the invitation to pending.admin@example.com', 'Revoke the invitation to pending.admin@example.com']);
+    assert.deepEqual(labelsOf(page.forms), ['Invite', 'Resend the invitation to pending.user@example.com', 'Revoke the invitation to pending.user@example.com', 'Resend the invitation to pending.admin@example.com', 'Revoke the invitation to pending.admin@example.com']);
     assert.deepEqual([resent.status, revoked.status, resentAgain.status], [303, 303, 409]);
     assert.match(resentAgain.body, /The invitation is no longer pending/);
     assert.deepEqual(forged.map(({ status }) => status), [303, 403, 409]);
-    assert.equal(invitationLines(after.body)[0], 'pending.user@example.com: User invitation, revoked.');
+    assert.deepEqual(invitationLines(after.body), []);
     assert.deepEqual(site.directory.invitationChanges, ['resend invitation-1', 'revoke invitation-1', 'revoke invitation-5']);
     assert.doesNotMatch(`${page.answer.body}${after.body}${JSON.stringify(site.records)}`, /secret-token/);
     assert.deepEqual(recordLines(site.records), [
@@ -102,13 +99,13 @@ describe('Hosted invitations through the public routes, with session and directo
     ]);
   });
 
-  test('Given a directory that enforces the invited address and then one that accepts by its own rules, when the invitations page opens, then the page claims a strict address match only for the first', { timeout: 20_000 }, async (t) => {
+  test('Given a directory that enforces the invited address and then one that accepts by its own rules, when Members opens, then the page claims a strict address match only for the first', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
 
-    const strict = (await eve.open('invitations')).body;
+    const strict = (await eve.open('members')).body;
     site.directory.invitationIdentityPolicy = 'provider-rules';
-    const providerRules = (await eve.open('invitations')).body;
+    const providerRules = (await eve.open('members')).body;
 
     assert.match(strict, /Only a sign-in with the invited email address can accept the invitation\./);
     assert.match(providerRules, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);
@@ -119,8 +116,8 @@ describe('Hosted invitations through the public routes, with session and directo
     const site = await serve(t);
     site.directory.addMembers({ subject: 'user-ida', organizationId: 'org-a', grants: [userGrant, adminGrant], status: 'inactive' });
 
-    await submitOnPage(site.browserOf(userOf('user-eve', 'org-a')), 'invitations', { label: 'Invite as User', filled: { email: 'ida@example.com' } });
-    await submitOnPage(site.browserOf(userOf('user-sam', 'org-a')), 'invitations', { label: 'Invite as Admin', filled: { email: 'pia@example.com' } });
+    await submitOnPage(site.browserOf(userOf('user-eve', 'org-a')), 'members', { label: 'Invite', filled: { email: 'ida@example.com' } });
+    await submitOnPage(site.browserOf(userOf('user-sam', 'org-a')), 'members', { label: 'Invite', filled: { email: 'pia@example.com', role: 'admin' } });
     for (const [email, subject] of [['ida@example.com', 'user-ida'], ['pia@example.com', 'user-pia']] as const) {
       site.directory.acceptInvitation(site.directory.invitationTo(email)?.invitationId ?? '', subject);
     }
@@ -130,16 +127,16 @@ describe('Hosted invitations through the public routes, with session and directo
     assert.deepEqual([rolesOf(site, 'user-ida', 'org-a'), rolesOf(site, 'user-pia', 'org-a')], [['user'], ['admin']]);
     assert.deepEqual([ida, pia], [{ portal: 200, members: 403 }, { portal: 200, members: 200 }]);
   });
-  test('Given a pending User invitation, when an Admin sends the same address as User again, also in another letter case, then nothing is sent and the browser returns to the invitations page; after another Admin revokes the invitation, a new send is a new invitation', { timeout: 20_000 }, async (t) => {
+  test('Given a pending User invitation, when an Admin sends the same address as User again, also in another letter case, then nothing is sent and the browser returns to Members; after another Admin revokes the invitation, a new send is a new invitation', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const send = (email: string) => submitOnPage(eve, 'invitations', { label: 'Invite as User', filled: { email } });
+    const send = (email: string) => submitOnPage(eve, 'members', { label: 'Invite', filled: { email } });
 
     const answers = [await send('new.user@example.com'), await send('New.User@Example.com')];
-    await submitOnPage(site.browserOf(userOf('user-cy', 'org-a')), 'invitations', 'Revoke the invitation to new.user@example.com');
+    await submitOnPage(site.browserOf(userOf('user-cy', 'org-a')), 'members', 'Revoke the invitation to new.user@example.com');
     answers.push(await send('new.user@example.com'));
 
-    assert.deepEqual(answers.map(({ status, location }) => [status, location?.href]), answers.map(() => [303, invitationsPage]));
+    assert.deepEqual(answers.map(({ status, location }) => [status, location?.href]), answers.map(() => [303, membersPage]));
     assert.deepEqual(site.directory.invitationChanges, ['send org-a user new.user@example.com', 'revoke invitation-1', 'send org-a user new.user@example.com']);
     assert.deepEqual(recordLines(site.records).map((line) => line.replace(/^.* invite user for /, '')), [
       'new.user@example.com: applied',
@@ -148,11 +145,11 @@ describe('Hosted invitations through the public routes, with session and directo
       'new.user@example.com: applied',
     ]);
   });
-  test('Given an Admin without completed MFA, when it opens invitations and sends either invitation role, then password access permits both and records each applied change', { timeout: 20_000 }, async (t) => {
+  test('Given an Admin without completed MFA, when it opens Members and sends either invitation role, then password access permits both and records each applied change', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const sam = site.browserOf(userOf('user-sam', 'org-a'), { mfaCompleted: false });
     const token = formsIn((await sam.open('organizations')).body)[0]?.fields.csrf_token ?? '';
-    assert.equal((await sam.open('invitations')).status, 200);
+    assert.equal((await sam.open('members')).status, 200);
     for (const role of ['user', 'admin']) {
       const post = await sam.post('invitations/send', { csrf_token: token, organization_id: 'org-a', role, email: `new.${role}@example.com` });
       assert.equal(post.status, 303, post.body);

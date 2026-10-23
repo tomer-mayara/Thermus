@@ -38,8 +38,8 @@ describe('WorkOSOrganizations invitation pages', () => {
     assert.deepEqual(double.calls, [{ method: 'listInvitations', input: { organizationId: acme, limit: 100, after: 'invitation_00START' } }]);
     assert.deepEqual(page, {
       items: [
-        { invitationId: 'invitation_01BOB', organizationId: acme, email: 'bob@example.com', role: 'user', state: 'pending' },
-        { invitationId: 'invitation_03DAN', organizationId: acme, email: 'dan@example.com', role: 'user', state: 'revoked' },
+        { invitationId: 'invitation_01BOB', organizationId: acme, email: 'bob@example.com', role: 'user', state: 'pending', expiresAt: bob.expiresAt },
+        { invitationId: 'invitation_03DAN', organizationId: acme, email: 'dan@example.com', role: 'user', state: 'revoked', expiresAt: dan.expiresAt },
       ],
       next: 'invitation_04EVE',
     });
@@ -160,7 +160,7 @@ describe('WorkOSOrganizations invitation', () => {
 
     const result = await double.directory().invitation('invitation_10GLOBEX');
 
-    assert.deepEqual(result, { invitationId: 'invitation_10GLOBEX', organizationId: globex, email: 'bob@example.com', role: 'admin', state: 'pending' });
+    assert.deepEqual(result, { invitationId: 'invitation_10GLOBEX', organizationId: globex, email: 'bob@example.com', role: 'admin', state: 'pending', expiresAt: bob.expiresAt });
     assert.ok(Object.isFrozen(result));
     assert.doesNotMatch(JSON.stringify(result), credentials);
     assert.deepEqual(double.calls, [{ method: 'getInvitation', input: 'invitation_10GLOBEX' }]);

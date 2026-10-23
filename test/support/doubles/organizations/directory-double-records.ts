@@ -18,6 +18,7 @@ export interface InvitationSeed {
   readonly role: string;
   readonly state?: InvitationState;
   readonly invitationId?: string;
+  readonly expiresAt?: string;
 }
 
 export interface MemberState {
@@ -36,6 +37,7 @@ export interface InvitationRecord {
   readonly organizationId: string;
   readonly email: string;
   readonly role: string;
+  readonly expiresAt: string;
   state: InvitationState;
   // A credential of the invited person. The double gives it with each invitation, as a provider record has it, so that
   // a test can show that it reaches no page or record.
@@ -72,8 +74,8 @@ export function stateOf(seed: MemberSeed): MemberState {
 }
 
 export function memberOf(state: MemberState): OrganizationMember {
-  const { membershipId, organizationId, email, status, grants, revision } = state;
-  return { membershipId, organizationId, email, status, grants, revision: `r${revision}` };
+  const { membershipId, subject, organizationId, email, status, grants, revision } = state;
+  return { membershipId, subject, organizationId, email, status, grants, revision: `r${revision}` };
 }
 
 export function roleGrantOf(role: string): RoleGrant {

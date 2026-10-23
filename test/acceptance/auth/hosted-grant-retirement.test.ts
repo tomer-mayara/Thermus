@@ -37,6 +37,7 @@ test('Given an Admin after password sign-in and a valid current User-grant form,
     roles: before,
     membersStatus: 200,
     grantForms: 0,
-    invitationsStatus: 200,
+    invitationsStatus: 303,
   });
+  assert.equal(invitations.location?.pathname, '/team/members');
 });

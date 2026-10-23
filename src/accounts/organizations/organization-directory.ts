@@ -13,6 +13,8 @@ export type MembershipStatus = 'active' | 'inactive' | 'pending';
 // that a change can require the state that the actor saw.
 export interface OrganizationMember {
   readonly membershipId: string;
+  // The member's identity subject in this directory's authority. Do not infer it from an email.
+  readonly subject: string;
   readonly organizationId: string;
   readonly email: string;
   readonly status: MembershipStatus;
@@ -30,6 +32,8 @@ export interface OrganizationInvitation {
   // The one role that the acceptance grants.
   readonly role: string;
   readonly state: InvitationState;
+  // The provider expiry time in ISO 8601 format.
+  readonly expiresAt: string;
 }
 
 // Who can accept an invitation, as the directory enforces it. 'invited-address': only a sign-in with the invited
@@ -62,7 +66,7 @@ export type AssignableRole = 'user' | 'admin';
 export interface InvitationRequest {
   readonly organizationId: string;
   readonly email: string;
-  // The invitation gives only this role, so that an Admin invitation gives no User access.
+  // The invitation assigns this role. Admin includes product access.
   readonly role: AssignableRole;
 }
 

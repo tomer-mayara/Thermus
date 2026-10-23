@@ -12,7 +12,7 @@ describe('OrganizationAdministration invitation failure records', () => {
       const timeout = new Error('directory send timed out');
       directory.queue('sendInvitation', { error: timeout, afterChange });
 
-      await assert.rejects(administration.sendInvitation(actorOf('user-eve'), request), timeout);
+      await assert.rejects(administration.sendInvitation(actorOf('user-eve'), request), { name: 'UnconfirmedChangeError', cause: timeout });
       const retried = await administration.sendInvitation(actorOf('user-eve'), request);
 
       assert.equal(retried, afterChange ? 'unchanged' : 'applied');
@@ -29,10 +29,36 @@ describe('OrganizationAdministration invitation failure records', () => {
       const { directory, records, administration } = invitationsWith();
       directory.sendInvitation = async () => answer as unknown as InvitationSendResult;
 
-      await assert.rejects(administration.sendInvitation(actorOf('user-eve'), request), /explicit/);
+      await assert.rejects(administration.sendInvitation(actorOf('user-eve'), request), (error) => {
+        assert.ok(error instanceof Error);
+        assert.equal(error.name, 'UnconfirmedChangeError');
+        assert.ok(error.cause instanceof Error);
+        assert.match(error.cause.message, /explicit/);
+        return true;
+      });
 
       assert.deepEqual(records.map(({ outcome }) => outcome), ['unknown']);
     });
+  }
+
+  for (const operation of ['resendInvitation', 'revokeInvitation'] as const) {
+    for (const afterChange of [false, true]) {
+      test(`Given an unconfirmed ${operation} ${afterChange ? 'after' : 'before'} its effect, when the Admin checks current invitations, then the unknown outcome stays unknown and no write repeats`, async () => {
+        const { directory, records, administration } = invitationsWith();
+        const failure = new Error('provider response included a private token');
+        directory.queue(operation, { error: failure, afterChange });
+
+        await assert.rejects(administration[operation](actorOf('user-eve'), { organizationId: 'org-a', invitationId: 'invitation-1' }), {
+          name: 'UnconfirmedChangeError', message: 'The outcome of the organization change is unconfirmed.', cause: failure,
+        });
+        const current = await administration.invitationOverview(actorOf('user-eve'), 'org-a');
+
+        assert.notEqual(current, 'denied');
+        assert.deepEqual(directory.invitationChanges, [`${operation === 'resendInvitation' ? 'resend' : 'revoke'} invitation-1`]);
+        assert.deepEqual(records.map(({ outcome }) => outcome), ['unknown']);
+        assert.doesNotMatch(JSON.stringify(records), /private token/);
+      });
+    }
   }
 
   for (const failure of ['membership', 'invitation'] as const) {

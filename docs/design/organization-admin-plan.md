@@ -1,6 +1,7 @@
 # Organization administration plan
 
-Plan date: 22 October 2026. Status: design for review, not implementation.
+Plan date: 22 October 2026. Status: design with implementation progress recorded
+under each Slice 1 ticket. Implementation does not imply release or cutover.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -39,11 +40,14 @@ under this rule.
 
 ## Existing code, boundaries, and ownership
 
-Signup is disabled by default and currently creates a personal workspace with
-User. Existing grants distinguish User, Admin, and Super Admin. Account pages
-manage grants/invitations; administration requires MFA, with proof limited to
-Required-policy Password sign-in. Customer destination storage/export routing do
-not exist. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
+Planning baseline, before S1-01: signup was disabled by default and created a
+personal workspace with User. Grants distinguished User, Admin, and Super Admin.
+Account pages managed grants/invitations; administration required MFA, with proof
+limited to Required-policy Password sign-in. The stacked Slice 1 implementation
+now retires those grant writes and inferred MFA checks, uses User/Admin, and adds
+named creation plus the combined Members page. The ticket records give its
+checks and remaining release holds. Customer destination storage/export routing
+do not exist. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 include URL origin/path and reason in operator output; Slice 2 must remove that
 content from operator completion records.
 
@@ -169,10 +173,9 @@ resend/revoke actions. No accepted-invitation history or setup rows. An empty
 pending section can be a sentence. Slice 1 has no member-row mutations:
 
 ```text
-Thermus       Workspace [Acme Labs v]             Alex  [Sign out]
-Connect your agent | Members
-                     -------
-Members                                           [Invite member]
+Thermus       Product / Connect | Members | Switch workspace
+                                 -------
+Members — Acme Labs
 Email                          Role
 alex@example.com               Admin · You
 sam@example.com                Admin
@@ -186,17 +189,20 @@ Slice 3 adds `[Change role]`; Security navigation appears with the MFA branch.
 Add security to the Admin role description only when that branch ships.
 
 ```text
-Invite to Acme Labs
+Invite to Acme Labs (on the Members page)
 Email address [ name@example.com                               ]
 (*) User — use Thermus and connect an MCP client
 ( ) Admin — also invite members
-[Send invitation]                                      [Back to members]
-Sent: Invitation sent.
-Existing member: This address is already a member. [Back to members]
-Pending invitation: An invitation already exists. [View pending invitations]
+[Invite]
+Confirmed send/resend/revoke: Return to the current Members page.
+Address conflict: Already a member or has a pending invitation.
+Unconfirmed change: It may have taken effect. [Check status]
 ```
 
-Use native confirmation pages. Each example state appears only when applicable.
+Use native HTML forms and fixed failure notices. Keep one invite form on Members;
+no dialog, flash-message state, or separate invitation-history page is needed.
+Each example state appears only when applicable. Distinguish a member from a
+pending invitation only when a current provider result proves that distinction.
 
 ```text
 Slice 2.5 — Remove jo@example.com from Acme Labs?
@@ -1173,6 +1179,10 @@ former creator another organization; other authorized access remains usable.
 
 #### S1-04a — Members and native invitation management
 
+Implementation and verification status: [S1-04a record](../implementation/admin-s1-04a.md).
+The acceptance scenarios below define this increment. The record separates local
+application evidence from the remaining live provider and cutover checks.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -1212,11 +1222,13 @@ Scenario: Report an unconfirmed invitation write
   And Thermus does not blindly repeat the write
 ```
 
-**Current gap / expected red, not run.** The portal has no Members navigation;
-existing account pages show grant controls, separate invitation views/history,
-and older role authority. Shared members lack the trusted target subject for You
-and invitations lack display expiry. Several
-native send/resend/revoke safeguards already exist and stay characterized.
+**Original gap / observed red.** Before this increment, the portal had no Members
+navigation and the account pages kept members and invitation history separate.
+S1-01/S1-02 had already removed grant controls and established User/Admin authority.
+Shared members lacked the trusted target subject for You and invitations lacked
+display expiry. The five new hosted acceptance cases failed on the combined page,
+single form, navigation, and unconfirmed-write notice before implementation.
+Existing native send/resend/revoke safeguards stay characterized.
 
 **Ordered TDD steps:**
 

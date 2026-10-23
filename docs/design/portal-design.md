@@ -47,8 +47,10 @@ For signed-in users with product access, put the organization ID, roles, and
 browser-versus-MCP workspace explanation in a native Details disclosure below
 the MCP setup steps. Start it closed. Use small gray text and wrap long IDs on
 narrow screens. Keep the profile, Sign Out, endpoint, and setup steps visible.
-Remove the organization page link from both access states. Keep the no-access
-message and Start free access recovery action visible.
+For current product access, show Product / Connect and Switch workspace in the
+workspace navigation. Show Members only when the current access response includes
+Admin. The Members route checks current Admin authority independently. Keep the
+no-access message and Start free access recovery action visible.
 
 Signup creates a named organization after identity sign-in. Show an editable
 organization name and one unchecked organization/authority agreement. Trim the
@@ -70,6 +72,19 @@ selected browser organization and guide organization must match. The portal
 reads the name from the current active membership; an absent or blank name
 shows unavailable access rather than a guessed workspace name. A failed
 switch offers safe recovery and must not repeat the first-Admin grant.
+
+## Members
+
+Use the same visual system for the Admin's Members page. Keep Product / Connect,
+Members, and Switch workspace together. Show active members, a You label from
+trusted identity, and pending invitations with expiry and current actions. Do
+not show invitation history or actions from later slices.
+
+Use one email field and User/Admin radio buttons. Select User by default. Keep
+Invite, Resend, and Revoke as protected HTML forms that work without JavaScript.
+Wrap long addresses and stack controls on narrow screens. A provider write with
+no confirmed result offers a Check status link, without a resubmit form or a
+claim that a pending invitation proves email delivery.
 
 ## Organization selection
 

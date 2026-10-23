@@ -21,23 +21,25 @@ function open(t: TestContext, logger = new OperatorLogSpy()) {
 }
 
 describe('Hosted invitation management with the real composition, routes, service, and MCPServer, and provider doubles', () => {
-  test('Given a directory change that fails after its effect, when an Admin sends an invitation after the provider refreshed the session, then the browser gets the failure page with the refreshed cookie, the operator log names the path and the cause, the record says unknown, and a retry reads the pending invitation and sends nothing again', async (t) => {
+  test('Given a directory change that fails after its effect, when an Admin sends an invitation after the provider refreshed the session, then the browser gets a safe unconfirmed notice with the refreshed cookie, a status read shows the pending invitation, and a fresh duplicate form sends nothing again', async (t) => {
     const site = open(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const form = { ...formLabelled((await shownPage(eve, 'invitations')).forms, 'Invite as User'), fields: { ...formLabelled((await shownPage(eve, 'invitations')).forms, 'Invite as User').fields, email: 'new@example.com' } };
+    const invitation = formLabelled((await shownPage(eve, 'members')).forms, 'Invite');
+    const form = { ...invitation, fields: { ...invitation.fields, email: 'new@example.com' } };
     site.directory.queue('sendInvitation', { error: new Error('directory change timed out'), afterChange: true });
 
     site.sessions.expireAccessToken(eve.cookieHeader);
     const failed = await eve.submit(form);
-    const retry = await eve.submit(form);
-    const page = await shownPage(eve, 'invitations');
+    const page = await shownPage(eve, 'members');
+    const retry = await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new@example.com' } });
 
-    assert.deepEqual([failed.status, failed.cookies.length], [500, 1]);
-    assert.match(failed.body, /The request failed\. Try again later\./);
+    assert.deepEqual([failed.status, failed.cookies.length], [503, 1]);
+    assert.match(failed.body, /The invitation change is not confirmed/);
+    assert.deepEqual(formsIn(failed.body), []);
     assert.equal(retry.status, 303);
     assert.match(page.answer.body, /new@example\.com: User invitation, pending/);
     assert.equal(site.directory.invitationChanges.length, 1);
-    assert.deepEqual(site.logger.lines, ['ERROR An account request failed unexpectedly for /team/invitations/send: Error: directory change timed out']);
+    assert.deepEqual(site.logger.lines, []);
     assert.deepEqual(recordLines(site.records), [
       'user-eve in org-a: invite user for new@example.com: unknown',
       'user-eve in org-a: invite user for new@example.com: unchanged',
@@ -50,7 +52,7 @@ describe('Hosted invitation management with the real composition, routes, servic
     site.directory.queue('sendInvitation', { result: 'unsupported' });
 
     const answers = [
-      await submitOnPage(eve, 'invitations', { label: 'Invite as User', filled: { email: 'new@example.com' } }),
+      await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new@example.com' } }),
     ];
 
     for (const answer of answers) {
@@ -66,11 +68,11 @@ describe('Hosted invitation management with the real composition, routes, servic
     const logger = new OperatorLogSpy();
     const site = openOrganizationSite(t, { reportFailure: accountFailureReporter(logger), memberships: administrationMembers, changeRecords: accountChangeRecorder(logger) });
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const token = formsIn((await eve.open('invitations')).body)[0]?.fields.csrf_token ?? '';
+    const token = formsIn((await eve.open('members')).body)[0]?.fields.csrf_token ?? '';
 
-    await submitOnPage(eve, 'invitations', { label: 'Invite as User', filled: { email: 'new@example.com' } });
+    await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new@example.com' } });
 
-    await submitOnPage(eve, 'invitations', 'Resend the invitation to new@example.com');
+    await submitOnPage(eve, 'members', 'Resend the invitation to new@example.com');
 
     assert.deepEqual(logger.lines, site.records.map((record) => `INFO Account change record: ${JSON.stringify(record)}`));
     assert.equal(logger.lines.length, 2);

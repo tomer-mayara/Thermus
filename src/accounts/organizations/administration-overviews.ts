@@ -11,6 +11,7 @@ import type {
 
 interface MemberEntry {
   readonly membershipId: string;
+  readonly subject: string;
   readonly email: string;
   readonly status: MembershipStatus;
   // The roles of the grants that give an application permission.
@@ -20,6 +21,7 @@ interface MemberEntry {
 
 export interface MemberOverview {
   readonly organizationId: string;
+  readonly organizationName: string;
   readonly members: readonly MemberEntry[];
   // The active memberships with product access, each counted once. The name stays for existing callers.
   readonly activeUserSeats: number;
@@ -32,6 +34,7 @@ export interface InvitationEntry {
   readonly email: string;
   readonly role: string;
   readonly state: InvitationState;
+  readonly expiresAt: string;
   // The changes that the actor can make now.
   readonly changes: readonly InvitationChange[];
 }
@@ -45,10 +48,10 @@ export interface InvitationOverview {
 
 const INVITATION_STATES: readonly InvitationState[] = Object.freeze(['pending', 'accepted', 'revoked', 'expired']);
 
-export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string): Promise<MemberOverview> {
+export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string, organizationName: string): Promise<MemberOverview> {
   const members = await membersOf(directory, organizationId);
   const entries = members.map(memberEntry);
-  return Object.freeze({ organizationId, members: Object.freeze(entries), activeUserSeats: userSeatsOf(members) });
+  return Object.freeze({ organizationId, organizationName, members: Object.freeze(entries), activeUserSeats: userSeatsOf(members) });
 }
 
 // From every member page, so that a failed page fails the count and no partial count looks complete.
@@ -77,14 +80,14 @@ function holdsUserSeat(member: OrganizationMember): boolean {
 }
 
 function memberEntry(member: OrganizationMember): MemberEntry {
-  const { membershipId, email, status, revision } = member;
+  const { membershipId, subject, email, status, revision } = member;
   const roles = [...new Set(member.grants.filter((grant) => grant.permissions.length > 0).map((grant) => grant.role))];
-  return Object.freeze({ membershipId, email, status, roles: Object.freeze(roles), revision });
+  return Object.freeze({ membershipId, subject, email, status, roles: Object.freeze(roles), revision });
 }
 
 // The entry copies only the fields of the contract, so that an invitation token of the provider stays out.
 function invitationEntry(invitation: OrganizationInvitation, managed: readonly AssignableRole[]): InvitationEntry {
-  const { invitationId, email, role, state } = invitation;
+  const { invitationId, email, role, state, expiresAt } = invitation;
   const changeable = state === 'pending' && managed.some((managedRole) => managedRole === role);
-  return Object.freeze({ invitationId, email, role, state, changes: Object.freeze<InvitationChange[]>(changeable ? ['resend', 'revoke'] : []) });
+  return Object.freeze({ invitationId, email, role, state, expiresAt, changes: Object.freeze<InvitationChange[]>(changeable ? ['resend', 'revoke'] : []) });
 }

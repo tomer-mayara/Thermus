@@ -59,7 +59,7 @@ describe('OrganizationAdministration invitation changes', () => {
     const request = { organizationId: 'org-a', email: 'new@example.com', role: 'user' };
 
     const unsupported = await administration.sendInvitation(actorOf('user-eve'), request);
-    await assert.rejects(administration.sendInvitation(actorOf('user-eve'), request), timeout);
+    await assert.rejects(administration.sendInvitation(actorOf('user-eve'), request), { name: 'UnconfirmedChangeError', cause: timeout });
 
     assert.equal(unsupported, 'unsupported');
     assert.deepEqual(records.map(({ outcome }) => outcome), ['unsupported', 'unknown']);
@@ -130,20 +130,20 @@ describe('OrganizationAdministration invitation changes', () => {
     assert.equal(directory.membershipIn('user-new', 'org-a')?.status, 'active');
   });
 
-  test('Given a pending invitation to an address for a role, also as a retry after an unknown outcome and in another letter case, when it is sent again, then nothing is sent and the outcome is unchanged; another role, or a send after the invitation was revoked, is sent', async () => {
+  test('Given a pending invitation, also after an unknown send and in another letter case, when it is sent again, then the same role is unchanged, another role gives a conflict, and only a send after revocation creates a new invitation', async () => {
     const { directory, records, administration } = invitationsWith();
     directory.queue('sendInvitation', { error: new Error('invitation send timed out'), afterChange: true });
     const send = (email: string, role: string) => administration.sendInvitation(actorOf('user-otto'), { organizationId: 'org-a', email, role });
 
-    await assert.rejects(send('new@example.com', 'user'), /timed out/);
+    await assert.rejects(send('new@example.com', 'user'), { name: 'UnconfirmedChangeError' });
     const outcomes = [await send('new@example.com', 'user'), await send('Pending.User@Example.com', 'user'), await send('pending.user@example.com', 'admin')];
     await administration.revokeInvitation(actorOf('user-otto'), invitation('org-a', 'invitation-1'));
     outcomes.push(await send('pending.user@example.com', 'user'));
 
-    assert.deepEqual(outcomes, ['unchanged', 'unchanged', 'applied', 'applied']);
+    assert.deepEqual(outcomes, ['unchanged', 'unchanged', 'address-in-use', 'applied']);
     assert.deepEqual(directory.invitationChanges, ['send org-a user new@example.com', 'send org-a admin pending.user@example.com', 'revoke invitation-1', 'send org-a user pending.user@example.com']);
     assert.deepEqual([...new Set(directory.invitationPageReads.map(({ states }) => states.join()))], ['pending']);
-    assert.deepEqual(records.map(({ outcome }) => outcome), ['unknown', 'unchanged', 'unchanged', 'applied', 'applied', 'applied']);
+    assert.deepEqual(records.map(({ outcome }) => outcome), ['unknown', 'unchanged', 'unchanged', 'address-in-use', 'applied', 'applied']);
   });
 
   test('Given a resend or revoke of an invitation of another organization, when it is denied, then its record names no role of that invitation', async () => {

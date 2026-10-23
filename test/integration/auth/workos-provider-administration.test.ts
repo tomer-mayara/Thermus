@@ -4,7 +4,7 @@ import { GenericServerException } from '@workos-inc/node';
 import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
 import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
-import type { ChangeOutcome, ChangeRecord, ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
+import { UnconfirmedChangeError, type ChangeOutcome, type ChangeRecord, type ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
 import {
   OrganizationAdministration,
   type Actor,
@@ -227,7 +227,7 @@ describe('Inactive memberships and invitations with the real WorkOS directory', 
     assert.deepEqual([pending?.status, pending?.grants.map(({ role }) => role)], ['pending', ['admin']]);
     assert.deepEqual([active?.status, active?.grants.map(({ role }) => role)], ['active', ['admin']]);
     assert.deepEqual(access, { roles: ['admin'], permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] });
-    assert.deepEqual(invitations.invitations, [{ invitationId: invitation.id, email: eve.email, role: 'admin', state: 'accepted', changes: [] }]);
+    assert.deepEqual(invitations.invitations, [{ invitationId: invitation.id, email: eve.email, role: 'admin', state: 'accepted', expiresAt: invitation.expiresAt, changes: [] }]);
     assert.deepEqual(changesIn(site), [invitationSend(eve.email, 'admin')]);
     assert.deepEqual(site.records, [sendRecord(byDan, invite, 'applied')]);
   });
@@ -281,6 +281,7 @@ describe('Inactive memberships and invitations with the real WorkOS directory', 
     changesIn(site);
 
     const overview = overviewOf(await site.service.invitationOverview(byDan, acme));
+    const expiryTimes = site.world.invitations.map(({ expiresAt }) => expiresAt);
     const outcomes: ChangeResult[] = [];
     for (const invitationId of [accepted, revoked, expired, pending]) {
       outcomes.push(await site.service.resendInvitation(byDan, { organizationId: acme, invitationId }));
@@ -289,12 +290,13 @@ describe('Inactive memberships and invitations with the real WorkOS directory', 
 
     const changeRecords = (invitationId: string, outcome: ChangeOutcome) => (['resend-invitation', 'revoke-invitation'] as const)
       .map((action) => invitationRecord(byDan, { organizationId: acme, invitationId, action, role: 'user' }, outcome));
-    assert.deepEqual(overview.invitations, [
+    assert.deepEqual(overview.invitations.map(({ expiresAt: _expiresAt, ...invitation }) => invitation), [
       { invitationId: accepted, email: 'one@example.com', role: 'user', state: 'accepted', changes: [] },
       { invitationId: revoked, email: 'two@example.com', role: 'user', state: 'revoked', changes: [] },
       { invitationId: expired, email: 'three@example.com', role: 'user', state: 'expired', changes: [] },
       { invitationId: pending, email: 'four@example.com', role: 'user', state: 'pending', changes: ['resend', 'revoke'] },
     ]);
+    assert.deepEqual(overview.invitations.map(({ expiresAt }) => expiresAt), expiryTimes);
     assert.deepEqual([overview.invitableRoles, overview.identityPolicy], [['user', 'admin'], 'provider-rules']);
     assert.doesNotMatch(JSON.stringify(overview), /invitation-token|authkit\.fake\.example/);
     assert.deepEqual(outcomes, ['not-pending', 'not-pending', 'not-pending', 'not-pending', 'not-pending', 'not-pending', 'applied', 'applied']);
@@ -337,6 +339,7 @@ describe('Member pages and WorkOS outages', () => {
       'newcomer@example.com: pending, user',
     ]);
     assert.equal(overview.activeUserSeats, 6);
+    assert.equal(overview.members.find(({ email }) => email === dan.email)?.subject, dan.id);
     assert.ok(pageReads.length >= 5, `WorkOS gave the members on ${pageReads.length} pages.`);
     for (const path of pageReads) {
       assert.match(path, new RegExp(`organization_id=${acme}&`));
@@ -364,4 +367,40 @@ describe('Member pages and WorkOS outages', () => {
     assert.deepEqual(site.billing.updates, []);
     assert.deepEqual(site.records, [sendRecord(byDan, send, 'failed')]);
   });
+});
+
+describe('Unconfirmed native invitation writes', () => {
+  test('Given WorkOS creates the invitation but closes the connection before its response, when an Admin sends and then checks current invitations, then the outcome stays unconfirmed and the SDK sends only once', async (t) => {
+    const site = await openSite(t);
+    const request = { organizationId: acme, email: 'lost-answer@example.com', role: 'admin' };
+    site.world.fake.intercept('POST /user_management/invitations', async (_request, respond) => {
+      await respond();
+      return 'close' as const;
+    });
+
+    await assert.rejects(site.service.sendInvitation(byDan, request), UnconfirmedChangeError);
+    const current = overviewOf(await site.service.invitationOverview(byDan, acme));
+
+    assert.equal(current.invitations[0]?.state, 'pending');
+    assert.equal(current.invitations[0]?.role, 'admin');
+    assert.deepEqual(changesIn(site), [invitationSend(request.email, request.role)]);
+    assert.deepEqual(site.records, [sendRecord(byDan, request, 'unknown')]);
+  });
+
+  for (const [operation, action] of [['resendInvitation', 'resend'], ['revokeInvitation', 'revoke']] as const) {
+    test(`Given a native ${action} response has no invitation data, when an Admin checks the pending invitation, then the write remains unconfirmed and no SDK write repeats`, async (t) => {
+      const site = await openSite(t);
+      const invitation = pendingInvitation('invitation_01ACME', acme);
+      site.world.invitations = [invitation];
+      const path = `/user_management/invitations/${invitation.id}/${action}`;
+      site.world.fake.answer(`POST ${path}`, { status: 200, body: {} });
+
+      await assert.rejects(site.service[operation](byDan, { organizationId: acme, invitationId: invitation.id }), UnconfirmedChangeError);
+      const current = overviewOf(await site.service.invitationOverview(byDan, acme));
+
+      assert.equal(current.invitations[0]?.state, 'pending');
+      assert.deepEqual(changesIn(site).map(({ method, path }) => ({ method, path })), [{ method: 'POST', path }]);
+      assert.deepEqual(site.records.map(({ outcome }) => outcome), ['unknown']);
+    });
+  }
 });

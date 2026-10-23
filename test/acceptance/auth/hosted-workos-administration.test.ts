@@ -211,10 +211,10 @@ describe('Hosted WorkOS edition: organization invitations', () => {
   test('Given Dan with Admin alone, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, dan);
-    const first = await pageOf(browser, 'invitations');
+    const first = await pageOf(browser, 'members');
     const invite = (role: 'User' | 'Admin', email: string) => {
-      const form = formLabelled(first.forms, `Invite as ${role}`);
-      return browser.submit({ ...form, fields: { ...form.fields, email } });
+      const form = formLabelled(first.forms, 'Invite');
+      return browser.submit({ ...form, fields: { ...form.fields, email, role: role.toLowerCase() } });
     };
     changesIn(site);
 
@@ -222,25 +222,25 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const repeated = await invite('User', 'NEW@example.com');
     const asAdmin = await invite('Admin', 'new@example.com');
     const member = await invite('Admin', 'ada@example.com');
-    const pending = await pageOf(browser, 'invitations');
+    const pending = await pageOf(browser, 'members');
     const resent = await browser.submit(formLabelled(pending.forms, 'Resend the invitation to new@example.com'));
     const revoked = await browser.submit(formLabelled(pending.forms, 'Revoke the invitation to new@example.com'));
-    const after = await pageOf(browser, 'invitations');
+    const after = await pageOf(browser, 'members');
     const invitation = site.world.invitations.find(({ email }) => email === 'new@example.com');
     assert.ok(invitation, 'WorkOS has no invitation for new@example.com.');
     const { token, acceptInvitationUrl } = await site.world.connection().workos.userManagement.getInvitation(invitation.id);
 
-    assert.deepEqual(labelsOf(first.forms), ['Invite as User', 'Invite as Admin']);
+    assert.deepEqual(labelsOf(first.forms), ['Invite']);
     assert.match(first.body, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);
     assert.doesNotMatch(first.body, /Only a sign-in with the invited email address can accept the invitation\./);
-    assertRedirectTo(sent, 'invitations');
-    assertRedirectTo(repeated, 'invitations');
+    assertRedirectTo(sent, 'members');
+    assertRedirectTo(repeated, 'members');
     assertNotice(asAdmin, 409, /This email address already belongs to a member of the organization, or it has a pending invitation\. Nothing changed\./);
     assertNotice(member, 409, /This email address already belongs to a member of the organization, or it has a pending invitation\. Nothing changed\./);
     assert.match(pending.body, /new@example\.com: User invitation, pending\./);
-    assertRedirectTo(resent, 'invitations');
-    assertRedirectTo(revoked, 'invitations');
-    assert.match(after.body, /new@example\.com: User invitation, revoked\./);
+    assertRedirectTo(resent, 'members');
+    assertRedirectTo(revoked, 'members');
+    assert.doesNotMatch(after.body, /new@example\.com/);
     assert.ok(labelsOf(after.forms).every((label) => !label.endsWith('new@example.com')), 'A revoked invitation has no change form.');
     assert.deepEqual(changesIn(site).map(({ method, path, body }) => `${method} ${path}${body === undefined ? '' : ` ${JSON.stringify(body)}`}`), [
       `POST /user_management/invitations ${JSON.stringify({ email: 'new@example.com', organization_id: acme, role_slug: 'user' })}`,
@@ -262,26 +262,25 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     }
   });
 
-  test('Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, the invitations page shows the acceptance, and the active product members count Eve', async (t) => {
+  test('Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, Members no longer shows the accepted invitation, and the active product members count Eve', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, hal);
-    const form = formLabelled((await pageOf(browser, 'invitations')).forms, 'Invite as User');
+    const form = formLabelled((await pageOf(browser, 'members')).forms, 'Invite');
 
-    assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'eve@example.com' } }), 'invitations');
+    assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'eve@example.com' } }), 'members');
     const pendingMembers = await pageOf(browser, 'members');
     const invitation = site.world.invitations.find(({ email }) => email === 'eve@example.com');
     assert.ok(invitation, 'WorkOS has no invitation for Eve.');
     site.world.acceptInvitation(invitation.id);
     const members = await pageOf(browser, 'members');
-    const invitations = await pageOf(browser, 'invitations');
 
-    assert.match(pendingMembers.body, /eve@example\.com: pending\. Roles: User\./);
+    assert.match(pendingMembers.body, /eve@example\.com: User invitation, pending\./);
     assert.equal(seatsIn(pendingMembers.body), 6);
     assert.deepEqual(site.world.rolesOf(eve, acme), ['user']);
     assert.equal(site.world.statusOf(eve, acme), 'active');
     assert.match(members.body, /eve@example\.com: active\. Roles: User\./);
     assert.equal(seatsIn(members.body), 7);
-    assert.match(invitations.body, /eve@example\.com: User invitation, accepted\./);
+    assert.doesNotMatch(members.body, /eve@example\.com: User invitation/);
     assert.equal(await mcpStatus(site, eve, acme), 200);
   });
 
@@ -293,17 +292,17 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     ];
     site.world.expireInvitation('invitation_01OLD');
     const browser = await signIn(site, cal);
-    const page = await pageOf(browser, 'invitations');
+    const page = await pageOf(browser, 'members');
     changesIn(site);
 
-    const userForm = formLabelled(page.forms, 'Invite as User');
+    const userForm = formLabelled(page.forms, 'Invite');
     const adminInvite = await browser.submit({ ...userForm, fields: { ...userForm.fields, role: 'admin', email: 'x@example.com' } });
     const resend = await browser.post('invitations/resend', { csrf_token: userForm.fields.csrf_token ?? '', organization_id: acme, invitation_id: 'invitation_01OLD' });
 
-    assert.deepEqual(labelsOf(page.forms), ['Invite as User', 'Invite as Admin', 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
-    assert.match(page.body, /old@example\.com: User invitation, expired\./);
+    assert.deepEqual(labelsOf(page.forms), ['Invite', 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
+    assert.doesNotMatch(page.body, /old@example\.com/);
     assert.match(page.body, /boss@example\.com: Admin invitation, pending\./);
-    assertRedirectTo(adminInvite, 'invitations');
+    assertRedirectTo(adminInvite, 'members');
     assertNotice(resend, 409, /The invitation is no longer pending/);
     assert.deepEqual(changesIn(site), [{ method: 'POST', path: '/user_management/invitations', body: { email: 'x@example.com', organization_id: acme, role_slug: 'admin' } }]);
   });
@@ -316,8 +315,8 @@ describe('Hosted WorkOS edition: the active product member count from every Work
     site.world.membershipPageOverlap = 1;
     site.world.invitations = [];
     const browser = await signIn(site, dan);
-    const form = formLabelled((await pageOf(browser, 'invitations')).forms, 'Invite as User');
-    assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'newcomer@example.com' } }), 'invitations');
+    const form = formLabelled((await pageOf(browser, 'members')).forms, 'Invite');
+    assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'newcomer@example.com' } }), 'members');
     site.world.fake.takeRequests();
 
     const page = await pageOf(browser, 'members');
@@ -327,7 +326,7 @@ describe('Hosted WorkOS edition: the active product member count from every Work
     assert.ok(pageReads.length >= 5, `WorkOS gave the members on ${pageReads.length} pages.`);
     for (const path of pageReads) assert.match(path, new RegExp(`organization_id=${acme}.*statuses=active,inactive,pending|statuses=active,inactive,pending.*organization_id=${acme}`));
     assert.equal(page.body.split('ada@example.com: active').length, 2, 'A repeated membership is listed more than once.');
-    assert.match(page.body, /newcomer@example\.com: pending\. Roles: User\./);
+    assert.match(page.body, /newcomer@example\.com: User invitation, pending\./);
   });
 
   test('Given a WorkOS outage on a later page of the members, when Dan opens the members page, then it gives the 500 failure page with an operator report and no partial count', async (t) => {

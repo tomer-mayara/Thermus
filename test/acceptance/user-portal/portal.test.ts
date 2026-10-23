@@ -107,7 +107,7 @@ test('Given product access, when the portal opens, then it keeps setup visible a
   assert.match(details.textContent ?? '', /You have product access in organization org_01ACME\. Roles: user\./);
   assert.match(details.textContent ?? '', /only affects this browser.*own consent/s);
   assert.equal(details.querySelector('.product-access')?.getAttribute('role'), null, 'Closed technical details must not be announced as a status');
-  assert.ok(!document.querySelector('a[href^="organizations"]'), 'The portal must not link to the organization page');
+  assert.equal(document.querySelector('a[href="organizations"]')?.textContent, 'Switch workspace');
 });
 
 test('Given no product access, when the portal opens, then signup recovery remains visible', async () => {
@@ -203,3 +203,19 @@ test('Given a signed-in user at a custom endpoint, when they choose Desktop and 
   assert.match(document.querySelector('.add-content code')?.textContent ?? '', /claude mcp add/);
   assert.deepEqual(requests, ['session', 'portal/access']);
 });
+
+for (const role of ['admin', 'user']) {
+  test(`Given a current ${role}, when the portal opens, then workspace navigation matches the current server role`, async () => {
+    const { document, requests } = await openPortal({ session: { ...ada, roles: ['admin'] }, productAccess: {
+      organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: [role], plan: 'free', mcpUrl: 'https://thermus.example/mcp',
+    } });
+    const navigation = document.querySelector('nav[aria-label="Workspace"]');
+    assert.ok(navigation);
+    assert.equal(navigation.querySelector('a[aria-current="page"]')?.textContent, 'Product / Connect');
+    assert.equal(navigation.querySelector('a[aria-current="page"]')?.getAttribute('href'), './');
+    assert.equal(navigation.querySelector('a[href="organizations"]')?.textContent, 'Switch workspace');
+    assert.equal(navigation.querySelector('a[href="members"]')?.textContent ?? null, role === 'admin' ? 'Members' : null);
+    assert.doesNotMatch(navigation.textContent ?? '', /Logging|Security|Remove|Change role|MFA/);
+    assert.deepEqual(requests, ['session', 'portal/access']);
+  });
+}

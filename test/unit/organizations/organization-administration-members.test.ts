@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { MemberOverview } from '../../../src/accounts/organizations/administration-overviews.ts';
 import type { OrganizationMember } from '../../../src/accounts/organizations/organization-directory.ts';
-import { actorOf, administrationWith, superAdminGrant, userGrant } from './fixtures/administration-fixtures.ts';
+import { actorOf, administrationWith, adminGrant, superAdminGrant, userGrant } from './fixtures/administration-fixtures.ts';
 
 function overviewOf(overview: MemberOverview | string): MemberOverview {
   assert.notEqual(typeof overview, 'string', `the overview was refused: ${String(overview)}`);
@@ -10,6 +10,45 @@ function overviewOf(overview: MemberOverview | string): MemberOverview {
 }
 
 describe('OrganizationAdministration members and the product member count', () => {
+  test('Given an Admin in two organizations, when the Admin reads members in one organization, then the name comes from the same current membership read that authorizes that organization', async () => {
+    const { administration, directory } = administrationWith([
+      { subject: 'user-eve', organizationId: 'org-a', organizationName: 'Acme <current>', grants: [adminGrant] },
+      { subject: 'user-eve', organizationId: 'org-b', organizationName: 'Different organization', grants: [adminGrant] },
+    ]);
+
+    const overview = overviewOf(await administration.memberOverview(actorOf('user-eve'), 'org-a'));
+
+    const { members: _members, activeUserSeats: _seats, ...organization } = overview;
+    assert.deepEqual(organization, { organizationId: 'org-a', organizationName: 'Acme <current>' });
+    assert.equal(directory.membershipReads.length, 1);
+  });
+
+  for (const organizationName of ['', '   ', undefined]) {
+    test(`Given a current authorized membership with the invalid name ${JSON.stringify(organizationName)}, when members are read, then the read fails before any member page`, async () => {
+      const { administration, directory } = administrationWith();
+      const read = directory.membershipsOf.bind(directory);
+      directory.membershipsOf = async (user) => (await read(user)).map((membership) => ({ ...membership, organizationName: organizationName as unknown as string }));
+
+      await assert.rejects(administration.memberOverview(actorOf('user-eve'), 'org-a'), /organization name/);
+
+      assert.deepEqual(directory.memberPageReads, []);
+    });
+  }
+
+  test('Given two members with the same email, when an Admin reads the overview, then each member retains its trusted identity subject', async () => {
+    const { administration } = administrationWith([
+      { subject: 'user-eve', organizationId: 'org-a', email: 'shared@example.com', grants: [adminGrant] },
+      { subject: 'user-other', organizationId: 'org-a', email: 'shared@example.com', grants: [userGrant] },
+    ]);
+
+    const overview = overviewOf(await administration.memberOverview(actorOf('user-eve'), 'org-a'));
+
+    assert.deepEqual(overview.members.map(({ roles: _roles, revision: _revision, status: _status, ...member }) => member), [
+      { membershipId: 'membership-user-eve-org-a', subject: 'user-eve', email: 'shared@example.com' },
+      { membershipId: 'membership-user-other-org-a', subject: 'user-other', email: 'shared@example.com' },
+    ]);
+  });
+
   test('Given an Admin actor with no MFA evidence, when the actor reads members and invites either role, then current permission reads authorize each operation', async () => {
     const { administration, directory } = administrationWith([
       { subject: 'user-admin', organizationId: 'org-a', grants: [{ role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
@@ -19,7 +58,7 @@ describe('OrganizationAdministration members and the product member count', () =
     const overview = overviewOf(await administration.memberOverview(actor, 'org-a'));
     assert.equal(overview.activeUserSeats, 1);
     for (const role of ['user', 'admin']) {
-      assert.equal(await administration.sendInvitation(actor, { organizationId: 'org-a', email: `${role}@example.com`, role }), 'applied');
+      assert.equal(await administration.sendInvitation(actor, { organizationId: 'org-a', email: `${role}.new@example.com`, role }), 'applied');
     }
     assert.deepEqual(directory.membershipReads, [actor.user, actor.user, actor.user]);
   });

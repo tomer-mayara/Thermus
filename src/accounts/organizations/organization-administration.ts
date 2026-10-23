@@ -38,6 +38,11 @@ export interface OrganizationAdministrationOptions {
   readonly clock?: () => Date;
 }
 
+interface ManagedOrganization {
+  readonly organizationName: string;
+  readonly roles: readonly AssignableRole[];
+}
+
 const SEND_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'address-in-use', 'unsupported']);
 const UPDATE_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'not-pending', 'unsupported']);
 
@@ -75,12 +80,12 @@ export class OrganizationAdministration {
 
   async memberOverview(actor: Actor, organizationId: string): Promise<MemberOverview | AdministrationRefusal> {
     const managed = await this.managedBy(actor, organizationId);
-    return typeof managed === 'string' ? managed : readMemberOverview(this.directory, organizationId);
+    return typeof managed === 'string' ? managed : readMemberOverview(this.directory, organizationId, managed.organizationName);
   }
 
   async invitationOverview(actor: Actor, organizationId: string): Promise<InvitationOverview | AdministrationRefusal> {
     const managed = await this.managedBy(actor, organizationId);
-    return typeof managed === 'string' ? managed : readInvitationOverview(this.directory, organizationId, managed);
+    return typeof managed === 'string' ? managed : readInvitationOverview(this.directory, organizationId, managed.roles);
   }
 
   async billingState(actor: Actor, organizationId: string): Promise<BillingState | AdministrationRefusal> {
@@ -94,7 +99,7 @@ export class OrganizationAdministration {
     return this.changes.run(entry, async () => {
       const managed = await this.managedBy(actor, request.organizationId);
       if (typeof managed === 'string') return managed;
-      const role = managedRole(managed, request.role);
+      const role = managedRole(managed.roles, request.role);
       if (role === undefined) return 'denied';
       const invitation = { organizationId: request.organizationId, email: request.email, role };
       if (await this.isPending(invitation)) return 'unchanged';
@@ -119,7 +124,7 @@ export class OrganizationAdministration {
       const invitation = await this.directory.invitation(request.invitationId);
       if (invitation?.organizationId !== request.organizationId) return 'denied';
       entry.role = invitation.role;
-      if (managedRole(managed, invitation.role) === undefined) return 'denied';
+      if (managedRole(managed.roles, invitation.role) === undefined) return 'denied';
       if (invitation.state !== 'pending') return 'not-pending';
       const { invitationId } = invitation;
       return async () => explicitResult(await (change === 'resend' ? this.directory.resendInvitation(invitationId) : this.directory.revokeInvitation(invitationId)), UPDATE_RESULTS);
@@ -134,11 +139,15 @@ export class OrganizationAdministration {
     return pending.some((invitation) => invitation.role === request.role && invitation.email.toLowerCase() === address);
   }
 
-  // The customer roles that the actor manages in the organization now, from a current read of its own memberships.
+  // The current organization name and roles that the actor manages, from one read of its own memberships.
   // The organization comes from the request; a selected organization of a session authorizes nothing.
-  private async managedBy(actor: Actor, organizationId: string): Promise<readonly AssignableRole[] | AdministrationRefusal> {
-    const managed = managedRoles(await this.directory.membershipsOf(actor.user), organizationId);
-    return managed.length === 0 ? 'denied' : managed;
+  private async managedBy(actor: Actor, organizationId: string): Promise<ManagedOrganization | AdministrationRefusal> {
+    const memberships = await this.directory.membershipsOf(actor.user);
+    const roles = managedRoles(memberships, organizationId);
+    if (roles.length === 0) return 'denied';
+    const organizationName = memberships.find((membership) => membership.active && membership.organizationId === organizationId)?.organizationName;
+    if (typeof organizationName !== 'string' || organizationName.trim() === '') throw new Error('The directory gave no organization name for the authorized membership');
+    return { organizationName, roles };
   }
 }
 

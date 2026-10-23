@@ -1,191 +1,176 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { describe, test } from 'node:test';
-import type { InvitationOverview, MemberOverview } from '../../../src/accounts/organizations/administration-overviews.ts';
+import type { InvitationOverview } from '../../../src/accounts/organizations/administration-overviews.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { accountRequest, ann, assertPage, publicOrigin } from './fixtures/account-routes-fixtures.ts';
-import { acmeInvitations, acmeMembers, annToken, formPageHeaders, serveAdministration, sessionCookies } from './fixtures/administration-routes-fixtures.ts';
+import { acmeInvitations, acmeMembers, annToken, serveAdministration, sessionCookies } from './fixtures/administration-routes-fixtures.ts';
 
-function headersWithoutCookies(response: Response): Record<string, string> {
-  return Object.fromEntries([...response.headers].filter(([name]) => name !== 'set-cookie'));
-}
+const current = { members: acmeMembers, invitations: acmeInvitations };
 
-describe('HostedAccountRoutes member and invitation pages', () => {
+describe('HostedAccountRoutes combined Members page', () => {
   for (const method of ['GET', 'HEAD']) {
-    test(`Given allowed access and a member overview, when a ${method} request opens the members page with forged organization values, then the service gets the user and organization of the decided context, and the page shows the seat count without grant controls`, async () => {
-      const { routes, organizations, resolver } = serveAdministration({ members: acmeMembers });
-
+    test(`Given current Admin access, when a ${method} request opens Members with forged organization values, then both complete reads use the trusted actor and organization`, async () => {
+      const { routes, organizations, resolver } = serveAdministration(current);
       const response = await routes.handle(accountRequest('/members?organizationId=org-b', 'session=ann', { method, headers: { 'X-Organization-Id': 'org-b' } }));
       const body = await response.text();
 
       assert.equal(response.status, 200);
-      assert.deepEqual(headersWithoutCookies(response), formPageHeaders);
+      assert.equal(response.headers.get('Cache-Control'), 'no-store');
       assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
-      assert.match(body, /<p>Active product members: 1<\/p>/);
-      assert.match(body, /<p>ann@example\.com: active\. Roles: User, Admin\.<\/p>/);
-      assert.match(body, /<p>dora@example\.com: active\. Roles: none\.<\/p>/);
-      assert.match(body, /<p>ivy@example\.com: inactive\. Roles: User\.<\/p>/);
-      assert.match(body, /<a href="\/invitations">Invitations<\/a>/);
-      assert.deepEqual(formsIn(body), []);
-      assert.doesNotMatch(body, /<script|<link|<img|<style/i);
-      assert.deepEqual(organizations.administrationCalls, [{ operation: 'memberOverview', actor: { user: ann }, request: 'org-a' }]);
+      assert.match(body, /Active product members: 1/);
+      assert.match(body, /ann@example\.com: active\. Roles: User, Admin\./);
+      assert.match(body, /dora@example\.com: active\. Roles: none\./);
+      assert.doesNotMatch(body, /ivy@example\.com|old@example\.com|Change role|Remove member|Logging|Security|<script/);
+      assert.deepEqual(organizations.administrationCalls.map(({ operation, actor, request }) => [operation, actor, request]), [
+        ['memberOverview', { user: ann }, 'org-a'], ['invitationOverview', { user: ann }, 'org-a'],
+      ]);
       assert.deepEqual(resolver.calls, [ann]);
+      const style = /<style>([\s\S]*?)<\/style>/.exec(body)?.[1] ?? '';
+      assert.notEqual(style, '');
+      assert.equal(response.headers.get('Content-Security-Policy'), `default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; style-src 'sha256-${createHash('sha256').update(style).digest('base64')}'; img-src 'self'; font-src 'self'`);
     });
   }
 
   for (const policy of ['invited-address', 'provider-rules'] as const) {
-    test(`Given an invitation overview with the ${policy} identity policy, when the invitations page opens, then it has a send form with an email field for each role that the actor can invite, a resend and a revoke form for each pending invitation of its authority, each invitation with its role and state, and the policy text of the directory`, async () => {
-      const { routes, organizations } = serveAdministration({ invitations: { ...acmeInvitations, identityPolicy: policy } });
+    test(`Given ${policy} invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions`, async () => {
+      const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, identityPolicy: policy } });
+      const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
 
-      const response = await routes.handle(accountRequest('/invitations', 'session=ann'));
-      const body = await response.text();
-
-      assert.equal(response.status, 200);
-      assert.deepEqual(headersWithoutCookies(response), formPageHeaders);
       assert.deepEqual(formsIn(body), [
-        { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user' }, label: 'Invite as User' },
-        { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'admin' }, label: 'Invite as Admin' },
+        { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user' }, label: 'Invite' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Resend the invitation to new@example.com' },
         { action: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Revoke the invitation to new@example.com' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-2' }, label: 'Resend the invitation to boss@example.com' },
         { action: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-2' }, label: 'Revoke the invitation to boss@example.com' },
       ]);
-      assert.match(body, /<label>Email address <input type="email" name="email" required maxlength="254"><\/label>/);
-      assert.match(body, /<p>new@example\.com: User invitation, pending\.<\/p>/);
-      assert.match(body, /<p>boss@example\.com: Admin invitation, pending\.<\/p>/);
-      assert.match(body, /<p>old@example\.com: User invitation, expired\.<\/p>/);
-      assert.match(body, /<a href="\/members">Members<\/a>/);
-      assert.equal(/Only a sign-in with the invited email address can accept the invitation\./.test(body), policy === 'invited-address');
-      assert.equal(/The sign-in service decides who can accept the invitation\./.test(body), policy === 'provider-rules');
-      assert.deepEqual(organizations.administrationCalls.map(({ operation, request }) => [operation, request]), [['invitationOverview', 'org-a']]);
+      assert.equal((body.match(/type="email"/g) ?? []).length, 1);
+      assert.match(body, /<label for="invite-email">Email address<\/label>/);
+      assert.match(body, /<fieldset>[\s\S]*<legend>Role<\/legend>/);
+      assert.match(body, /type="radio" name="role" value="user" checked/);
+      assert.match(body, /type="radio" name="role" value="admin"/);
+      assert.match(body, /Expires <time datetime="/);
+      assert.match(body, /Admin includes product and MCP access/);
+      assert.doesNotMatch(body, /Admin invitation gives no User access|old@example\.com/);
+      assert.equal(/Only a sign-in with the invited email address/.test(body), policy === 'invited-address');
+      assert.equal(/The sign-in service decides who can accept/.test(body), policy === 'provider-rules');
     });
   }
 
-  test('Given an invitations page, when it opens, then it says that the acceptance of a pending invitation gives its role, and that the role of another invitation can be the current role of the member', async () => {
-    const { routes } = serveAdministration({ invitations: acmeInvitations });
-
-    const body = await (await routes.handle(accountRequest('/invitations', 'session=ann'))).text();
-
-    assert.match(body, /The acceptance of a pending invitation gives the role that the page shows\. For an accepted, revoked, or expired invitation, the sign-in service can show the current role of the member instead\./);
-  });
-
-  test('Given an unknown identity policy from the directory, when the invitations page opens, then the page claims no strict address match', async () => {
-    const { routes } = serveAdministration({ invitations: { ...acmeInvitations, identityPolicy: 'same-address-maybe' as InvitationOverview['identityPolicy'] } });
-
-    const body = await (await routes.handle(accountRequest('/invitations', 'session=ann'))).text();
-
+  test('Given an unknown identity policy, when Members opens, then it makes no strict address promise', async () => {
+    const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, identityPolicy: 'unknown' as InvitationOverview['identityPolicy'] } });
+    const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
     assert.doesNotMatch(body, /Only a sign-in with the invited email address/);
-    assert.match(body, /The sign-in service decides who can accept the invitation\./);
+    assert.match(body, /The sign-in service decides who can accept/);
   });
 
-  test('Given provider values with HTML characters, when the members and invitations pages open, then each shows them as text', async () => {
+  test('Given no pending invitations, when Members opens, then the empty state keeps the single invitation form', async () => {
+    const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitations: [] } });
+    const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
+    assert.match(body, /No pending invitations/);
+    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite']);
+  });
+
+  test('Given another member with the same email, when Members opens, then only the trusted subject gets the You label', async () => {
+    const [member] = acmeMembers.members;
+    assert.ok(member, 'The fixture has a member to copy.');
+    const { routes } = serveAdministration({ ...current, members: { ...acmeMembers, members: [
+      { ...member, subject: 'another-user' },
+      { ...member, email: 'different@example.com', subject: ann.subject },
+    ] } });
+    const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
+    const rows = [...body.matchAll(/<li class="member-row">([\s\S]*?)<\/li>/g)].map(([, row]) => row ?? '');
+    assert.equal(rows.length, 2);
+    const [otherRow, ownRow] = rows;
+    assert.ok(otherRow, 'Members shows the other member.');
+    assert.ok(ownRow, 'Members shows the current member.');
+    assert.doesNotMatch(otherRow, /You/);
+    assert.match(ownRow, /You/);
+  });
+
+  test('Given hostile provider text and long values, when Members opens, then values are escaped and no member write control is added', async () => {
     const hostile = '"><script>alert(1)</script>';
-    const members: MemberOverview = {
-      organizationId: `org-${hostile}`,
-      activeUserSeats: 1,
-      members: [{ membershipId: `membership-${hostile}`, email: `<b>eve</b>${hostile}@example.com`, status: 'active', roles: [`custom-${hostile}`, 'toString'], revision: `r${hostile}` }],
-    };
-    const invitations: InvitationOverview = {
-      ...acmeInvitations,
-      organizationId: `org-${hostile}`,
-      invitations: [{ invitationId: `invitation-${hostile}`, email: `<i>new</i>${hostile}@example.com`, role: `custom-${hostile}`, state: 'pending', changes: ['revoke'] }],
-    };
-    const { routes } = serveAdministration({ members, invitations });
-
-    const bodies = [
-      await (await routes.handle(accountRequest('/members', 'session=ann'))).text(),
-      await (await routes.handle(accountRequest('/invitations', 'session=ann'))).text(),
-    ];
-
-    for (const body of bodies) assert.doesNotMatch(body, /<script>|<b>|<i>/);
-    assert.match(bodies[0] ?? '', /Roles: custom-&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;, toString\./);
-    assert.deepEqual(formsIn(bodies[0] ?? ''), []);
-    assert.deepEqual(formsIn(bodies[1] ?? '').map(({ fields, label }) => [fields.invitation_id, label]).at(-1), [`invitation-${hostile}`, `Revoke the invitation to <i>new</i>${hostile}@example.com`]);
+    const [member] = acmeMembers.members;
+    const [invitation] = acmeInvitations.invitations;
+    assert.ok(member, 'The fixture has a member to copy.');
+    assert.ok(invitation, 'The fixture has an invitation to copy.');
+    const { routes } = serveAdministration({
+      members: { ...acmeMembers, organizationName: `Acme ${hostile}`, members: [{ ...member, email: `<b>person</b>${hostile}@example.com`, roles: [`custom-${hostile}`, 'toString'] }] },
+      invitations: { ...acmeInvitations, invitations: [{ ...invitation, invitationId: hostile, email: `<i>new</i>${hostile}@example.com` }] },
+    });
+    const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
+    assert.doesNotMatch(body, /<script>|<b>|<i>/);
+    assert.match(body, /Roles: custom-&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;, toString\./);
+    assert.match(body, /Invite to Acme &quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h2>/);
+    assert.equal(formsIn(body)[0]?.fields.organization_id, 'org-a');
+    assert.deepEqual(formsIn(body).at(-1)?.fields.invitation_id, hostile);
+    assert.doesNotMatch(body, /Remove member|Change role/);
   });
 
-  test('Given an organization without invitations, when the invitations page opens, then it says so and still offers the send forms', async () => {
-    const { routes } = serveAdministration({ invitations: { ...acmeInvitations, invitableRoles: ['user', 'admin'], invitations: [] } });
-
-    const body = await (await routes.handle(accountRequest('/invitations', 'session=ann'))).text();
-
-    assert.match(body, /<p>There are no invitations\.<\/p>/);
-    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite as User', 'Invite as Admin']);
+  test('Given a session without MFA, when Members opens, then current Admin access is sufficient', async () => {
+    const { routes } = serveAdministration(current, { session: { mfaCompleted: false } });
+    assert.equal((await routes.handle(accountRequest('/members', 'session=ann'))).status, 200);
   });
 
-  test('Given a session without MFA and allowed current access, when administration pages open, then each renders normally and the service gets only the decided actor', async () => {
-    const { routes, organizations } = serveAdministration({ members: acmeMembers, invitations: acmeInvitations }, { session: { mfaCompleted: false } });
-
-    for (const path of ['/members', '/invitations']) {
-      const response = await routes.handle(accountRequest(path, 'session=ann'));
-      assert.equal(response.status, 200);
+  for (const method of ['GET', 'HEAD']) {
+    test(`Given current Admin access, when ${method} opens the old Invitations URL, then it redirects to Members with no history page`, async () => {
+      const { routes } = serveAdministration(current);
+      const response = await routes.handle(accountRequest('/invitations', 'session=ann', { method }));
+      assert.equal(response.status, 303);
+      assert.equal(response.headers.get('Location'), 'https://thermus.example/members');
       assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
-    }
+      assert.equal(await response.text(), '');
+    });
+  }
 
-    assert.deepEqual(organizations.administrationCalls.map(({ actor }) => actor), [{ user: ann }, { user: ann }]);
-  });
-
-  test('Given a service that denies the actor, when the pages open, then each gets 403 with a link to the organization page and the session cookies', async () => {
+  test('Given a service that denies the actor, when either page opens, then current service authorization refuses it', async () => {
     const { routes } = serveAdministration({ members: 'denied', invitations: 'denied' });
-
     for (const path of ['/members', '/invitations']) {
       const response = await routes.handle(accountRequest(path, 'session=ann'));
-      assert.equal(response.status, 403);
-      assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
-      assert.match(await response.text(), /<a href="\/organizations">organization page<\/a>/);
+      await assertPage(response, { status: 403, text: /organization page/, cookies: sessionCookies });
     }
   });
 
-  test('Given access that the resolver denies, when the pages open, then each gets 403 before the service runs', async () => {
-    const { routes, organizations } = serveAdministration({ members: acmeMembers }, { routes: { decisions: new Map([[ann.subject, { allowed: false, reason: 'membership-inactive' }]]) } });
-
-    for (const path of ['/members', '/invitations']) assert.equal((await routes.handle(accountRequest(path, 'session=ann'))).status, 403);
-
-    assert.deepEqual(organizations.administrationCalls, []);
-  });
+  for (const failure of ['members', 'invitations'] as const) {
+    test(`Given a failed ${failure} read, when Members opens, then no partial page or invitation form is returned`, async () => {
+      const outage = new Error('private provider cause');
+      const { routes, failures } = serveAdministration({ ...current, [failure]: outage });
+      const response = await routes.handle(accountRequest('/members', 'session=ann'));
+      const body = await response.text();
+      assert.equal(response.status, 500);
+      assert.doesNotMatch(body, /Active product members|No pending|<form|private provider cause/);
+      assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
+      assert.deepEqual(failures, [{ path: '/members', cause: outage }]);
+    });
+  }
 
   for (const method of ['POST', 'PUT', 'DELETE']) {
-    test(`Given a ${method} request, when it reaches a page, then it gets 405 with Allow: GET, HEAD and the session cookies, and the service is not asked`, async () => {
-      const { routes, organizations } = serveAdministration({ members: acmeMembers, invitations: acmeInvitations });
-
+    test(`Given a ${method} request to a page, when it arrives, then no read or write runs`, async () => {
+      const { routes, organizations } = serveAdministration(current);
       for (const path of ['/members', '/invitations']) {
         const response = await routes.handle(accountRequest(path, 'session=ann', { method, headers: { Origin: publicOrigin } }));
         assert.equal(response.headers.get('Allow'), 'GET, HEAD');
         await assertPage(response, { status: 405, text: /This page does not accept this request method\./, cookies: sessionCookies });
       }
-
       assert.deepEqual(organizations.administrationCalls, []);
     });
   }
 
-  test('Given an overview that fails, when the pages open, then each gets the failure page with the session cookies, and the operator gets the path and the cause', async () => {
-    const outage = new Error('organization directory timed out');
-    const { routes, failures } = serveAdministration({ members: outage, invitations: outage });
+  test('Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path', async () => {
+    const { routes } = serveAdministration(current, { routes: { publicBaseUrl: 'https://thermus.example/team' } });
+    const body = await (await routes.handle(accountRequest('/team/members', 'session=ann'))).text();
+    assert.deepEqual([...new Set(formsIn(body).map(({ action }) => action))], ['/team/invitations/send', '/team/invitations/resend', '/team/invitations/revoke']);
+    assert.match(body, /href="\/team\/">Product \/ Connect<\/a>/);
+    assert.match(body, /href="\/team\/members" aria-current="page">Members<\/a>/);
+    assert.match(body, /href="\/team\/organizations">Switch workspace<\/a>/);
+    assert.equal((await routes.handle(accountRequest('/team/invitations', 'session=ann'))).headers.get('Location'), 'https://thermus.example/team/members');
+  });
 
-    for (const path of ['/members', '/invitations']) {
-      await assertPage(await routes.handle(accountRequest(path, 'session=ann')), { status: 500, text: /The request failed\. Try again later\./, cookies: sessionCookies });
+  test('Given a denied resolver or no selected organization, when either page opens, then the service is not asked', async () => {
+    for (const decision of [{ allowed: false as const, reason: 'membership-inactive' as const }, { allowed: true as const, context: { user: ann, tenantId: 'local:installation', grants: [], permissions: [] } }]) {
+      const { routes, organizations } = serveAdministration(current, { routes: { decisions: new Map([[ann.subject, decision]]) } });
+      for (const path of ['/members', '/invitations']) assert.equal((await routes.handle(accountRequest(path, 'session=ann'))).status, 403);
+      assert.deepEqual(organizations.administrationCalls, []);
     }
-
-    assert.deepEqual(failures, [{ path: '/members', cause: outage }, { path: '/invitations', cause: outage }]);
-  });
-
-  test('Given a public URL under a path, when the pages open, then each form posts under that path and each link points under it', async () => {
-    const { routes } = serveAdministration({ members: acmeMembers, invitations: acmeInvitations }, { routes: { publicBaseUrl: 'https://thermus.example/team' } });
-
-    const members = await (await routes.handle(accountRequest('/team/members', 'session=ann'))).text();
-    const invitations = await (await routes.handle(accountRequest('/team/invitations', 'session=ann'))).text();
-
-    assert.deepEqual(formsIn(members), []);
-    assert.deepEqual([...new Set(formsIn(invitations).map(({ action }) => action))], ['/team/invitations/send', '/team/invitations/resend', '/team/invitations/revoke']);
-    assert.match(members, /<a href="\/team\/invitations">Invitations<\/a>/);
-    assert.match(invitations, /<a href="\/team\/members">Members<\/a>/);
-  });
-
-  test('Given a decided context without an organization, when the pages open, then each gets the 403 access denial and the service is not asked', async () => {
-    const { routes, organizations } = serveAdministration({ members: acmeMembers }, {
-      routes: { decisions: new Map([[ann.subject, { allowed: true, context: { user: ann, tenantId: 'local:installation', grants: [], permissions: [] } }]]) },
-    });
-
-    for (const path of ['/members', '/invitations']) assert.equal((await routes.handle(accountRequest(path, 'session=ann'))).status, 403);
-
-    assert.deepEqual(organizations.administrationCalls, []);
   });
 });

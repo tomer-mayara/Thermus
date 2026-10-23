@@ -24,11 +24,11 @@ test('Given an active Admin-only membership and password sign-in, when the Admin
   assert.equal((await browser.open('members')).status, 200);
   assert.equal((await browser.open('billing')).status, 200);
 
-  const invitations = await browser.open('invitations');
+  const invitations = await browser.open('members');
   assert.equal(invitations.status, 200, invitations.body);
   for (const role of ['User', 'Admin']) {
-    const form = formLabelled(formsIn(invitations.body), `Invite as ${role}`);
-    const answer = await browser.submit({ ...form, fields: { ...form.fields, email: `new-${role.toLowerCase()}@example.com` } });
+    const form = formLabelled(formsIn(invitations.body), 'Invite');
+    const answer = await browser.submit({ ...form, fields: { ...form.fields, role: role.toLowerCase(), email: `new-${role.toLowerCase()}@example.com` } });
     assert.equal(answer.status, 303, answer.body);
   }
   assert.deepEqual(site.world.invitations.map(({ email, roleSlug }) => [email, roleSlug]), [

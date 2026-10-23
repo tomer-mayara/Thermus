@@ -1,5 +1,28 @@
 # Test inventory
 
+## Current S1-04a inventory scope
+
+S1-04a combines active members and pending invitations on `/members`. The
+[implementation record](../implementation/admin-s1-04a.md) records the actual
+runs, review, and limits. These cases use local provider doubles and HTTP fakes;
+they do not prove live invitation acceptance or provider role preservation.
+
+- `test/acceptance/auth/hosted-members.test.ts` specifies the Admin page, trusted
+  You label, pending expiry, single User/Admin form, and native lifecycle actions.
+  Unknown send/resend/revoke responses offer a read-only status check and do not
+  repeat the write.
+- Existing hosted invitation, WorkOS administration, and route cases retain
+  current access, organization isolation, origin/CSRF, conflict, stale-target,
+  pagination, and safe-failure checks against the combined page.
+- Organization and WorkOS directory tests check trusted subject, current workspace
+  name, and expiry projection. Change-record tests distinguish failed preflight from an unknown
+  write outcome. Credentials remain excluded from overview data and pages.
+- Portal unit and acceptance cases check Product / Connect and workspace
+  selection for current access. Only the current access role enables Members;
+  session claims alone cannot add the link or authorize its route.
+- The existing hosted live administration driver follows the combined form.
+  Its live run remains separate and is not a local-test pass.
+
 ## Current S1-03b inventory scope
 
 S1-03b extends the named-creation recovery and eligibility characterization.

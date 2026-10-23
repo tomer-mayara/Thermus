@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { accountRequest } from './fixtures/account-routes-fixtures.ts';
-import { acmeMembers, annToken, changePost, serveAdministration, sessionCookies } from './fixtures/administration-routes-fixtures.ts';
+import { acmeInvitations, acmeMembers, annToken, changePost, serveAdministration, sessionCookies } from './fixtures/administration-routes-fixtures.ts';
 
 test('Given a currently authorized session and a valid legacy grant form, when the retired path receives it, then no service write runs and the response is unavailable with session cookies', async () => {
   const { routes, organizations } = serveAdministration({}, { routes: { withOperation: false } });
@@ -16,12 +16,12 @@ test('Given a currently authorized session and a valid legacy grant form, when t
 });
 
 test('Given current member data, when Members opens, then member details remain visible without grant forms', async () => {
-  const { routes } = serveAdministration({ members: acmeMembers });
+  const { routes } = serveAdministration({ members: acmeMembers, invitations: acmeInvitations });
 
   const response = await routes.handle(accountRequest('/members', 'session=ann'));
   const body = await response.text();
 
   assert.equal(response.status, 200);
   assert.match(body, /ann@example\.com: active\. Roles: User, Admin\./);
-  assert.deepEqual(formsIn(body), []);
+  assert.ok(formsIn(body).every(({ action }) => action.startsWith('/invitations/')));
 });
