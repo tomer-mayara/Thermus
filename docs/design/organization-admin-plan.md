@@ -18,7 +18,7 @@ access. Admin also manages the organization features shipped in that slice.
 Current organizations/accounts are internal/test only; make a clean User/Admin
 transition, without a legacy customer migration or customer Super Admin role.
 
-| Slice | Shipped scope |
+| Slice | Scope at completion |
 |---|---|
 | 1 — Basic Admin portal | Narrow provider boundary, User/Admin roles, named organization and first Admin, creator agreement, active-member list, native invitations/acceptance, and workspace selection. Product + Members navigation; no member removal, role changes, MFA gate, flags, factors, or policy UI/state. |
 | 2 — Collector export | Slice 1 plus Audit logs settings, safe content capture, and bounded best-effort export. Password only; no MFA dependency or member-reduction coordinator. |
@@ -545,7 +545,7 @@ System logs are the current Thermus engineering diagnostics. Only Thermus
 operators use them; customers have no access. `src/logs/system/` owns
 `SystemLogger`, `ConsoleSystemLogger`, and `OtelSystemLogger`, including automatic
 source file and line enrichment. Existing account change records in this output
-remain internal until S2-03a wires separate audit events.
+remain internal. S2-03a will add separate customer audit events.
 
 Audit logs are the customer organization Admin feature. `src/logs/audit/` owns
 the destination store/runtime and the distinct event-specific `AuditLog` and
