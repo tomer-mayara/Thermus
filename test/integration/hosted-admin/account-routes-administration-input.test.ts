@@ -10,7 +10,7 @@ function withoutToken(fields: Readonly<Record<string, string>>): Record<string, 
   return Object.fromEntries(Object.entries(fields).filter(([name]) => name !== 'csrf_token'));
 }
 
-describe('HostedAccountRoutes input checks of grant and invitation changes', () => {
+describe('HostedAccountRoutes input checks of invitation changes', () => {
   for (const [label, origin] of [['a foreign origin', 'https://evil.example'], ['a null origin', 'null'], ['another scheme', 'http://thermus.example'], ['no origin', undefined]] as const) {
     test(`Given change posts with ${label}, when they arrive, then each gets 403 with the session cookies, its body stays unread, and the service is not asked`, async () => {
       const { routes, organizations } = serveAdministration();

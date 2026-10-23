@@ -24,7 +24,6 @@ export function describeOperatorSetupProofs(run: LiveRun): void {
     authority: workosAuthority(settings.clientId),
     userManagement: workos.userManagement,
     authorization: workos.authorization,
-    organizations: workos.organizations,
   });
 
   async function membershipOf(fixtures: OrganizationFixtures, user: LiveUser, organizationId = fixtures.operatorOrganization.id): Promise<OrganizationMembership | undefined> {

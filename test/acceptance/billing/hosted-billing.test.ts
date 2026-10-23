@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { BillingRecorder } from '../../support/doubles/billing/billing-recorder.ts';
-import { recordLines, rolesOf, seatsIn, serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
-import { formLabelled, formsIn } from '../../support/drivers/browser/hosted-browser.ts';
+import { seatsIn, serveAdministrationSite } from '../../support/dsl/hosted-administration.ts';
+import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { userOf } from '../../support/fixtures/hosted-members.ts';
 
 const failurePage = /The request failed\. Try again later\./;
@@ -81,50 +81,39 @@ describe('Hosted billing with BillingFree through the public routes, with sessio
     assert.deepEqual([site.billing.reads, site.billing.updates, site.records], [[], [], []]);
   });
 
-  test('Given Acme with 4 active User seats on overlapping member pages, with Admin-only, Super-Admin-only, default-role, pending, and inactive memberships and a pending User invitation, when an Admin grants User to an Admin-only member and another Admin then revokes User from a member, then billing gets the complete count after each change, 5 and then 4, and the billing page still shows the free plan with no billed seat', { timeout: 20_000 }, async (t) => {
+  test('Given overlapping member pages and pending invitations, when an Admin reads Members and billing, then each active User counts once and the free billing state stays unchanged', async (t) => {
     const site = await serve(t);
     site.directory.addInvitations({ organizationId: 'org-a', email: 'pending.user@example.com', role: 'user' });
     site.directory.memberPageLayout = (members) => [members.slice(0, 3), members.slice(2, 6), members.slice(5)];
+    const browser = site.browserOf(userOf('user-sam', 'org-a'));
 
-    const granted = await submitOnPage(site.browserOf(userOf('user-fay', 'org-a')), 'members', 'Grant User to eve@example.com');
-    const revoked = await submitOnPage(site.browserOf(userOf('user-otto', 'org-a')), 'members', 'Revoke User from una@example.com');
-    const sam = site.browserOf(userOf('user-sam', 'org-a'));
-    const members = await sam.open('members');
-    const billingPage = await sam.open('billing');
+    const members = await browser.open('members');
+    const billingPage = await browser.open('billing');
 
-    assert.deepEqual([granted.status, revoked.status], [303, 303]);
-    assert.deepEqual(site.billing.updates, ['org-a: 5', 'org-a: 4']);
     assert.equal(seatsIn(members.body), 4);
     assert.match(billingPage.body, /Plan: Free/);
     assert.equal(billedSeatsIn(billingPage.body), 0);
-    assert.deepEqual(recordLines(site.records), [
-      'user-fay in org-a: grant user for membership-user-eve-org-a: applied',
-      'user-otto in org-a: revoke user for membership-user-una-org-a: applied',
-    ]);
+    assert.deepEqual(site.billing.updates, []);
+    assert.deepEqual(site.records, []);
     assert.deepEqual(site.failures, []);
   });
 
-  test('Given a member page that fails after a User grant change is made, when the change runs, then billing gets no partial count, the browser gets the failure page, the record says applied, and the operator gets the path and the cause; when a later User grant change runs after the directory recovers, then billing gets the complete count, which includes the first change', { timeout: 20_000 }, async (t) => {
+  test('Given a later member-page outage, when Members is read and then read after recovery, then no partial count is shown and the recovered page has the complete count', async (t) => {
     const site = await serve(t);
-    const fay = site.browserOf(userOf('user-fay', 'org-a'));
-    const { forms } = await shownPage(fay, 'members');
+    const browser = site.browserOf(userOf('user-fay', 'org-a'));
     site.directory.memberPageLayout = (members) => [members.slice(0, 2), new Error('member page 2 timed out'), members.slice(4)];
 
-    const failed = await fay.submit(formLabelled(forms, 'Grant User to eve@example.com'));
-    const updatesAfterFailure = [...site.billing.updates];
+    const failed = await browser.open('members');
     site.directory.memberPageLayout = undefined;
-    const later = await submitOnPage(site.browserOf(userOf('user-otto', 'org-a')), 'members', 'Revoke User from una@example.com');
+    const recovered = await browser.open('members');
 
     assert.equal(failed.status, 500);
     assert.match(failed.body, failurePage);
-    assert.deepEqual(updatesAfterFailure, []);
-    assert.deepEqual(rolesOf(site, 'user-eve', 'org-a'), ['admin', 'user']);
-    assert.equal(later.status, 303);
-    assert.deepEqual(site.billing.updates, ['org-a: 4']);
-    assert.deepEqual(recordLines(site.records), [
-      'user-fay in org-a: grant user for membership-user-eve-org-a: applied',
-      'user-otto in org-a: revoke user for membership-user-una-org-a: applied',
-    ]);
-    assert.deepEqual(site.failures.map(({ path, cause }) => `${path}: ${String(cause)}`), ['/team/members/grants: Error: member page 2 timed out']);
+    assert.equal(seatsIn(failed.body), undefined);
+    assert.equal(recovered.status, 200);
+    assert.equal(seatsIn(recovered.body), 4);
+    assert.deepEqual(site.billing.updates, []);
+    assert.deepEqual(site.records, []);
+    assert.deepEqual(site.failures.map(({ path, cause }) => `${path}: ${String(cause)}`), ['/team/members: Error: member page 2 timed out']);
   });
 });

@@ -55,7 +55,7 @@ required_checks:
   metrics: metrics.process_paths
 
 # Protected paths provide minimum review tiers; semantic impact can raise them. A path can appear in
-# more than one group. The lists matched the tree on 2026-10-21.
+# more than one group. The lists matched the tree on 2026-10-22.
 protected_paths:
   policy:
     tier: T1
@@ -167,6 +167,7 @@ public_surface:
     identity:
       - src/accounts/identity/access-context.ts
       - src/accounts/identity/browser-session.ts
+      - src/accounts/identity/browser-session-controls.ts
       - src/accounts/identity/identity-verifier.ts
       - src/accounts/identity/local-user-administration.ts
     billing:
@@ -184,6 +185,7 @@ public_surface:
       - src/accounts/organizations/customer-roles.ts
       - src/accounts/organizations/organization-administration.ts
       - src/accounts/organizations/organization-directory.ts
+      - src/accounts/organizations/signup-activation.ts
     page-fetch:
       - src/pipelines/page-fetch/fetch-failure.ts
       - src/pipelines/page-fetch/fetch-page.ts

@@ -6,7 +6,19 @@ import { annToken, changePost, serveAdministration, sessionCookies, validChanges
 
 const changes = Object.entries(validChanges);
 
-describe('HostedAccountRoutes grant and invitation changes', () => {
+describe('HostedAccountRoutes invitation changes', () => {
+  test('Given an invitation address already in use, when the native send is refused, then the notice explains the conflict without offering retired member role controls', async () => {
+    const { routes } = serveAdministration({ change: 'address-in-use' });
+
+    const response = await routes.handle(changePost(validChanges.send.path, validChanges.send.fields));
+    const body = await response.text();
+
+    assert.equal(response.status, 409);
+    assert.match(body, /already belongs to a member.*pending invitation/);
+    assert.match(body, /An existing member cannot be invited again\. To replace a pending invitation, revoke it first\./);
+    assert.doesNotMatch(body, /To change the roles|open the members page/);
+  });
+
   for (const [name, { path, fields }] of changes) {
     for (const outcome of ['applied', 'unchanged'] as const) {
       test(`Given a valid ${name} post from this site, when the service answers ${outcome}, then the service gets the actor with the MFA evidence of the session and only the fields of the change, and the browser gets 303 to the page with the session cookies`, async () => {
@@ -15,7 +27,7 @@ describe('HostedAccountRoutes grant and invitation changes', () => {
         const response = await routes.handle(changePost(path, fields, { 'X-Organization-Id': 'org-b' }));
 
         assert.equal(response.status, 303);
-        assert.equal(response.headers.get('Location'), `https://thermus.example${name === 'grant' ? '/members' : '/invitations'}`);
+        assert.equal(response.headers.get('Location'), `https://thermus.example/invitations`);
         assert.equal(response.headers.get('Cache-Control'), 'no-store');
         assert.deepEqual(response.headers.getSetCookie(), sessionCookies);
         assert.equal(await response.text(), '');
@@ -43,7 +55,6 @@ describe('HostedAccountRoutes grant and invitation changes', () => {
     for (const [, { path, fields }] of changes) await routes.handle(changePost(path, fields));
 
     assert.deepEqual(organizations.administrationCalls.map(({ operation, request }) => [operation, request]), [
-      ['changeGrant', { organizationId: 'org-a', membershipId: 'membership-dora', revision: 'r2', role: 'user', action: 'grant' }],
       ['sendInvitation', { organizationId: 'org-a', role: 'user', email: 'new.user@example.com' }],
       ['resendInvitation', { organizationId: 'org-a', invitationId: 'invitation-1' }],
       ['revokeInvitation', { organizationId: 'org-a', invitationId: 'invitation-1' }],
@@ -65,25 +76,6 @@ describe('HostedAccountRoutes grant and invitation changes', () => {
     });
   }
 
-  test('Given forged roles and actions, also for Super Admin, account disable, membership deactivation, and a credential reset, when they are posted, then the routes give them to the service unchanged, and the denial of the service refuses them', async () => {
-    const { routes, organizations } = serveAdministration({ change: 'denied' });
-    const forged = [
-      { role: 'super-admin', action: 'grant' },
-      { role: 'admin', action: 'revoke' },
-      { role: 'user', action: 'deactivate' },
-      { role: 'user', action: 'disable' },
-      { role: 'user', action: 'reset-credentials' },
-    ];
-
-    for (const change of forged) assert.equal((await routes.handle(changePost('/members/grants', { ...validChanges.grant.fields, ...change }))).status, 403);
-    const invite = await routes.handle(changePost('/invitations/send', { ...validChanges.send.fields, role: 'super-admin' }));
-
-    assert.equal(invite.status, 403);
-    assert.deepEqual(organizations.administrationCalls.map(({ request }) => (typeof request === 'string' ? request : `${'action' in request ? request.action : 'invite'} ${'role' in request ? request.role : ''}`)), [
-      'grant super-admin', 'revoke admin', 'deactivate user', 'disable user', 'reset-credentials user', 'invite super-admin',
-    ]);
-  });
-
   test('Given a change that fails in the service, when it is posted, then it gets the failure page with the session cookies and no redirect, and the operator gets the path and the cause', async () => {
     const outage = new Error('directory change timed out');
     const { routes, failures } = serveAdministration({ change: outage });
@@ -100,8 +92,8 @@ describe('HostedAccountRoutes grant and invitation changes', () => {
     const denied = serveAdministration({}, { routes: { decisions: new Map([[ann.subject, { allowed: false, reason: 'permission-required' }]]) } });
 
     const answers = [
-      await signedOut.routes.handle(postForm(validChanges.grant.path, { cookie: 'session=ended', body: new URLSearchParams(validChanges.grant.fields).toString() })),
-      await denied.routes.handle(changePost(validChanges.grant.path, validChanges.grant.fields)),
+      await signedOut.routes.handle(postForm(validChanges.send.path, { cookie: 'session=ended', body: new URLSearchParams(validChanges.send.fields).toString() })),
+      await denied.routes.handle(changePost(validChanges.send.path, validChanges.send.fields)),
     ];
 
     assert.deepEqual(answers.map(({ status }) => status), [401, 403]);

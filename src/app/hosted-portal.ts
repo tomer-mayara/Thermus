@@ -27,17 +27,18 @@ export class HostedPortal {
   readonly #files: ReadonlyMap<string, PortalFile>;
   readonly #headers: Readonly<Record<string, string>>;
 
-  private constructor(files: ReadonlyMap<string, PortalFile>, authkitIssuer: string) {
+  private constructor(files: ReadonlyMap<string, PortalFile>, formActionOrigins: readonly string[]) {
     this.#files = files;
+    const formActions = ["'self'", ...formActionOrigins.map(formActionOrigin)].join(' ');
     this.#headers = {
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
-      'Content-Security-Policy': `default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://api.workos.com ${new URL(authkitIssuer).origin}`,
+      'Content-Security-Policy': `default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action ${formActions}`,
     };
   }
 
-  static async load(authkitIssuer: string, directory = new URL('.', import.meta.resolve('#hosted-portal/index.html'))): Promise<HostedPortal> {
+  static async load(formActionOrigins: readonly string[], directory = new URL('.', import.meta.resolve('#hosted-portal/index.html'))): Promise<HostedPortal> {
     try {
       const index = new URL('index.html', directory);
       const assets = new URL('assets/', directory);
@@ -51,7 +52,7 @@ export class HostedPortal {
         files.set(path, { body, type: contentTypes[extname(entry.name)] ?? 'application/octet-stream' });
       }
       validateIndex(files);
-      return new HostedPortal(files, authkitIssuer);
+      return new HostedPortal(files, formActionOrigins);
     } catch {
       throw new Error('The hosted portal build is missing or invalid. Run npm run build:user-portal before startup.');
     }
@@ -76,6 +77,12 @@ export class HostedPortal {
       close: (listenerDrain) => application.close(listenerDrain),
     };
   }
+}
+
+function formActionOrigin(value: string): string {
+  const url = new URL(value);
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') throw new Error('A form destination needs an HTTP origin.');
+  return url.origin;
 }
 
 function validateIndex(files: ReadonlyMap<string, PortalFile>): void {

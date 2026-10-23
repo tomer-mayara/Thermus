@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { parseHTML } from 'linkedom';
 import { escapeHtml } from '../../html-escape.ts';
 import { FORM_HEADERS, NOTICE_HEADERS, hiddenField, postForm } from '../../page-html.ts';
-import type { SignupDocuments } from '../../../../accounts/providers/workos/workos-signup.ts';
+import type { SignupDocuments } from '../../../../accounts/organizations/signup-activation.ts';
 import { signupDocumentReader } from './workos-signup-document-reader.ts';
 import { SIGNUP_STYLE } from './workos-signup-style.ts';
 

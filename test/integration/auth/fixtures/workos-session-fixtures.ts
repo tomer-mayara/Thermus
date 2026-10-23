@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import { decodeJwt } from 'jose';
-import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/accounts/providers/workos/workos-browser-session.ts';
+import { WorkOSBrowserSession } from '../../../../src/accounts/providers/workos/workos-browser-session.ts';
+import type { ProfiledBrowserSessionState, ProfiledSignedInBrowserSession } from '../../../../src/accounts/identity/browser-session-controls.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../../support/doubles/workos/jwt-signing-key.ts';
 import { cookiePassword, fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer, type FakeClientSettings } from '../../../support/doubles/workos/workos-fake-api.ts';
@@ -75,7 +76,7 @@ export function cookieHeaderOf(setCookies: readonly string[]): string {
   return setCookies.map((setCookie) => setCookie.split(';')[0]).join('; ');
 }
 
-export function signedIn(state: WorkOSSessionState): WorkOSSignedInSession {
+export function signedIn(state: ProfiledBrowserSessionState): ProfiledSignedInBrowserSession {
   if (state.status !== 'signed-in') assert.fail(`the session is ${state.status}`);
   return state;
 }

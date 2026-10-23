@@ -18,9 +18,9 @@ export const acmeMembers: MemberOverview = {
   organizationId: 'org-a',
   activeUserSeats: 2,
   members: [
-    { membershipId: 'membership-ann', email: 'ann@example.com', status: 'active', roles: ['user', 'admin'], revision: 'r7', changes: [{ role: 'user', action: 'revoke' }] },
-    { membershipId: 'membership-dora', email: 'dora@example.com', status: 'active', roles: [], revision: 'r2', changes: [{ role: 'user', action: 'grant' }] },
-    { membershipId: 'membership-ivy', email: 'ivy@example.com', status: 'inactive', roles: ['user'], revision: 'r3', changes: [] },
+    { membershipId: 'membership-ann', email: 'ann@example.com', status: 'active', roles: ['user', 'admin'], revision: 'r7' },
+    { membershipId: 'membership-dora', email: 'dora@example.com', status: 'active', roles: [], revision: 'r2' },
+    { membershipId: 'membership-ivy', email: 'ivy@example.com', status: 'inactive', roles: ['user'], revision: 'r3' },
   ],
 };
 
@@ -36,7 +36,6 @@ export const acmeInvitations: InvitationOverview = {
 };
 
 export const validChanges = {
-  grant: { path: '/members/grants', fields: { csrf_token: annToken, organization_id: 'org-a', membership_id: 'membership-dora', revision: 'r2', role: 'user', action: 'grant' } },
   send: { path: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user', email: 'new.user@example.com' } },
   resend: { path: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' } },
   revoke: { path: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' } },

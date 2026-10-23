@@ -88,17 +88,21 @@ The hosted composition has one `Billing`. `composeWorkOSApplication()` in
 `src/app/hosted-workos-application.ts` creates a `BillingFree` and gives it to
 `composeHostedApplication()`, which gives it to `OrganizationAdministration`.
 The self-hosted composition creates no `Billing`. `OrganizationAdministration`
-is the only caller of `Billing`:
+is the production caller of `Billing`:
 
 - The billing page, `GET <base>billing`, calls `billingState()`.
   `billingState()` calls `stateOf` only for a sign-in that completed MFA and
   a current membership read that gives the actor `billing:manage` (Super
   Admin) in the selected organization. Else the page gets `403`, and
   `Billing` gets no call.
-- `changeGrant()` calls `updateSeats` after each applied change of a User
-  grant. It gives the complete count of active User seats from all member
-  pages. A failed member page or a failed update reaches the caller, and the
-  applied change keeps its record.
+
+S1-01 removes `changeGrant()` and its post-write `updateSeats()` call. The
+`Billing.updateSeats()` contract remains, but no customer membership route now
+calls it. Native invitation acceptance does not synchronize billing seats.
+The optional explicit work-slice composition still has a separate caller:
+`WorkOSGoogleOnboarding`, in `src/accounts/providers/workos/workos-google-onboarding.ts`,
+calls `updateSeats()` with `activeUserSeatCount()` after an applied enrollment.
+Production composition does not enable that enrollment path.
 
 No route changes billing: the free plan has no billing change, so a post to
 the billing page gets `405`. The
@@ -119,12 +123,13 @@ rules and these rules:
 - `BillingFree` keeps no state and makes no external call. It needs no
   storage, settings, or provider account.
 
-In these examples, `org-a` and `org-b` are hosted organizations.
+In these interface examples, `org-a` and `org-b` are hosted organizations.
+Seat-update examples describe `BillingFree`, not a current customer grant route.
 
 | Case | Example | Result |
 | --- | --- | --- |
-| First purchase | An operator creates `org-a`. Its Super Admin grants Admin and then User to itself. The billing page reads the billing state through `OrganizationAdministration.billingState()`. | `stateOf("org-a")` gives `{ organizationId: "org-a", plan: "free", billedSeats: 0 }`. There is nothing to buy. MCP access depends only on the User grant. |
-| Added seat | `org-a` has 4 active Users. An Admin grants User to a fifth person, and the app gives the count 5. | `updateSeats("org-a", 5)` gives the free state with 0 billed seats. There is no charge. |
+| First purchase | An operator creates `org-a`. Its Super Admin opens the billing page, which reads the billing state through `OrganizationAdministration.billingState()`. | `stateOf("org-a")` gives `{ organizationId: "org-a", plan: "free", billedSeats: 0 }`. There is nothing to buy. MCP access depends only on the User grant. |
+| Added seat | A caller gives the complete count 5 for `org-a`. | `updateSeats("org-a", 5)` gives the free state with 0 billed seats. There is no charge. |
 | Removed seats | The count goes from 5 to 4, and then to 0. | Each update gives the free state. There is no credit. The last removal ends nothing. |
 | Proration and cancellation | Seats change during a month, or a Super Admin wants to stop paying. | There is nothing to prorate or cancel. |
 | Payment failure and unpaid states | A payment fails. | This cannot occur, because no payment is collected. |
@@ -257,7 +262,7 @@ applies to both directions, so a seat that is free to add cannot earn a credit.
 - (d) No proration in either direction. Each change applies from the next
   period. An added seat is free until then.
 
-Example: 4 seats are paid. On day 10, an Admin grants User to a fifth person.
+Example: 4 seats are paid. On day 10, a fifth person gets User access.
 On day 20, one User grant is removed. Each next invoice includes 40 USD for 4
 seats in the next period.
 
@@ -324,8 +329,9 @@ the last failed retry.
 - (b) Billing state never changes access. Access depends only on grants. D7
   and D10 then do not change access.
 
-Example for (a): an operator creates an organization. Its Super Admin grants
-Admin and then User to itself. Its MCP requests get `subscription-required`
+Example for (a): an operator creates an organization and provisions initial
+User access through the approved onboarding procedure. Its MCP requests get
+`subscription-required`
 until a Super Admin completes the first payment.
 
 While `BillingFree` is in use, billing never changes access, as in (b). The
@@ -412,7 +418,7 @@ option, and AUTH-11 keeps them.
 7. **Duplicates and order.** A repeated event has no second effect. The app
    does not trust the event order. It reads the current provider object and
    applies that state.
-8. **Reconciliation.** After each grant change in the app, and on a schedule,
+8. **Reconciliation.** After each supported membership change, and on a schedule,
    the app gives the complete count to `updateSeats`. When the count and the
    provider quantity differ, the update corrects the provider. The schedule
    also finds changes outside the app, such as accepted invitations and
@@ -469,11 +475,10 @@ ticket. Do not create another one.
 3. Connect the provider implementation. `composeWorkOSApplication()` in
    `src/app/hosted-workos-application.ts` creates it instead of `BillingFree`, and
    `composeHostedApplication()` gives it to `OrganizationAdministration`. Thus
-   the two current callers of `Billing`, `changeGrant()` and `billingState()`
-   of `OrganizationAdministration`, use the provider implementation.
-   `changeGrant()` gives the complete count of active User seats to
-   `updateSeats` after each applied User grant change. `billingState()` reads
-   `stateOf` for the billing page. Connect each new caller to the same
+   `OrganizationAdministration.billingState()` reads `stateOf` through the
+   provider for the billing page. S1-01 retired the customer grant writer and
+   its seat-update call. AUTH-11 must add the approved seat synchronization
+   caller; it must not restore that writer. Connect new callers to the same
    `Billing`. If no approved rule still uses `BillingFree` after this change,
    remove it.
 4. Pass the [paid gates](#paid-gates).
@@ -490,7 +495,7 @@ recommended options.
 | `src/accounts/billing/billing-events.ts` | The event route. It checks the signature and the time on the raw body, and it records the IDs of processed events. |
 | `src/accounts/billing/seat-reconciliation.ts` | Gives the complete count to `updateSeats` after each membership change and on a schedule. |
 | `src/accounts/billing/billing-store.ts`, `migrations/billing/0001-billing.sql` | For D11 (a): SQLite through `node:sqlite` on the hosted persistent volume. The store keeps the provider customer and subscription IDs, the last confirmed status, quantity, and period end of each organization, the IDs of processed events, and the billing change records. For D11 (b), a PostgreSQL store replaces these files. |
-| `src/interfaces/web/account/administration-routes.ts`, `src/interfaces/web/account/administration-pages.ts` | The Super Admin billing page and actions. `AdministrationRoutes` serves the billing page, `GET <base>billing`, and `billingPage()` in `administration-pages.ts` makes it. `AdministrationRoutes.changeOnPost()` checks each member and invitation change: the method, the origin, the form, the form token, and the organization of the session. Each billing action gets the same checks. |
+| `src/interfaces/web/account/administration-routes.ts`, `src/interfaces/web/account/administration-pages.ts` | The Super Admin billing page and actions. `AdministrationRoutes` serves the billing page, `GET <base>billing`, and `billingPage()` in `administration-pages.ts` makes it. `AdministrationRoutes.changeOnPost()` checks each invitation change: the method, the origin, the form, the form token, and the organization of the session. Each billing action gets the same checks. |
 | `src/app/hosted-workos-application.ts` | `composeWorkOSApplication()` creates the provider implementation instead of `BillingFree` and gives it as `billing` to `composeHostedApplication()`. |
 | `src/runtime/config/deployment-config.ts`, `.env.example` | The provider settings of the hosted edition. The self-hosted edition reads none. |
 | `package.json`, `pnpm-lock.yaml` | An exact pin of the provider SDK, if AUTH-11 uses one. |

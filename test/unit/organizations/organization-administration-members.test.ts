@@ -9,10 +9,6 @@ function overviewOf(overview: MemberOverview | string): MemberOverview {
   return overview as MemberOverview;
 }
 
-function changesOf(overview: MemberOverview): Record<string, string[]> {
-  return Object.fromEntries(overview.members.map(({ email, changes }) => [email, changes.map(({ action, role }) => `${action} ${role}`)]));
-}
-
 describe('OrganizationAdministration members and the User seat summary', () => {
   test('Given members on several pages, when an Admin asks for the overview, then it reads each page with explicit statuses, lists each member of the organization with its application roles, and counts each active membership with User once', async () => {
     const { directory, administration } = administrationWith();
@@ -36,21 +32,6 @@ describe('OrganizationAdministration members and the User seat summary', () => {
       'org-a active,inactive,pending page-2',
       'org-a active,inactive,pending page-3',
     ]);
-  });
-
-  test('Given an Admin, a Super Admin, and a member with both, when each asks for the overview, then each active member offers only the changes of the authority of the actor, and inactive and pending members offer none', async () => {
-    const { administration } = administrationWith();
-
-    const [eve, sam, otto] = await Promise.all(['user-eve', 'user-sam', 'user-otto'].map(async (subject) => overviewOf(await administration.memberOverview(actorOf(subject), 'org-a'))));
-
-    assert.deepEqual(changesOf(eve as MemberOverview)['cy@example.com'], ['revoke user']);
-    assert.deepEqual(changesOf(eve as MemberOverview)['dora@example.com'], ['grant user']);
-    assert.deepEqual(changesOf(sam as MemberOverview)['cy@example.com'], ['revoke admin']);
-    assert.deepEqual(changesOf(sam as MemberOverview)['sam@example.com'], ['grant admin']);
-    assert.deepEqual(changesOf(otto as MemberOverview)['una@example.com'], ['revoke user', 'grant admin']);
-    for (const overview of [eve, sam, otto] as MemberOverview[]) {
-      assert.deepEqual([changesOf(overview)['ivy@example.com'], changesOf(overview)['pia@example.com']], [[], []]);
-    }
   });
 
   test('Given a member that is repeated on two pages, also with a changed status on the later page, when the overview is read, then each membership is listed and counted once, and its later record decides', async () => {
@@ -148,6 +129,6 @@ describe('OrganizationAdministration members and the User seat summary', () => {
     const overview = overviewOf(await administration.memberOverview(actorOf('user-otto'), 'org-a'));
     const [first] = overview.members;
 
-    assert.deepEqual([overview, overview.members, first, first?.roles, first?.changes, first?.changes[0]].map(Object.isFrozen), [true, true, true, true, true, true]);
+    assert.deepEqual([overview, overview.members, first, first?.roles].map(Object.isFrozen), [true, true, true, true]);
   });
 });

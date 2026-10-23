@@ -1,10 +1,8 @@
 import { waitForRequest } from '../../../../runtime/http/request-cancellation.ts';
 import { sameSecret } from '../../../../accounts/providers/workos/session-cookies.ts';
 import { readSignOutForm } from './sign-out-form.ts';
-import type { WorkOSBrowserSession, WorkOSSignedInSession } from '../../../../accounts/providers/workos/workos-browser-session.ts';
+import type { BrowserSessionControls, ProfiledSignedInBrowserSession } from '../../../../accounts/identity/browser-session-controls.ts';
 import { jsonAnswer, noticePage, seeOther, signInNotice } from './workos-session-pages.ts';
-
-export type SessionRoutesSession = Pick<WorkOSBrowserSession, 'authenticate' | 'startSignIn' | 'completeSignIn' | 'endSession' | 'csrfTokenOf'>;
 
 export interface SessionRouteFailure {
   readonly path: string;
@@ -12,7 +10,7 @@ export interface SessionRouteFailure {
 }
 
 export interface WorkOSSessionRoutesOptions {
-  readonly session: SessionRoutesSession;
+  readonly session: BrowserSessionControls;
   readonly publicBaseUrl: string;
   readonly redirectUri: string;
   readonly reportFailure: (report: SessionRouteFailure) => void;
@@ -37,7 +35,7 @@ const RETURN_PATH = /^\/(?!\/)[A-Za-z0-9\-._~!$&'()*+,;=:@%/]*$/;
 // They need no signed-in session, so the composition routes them before the account routes. An unexpected failure,
 // such as a WorkOS outage, changes no cookie, so that it cannot erase a session that can recover.
 export class WorkOSSessionRoutes {
-  private readonly session: SessionRoutesSession;
+  private readonly session: BrowserSessionControls;
   private readonly reportFailure: (report: SessionRouteFailure) => void;
   private readonly publicBaseUrl: string;
   private readonly publicOrigin: string;
@@ -128,7 +126,7 @@ export class WorkOSSessionRoutes {
   }
 }
 
-function portalView(session: WorkOSSignedInSession): object {
+function portalView(session: ProfiledSignedInBrowserSession): object {
   const { email, firstName, lastName } = session.profile;
   const name = [firstName, lastName].filter((part) => part !== undefined && part !== '').join(' ');
   const organizationId = session.user.selectedOrganizationId;

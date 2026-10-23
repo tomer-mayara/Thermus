@@ -643,9 +643,8 @@ They are in the existing suites:
   `test/integration/hosted-admin/account-routes-administration-pages.test.ts`,
   `test/integration/hosted-admin/account-routes-administration-changes.test.ts`,
   `test/integration/hosted-admin/account-routes-administration-input.test.ts`,
+  `test/integration/hosted-admin/account-routes-grant-retirement.test.ts`,
   `test/unit/organizations/organization-administration.test.ts`,
-  `test/unit/organizations/organization-administration-grants.test.ts`,
-  `test/unit/organizations/organization-administration-targets.test.ts`,
   `test/unit/organizations/organization-administration-changes.test.ts`,
   `test/unit/organizations/organization-administration-members.test.ts`,
   `test/unit/organizations/organization-administration-invitations.test.ts`,
@@ -653,7 +652,6 @@ They are in the existing suites:
   the WorkOS provider tests in `test/unit/auth-workos/`, with
   `test/unit/auth-workos/workos-organizations-memberships.test.ts`,
   `test/unit/auth-workos/workos-organizations-members.test.ts`,
-  `test/unit/auth-workos/workos-organizations-grants.test.ts`,
   `test/unit/auth-workos/workos-organizations-invitations.test.ts`,
   `test/unit/mcp/protected-resource-endpoint.test.ts`,
   `test/unit/config/deployment-config.test.ts`,
@@ -678,8 +676,9 @@ They are in the existing suites:
   `test/acceptance/auth/hosted-workos-administration.test.ts`,
   `test/acceptance/auth/hosted-organizations.test.ts`,
   `test/acceptance/auth/hosted-organization-requests.test.ts`,
-  `test/acceptance/auth/hosted-grants.test.ts`,
-  `test/acceptance/auth/hosted-grant-refusals.test.ts`,
+  `test/acceptance/auth/hosted-grant-retirement.test.ts`,
+  `test/acceptance/auth/hosted-membership-access.test.ts`,
+  `test/acceptance/auth/hosted-invitation-refusals.test.ts`,
   `test/acceptance/auth/hosted-invitations.test.ts`, and
   `test/acceptance/auth/hosted-seats.test.ts`, in
   `npm run test:acceptance`. The self-hosted container gate also checks that
@@ -920,22 +919,23 @@ The profiles exercise the following product behavior:
   sign-out, refresh, revocation, and cookie rotation.
 - AUTH-07W service cases in
   `test/acceptance/auth/hosted-live/operator-setup.ts` use the operator driver
-  to set state and check real `WorkOSOrganizations` and
-  `OrganizationAdministration` results for grants, revocation, replacement,
-  and recovery.
+  for external Super Admin setup, revocation, replacement, and recovery.
+  Real `WorkOSOrganizations` and `OrganizationAdministration` reads verify
+  current roles and access; customer grant writes are retired.
 - AUTH-07W hosted cases in
   `test/acceptance/auth/hosted-live/organization-server.ts` check onboarding,
   organization pages and selection, current access, billing, refused changes,
   and refreshed sessions. The expiry case runs after the AUTH-06 wait.
 - AUTH-08W service cases in
   `test/acceptance/auth/hosted-live/administration-proofs.ts` execute the real
-  `WorkOSOrganizations` directory. They check revision refusals, removal of
-  the last application role, inactive and pending memberships, paged reads,
-  User seats, and invitation changes.
+  `WorkOSOrganizations` directory. They check active, inactive, and pending
+  memberships, paged reads, User seats, and native invitation changes.
 - AUTH-08W hosted cases in
-  `test/acceptance/auth/hosted-live/administration-server.ts` check permitted
-  administration, forgery and stale-revision refusals, revocation, invitations,
-  and records. The Optional profile uses
+  `test/acceptance/auth/hosted-live/administration-server.ts` check that the
+  retired grant route returns `404` for a current-access caller without member
+  controls, a provider write,
+  or a grant record. They also check invitations, acceptance, and records. The
+  Optional profile uses
   `optional-administration-server.ts` for refusal and invitation cases.
 - Signup cases in `test/acceptance/auth/hosted-live/signup-server.ts` check
   the production notice, agreement, callback, and access behavior.
@@ -953,9 +953,9 @@ their memberships (`test/support/hosted-live/administration-fixtures.ts`).
 Organization C has the external ID `thermus-live-<run ID>-c`, as each
 customer organization of the operator runbook has one. WorkOS names the
 authorization resource of such an organization only by its external ID, so
-the grant cases in C cover the role writes on a resource that the external ID
-names. Organization D has no external ID, so the proofs in D cover an
-organization without one, whose resource WorkOS names by the organization ID.
+operator fixture changes in C use that external ID. Organization D has no
+external ID; its member-read and invitation proofs use the organization ID.
+Neither set uses a customer grant writer.
 Organization B of the staging fixtures holds the second membership of two of
 these users. The invitations of the proofs and cases go only to these
 existing users, because an invitation to a new address needs an email

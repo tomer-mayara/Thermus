@@ -4,9 +4,8 @@ import type { ChangeRecord } from '../../../../src/accounts/organizations/change
 import {
   OrganizationAdministration,
   type Actor,
-  type GrantChangeRequest,
 } from '../../../../src/accounts/organizations/organization-administration.ts';
-import { membershipIdOf, type MemberSeed } from '../../../support/doubles/organizations/directory-double-records.ts';
+import { type MemberSeed } from '../../../support/doubles/organizations/directory-double-records.ts';
 import { OrganizationDirectoryDouble } from '../../../support/doubles/organizations/organization-directory-double.ts';
 import { memberRole } from '../../../support/fixtures/hosted-roles.ts';
 import { BillingDouble } from './billing-double.ts';
@@ -60,28 +59,6 @@ export function invitationsWith() {
 // of the request.
 export function actorOf(subject: string, mfaCompleted = true): Actor {
   return { user: { authority, subject, selectedOrganizationId: 'org-b' }, mfaCompleted };
-}
-
-export interface RequestedGrantChange {
-  readonly target: string;
-  readonly role: string;
-  readonly action: string;
-  readonly organizationId?: string;
-  readonly targetOrganizationId?: string;
-}
-
-// A change of the membership of the target with its current revision, as a form shown now would send it.
-export function changeOf(directory: OrganizationDirectoryDouble, change: RequestedGrantChange): GrantChangeRequest {
-  const organizationId = change.organizationId ?? 'org-a';
-  const targetOrganizationId = change.targetOrganizationId ?? organizationId;
-  const target = directory.membershipIn(change.target, targetOrganizationId);
-  return {
-    organizationId,
-    membershipId: target?.membershipId ?? membershipIdOf(change.target, targetOrganizationId),
-    role: change.role,
-    action: change.action,
-    revision: target?.revision ?? 'r1',
-  };
 }
 
 export function rolesIn(directory: OrganizationDirectoryDouble, subject: string, organizationId = 'org-a'): readonly string[] {

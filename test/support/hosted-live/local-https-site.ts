@@ -6,7 +6,7 @@ import { createServer, type Server } from 'node:https';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
-import type { SignupDocuments } from '../../../src/accounts/providers/workos/workos-signup.ts';
+import type { SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
 import { createApplication, type Application, type ApplicationLogger } from '../../../src/app/application.ts';
 import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/runtime/http/server.ts';
@@ -138,7 +138,7 @@ async function stagingApplication(settings: HostedLiveSettings, logger: Applicat
   const { HostedPortal } = await import('../../../src/app/hosted-portal.ts');
   await assertHostedRenderer(executable);
   const connection = await openWorkOSConnection(config, logger, environment);
-  const portal = await HostedPortal.load(settings.authkitIssuer);
+  const portal = await HostedPortal.load(['https://api.workos.com', settings.authkitIssuer]);
   const application = await composeWorkOSApplication(config, connection, {
     logger, buildServer: fetchToolServers(createHostedToolOperations(environment, logger), logger),
     signup: { enabled: true, documents },

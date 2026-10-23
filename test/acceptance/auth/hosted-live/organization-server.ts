@@ -146,11 +146,10 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       assert.equal(billing.status, requiredMfa ? 200 : 403, billing.body);
       assert.match(billing.body, requiredMfa ? /Plan: Free/ : /Administration needs a sign-in that completed multi-factor authentication/);
       assert.equal(portal.status, 403);
-      assert.equal(customerGrant.status, 403, customerGrant.body);
-      assert.match(customerGrant.body, requiredMfa ? /Your account cannot make this change in the selected organization\. Nothing changed\./ : /Administration needs a sign-in that completed multi-factor authentication/);
+      assert.equal(customerGrant.status, 404, customerGrant.body);
       assert.deepEqual(membershipAfterCustomerGrant, membership, 'The refused customer grant changed the WorkOS membership.');
       assert.deepEqual(rolesAfterCustomerGrant, [superAdminRole]);
-      assert.ok(records.some((line) => line.includes(`"role":"${superAdminRole}"`) && line.includes(`"outcome":"${requiredMfa ? 'denied' : 'mfa-required'}"`)), 'The refused customer grant has no change record.');
+      assert.deepEqual(records, [], 'The retired route creates no grant change record.');
       assert.equal(billingAfterRevocation.status, 403);
       assertOnboarding(organizationsAfterRevocation, labelOf(user));
       await page.context().close();

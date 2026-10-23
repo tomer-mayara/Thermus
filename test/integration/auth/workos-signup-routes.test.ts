@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { parseHTML } from 'linkedom';
 import type { BrowserSession, BrowserSessionState } from '../../../src/accounts/identity/browser-session.ts';
 import { WorkOSSignupRoutes } from '../../../src/interfaces/web/auth/workos/workos-signup-routes.ts';
-import type { SignupActivation, SignupDocuments } from '../../../src/accounts/providers/workos/workos-signup.ts';
+import type { SignupActivation, SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
 
 const document = (text: string) => ({ version: 'v1', text, sha256: createHash('sha256').update(text).digest('hex') });
 const documents: SignupDocuments = { version: 'v1', terms: document('Test <terms>'), notice: document('Test <notice>'), agreement: { version: 'v1', text: 'I agree as an adult for business use.' } };

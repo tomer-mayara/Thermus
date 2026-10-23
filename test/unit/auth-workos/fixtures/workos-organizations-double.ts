@@ -163,8 +163,8 @@ export class WorkOSOrganizationsDouble {
 
   // The directory under test. The default clock gives the fixed time.
   directory(clock: () => Date = () => new Date(now)): WorkOSOrganizations {
-    const { userManagement, authorization, organizations } = this;
-    return new WorkOSOrganizations({ authority, userManagement, authorization, organizations, clock });
+    const { userManagement, authorization } = this;
+    return new WorkOSOrganizations({ authority, userManagement, authorization, clock });
   }
 
   methods(): string[] {

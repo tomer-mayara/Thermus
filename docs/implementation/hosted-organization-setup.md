@@ -3,8 +3,10 @@
 This runbook is for the external platform operator of the hosted edition. It
 gives the steps to set up a customer organization and its first Super Admin, and
 to revoke, replace, or recover a Super Admin. The operator does these steps in
-WorkOS. Thermus has no operator route or method: the customer routes refuse each
-request to grant or revoke Super Admin.
+WorkOS. Thermus has no operator route or method and no customer membership-grant
+writer. After the existing session and current access checks, the retired
+`/members/grants` path returns `404` without a write or change record. Earlier
+sign-in, access-denial, and failure responses stay unchanged.
 
 The [authentication design](../design/authentication-design.md#organization-administration)
 gives the roles. The [hosted live gate](test-gate-policy.md#hosted-live-gate-auth-06)
@@ -17,22 +19,20 @@ runs these steps against the WorkOS staging environment. The section
   replaces, and recovers Super Admin. This authority is outside the customer
   roles, and it needs no global administration product.
 - The operator grants only the explicit role `super-admin`. Super Admin gives no
-  Admin and no User. With the Required MFA evidence described in step 5, a
-  Super Admin can then grant Admin to itself in Thermus, and with that Admin
-  authority, User to itself. These are procedural bypasses of operator-managed
-  onboarding: before any User grant, follow
-  [Hosted User onboarding](hosted-user-onboarding.md). The application does not
-  check agreement evidence. Initially, the operator controls User grants; do
-  not delegate grant authority without the controls in that runbook.
+  Admin and no User. Customer self-grant forms are retired; Super Admin cannot
+  grant itself Admin or User in Thermus. Before any operator User grant, follow
+  [Hosted User onboarding](hosted-user-onboarding.md). Native invitations and
+  direct WorkOS writes still need the agreement controls of that runbook.
 - Each step adds or removes only the role `super-admin`, with one role
   assignment on the organization. The other grants of the person stay: User,
-  Admin, and the default role `member`, also when a customer changes User or
-  Admin at the same time. No step writes the complete role set of a
+  Admin, and the default role `member`, also when another authorized provider
+  writer changes User or Admin at the same time. No step writes the complete role set of a
   membership. A step never deactivates or deletes a membership, and it never
   changes the identity or another membership of the person.
-- No customer role can do these steps. Thermus refuses a customer request to
-  grant or revoke Super Admin with `403`, and it keeps a change record of the
-  refusal.
+- No customer role can do these steps. The customer invitation routes still
+  deny a request to invite Super Admin. A current-access caller of the retired
+  grant path gets `404`;
+  it does not write a refusal record.
 - This runbook does not create, rename, or delete a customer organization on
   request of a customer, does not change organization settings, does not author
   roles, and does not reset passwords or MFA factors.
@@ -148,10 +148,10 @@ roles before.
   ```
 
   The role assignment adds one role and keeps each other role, also a change
-  of User or Admin that a customer makes at the same time. Never send the
-  complete role set with `PUT /user_management/organization_memberships/{id}`:
+  of User or Admin that another authorized provider writer makes at the same
+  time. Never send the complete role set with `PUT /user_management/organization_memberships/{id}`:
   a replacement that starts from the read of step 3 can remove a grant that a
-  customer added after that read, or return a grant that a customer removed.
+  writer added after that read, or return a grant that a writer removed.
 
 - Inactive or pending: stop and record `stopped`. Do not create a membership:
   WorkOS documents that a create activates an inactive membership with the
@@ -163,8 +163,9 @@ roles before.
 ### 5. Verify the current access
 
 Read the membership again, as in step 3. It must be active with
-`super-admin`. Its other roles can differ from step 3: a customer can change
-User or Admin at the same time, and the role assignment keeps that change.
+`super-admin`. Its other roles can differ from step 3: another authorized
+provider writer can change User or Admin at the same time, and the role
+assignment keeps that change.
 Write the roles that you read in the record as the roles after. If the
 membership is not active with `super-admin`, the outcome is `unknown`:
 continue with [After an unknown outcome](#after-an-unknown-outcome).
@@ -192,8 +193,8 @@ use the browser outcome that matches the configured MFA contract.
      -d '{"role_slug":"super-admin","resource_type_slug":"organization","resource_external_id":"thermus-customer-0042"}'
    ```
 
-   Each other role stays, also a change that a customer makes at the same
-   time. If no other role remains, WorkOS gives the membership the default role
+   Each other role stays, also a change that another authorized provider writer
+   makes at the same time. If no other role remains, WorkOS gives the membership the default role
    `member`, which gives no application permission. The membership stays
    active. The identity and the other memberships of the person stay. The next
    request of the person in this organization gets no Super Admin access, also

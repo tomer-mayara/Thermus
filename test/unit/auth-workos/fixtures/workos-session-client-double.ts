@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { OauthException } from '@workos-inc/node';
 import { sessionCookie, signInCookie, type SessionEnvelope, type SignInEnvelope } from '../../../../src/accounts/providers/workos/session-cookies.ts';
-import { WorkOSBrowserSession, type WorkOSSessionState, type WorkOSSignedInSession } from '../../../../src/accounts/providers/workos/workos-browser-session.ts';
+import { WorkOSBrowserSession } from '../../../../src/accounts/providers/workos/workos-browser-session.ts';
+import type { ProfiledBrowserSessionState, ProfiledSignedInBrowserSession } from '../../../../src/accounts/identity/browser-session-controls.ts';
 import type {
   CodeExchange,
   SealCheck,
@@ -122,7 +123,7 @@ export function browserSession(client: WorkOSSessionClientDouble, clock?: () => 
   return new WorkOSBrowserSession({ workos: client, settings, authority, mfaEvidence: 'password-mfa-required', ...(clock === undefined ? {} : { clock }) });
 }
 
-export function signedIn(state: WorkOSSessionState): WorkOSSignedInSession {
+export function signedIn(state: ProfiledBrowserSessionState): ProfiledSignedInBrowserSession {
   if (state.status !== 'signed-in') assert.fail(`the session is ${state.status}`);
   return state;
 }

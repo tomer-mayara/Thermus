@@ -1,6 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
 import type {
-  GrantChangeRequest,
   InvitationChangeRequest,
   InvitationSendRequest,
 } from '../../../accounts/organizations/organization-administration.ts';
@@ -62,15 +61,6 @@ export function selectionIn(form: URLSearchParams, csrfToken: string, destinatio
   const returnTo = destinations.check(fields.return_to);
   if (!FIELD_VALUE.test(fields.organization_id) || returnTo === undefined) return 'invalidRequest';
   return { organizationId: fields.organization_id, returnTo };
-}
-
-// The form names the membership with the revision that the page showed. The organization of the session decides, so the
-// routes compare the organization of the form with it.
-export function grantChangeIn(form: URLSearchParams, csrfToken: string): GrantChangeRequest | FormRefusal {
-  const fields = formFields(form, csrfToken, ['organization_id', 'membership_id', 'revision', 'role', 'action']);
-  if (typeof fields === 'string') return fields;
-  if (!Object.values(fields).every((value) => FIELD_VALUE.test(value))) return 'invalidRequest';
-  return { organizationId: fields.organization_id, membershipId: fields.membership_id, revision: fields.revision, role: fields.role, action: fields.action };
 }
 
 export function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal {

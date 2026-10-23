@@ -1,14 +1,11 @@
 import type { BillingState } from '../../../accounts/billing/billing.ts';
 import { escapeHtml } from '../html-escape.ts';
-import type { InvitationEntry, InvitationOverview, MemberEntry, MemberOverview } from '../../../accounts/organizations/administration-overviews.ts';
-import type { RoleChange } from '../../../accounts/organizations/customer-roles.ts';
+import type { InvitationEntry, InvitationOverview, MemberOverview } from '../../../accounts/organizations/administration-overviews.ts';
 import type { InvitationIdentityPolicy } from '../../../accounts/organizations/organization-directory.ts';
 import { FORM_HEADERS, hiddenField, htmlDocument, NOTICE_HEADERS, postForm } from '../page-html.ts';
 
 export interface MembersPageForm {
   readonly overview: MemberOverview;
-  readonly csrfToken: string;
-  readonly grantAction: string;
   readonly invitationsPage: string;
 }
 
@@ -32,16 +29,14 @@ const PLAN_LABELS: Readonly<Record<BillingState['plan'], string>> = { free: 'Fre
 const STRICT_ADDRESS_TEXT = 'Only a sign-in with the invited email address can accept the invitation.';
 const PROVIDER_RULES_TEXT = 'The sign-in service decides who can accept the invitation. It can accept a sign-in with another address, for example an address of the same domain.';
 
-const ROLE_HELP = 'User gives access to the product and to MCP. Admin manages User access. Super Admin manages Admin access and billing. Each role is separate: Admin and Super Admin give no User access. Only the operator of this service manages Super Admin.';
+const ROLE_HELP = 'User gives access to the product and to MCP. Admin manages User invitations. Super Admin manages Admin invitations and billing. Each role is separate: Admin and Super Admin give no User access. Only the operator of this service manages Super Admin.';
 
-// The provider gives the email addresses, roles, and IDs, so the page escapes them. Each member has a form for each
-// change that the actor can make now, with the revision of the membership that the page shows.
+// The provider gives the email addresses and roles, so the page escapes them. Member rows have no write controls.
 export function membersPage(form: MembersPageForm): Response {
   const { overview } = form;
   const items = overview.members.flatMap((member) => [
     '<li>',
     `<p>${escapeHtml(member.email)}: ${escapeHtml(member.status)}. Roles: ${rolesText(member.roles)}.</p>`,
-    ...member.changes.flatMap((change) => grantForm(form, member, change)),
     '</li>',
   ]);
   const page = htmlDocument('Members', [
@@ -94,18 +89,6 @@ export function billingPage(state: BillingState): Response {
     '<p>This service collects no payment. The organization is on the free plan, and no seat is billed. Access depends only on the grants of each member.</p>',
   ]);
   return new Response(page, { status: 200, headers: NOTICE_HEADERS });
-}
-
-function grantForm(form: MembersPageForm, member: MemberEntry, change: RoleChange): string[] {
-  const label = change.action === 'grant' ? `Grant ${roleLabel(change.role)} to` : `Revoke ${roleLabel(change.role)} from`;
-  return postForm(form.grantAction, [
-    hiddenField('csrf_token', form.csrfToken),
-    hiddenField('organization_id', form.overview.organizationId),
-    hiddenField('membership_id', member.membershipId),
-    hiddenField('revision', member.revision),
-    hiddenField('role', change.role),
-    hiddenField('action', change.action),
-  ], `${label} ${member.email}`);
 }
 
 function invitationForm(form: InvitationsPageForm, invitation: InvitationEntry, change: 'resend' | 'revoke'): string[] {

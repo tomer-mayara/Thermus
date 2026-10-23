@@ -3,19 +3,19 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
+    "contract": true,
     "deployment": false,
     "crossCutting": false,
-    "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "component": true,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": true,
     "policy": true,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Repair developer quality tooling: pin a local ast-metrics patch with complete function ranges and base-scoped review, bind native metrics and V8 coverage to exact source identities, and use the stricter new-function goal for unmatched declarations with complete inventories. No MI/CRAP threshold, lint baseline, human approval rule, application component, public application contract, runtime authority, lifetime, provider, or deployment changes. The five registry view groups remain accurate; no Mermaid block changes.",
+    "modelUpdated": true,
+    "summary": "S1-01 retires the customer POST /members/grants contract: a formerly authorized request returns 404 without a role change, and Members has no grant forms. The parser, administration operation, and provider writer are removed. Current invitations, role mapping, MFA checks, signup metadata and legal content, session cookies, CSRF, return paths, and provider failure behavior remain. Identity owns the narrow browser session/profile controls; organizations owns signup activation records and operations. WorkOS implements these roles, and composition supplies the portal's existing CSP origins. Public-module declarations add these two neutral modules without changing package edges, gate selection, or approval rules. Registry component ownership, runtime prose, and design limits reflect this reduced writer surface; context, containers, deployment, resource lifetimes, and existing diagrams remain accurate. No provider, database, runtime dependency, or new infrastructure is added. T2 Need architect is required for the changed browser/server contract; internal contracts, sensitive paths, policy declarations, and retained quality findings also require human review. No new decision record was requested. The stack includes the shared metrics repair from PR #230. It changes developer measurement and installation only; application boundaries and review thresholds remain unchanged.",
     "views": [
       "context",
       "containers",
@@ -24,12 +24,19 @@
       "deployment"
     ],
     "evidence": [
-      "docs/implementation/ast-metrics-function-repair.md",
-      "patches/ast-metrics/README.md",
-      "script/code-quality/identity/native.ts",
-      "script/code-quality/coverage/source-map.ts",
-      "script/code-quality/architecture/correspondence.ts",
-      "architecture/components.md"
+      "docs/implementation/admin-s1-01.md",
+      "docs/design/organization-admin-plan.md",
+      "architecture/components.md",
+      "src/accounts/identity/browser-session-controls.ts",
+      "src/accounts/organizations/signup-activation.ts",
+      "src/accounts/organizations/organization-administration.ts",
+      "src/accounts/providers/workos/workos-organizations.ts",
+      "src/interfaces/web/account/administration-routes.ts",
+      "src/app/hosted-workos-application.ts",
+      "test/acceptance/auth/hosted-grant-retirement.test.ts",
+      "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+      "docs/implementation/pr-review-rules.yaml",
+      "docs/implementation/ast-metrics-function-repair.md"
     ]
   }
 }

@@ -7,7 +7,7 @@ import { test, type TestContext } from 'node:test';
 import type { Application } from '../../../src/app/application.ts';
 import { HostedPortal } from '../../../src/app/hosted-portal.ts';
 
-const issuer = 'https://auth.example.com';
+const formActionOrigins = ['https://api.workos.com', 'https://auth.example.com'];
 const html = '<!doctype html><html><head><link rel="stylesheet" href="/assets/portal.css"></head><body><div id="app"></div><script type="module" src="/assets/portal.js"></script></body></html>';
 
 async function portalDirectory(t: TestContext): Promise<string> {
@@ -26,7 +26,7 @@ function unusedApplication(): Application {
 
 test('Given a built portal, when GET and HEAD request root or build assets, then preloaded bytes and safe content headers are returned', async (t) => {
   const directory = await portalDirectory(t);
-  const portal = await HostedPortal.load(issuer, pathToFileURL(`${directory}/`));
+  const portal = await HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`));
   await rm(directory, { recursive: true });
   const application = portal.withApplication(unusedApplication());
   for (const [path, type, body] of [['/', 'text/html; charset=utf-8', html], ['/assets/portal.js', 'text/javascript; charset=utf-8', 'document.body.dataset.ready = "true";'], ['/assets/portal.css', 'text/css; charset=utf-8', 'body { color: black; }']]) {
@@ -43,9 +43,29 @@ test('Given a built portal, when GET and HEAD request root or build assets, then
   }
 });
 
+test('Given composition-supplied form destinations, when the portal opens, then its CSP contains only their normalized origins after self', async (t) => {
+  const directory = await portalDirectory(t);
+  const portal = await HostedPortal.load([
+    'https://identity.example/sign-in?return_to=portal',
+    'https://session.example:8443/logout#done',
+  ], pathToFileURL(`${directory}/`));
+  const response = await portal.withApplication(unusedApplication()).handle(new Request('https://thermus.example/'));
+
+  assert.equal(response.headers.get('Content-Security-Policy'), "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://identity.example https://session.example:8443");
+});
+
+test('Given non-HTTP or malformed form destinations, when the portal loads, then it refuses them without exposing the supplied value', async (t) => {
+  const directory = await portalDirectory(t);
+  for (const destination of ['javascript:alert(1)', 'data:text/plain;script-src *', 'https://identity.example; form-action *']) {
+    await assert.rejects(HostedPortal.load([destination], pathToFileURL(`${directory}/`)), {
+      message: 'The hosted portal build is missing or invalid. Run npm run build:user-portal before startup.',
+    });
+  }
+});
+
 test('Given the hosted wrapper, when health is read repeatedly, then it returns a constant local answer and refuses other methods', async (t) => {
   const directory = await portalDirectory(t);
-  const application = (await HostedPortal.load(issuer, pathToFileURL(`${directory}/`))).withApplication(unusedApplication());
+  const application = (await HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`))).withApplication(unusedApplication());
   for (const method of ['GET', 'HEAD', 'GET']) {
     const response = await application.handle(new Request('https://thermus.example/healthz', { method }));
     assert.equal(response.status, 200);
@@ -60,7 +80,7 @@ test('Given the hosted wrapper, when health is read repeatedly, then it returns 
 test('Given a built portal, when absent or encoded traversal assets are read, then each returns a missing-file response', async (t) => {
   const directory = await portalDirectory(t);
   await writeFile(join(directory, 'private.txt'), 'private');
-  const application = (await HostedPortal.load(issuer, pathToFileURL(`${directory}/`))).withApplication(unusedApplication());
+  const application = (await HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`))).withApplication(unusedApplication());
   for (const path of ['/assets/absent.js', '/assets/%2e%2e%2fprivate.txt', '/assets/%2Fprivate.txt', '/assets//portal.js']) {
     const response = await application.handle(new Request(`https://thermus.example${path}`));
     assert.equal(response.status, 404, path);
@@ -74,7 +94,7 @@ test('Given any other route or method, when the hosted wrapper receives it, then
   let closedWith: Promise<void> | undefined;
   const answer = new Response('existing handler', { status: 202 });
   const existing: Application = { async handle(request) { received.push(request); return answer; }, async close(drain) { closedWith = drain; await drain; } };
-  const application = (await HostedPortal.load(issuer, pathToFileURL(`${directory}/`))).withApplication(existing);
+  const application = (await HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`))).withApplication(existing);
   const cancelled = new AbortController();
   for (const [path, method] of [['/', 'POST'], ['/assets/portal.js', 'POST'], ['/account', 'GET'], ['/login', 'GET'], ['/callback', 'GET'], ['/logout', 'POST'], ['/session', 'GET'], ['/portal/access', 'GET'], ['/mcp', 'POST'], ['/.well-known/oauth-protected-resource/mcp', 'GET'], ['/unknown', 'GET'], ['/healthz/extra', 'GET']]) {
     const request = new Request(`https://thermus.example${path}?original=yes`, { method, headers: { 'X-Original': 'yes' }, signal: cancelled.signal, ...(method === 'POST' ? { body: 'original body' } : {}) });
@@ -91,17 +111,17 @@ test('Given a missing, empty, or broken portal build, when it is loaded, then st
   const index = join(directory, 'index.html');
   for (const contents of ['', '<html>placeholder</html>', html.replace('/assets/portal.js', '/main.ts'), html.replace('/assets/portal.css', '/assets/absent.css'), html.replace('/assets/portal.js', 'https://outside.example/app.js')]) {
     await writeFile(index, contents);
-    await assert.rejects(HostedPortal.load(issuer, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
+    await assert.rejects(HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
   }
   await writeFile(index, html);
   await writeFile(join(directory, 'assets/portal.js'), '');
-  await assert.rejects(HostedPortal.load(issuer, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
+  await assert.rejects(HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
   await rm(index);
-  await assert.rejects(HostedPortal.load(issuer, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
+  await assert.rejects(HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
 });
 
 test('Given a symlink in the portal build, when it is loaded, then startup refuses the build', async (t) => {
   const directory = await portalDirectory(t);
   await symlink(join(directory, 'index.html'), join(directory, 'assets/linked.html'));
-  await assert.rejects(HostedPortal.load(issuer, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
+  await assert.rejects(HostedPortal.load(formActionOrigins, pathToFileURL(`${directory}/`)), /The hosted portal build is missing or invalid/);
 });
