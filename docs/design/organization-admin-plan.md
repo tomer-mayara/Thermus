@@ -3,8 +3,8 @@
 Plan reviewed: 23 October 2026. Status: design with merged Slice 1 implementation
 recorded under its tickets. Release prerequisites remain; merged does not mean
 released or cut over. This revision reviews and refines expanded Slice 2 planning;
-it records the audit API foundation and leaves capture, UI, and delivery tickets
-planned.
+it records the audit API foundation and the S2-01b settings UI in the candidate.
+Production capture, Collector delivery, and the optional Test action remain planned.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.

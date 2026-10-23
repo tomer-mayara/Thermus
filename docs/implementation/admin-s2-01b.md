@@ -55,11 +55,18 @@ supply the required independent human architect approval.
 ## Current verification status
 
 The PR239 rebase moves the destination service, codec, and endpoint checks into
-`src/logs/audit/`. At the rebased structure checkpoint, the manager reported 92 compiled tests
-and 40 portal tests passing. Later UI wording and the complete candidate need
-final checks. Complete-candidate gates, quality evidence,
-and final SHA-bound review are pending. The runs below describe the earlier
-candidate and do not establish a pass for this rebased candidate.
+`src/logs/audit/`. At the rebased structure checkpoint, the manager reported
+92 compiled tests and 40 portal tests passing. The Audit logs UI wording followed
+BDD red-to-green steps: the changed label specifications failed first, then the
+focused selection passed 45 compiled tests and 40 portal tests. Source candidate:
+`b91e26b26e82274efc13d9363b49fcd18fb1742a`.
+
+The manager inspected desktop (1,200 px) and mobile (390 px) renders. Both passed
+the visual review. These renders use generated HTML only; they do not establish
+HTTP, browser navigation, storage, or Collector behavior. The full gates are
+still running and final metrics are pending. Final SHA-bound architecture links
+and publication await the final prose commit. The runs below describe the
+earlier candidate and do not establish a pass for this rebased candidate.
 
 ## Verification history before the PR239 rebase
 
@@ -156,33 +163,110 @@ The snooze file stays empty. These are reviewed findings, not a tool failure:
   tests. This ticket adds only the supplied service and Logging navigation to
   those cohesive files.
 
+## Current habit-hooks review
+
+The fresh complete-candidate run against `origin/main` reports 247 findings:
+8 complexity, 18 test non-null assertions, 1 oversized function, 2 parameter,
+1 unused-variable, 211 comment, and 6 oversized-file findings. The snooze file
+is empty. These findings have the following scoped dispositions; their presence
+does not establish that the other gates or final metrics pass.
+
+- The eight complexity findings retain distinct input refusals, token and CAS
+  rules, the atomic store double, and existing portal access/journey branches.
+  Direct guard and race tests cover the production rules. The shared parser
+  and IP range table already remove duplicated work.
+- The eighteen non-null assertions remain in tests. Test setup establishes each
+  handler, row, header, or nonempty buffer; missing data fails at its next use.
+- The oversized MCP server factory retains its request lifecycle and outcome
+  handling. Its SystemLog contract does not create a separate lifecycle owner.
+- The two parameter findings retain explicit application collaborators and the
+  four-scalar notice renderer. A parameter bag adds no useful domain owner.
+- The `using deadline` binding registers required disposal. Removing the binding
+  changes resource lifetime, so the unused-variable finding is retained.
+- The 211 comments explain existing boundary, fixture, lifetime, security, sink,
+  or test constraints, plus tenant binding, deferred capture/egress, unknown
+  commit recovery, and the atomic store double. Retain these reasons by file
+  group; they do not exempt future comments from review.
+- The six oversized files retain existing responsibilities: application
+  composition, habit-hooks configuration, the auth work-slice acceptance
+  harness, MCP integration cases, server-signal integration cases, and portal
+  journey tests. Changes add types/imports, a guard, the supplied settings
+  service, or Audit logs navigation within those owners.
+
+These dispositions combine the S2-01b reasons above with the inherited
+[System/Audit separation review](system-audit-log-separation.md), especially its
+habit-hooks dispositions. They do not waive a required check or authorize merge.
+
 ## Contract and policy review
 
-Against PR239, SystemLog and the named AuditLog/AuditLogger event contracts stay
-unchanged. The new destination settings service belongs to audit-logs. Web calls
-that supplied service by its public read/Save contract. It imports no credential
-codec and uses no System log as an Audit sink. App retains SQL cleanup ownership.
-The final checker-listed public surfaces and evidence must be refreshed for the
-rebased candidate; the earlier comparison below is historical.
+The complete-candidate check compares with `origin/main` at
+`bb19a9887f3e58776278e516cce9e7aa18efee5c`. It includes the inherited S2-01a
+storage and PR239 System/Audit separation. The focused S2-01b architecture
+comparison uses its actual PR239 parent, `f2adef8f24804bfcef45600328dd5575477240e9`.
+These bases answer different questions; the focused comparison does not remove
+inherited container, external dependency, deployment, or component facts.
 
-- **Policy:** the rules add only the web-to-audit-logs type import, the new audit destination
-  service public surface, and `node:net` for literal IP parsing. Explicit MI
-  exceptions expire on 2026-12-22. Check selection and approval authority stay
-  unchanged.
+The manager compared every checker-listed public surface before and after:
+
+- `src/index.ts` and `src/app/fetch-tool.ts` retain entry-point and MCP behavior.
+  Their logger parameters now use SystemLog as described below. Their changed
+  application import reaches the composition boundary. Relative to main, inherited composition adds optional hosted storage
+  and cleanup, then S2-01b supplies its settings service. Existing callers remain
+  valid. App retains SQL cleanup ownership and the inherited combined cleanup
+  failure behavior.
+- `account-form.ts` exports the existing `formFields` parser for reuse. The
+  parser's accepted inputs, refusals, and field behavior stay unchanged.
+- `src/logs/system/system-log.ts` replaces earlier structural declarations.
+  Its `error(unknown)` broadens the former string input; the concrete logger
+  already handled unknown failures. Internal diagnostic behavior, including
+  caller file/line, stays unchanged. This contract is unchanged against PR239.
+- `src/logs/audit/audit-log.ts` adds the inherited named `toolCompleted` and
+  `administrationChanged` event methods relative to main. Their fixed metadata
+  and synchronous sink contract are unchanged against PR239. AuditLogger adds
+  no source file, line, generic message, or stack fields. Production capture
+  and export remain unwired.
+- `src/logs/audit/destination-settings-service.ts` adds the public tenant-scoped
+  read/Save contract. It exposes token presence only, safe unavailable/invalid/
+  conflict/unconfirmed outcomes, and settings revisions. Its codec and endpoint
+  imports remain private to audit-logs; the inherited store contract retains
+  atomic tenant/revision authority. No provider SDK type crosses this surface.
+
+Policy questions and guarantees:
+
+- **Policy:** S2-01b declares the web-to-audit-logs type import, settings service
+  public surface, and `node:net` for literal address parsing. Inherited rules
+  separate System and Audit owners and prohibit dependencies between them.
+  Check thresholds and review authority stay unchanged. Explicit MI exceptions
+  require review; final metrics evidence remains pending.
+- **Contracts:** Admins gain Audit logs GET/HEAD and Save POST at the existing
+  `/logging` URLs. Initial settings are disabled and credentials are write-only.
+  A semantic no-op preserves ciphertext/revision. Stale writes conflict;
+  unconfirmed native replies offer only a saved-state GET link, with no Save
+  form, automatic retry, or server/session write hold. Manual and late writes
+  still face CAS. Internal System logs remain separate from customer settings.
+- **Dependencies/build:** the complete main-based candidate inherits pinned
+  `pg` 8.23.1, maintained by node-postgres, its development types, and lockfile
+  changes. The audit owner uses the driver directly for verified TLS and atomic
+  SQL. No ORM or provider SDK is added. S2-01b adds no dependency relative to
+  PR239. Parent storage and System/Audit review records give the full detail.
+- **Deployment/data:** the main-based candidate inherits optional hosted TLS,
+  connection/key configuration, a private settings schema, and bounded storage.
+  These are unchanged against PR239. The restricted server role and tenant CAS
+  protect the settings row. No live schema mutation is performed. Roll back the
+  image while retaining the database/table and encryption key; do not drop
+  shared objects or lose the only key. No event history or viewer is added.
 - **Security:** current trusted Admin permission gates both routes. Form values
-  cannot select the tenant. Origin, CSRF and bounded exact fields precede Save.
-  Credentials stay server-side; authentication failures and secret-bearing
-  collaborator errors return fixed safe outcomes.
-- **Client contract:** Admins gain Audit logs GET/HEAD and Save POST. Initial state
-  is disabled; credentials are write-only. Saved revisions reject stale writes.
-  Unconfirmed replies offer a saved-state read, not an automatic replay.
+  cannot choose a tenant; origin, CSRF, and bounded exact fields precede Save.
+  AES-256-GCM binds tokens to the tenant. Safe errors expose no credential or
+  collaborator exception text. System logs stay internal; Audit projection
+  admits named fields only, with no forwarding to a System sink. Authentication,
+  WorkOS authority, and password access remain unchanged.
 
-The earlier public-surface comparison checked the checker-listed modules at the parent
-and candidate. `src/index.ts` and `src/app/fetch-tool.ts` keep their exported
-contracts and MCP behavior; they import application composition, whose optional
-hosted storage argument now supplies the settings operations. The web
-`account-form.ts` adds the existing `formFields` export without changing its
-behavior. The new audit settings service defines safe read/Save results; its codec and
-endpoint dependencies are private to that owner. No provider SDK type crosses
-these contracts. T2 is required for the new browser/server contract and sensitive
-credential handling. An independent human architect must approve before merge.
+See the inherited [storage contract and recovery review](admin-s2-01a.md) and
+[System/Audit contract review](system-audit-log-separation.md) for the main-based
+parent guarantees. The preliminary checker reports `factsToDeclare: []`; its
+only listed blockers are missing snapshots, CRAP, and process/review evidence.
+That result does not establish completed gates or human approval. Final metrics,
+SHA-bound evidence, and complete-candidate checks are still pending. T2 Need
+architect applies to the browser/server contract and credential handling; an
+independent authorized human architect must approve before merge.
