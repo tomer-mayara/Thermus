@@ -9,13 +9,13 @@
     "component": true,
     "internalInterface": true,
     "sensitiveBehavior": true,
-    "dependencyRisk": false,
+    "dependencyRisk": true,
     "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "S1-01 retires the customer POST /members/grants contract: a formerly authorized request returns 404 without a role change, and Members has no grant forms. The parser, administration operation, and provider writer are removed. Current invitations, role mapping, MFA checks, signup metadata and legal content, session cookies, CSRF, return paths, and provider failure behavior remain. Identity owns the narrow browser session/profile controls; organizations owns signup activation records and operations. WorkOS implements these roles, and composition supplies the portal's existing CSP origins. Public-module declarations add these two neutral modules without changing package edges, gate selection, or approval rules. Registry component ownership, runtime prose, and design limits reflect this reduced writer surface; context, containers, deployment, resource lifetimes, and existing diagrams remain accurate. No provider, database, runtime dependency, or new infrastructure is added. T2 Need architect is required for the changed browser/server contract; internal contracts, sensitive paths, policy declarations, and retained quality findings also require human review. No new decision record was requested.",
+    "summary": "S1-01 retires the customer POST /members/grants contract: a formerly authorized request returns 404 without a role change, and Members has no grant forms. The parser, administration operation, and provider writer are removed. Current invitations, role mapping, MFA checks, signup metadata and legal content, session cookies, CSRF, return paths, and provider failure behavior remain. Identity owns the narrow browser session/profile controls; organizations owns signup activation records and operations. WorkOS implements these roles, and composition supplies the portal's existing CSP origins. Public-module declarations add these two neutral modules without changing package edges, gate selection, or approval rules. Registry component ownership, runtime prose, and design limits reflect this reduced writer surface; context, containers, deployment, resource lifetimes, and existing diagrams remain accurate. No provider, database, runtime dependency, or new infrastructure is added. T2 Need architect is required for the changed browser/server contract; internal contracts, sensitive paths, policy declarations, and retained quality findings also require human review. No new decision record was requested. The stack includes the shared metrics repair from PR #230. It changes developer measurement and installation only; application boundaries and review thresholds remain unchanged.",
     "views": [
       "context",
       "containers",
@@ -35,7 +35,8 @@
       "src/app/hosted-workos-application.ts",
       "test/acceptance/auth/hosted-grant-retirement.test.ts",
       "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
-      "docs/implementation/pr-review-rules.yaml"
+      "docs/implementation/pr-review-rules.yaml",
+      "docs/implementation/ast-metrics-function-repair.md"
     ]
   }
 }
