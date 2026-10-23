@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { browserRequest, csrfToken, logoutPost, serve, SessionDouble } from './fixtures/session-routes-fixtures.ts';
 
 for (const method of ['authenticate', 'startSignIn', 'completeSignIn', 'endSession'] as const) {
-  test(`Given ${method} waiting on WorkOS, when the browser disconnects, then the request stops waiting and observes a later failure`, async (t) => {
+  test(`Given ${method} waiting on WorkOS, when the browser disconnects, then the request stops waiting and observes a later failure`, { timeout: 1_000 }, async (t) => {
     const pending = Promise.withResolvers<never>();
     const session = new SessionDouble();
     const entered = Promise.withResolvers<void>();
@@ -15,12 +15,14 @@ for (const method of ['authenticate', 'startSignIn', 'completeSignIn', 'endSessi
     const request = method === 'endSession'
       ? new Request(logoutPost(new URLSearchParams({ csrf_token: csrfToken }).toString()), { signal: controller.signal })
       : browserRequest(`/team/${paths[method]}`, { signal: controller.signal });
-    const answer = routes.handle(request).then(() => 'response', () => 'cancelled');
+    const answer = routes.handle(request);
     t.after(() => pending.reject(new Error('late WorkOS failure')));
 
     await entered.promise;
     controller.abort();
-    assert.equal(await Promise.race([answer, delay(100).then(() => 'waiting')]), 'cancelled');
+    await assert.rejects(answer, (cause: unknown) => cause === controller.signal.reason);
+    pending.reject(new Error('late WorkOS failure'));
+    await delay(0);
     assert.deepEqual(failures, []);
   });
 }

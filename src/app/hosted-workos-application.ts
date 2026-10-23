@@ -124,7 +124,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
     reportFailure: operatorFailureReporter(logger),
   });
   const mcp = new ProtectedResourceEndpoint({ server, mcpResourceUrl: config.mcpResourceUrl, resourceMetadataUrl: config.resourceMetadataUrl, authorizationServer: settings.authkitIssuer });
-  const sessionRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure: accountFailureReporter(logger) });
+  const sessionRoutes = new WorkOSSessionRoutes({ session, accessResolver: provider, publicBaseUrl: config.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure: accountFailureReporter(logger) });
   const signupRoutes = new WorkOSSignupRoutes({
     publicBaseUrl: config.publicBaseUrl,
     enabled: parts.signup?.enabled ?? false,

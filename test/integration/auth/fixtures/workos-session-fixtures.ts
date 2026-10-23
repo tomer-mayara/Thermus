@@ -91,7 +91,7 @@ export async function signIn(world: SessionFixture, token: string): Promise<stri
   world.fake.answer(authenticateRoute, tokenAnswer(token, 'refresh-1'));
   const state = new URL(start.url).searchParams.get('state') ?? '';
   const completion = await world.session.completeSignIn({ query: new URLSearchParams({ code: 'code-1', state }), cookieHeader: cookieHeaderOf(start.cookies) });
-  if (completion.status !== 'signed-in') assert.fail(`the sign-in was refused: ${completion.reason}`);
+  if (completion.status !== 'signed-in') assert.fail('the sign-in was refused');
   world.fake.takeRequests();
   return cookieHeaderOf(completion.cookies.slice(1));
 }

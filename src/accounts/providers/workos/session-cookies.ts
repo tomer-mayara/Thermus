@@ -13,7 +13,8 @@ export interface SessionEnvelope {
 export interface SignInEnvelope {
   readonly state: string;
   readonly codeVerifier: string;
-  readonly returnTo: string;
+  // Absent when sign-in has no explicit application destination.
+  readonly returnTo?: string;
   // Milliseconds since the Unix epoch.
   readonly expiresAt: number;
 }
@@ -139,8 +140,9 @@ function isSessionEnvelope(value: unknown): value is SessionEnvelope {
 }
 
 function isSignInEnvelope(value: unknown): value is SignInEnvelope {
-  return hasExactly(value, ['state', 'codeVerifier', 'returnTo', 'expiresAt'])
-    && isText(value.state) && isText(value.codeVerifier) && isText(value.returnTo) && Number.isFinite(value.expiresAt);
+  const hasReturn = hasExactly(value, ['state', 'codeVerifier', 'returnTo', 'expiresAt']) && isText(value.returnTo);
+  return (hasReturn || hasExactly(value, ['state', 'codeVerifier', 'expiresAt']))
+    && isText(value.state) && isText(value.codeVerifier) && Number.isFinite(value.expiresAt);
 }
 
 function hasExactly<Key extends string>(value: unknown, keys: readonly Key[]): value is Record<Key, unknown> {

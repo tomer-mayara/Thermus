@@ -1,11 +1,11 @@
 import { decodeJwt, errors } from 'jose';
 import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { CookieEffects, OrganizationSwitch } from '../../identity/browser-session.ts';
-import type { BrowserProfile, BrowserSessionControls, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../identity/browser-session-controls.ts';
+import type { BrowserProfile, BrowserSessionControls, BrowserSignInCompletion, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../identity/browser-session-controls.ts';
 import { sessionCookie, type SealedCookie, type SessionEnvelope } from './session-cookies.ts';
 import { isDamagedSeal, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
 import type { SealRefresh, SessionFacts, WorkOSSealedSession, WorkOSSessionClient } from './workos-session-client.ts';
-import { AuthKitSignIn, type SignInCallback, type SignInCompletion, type SignInStart, type SignInOnboarding } from './workos-sign-in.ts';
+import { AuthKitSignIn, type SignInCallback, type SignInStart, type SignInOnboarding } from './workos-sign-in.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
 
 export interface WorkOSBrowserSessionOptions {
@@ -52,12 +52,15 @@ export class WorkOSBrowserSession implements BrowserSessionControls {
     return this.signedIn(envelope, check, []);
   }
 
-  startSignIn(request: { readonly returnTo: string }): Promise<SignInStart> {
+  startSignIn(request: { readonly returnTo?: string }): Promise<SignInStart> {
     return this.signIn.start(request.returnTo);
   }
 
-  completeSignIn(callback: SignInCallback): Promise<SignInCompletion> {
-    return this.signIn.complete(callback);
+  async completeSignIn(callback: SignInCallback): Promise<BrowserSignInCompletion> {
+    const completion = await this.signIn.complete(callback);
+    if (completion.status === 'refused') return completion;
+    const { facts, ...answer } = completion;
+    return { ...answer, user: this.userOf(facts) };
   }
 
   // For the logout route after its CSRF check. The logout URL ends the session at WorkOS.

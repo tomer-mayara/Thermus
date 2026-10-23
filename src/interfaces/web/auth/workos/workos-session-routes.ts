@@ -2,7 +2,9 @@ import { waitForRequest } from '../../../../runtime/http/request-cancellation.ts
 import { sameSecret } from '../../../../accounts/providers/workos/session-cookies.ts';
 import { readSignOutForm } from './sign-out-form.ts';
 import type { BrowserSessionControls, ProfiledSignedInBrowserSession } from '../../../../accounts/identity/browser-session-controls.ts';
-import { jsonAnswer, noticePage, seeOther, signInNotice } from './workos-session-pages.ts';
+import type { AccessResolver, AuthenticatedUser } from '../../../../accounts/identity/access-context.ts';
+import { PRODUCT_ACCESS } from '../../account/portal-access.ts';
+import { jsonAnswer, noticePage, seeOther, signedInRecovery, signInNotice } from './workos-session-pages.ts';
 
 export interface SessionRouteFailure {
   readonly path: string;
@@ -11,6 +13,7 @@ export interface SessionRouteFailure {
 
 export interface WorkOSSessionRoutesOptions {
   readonly session: BrowserSessionControls;
+  readonly accessResolver: AccessResolver;
   readonly publicBaseUrl: string;
   readonly redirectUri: string;
   readonly reportFailure: (report: SessionRouteFailure) => void;
@@ -32,23 +35,28 @@ const RETURN_PATH_LIMIT = 1_024;
 const RETURN_PATH = /^\/(?!\/)[A-Za-z0-9\-._~!$&'()*+,;=:@%/]*$/;
 
 // The browser routes of the WorkOS provider: the sign-in, its callback, the sign-out, and the session of the portal.
-// They need no signed-in session, so the composition routes them before the account routes. An unexpected failure,
-// such as a WorkOS outage, changes no cookie, so that it cannot erase a session that can recover.
+// They need no signed-in session, so the composition routes them before the account routes. A failure after a code
+// exchange keeps its new session cookie, so that the browser can recover without using the code again.
 export class WorkOSSessionRoutes {
   private readonly session: BrowserSessionControls;
+  private readonly accessResolver: AccessResolver;
   private readonly reportFailure: (report: SessionRouteFailure) => void;
   private readonly publicBaseUrl: string;
   private readonly publicOrigin: string;
   private readonly paths: RoutePaths;
   private readonly routes: ReadonlyMap<string, Route>;
+  private readonly selectionUrl: URL;
 
   constructor(options: WorkOSSessionRoutesOptions) {
     this.session = options.session;
+    this.accessResolver = options.accessResolver;
     this.reportFailure = options.reportFailure;
     this.publicBaseUrl = directoryUrl(options.publicBaseUrl);
     this.publicOrigin = new URL(this.publicBaseUrl).origin;
     const pathOf = (relative: string): string => new URL(relative, this.publicBaseUrl).pathname;
     this.paths = { base: pathOf('./'), login: pathOf('login'), callback: new URL(options.redirectUri).pathname, session: pathOf('session') };
+    this.selectionUrl = new URL('organizations', this.publicBaseUrl);
+    this.selectionUrl.searchParams.set('return_to', this.paths.base);
     this.routes = new Map<string, Route>([
       [this.paths.login, (request) => this.signIn(request)],
       [this.paths.callback, (request) => this.callback(request)],
@@ -78,9 +86,9 @@ export class WorkOSSessionRoutes {
   private async signIn(request: Request): Promise<Response> {
     if (!isRead(request)) return noticePage('methodNotAllowed', { Allow: READ_METHODS });
     const returnPaths = new URL(request.url).searchParams.getAll('return_to');
-    const returnTo = returnPaths.length === 0 ? this.paths.base : this.returnPath(single(returnPaths));
-    if (returnTo === undefined) return signInNotice('signInInvalid', this.paths.login);
-    const start = await this.session.startSignIn({ returnTo });
+    const returnTo = this.returnPath(single(returnPaths));
+    if (returnPaths.length > 0 && returnTo === undefined) return signInNotice('signInInvalid', this.paths.login);
+    const start = await this.session.startSignIn(returnTo === undefined ? {} : { returnTo });
     return seeOther(start.url, start.cookies);
   }
 
@@ -90,8 +98,26 @@ export class WorkOSSessionRoutes {
     const query = new URL(request.url).searchParams;
     const completion = await this.session.completeSignIn({ query, cookieHeader: request.headers.get('Cookie') });
     if (completion.status === 'refused') return signInNotice('signInFailed', this.paths.login, completion.cookies);
-    const returnTo = this.returnPath(completion.returnTo) ?? this.paths.base;
-    return seeOther(new URL(returnTo, this.publicOrigin).href, completion.cookies);
+    if (completion.returnTo !== undefined) {
+      const returnTo = this.returnPath(completion.returnTo) ?? this.paths.base;
+      return seeOther(new URL(returnTo, this.publicOrigin).href, completion.cookies);
+    }
+    try {
+      return seeOther(await this.defaultLanding(completion.user, request.signal), completion.cookies);
+    } catch (cause) {
+      if (request.signal.aborted) throw cause;
+      this.reportFailure({ path: this.paths.callback, cause });
+      return signedInRecovery(`${this.selectionUrl.pathname}${this.selectionUrl.search}`, completion.cookies);
+    }
+  }
+
+  // AuthKit gives no invitation marker. A default return uses only its selected organization and current access.
+  // Without both, the existing selector asks the user to choose; even one membership is not a selection.
+  private async defaultLanding(user: AuthenticatedUser, signal: AbortSignal): Promise<string> {
+    if (!user.selectedOrganizationId) return this.selectionUrl.href;
+    const access = await waitForRequest(signal, () => this.accessResolver.resolve(user));
+    if (access.allowed && access.context.organizationId === user.selectedOrganizationId && access.context.permissions.includes(PRODUCT_ACCESS)) return this.publicBaseUrl;
+    return this.selectionUrl.href;
   }
 
   // The origin check comes before the body is read, so that a post from another site causes no work. A browser without

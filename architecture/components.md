@@ -212,7 +212,11 @@ implements identity-owned verifier/resolver contracts;
 [WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
 implements the organizations-owned directory role. `WorkOSBrowserSession`
 implements the identity-owned `BrowserSessionControls`, including profile data
-for display. Signup uses the organizations-owned `SignupActivation` contract,
+for display and trusted identity from a completed sign-in. A missing sealed
+return destination selects the default landing; an explicit safe destination
+keeps its existing behavior. The callback uses the same supplied access resolver
+to check the selected organization before the default portal redirect. Signup
+uses the organizations-owned `SignupActivation` contract,
 including the requested organization name and purpose-marked legal bundle. The
 signup form calls the public organizations name validator, so this dependency
 includes runtime behavior. The dependency rules declare that existing owner pair.
@@ -400,6 +404,72 @@ cancellation; a disconnected client cannot receive a final response. Ordinary
 failures, invalid inputs, blocked content, and cancellation remain distinct
 inside the pipeline. The MCP-owned fetch wrapper maps withheld content to empty
 Markdown text success. MCP records the safe completion status in its finalizer.
+
+### Scenario: hosted default sign-in landing
+
+Scope: the hosted callback after AuthKit sign-in, including native invitation
+acceptance. AuthKit owns invitation acceptance. Thermus neither receives an
+invitation token in this contract nor infers a joined organization from query
+parameters. The WorkOS adapter maps validated exchange facts to neutral identity.
+
+```mermaid
+%%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
+sequenceDiagram
+  actor Browser as Customer browser
+  participant Routes as web / session routes
+  participant Session as workos / browser session
+  participant Access as workos / access and directory
+  participant Remote as WorkOS service
+  Browser->>Routes: Callback code and state, sealed sign-in cookie
+  Routes->>Session: Complete sign-in
+  Note over Session: Validate pending sign-in, expiry and state
+  Session->>Remote: Exchange code with PKCE
+  Remote-->>Session: Identity, selection, sealed session
+  Note over Session: Validate seal and map trusted identity
+  Session-->>Routes: Trusted user, optional destination, cookie effects
+  alt Explicit safe destination
+    Routes-->>Browser: Redirect to destination with cookie effects
+  else No selected organization
+    Routes-->>Browser: Redirect to workspace selector with cookie effects
+  else Default landing with a selected organization
+    Routes->>Access: Resolve current access for trusted identity
+    alt Resolution completes
+      Note over Access: Check authority and selected organization locally
+      Access->>Remote: Read selected active membership
+      Remote-->>Access: Current membership or absence
+      Note over Access: Validate query match and membership uniqueness
+      alt No active membership
+        Access-->>Routes: Denied
+      else Active matching membership
+        Note over Access: Validate role shape before reading its catalog
+        Access->>Remote: Read organization role catalog
+        Remote-->>Access: Catalog
+        Note over Access: Shared grantsOfRoles validates catalog and maps grants
+        Access-->>Routes: Allowed context with current permissions
+      end
+      Note over Routes: Require allowed context, matching organization and product permission
+      alt Local landing gate permits portal
+        Routes-->>Browser: Redirect to portal with cookie effects
+      else Local landing gate refuses portal
+        Routes-->>Browser: Redirect to selector with cookie effects
+      end
+    else Remote read or local validation fails
+      Access-->>Routes: Failure
+      Routes-->>Browser: Recovery page and selector link with cookie effects
+    end
+  end
+```
+
+[Session routes](../src/interfaces/web/auth/workos/workos-session-routes.ts)
+do not select the first or only membership. The existing
+[workspace selector](../src/interfaces/web/account/account-routes.ts) handles
+single, multiple, and no eligible memberships and rechecks access on selection.
+An access-read failure after code exchange retains the new session and clears
+the used sign-in cookie; recovery does not replay the code. Old sealed sign-ins
+with an explicit destination remain valid. Explicit destinations retain their
+own route access checks. Forged query hints grant no access. Joining creates no
+creator agreement or local activation record. Browser selection does not change
+the organization bound to an existing MCP token.
 
 ### Scenario: hosted member read
 

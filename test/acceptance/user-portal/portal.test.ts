@@ -205,7 +205,7 @@ test('Given a signed-in user at a custom endpoint, when they choose Desktop and 
 });
 
 for (const role of ['admin', 'user']) {
-  test(`Given a current ${role}, when the portal opens, then workspace navigation matches the current server role`, async () => {
+  test(`Given a current ${role}, when the portal opens, then workspace navigation matches the current server role and legal links need no invited-member agreement`, async () => {
     const { document, requests } = await openPortal({ session: { ...ada, roles: ['admin'] }, productAccess: {
       organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: [role], plan: 'free', mcpUrl: 'https://thermus.example/mcp',
     } });
@@ -216,6 +216,10 @@ for (const role of ['admin', 'user']) {
     assert.equal(navigation.querySelector('a[href="organizations"]')?.textContent, 'Switch workspace');
     assert.equal(navigation.querySelector('a[href="members"]')?.textContent ?? null, role === 'admin' ? 'Members' : null);
     assert.doesNotMatch(navigation.textContent ?? '', /Logging|Security|Remove|Change role|MFA/);
+    assert.equal(document.querySelector('footer a[href="https://thermus.ai/privacy"]')?.textContent, 'Privacy Notice');
+    assert.equal(document.querySelector('footer a[href="https://thermus.ai/terms"]')?.textContent, 'Terms of Service');
+    assert.equal(document.querySelector('input[type="checkbox"]'), null);
+    assert.deepEqual([...document.querySelectorAll('form')].map((form) => form.getAttribute('action')), ['logout']);
     assert.deepEqual(requests, ['session', 'portal/access']);
   });
 }
