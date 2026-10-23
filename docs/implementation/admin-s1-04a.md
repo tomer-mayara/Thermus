@@ -1,6 +1,6 @@
 # S1-04a implementation record
 
-Status: implemented; final quality and image checks in progress, 22 October 2026.
+Status: implemented; final quality classification in progress, 22 October 2026.
 
 ## Scope
 
@@ -141,8 +141,9 @@ Do not add a redundant standalone `npm run check`. The live limit above remains.
 | `npm run test:container` | 11/11 passed with the real self-hosted image. |
 | `npm run build:hosted` | Passed: 2,593 server unit, 29 portal unit, 20 portal acceptance, 1,039 integration, 118 selected acceptance/interface, and 13 renderer tests. |
 | Browser and registry review | Passed within the limits described above. |
-| Hosted Linux AMD64 image | In progress. |
-| Coverage, native metrics, and review tier | Pending on the committed candidate. |
+| Hosted Linux AMD64 image | 7/7 passed, including the image build and real runtime/renderer checks. |
+| Coverage | Verified unit and integration capture: 139 source files from 633 processes. |
+| Native metrics and review tier | Final assessment pending on the committed candidate. |
 | Hosted live | Not run: the staging environment hold above remains. |
 
 The final habit-hooks run reports five complexity, one parameter-count, 654
@@ -158,4 +159,60 @@ native invitation limits, and unknown-write semantics. Removing those contracts
 or splitting files only to reduce a count would obscure the guarantees. These
 are retained findings with reasons, not a passing lint result.
 
-Final metric findings and candidate-bound reports follow after measurement.
+## Metrics review
+
+The pinned analyzer is ast-metrics 0.43.1. Against trusted `origin/main`,
+these 25 changed production files remain below MI 85. They are goal misses,
+not passes. Low files changed in this increment were inspected through the
+native MCP wrapper. Required guards remain direct; no wrapper was added only
+to move a score.
+
+| File | Base → head MI | Reason to retain |
+| --- | ---: | --- |
+| `administration-overviews.ts` | 77.0 → 75.8 | Keep small frozen read projections together. Trusted name, subject, and expiry are needed by the page; complete-stack paths fall from 18 to 15. |
+| `organization-administration.ts` | 64.8 → 64.8 | Keep current authorization, native invitation preflight, and outcome recording in one service. Name validation uses the same current membership read; complete-stack paths fall from 57 to 46. |
+| `hosted-role-mapping.ts` | 73.1 → 73.3 | Validate the whole catalog before giving a grant. The same small mapper now checks two roles. |
+| `session-cookies.ts` | 66.3 → 66.3 | Compatibility comment only. Seal verification and cookie effects remain unchanged. |
+| `workos-auth-provider.ts` | 67.9 → 67.9 | Contract comment only. Existing verification and current-membership resolution remain unchanged. |
+| `workos-browser-session.ts` | 63.9 → 64.2 | Remove inferred MFA while keeping session refresh and cookie effects together; paths fall from 49  to 48. |
+| `workos-organizations.ts` | 53.1 → 53.5 | Keep exact membership validation and bounded provider reads. Subject and expiry reuse validated native records; complete-stack paths fall from 110 to 104. |
+| `workos-settings.ts` | 66.4 → 69.1 | Remove the MFA mode; paths fall from 37  to 33. Keep startup validation and safe diagnostics. |
+| `workos-sign-in.ts` | 66.8 → 66.6 | Remove inference; paths fall from 21  to 20. The remaining state, expiry, and callback checks belong to one sign-in operation. |
+| `workos-signup-documents.ts` | 72.3 → 70.2 | Keep purpose, version, canonical bytes, and hash validation at one boundary. The purpose discriminator adds three paths; it prevents personal terms from authorizing organization creation. |
+| `workos-signup.ts` | 36.3 → 32.5 | Keep confirmed creation, canonical metadata, reread, and grant checks in order. S1-03b characterized recovery and retained this owner; thin wrappers would hide the authority boundary. |
+| `hosted-portal.ts` | 50.6 → 49.9 | Parent origin validation adds three required paths. Keep existing routing and build-output guards. Trivial wrappers would not simplify them. |
+| `hosted-workos-application.ts` | 63.0 → 62.2 | Keep provider construction and cleanup in one composition. The neutral name callback uses the existing directory; complete-stack paths stay 13. |
+| `portal.ts` | 50.2 → 47.0 | Keep current-access navigation with product rendering. The new private navigation helper has two paths and no authorization authority; a router or state framework is unnecessary. |
+| `account-form.ts` | 61.2 → 61.6 | Parent grant-parser removal reduces paths from 49  to 45. Bounded-body and CSRF validation remain. |
+| `account-pages.ts` | 75.2 → 73.9 | Keep the fixed unconfirmed-write notice with other small notices. Its only action is a GET status check; no failure cause or write retry is rendered. |
+| `account-routes.ts` | 61.2 → 61.2 | Parent boundary change preserves current access, selection, cookies, and failure behavior. |
+| `administration-pages.ts` | 69.1 → 63.9 | Keep one native Members template and three small formatting/form helpers. The main template has three paths, sendForm has two, and invitationRow has one. Splitting static HTML would add indirection without separating a rule. |
+| `administration-routes.ts` | 61.3 → 59.3 | Keep Origin, method, CSRF, selected-organization, current-authority, and safe-error checks at the request boundary. changeOnPost has ten necessary paths; complete-stack file paths stay 44. |
+| `portal-access.ts` | 79.7 → 72.3 | Keep permission, exact membership name, and response construction at one HTTP boundary. Missing names fail safely after permission is checked. |
+| `workos-session-routes.ts` | 61.6 → 61.8 | Parent contract extraction preserves callback, return-path, logout, and cookie behavior. |
+| `workos-signup-document-reader.ts` | 81.2 → 81.2 | Parent shared-type import only; bounded legal-document rendering stays the same. |
+| `workos-signup-form.ts` | 61.0 → 58.3 | Keep bounded single-field, CSRF, version, and agreement parsing together. Domain name validation is shared through its public interface. |
+| `workos-signup-pages.ts` | 52.4 → 52.4 | Reuse the existing legal readers and page layout for the name and single agreement. The provider-independent markup stays in one page module. |
+| `workos-signup-routes.ts` | 43.9 → 40.5 | Keep admission, CSRF, cancellation, and cookie effects with the signup request. The new private switch step isolates handoff from activation without duplicating grants. |
+
+
+The new `members-style.ts` contains one CSS string and no functions. The complete
+snapshot confirms zero source declarations, so its MI and CRAP are N/A.
+`change-records.ts` scores 89.8; the existing added signup contract scores 87.9
+and `customer-roles.ts` scores 89.9. No new production file needs an MI exception.
+
+The native review reports 14 high findings on changed production files. Thirteen
+are covered by the table. The other is the class measure in `change-records.ts`:
+keep the small typed failure and the separation of preflight, one write, and
+outcome recording. The file measure passes. The remaining 48 high findings
+concern files unchanged by this complete candidate. Test files have no MI goal.
+These retained reasons do not authorize a merge.
+
+Coverage was captured after the complete source, tests, and impact declaration
+were committed. Later prose does not alter its source or build inputs. The
+standalone CRAP command still fails because `get_file_metrics` omits source
+declarations in `src/accounts/organizations/organization-administration.ts`.
+There is no valid CRAP report or completed function-goal assessment. This is a
+tool failure, not a permitted metric exception.
+
+Final process and candidate-bound tier results follow after measurement.
