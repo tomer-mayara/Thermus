@@ -67,8 +67,9 @@ agreement or organization. A retained v1 personal record remains a replay
 barrier, not organization consent or authority for an Admin upgrade. A retained
 record with missing, pending, inactive, or inconsistent access requires support;
 it does not authorize a new grant. Use [signup inspection and recovery](hosted-signup-recovery.md),
-not the manual new-membership procedure below, for an incomplete signup. Extended
-recovery and eligibility cases remain S1-03b work.
+not the manual new-membership procedure below, for an incomplete signup. The
+[S1-03b record](admin-s1-03b.md) records the offline recovery and eligibility
+cases. These cases do not prove live provider behavior.
 
 ## Manual grants and invitations
 

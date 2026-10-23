@@ -8,17 +8,35 @@ member's role.
 
 ## Current holds
 
-Do not start fixture creation or acceptance while any hold remains:
+Read-only review on 23 October 2026 confirmed the matching Staging configuration:
 
-- The locally saved client does not match the connected staging client.
-- The locally saved issuer is missing.
-- The callback configuration does not match the test callback.
-- Staging MFA is Optional. The Slice 1 test profile requires Disabled.
+- Environment: `environment_01M4VDKATD5PXZT4H01EHCMR2A`.
+- Client: `client_01M4VDKB7C7T2GV2NWPS84HADP`.
+- Issuer: `https://reasonable-field-33-staging.authkit.app`.
+- Login, callback, and sign-out URLs: `https://localhost:46443/login`,
+  `https://localhost:46443/callback`, and `https://localhost:46443/`.
 
-Resolve these facts through the authorized environment review. Record the exact
-verified environment, client, issuer, callback, and MFA profile without keys or
-other credentials. Do not change shared provider settings as part of this proof.
-An unresolved proof or an acceptance that changes an active role blocks release.
+The saved `.env.local` differs. The existing
+`~/.config/thermus/with-workos-staging.cjs` launcher supplies the matching client
+and issuer and reads the available Staging API key from Keychain. Missing local
+keys or an issuer are not current blockers, and no new keys are required from
+the owner. Provider readback shows password and email verification enabled;
+Google and SSO are also enabled. No settings were changed.
+
+Do not start fixture creation or acceptance while the provider profile remains
+incompatible: Staging MFA is Optional; Slice 1 requires Disabled. A matching
+client, issuer, and callback do not resolve this mismatch.
+
+The consumer case also needs controlled, authorized consumer-domain identities.
+Their mailbox control, provider classification, and cleanup ownership remain
+unconfirmed. That fixture requirement applies to the consumer case only.
+
+The native matrix remains **NOT RUN**. Real password sign-in, verification/reset,
+and native invitation behavior still need the applicable live/manual proof.
+Resolve the profile and fixture holds through the authorized environment review.
+Record settings without keys or other credentials. Do not change shared provider
+settings as part of this proof. An unresolved proof or an acceptance that changes
+an active role blocks release.
 
 ## Prerequisites and safety
 
