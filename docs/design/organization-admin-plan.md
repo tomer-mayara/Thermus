@@ -1095,6 +1095,10 @@ the matching named-organization landing. Legal approval remains a rollout requir
 
 #### S1-03b — Creation recovery and eligibility
 
+Implementation and verification status: [S1-03b record](../implementation/admin-s1-03b.md).
+The gap below describes the starting point. The record keeps characterization
+results, any implementation changes, and the remaining provider and rollout limits.
+
 **Acceptance specification first:**
 
 ```gherkin

@@ -1,5 +1,37 @@
 # Test inventory
 
+## Current S1-03b inventory scope
+
+S1-03b extends the named-creation recovery and eligibility characterization.
+The [S1-03b record](../implementation/admin-s1-03b.md) records actual runs and
+limits; this inventory does not claim a successful test run.
+
+- `test/acceptance/auth/hosted-signup-recovery.test.ts` covers lost organization
+  and membership responses before and after persistence, delayed completion,
+  and retries through a new application instance with a different submitted name.
+  Concurrent submissions use different names and share provider state across
+  application instances. Only a confirmed new-create response can authorize the
+  initial Admin membership attempt. A failed browser switch followed by a retry
+  cannot replay that grant. The shared signup DSL lives in
+  `test/support/dsl/workos-signup.ts`.
+- `test/acceptance/auth/hosted-signup-restart.test.ts` retains the closed-signup,
+  revoked-first-Admin, old-form, and separate-workspace recovery coverage.
+- `test/acceptance/auth/hosted-signup-eligibility.test.ts` covers creation after
+  invited access is lost, retained v1 User access without promotion or acceptance
+  overwrite after restart, revoked legacy access, malformed retained records with
+  and without other current access, and selection among current User/Admin
+  memberships without an extra Create action.
+- The signup integration cases check saved names and acceptance records across
+  retries. Current provider-read failures remain unavailable rather than eligible.
+  A broken or unusable retained record requires support and cannot repair access;
+  current access in another organization remains usable.
+
+These offline cases exercise the application against a local provider fake.
+They do not prove WorkOS service behavior, approve legal text, change provider
+settings, or open production signup. Recovery inspection stays read-only; a
+retry cannot rename the saved organization, overwrite acceptance, or replay a
+grant. The S1-03a creation contract below remains unchanged.
+
 ## Current S1-03a inventory scope
 
 S1-03a adds named organization creation, one initially unchecked organization/authority
@@ -32,7 +64,7 @@ this inventory does not claim a successful test run.
 - Existing eligibility, revocation, cancellation, bounded admission, origin,
   CSRF, no-cache, and retained-record cases remain. Historical v1 records stay
   replay barriers, with no inferred organization consent or Admin upgrade.
-  Extended recovery combinations remain S1-03b work.
+  The S1-03b overlay above covers the extended recovery combinations.
 - The hosted live signup source uses the TEST ONLY organization agreement,
   named first Admin, the ten-field v2 record, and matching browser/MCP token
   organization checks. Fixture cleanup accepts v1 or v2 only with the existing

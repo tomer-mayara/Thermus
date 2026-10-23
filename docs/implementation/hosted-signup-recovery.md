@@ -6,6 +6,8 @@ The signup pages use the approved Thermus portal design. Sign-in and activation
 remain separate steps. Page styles do not change signup eligibility, email
 verification, agreement checks, or the activation safeguards. S1-03a adds the
 organization name to the POST contract and uses one organization/authority agreement.
+The marked organization test bundle proves application behavior only. It does not
+approve legal text or open production signup; those remain separate rollout steps.
 
 Desktop legal readers support keyboard focus and scrolling. On mobile, each
 reader shows the original opening paragraph and a closed native disclosure.
@@ -72,10 +74,10 @@ The link starts a new sign-in and returns to signup. Its callback replaces the
 browser session. This recovery does not clear the cookie or change authentication
 on other routes. It creates no organization or membership for the deleted user.
 A fresh sign-in can use normal signup for its current subject. Any retained
-personal marker for an earlier subject stays in place and still blocks grant
+signup marker for an earlier subject stays in place and still blocks grant
 replay for that subject.
 
-## Retained personal record
+## Retained signup record
 
 The external ID is `thermus-signup:` followed by a base64url SHA-256 of the trusted
 WorkOS authority, one zero byte, and the subject. It has no email, but it remains
@@ -106,37 +108,39 @@ barrier. It supplies neither organization consent nor an Admin upgrade.
 The organization and reserved external ID prevent a later request from replaying
 the initial grant. Keep them after ordinary revocation, even when the membership
 is absent. Neither mutable metadata nor a successful read grants creation
-authority. The limit is one personal workspace per subject/environment while
-its record is retained, not one per human and not a permanent global ban.
+authority. Signup can create at most one organization per subject/environment
+while its record remains. This is not one per human or a permanent global ban.
 Account deletion needs the distinct decision in the deletion runbook.
 
 ## Inspect before deciding
 
 1. Verify the environment, actual user identity, and requested outcome. Locate
-   the personal external ID from the trusted authority and subject, not email
+   the reserved external ID from the trusted authority and subject, not email
    or browser-supplied IDs. Use WorkOS's
    [organization read procedures](https://workos.com/docs/reference/organization)
    and [membership reads](https://workos.com/docs/reference/authkit/organization-membership).
    Follow pagination and inspect all statuses. A provider error is unknown,
    not evidence of absence or eligibility.
-2. Compare the personal organization and marker with the retained exact bundle.
+2. Compare the organization and signup marker with the retained exact bundle.
    Inspect effective roles and live product permission. Preserve unrelated
    memberships and roles. Use this state table for the case record:
 
    | Observed state | Result |
    | --- | --- |
    | Current-user read confirms the user is absent (404) | Offer fresh Sign in with the full notice; POST returns 401. Make no activation write. |
-   | Valid personal marker and current active product access | Continue through the selector; no create or role update. |
-   | Marker exists; membership absent, pending, inactive, or inconsistent | Support required. Keep the marker; no grant replay or repair. Other authorized workspaces remain available. |
+   | Valid signup marker and current active product access | Continue through the selector; no create or role update. |
+   | Marker exists but is invalid, or its membership is absent, pending, inactive, or inconsistent | Support required. Keep the marker; no grant replay or repair. Continue remains available for current product access in another organization. |
    | No marker and current product access elsewhere, including Admin alone | Continue through the selector; no extra organization. |
    | No marker and no product access, with no uncertain earlier write | Normal signup may offer agreement when separately enabled; this is not an operator grant. |
-   | Failed read, invalid marker, conflicting IDs, or uncertain earlier write | Stop the affected recovery and escalate. Preserve evidence; make no activation write. |
+   | Failed read or unresolved earlier write | State is unknown. Stop the affected recovery and escalate. Preserve evidence; make no activation write. |
 
 3. After a timeout or lost create response, use reads of the exact known ID or
    external ID to inspect the outcome. Current absence does not prove a grant
    never occurred and was later removed. Another submission, process restart,
    conflict, or record read must not repeat membership creation, reactivate a
-   membership, restore roles, or replace the organization/marker. Only a
+   membership, restore roles, rename the organization, overwrite acceptance,
+   or replace the organization/marker. A later submitted name or agreement
+   does not replace saved facts. Only a
    confirmed new-create winner can make the initial membership attempt.
 4. If a manual recovery is needed, prepare a separate scoped decision with the
    observed state, evidence gaps, intended result, exact resources, agreement
@@ -147,8 +151,16 @@ Account deletion needs the distinct decision in the deletion runbook.
 
 After confirmed new creation, the browser switch must use current membership
 and select the same organization as the MCP guide. A refused or failed switch
-must not replay the initial grant. This procedure preserves the existing
-recovery boundary; extended recovery and eligibility cases remain S1-03b work.
+must not replay the initial grant. A valid historical v1 record with current usable
+User access can Continue without an Admin upgrade or a new agreement record. Past
+invited membership alone does not bar normal creation when no current product
+access or retained signup record remains. Multiple current memberships still use
+the selector; recovery does not select an arbitrary organization.
+
+The [S1-03b record](admin-s1-03b.md) gives the application recovery and eligibility
+characterization and its limits. A local provider fake can exercise conflicting
+creates and lost responses; it does not prove WorkOS service behavior or replace
+separately scoped provider verification.
 
 ## Coordinate an activation already in progress
 

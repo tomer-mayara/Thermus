@@ -70,7 +70,7 @@ organization. Use the WorkOS [user](https://workos.com/docs/reference/authkit/us
 and [membership](https://workos.com/docs/reference/authkit/organization-membership)
 read procedures; follow pagination and inspect memberships in all statuses.
 Do not copy full provider responses into the record. Also inventory the
-[retained personal signup record](hosted-signup-recovery.md#retained-personal-record),
+[retained signup record](hosted-signup-recovery.md#retained-signup-record),
 its reserved external ID and nine acceptance fields, and any later private
 agreement evidence. The marker is pseudonymous personal data, not anonymous
 operational data. It is an initial acceptance marker, not an agreement history.
