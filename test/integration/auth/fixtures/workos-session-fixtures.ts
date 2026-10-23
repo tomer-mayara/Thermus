@@ -55,7 +55,7 @@ export async function startSessionFixture(t: TestContext): Promise<SessionFixtur
 }
 
 export function sessionFor(fake: WorkOSFakeApi, client: FakeClientSettings = {}): WorkOSBrowserSession {
-  return new WorkOSBrowserSession({ workos: workosClientFor(fake, client), settings, authority, mfaEvidence: 'password-mfa-required' });
+  return new WorkOSBrowserSession({ workos: workosClientFor(fake, client), settings, authority });
 }
 
 export function accessToken(world: SessionFixture, organizationId: string, expired = false): Promise<string> {

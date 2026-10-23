@@ -36,8 +36,6 @@ export interface WorkOSApplicationParts {
   readonly onboarding?: GoogleOnboardingSettings;
   // Explicit composition supplies its own documents. Production selects the approved bundle at startup.
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
-  // A composition can discard MFA evidence, but only the configured Required policy can supply it.
-  readonly mfaEvidence?: 'unproven';
 }
 
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
@@ -111,7 +109,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const onboarding = parts.onboarding === undefined ? undefined : new WorkOSGoogleOnboarding({
     ...parts.onboarding, authority, workos, settings, records: accountChangeRecorder(logger), billing: parts.billing, directory: organizations,
   });
-  const session = new WorkOSBrowserSession({ workos, settings, authority, mfaEvidence: parts.mfaEvidence ?? (settings.mfaPolicy === 'required' ? 'password-mfa-required' : 'unproven'), ...(onboarding === undefined ? {} : { onboarding }) });
+  const session = new WorkOSBrowserSession({ workos, settings, authority, ...(onboarding === undefined ? {} : { onboarding }) });
   const server = new MCPServer({
     auth: {
       verifier: provider,

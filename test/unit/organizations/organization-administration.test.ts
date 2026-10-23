@@ -8,8 +8,8 @@ import { OrganizationDirectoryDouble } from '../../support/doubles/organizations
 
 const authority = 'hosted-provider-double';
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
-const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
+const adminGrant: RoleGrant = { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] };
+const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: [] };
 const memberRole: RoleGrant = { role: 'member', permissions: [] };
 
 function userOf(subject: string, selectedOrganizationId?: string): AuthenticatedUser {
@@ -58,7 +58,6 @@ describe('OrganizationAdministration', () => {
     assert.deepEqual(organizations, [
       { organizationId: 'org-a', organizationName: 'Organization A', selected: false },
       { organizationId: 'org-b', organizationName: 'Organization B', selected: false },
-      { organizationId: 'org-f', organizationName: 'Organization F', selected: false },
     ]);
   });
 
@@ -75,7 +74,7 @@ describe('OrganizationAdministration', () => {
       const organizations = await administration.listOrganizations(userOf('user-mia', selectedOrganizationId));
 
       assert.deepEqual(organizations.filter((organization) => organization.selected).map(({ organizationId }) => organizationId), selected);
-      assert.deepEqual(organizations.map(({ organizationId }) => organizationId), ['org-a', 'org-b', 'org-f']);
+      assert.deepEqual(organizations.map(({ organizationId }) => organizationId), ['org-a', 'org-b']);
     });
   }
 
@@ -87,7 +86,7 @@ describe('OrganizationAdministration', () => {
     directory.configure('user-mia', [membership('org-a', [userGrant], false), membership('org-c', [userGrant])]);
     const second = await administration.listOrganizations(mia);
 
-    assert.deepEqual(first.map(({ organizationId }) => organizationId), ['org-a', 'org-b', 'org-f']);
+    assert.deepEqual(first.map(({ organizationId }) => organizationId), ['org-a', 'org-b']);
     assert.deepEqual(second, [{ organizationId: 'org-c', organizationName: 'Organization C', selected: false }]);
     assert.deepEqual([Object.isFrozen(first), Object.isFrozen(first[0])], [true, true]);
     assert.equal(directory.membershipReads.length, 2);
@@ -107,6 +106,7 @@ describe('OrganizationAdministration', () => {
     { label: 'an inactive membership', organizationId: 'org-c' },
     { label: 'a membership whose role grants no application permission', organizationId: 'org-d' },
     { label: 'a membership without any grant', organizationId: 'org-e' },
+    { label: 'a retired role without application permissions', organizationId: 'org-f' },
     { label: 'an organization of another user only', organizationId: 'org-z' },
     { label: 'an unknown organization', organizationId: 'org-unknown' },
     { label: 'an empty organization ID', organizationId: '' },

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { adminGrant, memberRole, superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
 import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
 import { SignupClientFake, documents, user } from './fixtures/signup-client-fake.ts';
 
@@ -55,12 +56,23 @@ for (const state of ['absent', 'pending', 'inactive', 'non-product', 'directory-
   });
 }
 
-test('Given only an admin grant or an inactive User grant, when inspected, then signup remains eligible', async () => {
+test('Given only active Admin access, when inspected, then existing access can continue without a new workspace or membership', async () => {
   const fake = new SignupClientFake();
-  fake.existingAccess = [{ ...otherAccess, active: false }, { ...otherAccess, grants: [{ role: 'admin', permissions: ['user-grants:manage'] }] }];
-  assert.deepEqual(await inspect(fake), { status: 'eligible' });
+  fake.existingAccess = [{ ...otherAccess, grants: [adminGrant] }];
+  assert.deepEqual(await inspect(fake), { status: 'existing-access' });
   assert.deepEqual(fake.organizationWrites, []);
+  assert.deepEqual(fake.membershipWrites, []);
 });
+
+for (const grants of [[memberRole], [superAdminGrant]]) {
+  test(`Given inactive product access and only ${grants[0].role} active access, when inspected, then signup remains eligible without a write`, async () => {
+    const fake = new SignupClientFake();
+    fake.existingAccess = [{ ...otherAccess, active: false }, { ...otherAccess, grants }];
+    assert.deepEqual(await inspect(fake), { status: 'eligible' });
+    assert.deepEqual(fake.organizationWrites, []);
+    assert.deepEqual(fake.membershipWrites, []);
+  });
+}
 
 test('Given a provider read fails, when signup state is inspected, then the failure cannot become eligibility', async () => {
   const fake = new SignupClientFake();

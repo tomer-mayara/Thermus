@@ -8,22 +8,22 @@ organization and collects no payment. The paid product still needs
 [AUTH-11](#auth-11-implementation-specification). Until AUTH-11 passes its
 paid gates, no release collects payments.
 
-## Accepted policy
+## Current free billing policy
 
-The decisions below do not change these rules.
+S1-02 uses User and Admin customer roles. Admin includes product access and
+`billing:manage`; the billing read requires current authority in the selected
+organization, with no application MFA precondition. `BillingFree` still bills
+no organization. The billing page has no purchase or change action. No paid
+seat rule is implemented by this change. The member page shows **Active product
+members**, counting each unique active membership with `product:access` once,
+including Admin alone. The internal `activeUserSeats` and `activeUserSeatCount`
+names remain for compatibility; this count is not a bill.
 
-- Only the hosted edition has billing. The self-hosted edition has no billing
-  routes, storage, or provider calls.
-- In each organization, only Super Admin manages billing. No other grant gives
-  billing authority.
-- A billing change by a customer needs completed MFA and a basic change record:
-  actor, organization, target, action, time, and outcome, without credentials.
-- The count of seats is the number of unique active memberships with User in
-  the organization. User plus Admin or Super Admin counts once. Admin-only and
-  Super-Admin-only memberships, pending invitations, and inactive memberships
-  do not count.
-- WorkOS memberships are the authority for this count. If one membership page
-  fails, the count fails. The app never uses a partial count.
+The AUTH-10/AUTH-11 options below retain the earlier three-role proposal and
+User-seat terminology. They are pending paid-product decisions, not current
+customer access rules. Reconcile them with the two-role model before paid work.
+WorkOS memberships remain the authority for any complete membership count; a
+failed page must not produce a partial result.
 
 ## Owner decision
 
@@ -57,7 +57,7 @@ operation gives a `BillingState`.
 | Operation | Contract |
 | --- | --- |
 | `stateOf(organizationId)` | Gives the confirmed billing state of one organization. |
-| `updateSeats(organizationId, seatCount)` | Gets the complete current count of active User seats. The count is never a change to add or subtract, so the same count again has no further effect. Gives the confirmed state after the update. |
+| `updateSeats(organizationId, seatCount)` | Gets a complete current membership count from its caller; the current member overview counts active product members. The count is never a change to add or subtract, so the same count again has no further effect. Gives the confirmed state after the update. |
 
 `BillingState` has `organizationId`, `plan`, and `billedSeats`, the number of
 seats that are billed. The only plan now is `free`. AUTH-11 adds the paid
@@ -78,9 +78,9 @@ Each implementation obeys these rules:
    synchronous throw.
 4. **Frozen records.** Each state is a frozen record.
 5. **No role check.** `Billing` does not check roles. Before a customer billing
-   change, the application service checks Super Admin authority and completed
-   MFA, and it writes the change record. A seat update follows a membership
-   change, so it does not need Super Admin.
+   change, the application service must check the approved authority and write
+   the change record. Paid changes are not implemented. A seat update follows
+   a membership change and is not a customer billing action.
 6. **Hosted only.** The hosted composition creates one `Billing` when it serves
    a billing operation. The self-hosted composition creates none.
 
@@ -91,9 +91,8 @@ The self-hosted composition creates no `Billing`. `OrganizationAdministration`
 is the production caller of `Billing`:
 
 - The billing page, `GET <base>billing`, calls `billingState()`.
-  `billingState()` calls `stateOf` only for a sign-in that completed MFA and
-  a current membership read that gives the actor `billing:manage` (Super
-  Admin) in the selected organization. Else the page gets `403`, and
+  `billingState()` calls `stateOf` only after a current membership read gives
+  the actor `billing:manage` (Admin) in the selected organization. Else the page gets `403`, and
   `Billing` gets no call.
 
 S1-01 removes `changeGrant()` and its post-write `updateSeats()` call. The

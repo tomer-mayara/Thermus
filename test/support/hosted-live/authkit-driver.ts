@@ -1,9 +1,7 @@
 import type { Page, Route } from 'playwright';
-import type { HostedMfaPolicy } from './mfa-profile.ts';
 import type { LiveUser } from './staging-fixtures.ts';
 
 interface AuthKitPlan {
-  readonly mfaPolicy?: HostedMfaPolicy;
   readonly user: LiveUser;
   readonly authkitHost: string;
   readonly callback: string;
@@ -19,7 +17,6 @@ type AuthKitStep = (page: Page, plan: AuthKitPlan) => Promise<void>;
 
 const stepTimeout = 30_000;
 const maxPages = 10;
-const setupKeyPattern = /\b[A-Z2-7]{16,64}\b/;
 
 // Playwright messages can quote URLs and typed values. Keep the first line and drop each query.
 function safeMessage(error: unknown): string {
@@ -40,21 +37,6 @@ const enterEmail: AuthKitStep = async (page, { user }) => {
 const enterPassword: AuthKitStep = async (page, { user }) => {
   await page.locator('input[type=password]').fill(user.password);
   await leavePage(page, () => page.getByRole('button', { name: 'Sign in', exact: true }).click());
-};
-
-const enterOneTimeCode: AuthKitStep = async (page, { user }) => {
-  const code = await user.authenticator.nextCode();
-  await leavePage(page, () => page.locator('input[autocomplete=one-time-code]').first().fill(code));
-};
-
-const enrollAuthenticator: AuthKitStep = async (page, plan) => {
-  await page.getByRole('button', { name: 'View the setup key' }).click();
-  await page.locator('body').getByText(setupKeyPattern).first().waitFor();
-  const setupKey = setupKeyPattern.exec(await page.locator('body').innerText())?.[0];
-  if (setupKey === undefined) throw new Error('The MFA enrollment page shows no setup key.');
-  plan.user.authenticator.enroll(setupKey);
-  await page.keyboard.press('Escape');
-  await enterOneTimeCode(page, plan);
 };
 
 const chooseOrganization: AuthKitStep = async (page, { organizationName }) => {
@@ -86,8 +68,6 @@ const steps: ReadonlyArray<readonly [RegExp, AuthKitStep]> = [
   // AuthKit shows the invitation of a sign-in that started after the browser opened an invitation link.
   [/^\/invite\/?$/, enterEmail],
   [/^\/password/, enterPassword],
-  [/^\/mfa\/enrollment/, enrollAuthenticator],
-  [/^\/mfa\/verification/, enterOneTimeCode],
   [/^\/organization-selection/, chooseOrganization],
   [/^\/application-authorization\/?$/, allowAccess],
 ];
@@ -104,8 +84,8 @@ async function walkAuthKit(page: Page, plan: AuthKitPlan, callback: () => URL | 
     if (reached) return { pages, callback: reached };
     const { host, origin, pathname } = new URL(page.url());
     if (host !== plan.authkitHost) throw new Error(`AuthKit sent the browser to ${origin}${pathname}, not to the callback, after ${pages.join(' > ')}.`);
-    if (plan.mfaPolicy === 'optional' && pathname.startsWith('/mfa/')) {
-      throw new Error(`Optional MFA sign-in unexpectedly reached ${pathname}; no authenticator was enrolled by this proof.`);
+    if (pathname.startsWith('/mfa/')) {
+      throw new Error(`Password-only sign-in unexpectedly reached ${pathname}; this proof does not enroll or verify MFA.`);
     }
     pages.push(pathname);
     await stepFor(pathname)(page, plan).catch((error: unknown) => {
@@ -144,8 +124,8 @@ export async function completeAuthKit(page: Page, plan: Omit<AuthKitPlan, 'callb
     await page.waitForLoadState('domcontentloaded');
     const { host, pathname } = new URL(page.url());
     if (host !== plan.authkitHost) return pages;
-    if (plan.mfaPolicy === 'optional' && pathname.startsWith('/mfa/')) {
-      throw new Error(`Optional MFA sign-in unexpectedly reached ${pathname}; no authenticator was enrolled by this proof.`);
+    if (pathname.startsWith('/mfa/')) {
+      throw new Error(`Password-only sign-in unexpectedly reached ${pathname}; this proof does not enroll or verify MFA.`);
     }
     pages.push(pathname);
     await stepFor(pathname)(page, { ...plan, callback: '' }).catch((error: unknown) => {

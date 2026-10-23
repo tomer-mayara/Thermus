@@ -9,6 +9,7 @@ import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/work
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey } from '../../support/doubles/workos/jwt-signing-key.ts';
 import { fakeClientId, WorkOSFakeApi, workosClientFor, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
+import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 
 // The real provider and organization reads with the pinned SDK client. The answers come from a local fake in the
 // WorkOS wire format, so these tests do not show what the WorkOS service sends.
@@ -60,13 +61,12 @@ function roleJson(slug: string, permissions: readonly string[]) {
   };
 }
 
-// The staging roles, with the changes of a test.
+// The expected hosted catalog, with the changes of a test. No retired role is required.
 function rolesAnswer(changes: Readonly<Record<string, readonly string[] | undefined>> = {}): FakeAnswer {
   const roles: Record<string, readonly string[] | undefined> = {
     member: [],
-    user: ['product:access'],
-    admin: ['user-grants:manage'],
-    'super-admin': ['admin-grants:manage', 'billing:manage'],
+    user: userGrant.permissions,
+    admin: adminGrant.permissions,
     ...changes,
   };
   const data = Object.entries(roles).flatMap(([slug, permissions]) => permissions === undefined ? [] : [roleJson(slug, permissions)]);
@@ -102,11 +102,23 @@ describe('WorkOSAuthProvider with WorkOSOrganizations and the pinned WorkOS SDK'
         user: aliceInAcme,
         tenantId: `${authority}:${acme}`,
         organizationId: acme,
-        grants: [{ role: 'user', permissions: ['product:access'] }, { role: 'admin', permissions: ['user-grants:manage'] }],
-        permissions: ['product:access', 'user-grants:manage'],
+        grants: [userGrant, adminGrant],
+        permissions: adminGrant.permissions,
       },
     });
     assert.deepEqual(requestLines(), ['GET /authkit/oauth2/jwks', membershipRead, rolesRoute]);
+  });
+
+  test('Given a catalog with only User and Admin and an Admin-only membership, when access is resolved, then no Super Admin or default role is required and the context grants all Admin permissions', async (t) => {
+    const { fake, provider } = await directoryWorld(t);
+    fake.answer(membershipsRoute, membershipsAnswer(membershipJson(['admin'])));
+    fake.answer(rolesRoute, rolesAnswer({ member: undefined }));
+
+    const decision = await provider.resolve(aliceInAcme);
+
+    assert.ok(decision.allowed);
+    assert.deepEqual(decision.context.grants, [adminGrant]);
+    assert.deepEqual(decision.context.permissions, adminGrant.permissions);
   });
 
   test('Given a membership with only the default role, when access is resolved, then it is allowed with the default grant and no permission', async (t) => {
@@ -130,7 +142,9 @@ describe('WorkOSAuthProvider with WorkOSOrganizations and the pinned WorkOS SDK'
 
   for (const { label, membership, roles, rule } of [
     { label: 'a default role that gives product:access', membership: ['member'], roles: rolesAnswer({ member: ['product:access'] }), rule: /role member .* must give no application permission/ },
-    { label: 'no super-admin role', membership: ['user'], roles: rolesAnswer({ 'super-admin': undefined }), rule: /role super-admin does not exist/ },
+    { label: 'no Admin role', membership: ['user'], roles: rolesAnswer({ admin: undefined }), rule: /role admin does not exist/ },
+    { label: 'no User role', membership: ['admin'], roles: rolesAnswer({ user: undefined }), rule: /role user does not exist/ },
+    { label: 'a retired Super Admin role with application permissions', membership: ['admin'], roles: rolesAnswer({ 'super-admin': ['admin-grants:manage', 'billing:manage'] }), rule: /role super-admin .* must give no application permission/ },
     { label: 'a membership without a role list', membership: undefined, roles: rolesAnswer(), rule: /no role list/ },
   ]) {
     test(`Given ${label}, when access is resolved, then it fails with a HostedRoleConfigurationError and gives no context`, async (t) => {

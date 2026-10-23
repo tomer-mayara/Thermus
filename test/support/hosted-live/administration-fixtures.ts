@@ -5,9 +5,8 @@ import { FixtureFactory, settled, type LiveOrganization, type LiveUser, type Sta
 // Each label starts with the organization of its proof or case, so that it differs from the labels of the other
 // fixtures of the run.
 const userLabels = [
-  'd-repeat', 'd-concurrent', 'd-absent', 'd-retry', 'd-last-role', 'd-inactive', 'd-pending', 'd-seat-user-admin', 'd-seat-admin',
-  'd-seat-super-admin', 'd-seat-default', 'd-seat-inactive', 'd-seat-pending', 'd-invitee', 'd-member',
-  'c-super-admin', 'c-admin-only', 'c-administrator', 'c-selective', 'c-last-user', 'c-target', 'c-inactive', 'c-invitee-user',
+  'd-seat-user-admin', 'd-seat-admin', 'd-seat-user', 'd-seat-default', 'd-seat-inactive', 'd-seat-pending', 'd-invitee', 'd-member',
+  'c-admin-only', 'c-administrator', 'c-target', 'c-invitee-user',
   'c-invitee-admin', 'c-invitee-revoked',
 ] as const;
 
@@ -17,7 +16,6 @@ interface MembershipSetting {
   readonly make: FixtureFactory;
   readonly workos: WorkOS;
   readonly users: Readonly<Record<AdministrationUserLabel, LiveUser>>;
-  readonly organizationB: LiveOrganization;
   readonly organizationC: LiveOrganization;
   readonly organizationD: LiveOrganization;
 }
@@ -43,58 +41,37 @@ async function invitedMembership(workos: WorkOS, user: LiveUser, organization: L
   return membership.id;
 }
 
-function membershipsToMake({ make, workos, users, organizationB, organizationC, organizationD }: MembershipSetting) {
+function membershipsToMake({ make, workos, users, organizationC, organizationD }: MembershipSetting) {
   const inD = (label: AdministrationUserLabel, roles: string[]) => () => make.membership(users[label], organizationD, roles);
   const inC = (label: AdministrationUserLabel, roles: string[]) => () => make.membership(users[label], organizationC, roles);
   return {
-    repeatInD: inD('d-repeat', ['user']),
-    concurrentInD: inD('d-concurrent', ['user']),
-    absentInD: inD('d-absent', ['user']),
-    retryInD: inD('d-retry', ['user']),
-    lastRoleInD: inD('d-last-role', ['user']),
-    lastRoleInB: () => make.membership(users['d-last-role'], organizationB, ['user']),
-    inactiveInD: () => make.deactivatedMembership(users['d-inactive'], organizationD),
-    pendingInD: () => invitedMembership(workos, users['d-pending'], organizationD),
     seatUserAdminInD: inD('d-seat-user-admin', ['user', 'admin']),
     seatAdminInD: inD('d-seat-admin', ['admin']),
-    seatSuperAdminInD: inD('d-seat-super-admin', ['super-admin']),
+    seatUserInD: inD('d-seat-user', ['user']),
     seatDefaultInD: inD('d-seat-default', []),
     seatInactiveInD: () => make.deactivatedMembership(users['d-seat-inactive'], organizationD),
     seatPendingInD: () => invitedMembership(workos, users['d-seat-pending'], organizationD),
     memberInD: inD('d-member', ['user']),
-    superAdminInC: inC('c-super-admin', ['super-admin']),
     adminOnlyInC: inC('c-admin-only', ['admin']),
-    administratorInC: inC('c-administrator', ['super-admin', 'admin']),
-    selectiveInC: inC('c-selective', ['user', 'admin']),
-    lastUserInC: inC('c-last-user', ['user']),
-    lastUserInB: () => make.membership(users['c-last-user'], organizationB, ['user']),
+    administratorInC: inC('c-administrator', ['admin']),
     targetInC: inC('c-target', ['user']),
-    inactiveInC: () => make.deactivatedMembership(users['c-inactive'], organizationC, ['user', 'admin']),
     inviteeAdminInC: () => make.deactivatedMembership(users['c-invitee-admin'], organizationC, ['user', 'admin']),
   };
 }
 
 // The data of the AUTH-08W proofs and cases, after the staging fixtures of the run, with the same run ID. Each user is
-// new, so that no other proof or case changes it. Organization B is the one of the staging fixtures. Organization C has
+// new, so that no other proof or case changes it. Organization C has
 // the external ID thermus-live-<run ID>-c, as each customer organization of the operator runbook has an external ID,
-// and organization D has none. Thus the grant changes in C name the authorization resource by its external ID, and
-// those in D by the organization ID.
+// and organization D has none.
 // Organization D, of the provider proofs:
-// - d-repeat, d-concurrent, d-absent, and d-retry: User;
-// - d-last-role: User, and User in B;
-// - d-inactive: an inactive membership with User;
-// - d-pending: a pending membership with User, from an invitation;
-// - d-seat-user-admin: User and Admin; d-seat-admin: Admin; d-seat-super-admin: Super Admin; d-seat-default: only
+// - d-seat-user-admin: User and Admin; d-seat-admin: Admin; d-seat-user: User; d-seat-default: only
 //   the default role; d-seat-inactive: an inactive membership with User; d-seat-pending: a pending membership with
 //   User, from an invitation;
 // - d-member: User, the address of an active member;
 // - d-invitee: no membership.
 // Organization C, of the server cases:
-// - c-super-admin: only Super Admin; c-admin-only: only Admin;
-// - c-administrator: Super Admin and Admin, the administrator of the later cases;
-// - c-selective: User and Admin;
-// - c-last-user: User, and User in B;
-// - c-target: User; c-inactive: an inactive membership with User and Admin;
+// - c-admin-only and c-administrator: only Admin;
+// - c-target: User;
 // - c-invitee-admin: an inactive membership with User and Admin;
 // - c-invitee-user and c-invitee-revoked: no membership.
 export async function createAdministrationFixtures(workos: WorkOS, registry: FixtureRegistry, staging: StagingFixtures): Promise<AdministrationFixtures> {
@@ -102,7 +79,7 @@ export async function createAdministrationFixtures(workos: WorkOS, registry: Fix
   const [organizationC, organizationD] = await settled([make.organization('C', `thermus-live-${staging.runId}-c`), make.organization('D')]);
   const created = await settled(userLabels.map((label) => make.user(label)));
   const users = Object.fromEntries(userLabels.map((label, index) => [label, created[index]])) as Record<AdministrationUserLabel, LiveUser>;
-  const toMake = membershipsToMake({ make, workos, users, organizationB: staging.organizationB, organizationC, organizationD });
+  const toMake = membershipsToMake({ make, workos, users, organizationC, organizationD });
   const names = Object.keys(toMake) as AdministrationMembershipName[];
   const ids = await settled(names.map((name) => toMake[name]()));
   const memberships = Object.fromEntries(names.map((name, index) => [name, ids[index]])) as Record<AdministrationMembershipName, string>;

@@ -82,9 +82,23 @@ function holdsAny(texts: readonly string[], secrets: readonly string[]): boolean
   return texts.some((text) => values.some((secret) => text.includes(secret)));
 }
 
+async function organizationState(run: LiveRun, organizationId: string) {
+  const memberships = await (await run.workos.userManagement.listOrganizationMemberships({ organizationId, statuses: ['active', 'inactive', 'pending'], limit: 100 })).autoPagination();
+  const invitations = await (await run.workos.userManagement.listInvitations({ organizationId, limit: 100 })).autoPagination();
+  return {
+    memberships: memberships.map((membership) => ({ id: membership.id, ...stateOf(membership) })).toSorted((a, b) => a.id.localeCompare(b.id)),
+    invitations: invitations.map(({ id, state, updatedAt }) => ({ id, state, updatedAt })).toSorted((a, b) => a.id.localeCompare(b.id)),
+  };
+}
+
+function assertAdministrationRefusal(answer: ServerAnswer): void {
+  assert.equal(answer.status, 403, answer.body);
+  assert.doesNotMatch(answer.body, /<form/);
+}
+
 export function describeAdministrationServerCases(run: LiveRun): void {
   const { settings, workos } = run;
-  // The two administrators keep their sessions from one case to the next.
+  // The administrator keeps its session from one case to the next.
   const administrator = once(async () => signInThroughPortal(run, (await run.administrationFixtures()).users['c-administrator']));
 
   // A person opens the page and submits the form with this button.
@@ -103,9 +117,9 @@ export function describeAdministrationServerCases(run: LiveRun): void {
     return stateOf(membership);
   }
 
-  async function activeUserSeatsInWorkOS(organizationId: string): Promise<number> {
+  async function activeProductMembersInWorkOS(organizationId: string): Promise<number> {
     const active = await (await workos.userManagement.listOrganizationMemberships({ organizationId, statuses: ['active'], limit: 100 })).autoPagination();
-    return active.filter((membership) => rolesOf(membership).includes('user')).length;
+    return active.filter((membership) => rolesOf(membership).some((role) => role === 'user' || role === 'admin')).length;
   }
 
   async function invitationsInWorkOS(organizationId: string): Promise<Invitation[]> {
@@ -132,9 +146,9 @@ export function describeAdministrationServerCases(run: LiveRun): void {
   }
 
   describe('Hosted live gate (AUTH-08W): retired grant route', () => {
-    test('Given an authorized Admin with MFA and a valid current grant form, when it posts to the retired grant route, then it gets 404 with no member controls, provider change, or grant record', signInOptions, async () => {
+    test('Given a password-signed-in Admin and a valid current grant form, when it opens administration and product access and posts to the retired grant route, then the reads succeed and the post gets 404 with no member controls, provider change, or grant record', signInOptions, async () => {
       const { users, memberships, organizationC } = await run.administrationFixtures();
-      const { page } = await signInThroughPortal(run, users['c-admin-only']);
+      const { page, pages } = await signInThroughPortal(run, users['c-admin-only']);
       const session = await sessionJson(page);
       const directory = new WorkOSOrganizations({ authority: workosAuthority(settings.clientId), userManagement: workos.userManagement, authorization: workos.authorization });
       const target = await directory.member(memberships.targetInC);
@@ -146,8 +160,15 @@ export function describeAdministrationServerCases(run: LiveRun): void {
         membership_id: target.membershipId, revision: target.revision, role: 'user', action: 'revoke',
       } });
       const members = await shownPage(run, page, 'members');
+      const invitations = await shownPage(run, page, 'invitations');
+      await shownPage(run, page, 'billing');
 
-      assert.equal(session.mfaCompleted, true);
+      assert.ok(pages.some((path) => path.startsWith('/password')), 'The Admin did not complete a password page.');
+      assert.equal(pages.some((path) => path.startsWith('/mfa/')), false);
+      assert.equal(session.mfaCompleted, false);
+      assert.equal((await serverGet(page, 'portal/access')).status, 200);
+      assert.ok(labelsOf(invitations.forms).includes('Invite as User'));
+      assert.ok(labelsOf(invitations.forms).includes('Invite as Admin'));
       assert.equal(answer.status, 404, answer.body);
       assert.deepEqual(members.forms, []);
       assert.deepEqual(await membershipState(target.membershipId), before);
@@ -204,7 +225,27 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       assert.ok(!holdsAny([first.body, pending.body, after.body, ...log], credentials), 'An invitation token or link reached a page or the operator log.');
     });
 
-    test('Given the pending User invitation and the pending Admin invitation of C, when each invitee opens its invitation link and completes the AuthKit sign-in with MFA, then WorkOS makes the first active with only user, which opens the portal, and the second active with only admin — the earlier User grant does not return —, which opens the members page but not the portal; the invitations page shows both accepted, the members page shows the User seats of WorkOS, and no page or log line holds an invitation token or link', signInOptions, async (t) => {
+    test('Given a User in C and a pending invitation, when the User opens administration and submits valid send, resend, and revoke forms, then each request is refused without a form and WorkOS memberships and invitations stay unchanged', signInOptions, async () => {
+      const { users, organizationC } = await run.administrationFixtures();
+      const pending = (await invitationsInWorkOS(organizationC.id)).find(({ email, state }) => email === users['c-invitee-user'].email && state === 'pending');
+      assert.ok(pending, 'The invitation lifecycle case must leave the User invitation pending.');
+      const before = await organizationState(run, organizationC.id);
+      const { page } = await signInThroughPortal(run, users['c-target']);
+      const session = await sessionJson(page);
+      assert.equal(session.mfaCompleted, false);
+      assert.equal((await serverGet(page, 'portal/access')).status, 200);
+      for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(page, path));
+      const fields = { csrf_token: String(session.csrfToken), organization_id: organizationC.id };
+      assertAdministrationRefusal(await serverPost(page, 'invitations/send', { fields: { ...fields, email: users['c-invitee-revoked'].email, role: 'admin' } }));
+      for (const path of ['invitations/resend', 'invitations/revoke']) {
+        assertAdministrationRefusal(await serverPost(page, path, { fields: { ...fields, invitation_id: pending.id } }));
+      }
+      assert.deepEqual(await organizationState(run, organizationC.id), before, 'A refused User request changed WorkOS data.');
+      assert.deepEqual((await changeRecordsOf(users['c-target'])).map(({ outcome }) => outcome), ['denied', 'denied', 'denied']);
+      await page.context().close();
+    });
+
+    test('Given the pending User invitation and the pending Admin invitation of C, when each invitee opens its invitation link and completes password sign-in without MFA, then WorkOS gives only the invited role and both can open the product; only Admin opens administration, the earlier User grant does not return, both invitations are accepted, the product member count matches WorkOS, and no page or log holds an invitation token or link', signInOptions, async (t) => {
       const { organizationC, users, memberships } = await run.administrationFixtures();
       const [inviteeUser, inviteeAdmin] = [users['c-invitee-user'], users['c-invitee-admin']];
       const invitations = await invitationsInWorkOS(organizationC.id);
@@ -220,18 +261,24 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const { page } = await administrator();
       const invitationsPage = await shownPage(run, page, 'invitations');
       const membersPage = await shownPage(run, page, 'members');
-      const seats = await activeUserSeatsInWorkOS(organizationC.id);
+      const seats = await activeProductMembersInWorkOS(organizationC.id);
       const log = (await run.site()).log.lines;
       t.diagnostic(`AuthKit pages of the acceptances: ${userVisit.pages.join(' > ')}; ${adminVisit.pages.join(' > ')}`);
-      t.diagnostic(`User invitee: ${userMembership.status} ${JSON.stringify(userMembership.roles)}, portal ${userPortal.status}; Admin invitee: ${adminMembership.status} ${JSON.stringify(adminMembership.roles)}, portal ${adminPortal.status}, members page ${adminMembers.status}; User seats ${seatCount(membersPage)}, in WorkOS ${seats}`);
+      t.diagnostic(`User invitee: ${userMembership.status} ${JSON.stringify(userMembership.roles)}, portal ${userPortal.status}; Admin invitee: ${adminMembership.status} ${JSON.stringify(adminMembership.roles)}, portal ${adminPortal.status}, members page ${adminMembers.status}; product members ${seatCount(membersPage)}, in WorkOS ${seats}`);
 
-      assert.ok([userVisit, adminVisit].every(({ pages }) => pages.some((path) => path.startsWith('/mfa/'))), 'AuthKit did not ask for the MFA step in an acceptance.');
+      for (const visit of [userVisit, adminVisit]) {
+        assert.ok(visit.pages.some((path) => path.startsWith('/password')), 'The invitation acceptance did not complete a password page.');
+        assert.equal(visit.pages.some((path) => path.startsWith('/mfa/')), false);
+        assert.equal((await sessionJson(visit.page)).mfaCompleted, false);
+      }
       assert.deepEqual([userMembership.status, userMembership.roles], ['active', ['user']]);
       assert.equal(userPortal.status, 200, userPortal.body);
       assert.deepEqual(JSON.parse(userPortal.body), { organizationId: organizationC.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       assert.deepEqual([adminMembership.status, adminMembership.roles], ['active', ['admin']]);
-      assert.equal(adminPortal.status, 403);
+      assert.equal(adminPortal.status, 200, adminPortal.body);
+      assert.deepEqual(JSON.parse(adminPortal.body), { organizationId: organizationC.id, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
       assert.equal(adminMembers.status, 200, 'The Admin invitee cannot open the members page.');
+      for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(userVisit.page, path));
       assert.ok(invitationsPage.body.includes(`${inviteeUser.email}: User invitation, accepted.`), 'The invitations page does not show the accepted User invitation.');
       assert.ok(invitationsPage.body.includes(`${inviteeAdmin.email}: Admin invitation, accepted.`), 'The invitations page does not show the accepted Admin invitation.');
       assert.equal(seatCount(membersPage), seats);

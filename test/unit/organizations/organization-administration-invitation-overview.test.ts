@@ -21,15 +21,15 @@ describe('OrganizationAdministration invitation overview', () => {
       'accepted.user@example.com user accepted -',
       'revoked.user@example.com user revoked -',
       'expired.user@example.com user expired -',
-      'pending.admin@example.com admin pending -',
+      'pending.admin@example.com admin pending resend+revoke',
     ]);
-    assert.deepEqual([overview.organizationId, overview.invitableRoles, overview.identityPolicy], ['org-a', ['user'], 'invited-address']);
+    assert.deepEqual([overview.organizationId, overview.invitableRoles, overview.identityPolicy], ['org-a', ['user', 'admin'], 'invited-address']);
     assert.deepEqual([...new Set(directory.invitationPageReads.map(({ states }) => states.join()))], ['pending,accepted,revoked,expired']);
     assert.doesNotMatch(JSON.stringify(overview), /token/);
     assert.ok(Object.isFrozen(overview) && Object.isFrozen(overview.invitations) && Object.isFrozen(overview.invitations[0]?.changes));
   });
 
-  test('Given a Super Admin alone, a member with both roles, and a directory that accepts by its own rules, when each asks for the overview, then each can invite and change only the roles of its authority, and the overview gives the policy of the directory', async () => {
+  test('Given an Admin alone, a member with User and Admin, and a directory that accepts by its own rules, when each asks for the overview, then each can invite and change only the roles of its authority, and the overview gives the policy of the directory', async () => {
     const { directory, administration } = invitationsWith();
     directory.invitationIdentityPolicy = 'provider-rules';
 
@@ -37,8 +37,8 @@ describe('OrganizationAdministration invitation overview', () => {
     const otto = overviewOf(await administration.invitationOverview(actorOf('user-otto'), 'org-a'));
     const pendingChanges = (overview: InvitationOverview) => overview.invitations.filter(({ changes }) => changes.length > 0).map(({ email }) => email);
 
-    assert.deepEqual([sam.invitableRoles, otto.invitableRoles], [['admin'], ['user', 'admin']]);
-    assert.deepEqual([pendingChanges(sam), pendingChanges(otto)], [['pending.admin@example.com'], ['pending.user@example.com', 'pending.admin@example.com']]);
+    assert.deepEqual([sam.invitableRoles, otto.invitableRoles], [['user', 'admin'], ['user', 'admin']]);
+    assert.deepEqual([pendingChanges(sam), pendingChanges(otto)], [['pending.user@example.com', 'pending.admin@example.com'], ['pending.user@example.com', 'pending.admin@example.com']]);
     assert.deepEqual([sam.identityPolicy, otto.identityPolicy], ['provider-rules', 'provider-rules']);
   });
 
@@ -55,8 +55,7 @@ describe('OrganizationAdministration invitation overview', () => {
   });
 
   for (const { label, actor, refusal } of [
-    { label: 'a User without Admin or Super Admin', actor: actorOf('user-una'), refusal: 'denied' },
-    { label: 'an Admin whose sign-in did not complete MFA', actor: actorOf('user-eve', false), refusal: 'mfa-required' },
+    { label: 'a User without Admin', actor: actorOf('user-una'), refusal: 'denied' },
   ]) {
     test(`Given ${label}, when it asks for the invitation overview, then it is refused as ${refusal}, and no invitation is read`, async () => {
       const { directory, administration } = invitationsWith();

@@ -18,7 +18,7 @@ import {
 
 describe('HostedAccountRoutes', () => {
   test('Given a signed-in browser session with allowed access, when an account request arrives, then the operation gets that request and the decided context, and the client gets the operation answer', async () => {
-    const annContext = contextOf(ann, [userGrant, adminGrant], ['product:access', 'user-grants:manage']);
+    const annContext = contextOf(ann, [userGrant, adminGrant], adminGrant.permissions);
     const { routes, session, resolver, operations } = serve({
       sessions: new Map([['session=ann', signedIn(ann)]]),
       decisions: new Map([[ann.subject, allowedFor(annContext)]]),
@@ -38,7 +38,7 @@ describe('HostedAccountRoutes', () => {
 
   test('Given two signed-in users of different organizations whose access resolutions finish in reverse order, when their requests overlap, then each operation gets only the context of its own request', async () => {
     const annContext = contextOf(ann, [userGrant], ['product:access']);
-    const benContext = contextOf(ben, [adminGrant], ['user-grants:manage']);
+    const benContext = contextOf(ben, [adminGrant], adminGrant.permissions);
     const annDecided = Promise.withResolvers<void>();
     const { routes, operations } = serve({
       sessions: new Map([['session=ann', signedIn(ann)], ['session=ben', signedIn(ben)]]),

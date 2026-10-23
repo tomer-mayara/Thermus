@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import type { RoleGrant } from '../../../../src/accounts/identity/access-context.ts';
 import type { ChangeRecord } from '../../../../src/accounts/organizations/change-records.ts';
 import {
   OrganizationAdministration,
@@ -7,19 +6,17 @@ import {
 } from '../../../../src/accounts/organizations/organization-administration.ts';
 import { type MemberSeed } from '../../../support/doubles/organizations/directory-double-records.ts';
 import { OrganizationDirectoryDouble } from '../../../support/doubles/organizations/organization-directory-double.ts';
-import { memberRole } from '../../../support/fixtures/hosted-roles.ts';
+import { adminGrant, memberRole, userGrant } from '../../../support/fixtures/hosted-roles.ts';
+export { adminGrant, superAdminGrant, userGrant } from '../../../support/fixtures/hosted-roles.ts';
 import { BillingDouble } from './billing-double.ts';
 
 export const authority = 'hosted-provider-double';
-export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-export const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
-export const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
 export const recordTime = '2026-10-13T12:00:00.000Z';
 
-// Acme (org-a) and Globex (org-b). Acme has 3 active memberships with User: otto, cy, and una.
+// Acme (org-a) and Globex (org-b). Acme has 5 active product members: sam, otto, cy, eve, and una.
 export const members: readonly MemberSeed[] = [
-  { subject: 'user-sam', organizationId: 'org-a', grants: [superAdminGrant] },
-  { subject: 'user-otto', organizationId: 'org-a', grants: [userGrant, adminGrant, superAdminGrant] },
+  { subject: 'user-sam', organizationId: 'org-a', grants: [adminGrant] },
+  { subject: 'user-otto', organizationId: 'org-a', grants: [userGrant, adminGrant] },
   { subject: 'user-cy', organizationId: 'org-a', grants: [userGrant, adminGrant] },
   { subject: 'user-cy', organizationId: 'org-b', grants: [userGrant] },
   { subject: 'user-eve', organizationId: 'org-a', grants: [adminGrant] },
@@ -57,8 +54,8 @@ export function invitationsWith() {
 
 // The selected organization of the session is Globex, so that a test shows that the service uses only the organization
 // of the request.
-export function actorOf(subject: string, mfaCompleted = true): Actor {
-  return { user: { authority, subject, selectedOrganizationId: 'org-b' }, mfaCompleted };
+export function actorOf(subject: string): Actor {
+  return { user: { authority, subject, selectedOrganizationId: 'org-b' } };
 }
 
 export function rolesIn(directory: OrganizationDirectoryDouble, subject: string, organizationId = 'org-a'): readonly string[] {

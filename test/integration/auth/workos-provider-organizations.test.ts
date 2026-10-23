@@ -7,7 +7,7 @@ import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/worko
 import { WorkOSBrowserSession } from '../../../src/accounts/providers/workos/workos-browser-session.ts';
 import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
 import { WorkOSSessionRoutes } from '../../../src/interfaces/web/auth/workos/workos-session-routes.ts';
-import { workosAuthority, type WorkOSMfaPolicy } from '../../../src/accounts/providers/workos/workos-settings.ts';
+import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
 import { PRODUCT_ACCESS } from '../../../src/interfaces/web/account/portal-access.ts';
 import { MCPServer } from '../../../src/interfaces/mcp/mcp-server.ts';
@@ -20,7 +20,7 @@ import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { WorkOSFake, type FakeMembership, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { mcpRequest } from '../../support/drivers/mcp/mcp-http-request.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
-import { adminGrant, superAdminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
+import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 
 // The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the
 // WorkOS API, together with the real OrganizationAdministration, account routes, and MCP server. A probe stands in for
@@ -47,26 +47,26 @@ const otto: FakeUser = { id: 'user_01OTTO', email: 'otto@example.com', firstName
 const sam: FakeUser = { id: 'user_01SAM', email: 'sam@example.com', firstName: 'Sam' };
 
 // Mia: User in Acme, Admin in Globex, inactive in Initech, and only the default role in Umbrella. Otto: every role in
-// Hooli. Sam: only Super Admin in Acme.
+// Hooli. Sam: only Admin in Acme.
 const memberships: readonly FakeMembership[] = [
   { userId: mia.id, organizationId: acme, roles: ['user'] },
   { userId: mia.id, organizationId: globex, roles: ['admin'] },
   { userId: mia.id, organizationId: initech, roles: ['user', 'admin'], status: 'inactive' },
   { userId: mia.id, organizationId: umbrella, roles: [] },
-  { userId: otto.id, organizationId: hooli, roles: ['user', 'admin', 'super-admin'] },
-  { userId: sam.id, organizationId: acme, roles: ['super-admin'] },
+  { userId: otto.id, organizationId: hooli, roles: ['user', 'admin'] },
+  { userId: sam.id, organizationId: acme, roles: ['admin'] },
 ];
 
-async function openSite(t: TestContext, mfaPolicy: WorkOSMfaPolicy = 'optional') {
+async function openSite(t: TestContext) {
   const world = await WorkOSFake.start(t, hostedConfig.publicBaseUrl, Object.keys(organizationNames));
   world.memberships = memberships;
   world.organizationNames = organizationNames;
-  const { settings, workos, authkitKeySet } = world.connection(mfaPolicy);
+  const { settings, workos, authkitKeySet } = world.connection();
   const failures: AccountFailureReport[] = [];
   const reportFailure = (report: AccountFailureReport): void => { failures.push(report); };
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: hostedConfig.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
-  const session = new WorkOSBrowserSession({ workos, settings, authority, mfaEvidence: settings.mfaPolicy === 'required' ? 'password-mfa-required' : 'unproven' });
+  const session = new WorkOSBrowserSession({ workos, settings, authority });
   const pages = new AccountOperationSpy(destinations);
   const tools = new ProtectedToolSpy();
   const mcp = new MCPServer({
@@ -110,14 +110,14 @@ function workosRequests(site: Site): string[] {
 }
 
 describe('WorkOS organization reads with the real session, organization service, and account routes', () => {
-  test('Given a member with only Super Admin in Acme and an explicit Required MFA profile, when it selects Acme for the billing page, then the billing page of the organization service and the Admin-grant destination accept it from a current WorkOS read with exactly the super-admin grant, and the product page, the User administration, and the MCP tool refuse it: no Admin or User grant is inferred', async (t) => {
-    const site = await openSite(t, 'required');
+  test('Given a member with only Admin in Acme and password sign-in, when it selects Acme, then current reads permit billing, both administration destinations, the product, and MCP', async (t) => {
+    const site = await openSite(t);
     const browser = await signIn(site, sam);
 
     const selected = await select(browser, 'Acme', '/team/billing');
     const billing = await browser.follow(selected);
     const admins = await contextAt(browser, 'administration/admins');
-    const refusals = [(await browser.open('portal')).status, (await browser.open('administration/users')).status];
+    const access = [(await browser.open('portal')).status, (await browser.open('administration/users')).status];
     const token = await site.world.connectToken(sam, { org_id: acme });
     const tool = await site.transport(mcpRequest({ url: hostedConfig.mcpResourceUrl, method: 'tools/call', token, params: { name: ProtectedToolSpy.toolName, arguments: { url: 'https://example.com/' } } }));
 
@@ -125,12 +125,12 @@ describe('WorkOS organization reads with the real session, organization service,
     assert.equal(billing.status, 200, billing.body);
     assert.match(billing.body, /Plan: Free/);
     assert.deepEqual([admins.organizationId, admins.tenantId], [acme, `${authority}:${acme}`]);
-    assert.deepEqual(admins.grants, [superAdminGrant]);
-    assert.deepEqual(admins.permissions, ['admin-grants:manage', 'billing:manage']);
-    assert.deepEqual(refusals, [403, 403]);
-    assert.equal(tool.status, 403);
-    assert.deepEqual(site.tools.work, []);
-    assert.deepEqual(site.pages.work.map(({ path }) => path), ['/team/administration/admins']);
+    assert.deepEqual(admins.grants, [adminGrant]);
+    assert.deepEqual(admins.permissions, adminGrant.permissions);
+    assert.deepEqual(access, [200, 200]);
+    assert.equal(tool.status, 200);
+    assert.deepEqual(site.tools.work.map(({ step }) => step), ['fetch', 'clean']);
+    assert.deepEqual(site.pages.work.map(({ path }) => path), ['/team/administration/admins', '/team/portal', '/team/administration/users']);
   });
 
   test('Given a member with User in Acme, Admin in Globex, an inactive membership in Initech, and only the default role in Umbrella, when it selects each organization for a destination, then only Acme and Globex are authorized, and each destination, also the billing page, checks the permission of the selected organization only', async (t) => {
@@ -148,7 +148,7 @@ describe('WorkOS organization reads with the real session, organization service,
     assert.deepEqual(offered, ['Acme (selected)', 'Globex']);
     assert.deepEqual([toGlobex.status, toAcme.status], [303, 303]);
     assert.deepEqual([inGlobex.organizationId, inGlobex.grants], [globex, [adminGrant]]);
-    assert.equal(portalInGlobex, 403);
+    assert.equal(portalInGlobex, 200);
     assert.deepEqual([inAcme.organizationId, inAcme.grants], [acme, [userGrant]]);
     assert.equal(usersInAcme, 403);
     assert.equal((await browser.open('billing')).status, 403);
@@ -229,6 +229,6 @@ function permissiveDefaultRoles() {
     object: 'role', id: `role_01${slug.toUpperCase().replace('-', '')}`, name: slug, slug, description: null, permissions, type: 'EnvironmentRole',
     created_at: '2026-10-01T08:00:00.000Z', updated_at: '2026-10-01T08:00:00.000Z',
   });
-  const data = [role('member', ['product:access']), role('user', ['product:access']), role('admin', ['user-grants:manage']), role('super-admin', ['admin-grants:manage', 'billing:manage'])];
+  const data = [role('member', ['product:access']), role('user', ['product:access']), role('admin', adminGrant.permissions)];
   return { status: 200, body: { object: 'list', data } };
 }

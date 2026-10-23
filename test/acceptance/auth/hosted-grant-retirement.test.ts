@@ -4,9 +4,9 @@ import { rolesOf, serveAdministrationSite, shownPage } from '../../support/dsl/h
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { userOf } from '../../support/fixtures/hosted-members.ts';
 
-test('Given a legacy-authorized Admin with completed MFA and a valid current User-grant form, when it posts to the retired grant path, then that path is unavailable, no role changes, and native invitations remain available', { timeout: 20_000 }, async (t) => {
+test('Given an Admin after password sign-in and a valid current User-grant form, when it posts to the retired grant path, then that path is unavailable, no role changes, and native invitations remain available', { timeout: 20_000 }, async (t) => {
   const site = await serveAdministrationSite(t);
-  const admin = site.browserOf(userOf('user-eve', 'org-a'), { mfaCompleted: true });
+  const admin = site.browserOf(userOf('user-eve', 'org-a'), { mfaCompleted: false });
   const organizations = await admin.open('organizations');
   assert.equal(organizations.status, 200, organizations.body);
   const csrfToken = formsIn(organizations.body).find(({ fields }) => fields.organization_id === 'org-a')?.fields.csrf_token;

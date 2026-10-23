@@ -54,7 +54,7 @@ describe('MCPServer request context binding', () => {
     const resolverRecord = { user: alice, tenantId: 'tenant-org-a', organizationId: 'org-a', grants, permissions: ['product:access'] };
     const tools = new ContextReportToolSpy(async () => {
       resolverRecord.tenantId = 'tenant-org-b';
-      grants.push({ role: 'admin', permissions: ['user-grants:manage'] });
+      grants.push({ role: 'test-user-manager', permissions: ['user-grants:manage'] });
     });
     const { server } = serveAccess(t, new Map([[alice.subject, allowed(resolverRecord)]]), { tools });
 

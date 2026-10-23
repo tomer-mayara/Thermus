@@ -28,7 +28,7 @@ async function authorizeBrowser(url: string, parts: BrowserCommand): Promise<rea
   try {
     await page.goto(url, { waitUntil: 'commit' });
     return await completeAuthKit(page, { user: parts.user, organizationName: parts.organizationName,
-      authkitHost: new URL(parts.profile.issuer).host, mfaPolicy: 'optional' });
+      authkitHost: new URL(parts.profile.issuer).host });
   } finally {
     await page.context().close();
   }

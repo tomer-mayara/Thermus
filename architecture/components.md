@@ -188,7 +188,7 @@ flowchart TB
     account_web["Component: web<br/>Account and provider-specific browser routes<br/>TypeScript"]
     account_mcp["Component: mcp<br/>Authenticate and bind request access<br/>TypeScript"]
     account_identity["Component: identity<br/>Trusted access records and neutral auth contracts<br/>TypeScript"]
-    account_org["Component: organizations<br/>Check customer roles, MFA and privileged changes<br/>TypeScript"]
+    account_org["Component: organizations<br/>Check current customer roles and invitations<br/>TypeScript"]
     account_billing["Component: billing<br/>Free-plan state and seat-update role<br/>TypeScript"]
     account_workos["Component: workos<br/>Verify access, manage sessions and directory<br/>TypeScript / WorkOS SDK"]
   end
@@ -396,8 +396,8 @@ Markdown text success. MCP records the safe completion status in its finalizer.
 Scope: GET `/members` in the hosted Node server. The WorkOS adapter participant
 groups the session, access resolver, and shared directory; each return follows
 the request through that adapter. A signed-in session alone does not authorize
-the read. MFA is checked locally by organization administration before its
-first directory call. This groups remote reads, not a remote transaction.
+the read. Organization administration checks current Admin authority before
+reading the overview. This groups remote reads, not a remote transaction.
 
 ```mermaid
 %%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
@@ -415,7 +415,7 @@ sequenceDiagram
     Provider-->>Routes: Signed-out state and cookie effects
     Routes-->>Browser: Signed-out notice with cookie effects
   else Signed-in session
-    Provider-->>Routes: User, MFA evidence and cookie effects
+    Provider-->>Routes: User and cookie effects
     Routes->>Provider: Resolve current access
     Provider->>Remote: Read current organization grants
     Remote-->>Provider: Current membership and roles
@@ -425,26 +425,20 @@ sequenceDiagram
     else Access allowed
       Provider-->>Routes: Trusted organization context
       Routes->>Admin: memberOverview(actor, organization)
-      Admin->>Admin: Check MFA locally
-      alt MFA evidence missing
-        Admin-->>Routes: MFA required
-        Routes-->>Browser: MFA notice with cookie effects
-      else MFA present
-        Admin->>Provider: Read current memberships and managed roles
-        Provider->>Remote: Read current membership / role state
-        Remote-->>Provider: Current facts
-        Provider-->>Admin: Memberships and roles
-        alt Actor cannot manage organization
-          Admin-->>Routes: Denied
-          Routes-->>Browser: Refusal page with cookie effects
-        else Actor authorized
-          Admin->>Provider: Read member overview
-          Provider->>Remote: Read memberships, roles and users
-          Remote-->>Provider: Member data
-          Provider-->>Admin: Member overview data
-          Admin-->>Routes: Authorized overview
-          Routes-->>Browser: HTML member overview with cookie effects
-        end
+      Admin->>Provider: Read current memberships and managed roles
+      Provider->>Remote: Read current membership / role state
+      Remote-->>Provider: Current facts
+      Provider-->>Admin: Memberships and roles
+      alt Actor cannot manage organization
+        Admin-->>Routes: Denied
+        Routes-->>Browser: Refusal page with cookie effects
+      else Actor authorized
+        Admin->>Provider: Read member overview
+        Provider->>Remote: Read memberships, roles and users
+        Remote-->>Provider: Member data
+        Provider-->>Admin: Member overview data
+        Admin-->>Routes: Authorized overview
+        Routes-->>Browser: HTML member overview with cookie effects
       end
     end
   end
@@ -457,15 +451,20 @@ session authentication follows the outer failure handler instead.
 [Administration routes](../src/interfaces/web/account/administration-routes.ts)
 permit GET/HEAD reads without a CSRF check.
 [OrganizationAdministration](../src/accounts/organizations/organization-administration.ts)
-checks MFA and current role authority before reading the overview. The
+checks current Admin authority before reading the overview. The
 [shared directory](../src/accounts/providers/workos/workos-organizations.ts)
 reads current remote state. Privileged mutations and their recording rules
 remain described under resource ownership and design choices below.
 The former POST `/members/grants` route is absent. A request with current account
 access reaches the existing 404 response after the session and access checks. The Members
 page has no grant forms, and neither administration nor the directory exposes
-a grant writer. Native invitations retain their current authorization and MFA
-checks. The current role mapping remains in use.
+a grant writer. Admin manages native invitations for User or Admin. Both roles
+permit product and MCP access in their authorized organization. Unknown/default
+grants give no access; invalid role catalogs fail closed. Browser sessions report
+`mfaCompleted: false`, including retained cookies on read, refresh, and selection.
+The member overview counts each active product-authorized membership once,
+including Admin alone, and labels the count Active product members. These access
+changes add no provider, process, datastore, or component boundary.
 
 ## Deployment view
 

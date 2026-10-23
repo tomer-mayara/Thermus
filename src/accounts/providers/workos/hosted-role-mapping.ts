@@ -17,8 +17,7 @@ const APPLICATION_PERMISSIONS: ReadonlySet<string> = new Set(['product:access', 
 // The hosted role mapping. Each other role, also the default role, must give no application permission.
 const MAPPED_ROLE_PERMISSIONS: ReadonlyMap<string, readonly string[]> = new Map([
   ['user', ['product:access']],
-  ['admin', ['user-grants:manage']],
-  ['super-admin', ['admin-grants:manage', 'billing:manage']],
+  ['admin', ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage']],
 ]);
 
 // One grant for each role of a membership, with the application permissions of that role in its organization. Each
@@ -39,7 +38,7 @@ function checkedRoleMapping(roles: readonly RoleRecord[], organizationId: string
   for (const slug of MAPPED_ROLE_PERMISSIONS.keys()) {
     if (!permissionsByRole.has(slug)) {
       throw new HostedRoleConfigurationError(`The WorkOS role ${slug} does not exist in the organization ${organizationId}. `
-        + 'The hosted role mapping needs the roles user, admin, and super-admin.');
+        + 'The hosted role mapping needs the roles user and admin.');
     }
   }
   return permissionsByRole;
@@ -64,7 +63,7 @@ function haveSameMembers(actual: readonly string[], expected: readonly string[])
 
 function mappingRule(slug: string, expected: readonly string[], organizationId: string): string {
   const rule = expected.length === 0
-    ? 'must give no application permission. Only user, admin, and super-admin give application permissions'
+    ? 'must give no application permission. Only user and admin give application permissions'
     : `must give exactly the application permissions ${expected.join(', ')}`;
   return `The WorkOS role ${slug} of the organization ${organizationId} ${rule}.`;
 }

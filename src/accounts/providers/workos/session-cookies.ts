@@ -6,7 +6,7 @@ export interface SessionEnvelope {
   readonly seal: string;
   // It stays the same for the whole session, also after a refresh or an organization switch.
   readonly csrf: string;
-  // True only when the sign-in of the session completed multi-factor authentication.
+  // Legacy wire field. The current adapter discards old true values and always writes false.
   readonly mfa: boolean;
 }
 

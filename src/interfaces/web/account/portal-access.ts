@@ -2,7 +2,7 @@ import { AccessDeniedError, requirePermission } from '../../../accounts/identity
 import type { AccountOperation } from './account-routes.ts';
 import { noticePage } from './account-pages.ts';
 
-// The product portal and MCP need User. Admin or Super Admin alone gives no product access.
+// The product portal and MCP need product access, which User and Admin both give.
 export const PRODUCT_ACCESS = 'product:access';
 
 const JSON_HEADERS: Readonly<Record<string, string>> = {

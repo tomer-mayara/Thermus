@@ -1,5 +1,9 @@
 # Authentication implementation plan
 
+The current contract is [S1-02](#current-slice-1-contract-s1-02). The opening
+AUTH delivery narrative and later AUTH proof sections record earlier work.
+Their three-role and MFA statements are superseded by that contract.
+
 Thermus will use Better Auth for the free, self-hosted edition and WorkOS
 AuthKit with Connect for the hosted edition. Both implementations will satisfy
 the same narrow MCP contracts. Unit tests will use configurable doubles under
@@ -56,14 +60,40 @@ contracts. The owner resolved the two
 refinement below records intended rules only; it adds no implementation work
 now.
 
-Current S1-01 removes the customer grant writer and member-row grant forms.
-`POST <base>/members/grants` returns `404` after successful session and current
-access checks, without a membership write or change record. Signed-out, denied,
-and failed access lookups keep their existing responses. Member reads and native invitation send, resend, and revoke
-remain. User, Admin, Super Admin, and the current MFA rules are unchanged.
-Dated AUTH-08/AUTH-08W results below describe the earlier writer, not a current
-customer capability. See the [S1-01 implementation record](../implementation/admin-s1-01.md)
-for the current candidate and its verification status.
+## Current Slice 1 contract (S1-02)
+
+[S1-02](../implementation/admin-s1-02.md) supersedes the three-role and MFA
+rules in the earlier AUTH plans and proof descriptions below. Those descriptions
+retain their historical scope; they do not describe current customer authority.
+The customer roles are User and Admin. Both permit product and MCP access.
+Admin also reads members and manages native invitations for either User or Admin.
+User has `product:access`. Admin has `product:access`, `user-grants:manage`,
+`admin-grants:manage`, and `billing:manage`. The existing grant-management
+permission names do not restore the retired customer grant writer.
+The member summary shows **Active product members**: each unique active
+membership with `product:access` counts once, including Admin alone. Pending
+and inactive memberships and invitations do not count. Internal names
+`activeUserSeats` and `activeUserSeatCount` remain for caller compatibility.
+Each request still needs a current active membership and the required permission
+in its selected organization. Default and unknown grants give no access. An
+invalid role catalog fails closed.
+
+Password sign-in needs no application MFA gate. The WorkOS MFA policy setting,
+application policy modes, and Password-to-MFA inference are removed. The shared
+`mfaCompleted` field remains false for compatibility. A retained encrypted
+`mfa:true` value is discarded on read, refresh, and organization selection.
+No factor, MFA UI, or admission marker is added.
+
+Member rows remain read-only. The retired `POST <base>/members/grants` path
+returns `404` after the session and current-access checks, with no membership
+write or change record. Removal and role changes are later work. Admin product
+access means existing signup access offers Continue; named organization creation
+and the first Admin belong to S1-03a. Billing stays free and read-only.
+
+The [operator preparation](../implementation/hosted-organization-setup.md)
+reserves role/password cutover for S1-05. S1-02 changes no WorkOS account setting.
+A fake code exchange does not prove the real password flow, email verification,
+or password reset. See the implementation record for current verification limits.
 
 ## Requirements and delivery scope
 
@@ -71,17 +101,17 @@ for the current candidate and its verification status.
 | --- | --- |
 | One codebase and a small provider boundary | Required in the authentication foundation. |
 | Several local accounts, email/password, separate sessions, and offline administration | Required in the self-hosted release; all enabled users share one workspace and the same evaluation permissions. |
-| Hosted password/social login and MFA | Required in the hosted foundation through AuthKit. |
+| Hosted password login | AuthKit password access without an application MFA gate; provider cutover waits for S1-05. |
 | Selected organization, active membership, roles, and permissions | Required in the hosted foundation. |
 | Operator organization setup and customer membership administration | Required in the first hosted release, including operator recovery, onboarding, and invitations. |
-| Active User seats per organization | Required on the hosted account page; count each active membership with User once. |
+| Member overview | Read-only current membership list and Active product members count; include each active membership with product permission once. |
 | Per-seat payment collection and subscription synchronization | Required paid-product milestone (AUTH-11). The owner has not chosen a payment provider, and the paid billing rules remain open. Until AUTH-11 passes its paid gates, the hosted edition uses `BillingFree` through the `Billing` interface; it bills no organization and collects no payment. See the [paid billing design](billing-design.md). |
 | SSO, SCIM, step-up authentication, and full audit logs | Future hosted capabilities. Preserve provider boundaries; add their contracts when implementing them. |
 | Paid capabilities in the local edition | Disabled. No organizations, invitations, seat management, billing, or remote entitlement checks. |
 | Account or data migration between editions | Separate future work. Changing configuration does not migrate either. |
 
-The external platform operator creates hosted organizations and assigns their
-Super Admins. An authenticated user without an authorized organization receives
+Named organization creation and first Admin assignment are S1-03a work. The
+external platform operator controls provider setup and cutover. An authenticated user without an authorized organization receives
 guidance to contact the operator or accept an invitation. Until membership is
 active and grants the required permission, tenant operations remain unavailable.
 Onboarding never grants access through a default tenant or role.

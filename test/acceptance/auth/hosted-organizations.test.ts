@@ -3,12 +3,13 @@ import { describe, test, type TestContext } from 'node:test';
 import { formLabelled, formsIn, type BrowserAnswer } from '../../support/drivers/browser/hosted-browser.ts';
 import { statusesOf } from '../../support/dsl/hosted-access.ts';
 import { userOf } from '../../support/fixtures/hosted-members.ts';
-import { superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
+import { adminGrant, superAdminGrant } from '../../support/fixtures/hosted-roles.ts';
 import { serveOrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 const nora = userOf('user-nora');
 const ivy = userOf('user-ivy', 'org-a');
 const dora = userOf('user-dora', 'org-a');
+const retired = userOf('user-retired', 'org-a');
 const mia = userOf('user-mia', 'org-a');
 const sam = userOf('user-sam');
 
@@ -23,10 +24,12 @@ function assertHtmlPage(answer: BrowserAnswer): void {
 }
 
 describe('Hosted organization onboarding and selection through the public routes, with session and directory doubles', () => {
-  test('Given signed-in users without an authorized active organization — no membership, an inactive membership, or a membership whose role grants no application permission —, when each opens the organization page, then it tells them to accept an invitation or to contact the operator, offers no organization, and every tenant page stays refused without a default tenant or role, with a link to the organization page', { timeout: 20_000 }, async (t) => {
+  test('Given signed-in users without an authorized active organization — no membership, an inactive membership, a default role, or a retired role without application permissions —, when each opens the organization page, then it tells them to accept an invitation or to contact the operator, offers no organization, and every tenant page stays refused without a default tenant or role, with a link to the organization page', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
 
-    for (const user of [nora, ivy, dora]) {
+    site.directory.addMembers({ subject: retired.subject, organizationId: 'org-a', grants: [superAdminGrant] });
+
+    for (const user of [nora, ivy, dora, retired]) {
       const browser = site.browserOf(user);
       const onboarding = await browser.open('organizations');
 
@@ -66,11 +69,12 @@ describe('Hosted organization onboarding and selection through the public routes
     assert.equal(selected.cookies.length, 1);
     assert.notEqual(browser.cookieHeader, before);
     assert.equal(destination.status, 200);
-    assert.deepEqual(statuses, { portal: 403, 'administration/users': 200 });
+    assert.deepEqual(statuses, { portal: 200, 'administration/users': 200 });
     assert.deepEqual(relisted.map(({ label }) => label), ['Acme', 'Globex (selected)']);
     assert.deepEqual(site.sessions.switches, [{ subject: 'user-mia', organizationId: 'org-b' }]);
     assert.deepEqual(site.pages.work, [
       { path: '/team/administration/users', subject: 'user-mia', tenantId: 'hosted:org-b', organizationId: 'org-b' },
+      { path: '/team/portal', subject: 'user-mia', tenantId: 'hosted:org-b', organizationId: 'org-b' },
       { path: '/team/administration/users', subject: 'user-mia', tenantId: 'hosted:org-b', organizationId: 'org-b' },
     ]);
   });
@@ -97,7 +101,7 @@ describe('Hosted organization onboarding and selection through the public routes
     assert.deepEqual(site.pages.work, [{ path: '/team/portal', subject: 'user-mia', tenantId: 'hosted:org-a', organizationId: 'org-a' }]);
   });
 
-  test('Given a user with only Super Admin in an organization, when it selects that organization for the billing page, then billing and Admin-grant administration work there, but the product page, User administration, and the protected MCP tool stay refused, and no Admin or User grant is inferred', { timeout: 20_000 }, async (t) => {
+  test('Given a user with only Admin in an organization, when it selects that organization for the billing page, then billing, both administration destinations, product access, and the protected MCP tool work with the current Admin grant', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const browser = site.browserOf(sam);
 
@@ -115,11 +119,12 @@ describe('Hosted organization onboarding and selection through the public routes
     assert.deepEqual(formsIn(billing.body), []);
     assert.equal(administration.status, 200, administration.body);
     const { context } = JSON.parse(administration.body) as { context: { grants: unknown; permissions: unknown } };
-    assert.deepEqual(context.grants, [superAdminGrant]);
-    assert.deepEqual(context.permissions, ['admin-grants:manage', 'billing:manage']);
-    assert.deepEqual(statuses, { portal: 403, 'administration/users': 403 });
-    assert.equal(tool.isError, true);
-    assert.deepEqual(tool.content, [{ type: 'text', text: 'Access denied' }]);
-    assert.deepEqual(site.tools.work, []);
+    assert.deepEqual(context.grants, [adminGrant]);
+    assert.deepEqual(context.permissions, adminGrant.permissions);
+    assert.deepEqual(statuses, { portal: 200, 'administration/users': 200 });
+    assert.notEqual(tool.isError, true);
+    assert.deepEqual(site.tools.work.map(({ step, subject, tenantId }) => [step, subject, tenantId]), [
+      ['fetch', sam.subject, 'hosted:org-a'], ['clean', sam.subject, 'hosted:org-a'],
+    ]);
   });
 });

@@ -79,7 +79,7 @@ describe('Hosted organization requests through the public routes: browser checks
     assert.deepEqual(site.sessions.switches, []);
   });
 
-  test('Given a Super Admin with a selected organization, when it requests to create, resume, rename, or change the settings of an organization, then no route does it: the organization page accepts only reads, the selection accepts no other field, other organization paths do not exist, and the session gets no further switch', { timeout: 20_000 }, async (t) => {
+  test('Given an Admin with a selected organization, when it requests to create, resume, rename, or change the settings of an organization, then no route does it: the organization page accepts only reads, the selection accepts no other field, other organization paths do not exist, and the session gets no further switch', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const browser = site.browserOf(userOf('user-sam'));
     const acme = formLabelled(formsIn((await browser.open('organizations')).body), 'Acme');

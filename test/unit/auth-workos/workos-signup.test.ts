@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import { WorkOSSignup } from '../../../src/accounts/providers/workos/workos-signup.ts';
 import { SignupClientFake, documents, user } from './fixtures/signup-client-fake.ts';
 
@@ -42,17 +43,18 @@ test('Given WorkOS returns another current user, when activation is requested, t
 
 test('Given existing product access and no personal record, when activation is requested, then it uses existing access without a new workspace', async () => {
   const fake = new SignupClientFake();
-  fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [{ role: 'user', permissions: ['product:access'] }] }];
+  fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [userGrant] }];
   assert.deepEqual(await activate(fake), { status: 'existing-access' });
   assert.equal(fake.organizationWrites.length, 0);
   assert.equal(fake.membershipWrites.length, 0);
 });
 
-test('Given only Admin access, when activation is requested, then a separate personal workspace gets User access', async () => {
+test('Given only Admin product access, when activation is requested, then existing access continues without a new workspace or membership', async () => {
   const fake = new SignupClientFake();
-  fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [{ role: 'admin', permissions: ['user-grants:manage'] }] }];
-  assert.equal((await activate(fake)).status, 'active');
-  assert.deepEqual(fake.membershipWrites, [{ organizationId: 'org_personal', userId: user.subject, roleSlug: 'user' }]);
+  fake.existingAccess = [{ organizationId: 'org_existing', organizationName: 'Existing', active: true, grants: [adminGrant] }];
+  assert.deepEqual(await activate(fake), { status: 'existing-access' });
+  assert.deepEqual(fake.organizationWrites, []);
+  assert.deepEqual(fake.membershipWrites, []);
 });
 
 for (const state of ['absent', 'pending', 'inactive', 'non-product', 'directory-managed'] as const) {

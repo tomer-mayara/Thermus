@@ -7,8 +7,8 @@ import { FixtureFactory, settled, type LiveUser, type StagingFixtures } from './
 export const operatorActor = 'operator:hosted-live-gate';
 
 const userLabels = [
-  'selector', 'inactive-only', 'new-super-admin', 'independent', 'member-only', 'concurrent-grant', 'concurrent-revoke', 'sole-super-admin',
-  'outgoing', 'incoming', 'lost', 'recovering', 'unknown-outcome', 'inactive-retry', 'hosted-super-admin',
+  'selector', 'inactive-only', 'new-admin', 'independent', 'sole-admin',
+  'outgoing', 'incoming', 'lost', 'recovering', 'hosted-admin',
 ] as const;
 
 type OrganizationUserLabel = (typeof userLabels)[number];
@@ -25,14 +25,11 @@ export interface OrganizationFixtures {
 // is new, so that no AUTH-06 proof changes it:
 // - selector: User and Admin in A, User in B, and an inactive membership in the operator organization;
 // - inactive-only: only an inactive membership in A;
-// - independent: User and Admin in the operator organization, and User in B;
-// - member-only: a membership in the operator organization made without a role, so that it has the default role;
-// - concurrent-grant: User and Admin in the operator organization;
-// - concurrent-revoke and sole-super-admin: only Super Admin in the operator organization;
-// - outgoing: Super Admin and User in the operator organization;
-// - lost: an inactive Super Admin membership in the operator organization;
-// - inactive-retry: an inactive User membership in the operator organization;
-// - new-super-admin, incoming, recovering, unknown-outcome, and hosted-super-admin: no membership.
+// - independent: User in the operator organization, and User in B;
+// - sole-admin: only Admin in the operator organization;
+// - outgoing: Admin and User in the operator organization;
+// - lost: an inactive Admin membership in the operator organization;
+// - new-admin, incoming, recovering, and hosted-admin: no membership.
 export async function createOrganizationFixtures(workos: WorkOS, registry: FixtureRegistry, staging: StagingFixtures): Promise<OrganizationFixtures> {
   const make = new FixtureFactory(workos, registry, staging.runId);
   const runbook = new OperatorRunbook(workos, operatorActor);
@@ -47,15 +44,11 @@ export async function createOrganizationFixtures(workos: WorkOS, registry: Fixtu
     make.membership(users.selector, organizationB, ['user']),
     make.deactivatedMembership(users.selector, operatorOrganization),
     make.deactivatedMembership(users['inactive-only'], organizationA),
-    make.membership(users.independent, operatorOrganization, ['user', 'admin']),
+    make.membership(users.independent, operatorOrganization, ['user']),
     make.membership(users.independent, organizationB, ['user']),
-    make.membership(users['member-only'], operatorOrganization, []),
-    make.membership(users['concurrent-grant'], operatorOrganization, ['user', 'admin']),
-    make.membership(users['concurrent-revoke'], operatorOrganization, ['super-admin']),
-    make.membership(users['sole-super-admin'], operatorOrganization, ['super-admin']),
-    make.membership(users.outgoing, operatorOrganization, ['super-admin', 'user']),
-    make.deactivatedMembership(users.lost, operatorOrganization, ['super-admin']),
-    make.deactivatedMembership(users['inactive-retry'], operatorOrganization),
+    make.membership(users['sole-admin'], operatorOrganization, ['admin']),
+    make.membership(users.outgoing, operatorOrganization, ['admin', 'user']),
+    make.deactivatedMembership(users.lost, operatorOrganization, ['admin']),
   ]);
   return { runbook, organizationRequest, operatorOrganization, users };
 }

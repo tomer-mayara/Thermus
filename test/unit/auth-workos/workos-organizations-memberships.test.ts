@@ -98,13 +98,13 @@ async function assertReadFailure(read: Promise<unknown>, message: RegExp): Promi
 
 describe('WorkOSOrganizations memberships of a user', () => {
   test('Given active memberships in two organizations, when the memberships of the user are read, then each maps to a frozen active membership with the WorkOS organization name and the grants of the role mapping, after one read of the user with the explicit status active and one role read for each organization', async () => {
-    const { reads, organizations } = directoryWith([page([membership('org_01ACME', ['user', 'admin']), membership('org_02GLOBEX', ['super-admin'])])]);
+    const { reads, organizations } = directoryWith([page([membership('org_01ACME', ['user', 'admin']), membership('org_02GLOBEX', ['admin'])])]);
 
     const result = await organizations.membershipsOf(aliceUser);
 
     assert.deepEqual(result, [
-      { organizationId: 'org_01ACME', organizationName: 'Acme', active: true, grants: [{ role: 'user', permissions: ['product:access'] }, { role: 'admin', permissions: ['user-grants:manage'] }] },
-      { organizationId: 'org_02GLOBEX', organizationName: 'Globex', active: true, grants: [{ role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] }] },
+      { organizationId: 'org_01ACME', organizationName: 'Acme', active: true, grants: [{ role: 'user', permissions: ['product:access'] }, { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
+      { organizationId: 'org_02GLOBEX', organizationName: 'Globex', active: true, grants: [{ role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
     ]);
     assert.ok(Object.isFrozen(result) && result.every((record) => Object.isFrozen(record) && Object.isFrozen(record.grants)));
     assert.deepEqual(reads.membershipReads, [{ userId: alice, statuses: ['active'], limit: 100 }]);

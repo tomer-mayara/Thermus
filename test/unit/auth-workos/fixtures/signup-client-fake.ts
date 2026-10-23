@@ -1,3 +1,4 @@
+import { hostedRolePermissions } from '../../../support/fixtures/hosted-roles.ts';
 import type { CreateOrganizationOptions, CreateOrganizationMembershipOptions, ListOrganizationMembershipsOptions } from '@workos-inc/node';
 import type { OrganizationMembership } from '../../../../src/accounts/organizations/organization-directory.ts';
 import type { SignupDocuments } from '../../../../src/accounts/organizations/signup-activation.ts';
@@ -20,8 +21,7 @@ export class SignupClientFake {
   memberships: Membership[] = [];
   currentUser = { id: user.subject, emailVerified: true };
   existingAccess: readonly OrganizationMembership[] = [];
-  roles: Roles = [{ slug: 'member', permissions: [] }, { slug: 'user', permissions: ['product:access'] },
-    { slug: 'admin', permissions: ['user-grants:manage'] }, { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] }];
+  roles: Roles = Object.entries(hostedRolePermissions).map(([slug, permissions]) => ({ slug, permissions: [...permissions] }));
   organizationFailure: 'before' | 'after' | undefined;
   membershipFailure: 'before' | 'after' | undefined;
   readFailure = false;

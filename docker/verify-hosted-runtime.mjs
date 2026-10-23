@@ -18,7 +18,6 @@ const environment = {
   WORKOS_AUTHKIT_ISSUER: 'https://thermus-test.authkit.app',
   WORKOS_REDIRECT_URI: 'https://thermus.example/callback',
   WORKOS_COOKIE_PASSWORD: 'hosted-image-check-cookie-password-0032',
-  WORKOS_MFA_POLICY: 'optional',
 };
 assert.ok(readAdRulesFile(environment).trim().length > 0, 'The hosted image needs a nonempty production rules policy.');
 for (const name of ['hosted-ad-rules.SOURCE.md', 'hosted-ad-rules.LICENSE.txt']) {

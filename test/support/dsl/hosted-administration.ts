@@ -49,7 +49,7 @@ export async function submitOnPage(browser: HostedBrowser, path: string, choice:
 }
 
 export function seatsIn(body: string): number | undefined {
-  const match = /Active User seats: (\d+)/.exec(body);
+  const match = /Active product members: (\d+)/.exec(body);
   return match === null ? undefined : Number(match[1]);
 }
 

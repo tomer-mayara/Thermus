@@ -71,8 +71,8 @@ export function stagingRoles(): RoleRecord[] {
   return [
     { slug: 'member', permissions: [] },
     { slug: 'user', permissions: ['product:access'] },
-    { slug: 'admin', permissions: ['user-grants:manage'] },
-    { slug: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] },
+    { slug: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] },
+    { slug: 'super-admin', permissions: [] },
   ];
 }
 

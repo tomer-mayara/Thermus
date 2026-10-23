@@ -934,6 +934,10 @@ outcomes; shared UI/contracts expose no SDK/seal/provider-session types.
 
 #### S1-02 — User/Admin password access
 
+Implementation and verification status: [S1-02 record](../implementation/admin-s1-02.md).
+The gap below describes the starting candidate; the record gives the observed
+red/green results and the remaining verification limits.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -972,12 +976,13 @@ Scenario Outline: Discard inferred MFA evidence
     | workspace selection | a retained inferred mfa:true cookie |
 ```
 
-**Current gap / expected red, not run.** Hosted mapping gives Admin no product
-permission and uses Super Admin for Admin invitations. Administration requires
-MFA; composition infers proof from Required-policy Password sign-in and masks
-proof in Optional mode. Use the legacy Required/inference-enabled composition to
-expose the gap for fresh callbacks and retained `mfa:true` cookies. Optional/unproven
-cases already discard proof and stay characterized. This adds no new MFA feature.
+**Starting gap / observed red.** The earlier mapping gave Admin no product
+permission and used Super Admin for Admin invitations. Administration required
+MFA; composition inferred proof from Required-policy Password sign-in and masked
+proof in Optional mode. The Admin-only acceptance and legacy Required/inference
+cases failed before the source edits. Fresh callbacks and retained `mfa:true`
+cookies now discard that inference. Optional/unproven cases already discarded
+proof and stayed characterized. This adds no new MFA feature.
 
 **Ordered TDD steps:**
 

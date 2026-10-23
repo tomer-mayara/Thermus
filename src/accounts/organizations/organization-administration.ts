@@ -6,11 +6,9 @@ import { managedRole, managedRoles, managesBilling } from './customer-roles.ts';
 import { invitationsOf } from './directory-reads.ts';
 import type { AssignableRole, InvitationRequest, OrganizationDirectory, OrganizationMembership } from './organization-directory.ts';
 
-// The person who asks for an administration operation, with the evidence of its browser session.
+// The person who asks for an administration operation.
 export interface Actor {
   readonly user: AuthenticatedUser;
-  // True only when the sign-in of the session completed a multi-factor challenge.
-  readonly mfaCompleted: boolean;
 }
 
 export interface InvitationSendRequest {
@@ -24,7 +22,7 @@ export interface InvitationChangeRequest {
   readonly invitationId: string;
 }
 
-export type AdministrationRefusal = 'denied' | 'mfa-required';
+export type AdministrationRefusal = 'denied';
 
 export interface AuthorizedOrganization {
   readonly organizationId: string;
@@ -44,9 +42,9 @@ const SEND_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'address-in-
 const UPDATE_RESULTS: ReadonlySet<ChangeResult> = new Set(['applied', 'not-pending', 'unsupported']);
 
 // Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user, and
-// invitations and User seat reads. Each operation checks current actor and target state for its organization.
+// invitations and product member counts. Each operation checks current actor and target state for its organization.
 // Each invitation change keeps a record. Billing reads require the current billing permission. The external operator
-// sets up organizations and their Super Admins outside this service.
+// sets up organizations and their Admins outside this service.
 export class OrganizationAdministration {
   private readonly directory: OrganizationDirectory;
   private readonly changes: ChangeRecording;
@@ -86,13 +84,11 @@ export class OrganizationAdministration {
   }
 
   async billingState(actor: Actor, organizationId: string): Promise<BillingState | AdministrationRefusal> {
-    if (actor.mfaCompleted !== true) return 'mfa-required';
     const memberships = await this.directory.membershipsOf(actor.user);
     return managesBilling(memberships, organizationId) ? this.billing.stateOf(organizationId) : 'denied';
   }
 
-  // An invitation of the organization gives only the role that it names, so that an Admin invitation gives no User
-  // access. The directory owns the acceptance.
+  // An invitation gives the role that it names. Admin includes product access. The directory owns the acceptance.
   async sendInvitation(actor: Actor, request: InvitationSendRequest): Promise<ChangeResult> {
     const entry: ChangeEntry = { actor: actor.user, organizationId: request.organizationId, target: { email: request.email }, action: 'invite', role: request.role };
     return this.changes.run(entry, async () => {
@@ -139,10 +135,8 @@ export class OrganizationAdministration {
   }
 
   // The customer roles that the actor manages in the organization now, from a current read of its own memberships.
-  // The organization comes from the request; a selected organization of a session authorizes nothing. Each
-  // administration operation needs completed MFA first.
+  // The organization comes from the request; a selected organization of a session authorizes nothing.
   private async managedBy(actor: Actor, organizationId: string): Promise<readonly AssignableRole[] | AdministrationRefusal> {
-    if (actor.mfaCompleted !== true) return 'mfa-required';
     const managed = managedRoles(await this.directory.membershipsOf(actor.user), organizationId);
     return managed.length === 0 ? 'denied' : managed;
   }

@@ -5,11 +5,10 @@ import type { BrowserProfile, BrowserSessionControls, ProfiledBrowserSessionStat
 import { sessionCookie, type SealedCookie, type SessionEnvelope } from './session-cookies.ts';
 import { isDamagedSeal, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
 import type { SealRefresh, SessionFacts, WorkOSSealedSession, WorkOSSessionClient } from './workos-session-client.ts';
-import { AuthKitSignIn, type SignInCallback, type SignInCompletion, type SignInStart, type SignInOnboarding, type MfaEvidencePolicy } from './workos-sign-in.ts';
+import { AuthKitSignIn, type SignInCallback, type SignInCompletion, type SignInStart, type SignInOnboarding } from './workos-sign-in.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
 
 export interface WorkOSBrowserSessionOptions {
-  readonly mfaEvidence?: MfaEvidencePolicy;
   readonly onboarding?: SignInOnboarding;
   readonly workos: WorkOSSessionClient;
   readonly settings: Pick<WorkOSSettings, 'clientId' | 'redirectUri' | 'cookiePassword'>;
@@ -24,31 +23,29 @@ type RefreshFailure = Extract<SealRefresh, { authenticated: false }>;
 type RefreshSuccess = Extract<SealRefresh, { authenticated: true }>;
 
 // The hosted browser session of WorkOS AuthKit. The session cookie holds the sealed WorkOS session together with the
-// CSRF token and the MFA evidence of the sign-in, because the WorkOS seal changes at each refresh.
+// CSRF token, because the WorkOS seal changes at each refresh.
 export class WorkOSBrowserSession implements BrowserSessionControls {
   private readonly userManagement: WorkOSSessionClient['userManagement'];
   private readonly cookiePassword: string;
   private readonly authority: string;
   private readonly sessionCookie: SealedCookie<SessionEnvelope>;
   private readonly signIn: AuthKitSignIn;
-  private readonly mfaEvidence: MfaEvidencePolicy;
 
   constructor(options: WorkOSBrowserSessionOptions) {
     this.userManagement = options.workos.userManagement;
     this.cookiePassword = options.settings.cookiePassword;
     this.authority = options.authority;
-    this.mfaEvidence = options.mfaEvidence ?? 'unproven';
     this.sessionCookie = sessionCookie(options.settings.cookiePassword);
     const clock = options.clock ?? Date.now;
-    this.signIn = new AuthKitSignIn({ userManagement: this.userManagement, settings: options.settings, clock, mfaEvidence: this.mfaEvidence, sessionCookie: this.sessionCookie, ...(options.onboarding === undefined ? {} : { onboarding: options.onboarding }) });
+    this.signIn = new AuthKitSignIn({ userManagement: this.userManagement, settings: options.settings, clock, sessionCookie: this.sessionCookie, ...(options.onboarding === undefined ? {} : { onboarding: options.onboarding }) });
   }
 
   async authenticate(cookieHeader: string | null): Promise<ProfiledBrowserSessionState> {
     if (!this.sessionCookie.isSentIn(cookieHeader)) return { status: 'signed-out', cookies: [] };
     const stored = this.sessionCookie.contentOf(cookieHeader);
     if (stored === undefined) return this.signedOut();
-    // Mask earlier cookie evidence before a read, refresh, or organization switch can use or keep it.
-    const envelope = this.mfaEvidence === 'password-mfa-required' ? stored : { ...stored, mfa: false };
+    // Discard the old inferred bit before a read, refresh, or organization switch can use or keep it.
+    const envelope = { ...stored, mfa: false };
     const check = await this.checkSeal(envelope.seal);
     if (check === 'ended') return this.signedOut();
     if (check === 'refresh') return this.refreshed(envelope);

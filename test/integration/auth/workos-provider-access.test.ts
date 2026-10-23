@@ -15,8 +15,9 @@ const acme = 'org_01ACME';
 const aliceInAcme: AuthenticatedUser = { authority, subject: alice, selectedOrganizationId: acme };
 
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
-const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
+// Synthetic roles test the grant-reader seam without representing the customer role catalog.
+const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
+const accountManagerGrant: RoleGrant = { role: 'test-account-manager', permissions: ['admin-grants:manage', 'billing:manage'] };
 const memberGrant: RoleGrant = { role: 'member', permissions: [] };
 
 type GrantAnswer = readonly RoleGrant[] | undefined | Error;
@@ -56,8 +57,8 @@ describe('WorkOSAuthProvider access resolution', () => {
     assert.equal(hostedTenantId('workos:client_01ENVIRONMENT', 'org_01ACME'), 'workos:client_01ENVIRONMENT:org_01ACME');
   });
 
-  test('Given an active membership with the roles user and admin, when access is resolved, then it is allowed in the tenant of the organization with both grants and their combined permissions, after one fresh read', async () => {
-    const { grants, provider } = providerWith(new Map([[acme, [userGrant, adminGrant]]]));
+  test('Given an active membership with User and synthetic user-manager grants, when access is resolved, then it is allowed in the tenant of the organization with both grants and their combined permissions, after one fresh read', async () => {
+    const { grants, provider } = providerWith(new Map([[acme, [userGrant, userManagerGrant]]]));
 
     const decision = await provider.resolve(aliceInAcme);
 
@@ -67,7 +68,7 @@ describe('WorkOSAuthProvider access resolution', () => {
         user: aliceInAcme,
         tenantId: `${authority}:${acme}`,
         organizationId: acme,
-        grants: [userGrant, adminGrant],
+        grants: [userGrant, userManagerGrant],
         permissions: ['product:access', 'user-grants:manage'],
       },
     });
@@ -75,13 +76,13 @@ describe('WorkOSAuthProvider access resolution', () => {
     assert.deepEqual(grants.reads, [{ userId: alice, organizationId: acme }]);
   });
 
-  test('Given only Admin and Super Admin grants, when access is resolved, then it is allowed with each grant, because the product permission is checked by each operation and not here', async () => {
-    const { provider } = providerWith(new Map([[acme, [superAdminGrant, adminGrant]]]));
+  test('Given only synthetic management grants without product permission, when access is resolved, then it is allowed with each grant, because each operation checks its required permission', async () => {
+    const { provider } = providerWith(new Map([[acme, [accountManagerGrant, userManagerGrant]]]));
 
     const decision = await provider.resolve(aliceInAcme);
 
     assert.ok(decision.allowed);
-    assert.deepEqual(decision.context.grants, [superAdminGrant, adminGrant]);
+    assert.deepEqual(decision.context.grants, [accountManagerGrant, userManagerGrant]);
     assert.deepEqual(decision.context.permissions, ['admin-grants:manage', 'billing:manage', 'user-grants:manage']);
   });
 

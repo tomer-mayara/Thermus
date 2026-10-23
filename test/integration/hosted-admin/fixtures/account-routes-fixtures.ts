@@ -14,7 +14,7 @@ const authority = 'hosted-provider-double';
 export const ann: AuthenticatedUser = { authority, subject: 'user-ann', selectedOrganizationId: 'org-a' };
 export const ben: AuthenticatedUser = { authority, subject: 'user-ben', selectedOrganizationId: 'org-b' };
 export const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-export const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
+export const adminGrant: RoleGrant = { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] };
 export const noticeHeaders = {
   'content-type': 'text/html; charset=utf-8',
   'cache-control': 'no-store',

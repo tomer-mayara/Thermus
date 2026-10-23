@@ -42,7 +42,7 @@ describe('WorkOSBrowserSession: the session check of each request', () => {
     assert.deepEqual(client.calls, []);
   });
 
-  test('Given a seal whose access token verifies, when the session authenticates, then it is signed in as the WorkOS user in the environment authority with the organization of the session, the profile, the CSRF token, and the MFA evidence of the sign-in, without a cookie change', async () => {
+  test('Given a seal whose access token verifies, when the session authenticates, then it is signed in as the WorkOS user in the environment authority with the organization of the session, the profile, the CSRF token, and no MFA evidence, without a cookie change', async () => {
     const client = new WorkOSSessionClientDouble();
 
     const session = signedIn(await browserSession(client).authenticate(cookieHeader));
@@ -53,7 +53,7 @@ describe('WorkOSBrowserSession: the session check of each request', () => {
         user: { authority, subject: ada.id, selectedOrganizationId: 'org_01ACME' },
         profile: { email: ada.email, firstName: ada.firstName, lastName: ada.lastName },
         csrfToken: envelope.csrf,
-        mfaCompleted: true,
+        mfaCompleted: false,
         cookies: [],
       },
     );

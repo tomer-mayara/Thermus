@@ -783,7 +783,6 @@ environment of the command:
 | `WORKOS_API_KEY` | The API key of the staging environment. It must start with `sk_test_`, because the live proofs make and change users, organizations, memberships, and invitations. |
 | `WORKOS_CLIENT_ID` | The client ID of the staging environment. |
 | `WORKOS_AUTHKIT_ISSUER` | The AuthKit domain of the staging environment, exactly as WorkOS shows it: an absolute `https` URL without spaces, a username, a password, a query, or a fragment. |
-| `WORKOS_MFA_POLICY` | Omitted or `optional` selects the Optional profile; `required` selects the Required profile. These are the only accepted exact values. The provider must match the selected profile. |
 
 On the owner's Mac, the staging launcher reads the API key from the macOS
 Keychain and gives the three settings only to the command that it starts:
@@ -795,39 +794,21 @@ LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/the
 The launcher is outside the repository. Never print its key or copy it into a
 file, a ticket, or a log.
 
-The command uses one MFA profile for the complete run:
-
-```sh
-# Default profile: WorkOS MFA must be Optional.
-LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
-# Required profile: use only after WorkOS MFA is set to Required.
-WORKOS_MFA_POLICY=required LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
-```
-
-The provider preflight checks `mfaEnabled: true` and requires `mfaRequired` to
-be false for Optional or true for Required before any live test or login. A
-mismatch fails the run. The command does not change provider MFA settings.
-The Optional profile proves normal browser/Connect flows with no application
-MFA evidence and explicit administration refusal. The Required profile keeps
-the positive administration proofs under the matched password-MFA contract.
-Both profiles include the FS-02 signup cases. Required keeps the positive
-application administration cases. Optional replaces
-them with refusal and invitation-acceptance cases that preserve the MFA boundary.
-Operator/API administration contract proofs run in both profiles: those service-credential
-proofs do not give an Optional browser session administration authority.
-A pass of one profile does not prove the other. Restore shared Staging to
-Optional after an authorized Required-profile run.
+The current fixture uses one password-only profile. Provider preflight requires
+`mfaEnabled: false` and `mfaRequired: false`. It reads settings and changes none.
+The application has no `WORKOS_MFA_POLICY` option or inferred MFA proof. Admin
+can use existing member and invitation operations after password sign-in.
+Current memberships and permissions still decide each organization request.
+Earlier Optional/Required-profile results below are historical evidence only.
+A fake-backed code exchange does not prove real password sign-in, email
+verification, or password reset. The [operator checklist](hosted-organization-setup.md#s1-05-cutover-checklist-prepared-not-executed)
+prepares those checks for the scoped S1-05 cutover. This wording changes no gate
+selection or pass requirement and claims no new live success.
 
 Configure the other staging settings as the hosted edition needs them:
 
-- Email and password sign-in and Google OAuth with the built-in Google
-  credentials of WorkOS. No other social sign-in provider, no passkey, and no
-  magic sign-in. Optional gives no MFA evidence for any method. Only the
-  explicit Required profile can use Password under its verified provider
-  requirement; Google gives no MFA evidence. Google sign-in is on since
-  2026-10-14, for the
-  [auth WorkOS MCP URL fetch work slice](../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md)
-  (decision D1 of its [plan](auth-workos-mcp-url-fetch-plan.md)).
+- Email and password sign-in with the Slice 1 provider settings above. Existing
+  Google work-slice evidence is historical and does not prove password behavior.
 - Dynamic Client Registration (DCR) and Client ID Metadata Documents (CIMD)
   on, so that MCP clients such as Claude Code register themselves at AuthKit.
   They are on since 2026-10-14, for the same work slice.
@@ -843,7 +824,7 @@ Sign-out URI and the Initiate login URI are dashboard settings. The dashboard
 also keeps the sign-in methods and the social providers, under Authentication,
 and DCR and CIMD. The WorkOS connector can change these too, with its
 `updateAuthkitSettings` operation. Check the saved settings before the run.
-The gate preflight checks the selected MFA profile. The hosted application
+The gate preflight checks the password-only provider configuration. The hosted application
 cases follow the WorkOS logout redirects to the Sign-out URI and a direct
 AuthKit visit to the Initiate login URI. A redirect is not a page, so those
 cases watch the navigation requests of the browser.
@@ -934,9 +915,9 @@ The profiles exercise the following product behavior:
   `test/acceptance/auth/hosted-live/administration-server.ts` check that the
   retired grant route returns `404` for a current-access caller without member
   controls, a provider write,
-  or a grant record. They also check invitations, acceptance, and records. The
-  Optional profile uses
-  `optional-administration-server.ts` for refusal and invitation cases.
+  or a grant record. They also check invitations, acceptance, current User
+  refusals, password-only Admin authority, and records. There is one profile;
+  the earlier Optional administration suite is removed.
 - Signup cases in `test/acceptance/auth/hosted-live/signup-server.ts` check
   the production notice, agreement, callback, and access behavior.
 

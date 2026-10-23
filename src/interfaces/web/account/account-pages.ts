@@ -34,11 +34,6 @@ const NOTICES = {
   formTooLarge: { status: 413, title: 'Form too large', paragraphs: ['The form data is too large.'] },
   formTypeRefused: { status: 415, title: 'Form not accepted', paragraphs: ['This page accepts only HTML form data.'] },
   requestFailed: { status: 500, title: 'Request failed', paragraphs: ['The request failed. Try again later.'] },
-  mfaRequired: {
-    status: 403,
-    title: 'Multi-factor authentication required',
-    paragraphs: ['Administration needs a sign-in that completed multi-factor authentication. Sign in again, complete the second step, and then open this page again.'],
-  },
   changeDenied: {
     status: 403,
     title: 'Change refused',

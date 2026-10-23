@@ -30,7 +30,6 @@ const eve: FakeUser = { id: 'user_01EVE', email: 'eve@example.com', firstName: '
 
 const openSite = (t: TestContext, buildServer?: RequestServerBuilder) => serveWorkOSSite(t, {
   organizations: [organizationA, organizationB],
-  mfaPolicy: 'required',
   buildServer,
   setUp: (world) => {
     // Ada: User and Admin in A, User in B. Ben: Admin only in A. Cid: the default role only in A. Dee: no membership.
@@ -57,7 +56,7 @@ async function json(browser: HostedBrowser, path: string): Promise<{ status: num
 }
 
 describe('Hosted WorkOS edition: browser sign-in, the portal session, and current access', () => {
-  test('Given the hosted WorkOS edition with an explicit Required MFA policy, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, the MFA evidence of the password sign-in, and a form token', async (t) => {
+  test('Given the hosted WorkOS edition, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, no MFA evidence, and a form token', async (t) => {
     const site = await openSite(t);
     const { browser, start, callback } = await signInThroughServer(site, ada, organizationA);
     const session = await json(browser, 'session');
@@ -74,7 +73,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
     assert.match(cookieNamed(callback, signInCookie) ?? '', /Max-Age=0/i);
     assert.equal(session.status, 200);
     assert.deepEqual({ ...session.body, csrfToken: typeof session.body.csrfToken }, {
-      signedIn: true, email: ada.email, name: 'Ada Example', organizationId: organizationA, mfaCompleted: true, csrfToken: 'string',
+      signedIn: true, email: ada.email, name: 'Ada Example', organizationId: organizationA, mfaCompleted: false, csrfToken: 'string',
     });
   });
 
@@ -97,7 +96,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
     assert.equal((await browser.open('session')).status, 401);
   });
 
-  test('Given a User of organization A, an Admin-only member, a default-role member, and a user without a membership, when each opens the protected portal request, then only the User gets product access, and only from a current grant read', async (t) => {
+  test('Given a User of organization A, an Admin, a default-role member, and a user without a membership, when each opens the protected portal request, then the User and Admin get product access, and only from a current grant read', async (t) => {
     const site = await openSite(t);
     const results = [];
     for (const [user, organizationId] of [[ada, organizationA], [ben, organizationA], [cid, organizationA], [dee, undefined]] as const) {
@@ -107,7 +106,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
     const { browser } = await signInThroughServer(site, ada, organizationA);
     const access = await json(browser, 'portal/access');
 
-    assert.deepEqual(results, [['Ada', 200], ['Ben', 403], ['Cid', 403], ['Dee', 403]]);
+    assert.deepEqual(results, [['Ada', 200], ['Ben', 200], ['Cid', 403], ['Dee', 403]]);
     assert.deepEqual(access.body, { organizationId: organizationA, roles: ['user', 'admin'], plan: 'free', mcpUrl: hostedConfig.mcpResourceUrl });
     site.world.memberships = site.world.memberships.filter(({ userId, organizationId }) => !(userId === ada.id && organizationId === organizationA));
     assert.equal((await json(browser, 'portal/access')).status, 403, 'A removed membership still gave access to an existing session.');
@@ -175,7 +174,7 @@ describe('Hosted WorkOS edition: browser sign-in, the portal session, and curren
 });
 
 describe('Hosted WorkOS edition: Connect tokens at the MCP endpoint', () => {
-  test('Given Connect tokens, when the MCP endpoint gets them, then a User of the organization of the token is served, Admin only, the default role, a missing organization, and an inactive membership get 403, and no MCP work runs for them', async (t) => {
+  test('Given Connect tokens, when the MCP endpoint gets them, then a User or Admin of the organization of the token is served; the default role, a missing organization, and an inactive membership get 403, and no MCP work runs for them', async (t) => {
     const site = await openSite(t);
     const statuses = [];
     for (const [user, organizationId] of [[ada, organizationA], [ada, organizationB], [ben, organizationA], [cid, organizationA], [ada, undefined], [dee, organizationA]] as const) {
@@ -183,7 +182,7 @@ describe('Hosted WorkOS edition: Connect tokens at the MCP endpoint', () => {
       statuses.push([user.firstName, organizationId ?? 'none', (await site.discover(token)).status]);
     }
 
-    assert.deepEqual(statuses, [['Ada', organizationA, 200], ['Ada', organizationB, 200], ['Ben', organizationA, 403], ['Cid', organizationA, 403], ['Ada', 'none', 403], ['Dee', organizationA, 403]]);
+    assert.deepEqual(statuses, [['Ada', organizationA, 200], ['Ada', organizationB, 200], ['Ben', organizationA, 200], ['Cid', organizationA, 403], ['Ada', 'none', 403], ['Dee', organizationA, 403]]);
   });
 
   test('Given a browser token, an M2M-shaped token, an expired token, a token for another resource, and no token, when each reaches the MCP endpoint, then each gets 401 with a Bearer challenge that names the protected-resource metadata', async (t) => {
@@ -217,14 +216,19 @@ describe('Hosted WorkOS edition: Connect tokens at the MCP endpoint', () => {
     assert.deepEqual(metadata.authorization_servers, [site.world.settings.authkitIssuer]);
   });
 
-  test('Given a member with Admin only in A and User in B, when the browser session is in A and the MCP token is in B, then the portal refuses product access while MCP serves the token: each credential keeps its own organization', async (t) => {
+  test('Given a member with Admin in A and User in B, when the browser session is in A and the MCP token is in B, then each credential keeps its own organization, also after access in A is removed', async (t) => {
     const site = await openSite(t);
     const { browser } = await signInThroughServer(site, eve, organizationA);
     const token = await site.world.connectToken(eve, { org_id: organizationB });
 
-    assert.equal((await json(browser, 'portal/access')).status, 403);
+    const portal = await json(browser, 'portal/access');
+    assert.equal(portal.status, 200);
+    assert.equal(portal.body.organizationId, organizationA);
     assert.equal((await site.discover(token)).status, 200);
     assert.equal((await json(browser, 'session')).body.organizationId, organizationA);
+    site.world.setStatus(eve, organizationA, 'inactive');
+    assert.equal((await json(browser, 'portal/access')).status, 403);
+    assert.equal((await site.discover(token)).status, 200);
   });
 
   test('Given a membership read or key-set outage, when a request with a valid credential arrives, then the server answers 500 without protected work and reports the failure to the operator, without a token in the report', async (t) => {

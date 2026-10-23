@@ -5,7 +5,7 @@ import { actorOf, administrationWith, invitationsWith, recordLines } from './fix
 const invitation = (organizationId: string, invitationId: string) => ({ organizationId, invitationId });
 
 describe('OrganizationAdministration invitation changes', () => {
-  test('Given an Admin, a Super Admin, and a member with both, when each sends invitations for each role, then each can invite only the roles of its authority, each sent invitation names only its own role, and no customer can invite Super Admin', async () => {
+  test('Given Admin-only and combined User/Admin memberships, when each sends invitations for each role, then each can invite User or Admin, each invitation names its requested role, and retired or default roles cannot be invited', async () => {
     const { directory, records, administration } = administrationWith();
     const outcomes: Record<string, string[]> = {};
 
@@ -17,19 +17,21 @@ describe('OrganizationAdministration invitation changes', () => {
     }
 
     assert.deepEqual(outcomes, {
-      'user-eve': ['applied', 'denied', 'denied', 'denied'],
-      'user-sam': ['denied', 'applied', 'denied', 'denied'],
+      'user-eve': ['applied', 'applied', 'denied', 'denied'],
+      'user-sam': ['applied', 'applied', 'denied', 'denied'],
       'user-otto': ['applied', 'applied', 'denied', 'denied'],
     });
     assert.deepEqual(directory.invitationChanges, [
       'send org-a user user.user-eve@example.com',
+      'send org-a admin admin.user-eve@example.com',
+      'send org-a user user.user-sam@example.com',
       'send org-a admin admin.user-sam@example.com',
       'send org-a user user.user-otto@example.com',
       'send org-a admin admin.user-otto@example.com',
     ]);
     assert.deepEqual(recordLines(records).slice(0, 4), [
       'user-eve in org-a: invite user for user.user-eve@example.com: applied',
-      'user-eve in org-a: invite admin for admin.user-eve@example.com: denied',
+      'user-eve in org-a: invite admin for admin.user-eve@example.com: applied',
       'user-eve in org-a: invite super-admin for super-admin.user-eve@example.com: denied',
       'user-eve in org-a: invite member for member.user-eve@example.com: denied',
     ]);
@@ -38,7 +40,6 @@ describe('OrganizationAdministration invitation changes', () => {
   for (const { label, actor, organizationId, outcome } of [
     { label: 'a User without Admin', actor: actorOf('user-una'), organizationId: 'org-a', outcome: 'denied' },
     { label: 'an Admin of another organization', actor: actorOf('user-ben'), organizationId: 'org-a', outcome: 'denied' },
-    { label: 'an Admin whose sign-in did not complete MFA', actor: actorOf('user-eve', false), organizationId: 'org-a', outcome: 'mfa-required' },
   ]) {
     test(`Given ${label}, when it sends a User invitation, then it is refused as ${outcome}, nothing is sent, and the refusal is recorded`, async () => {
       const { directory, records, administration } = administrationWith();
@@ -98,8 +99,6 @@ describe('OrganizationAdministration invitation changes', () => {
   for (const { label, actor, target, outcome } of [
     { label: 'an accepted invitation', actor: 'user-eve', target: invitation('org-a', 'invitation-2'), outcome: 'not-pending' },
     { label: 'an expired invitation', actor: 'user-eve', target: invitation('org-a', 'invitation-4'), outcome: 'not-pending' },
-    { label: 'an Admin invitation, by an Admin', actor: 'user-eve', target: invitation('org-a', 'invitation-5'), outcome: 'denied' },
-    { label: 'a User invitation, by a Super Admin alone', actor: 'user-sam', target: invitation('org-a', 'invitation-1'), outcome: 'denied' },
     { label: 'an invitation of another organization', actor: 'user-eve', target: invitation('org-a', 'invitation-6'), outcome: 'denied' },
     { label: 'an unknown invitation', actor: 'user-eve', target: invitation('org-a', 'invitation-99'), outcome: 'denied' },
     { label: 'an invitation, by a User without Admin', actor: 'user-una', target: invitation('org-a', 'invitation-1'), outcome: 'denied' },
@@ -151,8 +150,8 @@ describe('OrganizationAdministration invitation changes', () => {
     const { records, administration } = invitationsWith();
 
     await administration.revokeInvitation(actorOf('user-eve'), invitation('org-a', 'invitation-6'));
-    await administration.revokeInvitation(actorOf('user-eve'), invitation('org-a', 'invitation-5'));
+    await administration.revokeInvitation(actorOf('user-una'), invitation('org-a', 'invitation-5'));
 
-    assert.deepEqual(recordLines(records), ['user-eve in org-a: revoke-invitation - for invitation-6: denied', 'user-eve in org-a: revoke-invitation admin for invitation-5: denied']);
+    assert.deepEqual(recordLines(records), ['user-eve in org-a: revoke-invitation - for invitation-6: denied', 'user-una in org-a: revoke-invitation - for invitation-5: denied']);
   });
 });

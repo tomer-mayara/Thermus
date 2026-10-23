@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "S1-01 retires the customer POST /members/grants contract: a formerly authorized request returns 404 without a role change, and Members has no grant forms. The parser, administration operation, and provider writer are removed. Current invitations, role mapping, MFA checks, signup metadata and legal content, session cookies, CSRF, return paths, and provider failure behavior remain. Identity owns the narrow browser session/profile controls; organizations owns signup activation records and operations. WorkOS implements these roles, and composition supplies the portal's existing CSP origins. Public-module declarations add these two neutral modules without changing package edges, gate selection, or approval rules. Registry component ownership, runtime prose, and design limits reflect this reduced writer surface; context, containers, deployment, resource lifetimes, and existing diagrams remain accurate. No provider, database, runtime dependency, or new infrastructure is added. T2 Need architect is required for the changed browser/server contract; internal contracts, sensitive paths, policy declarations, and retained quality findings also require human review. No new decision record was requested. The stack includes the shared metrics repair from PR #230. It changes developer measurement and installation only; application boundaries and review thresholds remain unchanged.",
+    "summary": "This stacked candidate includes S1-01 and S1-02. S1-01 retires POST /members/grants and its parser, domain operation, provider writer, and member controls. It introduces narrow identity session/profile and organization signup contracts, with unchanged package edges and resource lifetimes. S1-02 changes the hosted authorization guarantee to two customer roles: User permits product/MCP access, and Admin includes that access, both invitation roles, and the existing free billing read. Current active memberships and validated organization role catalogs decide access; default, retired, unknown, inactive, missing, and foreign grants cannot authorize it. Administration no longer accepts an MFA precondition or refusal. WorkOS settings, constructor, and composition contracts remove MFA inference options. Shared session and cookie formats remain compatible, but old inferred MFA values normalize to false on reads, refreshes, and organization selection. Member counts include each active product-authorized membership once. Callback state/PKCE, CSRF/origin checks, cookie verification, logout, outages, native invitation acceptance, and browser/MCP organization separation remain. Registry component responsibilities and member-read runtime diagrams reflect these contracts. Context, containers, deployment, source ownership, and provider boundaries stay the same. No provider setting, database, SDK dependency, new infrastructure, or legal bundle changes. The deployment verifier only drops the unused MFA setting; live tests now require an explicitly checked password-only provider configuration without changing it. Existing gates and approval rules remain. T2 Need architect is required for these observable access and session guarantees; internal contracts, sensitive paths, declarations, and retained quality findings also require human review. No new decision record was requested. The stack includes the shared metrics repair from PR #230. This increment also separates the existing required-setting password and legacy-session specifications without changing their behavior. Application boundaries and review thresholds remain unchanged.",
     "views": [
       "context",
       "containers",
@@ -25,18 +25,28 @@
     ],
     "evidence": [
       "docs/implementation/admin-s1-01.md",
+      "docs/implementation/admin-s1-02.md",
       "docs/design/organization-admin-plan.md",
       "architecture/components.md",
       "src/accounts/identity/browser-session-controls.ts",
       "src/accounts/organizations/signup-activation.ts",
       "src/accounts/organizations/organization-administration.ts",
+      "src/accounts/organizations/administration-overviews.ts",
+      "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "src/accounts/providers/workos/workos-browser-session.ts",
+      "src/accounts/providers/workos/workos-sign-in.ts",
+      "src/accounts/providers/workos/workos-settings.ts",
       "src/accounts/providers/workos/workos-organizations.ts",
       "src/interfaces/web/account/administration-routes.ts",
       "src/app/hosted-workos-application.ts",
       "test/acceptance/auth/hosted-grant-retirement.test.ts",
+      "test/acceptance/auth/hosted-workos-role-access.test.ts",
+      "test/acceptance/auth/hosted-workos-mfa-policy.test.ts",
+      "test/acceptance/auth/hosted-workos-signup.test.ts",
       "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
       "docs/implementation/pr-review-rules.yaml",
-      "docs/implementation/ast-metrics-function-repair.md"
+      "docs/implementation/ast-metrics-function-repair.md",
+      "test/acceptance/auth/hosted-workos-legacy-session.test.ts"
     ]
   }
 }

@@ -1,4 +1,70 @@
-# Hosted organization setup and recovery
+# Hosted organization setup and password cutover preparation
+
+
+## Current scope
+
+S1-02 prepares the User/Admin password model. It does not change the WorkOS
+account or execute a rollout. Execute the scoped cutover only in S1-05 with the
+owner's intended environment and application confirmed. Named creation and the
+first Admin are S1-03a work. The older Super Admin procedure below is historical
+and must not be used as the current role setup procedure.
+
+## Before you start
+
+Confirm the intended WorkOS staging or production environment, application,
+client ID, AuthKit issuer, organization scope, and operator authority. Keep API
+keys in the approved secret store; do not put credentials, reset links, or
+invitation tokens in Git, logs, tickets, or records. Preserve the private
+agreement controls in [Hosted User onboarding](hosted-user-onboarding.md).
+Do not copy a staging URL or role catalog into production without checking it.
+
+## S1-05 cutover checklist (prepared, not executed)
+
+1. Record the exact scope and approved change window. Read the saved provider
+   settings and deployed application URLs before any write. Stop on a client,
+   issuer, environment, or URL mismatch. Reconcile existing grants and pending
+   invitations before replacing the old catalog; do not infer a migration from
+   a renamed role.
+2. Configure the User/Admin catalog to match the application's validated role
+   mapping. User permits product/MCP access. Admin includes that access and
+   organization administration, including invitations for either role and the
+   free billing read. Default and unknown grants must give no Thermus access.
+   Read back the catalog and check custom organization roles too. Follow the
+   [WorkOS RBAC integration](https://workos.com/docs/rbac/integration).
+3. Confirm email/password sign-in and a provider MFA configuration compatible
+   with Slice 1. The current live fixture requires `mfaEnabled: false` and
+   `mfaRequired: false`; preflight reads these settings and does not write them.
+   There is no `WORKOS_MFA_POLICY` application setting. An old Required-policy
+   Password exchange is not proof of completed MFA.
+4. Verify the exact callback, MCP resource, sign-out, and Initiate login URLs
+   for that application. Use the [Initiate login URI guidance](https://workos.com/docs/authkit/vanilla/nodejs#configure-initiate-login-uri)
+   and [Sign-out URI guidance](https://workos.com/docs/authkit/sessions#sign-out-uris).
+   Do not guess dashboard paths or reuse another environment's URLs.
+5. Prove the real password flow, required email verification, password reset,
+   and invitation-origin sign-in with authorized staging identities. Check the
+   trusted application landing and current membership after invitation
+   acceptance. A local fake code exchange proves none of these provider flows.
+6. Check User and Admin product/MCP access; Admin member reads and both invite
+   roles; User administration refusal; default, unknown, inactive, removed,
+   and foreign-organization refusal; and unchanged authorized access in another
+   organization. Check current grants again on the next browser and MCP
+   request. Check protected cookies, callback state/PKCE, logout, and outage
+   handling. Keep member rows read-only and the retired grant route unavailable.
+7. Record verified outcomes and unresolved failures without credentials. Stop
+   rollout if scope, role catalog, password behavior, or access cannot be
+   established. Run the applicable existing gates; this checklist adds no gate.
+
+Current live configuration is unverified: the saved client differs from the
+connected staging client and the saved issuer is missing. No successful real
+password, verification, reset, or cutover result is claimed for S1-02.
+
+## Historical Super Admin procedure
+
+The remaining procedure records the earlier AUTH-07W/AUTH-08W operating model.
+Its API examples and MFA prerequisites do not authorize the S1-05 cutover or
+current customer authority. Historical onboarding references to its numbered
+identity, membership, and single-role steps describe manual controls only;
+confirm a current approved provider procedure before using them.
 
 This runbook is for the external platform operator of the hosted edition. It
 gives the steps to set up a customer organization and its first Super Admin, and
@@ -41,7 +107,7 @@ The operator dashboard MFA prerequisite below is separate from the AuthKit
 end-user policy. Shared Staging can use AuthKit Optional while the operator
 still must complete dashboard MFA before each runbook write.
 
-## Before you start
+## Historical prerequisites
 
 1. **Completed MFA.** Sign in to the WorkOS dashboard of the environment with
    MFA. The WorkOS team must require MFA (dashboard Settings, Authentication,

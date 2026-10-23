@@ -5,7 +5,7 @@ import type { AdministrationSetup } from './organization-administration-double.t
 
 export const sessionCookies = ['session=refreshed; Path=/; Secure; HttpOnly; SameSite=Lax'];
 export const annToken = 'csrf-token-of-user-ann';
-export const annContext = contextOf(ann, [userGrant, adminGrant], ['product:access', 'user-grants:manage']);
+export const annContext = contextOf(ann, [userGrant, adminGrant], adminGrant.permissions);
 export const formPageHeaders = {
   'content-type': 'text/html; charset=utf-8',
   'cache-control': 'no-store',
@@ -16,7 +16,7 @@ export const formPageHeaders = {
 
 export const acmeMembers: MemberOverview = {
   organizationId: 'org-a',
-  activeUserSeats: 2,
+  activeUserSeats: 1,
   members: [
     { membershipId: 'membership-ann', email: 'ann@example.com', status: 'active', roles: ['user', 'admin'], revision: 'r7' },
     { membershipId: 'membership-dora', email: 'dora@example.com', status: 'active', roles: [], revision: 'r2' },
@@ -26,11 +26,11 @@ export const acmeMembers: MemberOverview = {
 
 export const acmeInvitations: InvitationOverview = {
   organizationId: 'org-a',
-  invitableRoles: ['user'],
+  invitableRoles: ['user', 'admin'],
   identityPolicy: 'invited-address',
   invitations: [
     { invitationId: 'invitation-1', email: 'new@example.com', role: 'user', state: 'pending', changes: ['resend', 'revoke'] },
-    { invitationId: 'invitation-2', email: 'boss@example.com', role: 'admin', state: 'pending', changes: [] },
+    { invitationId: 'invitation-2', email: 'boss@example.com', role: 'admin', state: 'pending', changes: ['resend', 'revoke'] },
     { invitationId: 'invitation-3', email: 'old@example.com', role: 'user', state: 'expired', changes: [] },
   ],
 };

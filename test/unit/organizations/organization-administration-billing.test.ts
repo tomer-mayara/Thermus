@@ -1,20 +1,20 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { MemberSeed } from '../../support/doubles/organizations/directory-double-records.ts';
-import { actorOf, administrationWith, invitationsWith, members, superAdminGrant, userGrant } from './fixtures/administration-fixtures.ts';
+import { actorOf, administrationWith, invitationsWith, members, adminGrant, userGrant } from './fixtures/administration-fixtures.ts';
 
-// vic is an inactive Super Admin of Acme. gil is a Super Admin of Globex, the organization that each session of the
+// vic is an inactive Admin of Acme. gil is an Admin of Globex, the organization that each session of the
 // fixtures selected, and only a User in Acme.
 const billingMembers: readonly MemberSeed[] = [
   ...members,
-  { subject: 'user-vic', organizationId: 'org-a', grants: [superAdminGrant], status: 'inactive' },
-  { subject: 'user-gil', organizationId: 'org-b', grants: [superAdminGrant] },
+  { subject: 'user-vic', organizationId: 'org-a', grants: [adminGrant], status: 'inactive' },
+  { subject: 'user-gil', organizationId: 'org-b', grants: [adminGrant] },
   { subject: 'user-gil', organizationId: 'org-a', grants: [userGrant] },
 ];
 
 describe('OrganizationAdministration billing state', () => {
-  for (const subject of ['user-sam', 'user-otto']) {
-    test(`Given a Super Admin (${subject}) whose sign-in completed MFA and whose session selected Globex, when it asks for the billing state of Acme, then a current read of its memberships authorizes it, and it gets the state of Acme from billing`, async () => {
+  for (const subject of ['user-sam', 'user-otto', 'user-eve', 'user-cy']) {
+    test(`Given an Admin (${subject}) whose session selected Globex, when it asks for the billing state of Acme, then a current read of its memberships authorizes it, and it gets the state of Acme from billing`, async () => {
       const { directory, records, billing, administration } = administrationWith();
       const actor = actorOf(subject);
 
@@ -28,22 +28,11 @@ describe('OrganizationAdministration billing state', () => {
     });
   }
 
-  test('Given a Super Admin whose sign-in did not complete MFA, when it asks for the billing state, then MFA is required before any read: no membership is read, and billing reads nothing', async () => {
-    const { directory, billing, administration } = administrationWith();
-
-    const state = await administration.billingState(actorOf('user-sam', false), 'org-a');
-
-    assert.equal(state, 'mfa-required');
-    assert.deepEqual([directory.membershipReads, billing.stateReads], [[], []]);
-  });
-
   for (const { label, subject } of [
     { label: 'a User alone', subject: 'user-una' },
-    { label: 'an Admin alone', subject: 'user-eve' },
-    { label: 'User plus Admin', subject: 'user-cy' },
     { label: 'a member with only the default role', subject: 'user-dora' },
-    { label: 'a Super Admin whose membership is inactive', subject: 'user-vic' },
-    { label: 'a Super Admin of the selected organization of the session that is only a User in Acme', subject: 'user-gil' },
+    { label: 'an Admin whose membership is inactive', subject: 'user-vic' },
+    { label: 'an Admin of the selected organization of the session that is only a User in Acme', subject: 'user-gil' },
   ]) {
     test(`Given ${label}, when it asks for the billing state of Acme, then a current read of its memberships denies it, and billing reads nothing`, async () => {
       const { directory, billing, administration } = administrationWith(billingMembers);
@@ -57,7 +46,7 @@ describe('OrganizationAdministration billing state', () => {
     });
   }
 
-  test('Given a membership read that fails, when a Super Admin asks for the billing state, then the failure reaches the caller unchanged, and billing reads nothing', async () => {
+  test('Given a membership read that fails, when an Admin asks for the billing state, then the failure reaches the caller unchanged, and billing reads nothing', async () => {
     const { directory, billing, administration } = administrationWith();
     const outage = new Error('organization directory timed out');
     directory.failMembershipReads(outage);
@@ -67,7 +56,7 @@ describe('OrganizationAdministration billing state', () => {
     assert.deepEqual(billing.stateReads, []);
   });
 
-  test('Given a billing read that fails, when a Super Admin asks for the billing state, then the failure reaches the caller unchanged', async () => {
+  test('Given a billing read that fails, when an Admin asks for the billing state, then the failure reaches the caller unchanged', async () => {
     const { billing, administration } = administrationWith();
     const outage = new Error('billing read timed out');
     billing.failWith(outage);

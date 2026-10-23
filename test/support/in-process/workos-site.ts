@@ -1,6 +1,5 @@
 import type { TestContext } from 'node:test';
 import type { Application } from '../../../src/app/application.ts';
-import type { WorkOSMfaPolicy } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { composeWorkOSApplication, type WorkOSApplicationParts } from '../../../src/app/hosted-workos-application.ts';
 import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import type { RequestServerBuilder } from '../../../src/interfaces/mcp/mcp-server.ts';
@@ -25,8 +24,6 @@ interface WorkOSSiteOptions {
   readonly organizations: readonly string[];
   // Reuse provider state for a fresh application. Install the signup fake only on the first site.
   readonly world?: WorkOSFake;
-  // The MFA policy of the connection. Without it, the fake gives its own policy.
-  readonly mfaPolicy?: WorkOSMfaPolicy;
   // The MCP tool server of the composition. Without it, the MCP server of the composition has no tools.
   readonly buildServer?: RequestServerBuilder;
   // The signup setting of the composition. Without it, signup is closed.
@@ -50,15 +47,14 @@ interface WorkOSSignupSite extends WorkOSSite {
 }
 
 // The one place that composes the real hosted application against the fake: composeWorkOSApplication() with the
-// connection of the fake and the MFA policy of the test. A site of another deployment, such as LocalHttpsSite, can serve
+// connection of the fake. A site of another deployment, such as LocalHttpsSite, can serve
 // the application.
 export function composeApplicationWithWorkOSFake(
   config: typeof hostedConfig,
   world: WorkOSFake,
-  parts: WorkOSApplicationParts & { readonly mfaPolicy?: WorkOSMfaPolicy },
+  parts: WorkOSApplicationParts,
 ): Promise<Application> {
-  const { mfaPolicy, ...rest } = parts;
-  return composeWorkOSApplication(config, world.connection(mfaPolicy), rest);
+  return composeWorkOSApplication(config, world.connection(), parts);
 }
 
 // The real hosted composition with the WorkOS provider behind the real HTTP server on a loopback port, at the public
@@ -66,12 +62,12 @@ export function composeApplicationWithWorkOSFake(
 export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions & { readonly signupFake: true }): Promise<WorkOSSignupSite>;
 export function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite>;
 export async function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions): Promise<WorkOSSite | WorkOSSignupSite> {
-  const { config = hostedConfig, organizations, mfaPolicy, buildServer, signup, setUp } = options;
+  const { config = hostedConfig, organizations, buildServer, signup, setUp } = options;
   const world = options.world ?? await WorkOSFake.start(t, config.publicBaseUrl, organizations);
   const signupFake = options.signupFake === true ? new WorkOSSignupFake(world) : undefined;
   setUp?.(world);
   const log = new OperatorLogSpy();
-  const application = await composeApplicationWithWorkOSFake(config, world, { logger: log, buildServer, signup, mfaPolicy });
+  const application = await composeApplicationWithWorkOSFake(config, world, { logger: log, buildServer, signup });
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   let closing: Promise<void> | undefined;
   const close = () => (closing ??= server.close().then(() => application.close()));

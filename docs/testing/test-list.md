@@ -1,5 +1,95 @@
 # Test inventory
 
+## Current S1-02 inventory scope
+
+S1-02 changes the current hosted role/password expectations. User and Admin
+both have product/MCP access. Only Admin reads members and manages either
+invitation role. Current organization memberships and permissions still decide
+access. Default/unknown grants and invalid role catalogs fail closed. Member
+rows stay read-only; the retired grant route remains unavailable.
+The **Active product members** count includes each unique active membership
+with `product:access` once, including Admin alone; pending and inactive members
+and invitations do not count. Legacy internal seat API names remain compatible.
+
+Session regressions cover fresh password callbacks and retained encrypted
+`mfa:true` values across read, refresh, and organization selection: all report
+`mfaCompleted: false`. Application MFA policy modes and MFA refusals are removed.
+Admin-only existing signup access offers Continue. Named creation and first
+Admin remain S1-03a work. The live fixture has one password-only profile with
+provider read-back `mfaEnabled: false`, `mfaRequired: false`; it writes no settings.
+Live API-created users have verified email already. A future passing password
+case can prove their sign-in, but not verification of a fresh email or reset.
+
+Current compatibility scenarios replace the older matching entries below:
+
+- `test/acceptance/auth/hosted-workos-role-access.test.ts`: an Admin-only
+  password callback permits product, MCP, members, billing, and invitations for
+  either role. User permits product and MCP but denies administration. Current
+  default, retired, unknown, inactive, removed, and foreign memberships deny
+  access in one organization while valid access in another still works.
+- `test/acceptance/auth/hosted-organizations.test.ts`: selecting an Admin
+  organization permits product, both administration destinations, billing, and
+  MCP with its current grant. Default and retired roles offer no organization.
+  Inactive, foreign, and unknown selections keep their refusals.
+- `test/acceptance/auth/hosted-seats.test.ts`: Admin-only and combined User/Admin
+  members read the same count of six active Acme product members. Repeated page
+  records count once. User cannot read members; failed pages show no partial count.
+- `test/acceptance/auth/hosted-organization-requests.test.ts`: Admin still has
+  no create, rename, settings, or recovery route in this slice. Origin, CSRF,
+  return destination, cookie refresh, and session failure checks remain.
+- `test/acceptance/auth/mcp-access.test.ts`: canonical Admin and User grants
+  reach the tool with their combined permissions. The retired Super Admin role
+  has no application permission and starts no protected work. Credential,
+  membership, outage, and forged tenant checks remain.
+- `test/integration/auth/hosted-organizations.test.ts`: Admin reaches every
+  existing destination and MCP; User reaches product and MCP. Selection uses
+  current memberships and changes only that browser session. Other browser and
+  MCP sessions keep their organization; forged selections still fail.
+- `test/integration/auth/workos-provider-directory.test.ts`: a catalog with
+  only User and Admin is sufficient. Missing User or Admin, a privileged default
+  or retired role, or a missing membership role list fails without a context.
+  SDK and provider failures still propagate instead of granting access.
+
+- `test/acceptance/auth/hosted-mcp-signup-guidance.test.ts`: absent workspace,
+  inactive membership, and default/no-grant memberships get product-permission
+  guidance without protected work or provider writes. A currently authorized
+  token for another workspace still works. Invalid tokens keep the authentication
+  challenge; membership outages keep the server failure without signup guidance.
+
+- Signup inspection and activation unit tests use the canonical Admin catalog.
+  Existing active Admin product access gives `existing-access` with no new
+  organization or membership. Inactive product and default/retired grants stay
+  eligible when no retained record blocks signup. Hosted WorkOS signup offers
+  Admin-only Continue without agreement and rechecks Admin access on an old
+  signup form, without creating another organization or User membership.
+
+- `test/acceptance/auth/hosted-invitations.test.ts`: Admin can invite either
+  role; accepted Admin includes product access. Unsupported roles fail. Pending
+  User and Admin invitations can be changed; foreign and non-pending cases keep
+  their refusals, records, and token secrecy. Password access permits both roles.
+- `test/acceptance/auth/hosted-invitation-refusals.test.ts`: current User
+  authority refuses administration. Forged role, origin, CSRF, and selected
+  organization keep their refusal and refreshed-cookie checks.
+- `test/acceptance/auth/hosted-grant-retirement.test.ts`: an Admin after
+  password sign-in still gets no retired grant writer or member grant controls.
+- `test/acceptance/billing/hosted-billing.test.ts`: Admin reads the free plan
+  without completed MFA. User/default/foreign requests are denied. Six active
+  product members count once across overlapping Acme pages; outages show no
+  partial count, and recovery restores the complete count without billing writes.
+- `test/integration/auth/workos-provider-administration.test.ts`: foreign
+  authority is refused before remote reads; Admin can manage either invitation
+  role, and accepted Admin has all four application permissions. Product-member
+  counts include Admin alone. Existing stale invitation states, duplicate sends,
+  exact provider writes, records, and outage checks remain.
+
+The earlier AUTH three-role, Super Admin, User-only seat, MFA-refusal, and
+Optional/Required-profile entries below retain their historical scope. They
+must not be read as current acceptance criteria or a new successful test run.
+The [S1-02 record](../implementation/admin-s1-02.md) lists the final candidate's
+selected tests, results, and limits. Fake exchange coverage is application-side
+coverage; it does not prove real password sign-in, email verification, or reset.
+
+
 Tests under `test/` must exercise code under `src/`. A test can call a source
 module directly or reach it through a compiled module, CLI, HTTP server, browser,
 container, or runtime entry point. A test of a script, document, configuration,
@@ -1933,26 +2023,31 @@ The manual entry point `auth-workos-mcp-url-fetch.ts` next to this file is not a
 npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.js
 ```
 
-**Slice sessions always have unproven MFA** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mfa.test.ts`)
+**Slice Admin password access** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-admin-access.test.ts`)
 
-These two offline acceptance cases exercise the slice composition with the real HTTP-facing application and a WorkOS API fake. The slice remains unproven even when provider settings explicitly select Required. These cases passed in the final complete acceptance command.
-
-[V] Password and Google sign-ins with User, Admin, and Super Admin keep product access and false session MFA evidence
-[V] Members, invitations, billing, and a grant POST are refused without changing memberships
+Two offline acceptance cases exercise the slice composition through real HTTP
+with a WorkOS API fake. Password and Google exchanges with existing Admin-only
+membership permit product, members, invitations, and billing reads while session
+MFA remains false. The retired grant route returns 404 without membership writes.
+These are application-side cases, not live password or provider-setting proof.
 
 ```sh
-npm run build && node --test dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mfa.test.js
+pnpm exec node --import tsx --test test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-admin-access.test.ts
 ```
 
-**Hosted WorkOS Optional and Required MFA contracts** (`test/acceptance/auth/hosted-workos-mfa-policy.test.ts`)
+**Hosted WorkOS Required MFA setting** (`test/acceptance/auth/hosted-workos-mfa-policy.test.ts`)
 
-These three offline acceptance cases verify the provider setting through normal hosted composition. `serveWorkOSSite()` of `test/support/in-process/workos-site.ts` serves it behind the real HTTP server on a loopback port. The Optional behavior is the default; only explicit Required settings can use the password-MFA contract. These cases passed in the final complete acceptance command.
+This offline acceptance case uses the normal hosted composition and a WorkOS API fake behind real loopback HTTP.
 
-[V] Omitted and explicit Optional policy give Password sessions no MFA evidence and refuse the members page
-[V] Explicit Required policy preserves positive administration behavior for the password-MFA contract
+[V] A retained Required provider setting does not turn a Password callback into MFA proof; the signed-in portal reports `mfaCompleted: false`
+
+**Hosted WorkOS retained legacy session** (`test/acceptance/auth/hosted-workos-legacy-session.test.ts`)
+
+[V] Reading, refreshing, and switching the organization of a retained cookie with inferred MFA proof keep the user signed in and remove the unsupported MFA proof
+[V] Read and refresh retain the selected organization; switching uses the newly selected organization
 
 ```sh
-npm run build && node --test dist/test/acceptance/auth/hosted-workos-mfa-policy.test.js
+npm run build && node --test dist/test/acceptance/auth/hosted-workos-mfa-policy.test.js dist/test/acceptance/auth/hosted-workos-legacy-session.test.js
 ```
 
 **Automatic slice Google onboarding** (`test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts`)

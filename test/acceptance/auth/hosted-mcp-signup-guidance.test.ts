@@ -11,12 +11,12 @@ const user: FakeUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: 
 async function openSite(t: TestContext): Promise<WorkOSSite & { tools: ContextReportToolSpy }> {
   const tools = new ContextReportToolSpy();
   const site = await serveWorkOSSite(t, {
-    organizations: ['org_USER', 'org_ADMIN', 'org_INACTIVE', 'org_MEMBER'],
+    organizations: ['org_USER', 'org_NO_GRANT', 'org_INACTIVE', 'org_MEMBER'],
     buildServer: tools.buildServer,
     setUp: (world) => {
       world.memberships = [
         { userId: user.id, organizationId: 'org_USER', roles: ['user'] },
-        { userId: user.id, organizationId: 'org_ADMIN', roles: ['admin'] },
+        { userId: user.id, organizationId: 'org_NO_GRANT', roles: ['member'] },
         { userId: user.id, organizationId: 'org_INACTIVE', roles: ['user'], status: 'inactive' },
         { userId: user.id, organizationId: 'org_MEMBER', roles: [] },
       ];
@@ -35,10 +35,10 @@ function callTool(site: WorkOSServerSite, token?: string): Promise<Response> {
 }
 
 describe('Hosted MCP access guidance', () => {
-  test('Given an authenticated MCP client without User access in its token workspace, when it calls a tool, then the denial points to signup and reauthorization without granting access; a token for its User workspace can call the tool', async (t) => {
+  test('Given an authenticated MCP client without current product permission in its token workspace, when it calls a tool, then denial points to signup and reauthorization without granting access; an authorized token for another workspace still calls the tool', async (t) => {
     const site = await openSite(t);
 
-    for (const organizationId of [undefined, 'org_ADMIN', 'org_INACTIVE', 'org_MEMBER']) {
+    for (const organizationId of [undefined, 'org_NO_GRANT', 'org_INACTIVE', 'org_MEMBER']) {
       const token = await site.world.connectToken(user, organizationId === undefined ? {} : { org_id: organizationId });
       const response = await callTool(site, token);
       const body = await response.json() as { error: string; error_description: string };

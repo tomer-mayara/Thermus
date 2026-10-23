@@ -4,7 +4,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import type { Page } from 'playwright';
 import { formLabelled, formsIn, type PageForm } from '../../../support/drivers/browser/hosted-browser.ts';
 import { once, type LiveRun } from '../../../support/hosted-live/live-run.ts';
-import { rolesOf, superAdminRole } from '../../../support/hosted-live/operator-runbook.ts';
+import { rolesOf, adminRole } from '../../../support/hosted-live/operator-runbook.ts';
 import { serverGet, serverPost, sessionJson, signInThroughPortal, type PortalVisit, type ServerAnswer } from '../../../support/hosted-live/portal-visit.ts';
 import { localOrigin, mcpResource } from '../../../support/hosted-live/settings.ts';
 import type { LiveUser } from '../../../support/hosted-live/staging-fixtures.ts';
@@ -47,7 +47,6 @@ function labelOf(user: LiveUser): string {
 // Registers the AUTH-07W cases of the hosted server. It returns the case that needs an expired access token of the
 // selection session: the caller registers it after the AUTH-06 cases, whose 300-second wait lets the token expire.
 export function describeOrganizationServerCases(run: LiveRun): () => void {
-  const requiredMfa = run.settings.mfaPolicy === 'required';
   // The member signs in to A one time and selects B. The later cases use the same session.
   const selection = once(async (): Promise<SelectionVisit> => {
     const { organizationA, organizationB } = await run.fixtures();
@@ -88,7 +87,7 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationB.id, roles: ['user'], plan: 'free', mcpUrl: mcpResource });
       const selectedSession = await sessionJson(page);
       assert.equal(selectedSession.organizationId, organizationB.id);
-      assert.equal(selectedSession.mfaCompleted, requiredMfa);
+      assert.equal(selectedSession.mfaCompleted, false);
       assert.deepEqual(relisted.toSorted(), [organizationA.name, `${organizationB.name} (selected)`].toSorted());
     });
 
@@ -109,48 +108,51 @@ export function describeOrganizationServerCases(run: LiveRun): () => void {
       assert.ok(refusals.every((refusal) => refusal.location === undefined && sessionCookiesIn(refusal).length === 0), 'A refused selection switched or changed the session.');
       const selectedSession = await sessionJson(page);
       assert.equal(selectedSession.organizationId, organizationB.id);
-      assert.equal(selectedSession.mfaCompleted, requiredMfa);
+      assert.equal(selectedSession.mfaCompleted, false);
     });
 
-    test(`Given an operator Super Admin in the ${requiredMfa ? 'Required' : 'Optional'} MFA profile, when it signs in, then its organization is offered, billing ${requiredMfa ? 'opens with MFA evidence' : 'is refused without MFA evidence'}, product access and a customer Super Admin grant are refused; after operator revocation the same session loses its organization access`, signInOptions, async (t) => {
+    test('Given an operator-created Admin, when it signs in with a password, then its organization is offered and billing and product access work while the retired grant route is unavailable; after operator revocation the same session loses its organization access', signInOptions, async (t) => {
       const { runbook, operatorOrganization, users } = await run.organizationFixtures();
-      const user = users['hosted-super-admin'];
+      const user = users['hosted-admin'];
       const request = { organizationId: operatorOrganization.id, email: user.email };
-      assert.equal((await runbook.grantSuperAdmin(request)).outcome, 'applied');
+      assert.equal((await runbook.grantAdmin(request)).outcome, 'applied');
       const { page } = await signInThroughPortal(run, user);
       const session = await sessionJson(page);
       const membership = await runbook.membership(user.id, operatorOrganization.id);
-      assert.ok(membership, 'The Super Admin has no membership.');
+      assert.ok(membership, 'The Admin has no membership.');
 
       const offered = (await organizationForms(page)).map(({ label }) => label);
       const billing = await serverGet(page, 'billing');
       const portal = await serverGet(page, 'portal/access');
-      if (portal.status !== 403) {
+      if (portal.status !== 200) {
         const reports = (await run.site()).log.lines.filter((line) => line.startsWith('ERROR ')).slice(-3);
         t.diagnostic(`Unexpected portal status ${portal.status}. The last operator reports:\n${reports.join('\n')}`);
       }
       const customerGrant = await serverPost(page, 'members/grants', { fields: {
-        csrf_token: String(session.csrfToken), organization_id: operatorOrganization.id, membership_id: membership.id, revision: 'live', role: superAdminRole, action: 'grant',
+        csrf_token: String(session.csrfToken), organization_id: operatorOrganization.id, membership_id: membership.id, revision: 'live', role: adminRole, action: 'grant',
       } });
       const membershipAfterCustomerGrant = await runbook.membership(user.id, operatorOrganization.id);
       const rolesAfterCustomerGrant = rolesOf(membershipAfterCustomerGrant);
-      await runbook.revokeSuperAdmin(request);
+      await runbook.revokeAdmin(request);
       const billingAfterRevocation = await serverGet(page, 'billing');
+      const portalAfterRevocation = await serverGet(page, 'portal/access');
       const organizationsAfterRevocation = await serverGet(page, 'organizations');
       const records = (await run.site()).log.lines.filter((line) => line.startsWith('INFO Account change record:'));
-      t.diagnostic(`billing ${billing.status}, portal ${portal.status}, customer Super Admin grant ${customerGrant.status}, billing after the revocation ${billingAfterRevocation.status}`);
+      t.diagnostic(`billing ${billing.status}, portal ${portal.status}, customer Admin grant ${customerGrant.status}, billing after the revocation ${billingAfterRevocation.status}`);
 
       assert.equal(session.organizationId, operatorOrganization.id);
-      assert.equal(session.mfaCompleted, requiredMfa);
+      assert.equal(session.mfaCompleted, false);
       assert.deepEqual(offered, [`${operatorOrganization.name} (selected)`]);
-      assert.equal(billing.status, requiredMfa ? 200 : 403, billing.body);
-      assert.match(billing.body, requiredMfa ? /Plan: Free/ : /Administration needs a sign-in that completed multi-factor authentication/);
-      assert.equal(portal.status, 403);
+      assert.equal(billing.status, 200, billing.body);
+      assert.match(billing.body, /Plan: Free/);
+      assert.equal(portal.status, 200, portal.body);
+      assert.deepEqual(JSON.parse(portal.body), { organizationId: operatorOrganization.id, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
       assert.equal(customerGrant.status, 404, customerGrant.body);
       assert.deepEqual(membershipAfterCustomerGrant, membership, 'The refused customer grant changed the WorkOS membership.');
-      assert.deepEqual(rolesAfterCustomerGrant, [superAdminRole]);
+      assert.deepEqual(rolesAfterCustomerGrant, [adminRole]);
       assert.deepEqual(records, [], 'The retired route creates no grant change record.');
       assert.equal(billingAfterRevocation.status, 403);
+      assert.equal(portalAfterRevocation.status, 403);
       assertOnboarding(organizationsAfterRevocation, labelOf(user));
       await page.context().close();
     });
@@ -175,7 +177,7 @@ function describeExpiredSelectionCase(run: LiveRun, selection: () => Promise<Sel
       assert.equal(refused.status, 403, refused.body);
       assert.equal(sessionCookiesIn(refused).length, 1, 'The refusal did not carry the refreshed session cookie.');
       assert.equal(session.csrfToken, visit.csrfToken);
-      assert.equal(session.mfaCompleted, run.settings.mfaPolicy === 'required');
+      assert.equal(session.mfaCompleted, false);
       assert.equal(session.organizationId, organizationB.id);
       await visit.page.context().close();
     });

@@ -1,4 +1,3 @@
-import { hasRole } from './customer-roles.ts';
 import { invitationsOf, membersOf } from './directory-reads.ts';
 import type {
   AssignableRole,
@@ -22,7 +21,7 @@ interface MemberEntry {
 export interface MemberOverview {
   readonly organizationId: string;
   readonly members: readonly MemberEntry[];
-  // The active memberships with User, each counted once.
+  // The active memberships with product access, each counted once. The name stays for existing callers.
   readonly activeUserSeats: number;
 }
 
@@ -72,9 +71,9 @@ function userSeatsOf(members: readonly OrganizationMember[]): number {
   return members.filter(holdsUserSeat).length;
 }
 
-// A seat is an active membership with User. Each membership counts once, also with Admin or Super Admin.
+// Count each active membership with product access once, including an Admin-only membership.
 function holdsUserSeat(member: OrganizationMember): boolean {
-  return member.status === 'active' && hasRole(member.grants, 'user');
+  return member.status === 'active' && member.grants.some((grant) => grant.permissions.includes('product:access'));
 }
 
 function memberEntry(member: OrganizationMember): MemberEntry {

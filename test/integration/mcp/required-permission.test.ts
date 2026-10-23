@@ -12,7 +12,7 @@ import { alice, allowed, callReport, contextFor, identityFor, resourceUrl } from
 
 const resourceMetadataUrl = 'https://thermus.example/.well-known/oauth-protected-resource/mcp';
 const userGrant: RoleGrant = { role: 'user', permissions: ['product:access'] };
-const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
+const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
 const memberGrant: RoleGrant = { role: 'member', permissions: [] };
 const signupGuidance = 'Open https://thermus.example/signup to check access, then reauthorize the MCP client for the intended workspace.';
 
@@ -41,7 +41,7 @@ function serveWith(t: TestContext, decision: ConfiguredAccess, options: Pick<Mcp
 
 describe('MCPServer required permission', () => {
   test('Given product:access as the required permission and a context with the User grant, when a client calls a tool, then the tool gets that context', { timeout: 5_000 }, async (t) => {
-    const context = contextWith(userGrant, adminGrant);
+    const context = contextWith(userGrant, userManagerGrant);
     const { server, tools } = serveWith(t, allowed(context), { requiredPermission: 'product:access', accessDeniedDescription: signupGuidance });
 
     const report = await toolJson<ContextReport>(await server.fetch(callReport(t, 'alice-token')));
@@ -51,7 +51,7 @@ describe('MCPServer required permission', () => {
   });
 
   for (const { label, grants } of [
-    { label: 'only an Admin grant', grants: [adminGrant] },
+    { label: 'only a synthetic user-manager grant', grants: [userManagerGrant] },
     { label: 'only the default role', grants: [memberGrant] },
     { label: 'no grant', grants: [] },
   ]) {
@@ -101,7 +101,7 @@ describe('MCPServer required permission', () => {
     assert.deepEqual(reporter.reports, []);
   });
 
-  for (const decision of [{ allowed: false, reason: 'membership-inactive' } as const, allowed(contextWith(adminGrant))]) {
+  for (const decision of [{ allowed: false, reason: 'membership-inactive' } as const, allowed(contextWith(userManagerGrant))]) {
     test(`Given a custom access description and ${decision.allowed ? 'a missing required permission' : 'an access denial'}, when a client calls a tool, then it gets that description in the same OAuth denial before MCP work`, async (t) => {
       const dispatchSpy = t.mock.method(PerRequestHTTPServerTransport.prototype, 'handleMessage');
       const { server, tools, reporter } = serveWith(t, decision, { requiredPermission: 'product:access', accessDeniedDescription: signupGuidance });

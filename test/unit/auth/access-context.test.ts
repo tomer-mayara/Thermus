@@ -10,8 +10,9 @@ import {
 
 const productAccess = 'product:access';
 const userGrant: RoleGrant = { role: 'user', permissions: [productAccess] };
-const adminGrant: RoleGrant = { role: 'admin', permissions: ['user-grants:manage'] };
-const superAdminGrant: RoleGrant = { role: 'super-admin', permissions: ['admin-grants:manage', 'billing:manage'] };
+// Synthetic roles test explicit permission sets without representing the customer role catalog.
+const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
+const accountManagerGrant: RoleGrant = { role: 'test-account-manager', permissions: ['admin-grants:manage', 'billing:manage'] };
 const member: AuthenticatedUser = { authority: 'https://auth.thermus.example', subject: 'user-1', selectedOrganizationId: 'org-1' };
 
 function memberContext(grants: readonly RoleGrant[]) {
@@ -29,8 +30,8 @@ function deniedReason(check: () => void): string | undefined {
 }
 
 describe('Request context permissions', () => {
-  test('Given independent User and Admin grants, when permissions are checked, then each grant contributes its explicit permissions', () => {
-    const context = memberContext([userGrant, adminGrant]);
+  test('Given a User grant and a synthetic user-manager grant, when permissions are checked, then each grant contributes its explicit permissions', () => {
+    const context = memberContext([userGrant, userManagerGrant]);
 
     assert.equal(deniedReason(() => requirePermission(context, productAccess)), undefined);
     assert.equal(deniedReason(() => requirePermission(context, 'user-grants:manage')), undefined);
@@ -38,19 +39,19 @@ describe('Request context permissions', () => {
     assert.deepEqual(context.permissions, [productAccess, 'user-grants:manage']);
   });
 
-  test('Given a Super Admin grant alone, when product access is checked, then it is denied because no role inherits another role\'s permissions', () => {
-    const context = memberContext([superAdminGrant]);
+  test('Given a synthetic account-manager grant alone, when product access is checked, then it is denied because the context adds no permission beyond the supplied grants', () => {
+    const context = memberContext([accountManagerGrant]);
 
     assert.equal(deniedReason(() => requirePermission(context, productAccess)), 'permission-required');
     assert.equal(deniedReason(() => requirePermission(context, 'user-grants:manage')), 'permission-required');
     assert.equal(deniedReason(() => requirePermission(context, 'billing:manage')), undefined);
   });
 
-  test('Given Super Admin and User grants in either order, when the context is created, then it keeps every grant and the same complete permission set', () => {
-    const first = memberContext([superAdminGrant, userGrant]);
-    const second = memberContext([userGrant, superAdminGrant]);
+  test('Given synthetic account-manager and User grants in either order, when the context is created, then it keeps every grant and the same complete permission set', () => {
+    const first = memberContext([accountManagerGrant, userGrant]);
+    const second = memberContext([userGrant, accountManagerGrant]);
 
-    assert.deepEqual(first.grants.map(({ role }) => role), ['super-admin', 'user']);
+    assert.deepEqual(first.grants.map(({ role }) => role), ['test-account-manager', 'user']);
     assert.deepEqual([...first.permissions].sort(), [...second.permissions].sort());
     assert.deepEqual([...first.permissions].sort(), ['admin-grants:manage', 'billing:manage', productAccess]);
     for (const permission of first.permissions) {
@@ -73,7 +74,7 @@ describe('Request context permissions', () => {
 
   test('Given a denied permission check, when the error reaches a client, then its message is a safe generic text', () => {
     assert.throws(
-      () => requirePermission(memberContext([adminGrant]), productAccess),
+      () => requirePermission(memberContext([userManagerGrant]), productAccess),
       { name: 'AccessDeniedError', message: 'Access denied', reason: 'permission-required' },
     );
   });
@@ -98,7 +99,7 @@ describe('Request context records', () => {
 
     user.subject = 'user-2';
     permissions.push('billing:manage');
-    grants.push({ role: 'admin', permissions: ['user-grants:manage'] });
+    grants.push({ role: 'test-user-manager', permissions: ['user-grants:manage'] });
 
     assert.deepEqual(context, {
       user: member,

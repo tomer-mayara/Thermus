@@ -10,12 +10,12 @@ const organizationId = 'org_SLICE';
 const user = { id: 'user_ADMIN', email: 'admin@thermus.ai', firstName: 'Admin' };
 
 for (const method of ['Password', 'GoogleOAuth']) {
-  test(`Given the slice with unproven MFA, Required provider settings, and an existing User, Admin, and Super Admin membership, when the user signs in with ${method}, then product access works, the session has no MFA evidence, and administration remains refused`, async (t) => {
+  test(`Given the slice and an existing Admin membership, when the provider completes ${method} sign-in, then product and administration access work without MFA evidence and the retired grant route remains unavailable`, async (t) => {
     const world = await WorkOSFake.start(t, hostedRootConfig.publicBaseUrl, [organizationId]);
     world.authenticationMethod = method;
     world.users = [user];
-    world.memberships = [{ userId: user.id, organizationId, roles: ['user', 'admin', 'super-admin'] }];
-    const app = await composeWorkSliceApplication({ config: hostedRootConfig, connection: world.connection('required'), environment: {
+    world.memberships = [{ userId: user.id, organizationId, roles: ['admin'] }];
+    const app = await composeWorkSliceApplication({ config: hostedRootConfig, connection: world.connection(), environment: {
       THERMUS_SLICE_ORGANIZATION_ID: organizationId, AD_RULES_FILE: trustedAdRulesFile, LIGHTPANDA_BIN: '/test/lightpanda',
     } }, { info: () => {}, error: () => {} });
     t.after(() => app.close());
@@ -26,9 +26,8 @@ for (const method of ['Password', 'GoogleOAuth']) {
     assert.equal(JSON.parse(session.body).mfaCompleted, false);
     assert.equal(access.status, 200);
     for (const path of ['members', 'invitations', 'billing']) {
-      const denied = await browser.open(path);
-      assert.equal(denied.status, 403, path);
-      assert.match(denied.body, /Administration needs a sign-in that completed multi-factor authentication/);
+      const allowed = await browser.open(path);
+      assert.equal(allowed.status, 200, path);
     }
     const before = world.memberships;
     const deniedChange = await browser.post('members/grants', {
