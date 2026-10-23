@@ -35,6 +35,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
+| Logging PostgreSQL | `npm run test:logging:postgres` | Settings acceptance, hosted storage-failure acceptance, and settings integration `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
@@ -286,6 +287,10 @@ changed source affects their behavior:
 - `npm run test:hosted-live` for source that affects hosted authentication
   or WorkOS organization reads and changes, when the staging settings are
   available. If they are unavailable, record that the gate did not run.
+- `npm run test:logging:postgres` for the private logging settings store,
+  SQL runtime, or its hosted configuration and lifetime. This separate gate
+  exercises real PostgreSQL; ordinary test globs do not select its `.runtime.ts`
+  files. Docker image builds do not start nested PostgreSQL containers.
 
 The ordinary full suite includes the offline Better Auth interface proofs.
 No separate whole interface run is needed after `npm test` passes.

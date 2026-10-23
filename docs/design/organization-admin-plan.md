@@ -769,13 +769,13 @@ Update deployment/pause/quota/reconnect/recovery runbooks during implementation.
 ### Owner setup for Supabase — Slice 2
 
 Owner means the Thermus deployment operator with Supabase/Render access. This is
-platform setup; customer Admins use Logging for Collector settings. These variables
-are a **planned S2-01 runtime contract**, absent from current code. Add validation/`.env.example`
-placeholders before rollout. Missing values disable Slice 2 storage/export;
+platform setup; customer Admins use Logging for Collector settings. S2-01a implements these server variables with validation and `.env.example`
+placeholders. See the [implementation](../implementation/admin-s2-01a.md) and
+[database owner runbook](../implementation/admin-s2-01a-database-setup.md). Missing values disable Slice 2 storage/export;
 preserve MCP and already-admitted portal product access under the outage rule
 above. Slice 1 needs no database setup.
 
-| Planned variable | Server runtime value |
+| Variable | Server runtime value |
 |---|---|
 | `DATABASE_URL` | PostgreSQL URI for the selected project's restricted runtime role. |
 | `LOGGING_DESTINATION_ENCRYPTION_KEY` | Independent cryptographically random 32 bytes, encoded as base64; stable across deploys and backed up outside the database. |
@@ -790,23 +790,24 @@ Plain `pg` SQL needs none of the Supabase [publishable/secret or legacy
    and keep added costs at $0; create/transfer/upgrade nothing. Connector OAuth is
    optional for Codex inspection, separate from PostgreSQL authentication; owner
    verification can supply the needed facts while connector access is denied.
-2. The implementer then prepares reviewed S2-01 setup. Apply its scoped migrations
-   and [restricted runtime `LOGIN` role](https://supabase.com/docs/guides/database/postgres/roles).
-   Proposed names are `thermus_app` and private schema `thermus_admin`; check them
-   against the existing database. Give the role its own password and only needed
+2. The implementer then prepares reviewed S2-01 setup. Apply the reviewed [scoped migration](../../sql/migrations/20261023211956_logging_destination_settings.sql).
+   The selected runtime role is `thermus_logging` and the private schema is
+   `thermus_admin`; check that both names are unused in the existing database.
+   The transaction fails on collisions and creates the role with `NOLOGIN`.
+   Provision its own password securely, then enable `LOGIN`; give it only needed
    rights. Keep privileged owner/`postgres` credentials for setup, never the app;
    leave existing shared-project data untouched.
 3. In [Connect → Session pooler](https://supabase.com/docs/guides/database/connecting-to-postgres),
    copy and recheck the selected project's details at rollout. The authenticated
    view showed host `aws-1-us-west-2.pooler.supabase.com`, port `5432`, database
    `postgres`, and free IPv4-proxied session pooling. No connection was tested;
-   the direct IPv4 add-on is not needed. For the future restricted role, use
-   `thermus_app.rnqktgtgrvvqptbaosth` and its URL-encoded role password. The supplied
+   the direct IPv4 add-on is not needed. For the restricted role, use
+   `thermus_logging.rnqktgtgrvvqptbaosth` and its URL-encoded role password. The supplied
    HTTPS API URL is not the DB URI. Require certificate
    and hostname verification: use default trust when valid, or the
    [official CA for that endpoint](https://supabase.com/docs/guides/platform/ssl-enforcement)
-   if needed. Keep SSL query parameters out of `DATABASE_URL`. S2-01 explicitly
-   configures verified `pg` TLS and rejects all conflicting URL SSL options,
+   if needed. Keep all query parameters and fragments out of `DATABASE_URL`. S2-01a explicitly
+   configures verified `pg` TLS and rejects URL options,
    including `ssl`; examples are `sslmode`, `sslrootcert`, `sslcert`, and `sslkey`,
    which can [replace its SSL configuration](https://node-postgres.com/features/ssl).
 4. Generate the independent key locally, for example with `openssl rand -base64 32`.
@@ -1441,7 +1442,8 @@ The [customer logging rules](#customer-logging--slice-2), [storage
 rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supabase--slice-2)
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
-another slice names a group. No Slice 2 implementation or verification is claimed here.
+another slice names a group. The S2-01a implementation record below states its
+completed scope and verification limits; the remaining tickets stay planned.
 
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
@@ -1476,6 +1478,12 @@ documents, and manual rollout proofs need no tests of file text or prose.
 
 #### S2-01a — Durable private settings store and bounded runtime
 
+**Implementation record.** S2-01a adds the server store contract, plain `pg`
+adapter, bounded runtime, hosted configuration/lifecycle integration, and reviewed
+scoped schema/role setup. See [scope and verification limits](../implementation/admin-s2-01a.md).
+S2-01b and later Slice 2 behavior remains planned. Actual Supabase setup and
+TLS/grant/backup/restore/$0 proof remain S2-04 owner gates.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -1491,11 +1499,12 @@ Scenario: Keep product access during storage failure
   And late database work remains bounded and is disposed
 ```
 
-**Gap / expected red.** There is no private SQL settings store or runtime database
-configuration. The new persistence and bounded-storage cases should fail on that gap.
-Existing MCP operation, WorkOS access, and shutdown behavior are passing characterization.
-These are planned cases, not observed test results. Store acceptance uses the public
-contract; browser Save acceptance arrives in 01b.
+**Initial gap / expected red.** Before S2-01a, there was no private SQL settings
+store or runtime database configuration. The acceptance and focused tests were
+written against that gap. Existing MCP, WorkOS access, and shutdown behavior
+provide characterization. The implementation record above identifies the current
+scope; its review evidence records observed checks. Store acceptance uses the
+public contract; browser Save acceptance arrives in 01b.
 
 **Ordered TDD steps:**
 
@@ -1509,7 +1518,8 @@ contract; browser Save acceptance arrives in 01b.
 2. Red: interface cases specify tenant-scoped read and atomic expected-revision Save,
    including absence, concurrent first saves, stale writes, and disable→enable. The
    destination owner supplies semantic no-op decisions; the store checks revision atomically.
-   Green: implement plain `pg` SQL with short transactions and one revision per actual change.
+   Green: implement plain `pg` SQL with one atomic statement per Save and one
+   revision per actual change.
    Refactor to a portable narrow contract; no Supabase SDK, ORM, general repository, or second
    adapter. Store/portal contracts expose no WorkOS or Supabase SDK types. Domain credential
    decisions and encryption belong to 01b; the store persists their opaque value.
@@ -1533,9 +1543,10 @@ contract; browser Save acceptance arrives in 01b.
 [`hosted-workos-application.ts`](../../src/app/hosted-workos-application.ts) and
 [`application.ts`](../../src/app/application.ts); configuration starts at
 [`deployment-config.ts`](../../src/runtime/config/deployment-config.ts). `src/index.ts` owns
-the existing shutdown deadline. The destination settings contract, SQL adapter, and runtime
-settings reader are proposed source owners; confirm their smallest package homes before
-implementation. Start from `test/unit/config/deployment-config.test.ts`,
+the existing shutdown deadline. The destination settings contract, SQL adapter, and bounded
+runtime now live in `src/logging/`; the settings reader is
+`src/runtime/config/logging-storage-config.ts`, composed by `src/app/logging-storage.ts`.
+The initial characterization anchors are `test/unit/config/deployment-config.test.ts`,
 `test/unit/application-lifecycle.test.ts`, and
 `test/acceptance/mcp/hosted-process-shutdown.test.ts` for characterization. Add focused
 store contract cases under `test/interface/`, real SQL collaboration under

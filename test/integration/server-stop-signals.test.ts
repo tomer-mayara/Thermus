@@ -9,7 +9,7 @@ import { serve, serveApplication } from '../../src/index.ts';
 import { MCPServer } from '../../src/interfaces/mcp/mcp-server.ts';
 import { trustedAdRulesFile } from '../support/fixtures/ad-rules.ts';
 import { dataDirectory } from '../support/isolation/data-directory.ts';
-import { hostedFetchSettings, hostedStartupLine, workOSSettings } from '../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, hostedStorageUnavailableLine, workOSSettings } from '../support/fixtures/hosted-placeholder.ts';
 
 const stopSignals = ['SIGINT', 'SIGTERM'] as const;
 const hostedEnvironment = { DEPLOYMENT: 'hosted', PUBLIC_BASE_URL: 'https://thermus.example', LISTEN_HOST: '127.0.0.1', LISTEN_PORT: '0', ...hostedFetchSettings, ...workOSSettings };
@@ -57,6 +57,7 @@ for (const signal of stopSignals) {
 
     assert.deepEqual(record.lines.map(withoutPort), [
       { message: hostedStartupLine, signalsWithHandler: [] },
+      { message: `ERROR ${hostedStorageUnavailableLine}`, signalsWithHandler: [] },
       { message: 'Listening on http://127.0.0.1:<port>', signalsWithHandler: ['SIGINT', 'SIGTERM'] },
       { message: `Stopping after ${signal}`, signalsWithHandler: [] },
     ]);
@@ -106,7 +107,10 @@ test('Given a listen port that another server uses, when the serve sequence star
 
   await assert.rejects(serve({ ...hostedEnvironment, LISTEN_PORT: String(port) }, record.logger, record.processSignals), { code: 'EADDRINUSE' });
 
-  assert.deepEqual(record.lines, [{ message: hostedStartupLine, signalsWithHandler: [] }]);
+  assert.deepEqual(record.lines, [
+    { message: hostedStartupLine, signalsWithHandler: [] },
+    { message: `ERROR ${hostedStorageUnavailableLine}`, signalsWithHandler: [] },
+  ]);
   assert.deepEqual(record.signalsWithHandler(), []);
 });
 

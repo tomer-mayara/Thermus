@@ -1,3 +1,4 @@
+import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
 import {
@@ -32,6 +33,7 @@ export interface WorkOSConnection {
 // operation; a development composition can supply another request-scoped tool server.
 export interface WorkOSApplicationParts {
   readonly logger: ApplicationLogger;
+  readonly loggingStorage?: HostedLoggingStorage;
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
@@ -54,7 +56,12 @@ export async function openWorkOSApplication(config: RouteConfig, logger: Applica
   await assertHostedRenderer(environment.LIGHTPANDA_BIN);
   const { HostedPortal } = await import('./hosted-portal.ts');
   const portal = await HostedPortal.load(['https://api.workos.com', connection.settings.authkitIssuer]);
-  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operations, logger), signup });
+  const { openLoggingStorage } = await import('./logging-storage.ts');
+  await using resources = new AsyncDisposableStack();
+  const loggingStorage = await openLoggingStorage(environment, logger);
+  if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
+  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operations, logger), signup, loggingStorage });
+  resources.move();
   return portal.withApplication(application);
 }
 
@@ -87,7 +94,7 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     billing,
     operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
-  });
+  }, parts.loggingStorage);
 }
 
 async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {

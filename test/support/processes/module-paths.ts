@@ -53,3 +53,6 @@ export const hostedImageIdentity = containerModule('hosted-image-identity');
 // The debug command runs directly from source; no build copies the script.
 export const fetchPublicScriptEntry = fileURLToPath(siblingModule('fetch-public-script-entry'));
 export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.ts', repositoryRoot));
+
+// The scoped owner setup used by the disposable PostgreSQL settings site.
+export const loggingSettingsMigration = fileURLToPath(new URL('sql/migrations/20261023211956_logging_destination_settings.sql', repositoryRoot));

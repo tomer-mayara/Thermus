@@ -147,7 +147,7 @@ export function accountChangeRecorder(logger: ApplicationLogger): ChangeRecorder
   return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 
-export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts): Application {
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void> }): Application {
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
     session: parts.session,
@@ -165,7 +165,11 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     return handle(new Request(request, { signal }));
   }, { close: () => {
     shutdown.abort(new DOMException('The hosted application is shutting down', 'AbortError'));
-    return parts.mcp.close();
+    const closing = [(async () => parts.mcp.close())(), (async () => loggingStorage?.close())()];
+    return Promise.allSettled(closing).then((results) => {
+      const failures = results.filter((result) => result.status === 'rejected').map((result) => result.reason);
+      if (failures.length > 0) throw new AggregateError(failures, 'Hosted application cleanup failed.');
+    });
   } });
 }
 

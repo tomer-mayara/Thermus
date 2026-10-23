@@ -312,28 +312,28 @@ dependency_graph:
   file_guards: keep # the eslint import rules in .habit-hooks continue to apply
   known_cycles: []
   allowed_external_imports:
-    # Observed per component on 2026-10-21; no inherited parent allowances.
+    # Observed per component; logging additions checked on 2026-10-23. No inherited parent allowances.
     workos: [ "@workos-inc/node", jose ]
     web: [ linkedom, micromark, micromark-extension-gfm ]
     better-auth: [ "@better-auth/mcp", better-auth ]
     config: [ "@modelcontextprotocol/server" ]
     app: [ "@workos-inc/node", jose, linkedom ]
     html-processing: [ adblock-rs, agent-input-sanitizer, css-select, css-tree, defuddle, htmlparser2, linkedom, parse5, parse5-htmlparser2-tree-adapter ]
-    logging: [ "@opentelemetry/api-logs" ]
+    logging: [ "@opentelemetry/api-logs", pg ]
     mcp: [ "@modelcontextprotocol/server" ]
     search-engine: [ css-select, htmlparser2 ]
     user-portal: [ vite ]
   allowed_node_builtins:
-    # Observed per component on 2026-10-21; no inherited parent allowances.
+    # Observed per component; logging/config additions checked on 2026-10-23. No inherited parent allowances.
     workos: [ node:crypto ]
     web: [ node:crypto ]
     better-auth: [ node:crypto, node:fs, node:path, node:sqlite ]
     cli: [ node:util ]
-    config: [ node:fs, node:path ]
+    config: [ node:crypto, node:fs, node:fs/promises, node:path ]
     app: [ node:child_process, node:fs/promises, node:path, node:readline, node:stream, node:url ]
     html-processing: [ node:crypto ]
     http: [ node:events, node:http, node:net ]
-    logging: [ node:path, node:stream, node:url ]
+    logging: [ node:crypto, node:path, node:stream, node:url ]
     mcp: [ node:crypto ]
     page-fetch: [ node:os ]
     search: [ node:os ]

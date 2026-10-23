@@ -61,6 +61,7 @@ flowchart TB
     hosted_portal["Container: user portal<br/>Browser JavaScript / HTML / CSS<br/>Connection instructions and account UI"]
     hosted_server["Container: Thermus server<br/>Node.js / TypeScript<br/>MCP tools, account routes, authentication"]
     hosted_renderer["Container: renderer child<br/>Lightpanda<br/>Renders one public page per fetch"]
+    hosted_settings[("Container: optional settings datastore<br/>PostgreSQL / private schema<br/>Tenant destination settings and revision")]
   end
   hosted_workos["External system: WorkOS / AuthKit<br/>Identity and organization services"]
   hosted_public["External systems: public websites<br/>Includes Brave HTML search"]
@@ -69,6 +70,7 @@ flowchart TB
   hosted_portal -->|HTTP account routes| hosted_server
   hosted_server -->|serves portal assets over HTTP| hosted_portal
   hosted_server -->|SDK HTTPS / JWT key set| hosted_workos
+  hosted_server -->|plain pg / verified TLS when configured| hosted_settings
   hosted_server -->|execFile / stdout JSON| hosted_renderer
   hosted_renderer -->|HTTP / HTTPS page requests| hosted_public
 ```
@@ -119,6 +121,7 @@ roots, responsibilities, and public contracts.
 | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
 | Renderer process | External Lightpanda binary, controlled by `website-fetcher`; no new source owner |
 | Local installation datastore | Opened and owned by `better-auth`; no new source owner |
+| Optional hosted settings datastore | `logging` owns SQL access; `app` owns its runtime lifetime; no new source owner |
 
 ### Selected C4 components: tool processing in the Node server
 
@@ -231,6 +234,40 @@ form destinations. The portal uses a supplied current active-organization name
 read for workspace display; an absent or blank name returns unavailable rather
 than a fallback identity. Profile data does not grant access.
 
+### Selected C4 components: hosted settings storage in the Node server
+
+Scope: one hosted Node server container. This optional foundation has no browser
+Save route or customer export caller. The PostgreSQL datastore is a supporting
+Level 2 container; WorkOS remains the authority for identity and organizations.
+
+```mermaid
+flowchart TB
+  subgraph storage_server["Container: Thermus Node server · hosted"]
+    storage_app["Component: app<br/>Open optional settings runtime<br/>Own shutdown / TypeScript"]
+    storage_config["Component: config<br/>Validate URI, key and optional CA<br/>TypeScript / Node crypto and filesystem"]
+    storage_logging["Component: logging<br/>Tenant settings, atomic revision Save<br/>Bound SQL work / TypeScript and pg"]
+  end
+  storage_data[("Container: settings datastore<br/>PostgreSQL private schema<br/>Destination settings and opaque credential")]
+  storage_app -->|reads startup settings| storage_config
+  storage_app ==>|constructs and closes optional runtime| storage_logging
+  storage_logging -->|parameterized SQL / verified TLS| storage_data
+```
+
+[Logging storage composition](../src/app/logging-storage.ts) returns unavailable
+when settings are absent or invalid. [Config](../src/runtime/config/logging-storage-config.ts)
+validates the PostgreSQL URI, independent 32-byte base64 key and optional PEM CA
+bundle. URI query parameters cannot override TLS or connection options. The
+[SQL adapter](../src/logging/pg-destination-settings-store.ts) uses the
+[neutral settings contract](../src/logging/destination-settings-store.ts).
+It stores an opaque credential; encryption and destination decisions are not
+implemented here. No provider SDK types enter that contract.
+
+The store selects by tenant ID and compares the expected revision in one SQL
+statement. First-save races and stale writes return conflict. An identical row
+keeps its revision; an actual change gets a new revision. A write whose outcome
+cannot be confirmed returns unconfirmed. The future caller must supply the
+trusted tenant ID and preserve ciphertext for semantic no-op decisions.
+
 ### Selected C4 components: local authentication in the Node server
 
 Scope: one local Node server container. Offline CLI administration belongs to
@@ -297,6 +334,7 @@ flowchart TB
   fetching["Search and page providers<br/>search-engine · website-fetcher"]
   external_web(["Lightpanda → public web / Brave HTML"])
   runtime["Composition and runtime<br/>app · config · http · logging"]
+  settings_data[("Optional hosted PostgreSQL<br/>Destination settings")]
   clients --> interfaces
   interfaces -->|supplied account roles| accounts
   accounts -->|hosted selection| hosted
@@ -308,6 +346,7 @@ flowchart TB
   tools --> fetching
   fetching --> external_web
   runtime -.->|construct, serve, record, close| interfaces
+  runtime -->|logging settings SQL when configured| settings_data
 ```
 
 App constructs the collaborators and selects one authentication edition. The
@@ -321,7 +360,9 @@ Within the provider group, the Brave search engine calls the supplied website
 fetcher. Both search and page fetch reach external pages through Lightpanda;
 search uses Brave HTML rather than a separate external API. Within the runtime
 group, app owns composition and lifetimes, config validates settings, HTTP serves
-the composed handler, and logging receives supplied record/report sinks.
+the composed handler, and logging receives supplied record/report sinks. Logging
+also owns the optional hosted settings store and bounded SQL runtime. No tool or
+browser route calls that store in this foundation.
 
 An **import dependency** points from an importer to the component whose module
 it imports. The rules count runtime and whole-statement type-only imports
@@ -613,20 +654,28 @@ flowchart TB
     deploy_edge -->|HTTP forwarding to :8080| deploy_hosted_node
     deploy_hosted_node -->|execFile / stdout JSON| deploy_hosted_child
   end
+  deploy_settings[("Optional managed PostgreSQL<br/>Private thermus_admin schema<br/>Selected Supabase target; rollout unverified")]
+  deploy_hosted_node -->|pg / verified TLS when configured| deploy_settings
   deploy_workos["External system: WorkOS / AuthKit<br/>HTTPS identity / organization services"]
   deploy_public["External systems: public websites<br/>HTTP / HTTPS pages and Brave HTML"]
   deploy_hosted_node -->|HTTPS SDK / key set| deploy_workos
-  deploy_hosted_child -->|HTTP / HTTPS| deploy_public
-  deploy_local_child -->|HTTP / HTTPS| deploy_public
+  deploy_hosted_child --> deploy_public
+  deploy_local_child --> deploy_public
 ```
+
+Both renderer children use HTTP or HTTPS to reach public websites and Brave.
 
 [Dockerfile](../Dockerfile) pins Node and Lightpanda, runs as the `node` user,
 and selects self-hosted operation. [Dockerfile.hosted](../Dockerfile.hosted)
 includes the built portal and trusted rules and selects hosted operation.
 The [recorded Render topology](../docs/implementation/render-hosted-docker-plan.md)
-describes one service/process target with no separate frontend, database,
-Redis, disk, or worker. The record is dated evidence, not current cloud
-verification; current replica count and cloud configuration are unknown here.
+describes the earlier single-service target without a separate frontend, database,
+Redis, disk, or worker. Source now supports an optional external PostgreSQL
+settings datastore. The selected Supabase target and ordered setup are recorded in
+the [organization-admin plan](../docs/design/organization-admin-plan.md#owner-setup-for-supabase--slice-2);
+actual TLS, grants, backup/restore and cost proof remain rollout holds. Neither
+this source map nor that dated record verifies current cloud configuration.
+Current replica count and activated database settings are unknown here.
 Compose publishes only loopback HTTP. A different public address requires the
 HTTPS reverse proxy described by the installation contract; this diagram does
 not invent that infrastructure.
@@ -664,9 +713,9 @@ surface and the narrower file-context restrictions.
 | `html-processing` — [`src/pipelines/html-processing/`](../src/pipelines/html-processing/) | Input/depth limits; ad removal; hidden-content/control sanitation; Brave result projection; Markdown conversion. Transformer subdirectories remain inside one owner. | ProcessHtmlStep and documented [HTML runner](../src/pipelines/html-processing/html-to-markdown-pipeline.ts); documented ad-cleaner construction and depth-limit error. App selects concrete transformations. |
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
-| `logging` — [`src/logging/`](../src/logging/) | Format and emit operator logs through console or OpenTelemetry implementations. | BaseLogger/LogLevel and concrete logger modules selected at composition. |
+| `logging` — [`src/logging/`](../src/logging/) | Format and emit operator logs; own tenant destination settings, atomic revisions, and bounded PostgreSQL work. | BaseLogger/LogLevel and concrete logger modules selected at composition; neutral destination-settings store contract, private pg adapter and SQL runtime. No browser Save or export caller yet. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
-| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules. |
+| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
 ## Behavior and resource ownership
 
@@ -722,8 +771,21 @@ Signup remains false by default. The unchanged historical personal-User bundle
 does not authorize new named creation; marked test documents prove behavior only.
 The approved document versions and hashes use the existing WorkOS creator-record
 fields. WorkOS organization metadata and the deterministic external ID retain
-creation/legal facts without a new application datastore. Google enrollment is an optional explicit composition;
+creation/legal facts independently of the optional logging-settings datastore. Google enrollment is an optional explicit composition;
 production does not supply its onboarding settings.
+
+The hosted [logging runtime](../src/logging/bounded-sql-runtime.ts) bounds active
+and pending work, acquisition, caller duration and PostgreSQL statements. Caller
+timeout does not free unsettled work from accounting. Late clients are destroyed;
+late results cannot complete an expired caller. Idle-pool errors are observed.
+The pool is lazy: configuration does not establish a live SQL connection or prove
+TLS/grants. Missing or failed storage leaves MCP and admitted product access
+independent of SQL. The local edition does not open this pool.
+
+Hosted application close starts MCP cleanup and SQL cleanup together. The SQL
+runtime rejects new work, expires admitted calls and bounds pool closure within
+the existing process shutdown deadline. The settings datastore persists across
+runtime closure; tool content and export queues are not stored here.
 
 ## Design choices and current soft spots
 

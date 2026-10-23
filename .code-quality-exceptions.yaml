@@ -1,0 +1,21 @@
+exceptions:
+  - path: src/app/logging-storage.ts
+    metric: mi
+    bound: 63
+    reason: Optional hosted storage composition keeps validation, safe failure and lazy adapter loading in one small boundary. Splitting its three paths would hide startup failure policy.
+    expires: 2026-12-22
+  - path: src/logging/bounded-sql-runtime.ts
+    metric: mi
+    bound: 41
+    reason: One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership.
+    expires: 2026-12-22
+  - path: src/logging/pg-destination-settings-store.ts
+    metric: mi
+    bound: 54
+    reason: The compact adapter keeps atomic SQL, expected-revision outcomes and row mapping together. Unit mapping and real PostgreSQL acceptance cover separate concerns; splitting SQL constants or mappings would spread the same invariant.
+    expires: 2026-12-22
+  - path: src/runtime/config/logging-storage-config.ts
+    metric: mi
+    bound: 59
+    reason: The settings reader keeps required URI, canonical key and PEM validation with safe variable-only diagnostics. Its input rules need distinct branches and are covered by focused cases; a new validation framework would add complexity.
+    expires: 2026-12-22

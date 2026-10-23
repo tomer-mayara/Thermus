@@ -9,7 +9,7 @@ import { DataDirectoryInUseError, lockDataDirectory } from '../../../src/account
 import { LocalInstallationError } from '../../../src/accounts/providers/better-auth/local-installation.ts';
 import { publicBaseUrl } from '../../support/in-process/better-auth-local.ts';
 import { changeDatabase, dataDirectory, storedInstallationIds } from '../../support/isolation/data-directory.ts';
-import { hostedFetchSettings, hostedStartupLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, hostedStorageUnavailableLine, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { WorkOSSettingsError } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { accountsOf, addAccount, passwordOf, selfHostedConfig, selfHostedServerSettings, withRuntime } from '../../support/in-process/local-runtime.ts';
@@ -194,6 +194,6 @@ describe('Local installation with the real application and provider', () => {
 
     assert.deepEqual([answers.map(({ status }) => status), closes[0] === closes[1]], [[401, 401], true]);
     await Promise.all(closes);
-    assert.deepEqual(logger.lines, [hostedStartupLine]);
+    assert.deepEqual(logger.lines, [hostedStartupLine, `ERROR ${hostedStorageUnavailableLine}`]);
   });
 });

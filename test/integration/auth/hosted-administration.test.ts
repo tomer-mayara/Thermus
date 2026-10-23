@@ -8,7 +8,7 @@ import { recordLines, rolesOf, shownPage, submitOnPage } from '../../support/dsl
 import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { administrationMembers, userOf } from '../../support/fixtures/hosted-members.ts';
-import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, hostedStorageUnavailableLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { openOrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 
 function open(t: TestContext, logger = new OperatorLogSpy()) {
@@ -118,6 +118,6 @@ describe('Hosted invitation management with the real composition, routes, servic
       assert.deepEqual(answer.cookies, []);
       assert.doesNotMatch(answer.body, /<form/);
     }
-    assert.deepEqual(logger.lines, [`INFO ${hostedStartupLine}`]);
+    assert.deepEqual(logger.lines, [`INFO ${hostedStartupLine}`, `ERROR ${hostedStorageUnavailableLine}`]);
   });
 });
