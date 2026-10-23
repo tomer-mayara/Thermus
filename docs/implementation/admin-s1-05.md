@@ -1,9 +1,53 @@
 # S1-05 implementation record
-Current validation: all seven Slice 1 branches are rebased onto the shared [metrics repair](ast-metrics-function-repair.md), [PR #230](https://github.com/tomer-mayara/Thermus/pull/230), above main `9b6f7cac13aba6084f771413714f6bbfba11dd7a`. The dated results below describe the earlier candidates and analyzer. Current SHA-bound checks, retained goals, and blockers are recorded in [PR #229](https://github.com/tomer-mayara/Thermus/pull/229) and each parent PR. Earlier passes do not certify a rebased commit. Each candidate needs its own compatible evidence.
+Current validation: all seven Slice 1 branches are rebased onto the shared
+[metrics repair](ast-metrics-function-repair.md),
+[PR #230](https://github.com/tomer-mayara/Thermus/pull/230), above trusted main
+`53da7ac40149ed8e5bc67fa208d8701474fff284`. The dated results below describe
+earlier candidates and the earlier analyzer. Current candidate pins,
+SHA-bound checks, retained goals, and blockers are recorded in
+[PR #229](https://github.com/tomer-mayara/Thermus/pull/229) and
+[parent PR #226](https://github.com/tomer-mayara/Thermus/pull/226), with each
+parent PR's evidence. Earlier passes do not certify a rebased commit. Each
+candidate needs its own compatible evidence.
 
 The repair restores complete native function inventory, exact metric/coverage source identity, and base-scoped Review. Small parent changes keep Members HTML/status/headers and test assertions intact. The owner chose to retain justified existing low-MI file goals and fix tool failures and new regressions. No threshold, baseline, or snooze was relaxed. Human architecture approval and the provider, legal, manual UI, and cutover holds remain separate from local quality validation.
 
 The parent registry now shows the ordered Members overview calls and the local gates in callback landing. Those corrections describe existing behavior. This ticket changes no production source or registry diagram relative to its parent.
+
+The hosted image client cancellation correction is inherited from the S1-04b
+parent. S1-05 adds no further image-driver change. The dated diagnostic below
+preserves the earlier failure and local probe limits; it does not certify the
+current candidate.
+
+## Client cancellation diagnostic (23 October 2026)
+
+The first image run at `ce012a941efc6b21779362020c67f378e251f567` waited for
+`cancelled`, but the renderer ended at its 15-second timeout and reported
+`fetch_failed`. An unchanged S1-03b retry passed 7/7. Those logs do not show
+when the client aborted or whether its pending call rejected.
+
+A bounded local HTTP diagnostic on Node 24.20.0 reproduced a client lifetime
+failure. Under forced garbage collection, the existing temporary Request pattern
+lost cancellation in every trial. Passing the same signal directly to `fetch`,
+or keeping the input Request alive, produced `AbortError` and an early socket
+close. A follow-up observed the same split after the client received response
+headers and started reading the delayed body. Full scripts, scalar timings, and
+outcomes are retained locally under `ast-report/cancellation-diagnosis/`.
+This proves a failure mechanism in the client pattern. It does not prove that
+garbage collection caused the original image failure or that the server path
+has no defect.
+
+The image test driver now passes `{ signal }` directly to `fetch`. Its first
+intentional cancellation retains the settled value as `unknown` and requires
+an Error named `AbortError`; a resolved tool result now fails clearly. Renderer
+settlement, the `cancelled` record, capacity recovery, SIGTERM assertions, and
+the existing timeouts remain in place. This is a test-driver correction with
+no production or shared-helper API change.
+
+Validation of this changed candidate is pending. The manager will select and
+run the required suites and image gate. Earlier image passes do not certify
+this correction. The local diagnostic does not replace that gate or the
+provider, legal, manual UI, cutover, and human-review holds.
 
 ## Earlier implementation and verification record
 
