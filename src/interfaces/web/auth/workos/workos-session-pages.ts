@@ -55,6 +55,10 @@ export function signInNotice(name: 'signInInvalid' | 'signInFailed', loginPath: 
   return withCookies(page(NOTICES[name], [`<p><a href="${escapeHtml(loginPath)}">Sign in again</a></p>`]), cookies);
 }
 
+export function signedInRecovery(selectionPath: string, cookies: CookieEffects): Response {
+  return withCookies(page(NOTICES.requestFailed, [`<p><a href="${escapeHtml(selectionPath)}">Open your workspaces</a></p>`]), cookies);
+}
+
 export function seeOther(location: string, cookies: CookieEffects): Response {
   return withCookies(new Response(null, { status: 303, headers: { Location: location, ...ANSWER_HEADERS } }), cookies);
 }

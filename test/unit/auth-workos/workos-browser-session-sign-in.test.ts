@@ -28,6 +28,19 @@ function callback(query: string, cookieHeader: string | null = signInHeader) {
 }
 
 describe('WorkOSBrowserSession: the start of a sign-in', () => {
+  test('Given no explicit return path, when a native sign-in completes, then its completion has no return path and names only the identity from the code exchange', async () => {
+    const client = new WorkOSSessionClientDouble();
+    const session = browserSession(client);
+    const start = await session.startSignIn({});
+
+    const completion = await session.completeSignIn(callback('code=code-1&state=state-1&organization_id=org_FORGED&email=other@example.com', start.cookies[0]?.split(';')[0] ?? ''));
+
+    assert.equal(completion.status, 'signed-in');
+    if (completion.status !== 'signed-in') assert.fail('the sign-in must complete');
+    assert.equal(completion.returnTo, undefined);
+    assert.deepEqual(completion.user, { authority, subject: ada.id, selectedOrganizationId: 'org_01ACME' });
+  });
+
   test('Given a return path, when a sign-in starts, then WorkOS makes the AuthKit URL with PKCE for the redirect URI and the client ID, and the sign-in cookie holds the state, the verifier, the return path, and an expiry 10 minutes later', async () => {
     const client = new WorkOSSessionClientDouble();
 
@@ -54,14 +67,25 @@ describe('WorkOSBrowserSession: the sign-in callback', () => {
       method: 'authenticateWithCode',
       input: { clientId: settings.clientId, code: 'code-1', codeVerifier: signIn.codeVerifier, session: { sealSession: true, cookiePassword: settings.cookiePassword } },
     }]);
-    if (completion.status !== 'signed-in') assert.fail(`the sign-in was refused: ${completion.reason}`);
+    if (completion.status !== 'signed-in') assert.fail('the sign-in was refused');
     assert.equal(completion.returnTo, '/team/members');
+    assert.deepEqual(completion.user, { authority, subject: ada.id, selectedOrganizationId: 'org_01ACME' });
     assert.equal(completion.cookies.length, 2);
     assert.equal(completion.cookies[0], clearedSignInCookie);
     const session = sessionEnvelopeIn(completion.cookies[1]);
     assert.equal(session?.seal, 'seal-1');
     assert.equal(session?.mfa, false);
     assert.match(session?.csrf ?? '', /^[\w-]{43}$/);
+  });
+
+  test('Given a code exchange without an organization, when callback hints claim one, then the trusted completion remains unselected', async () => {
+    const client = new WorkOSSessionClientDouble();
+    client.exchange = { user: ada, sealedSession: 'seal-1', authenticationMethod: 'Password' };
+
+    const completion = await browserSession(client).completeSignIn(callback(`code=code-1&state=${signIn.state}&organization_id=org_FORGED`));
+
+    if (completion.status !== 'signed-in') assert.fail('the sign-in must complete');
+    assert.deepEqual(completion.user, { authority, subject: ada.id });
   });
 
   test('Given a sign-in with a method other than Password, when the code is exchanged, then the session has no MFA evidence', async () => {

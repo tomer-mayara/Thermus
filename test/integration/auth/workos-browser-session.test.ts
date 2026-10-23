@@ -43,7 +43,7 @@ describe('WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session chec
       { grant: 'authorization_code', client: fakeClientId, secret: fakeApiKey, code: 'code-1' },
     );
     assert.equal(createHash('sha256').update(body.code_verifier ?? '').digest('base64url'), authKitUrl.searchParams.get('code_challenge'));
-    if (completion.status !== 'signed-in') assert.fail(`the sign-in was refused: ${completion.reason}`);
+    if (completion.status !== 'signed-in') assert.fail('the sign-in was refused');
     assert.equal(completion.returnTo, '/team/members');
     const session = signedIn(await world.session.authenticate(cookieHeaderOf(completion.cookies.slice(1))));
     assert.deepEqual(

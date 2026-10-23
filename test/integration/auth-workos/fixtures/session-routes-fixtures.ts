@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import type { CookieEffects } from '../../../../src/accounts/identity/browser-session.ts';
 import type { BrowserSessionControls, BrowserSignInCompletion, BrowserSignInStart, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../../../src/accounts/identity/browser-session-controls.ts';
 import { WorkOSSessionRoutes, type SessionRouteFailure } from '../../../../src/interfaces/web/auth/workos/workos-session-routes.ts';
+import { AccessResolverSpy } from '../../../support/doubles/auth/access-resolver-spy.ts';
 
 export const publicBaseUrl = 'https://thermus.example/team/';
 export const publicOrigin = 'https://thermus.example';
@@ -41,7 +42,7 @@ export class SessionDouble implements BrowserSessionControls {
   readonly calls: SessionCall[] = [];
   state: Answer<ProfiledBrowserSessionState> = signedInState();
   start: Answer<BrowserSignInStart> = { url: authKitUrl, cookies: [signInCookie] };
-  completion: Answer<BrowserSignInCompletion> = { status: 'signed-in', returnTo: '/team/members', cookies: [clearedSignInCookie, sessionCookie] };
+  completion: Answer<BrowserSignInCompletion> = { status: 'signed-in', user: signedInState().user, returnTo: '/team/members', cookies: [clearedSignInCookie, sessionCookie] };
   end: Answer<SessionEnd> = { logoutUrl, cookies: [clearedSessionCookie] };
   token: string | undefined = csrfToken;
 
@@ -49,7 +50,7 @@ export class SessionDouble implements BrowserSessionControls {
     return this.answer('authenticate', cookieHeader, this.state);
   }
 
-  async startSignIn(request: { readonly returnTo: string }): Promise<BrowserSignInStart> {
+  async startSignIn(request: { readonly returnTo?: string }): Promise<BrowserSignInStart> {
     return this.answer('startSignIn', request, this.start);
   }
 
@@ -77,9 +78,9 @@ export class SessionDouble implements BrowserSessionControls {
   }
 }
 
-export function serve(session = new SessionDouble(), base = publicBaseUrl) {
+export function serve(session = new SessionDouble(), base = publicBaseUrl, accessResolver = new AccessResolverSpy()) {
   const failures: SessionRouteFailure[] = [];
-  const routes = new WorkOSSessionRoutes({ session, publicBaseUrl: base, redirectUri, reportFailure: (report) => failures.push(report) });
+  const routes = new WorkOSSessionRoutes({ session, accessResolver, publicBaseUrl: base, redirectUri, reportFailure: (report) => failures.push(report) });
   return { routes, session, failures };
 }
 

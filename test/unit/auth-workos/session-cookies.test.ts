@@ -127,6 +127,13 @@ describe('Sealed cookies of the hosted browser session', () => {
     for (const value of values) assert.equal(cookie.contentOf(`__Host-thermus-session=${value}`), undefined, value);
   });
 
+  test('Given a sign-in with no explicit return destination, when its sealed cookie is read, then the absence is preserved', () => {
+    const cookie = signInCookie(password);
+    const { returnTo: _returnTo, ...withoutReturn } = signIn;
+
+    assert.deepEqual(cookie.contentOf(sentBack(cookie.setCookie(withoutReturn))), withoutReturn);
+  });
+
   test('Given authentic seals of content with another shape, when they are read, then each gives no content', () => {
     const cookie = sessionCookie(password);
     const signInReader = signInCookie(password);

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { WorkOSSessionRoutes } from '../../../src/interfaces/web/auth/workos/workos-session-routes.ts';
+import { AccessResolverSpy } from '../../support/doubles/auth/access-resolver-spy.ts';
 import {
   assertPage,
   assertRedirect,
@@ -12,17 +13,18 @@ import {
   SessionDouble,
   sessionCookie,
   signInCookie,
+  signedInState,
 } from './fixtures/session-routes-fixtures.ts';
 
 describe('WorkOSSessionRoutes: the sign-in', () => {
-  test('Given a browser without a return path, when it opens the sign-in path with GET or HEAD, then the server starts a sign-in that returns to the public base path and sends the browser to AuthKit with the sign-in cookie', async () => {
+  test('Given a browser without a return path, when it opens the sign-in path with GET or HEAD, then the server starts a sign-in without a return destination and sends the browser to AuthKit with the sign-in cookie', async () => {
     for (const method of ['GET', 'HEAD']) {
       const { routes, session } = serve();
 
       const response = await routes.handle(browserRequest('/team/login', { method }));
 
       assertRedirect(response, authKitUrl, [signInCookie]);
-      assert.deepEqual(session.calls, [{ method: 'startSignIn', input: { returnTo: '/team/' } }], method);
+      assert.deepEqual(session.calls, [{ method: 'startSignIn', input: {} }], method);
     }
   });
 
@@ -105,6 +107,7 @@ describe('WorkOSSessionRoutes: the sign-in callback', () => {
     session.completion = { status: 'refused', cookies: [clearedSignInCookie] };
     const routes = new WorkOSSessionRoutes({
       session,
+      accessResolver: new AccessResolverSpy(),
       publicBaseUrl: "https://thermus.example/a&b'c/",
       redirectUri: "https://thermus.example/a&b'c/callback",
       reportFailure: () => assert.fail('a refused callback is no failure'),
@@ -121,7 +124,7 @@ describe('WorkOSSessionRoutes: the sign-in callback', () => {
 
   test('Given a return path in the sealed sign-in that is not a page of this service, when the callback completes, then the browser goes to the public base path instead', async () => {
     const session = new SessionDouble();
-    session.completion = { status: 'signed-in', returnTo: '//evil.example/team/', cookies: [clearedSignInCookie, sessionCookie] };
+    session.completion = { status: 'signed-in', user: signedInState().user, returnTo: '//evil.example/team/', cookies: [clearedSignInCookie, sessionCookie] };
     const { routes } = serve(session);
 
     assertRedirect(await routes.handle(browserRequest('/team/callback?code=code-1&state=state-1')), 'https://thermus.example/team/', [clearedSignInCookie, sessionCookie]);

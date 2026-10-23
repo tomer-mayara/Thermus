@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import type { CookieEffects } from '../../identity/browser-session.ts';
 import { sameSecret, SIGN_IN_MAX_AGE_SECONDS, signInCookie, type SealedCookie, type SessionEnvelope, type SignInEnvelope } from './session-cookies.ts';
-import { isOAuthRefusal, sealedSessionOf, type CodeExchange, type WorkOSSessionClient } from './workos-session-client.ts';
+import { isOAuthRefusal, sealedSessionOf, type CodeExchange, type SessionFacts, type WorkOSSessionClient } from './workos-session-client.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
 
 export interface SignInStart {
@@ -17,7 +17,7 @@ export interface SignInCallback {
 export type SignInRefusal = 'sign-in-missing' | 'sign-in-expired' | 'provider-error' | 'invalid-callback' | 'state-mismatch' | 'code-refused';
 
 export type SignInCompletion =
-  | { readonly status: 'signed-in'; readonly returnTo: string; readonly cookies: CookieEffects }
+  | { readonly status: 'signed-in'; readonly facts: SessionFacts; readonly returnTo?: string; readonly cookies: CookieEffects }
   | { readonly status: 'refused'; readonly reason: SignInRefusal; readonly cookies: CookieEffects };
 
 export interface SignInOnboarding {
@@ -35,7 +35,7 @@ export interface AuthKitSignInOptions {
 interface PendingSignIn {
   readonly code: string;
   readonly codeVerifier: string;
-  readonly returnTo: string;
+  readonly returnTo?: string;
 }
 
 const CSRF_TOKEN_BYTES = 32;
@@ -59,7 +59,7 @@ export class AuthKitSignIn {
     this.signInCookie = signInCookie(options.settings.cookiePassword);
   }
 
-  async start(returnTo: string): Promise<SignInStart> {
+  async start(returnTo?: string): Promise<SignInStart> {
     const { url, state, codeVerifier } = await this.userManagement.getAuthorizationUrlWithPKCE({
       provider: 'authkit',
       redirectUri: this.settings.redirectUri,
@@ -83,7 +83,7 @@ export class AuthKitSignIn {
       // The code exchange does not prove that this session completed MFA.
       mfa: false,
     };
-    return { status: 'signed-in', returnTo: pending.returnTo, cookies: [this.signInCookie.clearCookie(), this.sessionCookie.setCookie(session)] };
+    return { status: 'signed-in', facts: completed, returnTo: pending.returnTo, cookies: [this.signInCookie.clearCookie(), this.sessionCookie.setCookie(session)] };
   }
 
   // The checks before the code exchange: the sign-in of this browser, the answer of AuthKit, and its state.

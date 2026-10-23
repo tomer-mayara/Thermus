@@ -1,5 +1,27 @@
 # Test inventory
 
+## Current S1-04b inventory scope
+
+S1-04b adds default sign-in landing from trusted identity and current access.
+The [implementation record](../implementation/admin-s1-04b.md) records actual
+runs. These offline tests do not prove native invitation role preservation.
+
+- `test/acceptance/auth/hosted-invitation-landing.test.ts` exercises the hosted
+  HTTP callback, current workspace guide access, ambiguous selection, explicit
+  safe returns, and absence of creator/activation writes with the pinned SDK
+  against a local provider fake.
+- Session-cookie and browser-session unit tests check optional sealed destinations,
+  compatibility with old explicit destinations, and trusted identity projection.
+- `test/integration/auth-workos/workos-session-routes-landing.test.ts` checks
+  current access, rejected stale or mismatched selection, ignored query hints,
+  and signed-in recovery with cookie effects after an access-read failure.
+- Existing organization integration cases retain single/multiple/no eligible
+  memberships, refused or failed selection, and isolation of another browser
+  and an existing MCP token. Existing portal cases retain readable legal links.
+- The [native proof matrix](workos-invitation-proof-matrix.md) remains NOT RUN.
+  It requires real WorkOS acceptance, controlled recipients, and race observations.
+  A fake or SDK request assertion cannot close that gate.
+
 ## Current S1-04a inventory scope
 
 S1-04a combines active members and pending invitations on `/members`. The

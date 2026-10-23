@@ -1,4 +1,5 @@
 import type { BrowserSession, CookieEffects, SignedInBrowserSession } from './browser-session.ts';
+import type { AuthenticatedUser } from './access-context.ts';
 
 // Profile values are display data. They do not grant access.
 export interface BrowserProfile {
@@ -21,7 +22,7 @@ export interface BrowserSignInStart {
 }
 
 export type BrowserSignInCompletion =
-  | { readonly status: 'signed-in'; readonly returnTo: string; readonly cookies: CookieEffects }
+  | { readonly status: 'signed-in'; readonly user: AuthenticatedUser; readonly returnTo?: string; readonly cookies: CookieEffects }
   | { readonly status: 'refused'; readonly cookies: CookieEffects };
 
 export interface SessionEnd {
@@ -33,7 +34,7 @@ export interface SessionEnd {
 // Browser routes pass callback input through. The adapter verifies provider state and protects session cookies.
 export interface BrowserSessionControls extends BrowserSession {
   authenticate(cookieHeader: string | null): Promise<ProfiledBrowserSessionState>;
-  startSignIn(request: { readonly returnTo: string }): Promise<BrowserSignInStart>;
+  startSignIn(request: { readonly returnTo?: string }): Promise<BrowserSignInStart>;
   completeSignIn(callback: { readonly query: URLSearchParams; readonly cookieHeader: string | null }): Promise<BrowserSignInCompletion>;
   endSession(cookieHeader: string | null): Promise<SessionEnd>;
   csrfTokenOf(cookieHeader: string | null): string | undefined;

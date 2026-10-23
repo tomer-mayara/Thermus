@@ -1276,22 +1276,29 @@ Scenario: Open a trusted joined organization
   And joining adds no creator agreement, custom activation record, or MCP rebinding
 
 Scenario: Select when joined context is unclear
-  Given an invitation-return callback with multiple eligible memberships
+  Given an AuthKit callback with multiple eligible memberships
+  And no explicit application return destination
   And no validated selected or joined organization context
   When the Thermus landing is resolved
   Then the existing workspace selector opens without guessing an organization
 ```
 
-**Current gap / expected red, not run.** Selected-organization guide behavior
-already works and stays green. Invitation-return landing without validated
-selection/joined context is the new source gap. Ordinary returning sign-in with a
-valid selection/safe return path must not force reselection. Native preservation/race
-cases are unproven provider behavior, not claimed failing source tests.
+**Implementation and evidence.** See the [S1-04b record](../implementation/admin-s1-04b.md)
+for current results and holds. The first executable case reproduced the gap:
+an unselected default sign-in redirected to the root instead of the selector.
+Selected current access and explicit safe return paths stayed green. AuthKit
+does not supply a distinct invitation marker in the callback contract. Keep an
+absent application destination distinct from an explicit one in the sealed
+sign-in state. Apply default landing to either ordinary or invitation sign-in;
+do not guess which flow occurred. An explicit safe destination, including the
+root, keeps its existing behavior and route access checks. Old sealed sign-ins
+with a destination remain compatible. Native preservation/race cases are
+unproven provider behavior, not claimed failing source tests.
 
 **Ordered TDD steps:**
 
 1. Characterize selected-organization landing and safe ordinary return paths.
-   Add the ambiguous invitation-return case; derive landing only from validated
+   Add the ambiguous default-return case; derive landing only from validated
    provider/session context and fresh membership. Ignore forged organization hints.
 2. Drive single/multiple/no-eligible membership and selection refusal/outage
    paths. Reuse the selector and signed-in recovery; preserve unrelated browser
@@ -1306,6 +1313,8 @@ cases are unproven provider behavior, not claimed failing source tests.
    both orders, and acceptance/resend/revoke races. Preserve consumer exact-address
    behavior. Fakes/SDK request tests cannot close this gate; hold if preservation
    is unproven or acceptance can change an active role.
+   The [native proof matrix](../testing/workos-invitation-proof-matrix.md)
+   gives the exact cases, observations, environment holds, and cleanup scope.
 
 **Homes and anchors.** Use [session callback](../../src/interfaces/web/auth/workos/workos-session-routes.ts),
 [organization selection](../../src/interfaces/web/account/account-routes.ts), and

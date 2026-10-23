@@ -74,7 +74,7 @@ async function openSite(t: TestContext) {
     buildServer: tools.buildServer,
     reportFailure: () => {},
   });
-  const browserRoutes = new WorkOSSessionRoutes({ session, publicBaseUrl: hostedConfig.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure });
+  const browserRoutes = new WorkOSSessionRoutes({ session, accessResolver: provider, publicBaseUrl: hostedConfig.publicBaseUrl, redirectUri: settings.redirectUri, reportFailure });
   const application = composeHostedApplication(
     hostedConfig,
     { session, accessResolver: provider, organizations, mcp, browserRoutes },
