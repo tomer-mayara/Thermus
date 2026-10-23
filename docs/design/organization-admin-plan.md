@@ -51,7 +51,8 @@ now retires those grant writes and inferred MFA checks, uses User/Admin, and add
 named creation plus the combined Members page. The ticket records give its
 checks and remaining release holds. The private audit destination store and bounded SQL runtime are implemented in
 S2-01a. The rebased S2-01b candidate adds the Audit logs settings UI and Save. Customer
-audit capture and export delivery remain planned; final candidate gates are pending. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
+audit capture and export delivery remain planned. Current functional and quality
+results are recorded in the [S2-01b implementation record](../implementation/admin-s2-01b.md). Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 include URL origin/path and reason in operator output; Slice 2 must remove that
 content from operator completion records.
 
@@ -1472,8 +1473,8 @@ rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supaba
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
 another slice names a group. The S2-01a and S2-01b implementation records below
-state their implementation scope and verification limits. S2-01b final gates
-are pending after its PR239 rebase; later tickets stay planned.
+state their implementation scope and verification limits. S2-01b functional gates and quality results are recorded after its PR239 rebase;
+later tickets stay planned.
 
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|

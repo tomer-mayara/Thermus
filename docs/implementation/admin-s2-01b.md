@@ -63,10 +63,86 @@ focused selection passed 45 compiled tests and 40 portal tests. Source candidate
 
 The manager inspected desktop (1,200 px) and mobile (390 px) renders. Both passed
 the visual review. These renders use generated HTML only; they do not establish
-HTTP, browser navigation, storage, or Collector behavior. The full gates are
-still running and final metrics are pending. Final SHA-bound architecture links
-and publication await the final prose commit. The runs below describe the
-earlier candidate and do not establish a pass for this rebased candidate.
+HTTP, browser navigation, storage, or Collector behavior.
+
+The complete candidate passed `npm test` (4,301 backend and 49 portal tests),
+typecheck, portal build, 11 local PostgreSQL tests, and 11 self-hosted image tests.
+Hosted offline build groups passed 2,695, 29, 20, 1,051, 119, and 13 tests. The
+Linux AMD64 hosted image passed seven tests. One live System log Axiom interface
+test also passed; it does not prove customer Audit delivery. Coverage collection
+passed 2,695 unit, 29 portal, and 1,051 integration tests. Its provenance verifies
+661 processes and 152 files, not complete coverage of all production behavior.
+
+The first refreshed quality reports were measured at `89abd40e89d08ec83af64501fc83d2bf75a322ee`
+against main `bb19a9887f3e58776278e516cce9e7aa18efee5c`. The PR review artifacts
+bind the same tested source and metric inputs to the final prose-only commit. Full reports are retained
+under `ast-report/s2-01b-239-final/`. The runs below the current quality section
+describe the earlier candidate; they are not reused as current pass evidence.
+
+## Current maintainability and coverage review
+
+The process completed all four stages without a tool failure. Delta reports a
+goal miss: 27 of 28 measured changed production files are below MI 85. Review
+reports a goal miss with eight high, eight medium, and one low finding. CRAP's
+raw command exits 1 for unmeasured functions; it reports a goal miss rather than
+a tool failure. Architecture passed. The local checker accepts the proved bounds
+below. No new exception or threshold change is required by these results.
+
+Each retained low file and its reason follows. Paths are relative to `src/`.
+
+| Changed source | MI | Reason to retain |
+| --- | ---: | --- |
+| `logs/audit/bounded-sql-runtime.ts` | 41.9 | Keep bounded admission, leases, deadlines, and late-settlement cleanup in one runtime owner. |
+| `logs/audit/destination-settings-service.ts` | 43.0 | Keep retention, encryption choice, projection, no-op, and revision rules together. |
+| `interfaces/mcp/fetch-tool-server.ts` | 45.9 | Retain the existing request lifecycle and outcomes; this candidate changes its SystemLog contract. |
+| `interfaces/user-portal/portal.ts` | 47.0 | Only Admin navigation changes; existing access and journey responsibilities stay together. |
+| `interfaces/cli/local-auth-command.ts` | 50.0 | Retain existing command and error handling with the narrow SystemLog role. |
+| `logs/audit/pg-destination-settings-store.ts` | 54.2 | Keep parameterized tenant CAS, row mapping, and bounded SQL composition together. |
+| `logs/system/system-logger.ts` | 54.5 | Retain existing severity, safe failure formatting, and internal caller-location rules. |
+| `app/application.ts` | 54.6 | Keep supplied collaborators and shared cleanup lifetime in one composition boundary. |
+| `logs/audit/destination-credential-codec.ts` | 57.2 | Keep key, nonce, tag, and tenant authenticated data in one compact cryptographic owner. |
+| `interfaces/web/account/logging-routes.ts` | 58.5 | Keep current Admin checks, read/Save dispatch, and safe recovery at one boundary. |
+| `interfaces/web/account/administration-routes.ts` | 59.1 | Add Audit logs navigation without a second member-operation owner. |
+| `runtime/http/fetch-exchange.ts` | 59.5 | Retain existing HTTP exchange and failure behavior with the SystemLog role. |
+| `runtime/config/logging-storage-config.ts` | 60.0 | Keep URI, TLS, and key validation at the startup boundary. |
+| `interfaces/web/account/account-routes.ts` | 60.2 | Add protected dispatch after current access resolution without another authority layer. |
+| `index.ts` | 60.3 | Retain process startup, shutdown deadline, and required disposal under the existing owner. |
+| `app/hosted-workos-application.ts` | 60.3 | Keep provider selection and optional storage composition with its hosted lifetime. |
+| `interfaces/web/account/account-form.ts` | 61.6 | Export the existing exact-field parser; accepted fields and refusals stay unchanged. |
+| `interfaces/web/account/administration-pages.ts` | 64.9 | Extend shared navigation while preserving existing page operations. |
+| `app/fetch-tool.ts` | 67.9 | Retain existing tool composition and SystemLog adaptation. |
+| `runtime/http/server.ts` | 68.5 | Retain listener, cancellation, and drain behavior with the SystemLog contract. |
+| `logs/audit/destination-endpoint.ts` | 69.9 | Use a range table for literal checks; actual-connection egress remains deferred. |
+| `interfaces/web/account/logging-page.ts` | 73.1 | Keep one native form, escaping, and secret absence visible. |
+| `interfaces/web/account/logging-form.ts` | 73.9 | Keep exact fields and distinct refusals together; reuse shared CSRF parsing. |
+| `app/logging-storage.ts` | 75.2 | Keep key, service, and runtime construction at one optional hosted startup boundary. |
+| `logs/system/otel-system-logger.ts` | 76.8 | Retain existing internal OTel mapping; moving the adapter adds no customer path. |
+| `logs/system/console-system-logger.ts` | 79.6 | Retain existing internal console formatting and safe error output. |
+| `interfaces/web/account/members-page-layout.ts` | 83.0 | Share one header and CSP owner across Members and Audit logs. |
+
+AuditLogger scores MI 88.2 and meets the file goal. Four files have no measured
+file MI: `interfaces/web/account/members-style.ts` is CSS text;
+`logs/audit/audit-log.ts`, `logs/audit/destination-settings-store.ts`, and
+`logs/system/system-log.ts` define contracts. MI is N/A for those files.
+
+The eight high native findings belong to the Audit routes, bounded SQL runtime,
+credential codec, settings service, PostgreSQL store, SystemLogger, console
+adapter, and OTel adapter. Retain each for the corresponding ownership and
+invariant reason in the table. Existing time-limited MI exceptions and inherited
+review reasons remain recorded; this review does not lower a goal. Medium and
+low findings retain the same focused guard, parser, composition, and unchanged
+SystemLog behavior reasons. Full findings stay in the reports.
+
+CRAP identifies 83 new and 27 changed functions: 109 of these 110 have measured
+scores. The measured maximum is 14.001143072; each measured added or changed
+function meets its goal. The one new unmeasured callback is
+`openDestinationSettingsRuntime`'s `close` callback in
+`logs/audit/pg-destination-settings-store.ts`. Its one decision path proves a
+CRAP bound of 1 to 2, which meets both goals without an exception. This is a
+bound, not measured coverage. Three unchanged `index.ts` deadline callbacks
+also lack measured coverage: `arm` has two paths and bound 2 to 6; two other
+callbacks have one path and bound 1 to 2. Retain the reason `unchanged by this PR`.
+No full-coverage claim is made.
 
 ## Verification history before the PR239 rebase
 
@@ -237,7 +313,7 @@ Policy questions and guarantees:
   public surface, and `node:net` for literal address parsing. Inherited rules
   separate System and Audit owners and prohibit dependencies between them.
   Check thresholds and review authority stay unchanged. Explicit MI exceptions
-  require review; final metrics evidence remains pending.
+  require review; current measured results and bounds are recorded above.
 - **Contracts:** Admins gain Audit logs GET/HEAD and Save POST at the existing
   `/logging` URLs. Initial settings are disabled and credentials are write-only.
   A semantic no-op preserves ciphertext/revision. Stale writes conflict;
@@ -264,9 +340,10 @@ Policy questions and guarantees:
 
 See the inherited [storage contract and recovery review](admin-s2-01a.md) and
 [System/Audit contract review](system-audit-log-separation.md) for the main-based
-parent guarantees. The preliminary checker reports `factsToDeclare: []`; its
-only listed blockers are missing snapshots, CRAP, and process/review evidence.
-That result does not establish completed gates or human approval. Final metrics,
-SHA-bound evidence, and complete-candidate checks are still pending. T2 Need
+parent guarantees. The checker at `89abd40e89d08ec83af64501fc83d2bf75a322ee` reports
+T2 Need architect, local eligibility `eligible`, `blockers: []`, and
+`factsToDeclare: []`. This local result does not establish independent human
+approval or GitHub CI status. CI read access was denied, and no merge is made.
+The final PR review artifacts pin the prose commit and architecture comparison. T2 Need
 architect applies to the browser/server contract and credential handling; an
 independent authorized human architect must approve before merge.
