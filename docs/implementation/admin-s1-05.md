@@ -3,6 +3,8 @@ Current validation: all seven Slice 1 branches are rebased onto the shared [metr
 
 The repair restores complete native function inventory, exact metric/coverage source identity, and base-scoped Review. Small parent changes keep Members HTML/status/headers and test assertions intact. The owner chose to retain justified existing low-MI file goals and fix tool failures and new regressions. No threshold, baseline, or snooze was relaxed. Human architecture approval and the provider, legal, manual UI, and cutover holds remain separate from local quality validation.
 
+The parent registry now shows the ordered Members overview calls and the local gates in callback landing. Those corrections describe existing behavior. This ticket changes no production source or registry diagram relative to its parent.
+
 ## Earlier implementation and verification record
 
 Status: offline journey implemented and local functional gates passed;
