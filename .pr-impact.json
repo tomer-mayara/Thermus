@@ -9,13 +9,13 @@
     "component": false,
     "internalInterface": false,
     "sensitiveBehavior": false,
-    "dependencyRisk": false,
+    "dependencyRisk": true,
     "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Refine the manual architecture comparison guidance in AGENTS.md. Prefer one clear combined L3 comparison with only needed unchanged neighbors. Identify new runtime use at its caller or context, trace shared-contract effects through callers including unchanged files, and name material effects outside the focused view. Identify the failed operation and phase when they affect authority, recovery, or retries. Limit the L4 trigger to changed production callable contracts; test-helper APIs do not trigger it. State when production architecture is unchanged; tests or documents alone do not establish runtime behavior. Inspect diagrams at normal PR width, about 800 pixels, without zoom, and simplify small labels. This changes reporting guidance only and adds no automated gate or approval authority. The context, hosted/local containers, components, runtime, and deployment views remain accurate because no application source, callable contract, configuration, responsibility, collaboration, resource lifetime, external system, or deployment placement changes. No registry edit or Mermaid render is needed.",
+    "summary": "Repair developer quality tooling: pin a local ast-metrics patch with complete function ranges and base-scoped review, bind native metrics and V8 coverage to exact source identities, and use the stricter new-function goal for unmatched declarations with complete inventories. No MI/CRAP threshold, lint baseline, human approval rule, application component, public application contract, runtime authority, lifetime, provider, or deployment changes. The five registry view groups remain accurate; no Mermaid block changes.",
     "views": [
       "context",
       "containers",
@@ -24,11 +24,12 @@
       "deployment"
     ],
     "evidence": [
-      "AGENTS.md",
-      "docs/implementation/component-registry-workflow.md",
-      "architecture/components.md",
-      "docs/implementation/test-gate-policy.md",
-      "docs/implementation/pr-review-rules.yaml"
+      "docs/implementation/ast-metrics-function-repair.md",
+      "patches/ast-metrics/README.md",
+      "script/code-quality/identity/native.ts",
+      "script/code-quality/coverage/source-map.ts",
+      "script/code-quality/architecture/correspondence.ts",
+      "architecture/components.md"
     ]
   }
 }

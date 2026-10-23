@@ -1,7 +1,7 @@
 // Expected failures print a command diagnostic and exit 1.
 export class CommandError extends Error {}
 
-export const notInstalled = 'ast-metrics is not installed or not on PATH. See docs/implementation/ast-metrics-review.md.';
+export const notInstalled = 'The local ast-metrics runtime could not start. Run pnpm exec node script/code-quality/ast-metrics-install.ts. See docs/implementation/ast-metrics-review.md.';
 
 export function reportCommandError(command: string, error: unknown): void {
   if (!(error instanceof CommandError)) throw error;

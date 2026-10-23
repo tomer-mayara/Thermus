@@ -8,6 +8,7 @@ import { parseCommandArguments } from './shared/command-line.ts';
 import { ignoredEntryCount } from './baseline/ignored-count.ts';
 import { CommandError, repositoryRoot } from './shared/repository.ts';
 import { cliToolVersion } from './shared/tool-version.ts';
+import { astMetricsBinary } from './shared/tool-runtime.ts';
 
 const help = `Usage: node script/code-quality/ast-metrics-baseline.ts [--allow-tool-version] [--help]
 
@@ -41,7 +42,7 @@ function baselineCount(root: string, allowMissing = false): number {
 }
 
 function refresh(root: string): void {
-  const run = spawnSync('ast-metrics', ['baseline'], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'], timeout: 60_000 });
+  const run = spawnSync(astMetricsBinary(), ['baseline'], { cwd: root, stdio: ['ignore', 'inherit', 'inherit'], timeout: 60_000 });
   checkAstMetricsStarted(run.error);
   if (run.status === null) throw new CommandError(`ast-metrics baseline stopped on signal ${run.signal}.`);
   if (run.status !== 0) throw new CommandError(`ast-metrics baseline failed with exit status ${run.status}.`);

@@ -2,8 +2,7 @@
 import { relative, sep } from 'node:path';
 import { arrayOf, isJsonObject, jsonOf, numberOf, numberOrZero, objectOf, textOf, textsOf } from '../shared/json.ts';
 import { textOrder } from '../shared/order.ts';
-import { rounded } from '../shared/numbers.ts';
-import type { CommunityReferences, FileMeasurement, SnapshotFunction } from './types.ts';
+import type { CommunityReferences, FileMeasurement } from './types.ts';
 import { CommandError } from '../shared/repository.ts';
 
 // Sorted by path, the order of the snapshot. The report names each file by its absolute path; the snapshot names it by
@@ -42,27 +41,6 @@ function fileMaintainabilityOf(value: unknown, path: string): number | undefined
     if (index === undefined || typeof index === 'number' && Number.isFinite(index)) return index;
   }
   throw new CommandError(`Invalid file maintainability for ${path}: expected an object with an optional finite maintainabilityIndex.`);
-}
-
-// The shape of the answer of get_file_metrics follows ast-metrics 0.43.1.
-// Each src/ file needs its answer: a snapshot with a gap would look complete.
-export function snapshotFunctionsOf(path: string, text: string | undefined): SnapshotFunction[] {
-  if (text === undefined) throw new CommandError(`get_file_metrics gave no answer for ${path}.`);
-  const answer = jsonOf(text);
-  if (!isJsonObject(answer)) throw new CommandError(`get_file_metrics gave an unexpected answer for ${path}: expected a JSON object.`);
-  return arrayOf(answer.functions).map(functionOf);
-}
-
-// ast-metrics gives an anonymous function, such as a callback or a test case, an empty name. A function without code
-// of its own has no maintainability index.
-function functionOf(entry: unknown): SnapshotFunction {
-  const fields = objectOf(entry);
-  return {
-    name: textOf(fields.name) || '(anonymous)',
-    paths: numberOrZero(fields.cyclomatic_complexity),
-    maintainability: rounded(numberOf(objectOf(fields.maintainability).maintainability_index), 1),
-    loc: numberOrZero(objectOf(fields.volume).loc),
-  };
 }
 
 // The shape of the answer of get_communities with members follows ast-metrics 0.43.1.

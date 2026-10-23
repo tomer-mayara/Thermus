@@ -33,8 +33,13 @@ The report holds source scripts under dist/src/ (emitted JavaScript) and src/
 (source TypeScript), with representation and content identity. Offsets use UTF-16
 code units of the executed representation. It records each function name, whole
 range, calls, and covered share of its own characters after nested ranges leave
-the mask. Measurement version is own-characters-1; report schema version is 2. A
-function without a name is "(anonymous)". The compiler helpers, whose names start
+the mask. Measurement version is own-characters-1; report schema version is 3.
+Verified reports attach source identities (typescript-tokens-v2) by exact function
+ranges. Emitted functions need exact source-map boundaries from the bound build;
+source functions use checked source ranges. Missing or ambiguous evidence stays
+unknown. Current source identities do not use legacy report names as a fallback.
+Collect fresh compatible coverage when selection permits; do not edit old reports.
+A function without a name is "(anonymous)". The compiler helpers, whose names start
 with __, and the functions strictly inside them are not in the report. Functions
 with no own characters appear in unmeasuredFunctions with no-own-characters.
 Invalid ranges, unsafe counts, crossing functions, and incompatible identities

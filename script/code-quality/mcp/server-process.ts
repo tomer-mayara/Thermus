@@ -4,6 +4,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { checkServerToolVersion, type ToolVersionPolicy } from '../shared/tool-version.ts';
 import { CommandError } from '../shared/repository.ts';
 import { serverOf, type AstMetricsWork } from './server.ts';
+import { astMetricsBinary } from '../shared/tool-runtime.ts';
 
 const diagnosticStderrLimit = 2_000;
 
@@ -59,9 +60,9 @@ export class ServerProcess {
   readonly #client = new Client({ name: 'thermus-ast-metrics-mcp', version: '0.0.0' });
   readonly #exit: Promise<never>;
 
-  constructor(root: string, folder?: string) {
+  constructor(root: string, folder?: string, binary = astMetricsBinary()) {
     const args = folder === undefined ? ['mcp'] : ['mcp', folder];
-    this.#transport = new StdioClientTransport({ command: 'ast-metrics', args, cwd: root, env: commandEnvironment(), stderr: 'pipe' });
+    this.#transport = new StdioClientTransport({ command: binary, args, cwd: root, env: commandEnvironment(), stderr: 'pipe' });
     this.#exit = exitOf(this.#transport);
   }
 

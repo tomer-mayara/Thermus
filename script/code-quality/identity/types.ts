@@ -1,7 +1,8 @@
-export const normalizationVersion = 'typescript-tokens-v1';
+export const normalizationVersion = 'typescript-tokens-v2';
+export type NormalizationVersion = 'typescript-tokens-v1' | typeof normalizationVersion;
 
 export interface FunctionIdentity {
-  readonly version: typeof normalizationVersion;
+  readonly version: NormalizationVersion;
   readonly kind: string;
   readonly owner: string;
   readonly name: string;
@@ -13,7 +14,7 @@ export interface FunctionIdentity {
 }
 
 export interface SourceEvidence {
-  readonly version: typeof normalizationVersion;
+  readonly version: NormalizationVersion;
   readonly coordinates: 'utf16';
   readonly complete: boolean;
 }

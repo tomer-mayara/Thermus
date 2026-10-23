@@ -1,0 +1,124 @@
+diff --git a/internal/command/review_command.go b/internal/command/review_command.go
+index ba2d3ec..f1e3b3e 100644
+--- a/internal/command/review_command.go
++++ b/internal/command/review_command.go
+@@ -120,8 +120,8 @@ func (c *ReviewCommand) Execute() error {
+ 
+ 	// New lint violations (only when requirements are configured)
+ 	if c.Configuration.Requirements != nil {
+-		headOutcomes := c.evaluateRequirements(headFiles)
+-		baseOutcomes := c.evaluateRequirements(baseFiles)
++		headOutcomes := c.evaluateRequirements(headFiles, c.Configuration)
++		baseOutcomes := c.evaluateRequirements(baseFiles, baseConfig)
+ 		result.AppendFindings(review.DiffLint(headOutcomes, baseOutcomes, repository.Path, worktree))
+ 	}
+ 
+@@ -196,17 +196,17 @@ func (c *ReviewCommand) configurationForBase(worktree string, repositoryRoot str
+ 	return &baseConfig, nil
+ }
+ 
+-func (c *ReviewCommand) evaluateRequirements(files []*pb.File) []requirement.RuleOutcome {
+-	if c.Configuration.Requirements == nil || len(files) == 0 {
++func (c *ReviewCommand) evaluateRequirements(files []*pb.File, config *configuration.Configuration) []requirement.RuleOutcome {
++	if config == nil || config.Requirements == nil || len(files) == 0 {
+ 		return nil
+ 	}
+ 	aggregator := analyzer.NewAggregator(files, nil)
+ 	// One aggregate per analyzed source, so that a project holding its own
+ 	// requirements is judged on its own metrics.
+-	aggregator.WithAnalyzedPaths(c.Configuration.SourcesToAnalyzePath)
++	aggregator.WithAnalyzedPaths(config.SourcesToAnalyzePath)
+ 	projectAggregated := aggregator.Aggregates()
+-	evaluator := requirement.NewScopedRequirementsEvaluator(c.Configuration)
+-	if baselinePath := requirement.ResolveBaselinePath(c.Configuration.Requirements.Baseline); baselinePath != "" {
++	evaluator := requirement.NewScopedRequirementsEvaluator(config)
++	if baselinePath := requirement.ResolveBaselinePath(config.Requirements.Baseline); baselinePath != "" {
+ 		if baseline, err := requirement.LoadBaseline(baselinePath); err == nil {
+ 			evaluator.Baseline = baseline
+ 		}
+diff --git a/internal/engine/treesitter/visitor.go b/internal/engine/treesitter/visitor.go
+index 8c38356..07f12ff 100644
+--- a/internal/engine/treesitter/visitor.go
++++ b/internal/engine/treesitter/visitor.go
+@@ -508,7 +508,13 @@ func (v *Visitor) Visit(node *sitter.Node) {
+ 		// the dependencies written on the signature: parameter and return
+ 		// types, attributes
+ 		v.recordImports(node, true)
+-		v.ad.EachChildBody(body, func(ch *sitter.Node) { v.Visit(ch) })
++		// Default parameters and concise bodies can declare nested functions.
++		if params := v.ad.NodeParams(node); params != nil {
++			v.Visit(params)
++		}
++		if body != nil {
++			v.Visit(body)
++		}
+ 		// optional: extract operators/operands from source per adapter
+ 		if va, ok := v.ad.(interface {
+ 			ExtractOperatorsOperands(src []byte, startLine, endLine int) (ops []string, operands []string)
+diff --git a/internal/engine/typescript/typescript_runner.go b/internal/engine/typescript/typescript_runner.go
+index 26d7be5..454831c 100644
+--- a/internal/engine/typescript/typescript_runner.go
++++ b/internal/engine/typescript/typescript_runner.go
+@@ -1,6 +1,8 @@
+ package typescript
+ 
+ import (
++	"crypto/sha256"
++	"fmt"
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
+@@ -80,6 +82,7 @@ func (r TypeScriptRunner) Parse(path string) (*pb.File, error) {
+ 	v.Visit(root)
+ 	file := v.Result()
+ 	file.ProgrammingLanguage = "TypeScript"
++	file.Checksum = fmt.Sprintf("sha256:%x", sha256.Sum256(src))
+ 	r.nameTheModuleAfterItsPath(file, path)
+ 
+ 	file.IsTest = r.isTestFile(path)
+diff --git a/internal/engine/util.go b/internal/engine/util.go
+index f07ed82..7dd76ec 100644
+--- a/internal/engine/util.go
++++ b/internal/engine/util.go
+@@ -235,6 +235,11 @@ func functionDedupKey(function *pb.StmtFunction) string {
+ 	if function == nil {
+ 		return ""
+ 	}
++	// One declaration can occur in namespace, class, and file lists. Different
++	// declarations can have the same name, including anonymous class callbacks.
++	if location := function.Location; location != nil && location.StartLine > 0 && location.EndLine >= location.StartLine && location.StartFilePos >= 0 && location.EndFilePos > location.StartFilePos {
++		return fmt.Sprintf("loc:%d:%d", location.StartFilePos, location.EndFilePos)
++	}
+ 	if function.Name != nil {
+ 		if q := strings.TrimSpace(function.Name.Qualified); q != "" {
+ 			return "q:" + q
+diff --git a/internal/mcp/tools_file.go b/internal/mcp/tools_file.go
+index 801059f..720a7d2 100644
+--- a/internal/mcp/tools_file.go
++++ b/internal/mcp/tools_file.go
+@@ -40,6 +40,11 @@ func handleGetFileMetrics(svc *AnalysisService) func(ctx context.Context, reques
+ 			}
+ 
+ 			result := buildFileMetrics(f)
++			// The TypeScript parser hashes the bytes it analyzed, including when
++			// this response uses the cached analysis.
++			if strings.HasPrefix(f.Checksum, "sha256:") {
++				result["source_sha256"] = strings.TrimPrefix(f.Checksum, "sha256:")
++			}
+ 
+ 			// Add classes
+ 			classes := engine.GetClassesInFile(f)
+@@ -64,6 +69,13 @@ func handleGetFileMetrics(svc *AnalysisService) func(ctx context.Context, reques
+ 				fm := map[string]any{
+ 					"name": getFuncName(fn),
+ 				}
++				if location := fn.Location; location != nil && location.StartLine > 0 && location.EndLine >= location.StartLine && location.StartFilePos >= 0 && location.EndFilePos > location.StartFilePos {
++					fm["source_range"] = map[string]any{
++						"coordinates": "utf8-bytes",
++						"start":       location.StartFilePos,
++						"end":         location.EndFilePos,
++					}
++				}
+ 				if fn.Stmts != nil && fn.Stmts.Analyze != nil {
+ 					fillAnalyzeMetrics(fm, fn.Stmts.Analyze)
+ 				}

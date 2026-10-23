@@ -18,16 +18,39 @@ changes under `test/` select affected groups. Script, configuration, and
 documentation changes use relevant type, lint, and manual checks. Do not add
 `npm run check`, which repeats unit and portal tests. A command must not start a broader suite through a nested coverage call.
 
-Tool operations need `ast-metrics` on PATH (`brew install
-ast-metrics/tap/ast-metrics` on macOS). The wrappers pin 0.43.1 and check CLI
-results with `ast-metrics version`, and MCP results with initialization.
-`--allow-tool-version` permits another actual version for that run and its
-child operations; a mismatch otherwise fails before results are consumed.
-Help, offline architecture rendering, and coverage collection need no
-installed ast-metrics. Delta and CRAP also need no tool for an empty default
-selection. A pin change needs manual checks against the installed tool and a review of its output.
-MCP operations start and stop their server within a deadline, also after a
-failure. Do not start or register a persistent server.
+Tool operations use the pinned patched whole-tool runtime, version
+`0.43.1-thermus.1`. Install it once with:
+
+```bash
+pnpm exec node script/code-quality/ast-metrics-install.ts
+```
+
+The installer needs Git, tar, Go **1.27.3**, a C compiler, and network access on
+macOS or Linux. Set `GO_BIN=/absolute/path/to/go` if Go is not on PATH. It verifies
+the pinned upstream source archive SHA256, applies and reverse-checks the
+repository patch in an isolated Git root, checks Go module sums, and builds the
+complete CLI under ignored
+`.cache/ast-metrics/0.43.1-thermus.1/<platform>-<arch>/`. It keeps the upstream
+license beside the binary. Before publication, a bounded MCP smoke check verifies
+the source hash, callback inventory, declaration byte ranges, Unicode positions,
+and own complexity. It does not change an installed global ast-metrics.
+See [patch inputs](../../patches/ast-metrics/README.md).
+
+An intact install is reused without network or build tools. Each tool operation
+checks the install manifest against the current patch and binary SHA256. A
+missing, stale, or damaged runtime fails with the install command; there is no
+PATH fallback. A failed download, checksum, patch, build, or version check
+publishes no runtime. Concurrent installers fail on an install lock. After an
+interrupted installer, remove its reported lock only when no installer is active.
+The runtime belongs to these wrappers, including when they analyze a base tree.
+
+The wrappers check CLI results with `version`, and MCP results with
+initialization. `--allow-tool-version` permits another reported version for that
+run and its child operations. It does not bypass install integrity checks or
+select a global binary. Help, offline architecture rendering, and coverage
+collection need no installed ast-metrics. Delta and CRAP also need no tool for an
+empty default selection. MCP operations start and stop their server within a
+deadline, also after a failure. Do not start or register a persistent server.
 
 ## Source layout
 
@@ -125,12 +148,14 @@ listed in `unmeasuredFunctions`. This is character coverage, not basis-path
 coverage. The [coverage guide](../../docs/implementation/ast-metrics-review.md#measure-the-coverage-per-function-scriptcode-qualityast-metrics-coveragets)
 gives the range and representation rules.
 
-Coverage joins by file and unique supported V8 name: a method uses its own
-name, and a constructor uses its class name. Anonymous functions, duplicate
-names, and missing matches have no exact CRAP. Only a complete verified
-report can show that a missing file was not loaded; its unique supported
-named functions then use share 0. Anonymous functions stay unknown even
-when their file is absent. A missing name within a present file stays unknown.
+Version-3 coverage joins by file and exact source identity. Checked ranges
+separate anonymous functions and repeated names. A loaded file without an
+exact match stays unknown. Only a complete verified report can show that an
+absent file was not loaded; all its functions then use share 0. Legacy
+unique-name matching applies only when neither side has source evidence.
+Version-1 and version-2 reports cannot supply exact joins for current source
+identities. Collect fresh compatible coverage when test selection permits;
+never edit stored reports to claim a new measurement.
 Without a share, paths are a lower bound: `CRAP ≥ paths`. At least 30 paths
 proves a violation; fewer paths do not prove a pass. Unknowns include
 zero-own exclusions and known lower-bound violations.
@@ -139,10 +164,11 @@ Function identity is separate from this coverage join. In the same file or
 a proven file rename, a unique declaration kind/owner/name pair proves
 continuity. Equal body/signature hashes mean unchanged; edits mean changed.
 Otherwise, only a unique unchanged body/signature pair can prove a move or
-rename. New classification needs complete source evidence and no unresolved
-base partner or move candidate. Name equality alone cannot resolve copies,
-duplicate bodies, anonymous functions, or changed extractions. Legacy or
-incomplete evidence stays identity unknown. Offline rendering does not read
+rename. With complete source inventories, an unmatched declaration takes the
+stricter new-function goal. This is a conservative assessment, not proof that
+the code has no prior form. Deleted declarations, copies, duplicate bodies,
+and changed extractions cannot relax that goal. Name equality alone cannot
+prove continuity. Incomplete evidence stays identity unknown. Offline rendering does not read
 the caller's checkout to fill a gap. Unknown identity cannot be called added
 or worse, and cannot pass a required goal.
 
@@ -490,7 +516,7 @@ Local evidence is under `ast-report/loader-integration-final-2026-10-19/`.
 The earlier `c620cf8f` run passed all 535 integration tests but failed strict
 verification for four raw-only loaders; it remains an unverified historical run.
 
-Schema stays `version: 2` and `measurementVersion: "own-characters-1"`.
+New reports use `version: 3` and `measurementVersion: "own-characters-1"`.
 New capture manifests use version 4 with
 `completionProtocol: "normal-exit-or-sealed-or-loader-1"` and original `captureId`, also
 retained in per-capture provenance. Their raw fingerprint includes coverage,
@@ -517,7 +543,15 @@ different representations cannot be unioned without conversion. The reader
 validates whole ranges, counts, nesting, script bounds, content identities,
 and safe summed calls before computing own-character coverage. Each
 measured function keeps name, whole range, calls, and covered share;
-zero-own functions are listed separately. See the
+zero-own functions are listed separately and excluded by exact range.
+Verified reports attach source identities and source-file content hashes when
+exact evidence is available. The V8 range must match one executable declaration;
+its emitted boundaries must map exactly to the expected source declaration.
+The mapped end and kind must agree, with the mapped start inside its signature.
+Source TypeScript uses its checked source range directly. Source, emitted, and
+map bytes are bound by capture provenance. Missing maps, stale content, and
+ambiguous boundaries stay unknown; module initializers do not match callbacks.
+Measured masks keep the executed representation's own characters. See the
 [coverage guide](../../docs/implementation/ast-metrics-review.md#measure-the-coverage-per-function-scriptcode-qualityast-metrics-coveragets)
 for sourceURL trailers and exact validation rules.
 
@@ -756,12 +790,14 @@ value for the MI rules of check 4.
 Optional `title` is the commit message's first line; optional `provenance`
 contains source and expected coverage-input fingerprints, runtime, compiler,
 suite, and measurement version. Optional source evidence uses
-`typescript-tokens-v1`, UTF-16 ranges, and completeness. Supported function
-identity keeps kind, owner, name, range, and body/signature hashes. Token
-normalization ignores whitespace and comments but retains executable syntax
-and literal spelling. Anonymous functions, duplicate names, unsupported
-owners, and parse errors limit identity. Legacy snapshots remain readable
-for structure. The [snapshot guide](../../docs/implementation/ast-metrics-review.md#take-a-snapshot-scriptcode-qualityast-metrics-snapshotts)
+`typescript-tokens-v2`, UTF-16 ranges, and completeness. Checked native byte
+ranges bind each metric to an exact executable source declaration. Identity
+keeps kind, lexical owner, name, range, and body/signature hashes. Anonymous
+functions and repeated names can have distinct identities. Token normalization
+ignores whitespace and comments but retains executable syntax and literal
+spelling. Missing or ambiguous ranges and parse errors limit identity. Legacy
+`typescript-tokens-v1` snapshots remain readable under their original limits;
+they are not upgraded in place. The [snapshot guide](../../docs/implementation/ast-metrics-review.md#take-a-snapshot-scriptcode-qualityast-metrics-snapshotts)
 gives exact fields and completeness rules.
 
 Community labels use the largest source namespace by member count, without

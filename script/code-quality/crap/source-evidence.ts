@@ -1,6 +1,6 @@
 import { ts } from 'ts-morph';
 import { declarationsOf } from '../identity/declarations.ts';
-import { functionEvidenceOf } from '../identity/source.ts';
+import { candidateIdentityOf, functionEvidenceOf } from '../identity/source.ts';
 import type { TableFile } from '../architecture/types.ts';
 import type { SnapshotFunction } from '../snapshot/types.ts';
 import { CommandError } from '../shared/repository.ts';
@@ -13,8 +13,9 @@ export function sourceFileOf(path: string, text: string, metrics?: readonly Snap
 }
 
 function declaredFunctions(tree: ts.SourceFile): SnapshotFunction[] {
-  return declarationsOf(tree).filter(({ node }) => node.body !== undefined).map(({ node, name }): SnapshotFunction => {
+  return declarationsOf(tree).map((candidate): SnapshotFunction => {
+    const { node, name } = candidate;
     const parent = node.parent;
-    return { name: name === undefined ? '(anonymous)' : ts.isClassDeclaration(parent) && parent.name ? `${parent.name.text}.${name}` : name, paths: 0, loc: 0 };
+    return { name: name === undefined ? '(anonymous)' : ts.isClassDeclaration(parent) && parent.name ? `${parent.name.text}.${name}` : name, paths: 0, loc: 0, identity: candidateIdentityOf(candidate) };
   });
 }

@@ -28,7 +28,7 @@ export async function snapshotOfTree(root: string, timeoutMs: number, checked?: 
   const files = sourceFilesOf(analysisReportOf(root, analyzedFolder), root);
   const paths = files.map((file) => file.path);
   const answers = await withAstMetricsServer({ root, folder: analyzedFolder, checked: tool }, timeoutMs, (server) => serverAnswersOf(server, paths));
-  const snapshot = snapshotOf({ commit, date, title, ownership, files, ...answers, sourceTexts: sourceTextsOf(root, paths) });
+  const snapshot = snapshotOf({ root, commit, date, title, ownership, files, ...answers, sourceTexts: sourceTextsOf(root, paths) });
   if (JSON.stringify(provenance) !== JSON.stringify(inputIdentityOf(root)) || JSON.stringify(ownership) !== JSON.stringify(ownershipOfTree(root))) {
     throw new repository.CommandError('The inputs changed during the snapshot. No snapshot was published.');
   }
