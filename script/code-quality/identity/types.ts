@@ -1,5 +1,5 @@
 export const normalizationVersion = 'typescript-tokens-v2';
-export type NormalizationVersion = 'typescript-tokens-v1' | typeof normalizationVersion;
+type NormalizationVersion = 'typescript-tokens-v1' | typeof normalizationVersion;
 
 export interface FunctionIdentity {
   readonly version: NormalizationVersion;
