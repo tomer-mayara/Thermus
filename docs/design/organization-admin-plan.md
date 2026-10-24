@@ -1,22 +1,15 @@
 # Organization administration plan
 
-Plan reviewed: 24 October 2026. Status: design with merged Slice 1 implementation
-recorded under its tickets. Release prerequisites remain; merged does not mean
-released or cut over. This revision records the audit API foundation and the
-organization settings UI implemented in [PR #238](https://github.com/tomer-mayara/Thermus/pull/238).
-The S2-02a candidate adds an isolated one-shot OTLP sender; see its
-[implementation record](../implementation/admin-s2-02a.md). S2-02b adds the
-saved-destination Test. The S2-03a candidate adds bounded customer
-capture at MCP and protected Admin boundaries; see its
-[implementation record](../implementation/admin-s2-03a.md). The S2-03b candidate
-adds activity-driven settings snapshots; see its
-[implementation record](../implementation/admin-s2-03b.md). S2-03c adds bounded
-queued delivery and fresh attempt authorization; see its
-[implementation record](../implementation/admin-s2-03c.md).
-The S2-04 development candidate adds integrated proof and owner recovery procedures;
-see its [implementation record](../implementation/admin-s2-04.md) and
-[notice review](../implementation/admin-s2-04-notice-review.md). Candidate records
-do not establish merge, deployment, release, or completion of owner gates.
+Plan reviewed: 24 October 2026. Slice 1 implementation is merged; its release
+prerequisites remain. The combined Slice 2 candidate includes settings, Save/Test,
+capture, snapshots, delivery, visible help, and controlled integration proof.
+The [Slice 2 review and remaining work](#slice-2-review-and-remaining-work)
+records a required redaction correction, stack repair, and merge checks.
+The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+owns the separate activation requirements. Slice 2 is not merged or released.
+Ticket records describe their historical increments; their earlier missing
+features are not the status of the combined candidate. Merged does not mean
+released, and passing controlled tests does not complete owner gates.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -295,8 +288,8 @@ The [audit log rules](#audit-logs--slice-2) define customer access and event saf
 An Admin selects the organization, opens **Audit logs**, and saves its Collector
 endpoint, None/Bearer authentication, and Enable setting. Each load and Save checks
 current Admin permission for that organization; a submitted organization ID is not
-authority. S2-01b implements the page and Save in PR #238. The mock below shows
-the complete Slice 2 target: optional Test and actual delivery are later tickets.
+authority. S2-01b implements the page and Save, S2-02b implements optional Test,
+and S2-03c implements bounded delivery. The mock shows the combined Slice 2 candidate.
 The server must have the private settings connection and encryption key from
 [owner setup](#owner-setup-for-supabase--slice-2). Admins enter their Collector
 credentials in this page; they do not receive the server's database credentials.
@@ -628,7 +621,11 @@ public results/errors: search queries, requested URLs, fetched text, and reasons
 plus administration metadata. No content checkbox or metadata-only mode. Exclude
 internal HTTP traffic, sign-in forms, cookies, Authorization headers, and logging
 tokens. Redact known credential fields/recognized credential-bearing URL params;
-arbitrary free text cannot be promised secret-free.
+arbitrary free text cannot be promised secret-free. Redaction must preserve
+surrounding public content when its boundary is known, including JSON sibling
+fields and enclosing Markdown. Do not treat over-redaction of an admitted event
+as allowed best-effort delivery loss. Keep ambiguous credential text redacted;
+do not fix content loss by exposing part of a credential.
 
 Capture one structured customer completion event at the
 [MCP boundary](../../src/interfaces/mcp/fetch-tool-server.ts): validated
@@ -1532,13 +1529,62 @@ The [audit log rules](#audit-logs--slice-2), [storage
 rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supabase--slice-2)
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
-another slice names a group. S2-01a/b, S2-02a/b, and S2-03a/b/c have
-implementation candidates and linked records below, including saved-destination
-Test, content capture, snapshots, and bounded delivery. S2-04 is the current
-integrated-verification and owner-procedure candidate. These statuses do not
-claim that a candidate is merged, deployed, released, or ticket-complete. Actual
-storage, Collector, recovery, notice approval, capacity, and Slice 1 release
-proof remain separate gates; see the [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds).
+another slice names a group. All groups have implementation candidates and
+linked records below. S2-04 adds integrated controlled proof, visible help, and
+owner procedures. The combined candidate is not released. The review below
+owns code-merge work; the [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+owns actual storage, Collector, recovery, notice, capacity, and Slice 1 release proof.
+
+#### Slice 2 review and remaining work
+
+Reviewed source: `751c704063a153fba1b553c06369a3d72fe8a19d`, against main
+`b03e2d2c1ae55eed1d31e808e9a2dd65a6483220`, on 24 October 2026.
+The review checked all nine PRs and the combined source. It found one required
+source correction. It found no further material defect in the reviewed storage,
+authority, System/Audit separation, snapshots, or delivery paths. This is a
+review conclusion within that scope, not proof that no other defect exists.
+
+| Finding | Required action | State |
+|---|---|---|
+| P2: URL credential redaction consumes adjacent public content. A JSON result with `?token=PRIVATE` followed by a public sibling field loses that field; a Markdown link can lose its closing text. The admitted result reports `truncated: false`. | Complete the [S2-03a correction](#s2-03a-correction--preserve-public-text-around-redacted-urls) before merging the capture change or its descendants. | Reproduced through `AuditLog` on Node 24; not fixed by this plan update. |
+| #237 conflicts with current main in `.pr-impact.json` and the base metrics record. | Update #237 from main, refresh its impact declaration, and keep main's immutable metrics record. Carry the parent correction through the stack and check each resulting diff. | Merge preparation remains. The combined top branch already contains current main; that does not make #237 mergeable. |
+| #238 conflicts with the newer #239, but #241 already includes its head `e64a49c6` through merge `d499eee8`. | Deliver S2-01b through #241. Its review must cover both inherited settings and Test. After that inclusion reaches main, verify #238 is merged or close it as included. Retain its evidence. | Do not separately repair and merge #238 merely to duplicate that inclusion. |
+| All nine PRs have no recorded review submissions or inline review threads. Required remote CI remains unverified after the connector access denial. | Verify required checks, refresh candidate-bound quality/architecture evidence after fixes or restacking, and obtain independent authorized human T2 approval of the resulting candidates. | Previous local passes and agent sign-off do not satisfy these merge requirements. |
+| Some ticket prose still described Test/delivery as future work or checks as never run. | Use combined-candidate status here and preserve historical ticket records as history. | Corrected in this review update. |
+
+The planned delivery path is **#237 → #239 → #240 → #241 → #242 → #243 →
+#244 → #245**, with **#238 included by #241**. Preserve that existing join;
+there is no need to create a second settings implementation or a new PR solely
+to make the history linear. Check ancestry and current refs again when preparing
+the merges. Do not merge a child into its parent merely to close a PR; the
+delivery target is main after its dependencies are present. This review performs
+no rebase, merge, deployment, live setup, or source fix. PR #245 is Draft while
+the correction and final review remain open.
+
+Fix the redaction defect, repair the affected stack, then refresh the applicable
+checks and obtain required review before merge. Complete the linked S2-04 ledger
+before activation. Its live setup and owner obligations do not add code-merge
+prerequisites while the feature stays inactive.
+Absent server settings leave storage/export unavailable. The new-settings form
+defaults to disabled; an Admin can explicitly enable on the first Save. Existing
+saved enabled state persists across deployment. Merging code does not authorize
+setting secrets, deployment, or enabling export. A previous live observation
+recorded Render auto-deploy as off; recheck deployment settings before a merge.
+Backup cadence, retention, and delegate suggestions remain owner choices, not new
+product features. Use the existing runbooks rather than add another recovery system.
+
+**Simplicity decisions retained by this review:**
+
+| Part | Smallest correct scope |
+|---|---|
+| Settings and UI | One settings row per tenant, one Save, one optional saved Test; no draft copy, connection history, or viewer. |
+| Storage and secrets | Existing plain PostgreSQL port and encrypted Bearer token; no ORM, identity mirror, event database, or automatic key rotation. |
+| Customer capture | Explicit Audit methods and named fields; fix the URL redaction boundary within this owner, without a general document parser or System logger rewrite. |
+| Delivery | Keep the bounded snapshot, queue, and sender owners. Their different freshness, revision, and native-cleanup rules are needed for safe nonblocking export. Add no durable queue, worker, polling service, or second pre-send read. |
+| Verification | Keep existing failure cases plus focused regression cases. The integrated journey composes them; it need not repeat every failure matrix. |
+| Operations | Keep one release ledger and the existing scoped runbooks. Member removal stays in Slice 2.5; role changes and MFA stay in Slice 3. |
+
+#### Slice 2 ticket map
 
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
@@ -1551,8 +1597,9 @@ proof remain separate gates; see the [S2-04 ledger](../implementation/admin-s2-0
 | S2-03c | S2-02a, S2-02b, S2-03b | Bounded queue, current-revision dispatch, and retries. | Isolation, overload, outage, retry, and shutdown cases pass. |
 | S2-04 | Implemented S2-01/02/03 and configured Slice 1 implementation | Integrated verification, owner rollout, documents, and release. | Full Slice 2 journey and actual storage/Collector/manual/legal/$0 proof pass. |
 
-Recommended order: **01a → 01b → 02a → 02b → 03a → 03b → 03c → 04**. The dependency table
-allows 02a independently of the settings store. The existing Slice 1 source is the
+The original recommended implementation order was **01a → 01b → 02a → 02b → 03a → 03b → 03c → 04**.
+The dependency table allows 02a independently of the settings store; the actual
+PR delivery path is recorded above. The existing Slice 1 source is the
 functional starting point; S1-05 release and cutover remain a hard gate for Slice 2 release,
 not a claim that merged code was released. Tickets are behavior increments, not
 requirements for eight packages, classes, or pull requests.
@@ -1847,8 +1894,9 @@ Scenario: Ignore an old Test result
 is stacked over #240 and includes the settings dependency from #238, merged
 into this branch.
 The [implementation record](../implementation/admin-s2-02b.md) describes the
-saved-only Test, bounded lifetime, and result suppression. Complete-candidate
-checks and review remain pending; this is not a release record. The steps below
+saved-only Test, bounded lifetime, and result suppression. Its linked PR evidence
+records local checks and technical review; current merge requirements are listed
+above. This is not a release record. The steps below
 preserve the acceptance and implementation order. A successful Test is never
 an Enable prerequisite.
 
@@ -1968,10 +2016,44 @@ observable customer versus operator outputs through shared support drivers.
 
 **Implementation candidate.** The [S2-03a record](../implementation/admin-s2-03a.md)
 describes the supplied capture sink, trusted boundary context, fixed byte bounds,
-and completion isolation. The default sink drops events. Final-content, redaction,
-UTF-8, operator-isolation, trusted-routing, and non-throwing specifications must
-pass on the complete candidate. Controlled-sink evidence does not establish
-snapshot loading or delivery, owned by 03b/c.
+and completion isolation. In that historical increment the default sink drops
+events; the combined candidate uses 03b/c snapshots and dispatch. Recorded runs
+of the existing specifications passed, but the review found the redaction gap
+below. Controlled-sink evidence alone does not establish snapshot loading or delivery.
+
+##### S2-03a correction — Preserve public text around redacted URLs
+
+This is a correction to S2-03a, not a new export feature or a separate slice.
+The URL-value expression in `src/logs/audit/audit-content.ts` consumes closing
+JSON/Markdown syntax and unrelated public text after a recognized credential.
+The following case is missing from the current suite and must fail before the fix:
+
+```gherkin
+Scenario: Redact a URL credential without deleting surrounding public output
+  Given an enabled tenant and validated input and a result with token=PRIVATE in a URL
+  And the URL is enclosed in JSON or Markdown followed by KEEP_PUBLIC
+  When the public MCP completion is captured and encoded for Audit delivery
+  Then PRIVATE is absent from the exported input and result
+  And KEEP_PUBLIC and the unambiguous enclosing syntax are preserved
+  And the client receives its original complete result
+  And the small exported result has correct byte counts and truncated=false
+```
+
+Ordered TDD work:
+
+1. Add the failing public-boundary acceptance case above. Use the existing
+   MCP/audit driver; do not add a test framework or duplicate the full journey.
+2. Add focused failing capture/encoding cases for a JSON sibling field and a
+   Markdown link with adjacent public text. Keep encoded parameter names,
+   quoted/escaped credential values, Unicode, and result-boundary cases green.
+3. Correct the bounded redaction rule in its existing owner. An accepted URL
+   can contain quote or angle-bracket characters in its credential value: merely
+   treating every such character as a delimiter can expose the credential tail.
+   Preserve public text only with a known enclosing boundary; keep ambiguous
+   credential text redacted. Add no general serializer or per-tenant setting.
+4. Refactor with the focused tests green, then rerun the acceptance and selected
+   complete-candidate gates. Retain the new red/green evidence and refresh the
+   affected PR review. The current plan-only review does not close this correction.
 
 #### S2-03b — Activity-driven settings snapshots
 
@@ -2033,7 +2115,8 @@ authority to dispatch; 03c owns current store checks.
 describes the snapshot owner, fixed resource bounds, failure behavior, and shutdown.
 Cold/disabled/expired activity drops the current event; loads affect future capture
 only. That slice used a refusing downstream sink; S2-03c supplies dispatch.
-Acceptance and full-candidate execution evidence remain required before Ready.
+The linked PR records its acceptance and complete-candidate execution evidence;
+refresh applicable evidence when its candidate changes.
 
 #### S2-03c — Bounded queue and current-revision dispatch
 

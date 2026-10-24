@@ -6,6 +6,14 @@ This development candidate is stacked on S2-03c in
 Source implementation, controlled proof, owner setup, and release are separate
 claims. This record does not mark S2-04 done or authorize deployment.
 
+The [24 October stack review](../design/organization-admin-plan.md#slice-2-review-and-remaining-work)
+found a redaction defect in inherited S2-03a: a URL credential can cause adjacent
+public text to be removed. It remains a required source correction. PR #245 was
+returned to Draft for the plan update and pending correction/review. The prior
+controlled proofs below remain evidence of the cases they ran, not a merge pass
+for this uncovered case. Stack repair, current required checks, and independent
+human approval remain separate from the activation ledger below.
+
 The public browser, MCP, and Collector journey characterizes existing behavior.
 The missing export help was specified by failing acceptance and focused unit
 tests before its implementation. The procedures below add no runtime behavior
