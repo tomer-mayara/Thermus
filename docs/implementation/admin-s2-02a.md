@@ -139,6 +139,21 @@ remain unchanged by this ticket. The parent foundation and its storage and
 runtime effects are recorded in [S2-01a](admin-s2-01a.md); this sender does not
 replace or weaken those guarantees.
 
+The complete-candidate public-surface review compares these exports with main:
+
+| Module | Before and after |
+| --- | --- |
+| `src/index.ts` | `serve` and `ServeOptions` use the derived SystemLog role in place of ApplicationLogger. The error input widens from string to unknown; startup and signal contracts stay the same apart from the inherited storage lifetime. |
+| `src/app/fetch-tool.ts` | Tool composition uses the same derived role. Fetch/search arguments, returned operations, capacity, and diagnostic calls stay the same. |
+| `src/logs/system/system-logger.ts` | The renamed BaseLogger retains levels, formatting, and caller location. SystemLog derives only info/error from it; plain role objects remain valid. |
+| `src/logs/audit/audit-log.ts` | The parent adds explicit metadata events, synchronous AuditEventSink, and the concrete AuditLog class. Named projection omits arbitrary fields; sink failure does not change the completed action. Its private sink prevents substitution by a method-only object. |
+| `src/logs/audit/otlp-audit-sender.ts` | The new send operation adds the supplied destination/event and optional cancellation contract. This document records order, outcomes, bounds, and lifetime, including the changed direct dependencies named by the checker. |
+| `src/logs/audit/audit-send.ts` | The new destination and outcome types, immutable limits, and safe internal failure class support that operation. The reason alias is private. No receiver text or credentials enter the outcome contract. |
+
+Against the actual stack parent, only the last two public modules are new;
+the other listed contracts remain as #239 defines them. No new architecture
+decision record is required to implement this already planned sender.
+
 **Checks and authority.** The package command and test gate policy add the
 isolated Collector runtime gate so that actual TLS and protocol collaboration
 are selected when relevant. Ownership and public-surface declarations identify
