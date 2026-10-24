@@ -13,9 +13,16 @@ const compileTimeout = 120_000;
 const fileError = /^(.+?)\(\d+,\d+\): error TS\d+: /u;
 const optionsError = /^error TS\d+: /u;
 
+// skipped: the listed modules that do not exist in the working tree, when the caller allows that.
 interface Declarations {
   readonly texts: ReadonlyMap<string, string>;
   readonly ignored: { readonly errors: number; readonly files: number };
+  readonly skipped: readonly string[];
+}
+
+// skipMissing: a replay of an earlier revision lists modules that did not exist yet; they get no snapshot there.
+export interface EmitOptions {
+  readonly skipMissing?: boolean;
 }
 
 // An error of the compiler options names no file.
@@ -30,13 +37,13 @@ export function snapshotPathOf(folder: string, module: string): string {
 }
 
 // The compiler reads the working tree, not a commit.
-export function emitDeclarations(root: string, modules: readonly string[]): Declarations {
+export function emitDeclarations(root: string, modules: readonly string[], options: EmitOptions = {}): Declarations {
   const declarationPaths = new Map(modules.map((module) => [module, declarationPathOf(module)]));
   const outDir = mkdtempSync(join(tmpdir(), 'api-surface-'));
   try {
     const errors = compilerErrors(root, outDir);
     checkErrors(errors, modules);
-    return { texts: emittedTexts(outDir, declarationPaths), ignored: { errors: errors.length, files: new Set(errors.map((error) => error.file)).size } };
+    return { ...emittedTexts(outDir, declarationPaths, options.skipMissing === true), ignored: { errors: errors.length, files: new Set(errors.map((error) => error.file)).size } };
   } finally {
     rmSync(outDir, { recursive: true, force: true });
   }
@@ -82,10 +89,11 @@ function checkErrors(errors: readonly CompilerError[], modules: readonly string[
   throw new CommandError(`The TypeScript compiler reported errors in ${named.join(', ')}, so the declaration snapshots can be incomplete. ${stopping[0].line}`);
 }
 
-function emittedTexts(outDir: string, declarationPaths: ReadonlyMap<string, string>): Map<string, string> {
+function emittedTexts(outDir: string, declarationPaths: ReadonlyMap<string, string>, skipMissing: boolean): Pick<Declarations, 'texts' | 'skipped'> {
   const missing = [...declarationPaths].filter(([, path]) => !existsSync(join(outDir, path))).map(([module]) => module);
-  if (missing.length > 0) throw new CommandError(`The TypeScript compiler emitted no declarations for ${missing.join(', ')}. Make sure that each module exists and that ${declarationProject} includes it.`);
-  return new Map([...declarationPaths].map(([module, path]) => [module, readFileSync(join(outDir, path), 'utf8')]));
+  if (missing.length > 0 && !skipMissing) throw new CommandError(`The TypeScript compiler emitted no declarations for ${missing.join(', ')}. Make sure that each module exists and that ${declarationProject} includes it.`);
+  const present = [...declarationPaths].filter(([module]) => !missing.includes(module));
+  return { texts: new Map(present.map(([module, path]) => [module, readFileSync(join(outDir, path), 'utf8')])), skipped: missing };
 }
 
 function counted(count: number, noun: string): string {

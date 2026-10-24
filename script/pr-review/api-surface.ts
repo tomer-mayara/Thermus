@@ -8,7 +8,7 @@ import { repositoryRoot } from '../code-quality/shared/repository.ts';
 import { declarationProject, emitDeclarations, ignoredNote, snapshotPathOf } from './declaration-emit.ts';
 import { rulesOf } from './rules.ts';
 
-const help = `Usage: node script/pr-review/api-surface.ts [--check] [--rules PATH] [--help]
+const help = `Usage: node script/pr-review/api-surface.ts [--check] [--skip-missing] [--rules PATH] [--help]
 
 Write the declaration snapshot of each module that public_surface lists.
 The installed TypeScript compiler emits the declarations of src/ with
@@ -26,6 +26,9 @@ snapshots of the merge base.
 
 Options:
   --check        Write nothing; list each stale, missing, and orphan file
+  --skip-missing Leave out each listed module that does not exist in this
+                 working tree, and name it on stderr. For a replay of an earlier
+                 revision; the check at HEAD still needs every snapshot.
   --rules PATH   Rules file of the working tree, relative to the repository
                  root (default: docs/implementation/pr-review-rules.yaml)
   --help, -h     Show this help
@@ -37,6 +40,7 @@ tool error stopped the command; repair the diagnostic.
 
 const shape = {
   check: { type: 'boolean' },
+  'skip-missing': { type: 'boolean' },
   rules: { type: 'string', default: 'docs/implementation/pr-review-rules.yaml' },
   help: { type: 'boolean', short: 'h' },
 } as const;
@@ -55,18 +59,19 @@ function main(args: readonly string[]): void {
     return;
   }
   const root = repositoryRoot();
-  const { folder, entries } = entriesOf(root, values.rules);
+  const { folder, entries } = entriesOf(root, values.rules, values['skip-missing'] === true);
   if (values.check) checkSnapshots(folder, entries);
   else writeSnapshots(root, folder, entries);
 }
 
-function entriesOf(root: string, rulesPath: string): { readonly folder: string; readonly entries: readonly Entry[] } {
+function entriesOf(root: string, rulesPath: string, skipMissing: boolean): { readonly folder: string; readonly entries: readonly Entry[] } {
   const rules = rulesOf(rulesText(root, rulesPath), `The rules file ${rulesPath}`);
   const folder = rules.surface.snapshots;
   if (folder === undefined) throw new CommandError(`The rules file ${rulesPath} has no key public_surface.snapshots, so the snapshots have no folder.`);
-  const declarations = emitDeclarations(root, rules.surface.modules);
+  const declarations = emitDeclarations(root, rules.surface.modules, { skipMissing });
   const note = ignoredNote(declarations.ignored);
   if (note !== undefined) process.stderr.write(`api-surface: ${note}\n`);
+  if (declarations.skipped.length > 0) process.stderr.write(`api-surface: skipped ${declarations.skipped.length} listed modules that do not exist here: ${declarations.skipped.join(', ')}\n`);
   const expected = new Map([...declarations.texts].map(([module, text]) => [snapshotPathOf(folder, module), text]));
   const present = filesUnder(root, folder);
   const entries: Entry[] = [

@@ -339,19 +339,40 @@ against main visible.
 
 ## Replay earlier pull requests
 
-`replay.ts` evaluates the rules and the checker of HEAD against earlier pull
-requests. It is evaluation only: use it to calibrate the rules, never as
-evidence for a candidate.
+`replay.ts` evaluates the rules and the checker of this working tree against
+earlier pull requests. It is evaluation only: use it to calibrate the rules or
+to verify a change to them, never as evidence for a candidate. The trusted
+merge-base policy governs a real candidate.
 
 ```sh
-pnpm exec node script/pr-review/replay.ts --pr N [--pr N ...] [--pair BASE:HEAD ...] [--out DIR] [--json]
+pnpm exec node script/pr-review/replay.ts --pr N [--pr N ...] [--pair BASE:HEAD ...] [--repo OWNER/NAME] [--out DIR] [--json]
 ```
 
-For each pull request or pair, the script makes temporary commits of both
-revisions. They hold the rules file and `tsconfig.api-surface.json` of HEAD and
-snapshots regenerated for that revision. Then the checker of HEAD classifies
-the pair. `--pr N` names a pull request, `--pair BASE:HEAD` names two commits,
-`--out DIR` names the output folder, and `--json` selects JSON output.
+For each pull request or pair, the command makes two commits in temporary
+worktrees. The base commit is the merge base plus the rules file and
+`tsconfig.api-surface.json` of this working tree and the declaration snapshots
+that `api-surface.ts --skip-missing` regenerates for that revision. The head
+commit is the head of the pull request plus the same files; its parents are
+that head and the base commit, so that the checker takes the base commit as the
+merge base and reads the installed rules there. Each commit keeps the committer
+date of its source commit, so a rerun gives the same commits and the same
+exception expiry. When the pull request head has a `.pr-impact.json`, the
+command stamps a copy with the two commits and gives it to the checker; the row
+then shows the tier with the flags that the author set. Then
+`check.ts --base <base commit> --json` runs in the worktree of the head commit.
+A pull request that changed an installed file gets a note in its row. A listed
+module that does not exist at a revision has no snapshot there, so its row
+shows `public_surface.snapshots.missing` blockers; the tier still counts.
+
+`--pr N` names a pull request of `--repo` (default `tomer-mayara/Thermus`)
+and needs `gh`: a merge commit gives head and base from its parents, a squash
+merge uses the recorded head, and an open pull request uses `refs/pull/N/head`
+and its base branch. `--pair BASE:HEAD` names two refs or commits of this
+repository. `--out DIR` (default `ast-report/replay`) receives `replay.md`,
+`replay.json`, and one checker result per row. `--json` prints one JSON
+object instead of the Markdown table. The command removes its worktrees and
+temporary refs at the end, also after a failure, SIGINT, or SIGTERM, and sweeps
+what an interrupted run left.
 
 The label command uses exactly `T0 Auto merge`, `T1 Team review`, or
 `T2 Need architect`; labels select no approval authority.
