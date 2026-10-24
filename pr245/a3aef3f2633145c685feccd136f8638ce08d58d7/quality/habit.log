@@ -1,0 +1,464 @@
+── high-complexity (24 issues) ──
+
+High cyclomatic complexity means one function makes too many decisions at once. The count is the symptom; tangled responsibilities are the cause.
+
+**Untangle the decisions:**
+1. Lift guards out first — turn precondition checks into early returns so the happy path stays flat. Much of the count is preconditions wrapped around the real work.
+2. Change the shape of what remains: an `if`/`else` chain switching on one value is often a lookup table or polymorphism in disguise; a nested loop is often a filter/map pipeline.
+3. If the branches are genuinely separate jobs, extract one function per branch, each named for the responsibility it handles.
+
+Useful tip: describe each branch in one sentence. Two branches with the same sentence belong together; a branch you cannot name cleanly wants its own function.
+
+**AVOID**: merging conditions with and/or, or rewriting branches as ternaries, just to lower the score — the decisions remain, only the counter moves. You are done when a first-time reader can hold the whole function in their head.
+
+src/app/hosted-workos-application.ts:97
+src/interfaces/mcp/fetch-tool-server.ts:35
+src/interfaces/mcp/fetch-tool-server.ts:96
+src/interfaces/user-portal/portal.ts:82
+src/interfaces/web/account/administration-routes.ts:157
+src/interfaces/web/account/logging-form.ts:6
+src/interfaces/web/account/logging-routes.ts:30
+src/logs/audit/audit-collector.ts:29
+src/logs/audit/audit-event-projection.ts:30
+src/logs/audit/audit-event-projection.ts:62
+src/logs/audit/audit-snapshots.ts:95
+src/logs/audit/destination-endpoint.ts:3
+src/logs/audit/destination-settings-service.ts:44
+src/logs/audit/destination-settings-service.ts:65
+src/logs/audit/destination-settings-service.ts:99
+src/logs/audit/destination-settings-service.ts:137
+src/logs/audit/otlp-audit-encoding.ts:22
+src/logs/audit/otlp-audit-response.ts:13
+src/logs/audit/otlp-audit-response.ts:34
+src/logs/audit/public-audit-destination.ts:24
+test/acceptance/auth/self-hosted-container.test.ts:145
+test/acceptance/user-portal/portal.test.ts:174
+test/acceptance/user-portal/portal.test.ts:208
+test/support/doubles/logging/destination-settings-fake.ts:15
+
+── non-null-assertion (18 issues) ──
+
+A null check — and especially a `!` — is usually covering an underlying design problem, not handling a value that's legitimately sometimes-missing. Before you write one, say out loud what the null actually represents and how it relates to the other objects. That sentence almost always names the real fix.
+
+Two design smells hide behind most null assertions:
+
+- **A circular dependency with no clear owner.** Two objects reference each other, so neither can be built first and one sits briefly null. The fix is to give the dependency a direction: work out which object owns the other (operates on its state, is its exclusive consumer) and have the owner *create* the owned so they're initialised together — or, if it's really an upward event, give the emitter an opaque handler (no-op default) that the owner wires after construction. The mutual reference disappears.
+- **Null standing in for a special case** — "outside the grid", "not found", "not loaded yet". Model that case explicitly: a subclass or a separate class with the same interface — a null object, like a `NullCell` that behaves as a blocked cell — resolved once at the boundary so no caller ever sees null.
+
+Sometimes a null genuinely is unavoidable. Even then `!` is wrong: it swallows the failure at runtime. Replace it with an explicit check — an `if`-guard / early return, or a throw with a clear message — so a broken assumption fails loudly, where it happens.
+
+The only exception: an extremely simple method where the nullable's scope is tiny, a wrong value genuinely cannot cause a silent error, and there's a real performance gain. This should be vanishingly rare — check in with a human before settling for it.
+
+test/integration/hosted-admin/account-routes-logging.test.ts:17
+test/integration/hosted-admin/account-routes-logging.test.ts:25
+test/integration/hosted-admin/account-routes-logging.test.ts:30
+test/unit/html/logging-routes.test.ts:18
+test/unit/html/logging-routes.test.ts:39
+test/unit/html/logging-routes.test.ts:45
+test/unit/html/logging-routes.test.ts:50
+test/unit/html/logging-routes.test.ts:56
+test/unit/html/logging-routes.test.ts:64
+test/unit/html/logging-routes.test.ts:73
+test/unit/html/logging-routes.test.ts:75
+test/unit/html/logging-routes.test.ts:79
+test/unit/html/logging-routes.test.ts:93
+test/unit/logging/destination-credential-codec.test.ts:14
+test/unit/logging/destination-settings-service.test.ts:41
+test/unit/logging/destination-settings-service.test.ts:88
+test/unit/logging/destination-settings-service.test.ts:89
+test/unit/logging/destination-settings-service.test.ts:177
+
+── oversized-function (1 issue) ──
+
+Functions over 12 lines almost always carry more than one responsibility, and that is the smell to chase — not the line count itself.
+
+Analyse responsibilities first: what distinct concerns does this function handle? Ask: (1) Are these separate responsibilities that belong in different methods? (2) Should this become a class with multiple methods? (3) Can you group cohesive data into objects to reduce local variables?
+
+Avoid mechanical extraction. Pulling out a `helperA` / `helperB` purely to satisfy the threshold often hides the smell behind worse names and leaves the real shape untouched. Find true responsibility boundaries.
+
+If responsibilities are tangled you may need to first *inline* methods to see the whole picture before redistributing. Think of this when reducing line count seems particularly hard — stepping backwards often opens up better possibilities.
+
+A concrete technique: write what the method does in one short sentence. Refactor until the code reads as close to that sentence as possible. If you cannot say what it does in one sentence, it almost certainly has more than one responsibility.
+
+src/interfaces/mcp/fetch-tool-server.ts:20
+
+── too-many-parameters (7 issues) ──
+
+High parameter count is a sign of coupling.
+Parameters that travel together across several calls are a missing abstraction.
+
+**Find the missing abstraction:**
+1. Look at the call sites and nearby functions — is there an existing class a group of these parameters belongs to? Search wider than the file that fired: values that keep appearing side by side are the entity, and it is usually one of the domain's own nouns — where that name already exists, it is the answer.
+2. If not, create it — then move behaviour that uses those fields onto it.
+3. If one object owns most of the parameters, it may be the natural home for this function.
+4. Use it at every site it fits, not only the one that fired — a call passing three of its fields is the same concept sitting under the threshold.
+
+Useful tip: rewrite each call site with the signature that feels natural there, and let that shape the final method. 
+
+**AVOID**: A `{ ...everything }` bag that merely renames the list hides the coupling instead of removing it. A `FooProps` or options object named after the function that takes it is the same bag: organised by method rather than by abstraction, so the next function invents another one and the concept stays unnamed. You are done when the entity carries a domain name and no call site still passes its fields loose.
+
+src/app/application.ts:153
+src/interfaces/web/account/administration-routes.ts:180
+src/logs/audit/audit-collector-state.ts:26
+src/logs/audit/destination-settings-service.ts:59
+src/logs/audit/destination-settings-service.ts:65
+src/logs/audit/otlp-audit-request.ts:8
+test/unit/logging/audit/otlp-audit-response.test.ts:6
+
+── unused-variable (1 issue) ──
+
+An unused local variable is dead weight: the reader has to prove to themselves it does not matter. It usually signals one of three things — a computation whose result is never consumed (delete the computation, not just the assignment), a leftover from a refactor that moved logic elsewhere, or a value you meant to use and forgot to wire in (the real bug).
+
+Decide which it is before deleting. If the right-hand side has side effects you still need, keep the call but drop the binding. If it was meant to be returned or passed on, finish that thread rather than silencing the warning. Suppressing it with a throwaway name hides the question instead of answering it.
+
+src/index.ts:30
+
+── non-essential-comment (310 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+.habit-hooks/eslint.config.mjs:63
+docker/verify-hosted-runtime.mjs:10
+docker/verify-hosted-runtime.mjs:11
+src/index.ts:40
+src/index.ts:69
+src/index.ts:71
+src/index.ts:80
+src/index.ts:100
+src/index.ts:101
+src/app/application.ts:15
+src/app/application.ts:16
+src/app/application.ts:29
+src/app/application.ts:30
+src/app/application.ts:42
+src/app/application.ts:43
+src/app/application.ts:54
+src/app/application.ts:57
+src/app/application.ts:68
+src/app/application.ts:79
+src/app/application.ts:112
+src/app/application.ts:133
+src/app/application.ts:143
+src/app/application.ts:148
+src/app/application.ts:215
+src/app/fetch-tool.ts:26
+src/app/fetch-tool.ts:62
+src/app/fetch-tool.ts:73
+src/app/hosted-workos-application.ts:28
+src/app/hosted-workos-application.ts:29
+src/app/hosted-workos-application.ts:36
+src/app/hosted-workos-application.ts:37
+src/app/hosted-workos-application.ts:41
+src/app/hosted-workos-application.ts:44
+src/app/hosted-workos-application.ts:48
+src/app/hosted-workos-application.ts:50
+src/app/hosted-workos-application.ts:54
+src/app/hosted-workos-application.ts:78
+src/app/hosted-workos-application.ts:79
+src/app/hosted-workos-application.ts:140
+src/app/hosted-workos-application.ts:141
+src/app/logging-storage.ts:11
+src/app/logging-storage.ts:35
+test/acceptance/auth/self-hosted-container.test.ts:24
+test/acceptance/auth/self-hosted-container.test.ts:27
+test/acceptance/auth/self-hosted-container.test.ts:28
+test/acceptance/auth/self-hosted-container.test.ts:54
+test/acceptance/auth/self-hosted-container.test.ts:90
+test/acceptance/auth/self-hosted-container.test.ts:153
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:1
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:2
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:36
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:69
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:70
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:121
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:122
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:141
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:142
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:143
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:165
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:166
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:242
+test/acceptance/mcp/get-url-as-markdown.runtime.ts:346
+test/acceptance/mcp/http-shutdown.test.ts:155
+test/acceptance/mcp/renderer-setup-report.test.ts:17
+test/acceptance/mcp/renderer-setup-report.test.ts:62
+test/acceptance/mcp/self-hosted-fetch-tool.test.ts:28
+test/acceptance/mcp/self-hosted-fetch-tool.test.ts:41
+test/acceptance/mcp/self-hosted-fetch-tool.test.ts:197
+test/support/container/audit-sender-site.ts:58
+test/support/container/audit-sender-site.ts:74
+test/support/container/audit-sender-site.ts:181
+test/support/fixtures/hosted-placeholder.ts:4
+test/support/fixtures/hosted-placeholder.ts:5
+test/support/fixtures/hosted-placeholder.ts:14
+test/support/fixtures/hosted-placeholder.ts:24
+test/support/hosted-live/local-https-site.ts:27
+test/support/hosted-live/local-https-site.ts:45
+test/support/hosted-live/local-https-site.ts:47
+test/support/hosted-live/local-https-site.ts:49
+test/support/hosted-live/local-https-site.ts:51
+test/support/hosted-live/local-https-site.ts:54
+test/support/hosted-live/local-https-site.ts:55
+test/support/hosted-live/local-https-site.ts:59
+test/support/hosted-live/local-https-site.ts:60
+test/support/hosted-live/local-https-site.ts:64
+test/support/hosted-live/local-https-site.ts:73
+test/support/hosted-live/local-https-site.ts:87
+test/support/hosted-live/local-https-site.ts:96
+test/support/hosted-live/local-https-site.ts:104
+test/support/in-process/audit-snapshot-site.ts:24
+test/support/in-process/axiom-test-export.ts:48
+test/support/in-process/axiom-test-export.ts:79
+test/support/in-process/axiom-test-export.ts:101
+test/support/in-process/axiom-test-export.ts:102
+test/support/in-process/axiom-test-export.ts:123
+test/support/in-process/hosted-audit-journey-site.ts:40
+test/support/in-process/postgres-settings-site.ts:12
+test/support/in-process/workos-site.ts:13
+test/support/in-process/workos-site.ts:21
+test/support/in-process/workos-site.ts:23
+test/support/in-process/workos-site.ts:25
+test/support/in-process/workos-site.ts:27
+test/support/in-process/workos-site.ts:29
+test/support/in-process/workos-site.ts:36
+test/support/in-process/workos-site.ts:38
+test/support/in-process/workos-site.ts:44
+test/support/in-process/workos-site.ts:46
+test/support/in-process/workos-site.ts:54
+test/support/in-process/workos-site.ts:55
+test/support/in-process/workos-site.ts:56
+test/support/in-process/workos-site.ts:65
+test/support/in-process/workos-site.ts:66
+test/support/processes/audit-destination-test-probe.ts:25
+test/support/processes/module-paths.ts:3
+test/support/processes/module-paths.ts:4
+test/support/processes/module-paths.ts:5
+test/support/processes/module-paths.ts:6
+test/support/processes/module-paths.ts:18
+test/support/processes/module-paths.ts:21
+test/support/processes/module-paths.ts:24
+test/support/processes/module-paths.ts:25
+test/support/processes/module-paths.ts:30
+test/support/processes/module-paths.ts:33
+test/support/processes/module-paths.ts:43
+test/support/processes/module-paths.ts:44
+test/support/processes/module-paths.ts:50
+test/support/processes/module-paths.ts:53
+test/support/processes/module-paths.ts:57
+test/support/processes/module-paths.ts:60
+src/accounts/organizations/change-records.ts:3
+src/accounts/organizations/change-records.ts:4
+src/accounts/organizations/change-records.ts:7
+src/accounts/organizations/change-records.ts:8
+src/accounts/organizations/change-records.ts:11
+src/accounts/organizations/change-records.ts:21
+src/accounts/organizations/change-records.ts:23
+src/accounts/organizations/change-records.ts:28
+src/accounts/organizations/change-records.ts:29
+src/accounts/organizations/change-records.ts:39
+src/accounts/organizations/change-records.ts:42
+src/accounts/organizations/change-records.ts:51
+src/accounts/organizations/change-records.ts:52
+src/accounts/organizations/change-records.ts:53
+src/accounts/organizations/change-records.ts:79
+src/accounts/organizations/change-records.ts:93
+src/interfaces/cli/local-auth-command.ts:9
+src/interfaces/mcp/fetch-tool-server.ts:118
+src/interfaces/mcp/fetch-tool-server.ts:144
+src/interfaces/mcp/fetch-tool-server.ts:156
+src/interfaces/mcp/fetch-tool-server.ts:165
+src/interfaces/user-portal/portal.ts:4
+src/interfaces/user-portal/portal.ts:5
+src/interfaces/user-portal/portal.ts:6
+src/interfaces/user-portal/portal.ts:29
+src/logs/audit/audit-collector.ts:35
+src/logs/audit/audit-collector.ts:93
+src/logs/audit/audit-content.ts:8
+src/logs/audit/audit-content.ts:9
+src/logs/audit/audit-content.ts:21
+src/logs/audit/audit-content.ts:41
+src/logs/audit/audit-content.ts:64
+src/logs/audit/audit-log.ts:73
+src/logs/audit/audit-log.ts:82
+src/logs/audit/audit-log.ts:91
+src/logs/audit/audit-log.ts:7
+src/logs/audit/audit-log.ts:23
+src/logs/audit/audit-log.ts:29
+src/logs/audit/audit-log.ts:46
+src/logs/audit/audit-log.ts:58
+src/logs/audit/audit-log.ts:62
+src/logs/audit/audit-send.ts:3
+src/logs/audit/audit-send.ts:11
+src/logs/audit/audit-send.ts:18
+src/logs/audit/audit-send.ts:24
+src/logs/audit/audit-send.ts:31
+src/logs/audit/audit-snapshot-state.ts:42
+src/logs/audit/audit-snapshots.ts:42
+src/logs/audit/audit-snapshots.ts:65
+src/logs/audit/audit-snapshots.ts:85
+src/logs/audit/audit-snapshots.ts:89
+src/logs/audit/audit-snapshots.ts:15
+src/logs/audit/bounded-sql-runtime.ts:47
+src/logs/audit/destination-endpoint.ts:39
+src/logs/audit/destination-settings-service.ts:43
+src/logs/audit/destination-settings-service.ts:58
+src/logs/audit/destination-settings-store.ts:1
+src/logs/audit/destination-settings-store.ts:23
+src/logs/audit/destination-test.ts:14
+src/logs/audit/otlp-audit-encoding.ts:45
+src/logs/audit/otlp-audit-request.ts:7
+src/logs/audit/otlp-audit-sender.ts:19
+src/logs/audit/otlp-audit-sender.ts:31
+src/logs/audit/otlp-audit-sender.ts:77
+src/logs/audit/otlp-audit-sender.ts:53
+src/logs/audit/otlp-audit-sender.ts:59
+src/logs/audit/public-audit-destination.ts:8
+src/logs/audit/public-audit-destination.ts:40
+src/logs/system/console-system-log-sink.ts:21
+src/logs/system/system-logger.ts:22
+src/logs/system/system-logger.ts:58
+src/logs/system/system-logger.ts:59
+src/runtime/config/logging-storage-config.ts:19
+src/runtime/http/fetch-exchange.ts:13
+src/runtime/http/fetch-exchange.ts:19
+src/runtime/http/fetch-exchange.ts:30
+src/runtime/http/fetch-exchange.ts:42
+src/runtime/http/fetch-exchange.ts:72
+src/runtime/http/fetch-exchange.ts:78
+src/runtime/http/fetch-exchange.ts:88
+src/runtime/http/fetch-exchange.ts:93
+src/runtime/http/fetch-exchange.ts:96
+src/runtime/http/fetch-exchange.ts:120
+src/runtime/http/server.ts:28
+src/runtime/http/server.ts:53
+src/runtime/http/server.ts:54
+src/runtime/http/server.ts:55
+src/runtime/http/server.ts:72
+src/runtime/http/server.ts:73
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:22
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:23
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:28
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:34
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:52
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:78
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:80
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:89
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:93
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts:116
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:2
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:3
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:4
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:5
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:6
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:46
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:47
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:48
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:68
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts:91
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts:19
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts:25
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts:35
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts:54
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts:58
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts:2
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts:3
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts:4
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts:5
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts:28
+test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts:29
+test/support/doubles/application/operator-log-spy.ts:3
+test/support/doubles/application/operator-log-spy.ts:4
+test/support/doubles/application/operator-log-spy.ts:5
+test/support/doubles/logging/destination-settings-fake.ts:4
+test/support/doubles/mcp/fetch-operation-spy.ts:5
+test/support/doubles/mcp/fetch-operation-spy.ts:29
+test/support/drivers/browser/hosted-browser.ts:23
+test/support/drivers/browser/hosted-browser.ts:28
+test/support/drivers/browser/hosted-browser.ts:29
+test/support/drivers/browser/hosted-browser.ts:30
+test/support/drivers/browser/hosted-browser.ts:59
+test/support/drivers/browser/hosted-browser.ts:95
+test/support/drivers/browser/hosted-browser.ts:96
+test/support/drivers/browser/hosted-browser.ts:118
+test/support/drivers/browser/hosted-browser.ts:131
+test/support/drivers/browser/hosted-browser.ts:132
+test/unit/logging/audit/audit-log.test.ts:37
+test/unit/logging/system/console-logger.test.ts:90
+src/interfaces/web/account/account-form.ts:17
+src/interfaces/web/account/account-form.ts:18
+src/interfaces/web/account/account-form.ts:20
+src/interfaces/web/account/account-form.ts:21
+src/interfaces/web/account/account-form.ts:23
+src/interfaces/web/account/account-form.ts:27
+src/interfaces/web/account/account-form.ts:28
+src/interfaces/web/account/account-form.ts:41
+src/interfaces/web/account/account-form.ts:42
+src/interfaces/web/account/account-form.ts:57
+src/interfaces/web/account/account-form.ts:80
+src/interfaces/web/account/account-form.ts:93
+src/interfaces/web/account/account-form.ts:94
+src/interfaces/web/account/account-routes.ts:11
+src/interfaces/web/account/account-routes.ts:12
+src/interfaces/web/account/account-routes.ts:74
+src/interfaces/web/account/account-routes.ts:75
+src/interfaces/web/account/account-routes.ts:93
+src/interfaces/web/account/account-routes.ts:94
+src/interfaces/web/account/account-routes.ts:108
+src/interfaces/web/account/account-routes.ts:109
+src/interfaces/web/account/account-routes.ts:120
+src/interfaces/web/account/account-routes.ts:121
+src/interfaces/web/account/account-routes.ts:142
+src/interfaces/web/account/account-routes.ts:143
+src/interfaces/web/account/account-routes.ts:144
+src/interfaces/web/account/account-routes.ts:152
+src/interfaces/web/account/account-routes.ts:166
+src/interfaces/web/account/administration-pages.ts:19
+src/interfaces/web/account/administration-routes.ts:24
+src/interfaces/web/account/administration-routes.ts:65
+src/interfaces/web/account/administration-routes.ts:66
+src/interfaces/web/account/administration-routes.ts:67
+src/interfaces/web/account/administration-routes.ts:107
+src/interfaces/web/account/administration-routes.ts:154
+src/interfaces/web/account/administration-routes.ts:155
+src/interfaces/web/account/administration-routes.ts:156
+src/interfaces/web/account/administration-routes.ts:188
+src/interfaces/web/account/logging-form.ts:13
+src/interfaces/web/account/logging-routes.ts:18
+src/interfaces/web/account/logging-routes.ts:44
+src/interfaces/web/account/logging-routes.ts:110
+src/interfaces/web/account/members-page-layout.ts:13
+
+── oversized-file (16 issues) ──
+
+Files over 200 lines accumulate unrelated concerns. The smell is poor cohesion — a file that asks the reader to hold too many ideas at once — not the raw line count.
+
+First identify the seams: which exports, types, or helper clusters actually belong together? A long file usually splits cleanly along one of: a data type and its operations, a feature pipeline, or one concern per file.
+
+Avoid mechanical splits. Carving the file at line 200 into `foo-1.ts` and `foo-2.ts`, or moving every private helper into a `utils.ts`, satisfies the threshold without making anything clearer — the cohesion problem just hops to a new place.
+
+If the file's structure resists splitting, that is itself the signal: responsibilities are tangled. Look for a missing abstraction (a class, a small module with a focused interface) that would let related pieces move together as a unit.
+
+A concrete technique: write a one-sentence description of what each emerging seam *would* be responsible for. If you cannot, you have not found the seam yet — do not split.
+
+.habit-hooks/eslint.config.mjs
+src/app/application.ts
+test/acceptance/auth/self-hosted-container.test.ts
+test/acceptance/mcp/get-url-as-markdown.runtime.ts
+test/acceptance/mcp/self-hosted-fetch-tool.test.ts
+test/acceptance/user-portal/portal.test.ts
+test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts
+test/integration/mcp/fetch-tool-server.test.ts
+test/integration/server-stop-signals.test.ts
+test/support/container/audit-sender-site.ts
+test/unit/logging/audit/audit-capture.test.ts
+test/unit/logging/audit/audit-collector.test.ts
+test/unit/logging/audit/audit-snapshots.test.ts
+test/unit/logging/audit/destination-test.test.ts
+test/unit/logging/audit/otlp-audit-sender.test.ts
+test/unit/logging/system/console-logger.test.ts

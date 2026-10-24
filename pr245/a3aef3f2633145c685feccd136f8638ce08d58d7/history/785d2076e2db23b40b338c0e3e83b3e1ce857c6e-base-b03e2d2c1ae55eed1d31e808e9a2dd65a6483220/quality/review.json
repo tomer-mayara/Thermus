@@ -1,0 +1,1077 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+  "headSha": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+  "summary": {
+    "filesChanged": 59,
+    "filesAdded": 104,
+    "filesDeleted": 9,
+    "high": 13,
+    "medium": 28,
+    "low": 5,
+    "improvements": 3
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "src/app/hosted-workos-application.ts",
+      "message": "Maintainability index: 62 -> 56 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 62.161664960403826,
+      "after": 56.20859397680054
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "line": 19,
+      "message": "Maintainability too low: got 46 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/audit-collector.ts",
+      "line": 11,
+      "message": "Maintainability too low: got 40 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "line": 16,
+      "message": "Maintainability too low: got 50 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/bounded-sql-runtime.ts",
+      "line": 48,
+      "message": "Maintainability too low: got 42 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/destination-credential-codec.ts",
+      "line": 3,
+      "message": "Maintainability too low: got 57 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 36,
+      "message": "Maintainability too low: got 46 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/destination-test.ts",
+      "line": 16,
+      "message": "Maintainability too low: got 55 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "line": 60,
+      "message": "Maintainability too low: got 71 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "line": 15,
+      "message": "Maintainability too low: got 56 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/system/console-system-log-sink.ts",
+      "line": 22,
+      "message": "Maintainability too low: got 81 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/logs/system/system-logger.ts",
+      "line": 26,
+      "message": "Maintainability too low: got 55 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/unit/mcp/tool-completion-record.test.ts",
+      "message": "Maintainability index: 68 -> 58 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 67.72686473113363,
+      "after": 58.44030063121482
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/app/application.ts",
+      "message": "Cyclomatic complexity too high: got 48 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/app/hosted-workos-application.ts",
+      "message": "Too many Lines of code (176 > 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "message": "Too many Lines of code (167 > 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "line": 35,
+      "subject": "callTool",
+      "message": "Cyclomatic complexity: 10 -> 15 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 10,
+      "after": 15
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "line": 96,
+      "subject": "safeFailure",
+      "message": "Cyclomatic complexity: 8 -> 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 8,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/interfaces/web/account/administration-routes.ts",
+      "line": 157,
+      "subject": "AdministrationRoutes::changeOnPost",
+      "message": "Cyclomatic complexity: 10 -> 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 10,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/interfaces/web/account/logging-form.ts",
+      "line": 6,
+      "subject": "loggingForm",
+      "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "message": "Cyclomatic complexity too high: got 44 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "line": 30,
+      "subject": "logging-routes\\LoggingRoutes.",
+      "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 13
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/logs/audit/audit-collector.ts",
+      "message": "Cyclomatic complexity too high: got 70 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/logs/audit/audit-collector.ts",
+      "message": "Too many Lines of code (153 > 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/audit-collector.ts",
+      "line": 29,
+      "subject": "AuditCollector::admit",
+      "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "message": "Cyclomatic complexity too high: got 54 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "line": 30,
+      "subject": "inputOf",
+      "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 13
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "line": 62,
+      "subject": "projectAdministrationChange",
+      "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "message": "Cyclomatic complexity too high: got 49 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/logs/audit/bounded-sql-runtime.ts",
+      "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/logs/audit/bounded-sql-runtime.ts",
+      "message": "Too many Lines of code (173 > 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/destination-endpoint.ts",
+      "line": 3,
+      "subject": "validDestinationEndpoint",
+      "message": "New function with cyclomatic complexity 14 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 14
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "message": "Cyclomatic complexity too high: got 78 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "message": "Too many Lines of code (153 > 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 99,
+      "subject": "DestinationSettingsService::save",
+      "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 13
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 65,
+      "subject": "DestinationSettingsService::testSaved",
+      "message": "New function with cyclomatic complexity 14 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 14
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 137,
+      "subject": "invalidInput",
+      "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/otlp-audit-encoding.ts",
+      "line": 22,
+      "subject": "eventAttributes",
+      "message": "New function with cyclomatic complexity 15 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 15
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "line": 8,
+      "message": "LLOC too high in method requestAuditExport(): got 21 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/public-audit-destination.ts",
+      "line": 24,
+      "subject": "parseAuditDestination",
+      "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 13
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/index.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "message": "Efferent coupling too high: got 15 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/logs/audit/audit-collector.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "message": "Efferent coupling too high: got 12 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/runtime/http/server.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    }
+  ],
+  "improvements": [
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "maintainability-improvement",
+      "file": "src/interfaces/mcp/fetch-tool-schema.ts",
+      "message": "Maintainability index: 61 -> 70",
+      "before": 60.57547380260303,
+      "after": 70.2186442498594
+    },
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "maintainability-improvement",
+      "file": "src/interfaces/mcp/tool-completion-record.ts",
+      "message": "Maintainability index: 55 -> 83",
+      "before": 54.96773725520755,
+      "after": 83.11809545265797
+    },
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "maintainability-improvement",
+      "file": "test/integration/mcp/tool-completion-record.test.ts",
+      "message": "Maintainability index: 49 -> 59",
+      "before": 49.43007306823616,
+      "after": 59.163846853911444
+    }
+  ],
+  "gate": "failed",
+  "nativeReview": {
+    "methodologyVersion": "1.1",
+    "baseRef": "origin/main",
+    "baseSha": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+    "headSha": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+    "summary": {
+      "filesChanged": 59,
+      "filesAdded": 104,
+      "filesDeleted": 9,
+      "high": 13,
+      "medium": 31,
+      "low": 5,
+      "improvements": 3
+    },
+    "regressions": [
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "src/app/hosted-workos-application.ts",
+        "message": "Maintainability index: 62 -> 56 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 62.161664960403826,
+        "after": 56.20859397680054
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "line": 19,
+        "message": "Maintainability too low: got 46 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/audit-collector.ts",
+        "line": 11,
+        "message": "Maintainability too low: got 40 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/audit-snapshots.ts",
+        "line": 16,
+        "message": "Maintainability too low: got 50 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/bounded-sql-runtime.ts",
+        "line": 48,
+        "message": "Maintainability too low: got 42 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-credential-codec.ts",
+        "line": 3,
+        "message": "Maintainability too low: got 57 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 36,
+        "message": "Maintainability too low: got 46 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-test.ts",
+        "line": 16,
+        "message": "Maintainability too low: got 55 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/otlp-audit-sender.ts",
+        "line": 60,
+        "message": "Maintainability too low: got 71 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/pg-destination-settings-store.ts",
+        "line": 15,
+        "message": "Maintainability too low: got 56 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/system/console-system-log-sink.ts",
+        "line": 22,
+        "message": "Maintainability too low: got 81 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/system/system-logger.ts",
+        "line": 26,
+        "message": "Maintainability too low: got 55 (min: 85)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "test/unit/mcp/tool-completion-record.test.ts",
+        "message": "Maintainability index: 68 -> 58 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 67.72686473113363,
+        "after": 58.44030063121482
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/app/application.ts",
+        "message": "Cyclomatic complexity too high: got 48 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/app/hosted-workos-application.ts",
+        "message": "Too many Lines of code (176 > 150)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "message": "Too many Lines of code (167 > 150)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "complexity-regression",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "line": 35,
+        "subject": "callTool",
+        "message": "Cyclomatic complexity: 10 -> 15 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 10,
+        "after": 15
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "complexity-regression",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "line": 96,
+        "subject": "safeFailure",
+        "message": "Cyclomatic complexity: 8 -> 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 8,
+        "after": 11
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "complexity-regression",
+        "file": "src/interfaces/web/account/administration-routes.ts",
+        "line": 157,
+        "subject": "AdministrationRoutes::changeOnPost",
+        "message": "Cyclomatic complexity: 10 -> 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 10,
+        "after": 11
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/interfaces/web/account/logging-form.ts",
+        "line": 6,
+        "subject": "loggingForm",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "message": "Cyclomatic complexity too high: got 44 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "line": 30,
+        "subject": "logging-routes\\LoggingRoutes.",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/audit-collector.ts",
+        "message": "Cyclomatic complexity too high: got 70 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/logs/audit/audit-collector.ts",
+        "message": "Too many Lines of code (153 > 150)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/audit-collector.ts",
+        "line": 29,
+        "subject": "AuditCollector::admit",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/audit-event-projection.ts",
+        "message": "Cyclomatic complexity too high: got 54 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/audit-event-projection.ts",
+        "line": 30,
+        "subject": "inputOf",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/audit-event-projection.ts",
+        "line": 62,
+        "subject": "projectAdministrationChange",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/audit-snapshots.ts",
+        "message": "Cyclomatic complexity too high: got 49 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/audit-snapshots.ts",
+        "line": 95,
+        "subject": "AuditSnapshots::read",
+        "message": "New function with cyclomatic complexity 10 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 10
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/bounded-sql-runtime.ts",
+        "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/logs/audit/bounded-sql-runtime.ts",
+        "message": "Too many Lines of code (173 > 150)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-endpoint.ts",
+        "line": 3,
+        "subject": "validDestinationEndpoint",
+        "message": "New function with cyclomatic complexity 14 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 14
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "message": "Cyclomatic complexity too high: got 78 (max: 40)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "message": "Too many Lines of code (153 > 150)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 44,
+        "subject": "DestinationSettingsService::authorizeExport",
+        "message": "New function with cyclomatic complexity 10 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 10
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 99,
+        "subject": "DestinationSettingsService::save",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 65,
+        "subject": "DestinationSettingsService::testSaved",
+        "message": "New function with cyclomatic complexity 14 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 14
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 123,
+        "subject": "DestinationSettingsService::token",
+        "message": "New function with cyclomatic complexity 10 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 10
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 137,
+        "subject": "invalidInput",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/otlp-audit-encoding.ts",
+        "line": 22,
+        "subject": "eventAttributes",
+        "message": "New function with cyclomatic complexity 15 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 15
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:lloc_by_method",
+        "file": "src/logs/audit/otlp-audit-request.ts",
+        "line": 8,
+        "message": "LLOC too high in method requestAuditExport(): got 21 (max: 20)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/public-audit-destination.ts",
+        "line": 24,
+        "subject": "parseAuditDestination",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/index.ts",
+        "message": "Efferent coupling too high: got 11 (max: 10)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "message": "Efferent coupling too high: got 15 (max: 10)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/logs/audit/audit-collector.ts",
+        "message": "Efferent coupling too high: got 12 (max: 10)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/logs/audit/otlp-audit-sender.ts",
+        "message": "Efferent coupling too high: got 12 (max: 10)",
+        "before": 0,
+        "after": 0
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/runtime/http/server.ts",
+        "message": "Efferent coupling too high: got 11 (max: 10)",
+        "before": 0,
+        "after": 0
+      }
+    ],
+    "improvements": [
+      {
+        "kind": "improvement",
+        "severity": "low",
+        "rule": "maintainability-improvement",
+        "file": "src/interfaces/mcp/fetch-tool-schema.ts",
+        "message": "Maintainability index: 61 -> 70",
+        "before": 60.57547380260303,
+        "after": 70.2186442498594
+      },
+      {
+        "kind": "improvement",
+        "severity": "low",
+        "rule": "maintainability-improvement",
+        "file": "src/interfaces/mcp/tool-completion-record.ts",
+        "message": "Maintainability index: 55 -> 83",
+        "before": 54.96773725520755,
+        "after": 83.11809545265797
+      },
+      {
+        "kind": "improvement",
+        "severity": "low",
+        "rule": "maintainability-improvement",
+        "file": "test/integration/mcp/tool-completion-record.test.ts",
+        "message": "Maintainability index: 49 -> 59",
+        "before": 49.43007306823616,
+        "after": 59.163846853911444
+      }
+    ],
+    "gate": "failed"
+  },
+  "reviewPolicy": {
+    "version": 1,
+    "source": "Thermus review wrapper",
+    "newFunctionPaths": ">10",
+    "highFunctionPaths": ">=25",
+    "layerSource": "CR-13 resolved imports"
+  }
+}

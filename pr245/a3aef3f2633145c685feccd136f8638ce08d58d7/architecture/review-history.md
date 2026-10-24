@@ -1,0 +1,9 @@
+# Architecture review record
+
+Final candidate a3aef3f2633145c685feccd136f8638ce08d58d7; base 7d01d2fb61c1ee0faebd1a1b78819902f832f5f4. The manager accepted the existing focused L3 and its four behavior notes. The source is [l3.mmd](l3.mmd); the [800 pixel render](l3-800.png) is the reviewed image. The source and render hashes match the previous approved version. The main PR description contains the one authoritative embedded comparison.
+
+[Registry inventory](registry-inventory.json) accounts for all 11 before and 13 after views. [Reuse proof](reuse-proof.json) records unchanged base source/registry and the final source pins. Four views changed and two were added; seven remained unchanged. Inherited broad overview/deployment labels remain small; the focused comparison is readable at ordinary PR width.
+
+[Contract review](contract-review.md) and [declaration semantics](../api/declaration-semantics.md) distinguish source dependencies, composition and runtime calls. The strongest added callable is tracked send, with separate outcome and physical-settlement promises. L3 and its notes cover authority, payload, ordering, cancellation and resource lifetime; manager review accepts omission of a separate L4. No ADR was requested.
+
+Earlier feedback corrected component ownership, caller/source distinctions, stopping outcomes, DNS/TLS authority, queue bounds and physical settlement. The preserved [v4 comment](../history/architecture-v4-comment.md) and [validation record](../history/architecture-v4-validation.json) retain pins, source identity and publication checks. The policy-only main advance required no redraw. The root manager checked the final generated facts, all nine declaration differences and the complete-candidate evidence. Required independent human approval remains separate.

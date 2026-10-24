@@ -1,0 +1,1897 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+  "mergeBase": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.component_set",
+        "fact": "audit-logs added (roots src/logs/audit/)"
+      },
+      {
+        "key": "architecture.component_set",
+        "fact": "logging removed (roots src/logging/)"
+      },
+      {
+        "key": "architecture.component_set",
+        "fact": "system-logs added (roots src/logs/system/)"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "app -> system-logs (runtime) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "app -> audit-logs (runtime) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "web -> audit-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "mcp -> system-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "mcp -> audit-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "http -> system-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "cli -> system-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "audit-logs -> organizations (type) added"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/system/system-logger.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/destination-settings-service.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/audit-log.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/otlp-audit-sender.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/audit-send.ts"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/index.ts (+4 -3 lines)",
+        "detail": "diff --git a/docs/api-surface/src/index.d.ts b/docs/api-surface/src/index.d.ts\nindex 81f3caab..cfe716c6 100644\n--- a/docs/api-surface/src/index.d.ts\n+++ b/docs/api-surface/src/index.d.ts\n@@ -1,4 +1,5 @@\n-import { type Application, type ApplicationLogger } from './app/application.ts';\n+import { type SystemLog } from './logs/system/system-logger.ts';\n+import { type Application } from './app/application.ts';\n import { type ListenAddress } from './runtime/config/deployment-config.ts';\n type Environment = Readonly<Record<string, string | undefined>>;\n export interface ProcessSignals {\n@@ -8,10 +9,10 @@ export interface ProcessSignals {\n export interface ServeOptions {\n     readonly listen: ListenAddress;\n     readonly publicBaseUrl: string;\n-    readonly logger: ApplicationLogger;\n+    readonly logger: SystemLog;\n     readonly signals: ProcessSignals;\n }\n-export declare function serve(environment: Environment, logger: ApplicationLogger, signals: ProcessSignals): Promise<void>;\n+export declare function serve(environment: Environment, logger: SystemLog, signals: ProcessSignals): Promise<void>;\n export declare function serveApplication(open: () => Application | Promise<Application>, options: ServeOptions): Promise<void>;\n export type StopSignal = Disposable & {\n     readonly received: Promise<NodeJS.Signals>;\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/interfaces/mcp/fetch-tool-schema.ts (+0 -4 lines)",
+        "detail": "diff --git a/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts b/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts\nindex 8baae0b1..d2b80a84 100644\n--- a/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts\n+++ b/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts\n@@ -22,7 +22,3 @@ export declare function parseFetchToolArguments(value: unknown): Promise<{\n     url: string;\n     reason: string;\n } | undefined>;\n-export declare function fieldStatus(value: unknown, bounds: {\n-    minLength: number;\n-    maxLength: number;\n-}): 'valid' | 'missing' | 'not_string' | 'empty' | 'too_long';\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/interfaces/web/account/account-form.ts (+1 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/interfaces/web/account/account-form.d.ts b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\nindex bac5060e..555ac53c 100644\n--- a/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n+++ b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n@@ -18,3 +18,4 @@ export declare function selectionIn(form: URLSearchParams, csrfToken: string, de\n export declare function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal;\n export declare function invitationChangeIn(form: URLSearchParams, csrfToken: string): InvitationChangeRequest | FormRefusal;\n export declare function readForm(request: Request): Promise<URLSearchParams | FormRefusal>;\n+export declare function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal;\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/app/fetch-tool.ts (+5 -4 lines)",
+        "detail": "diff --git a/docs/api-surface/src/app/fetch-tool.d.ts b/docs/api-surface/src/app/fetch-tool.d.ts\nindex 2e4f3d46..421cf5c1 100644\n--- a/docs/api-surface/src/app/fetch-tool.d.ts\n+++ b/docs/api-surface/src/app/fetch-tool.d.ts\n@@ -1,8 +1,9 @@\n-import type { ApplicationLogger } from './application.ts';\n+import type { AuditLog } from '../logs/audit/audit-log.ts';\n+import type { SystemLog } from '../logs/system/system-logger.ts';\n import { type ToolOperations } from '../interfaces/mcp/fetch-tool-server.ts';\n import type { RequestServerBuilder } from '../interfaces/mcp/mcp-server.ts';\n type Environment = Readonly<Record<string, string | undefined>>;\n export type { ToolOperations } from '../interfaces/mcp/fetch-tool-server.ts';\n-export declare function createToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations;\n-export declare function createHostedToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations;\n-export declare function fetchToolServers(operations: ToolOperations, logger: ApplicationLogger): RequestServerBuilder;\n+export declare function createToolOperations(environment: Environment, logger: SystemLog): ToolOperations;\n+export declare function createHostedToolOperations(environment: Environment, logger: SystemLog): ToolOperations;\n+export declare function fetchToolServers(operations: ToolOperations, logger: SystemLog, audit?: Pick<AuditLog, 'toolCompleted'>): RequestServerBuilder;\n"
+      },
+      {
+        "key": "architecture.registry_view_changed",
+        "fact": "architecture/components.md: 2 views added, 4 views edited"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: @opentelemetry/api-logs"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: pg"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "config: node:crypto"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "config: node:fs/promises"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: node:path"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: node:stream"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: node:url"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:crypto"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:dns"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:dns/promises"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:https"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:net"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:tls"
+      },
+      {
+        "key": "dependencies.keys_changed",
+        "fact": "package.json: dependencies.pg added"
+      },
+      {
+        "key": "dependencies.keys_changed",
+        "fact": "package.json: devDependencies.@types/pg added"
+      }
+    ],
+    "summary": "T2: component set changed for 3 components; 8 allowed edges added or widened; 5 public modules added; declarations changed in 4 public modules; 2 registry views added, 4 registry views edited; 13 external imports added; 2 dependency keys added or removed"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.component_set",
+      "fact": "audit-logs added (roots src/logs/audit/)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.component_set",
+      "fact": "logging removed (roots src/logging/)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.component_set",
+      "fact": "system-logs added (roots src/logs/system/)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "app -> system-logs (runtime) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "app -> audit-logs (runtime) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "web -> audit-logs (type) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "mcp -> system-logs (type) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "mcp -> audit-logs (type) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "http -> system-logs (type) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "cli -> system-logs (type) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "audit-logs -> organizations (type) added"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/system/system-logger.ts"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/destination-settings-service.ts"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/audit-log.ts"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/otlp-audit-sender.ts"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/audit-send.ts"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/index.ts (+4 -3 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/interfaces/mcp/fetch-tool-schema.ts (+0 -4 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/interfaces/web/account/account-form.ts (+1 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/app/fetch-tool.ts (+5 -4 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 2 views added, 4 views edited"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.container",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.external",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.deployment",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.crossCutting",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.component",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.policy",
+      "fact": ".habit-hooks/eslint.config.mjs"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.policy",
+      "fact": "docs/implementation/pr-review-rules.yaml"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.contracts",
+      "fact": "src/index.ts"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.contracts",
+      "fact": "src/interfaces/mcp/fetch-tool-schema.ts"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.deploy_and_data",
+      "fact": ".env.example"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.deploy_and_data",
+      "fact": "docker/verify-hosted-runtime.mjs"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.security",
+      "fact": "src/interfaces/web/account/account-form.ts"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.security",
+      "fact": "src/runtime/config/logging-storage-config.ts"
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": ".code-quality-exceptions.yaml"
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: @opentelemetry/api-logs"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: pg"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "config: node:crypto"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "config: node:fs/promises"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: node:path"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: node:stream"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: node:url"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:crypto"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:dns"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:dns/promises"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:https"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:net"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:tls"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.keys_changed",
+      "fact": "package.json: dependencies.pg added"
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.keys_changed",
+      "fact": "package.json: devDependencies.@types/pg added"
+    },
+    {
+      "tier": "T1",
+      "key": "public_surface",
+      "fact": "docs/reference/mcp-fetch-tool.md"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/app/logging-storage.ts covered by \"Optional hosted storage composition keeps validation, safe failure, lazy adapter loading, and service/key wiring in one small boundary. Its three paths are unchanged; splitting construction from cleanup would hide ownership.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-form.ts covered by \"One small form parser combines the shared CSRF and exact-field check with optional checkbox and typed field validation. Each guard rejects a distinct invalid request; a second parser framework would duplicate the existing owner.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-page.ts covered by \"The native form and fixed recovery notice stay with their HTML escaping and write-only token projection. The form reuses the current page layout; extracting individual markup fields would spread one small page.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-routes.ts covered by \"This boundary keeps current Admin authority, request checks, safe outcome mapping and trusted audit capture together. Read, Save and Test stay separate; the route callback has thirteen paths, and each mutation has eight. Tests cover refusals, uncertain writes and throwing capture. Two form-guard copies do not justify a parser or dispatch framework.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-test-page.ts covered by \"Two typed lookup tables keep every safe sender and operation notice exhaustive in one small presentation boundary. The sole function has two paths. Splitting fixed messages into more files would spread one outcome contract without reducing decisions.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-collector-state.ts covered by \"Two small calculations own positive bound validation and typed retry eligibility, exponential delay, jitter and Retry-After precedence. They have four and eight paths. State records stay with these limits; a policy hierarchy or per-field modules would add structure without reducing the rules.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-collector.ts covered by \"One queue owner keeps admission, tenant FIFO, one item and byte account, authorization, retry, fixed age and physical settlement consistent. Nineteen functions have at most eleven paths; the short authorization frame prevents a destination or event alias from surviving a send wait. Moving each state or counter into another owner would obscure release-once and cancellation rules. Focused tests cover overload, deadlines, revisions and each close phase.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-content.ts covered by \"Recognized credential redaction and the bounded exported text copy share one content-safety owner. Six short functions have at most six paths. Recognized bounded text enclosures preserve public syntax; validated URLs and ambiguous text retain full query-value redaction. Byte accounting reserves JSON escaping and the marker. Regression cases cover raw punctuation, escaped or split credentials, Unicode, and malformed enclosures. A general document parser or separate file for each pattern would hide the fixed policy.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-event-projection.ts covered by \"This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-https-connection.ts covered by \"One TLS owner keeps handshake approval, actual peer checks, cancellation, and awaited socket disposal in the same lifetime. Its largest function has four paths; unit and real TLS cases cover the order before HTTP data.\" until 2026-12-23"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-snapshot-state.ts covered by \"Small state contracts and pure projections keep fixed limits, enabled/revision validation and detached bounded AuditEvent ownership explicit. Four functions have at most five paths. A cache framework or per-field modules would spread one metadata contract.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-snapshots.ts covered by \"One owner keeps activity admission, bounded metadata, freshness, backoff, physical reads, deadlines and shutdown consistent. The load function has ten paths after the optional successful-observation hook; failure isolation must not invalidate valid metadata. Splitting its shared reservations or observation checks would obscure lifetime and authority.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/bounded-sql-runtime.ts covered by \"One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-credential-codec.ts covered by \"The compact codec keeps key copying, nonce and tag layout, tenant authenticated data and fail-closed decryption in one owner. Its largest function has four paths. Splitting cryptographic framing would obscure the invariant.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-endpoint.ts covered by \"Syntax and literal-address checks need distinct guards. A range table replaces repeated IPv4 branches; no DNS or socket policy is added here. Focused cases cover malformed and private destinations without a general URL framework.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-settings-service.ts covered by \"One owner keeps validated credential recovery, atomic Save, saved Test and fresh export authorization together. Test has fourteen paths; export authorization has ten for distinct unavailable, changed, aborted and credential outcomes. One fresh version supplies all dispatch fields. Splitting credentials or revision checks into another service would weaken visible ownership.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-test.ts covered by \"One small lifetime owner keeps four-slot admission, caller deadline, cancellation and late callback settlement together. Its largest function has three paths. Moving timer or slot cleanup to another owner would obscure when admission is released.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-encoding.ts covered by \"Named OTLP fields now include bounded public input and result copies and the Save/Test action variant. Timestamp conversion and encoded byte validation remain one wire-format boundary. The largest function has fifteen paths for four event variants; focused format and real Collector cases cover the contract. Splitting individual attributes would spread one format without reducing its rules.\" until 2026-12-23"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-request.ts covered by \"The request owner keeps the checked socket, bounded response collection, cancellation, and response settlement together. Callbacks have at most five paths. A request framework would obscure the no-global-agent guarantee and cleanup ownership.\" until 2026-12-23"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-response.ts covered by \"Success shape, partial rejection, status classification, and Retry-After limits belong to one OTLP result policy. The largest functions have nine paths and focused wire cases. Splitting status and body rules would make their required precedence harder to review.\" until 2026-12-23"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-sender.ts covered by \"One sender owns synchronous payload preparation, safe failure mapping, caller outcome and physical cleanup. Functions have at most six paths. Clearable request state is needed while native DNS ignores cancellation; separating its admission and cleanup would hide that lifetime.\" until 2026-12-23"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/pg-destination-settings-store.ts covered by \"The compact adapter keeps atomic SQL, expected-revision outcomes and row mapping together. Unit mapping and real PostgreSQL acceptance cover separate concerns; splitting SQL constants or mappings would spread the same invariant.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/public-audit-destination.ts covered by \"One destination boundary keeps URL and auth checks, all-answer public IP policy, and pinned peer comparison together. Its largest function has 13 paths covered by focused refusal cases. Splitting each guard would hide the connection policy.\" until 2026-12-23"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/runtime/config/logging-storage-config.ts covered by \"The settings reader keeps required URI, canonical key and PEM validation with safe variable-only diagnostics. Its input rules need distinct branches and are covered by focused cases; a new validation framework would add complexity.\" until 2026-12-22"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-encoding.ts#encodeAuditEvent: [4, 20] covered by \"The prior verified capture could not bind emitted encoder coverage to its source identity. The four source paths bound unknown-coverage CRAP to [4, 20], so the new-function target of 15 is unproved unless the current capture resolves it. Focused encoding and real Collector cases cover behavior; keep the small wire boundary without editing coverage or splitting it to evade the mapping limit.\" until 2026-12-23"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.dependencyRisk",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.policy",
+      "question": "Does this change what the checks enforce, or who decides? Record the new rule and why."
+    },
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    },
+    {
+      "key": "protected_paths.deploy_and_data",
+      "question": "What changes in the image, the runtime, or the stored data, and how is it rolled back? Record the recovery step."
+    },
+    {
+      "key": "protected_paths.security",
+      "question": "Does this change admission, trust, permissions, or what untrusted content can reach? Record the guarantee that holds after the change."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "A",
+      "path": ".code-quality-exceptions.yaml"
+    },
+    {
+      "status": "M",
+      "path": ".env.example"
+    },
+    {
+      "status": "M",
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
+      "path": ".habit-hooks/eslint.config.mjs"
+    },
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docker/verify-hosted-runtime.mjs"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/app/fetch-tool.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/index.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/interfaces/web/account/account-form.d.ts"
+    },
+    {
+      "status": "A",
+      "path": "docs/api-surface/src/logs/audit/audit-log.d.ts"
+    },
+    {
+      "status": "A",
+      "path": "docs/api-surface/src/logs/audit/audit-send.d.ts"
+    },
+    {
+      "status": "A",
+      "path": "docs/api-surface/src/logs/audit/destination-settings-service.d.ts"
+    },
+    {
+      "status": "A",
+      "path": "docs/api-surface/src/logs/audit/otlp-audit-sender.d.ts"
+    },
+    {
+      "status": "A",
+      "path": "docs/api-surface/src/logs/system/system-logger.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-01a-database-setup.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-01a.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-01b.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-02a.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-02b.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-03a.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-03b.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-03c.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-04-notice-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-04.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/basic-mcp-url-fetch-plan.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/logs-object-refactor-change-request.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/pr-review-rules.yaml"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/system-audit-log-separation.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/legal/organization-signup-2026-10-23/data-flow-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-23-b03e2d2c.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-24-7d01d2fb.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/reference/mcp-fetch-tool.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/otel-logger.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-code-layout.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "pnpm-lock.yaml"
+    },
+    {
+      "status": "A",
+      "path": "sql/migrations/20261023211956_logging_destination_settings.sql"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/organizations/change-records.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/app/application.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/app/fetch-tool.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/app/hosted-workos-application.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/app/logging-storage.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/cli/local-auth-command.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/mcp/fetch-tool-schema.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/mcp/fetch-tool-server.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/mcp/tool-completion-record.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/user-portal/portal.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/account-form.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/account-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-pages.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-routes.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/logging-form.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/logging-page.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/logging-routes.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/logging-test-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-page-layout.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-collector-state.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-collector.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-content.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-event-projection.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-https-connection.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-log.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-send.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-snapshot-state.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/audit-snapshots.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/bounded-sql-runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/destination-credential-codec.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/destination-endpoint.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/destination-settings-service.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/destination-settings-store.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/destination-test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/otlp-audit-encoding.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/otlp-audit-request.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/otlp-audit-response.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/otlp-audit-sender.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/pg-destination-settings-store.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/logs/audit/public-audit-destination.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "src/logging/console-logger.ts",
+      "path": "src/logs/system/console-system-log-sink.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "src/logging/otel-logger.ts",
+      "path": "src/logs/system/otel-system-log-sink.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "src/logging/base-logger.ts",
+      "path": "src/logs/system/system-logger.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/runtime/config/logging-storage-config.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/runtime/http/fetch-exchange.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/runtime/http/server.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-members.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/self-hosted-container.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/activity-snapshots.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/administration-capture.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/audit-log.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/audit-sender.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/collector-dispatch.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/destination-settings.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/destination-test.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/export-destination.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/hosted-customer-export.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/hosted-snapshot-composition.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/hosted-storage-startup.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts"
+    },
+    {
+      "status": "D",
+      "path": "test/acceptance/logging/otel-logger.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/system/otel-logger.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/system/system-log-sink.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/mcp/customer-tool-capture.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/get-url-as-markdown.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/hosted-fetch-tool.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/http-dns-cancellation.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/http-fetch.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/http-renderer-shutdown.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/http-shutdown.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/renderer-setup-report.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/mcp/self-hosted-fetch-tool.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/user-portal/portal.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/fixtures/local-auth-command-harness.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/hosted-administration.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/auth/hosted-audit-snapshot-lifecycle.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/hosted-live-site/mcp.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/hosted-organizations.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/auth/hosted-storage-lifecycle.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/local-auth-command-boundary.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/local-installation.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/hosted-admin/account-routes-audit.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/hosted-admin/account-routes-logging.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/logging/audit/destination-settings.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/logging/audit/logging-storage-export.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/mcp/fetch-tool-server.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/mcp/get-url-as-markdown-mcp.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/mcp/renderer-setup-report.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/mcp/tool-completion-record.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/server-stop-signals.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/interface/logging/audit/destination-settings-store.test.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "test/interface/logging/axiom-logging.test.ts",
+      "path": "test/interface/logging/system/axiom-logging.test.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "test/interface/logging/otel-logger-axiom.live.ts",
+      "path": "test/interface/logging/system/otel-logger-axiom.live.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "test/interface/logging/otel-logger.test.ts",
+      "path": "test/interface/logging/system/otel-logger.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/container/audit-sender-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/container/audit-tls-receiver.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/application/operator-log-spy.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/doubles/logging/audit-export-sender-spy.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/doubles/logging/destination-settings-fake.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/doubles/logging/snapshot-settings-store-spy.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/mcp/fetch-operation-spy.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/drivers/browser/hosted-browser.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/dsl/mcp-request-isolation.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/fixtures/hosted-placeholder.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/hosted-live/local-https-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/audit-administration-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/audit-collector-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/audit-snapshot-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/axiom-test-export.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/hosted-audit-export-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/hosted-audit-journey-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/hosted-audit-snapshot-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/logging-destination-test-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/mcp-audit-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/postgres-settings-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/workos-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/processes/audit-capture-export-probe.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/processes/audit-destination-test-probe.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/processes/audit-sender-probe.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/processes/hosted-audit-journey-probe.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/processes/module-paths.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/config/logging-storage-config.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/logging-form.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/logging-routes.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/logging-test-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/http/server-requests.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/http/server-responses.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/audit-capture.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/audit-collector-observation.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/audit-collector.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/audit-https-connection.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/audit-log.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/audit-snapshots.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/bounded-sql-runtime.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/destination-test.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/export-authorization.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/fixtures/audit-collector-fixtures.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/fixtures/audit-snapshot-fixtures.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/otlp-audit-encoding.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/otlp-audit-request.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/otlp-audit-response.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/otlp-audit-sender.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/pg-destination-settings-store.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/public-audit-destination.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/destination-credential-codec.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/destination-settings-service.test.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "test/unit/logging/console-logger.test.ts",
+      "path": "test/unit/logging/system/console-logger.test.ts"
+    },
+    {
+      "status": "R",
+      "oldPath": "test/unit/logging/otel-logger.test.ts",
+      "path": "test/unit/logging/system/otel-logger.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/system/system-logger.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/mcp/tool-completion-record.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/organizations/change-records.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/user-portal/portal.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 2200,
+    "productionLimit": 400,
+    "total": 12903,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 358,
+    "removed": 10,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/accounts/organizations/change-records.ts: 89.81304992725435 to 89.22475666893104",
+    "changed: src/app/application.ts: 56.17474697614129 to 54.75315119138496",
+    "changed: src/app/fetch-tool.ts: 67.897786721955 to 67.74490131344933",
+    "changed: src/app/hosted-workos-application.ts: 62.161664960403826 to 56.20859397680054",
+    "new: src/app/logging-storage.ts: 75.93874390720484",
+    "changed: src/index.ts: 60.341782637738056 to 60.268250151030934",
+    "changed: src/interfaces/cli/local-auth-command.ts: 50.013969903234944 to 49.98602413969282",
+    "changed: src/interfaces/mcp/fetch-tool-schema.ts: 60.57547380260303 to 70.2186442498594",
+    "changed: src/interfaces/mcp/fetch-tool-server.ts: 45.74341398850147 to 44.74554675681968",
+    "changed: src/interfaces/mcp/tool-completion-record.ts: 54.96773725520755 to 83.11809545265797",
+    "changed: src/interfaces/user-portal/portal.ts: 47.012305725672505 to 47.012305725672505",
+    "changed: src/interfaces/web/account/account-form.ts: 61.60432516158119 to 61.60432516158119",
+    "changed: src/interfaces/web/account/account-routes.ts: 61.20465059180725 to 60.07546058335585",
+    "changed: src/interfaces/web/account/administration-pages.ts: 64.89901264910168 to 64.89901264910168",
+    "changed: src/interfaces/web/account/administration-routes.ts: 59.262568959744314 to 56.14187606413681",
+    "new: src/interfaces/web/account/logging-form.ts: 73.90121040809896",
+    "new: src/interfaces/web/account/logging-page.ts: 72.85861970023612",
+    "new: src/interfaces/web/account/logging-routes.ts: 47.791505447861134",
+    "new: src/interfaces/web/account/logging-test-page.ts: 71.8038342317498",
+    "changed: src/interfaces/web/account/members-page-layout.ts: 86.13129726591819 to 83.0401390680943",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot",
+    "new: src/logs/audit/audit-collector-state.ts: 59.506041448660795",
+    "new: src/logs/audit/audit-collector.ts: 40.46904539386636",
+    "new: src/logs/audit/audit-content.ts: 66.03646029274161",
+    "new: src/logs/audit/audit-event-projection.ts: 36.99712939607105",
+    "new: src/logs/audit/audit-https-connection.ts: 49.28627953548048",
+    "new: src/logs/audit/audit-log.ts: 88.05501787852491",
+    "new: src/logs/audit/audit-send.ts: 112.12591906567519",
+    "new: src/logs/audit/audit-snapshot-state.ts: 67.58503629937391",
+    "new: src/logs/audit/audit-snapshots.ts: 51.63520998785902",
+    "new: src/logs/audit/bounded-sql-runtime.ts: 41.89086619745289",
+    "new: src/logs/audit/destination-credential-codec.ts: 57.15224361618008",
+    "new: src/logs/audit/destination-endpoint.ts: 69.85659655367279",
+    "new: src/logs/audit/destination-settings-service.ts: 41.69472240093922",
+    "not applicable: src/logs/audit/destination-settings-store.ts: no raw MI in the head snapshot",
+    "new: src/logs/audit/destination-test.ts: 73.83399132073536",
+    "new: src/logs/audit/otlp-audit-encoding.ts: 54.626113259105146",
+    "new: src/logs/audit/otlp-audit-request.ts: 60.36464327202974",
+    "new: src/logs/audit/otlp-audit-response.ts: 47.92219396974867",
+    "new: src/logs/audit/otlp-audit-sender.ts: 64.71989012659888",
+    "new: src/logs/audit/pg-destination-settings-store.ts: 54.212735073143314",
+    "new: src/logs/audit/public-audit-destination.ts: 60.33075525288621",
+    "changed: src/logging/console-logger.ts -> src/logs/system/console-system-log-sink.ts: 79.5562845691285 to 82.99873966825315",
+    "changed: src/logging/otel-logger.ts -> src/logs/system/otel-system-log-sink.ts: 76.8377658503876 to 81.95776416845449",
+    "changed: src/logging/base-logger.ts -> src/logs/system/system-logger.ts: 54.545136278922136 to 56.24377370310303",
+    "new: src/runtime/config/logging-storage-config.ts: 59.990871970671556",
+    "changed: src/runtime/http/fetch-exchange.ts: 59.53758140402472 to 59.465211106816625",
+    "changed: src/runtime/http/server.ts: 68.6434295201977 to 68.52365171422865"
+  ],
+  "crap": [
+    "src/interfaces/mcp/fetch-tool-server.ts: callTool: 15.000006075",
+    "src/logs/audit/otlp-audit-encoding.ts: eventAttributes: 15.0",
+    "src/logs/audit/destination-endpoint.ts: validDestinationEndpoint: 14.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.testSaved: 14.0",
+    "src/logs/audit/public-audit-destination.ts: parseAuditDestination: 13.2",
+    "src/logs/audit/audit-event-projection.ts: inputOf: 13.1",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.: 13.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.save: 13.0",
+    "src/logs/audit/audit-event-projection.ts: projectAdministrationChange: 11.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.admit: 11.0",
+    "src/interfaces/mcp/fetch-tool-server.ts: safeFailure: 11.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.changeOnPost: 11.0",
+    "src/interfaces/web/account/logging-form.ts: loggingForm: 11.0",
+    "src/logs/audit/destination-settings-service.ts: invalidInput: 11.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.authorizeExport: 10.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.token: 10.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.read: 10.0",
+    "src/logs/audit/audit-event-projection.ts: projectToolCompletion: 9.0",
+    "src/logs/audit/otlp-audit-response.ts: interpretAuditResponse: 9.0",
+    "src/logs/audit/otlp-audit-response.ts: accepted: 9.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.save: 8.1",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.dispatch: 8.1",
+    "src/logs/audit/audit-event-projection.ts: contextOf: 8.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.pump: 8.0",
+    "src/logs/audit/audit-collector-state.ts: retryDelay: 8.0",
+    "src/app/hosted-workos-application.ts: composeWorkOSApplication: 8.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.test: 8.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.writeAuditEvent: 8.0",
+    "src/runtime/config/logging-storage-config.ts: loadLoggingStorageConfig: 8.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.saveAnswer: 8.0",
+    "src/logs/audit/bounded-sql-runtime.ts: connectionOptions: 7.2",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.startAttempt: 7.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.execute: 7.0",
+    "src/runtime/config/logging-storage-config.ts: validDatabaseUri: 7.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.keep: 6.0",
+    "src/logs/audit/audit-content.ts: redactTextMatch: 6.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.capacity: 6.0",
+    "src/logs/audit/otlp-audit-sender.ts: failureOutcome: 6.0",
+    "src/logs/audit/bounded-sql-runtime.ts: validateBounds: 5.2",
+    "src/app/logging-storage.ts: openLoggingStorage: 5.1",
+    "src/logs/audit/public-audit-destination.ts: publicAddress: 5.0",
+    "src/logs/audit/otlp-audit-response.ts: retryDelay: 5.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 5.0",
+    "src/interfaces/web/account/members-page-layout.ts: membersPageLayout: 5.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.tenantOperation: 5.0",
+    "src/interfaces/web/account/logging-page.ts: loggingPage: 5.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.settingsObserved: 5.0",
+    "src/logs/audit/audit-event-projection.ts: inputText: 5.0",
+    "src/logs/audit/audit-snapshot-state.ts: snapshotFrom: 5.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.loadLater: 5.0",
+    "src/logs/audit/destination-settings-service.ts: retainedToken: 5.0",
+    "src/logs/audit/otlp-audit-encoding.ts: timestampNanos: 5.0",
+    "src/logs/audit/pg-destination-settings-store.ts: pg-destination-settings-store\\PgDestinationSettingsStore.: 5.0",
+    "src/logs/audit/public-audit-destination.ts: resolveAuditAddress: 5.0",
+    "src/logs/audit/public-audit-destination.ts: sameAuditAddress: 5.0",
+    "src/index.ts: run: 4.2",
+    "src/logs/audit/audit-collector-state.ts: collectorBounds: 4.1",
+    "src/logs/audit/audit-snapshot-state.ts: snapshotBounds: 4.1",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.release: 4.0",
+    "src/logs/audit/audit-https-connection.ts: connectAuditTls: 4.0",
+    "src/interfaces/web/account/account-form.ts: formFields: 4.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.handlerFor: 4.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.backoff: 4.0",
+    "src/logs/audit/audit-content.ts: prefixWithin: 4.0",
+    "src/logs/audit/audit-event-projection.ts: metadata: 4.0",
+    "src/logs/audit/audit-event-projection.ts: projectDestinationChange: 4.0",
+    "src/logs/audit/audit-snapshot-state.ts: boundedSnapshotText: 4.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.close: 4.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.makeRoom: 4.0",
+    "src/logs/audit/destination-credential-codec.ts: destination-credential-codec\\DestinationCredentialCodec.decrypt: 4.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.read: 4.0",
+    "src/logs/audit/destination-settings-service.ts: matchesSavedSettings: 4.0",
+    "src/runtime/config/logging-storage-config.ts: validateCertificates: 4.0",
+    "src/logs/audit/otlp-audit-encoding.ts: stringAttribute: 3.1",
+    "src/logs/audit/audit-content.ts: redactParameter: 3.1",
+    "src/runtime/config/logging-storage-config.ts: explicitCredentials: 3.0",
+    "src/logs/audit/audit-snapshot-state.ts: detachedAuditEvent: 3.0",
+    "src/logs/audit/otlp-audit-sender.ts: attempt: 3.0",
+    "src/app/hosted-workos-application.ts: openWorkOSApplication: 3.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.discardRevision: 3.0",
+    "src/accounts/organizations/change-records.ts: change-records\\ChangeRecording.keep: 3.0",
+    "src/interfaces/mcp/fetch-tool-server.ts: emitCompletion: 3.0",
+    "src/interfaces/mcp/tool-completion-record.ts: formatToolCompletion: 3.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.schedule: 3.0",
+    "src/logs/audit/audit-content.ts: captureAuditResult: pass from the bound [3, 12]",
+    "src/logs/audit/audit-https-connection.ts: (anonymous): 3.0",
+    "src/logs/audit/audit-log.ts: audit-log\\AuditLog.administrationChanged: 3.0",
+    "src/logs/audit/audit-log.ts: audit-log\\AuditLog.destinationChanged: 3.0",
+    "src/logs/audit/audit-log.ts: audit-log\\AuditLog.toolCompleted: 3.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.: 3.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.current: 3.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.expire: 3.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.residentFor: 3.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.run: 3.0",
+    "src/logs/audit/destination-test.ts: destination-test\\DestinationTestLifetime.run: 3.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 3.0",
+    "src/logs/audit/otlp-audit-response.ts: record: 3.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.start: 3.0",
+    "src/logs/system/system-logger.ts: system-logger\\SystemLogger.messageOf: 3.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 2.0",
+    "src/logs/audit/destination-endpoint.ts: publicIpv6: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: createPgSettingsRuntime: 2.0",
+    "src/logs/audit/audit-https-connection.ts: (anonymous): 2.0",
+    "src/app/application.ts: (anonymous): 2.0",
+    "src/app/application.ts: (anonymous): 2.0",
+    "src/app/application.ts: createApplication: 2.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 2.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 2.0",
+    "src/index.ts: hostedShutdownDeadline: 2.0",
+    "src/interfaces/mcp/fetch-tool-server.ts: captureCompletion: 2.0",
+    "src/interfaces/user-portal/portal.ts: showWorkspaceNavigation: 2.0",
+    "src/interfaces/web/account/account-form.ts: (anonymous): 2.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.withScope: 2.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.keep: 2.0",
+    "src/interfaces/web/account/logging-test-page.ts: loggingTestAnswer: 2.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.: 2.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.close: 2.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.dispose: 2.0",
+    "src/logs/audit/audit-https-connection.ts: closeAuditSocket: 2.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.finish: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.destroy: 2.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.dispose: 2.0",
+    "src/logs/audit/destination-credential-codec.ts: destination-credential-codec\\DestinationCredentialCodec.constructor: 2.0",
+    "src/logs/audit/destination-endpoint.ts: (anonymous): 2.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.readStored: 2.0",
+    "src/logs/audit/destination-test.ts: destination-test\\DestinationTestLifetime.: 2.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 2.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 2.0",
+    "src/logs/audit/otlp-audit-sender.ts: beginAttempt: 2.0",
+    "src/logs/audit/pg-destination-settings-store.ts: openDestinationSettingsRuntime: 2.0",
+    "src/logs/audit/pg-destination-settings-store.ts: pg-destination-settings-store\\PgDestinationSettingsStore.: 2.0",
+    "src/logs/audit/pg-destination-settings-store.ts: pg-destination-settings-store\\PgDestinationSettingsStore.read: 2.0",
+    "src/logs/audit/pg-destination-settings-store.ts: pg-destination-settings-store\\PgDestinationSettingsStore.save: 2.0",
+    "src/logs/system/system-logger.ts: system-logger\\SystemLogger.emit: 2.0",
+    "src/runtime/http/fetch-exchange.ts: (anonymous): 2.0",
+    "src/app/application.ts: (anonymous): 1.0",
+    "src/app/application.ts: (anonymous): 1.0",
+    "src/app/application.ts: (anonymous): 1.0",
+    "src/app/application.ts: (anonymous): 1.0",
+    "src/app/application.ts: (anonymous): 1.0",
+    "src/app/application.ts: (anonymous): 1.0",
+    "src/app/application.ts: accountChangeRecorder: 1.0",
+    "src/app/application.ts: accountFailureReporter: 1.0",
+    "src/app/application.ts: composeHostedApplication: 1.0",
+    "src/app/application.ts: createHostedApplication: 1.0",
+    "src/app/application.ts: createSelfHostedApplication: 1.0",
+    "src/app/application.ts: discardAuditLog: 1.0",
+    "src/app/application.ts: operatorFailureReporter: 1.0",
+    "src/app/fetch-tool.ts: (anonymous): 1.0",
+    "src/app/fetch-tool.ts: createHostedToolOperations: 1.0",
+    "src/app/fetch-tool.ts: createToolOperations: 1.0",
+    "src/app/fetch-tool.ts: fetchToolServers: 1.0",
+    "src/app/fetch-tool.ts: rendererSetupReporter: 1.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 1.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 1.0",
+    "src/app/hosted-workos-application.ts: openWorkOSConnection: 1.0",
+    "src/app/logging-storage.ts: (anonymous): 1.0",
+    "src/app/logging-storage.ts: composeLoggingStorage: pass from the bound [1, 2]",
+    "src/index.ts: runOperatorCommand: 1.0",
+    "src/index.ts: serve: 1.0",
+    "src/interfaces/mcp/fetch-tool-server.ts: (anonymous): 1.0",
+    "src/interfaces/mcp/fetch-tool-server.ts: (anonymous): 1.0",
+    "src/interfaces/mcp/fetch-tool-server.ts: createFetchToolServer: 1.0",
+    "src/interfaces/web/account/account-routes.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/account-routes.ts: account-routes\\HostedAccountRoutes.constructor: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.constructor: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.membersPage: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.resendInvitation: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.revokeInvitation: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.sendInvitation: 1.0",
+    "src/interfaces/web/account/logging-page.ts: loggingNotice: 1.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.constructor: 1.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.path: 1.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.unavailable: 1.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.: 1.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.: 1.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.: 1.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.: 1.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.: 1.0",
+    "src/logs/audit/audit-collector.ts: audit-collector\\AuditCollector.constructor: 1.0",
+    "src/logs/audit/audit-content.ts: redactAuditText: pass from the bound [1, 2]",
+    "src/logs/audit/audit-content.ts: redactAuditUrl: pass from the bound [1, 2]",
+    "src/logs/audit/audit-https-connection.ts: (anonymous): 1.0",
+    "src/logs/audit/audit-https-connection.ts: (anonymous): 1.0",
+    "src/logs/audit/audit-https-connection.ts: (anonymous): 1.0",
+    "src/logs/audit/audit-https-connection.ts: cancel: 1.0",
+    "src/logs/audit/audit-log.ts: audit-log\\AuditLog.constructor: 1.0",
+    "src/logs/audit/audit-send.ts: audit-send\\AuditSendFailure.constructor: 1.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.: 1.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.: 1.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.: 1.0",
+    "src/logs/audit/audit-snapshots.ts: audit-snapshots\\AuditSnapshots.constructor: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: (anonymous): 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.close: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.constructor: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.session: 1.0",
+    "src/logs/audit/bounded-sql-runtime.ts: bounded-sql-runtime\\BoundedSqlRuntime.start: 1.0",
+    "src/logs/audit/destination-credential-codec.ts: destination-credential-codec\\DestinationCredentialCodec.encrypt: 1.0",
+    "src/logs/audit/destination-endpoint.ts: (anonymous): 1.0",
+    "src/logs/audit/destination-endpoint.ts: (anonymous): 1.0",
+    "src/logs/audit/destination-endpoint.ts: ipv4Value: 1.0",
+    "src/logs/audit/destination-endpoint.ts: publicIpv4: 1.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.: 1.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.: 1.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.constructor: 1.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.test: 1.0",
+    "src/logs/audit/destination-settings-service.ts: project: 1.0",
+    "src/logs/audit/destination-test.ts: destination-test\\DestinationTestLifetime.: 1.0",
+    "src/logs/audit/destination-test.ts: destination-test\\DestinationTestLifetime.: 1.0",
+    "src/logs/audit/destination-test.ts: destination-test\\DestinationTestLifetime.: 1.0",
+    "src/logs/audit/destination-test.ts: destination-test\\DestinationTestLifetime.: 1.0",
+    "src/logs/audit/destination-test.ts: destination-test\\DestinationTestLifetime.cancel: 1.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 1.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 1.0",
+    "src/logs/audit/otlp-audit-request.ts: requestAuditExport: pass from the bound [1, 2]",
+    "src/logs/audit/otlp-audit-sender.ts: clear: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: clearPayload: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.cancel: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.send: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: prepare: 1.0",
+    "src/logs/audit/pg-destination-settings-store.ts: (anonymous): pass from the bound [1, 2]",
+    "src/logs/audit/pg-destination-settings-store.ts: pg-destination-settings-store\\PgDestinationSettingsStore.constructor: 1.0",
+    "src/logs/audit/pg-destination-settings-store.ts: settings: 1.0",
+    "src/logs/audit/public-audit-destination.ts: (anonymous): 1.0",
+    "src/logs/system/console-system-log-sink.ts: console-system-log-sink\\ConsoleSystemLogSink.constructor: 1.0",
+    "src/logs/system/console-system-log-sink.ts: console-system-log-sink\\ConsoleSystemLogSink.writeSystemLog: 1.0",
+    "src/logs/system/otel-system-log-sink.ts: otel-system-log-sink\\OtelSystemLogSink.constructor: 1.0",
+    "src/logs/system/otel-system-log-sink.ts: otel-system-log-sink\\OtelSystemLogSink.writeSystemLog: 1.0",
+    "src/logs/system/system-logger.ts: system-logger\\SystemLogger.constructor: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: goal miss",
+    "Architecture: passed",
+    "outside scopes.production: test/unit/mcp/tool-completion-record.test.ts: Maintainability index: 68 -> 58 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [
+    {
+      "key": "dependency_graph.components",
+      "value": "audit-logs"
+    },
+    {
+      "key": "dependency_graph.allowed_edges",
+      "value": "{ from: app, to: audit-logs, kind: runtime }"
+    },
+    {
+      "key": "dependency_graph.allowed_edges",
+      "value": "{ from: audit-logs, to: organizations, kind: type }"
+    },
+    {
+      "key": "dependency_graph.allowed_edges",
+      "value": "{ from: cli, to: logging, kind: type }"
+    },
+    {
+      "key": "dependency_graph.allowed_edges",
+      "value": "{ from: http, to: logging, kind: type }"
+    },
+    {
+      "key": "dependency_graph.allowed_edges",
+      "value": "{ from: mcp, to: audit-logs, kind: type }"
+    },
+    {
+      "key": "dependency_graph.allowed_edges",
+      "value": "{ from: mcp, to: logging, kind: type }"
+    },
+    {
+      "key": "dependency_graph.allowed_edges",
+      "value": "{ from: web, to: audit-logs, kind: type }"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.audit-logs",
+      "value": "node:tls"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.audit-logs",
+      "value": "node:dns"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.audit-logs",
+      "value": "node:net"
+    },
+    {
+      "key": "dependency_graph.allowed_external_imports.audit-logs",
+      "value": "pg"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.audit-logs",
+      "value": "node:crypto"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.audit-logs",
+      "value": "node:https"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.audit-logs",
+      "value": "node:dns/promises"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.config",
+      "value": "node:crypto"
+    },
+    {
+      "key": "dependency_graph.allowed_node_builtins.config",
+      "value": "node:fs/promises"
+    },
+    {
+      "key": "public_surface.between_packages.logging",
+      "value": "src/logs/system/system-logger.ts"
+    },
+    {
+      "key": "public_surface.between_packages.audit-logs",
+      "value": "src/logs/audit/audit-log.ts"
+    },
+    {
+      "key": "public_surface.between_packages.audit-logs",
+      "value": "src/logs/audit/destination-settings-service.ts"
+    },
+    {
+      "key": "public_surface.between_packages.audit-logs",
+      "value": "src/logs/audit/audit-send.ts"
+    }
+  ],
+  "surfaceDifferences": [
+    "src/index.ts",
+    "src/index.ts (imports changed src/app/application.ts)",
+    "src/interfaces/mcp/fetch-tool-schema.ts",
+    "src/interfaces/web/account/account-form.ts",
+    "src/accounts/organizations/change-records.ts",
+    "src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/change-records.ts)",
+    "src/app/fetch-tool.ts",
+    "docs/reference/mcp-fetch-tool.md",
+    "src/logs/system/system-logger.ts",
+    "src/logs/audit/destination-settings-service.ts",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/destination-credential-codec.ts)",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/destination-endpoint.ts)",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/destination-settings-store.ts)",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/audit-send.ts)",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/destination-test.ts)",
+    "src/logs/audit/audit-log.ts",
+    "src/logs/audit/audit-log.ts (imports changed src/logs/audit/audit-event-projection.ts)",
+    "src/logs/audit/audit-log.ts (imports changed src/logs/audit/audit-content.ts)",
+    "src/logs/audit/otlp-audit-sender.ts",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-log.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-send.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/public-audit-destination.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-https-connection.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-request.ts)",
+    "src/logs/audit/audit-send.ts",
+    "src/logs/audit/audit-send.ts (imports changed src/logs/audit/audit-log.ts)"
+  ],
+  "informational": [
+    "48 public modules, 4 snapshots changed, 5 added",
+    "allowed edge removed: app -> logging (runtime)",
+    "declaration snapshot added: src/logs/system/system-logger.ts",
+    "declaration snapshot added: src/logs/audit/destination-settings-service.ts",
+    "declaration snapshot added: src/logs/audit/audit-log.ts",
+    "declaration snapshot added: src/logs/audit/otlp-audit-sender.ts",
+    "declaration snapshot added: src/logs/audit/audit-send.ts",
+    "external import removed: logging: @opentelemetry/api-logs",
+    "external import removed: logging: node:path",
+    "external import removed: logging: node:stream",
+    "external import removed: logging: node:url",
+    "public module touched, declarations unchanged: src/accounts/organizations/change-records.ts",
+    "public module touched, declarations unchanged: src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/change-records.ts)",
+    "size.production_lines_note_above: 2200 production lines, above the limit of 400",
+    "size.total_lines_note_above: 12903 lines without generated files, above the limit of 1500",
+    "ratchet.maintainability_index.existing_file_drop_note_at: src/app/hosted-workos-application.ts: 62.161664960403826 to 56.20859397680054",
+    "ratchet.review_findings_high: src/app/hosted-workos-application.ts: Maintainability index: 62 -> 56 (below 85 is hard to maintain)",
+    "ratchet.review_findings_high: src/interfaces/web/account/logging-routes.ts: Maintainability too low: got 46 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/audit-collector.ts: Maintainability too low: got 40 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/audit-snapshots.ts: Maintainability too low: got 50 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/bounded-sql-runtime.ts: Maintainability too low: got 42 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/destination-credential-codec.ts: Maintainability too low: got 57 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/destination-settings-service.ts: Maintainability too low: got 46 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/destination-test.ts: Maintainability too low: got 55 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/otlp-audit-sender.ts: Maintainability too low: got 71 (min: 85)",
+    "ratchet.review_findings_high: src/logs/audit/pg-destination-settings-store.ts: Maintainability too low: got 56 (min: 85)",
+    "ratchet.review_findings_high: src/logs/system/console-system-log-sink.ts: Maintainability too low: got 81 (min: 85)",
+    "ratchet.review_findings_high: src/logs/system/system-logger.ts: Maintainability too low: got 55 (min: 85)"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

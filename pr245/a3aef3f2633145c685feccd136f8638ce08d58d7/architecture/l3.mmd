@@ -1,0 +1,26 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial","fontSize":"16px","primaryTextColor":"#222222","lineColor":"#666666","edgeLabelBackground":"#ffffff","clusterBkg":"#fafafa","clusterBorder":"#777777"},"flowchart":{"htmlLabels":true,"nodeSpacing":28,"rankSpacing":36,"padding":14,"wrappingWidth":260,"curve":"basis"}}}%%
+flowchart TB
+  subgraph server["L2 container: Thermus Node server · hosted"]
+    app["app · CHANGED<br/>Compose system output and shared audit path<br/>Own settings / capture / dispatch lifetime"]
+    mcp["mcp · CHANGED<br/>Capture final validated tool outcome<br/><font color='#b42318'>REMOVED: URL / reason in diagnostics</font>"]
+    web["web · CHANGED<br/>Current Admin settings / Save / Test<br/>Capture trusted action metadata; show help"]
+    system["logging → system-logs · CHANGED<br/>Internal diagnostics retain caller location<br/>Formatter with supplied console / OTel sink"]
+    audit["audit-logs · NEW owner<br/>Settings and saved Test; bounded capture<br/>Activity snapshots; queue and authorized export"]
+  end
+  sql[("L2 · PostgreSQL · NEW option<br/>Tenant settings / encrypted credential / revision<br/>No event history")]
+  collector["L2 peer: customer Collector · NEW destination<br/>OTLP HTTP JSON over HTTPS<br/>Configured capability; rollout unverified"]
+  app ==>|CHANGED composition| system
+  app ==>|NEW shared composition| audit
+  mcp -->|completion diagnostics| system
+  mcp -->|NEW final public capture| audit
+  web -->|NEW settings / Test / action capture| audit
+  audit -->|NEW pg / verified TLS| sql
+  audit -->|NEW export and saved Test / HTTPS POST| collector
+  classDef changed fill:#fff4d6,stroke:#aa6b00,color:#222222
+  classDef added fill:#e9f6ed,stroke:#287a3e,color:#222222
+  class app,mcp,web,system changed
+  class audit,sql,collector added
+  linkStyle 0 stroke:#aa6b00,stroke-width:3px
+  linkStyle 1 stroke:#287a3e,stroke-width:3px
+  linkStyle 3,4,5,6 stroke:#287a3e
+  style server fill:#fafafa,stroke:#777777,color:#222222

@@ -1,0 +1,59 @@
+{
+  "generatedAtUtc": "2026-10-24T22:26:41.943866+00:00",
+  "candidate": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+  "base": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "mergeTree": "0155de6c84782c4b4f1ae78b3a925a093db591bd",
+  "mergeTreeEqualsHead": true,
+  "clean": true,
+  "ancestors": [
+    {
+      "pr": 237,
+      "head": "82f3d6049a23fe10fa9827379fd48863b584dbe3",
+      "ancestor": true,
+      "remoteBranch": "codex/admin-s2-01a"
+    },
+    {
+      "pr": 238,
+      "head": "e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81",
+      "ancestor": true,
+      "remoteBranch": "codex/admin-s2-01b"
+    },
+    {
+      "pr": 239,
+      "head": "c5bbc96d6a243997d04a0af069e291eef175dcb3",
+      "ancestor": true,
+      "remoteBranch": "codex/system-audit-logs"
+    },
+    {
+      "pr": 240,
+      "head": "a8e7917147a00b30d5d2014c75e19ad2833d19fc",
+      "ancestor": true,
+      "remoteBranch": "codex/admin-s2-02a"
+    },
+    {
+      "pr": 241,
+      "head": "243acef2e92748e9cf54ed137b42f777f4cdea3f",
+      "ancestor": true,
+      "remoteBranch": "codex/admin-s2-02b"
+    },
+    {
+      "pr": 242,
+      "head": "c68c61751c36be9b208e6efd95d7f7f1f4243e6b",
+      "ancestor": true,
+      "remoteBranch": "codex/admin-s2-03a"
+    },
+    {
+      "pr": 243,
+      "head": "ab6bfe9ab117ce33910e9fe1f3614ed1e4f3a08e",
+      "ancestor": true,
+      "remoteBranch": "codex/admin-s2-03b"
+    },
+    {
+      "pr": 244,
+      "head": "b2acfe82e3c24529eca007a83b6999e655052e74",
+      "ancestor": true,
+      "remoteBranch": "codex/admin-s2-03c"
+    }
+  ],
+  "strategy": "Consolidated PR245 is based on current main and contains all eight unchanged ancestor PR heads. Retarget those PRs to main before one expected-head merge commit; no squash, rebase or separate prefix merge. Git ancestry retains the stack dependencies."
+}

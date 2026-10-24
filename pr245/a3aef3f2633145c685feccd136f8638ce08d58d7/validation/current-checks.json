@@ -1,0 +1,231 @@
+{
+  "candidate": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+  "base": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "checks": [
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/container-checks.json",
+      "record": {
+        "name": "container",
+        "command": [
+          "npm",
+          "run",
+          "test:container"
+        ],
+        "head": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+        "seconds": 209.36,
+        "exit": 0,
+        "log": "container.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/coverage-checks.json",
+      "record": {
+        "name": "coverage",
+        "command": [
+          "pnpm",
+          "exec",
+          "node",
+          "script/code-quality/ast-metrics-coverage.ts",
+          "--suite",
+          "unit",
+          "--suite",
+          "integration"
+        ],
+        "head": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+        "seconds": 106.39,
+        "exit": 0,
+        "log": "coverage.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/hosted-checks.json",
+      "record": {
+        "name": "hosted",
+        "command": [
+          "npm",
+          "run",
+          "test:container:hosted"
+        ],
+        "head": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+        "seconds": 782.5,
+        "exit": 0,
+        "log": "hosted.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/pre-checks.json",
+      "record": {
+        "name": "ordinary",
+        "command": [
+          "npm",
+          "test"
+        ],
+        "head": "380596efc2b28e967071337046435d62ab86ae56",
+        "seconds": 304.5,
+        "exit": 0,
+        "log": "ordinary.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/pre-checks.json",
+      "record": {
+        "name": "typecheck",
+        "command": [
+          "npm",
+          "run",
+          "typecheck"
+        ],
+        "head": "c28083c92db6a8eff82e9294f1fd2592c5e4d693",
+        "seconds": 1.55,
+        "exit": 0,
+        "log": "typecheck.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/pre-checks.json",
+      "record": {
+        "name": "portal",
+        "command": [
+          "npm",
+          "run",
+          "build:user-portal"
+        ],
+        "head": "c28083c92db6a8eff82e9294f1fd2592c5e4d693",
+        "seconds": 0.79,
+        "exit": 0,
+        "log": "portal.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/pre-checks.json",
+      "record": {
+        "name": "postgres",
+        "command": [
+          "npm",
+          "run",
+          "test:logging:postgres"
+        ],
+        "head": "c28083c92db6a8eff82e9294f1fd2592c5e4d693",
+        "seconds": 23.38,
+        "exit": 0,
+        "log": "postgres.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/pre-checks.json",
+      "record": {
+        "name": "collector",
+        "command": [
+          "npm",
+          "run",
+          "test:logging:collector"
+        ],
+        "head": "c28083c92db6a8eff82e9294f1fd2592c5e4d693",
+        "seconds": 14.25,
+        "exit": 0,
+        "log": "collector.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-merge/pre-checks.json",
+      "record": {
+        "name": "axiom",
+        "command": [
+          "npm",
+          "run",
+          "test:interface:axiom"
+        ],
+        "head": "c28083c92db6a8eff82e9294f1fd2592c5e4d693",
+        "seconds": 2.17,
+        "exit": 0,
+        "log": "axiom.log"
+      }
+    },
+    {
+      "source": "ast-report/logs-refactor-checks/pr245-current-main/coverage-checks.json",
+      "record": {
+        "name": "coverage",
+        "command": [
+          "pnpm",
+          "exec",
+          "node",
+          "script/code-quality/ast-metrics-coverage.ts",
+          "--suite",
+          "unit",
+          "--suite",
+          "integration"
+        ],
+        "head": "1e6077ceae7435aed924d5f35051e081980a74de",
+        "seconds": 107.85,
+        "exit": 0,
+        "log": "coverage.log"
+      }
+    }
+  ],
+  "freshCurrentManualChecks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "ast-report/merge-stack/new-main-typecheck.log",
+      "when": "merged working bytes before1e6077cecommit"
+    },
+    {
+      "command": "pnpm exec node script/pr-review/api-surface.ts --check",
+      "exit": 0,
+      "log": "ast-report/merge-stack/policy-integration/final-api-check.log",
+      "result": "48 current public snapshots;33 ignored declaration diagnostics in2 unchanged unlisted files"
+    }
+  ],
+  "runtimeReuse": "ast-report/merge-stack/runtime-input-equivalence.json",
+  "metricsExits": [
+    {
+      "name": "snapshot-base",
+      "exit": 0
+    },
+    {
+      "name": "snapshot",
+      "exit": 0
+    },
+    {
+      "name": "process",
+      "exit": 1
+    },
+    {
+      "name": "crap",
+      "exit": 1
+    },
+    {
+      "name": "habit",
+      "exit": 1
+    }
+  ],
+  "tierCommand": {
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/pr-review/check.ts",
+      "--base",
+      "origin/main",
+      "--repo",
+      "tomer-mayara/Thermus",
+      "--impact",
+      "ast-report/logs-refactor-checks/pr245-final/impact.json",
+      "--base-snapshot",
+      "ast-report/logs-refactor-checks/pr245-final/snapshot-base.json",
+      "--head-snapshot",
+      "ast-report/logs-refactor-checks/pr245-final/snapshot.json",
+      "--crap",
+      "ast-report/logs-refactor-checks/pr245-final/crap.json",
+      "--process",
+      "ast-report/logs-refactor-checks/pr245-final/process.json",
+      "--review",
+      "ast-report/logs-refactor-checks/pr245-final/review.json",
+      "--json"
+    ],
+    "exit": 0,
+    "stdout": "tier.json",
+    "stderr": "tier.stderr.log"
+  },
+  "limits": "Metrics goal misses and retained smells are reviewed dispositions, not blanket passing metrics. Hosted image ran on785d; current runtime inputs are equal; changed review scripts passed fresh typecheck."
+}

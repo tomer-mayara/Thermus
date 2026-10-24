@@ -1,0 +1,23 @@
+{
+  "candidate": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+  "base": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "mergeable": true,
+  "draft": true,
+  "accessRestored": true,
+  "statuses": [],
+  "checkRuns": {
+    "total_count": 0,
+    "check_runs": []
+  },
+  "protection": {
+    "enabled": false,
+    "required_status_checks": {
+      "enforcement_level": "off",
+      "contexts": [],
+      "checks": []
+    }
+  },
+  "protected": false,
+  "reviews": [],
+  "meaning": "No remote statuses or check runs exist for this candidate. This is not a remote passing result. Required local checks and authorized current-head human approval remain independently required."
+}

@@ -1,0 +1,276 @@
+{
+  "candidate": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+  "base": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "generatedAtUtc": "2026-10-24T22:36:55.611783+00:00",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1328,
+      "sha256": "abcf5d592f6b8753d77fc0ecf7996c0a007dc6fd1ddfb6051bd2e4f03a7dc662",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "api/declaration-differences.json",
+      "bytes": 18912,
+      "sha256": "1e385e837a76159f4096a668bc067c83d64ce07bcf9016846a970ab6a1a73267",
+      "transformation": "Artifact-base placeholders converted to relative links; current head placeholder resolved. Numeric report fields unchanged."
+    },
+    {
+      "path": "api/declaration-semantics.md",
+      "bytes": 3441,
+      "sha256": "aa36eb52fd7745d07bb9400001dd4245b4dc753d1bc2393760667d360e8e221c",
+      "transformation": "Artifact-base placeholders converted to relative links; current head placeholder resolved. Numeric report fields unchanged."
+    },
+    {
+      "path": "architecture/contract-review.md",
+      "bytes": 13214,
+      "sha256": "113bb3d997630c4584d117f78fbc7ecc5f91bf81eb9d4e7f53f162c5f8d9a28a",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "architecture/l3-800.png",
+      "bytes": 97300,
+      "sha256": "216a45bf9391b783a2169af984f0d6c9ddcff49b00719262c899aafff8301d78",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "architecture/l3.mmd",
+      "bytes": 2013,
+      "sha256": "58fc24842621de8e55da1e78da05becdbcb91e9b38d6902e1e52815ce05dbca4",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "architecture/l3.svg",
+      "bytes": 26544,
+      "sha256": "647fbbd2996daf4a187e2396eaf8ce62c45122f59ca119284f0babb9ef5a0869",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "architecture/registry-inventory.json",
+      "bytes": 7637,
+      "sha256": "0c27368666fd6bbf67ddff4057cc40aad9cf3a289c975394a494d8638bf7a8c2",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "architecture/reuse-proof.json",
+      "bytes": 6373,
+      "sha256": "4bdf76848586e17521ee1e0c0b1694583b4a7a0d8bcf45dc56c3885ff4d45001",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "architecture/review-history.md",
+      "bytes": 1804,
+      "sha256": "a02f97e48b7732a8c9c64468e55d4d441ca453698906b18c069a25e81e7d21f9",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/crap.json",
+      "bytes": 237881,
+      "sha256": "0ab3a54f83f975e410a58cbc05bb6bae24c5a5fb83ada28f687d1e419ac9fe12",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/impact.json",
+      "bytes": 7504,
+      "sha256": "c014cc8beb898e256b8bb473de3e5d7ae1d227c81e07090e9c6b062ae66c086b",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/process.json",
+      "bytes": 114405,
+      "sha256": "eb81d0c7fcb4f587643926223a009a85295a3f21821ad8a8956a709c8d0b1e7e",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/process.md",
+      "bytes": 112489,
+      "sha256": "7c28b755afc3c89b647c3413f5adb539c3970c0459f0037d46d80e1b4941337e",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/review.json",
+      "bytes": 35499,
+      "sha256": "b6c2fe2763f9a679fbf249ce4833a059825e2694b4bd2256d1b3e91df6a40a81",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/snapshot-base.json",
+      "bytes": 874278,
+      "sha256": "1deca3b254aa4a50dd7677fc4a8b386725a4ec10c2c6238b20beae2fec504db0",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/snapshot.json",
+      "bytes": 1017516,
+      "sha256": "426b4142e77573fcf6ba6332b32970a75d5c877d58147e1cb7a183736de39f0d",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/785d2076e2db23b40b338c0e3e83b3e1ce857c6e-base-b03e2d2c1ae55eed1d31e808e9a2dd65a6483220/quality/tier.json",
+      "bytes": 86979,
+      "sha256": "b445d159b459e930487806176c5443a9e97b1060fb2aaaf9ca1ec86ad288f708",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/README.md",
+      "bytes": 1029,
+      "sha256": "f315af2573b758166b8d3340ac3f64e7f1bd5734274c8b5afa06083d1ba37942",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/architecture-v4-comment.md",
+      "bytes": 8511,
+      "sha256": "8af7965d907975788449a7af371acd28da349e2116350e3511d01e8d167fd727",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/architecture-v4-validation.json",
+      "bytes": 5781,
+      "sha256": "c3a8e1323b728a10f5dbbf913abc4231088d3a3afdb209283113603774438b08",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "history/validation-audit.md",
+      "bytes": 2554,
+      "sha256": "7a7c5bf6c8f7f9ffe313c79a9c197f38aa5be414ee83debf126501e7d73aa691",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/checker-diagnostic.md",
+      "bytes": 766,
+      "sha256": "5597ddc6433aff7f22508947f556b4762879c2d6c58fd9852b8db5c09774503f",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/crap.json",
+      "bytes": 237881,
+      "sha256": "237edaed9f13591998c46da45e11df289d887915769ea42625601fd6ae5ebe06",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/habit.log",
+      "bytes": 25721,
+      "sha256": "23932d54e25f59d09afd13f61cb60060feab2d40b244bc301de147483209d124",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/impact.json",
+      "bytes": 8388,
+      "sha256": "3228c43fca93749197de80a35c4e1b615b2e638c85f5cdebeb8ade70041fa8e7",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/manager-review.md",
+      "bytes": 4849,
+      "sha256": "f7c085637103878b10090d490b1bbc7e2d31595951b153c6a97fcd3b2f73615d",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/metrics-exits.json",
+      "bytes": 235,
+      "sha256": "d94714f37fbad0aa3f42655fcb5a4b97e136f8f9fc0cea336d26687735b646ba",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/process.json",
+      "bytes": 115983,
+      "sha256": "e588e14a3d8f54b1e5e19b5fa25b34dfc6d4f70c66d33802f928a53d39aa9fc5",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/process.md",
+      "bytes": 114035,
+      "sha256": "3e4ad706074d705801996e2e882008192d5c3a1ed1bae7cca92a7f7bf1799f55",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/quality-review.json",
+      "bytes": 158742,
+      "sha256": "0452ed8097d5b49e0f54643531718e68eeded6548aef9153e29884ffe7be49c6",
+      "transformation": "Artifact-base placeholders converted to relative links; current head placeholder resolved. Numeric report fields unchanged."
+    },
+    {
+      "path": "quality/quality-review.md",
+      "bytes": 25552,
+      "sha256": "5948f476daa5afbb3314c52403fff1eb5741bca0508ad3bec32fd843d2854165",
+      "transformation": "Artifact-base placeholders converted to relative links; current head placeholder resolved. Numeric report fields unchanged."
+    },
+    {
+      "path": "quality/review.json",
+      "bytes": 35499,
+      "sha256": "23672bb8fb852fc25ff0fb6cbe9152bab13006e3d8e6d48f9ea98f504ff32ed6",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/snapshot-base.json",
+      "bytes": 874296,
+      "sha256": "ddce66de3154b5b6d6ed1de4772fe41d19a2216ebd653ca2ab9b5653cf43a058",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/snapshot-index.md",
+      "bytes": 527,
+      "sha256": "23e41e848e32270ce572cbfdd4cde580cc05abe5bd6360447e8bf0ea32a78c45",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/snapshot.json",
+      "bytes": 1017514,
+      "sha256": "eb42722ad3ea172a85321e363217c4986bc635d77fd404627a3e196c72b2c5cb",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/tier-command.json",
+      "bytes": 744,
+      "sha256": "92d542c3970691693a23e8d09fb20f3de43c6a35b21befbb491c4e810892d0ed",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "quality/tier.json",
+      "bytes": 97552,
+      "sha256": "24b3193d0f0fccb7f328956094dbd3c4b9fae7aa3382cdb0e874e8a45d2d66ab",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "validation/ancestor-pr-pins.json",
+      "bytes": 1737,
+      "sha256": "83482158e2c1bf102b965e759a74b052188b1c11fdc81e8b2f9848e984880384",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "validation/coverage-provenance.json",
+      "bytes": 3887,
+      "sha256": "c5a2f287a56865a2d803e2903b6b5d65a98bfeb0e653eb7340919e23b3e4764b",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "validation/current-checks.json",
+      "bytes": 6081,
+      "sha256": "2e6f89e0bbb1ecd33e29c0902c838d8437835ccae986aa5fd3d3039dddcb40a7",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "validation/graph.json",
+      "bytes": 1813,
+      "sha256": "5de0e194c025d4804ced8dcbb5961a70becb2c05104c3fd5394c26b3e5edf4fe",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "validation/remote-checks.json",
+      "bytes": 668,
+      "sha256": "7d8a802501571c86c356c553d6f5db00927d6993665d9238b5cb9223b82190f6",
+      "transformation": "none in final pass"
+    },
+    {
+      "path": "validation/runtime-reuse-proof.json",
+      "bytes": 7551,
+      "sha256": "fc665015e42debc7f1fa4f2d894fbbb72e03207f9fc4d7613dbd9ee932c9710c",
+      "transformation": "none in final pass"
+    }
+  ],
+  "relativeLinksChecked": 37,
+  "secretPatternAlerts": 0,
+  "scope": "Explicit review reports/renders and provenance only. No environment files, credentials, generic gate logs or raw provider data. Finite pattern scan is not a universal secret detector.",
+  "sourceCandidateChanged": false,
+  "humanApproval": "pending; later PR comments record approval"
+}

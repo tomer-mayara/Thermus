@@ -1,0 +1,244 @@
+[
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 1,
+    "heading": "## Context",
+    "startLine": 31,
+    "endLine": 44,
+    "sha256": "e49472cc0b4e2d8a33b4c53c0211cb49453a001ae31628b2ae69774829c9d901"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 2,
+    "heading": "### C4 containers: hosted edition",
+    "startLine": 56,
+    "endLine": 73,
+    "sha256": "a801412e4c677e5ab9819972360c077061a81b0170b7bd81d1cb1d3fc3214707"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 3,
+    "heading": "### C4 containers: local edition",
+    "startLine": 84,
+    "endLine": 103,
+    "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 4,
+    "heading": "### Selected C4 components: tool processing in the Node server",
+    "startLine": 134,
+    "endLine": 161,
+    "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 5,
+    "heading": "### Selected C4 components: hosted authentication in the Node server",
+    "startLine": 183,
+    "endLine": 205,
+    "sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 6,
+    "heading": "### Selected C4 components: local authentication in the Node server",
+    "startLine": 240,
+    "endLine": 257,
+    "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 7,
+    "heading": "### Collaboration overview",
+    "startLine": 287,
+    "endLine": 310,
+    "sha256": "719d1dc36e093e25e5d71324d1d711ccf12477e2a8a442e9ea3fa6a85a05ee05"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 8,
+    "heading": "### Scenario: MCP page fetch and renderer cancellation",
+    "startLine": 345,
+    "endLine": 395,
+    "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 9,
+    "heading": "### Scenario: hosted default sign-in landing",
+    "startLine": 416,
+    "endLine": 460,
+    "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 10,
+    "heading": "### Scenario: hosted member read",
+    "startLine": 483,
+    "endLine": 541,
+    "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+  },
+  {
+    "side": "before",
+    "revision": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+    "block": 11,
+    "heading": "## Deployment view",
+    "startLine": 592,
+    "endLine": 620,
+    "sha256": "311d5284900fbf6d590180ca104edb8407dffef29aee44b9f5851bdc7f064fb5"
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 1,
+    "heading": "## Context",
+    "startLine": 31,
+    "endLine": 46,
+    "sha256": "8add4682bdd88dff77abb80c072308658bc8d05b298e3c9e557ab5915562baee",
+    "change": "changed",
+    "beforeBlock": 1
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 2,
+    "heading": "### C4 containers: hosted edition",
+    "startLine": 58,
+    "endLine": 79,
+    "sha256": "044afa7b7d6dda59ccc9244be56f7ea36ed2df6e59575157877e3a77d35c703b",
+    "change": "changed",
+    "beforeBlock": 2
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 3,
+    "heading": "### C4 containers: local edition",
+    "startLine": 90,
+    "endLine": 109,
+    "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909",
+    "change": "unchanged",
+    "beforeBlock": 3
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 4,
+    "heading": "### Selected C4 components: tool processing in the Node server",
+    "startLine": 141,
+    "endLine": 168,
+    "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57",
+    "change": "unchanged",
+    "beforeBlock": 4
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 5,
+    "heading": "### Selected C4 components: hosted authentication in the Node server",
+    "startLine": 190,
+    "endLine": 212,
+    "sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191",
+    "change": "unchanged",
+    "beforeBlock": 5
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 6,
+    "heading": "### Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "startLine": 250,
+    "endLine": 265,
+    "sha256": "c439417a6cac5aed29a668b78291ecd916d39719c7b654d17c3fb6f1bf6824d9",
+    "change": "added",
+    "beforeBlock": null
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 7,
+    "heading": "### Selected C4 components: system and audit logs in the Node server",
+    "startLine": 310,
+    "endLine": 324,
+    "sha256": "521c3bc179dac03b4b2be092c782171e6bd63cb1ac1405d7c57cb02a456cdc39",
+    "change": "added",
+    "beforeBlock": null
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 8,
+    "heading": "### Selected C4 components: local authentication in the Node server",
+    "startLine": 490,
+    "endLine": 507,
+    "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0",
+    "change": "unchanged",
+    "beforeBlock": 6
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 9,
+    "heading": "### Collaboration overview",
+    "startLine": 537,
+    "endLine": 563,
+    "sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9",
+    "change": "changed",
+    "beforeBlock": 7
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 10,
+    "heading": "### Scenario: MCP page fetch and renderer cancellation",
+    "startLine": 604,
+    "endLine": 654,
+    "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d",
+    "change": "unchanged",
+    "beforeBlock": 8
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 11,
+    "heading": "### Scenario: hosted default sign-in landing",
+    "startLine": 675,
+    "endLine": 719,
+    "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686",
+    "change": "unchanged",
+    "beforeBlock": 9
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 12,
+    "heading": "### Scenario: hosted member read",
+    "startLine": 742,
+    "endLine": 800,
+    "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84",
+    "change": "unchanged",
+    "beforeBlock": 10
+  },
+  {
+    "side": "after",
+    "revision": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "block": 13,
+    "heading": "## Deployment view",
+    "startLine": 851,
+    "endLine": 883,
+    "sha256": "7d0e3a9a26536fe1fb34ff2a6681c25fa18569b3435f4730719f5752fc4e65db",
+    "change": "changed",
+    "beforeBlock": 11
+  }
+]

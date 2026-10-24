@@ -1,0 +1,22 @@
+[
+  {
+    "name": "snapshot-base",
+    "exit": 0
+  },
+  {
+    "name": "snapshot",
+    "exit": 0
+  },
+  {
+    "name": "process",
+    "exit": 1
+  },
+  {
+    "name": "crap",
+    "exit": 1
+  },
+  {
+    "name": "habit",
+    "exit": 1
+  }
+]

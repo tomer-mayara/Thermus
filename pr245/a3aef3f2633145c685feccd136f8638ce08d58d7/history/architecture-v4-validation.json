@@ -1,0 +1,159 @@
+{
+  "finalHead": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+  "base": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+  "mergeBase": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+  "workingTreeClean": true,
+  "impactEvidenceCount": 104,
+  "impactEvidenceDeduplicated": true,
+  "missingImpactEvidencePaths": [],
+  "frozenSourceTestHashesMatchIndependentReview": true,
+  "registryBeforeCount": 11,
+  "registryAfterCount": 13,
+  "changedAfterBlocks": [
+    1,
+    2,
+    9,
+    13
+  ],
+  "addedAfterBlocks": [
+    6,
+    7
+  ],
+  "unchangedAfterBlocks": [
+    3,
+    4,
+    5,
+    8,
+    10,
+    11,
+    12
+  ],
+  "all13AfterMermaidsUnchangedFromV2": true,
+  "embeddedMermaidMatchesSource": true,
+  "sourceLinksChecked": [
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "start": 43,
+      "end": 115,
+      "lines": 153
+    },
+    {
+      "revision": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+      "path": "src/interfaces/mcp/tool-completion-record.ts",
+      "start": 7,
+      "end": 28,
+      "lines": 46
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "src/interfaces/mcp/fetch-tool-server.ts",
+      "start": 66,
+      "end": 90,
+      "lines": 167
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "src/index.ts",
+      "start": 23,
+      "end": 25,
+      "lines": 114
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "test/acceptance/logging/audit/audit-log.test.ts",
+      "start": 65,
+      "end": 80,
+      "lines": 80
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "src/logs/audit/audit-snapshots.ts",
+      "start": 31,
+      "end": 46,
+      "lines": 135
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "src/logs/audit/audit-collector.ts",
+      "start": 92,
+      "end": 152,
+      "lines": 153
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "src/app/logging-storage.ts",
+      "start": 35,
+      "end": 40,
+      "lines": 40
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "src/logs/audit/audit-send.ts",
+      "start": 18,
+      "end": 29,
+      "lines": 35
+    },
+    {
+      "revision": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+      "path": "architecture/components.md",
+      "start": null,
+      "end": null,
+      "lines": 773
+    },
+    {
+      "revision": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "path": "architecture/components.md",
+      "start": null,
+      "end": null,
+      "lines": 1064
+    }
+  ],
+  "l3SourceSha256": "58fc24842621de8e55da1e78da05becdbcb91e9b38d6902e1e52815ce05dbca4",
+  "l3RenderSha256": "216a45bf9391b783a2169af984f0d6c9ddcff49b00719262c899aafff8301d78",
+  "commentSha256": "8af7965d907975788449a7af371acd28da349e2116350e3511d01e8d167fd727",
+  "precommitProseCorrections": "All3 verified in committed final source: past-tense earlier defect, recognized bounded enclosure MIreason, historical S2-04pre-repair gates.",
+  "renderReusedFromApprovedV2": true,
+  "l4": "Omitted: strongest new TrackedAuditSender.start outcome/settled contract and fresh authority/lifetime questions covered by L3+4notes; repair stays within audit owner and explicit bounded text policy.",
+  "redaction": "Defined boundary repair and escaped-quote performance issue fixed; unsupported/deeper/incomplete syntax can still lose public context and report truncated=false; not a general parser or arbitrary-secret guarantee.",
+  "gateStatus": "Manager reports metrics rerun underway. Other selected tests retain identical production/test input bytes. This reviewer runs no checks and does not claim final gate or approval completion.",
+  "managerReview": "Approved final v4 text, pins and identical approved 800px diagram after confirming only the existing exception YAML changed. Gates and current-head human approval remain separate.",
+  "humanApproval": "Prior stack approval is trusted user attestation; current repaired aggregate head approval is separate and not supplied by agent review.",
+  "reviewerRuns": {
+    "tests": 0,
+    "builds": 0,
+    "Docker": 0,
+    "trackedEdits": 0,
+    "refChanges": 0,
+    "publication": 0
+  },
+  "limits": [
+    "No deployed integration, live provider/SQL/intended Collector, recovery/custody, capacity, notice/help approval, activation or release proof.",
+    "Inherited broad registry9/13 readability limits remain; focused800px diagram is manager approved.",
+    "Independent source review/finite manual probes differ from complete-candidate gates and independent authorized human approval."
+  ],
+  "previousApprovedHead": "c28083c92db6a8eff82e9294f1fd2592c5e4d693",
+  "latestDelta": [
+    ".code-quality-exceptions.yaml"
+  ],
+  "productionAndTestTreesUnchangedFromV3": {
+    "src": {
+      "before": "9d17a49c6c9489111d52c6227630690b00e90cb1",
+      "after": "9d17a49c6c9489111d52c6227630690b00e90cb1",
+      "identical": true
+    },
+    "test": {
+      "before": "564d2ac24f1a1280503356285a8ba608c6a3b70d",
+      "after": "564d2ac24f1a1280503356285a8ba608c6a3b70d",
+      "identical": true
+    },
+    "architecture/components.md": {
+      "before": "90e5e2c3acfa8804eb74455128bc7d471e6f208f",
+      "after": "90e5e2c3acfa8804eb74455128bc7d471e6f208f",
+      "identical": true
+    }
+  },
+  "renderReusedFromApprovedV3": true,
+  "publication": "No v4 PR change by this reviewer; historical v3 was published/readback by manager at comment6383057351.",
+  "qualityOnlyChange": "Existing audit-event-projection MI exception bound37\u219236.9, reason records exact36.99712939607105 displayed37.0; no production architecture change."
+}

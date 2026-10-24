@@ -1,0 +1,28 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/pr-review/check.ts",
+    "--base",
+    "origin/main",
+    "--repo",
+    "tomer-mayara/Thermus",
+    "--impact",
+    "ast-report/logs-refactor-checks/pr245-final/impact.json",
+    "--base-snapshot",
+    "ast-report/logs-refactor-checks/pr245-final/snapshot-base.json",
+    "--head-snapshot",
+    "ast-report/logs-refactor-checks/pr245-final/snapshot.json",
+    "--crap",
+    "ast-report/logs-refactor-checks/pr245-final/crap.json",
+    "--process",
+    "ast-report/logs-refactor-checks/pr245-final/process.json",
+    "--review",
+    "ast-report/logs-refactor-checks/pr245-final/review.json",
+    "--json"
+  ],
+  "exit": 0,
+  "stdout": "tier.json",
+  "stderr": "tier.stderr.log"
+}

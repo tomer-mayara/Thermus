@@ -1,0 +1,155 @@
+{
+  "oldBase": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+  "newBase": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "reviewedProductionCandidate": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+  "finalHead": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+  "mainSourceAndRegistryObjects": {
+    "src": {
+      "oldMainObject": "455c7566e3a2c8227a028ad35b7f28938f45860d",
+      "newMainObject": "455c7566e3a2c8227a028ad35b7f28938f45860d",
+      "mainUnchanged": true
+    },
+    "test": {
+      "oldMainObject": "03ef9e77f10dfb845b5934aa195c384087fde182",
+      "newMainObject": "03ef9e77f10dfb845b5934aa195c384087fde182",
+      "mainUnchanged": true
+    },
+    "architecture/components.md": {
+      "oldMainObject": "809578edb347b1888a860978a461ee389e4b1783",
+      "newMainObject": "809578edb347b1888a860978a461ee389e4b1783",
+      "mainUnchanged": true
+    },
+    "package.json": {
+      "oldMainObject": "616da9bad69e419891a710cc1ba7bd1926df5b74",
+      "newMainObject": "616da9bad69e419891a710cc1ba7bd1926df5b74",
+      "mainUnchanged": true
+    },
+    "pnpm-lock.yaml": {
+      "oldMainObject": "089ba6a12f2012ece31471e09cb95f4665aa3c8f",
+      "newMainObject": "089ba6a12f2012ece31471e09cb95f4665aa3c8f",
+      "mainUnchanged": true
+    },
+    "Dockerfile": {
+      "oldMainObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+      "newMainObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+      "mainUnchanged": true
+    },
+    "Dockerfile.hosted": {
+      "oldMainObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "newMainObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "mainUnchanged": true
+    },
+    "tsconfig.build.json": {
+      "oldMainObject": "1bba4a3987dbf3fd02308d74c0da5154faed21b0",
+      "newMainObject": "1bba4a3987dbf3fd02308d74c0da5154faed21b0",
+      "mainUnchanged": true
+    },
+    "tsconfig.json": {
+      "oldMainObject": "229ff3b3551b7bbc1bacd835255cf52969cec05e",
+      "newMainObject": "229ff3b3551b7bbc1bacd835255cf52969cec05e",
+      "mainUnchanged": true
+    },
+    "tsconfig.user-portal.json": {
+      "oldMainObject": "9d3be27ea030b3165505f23a48020ef8082eca85",
+      "newMainObject": "9d3be27ea030b3165505f23a48020ef8082eca85",
+      "mainUnchanged": true
+    }
+  },
+  "reusedApprovedArchitecture": [
+    {
+      "path": "l3.mmd",
+      "sha256": "58fc24842621de8e55da1e78da05becdbcb91e9b38d6902e1e52815ce05dbca4",
+      "byteIdenticalToApprovedV4": true
+    },
+    {
+      "path": "l3.svg",
+      "sha256": "647fbbd2996daf4a187e2396eaf8ce62c45122f59ca119284f0babb9ef5a0869",
+      "byteIdenticalToApprovedV4": true
+    },
+    {
+      "path": "l3-800.png",
+      "sha256": "216a45bf9391b783a2169af984f0d6c9ddcff49b00719262c899aafff8301d78",
+      "byteIdenticalToApprovedV4": true
+    },
+    {
+      "path": "registry-inventory.json",
+      "sha256": "2f12a0cf5a193a87b45847d69e4fed2d2d9428e759e415c6884d68887a3c2a24",
+      "byteIdenticalToApprovedV4": true
+    },
+    {
+      "path": "render-validation.json",
+      "sha256": "f1323b5ab3876d7008b1cbf083f852835f7fc471f08b175ff003303045d88424",
+      "byteIdenticalToApprovedV4": true
+    },
+    {
+      "path": "render-reuse-proof.json",
+      "sha256": "b67187f9aa4db266f3a568e8e062a279e54826d68c3c67d88167267fe8313fc5",
+      "byteIdenticalToApprovedV4": true
+    },
+    {
+      "path": "contract-review.md",
+      "sha256": "113bb3d997630c4584d117f78fbc7ecc5f91bf81eb9d4e7f53f162c5f8d9a28a",
+      "byteIdenticalToApprovedV4": true
+    }
+  ],
+  "scope": "Architecture/code baseline unchanged; review policy/scripts changed. No blanket1086-file check-input match is claimed. Final snapshots, checker facts/API diffs and report metadata await committed candidate.",
+  "rerenderRequired": false,
+  "observedMergeHead": "1e6077ceae7435aed924d5f35051e081980a74de",
+  "mergeRuntimeObjectsUnchangedFromPriorSource": {
+    "src": {
+      "sourceCandidateObject": "9d17a49c6c9489111d52c6227630690b00e90cb1",
+      "mergeCandidateObject": "9d17a49c6c9489111d52c6227630690b00e90cb1",
+      "identical": true
+    },
+    "test": {
+      "sourceCandidateObject": "564d2ac24f1a1280503356285a8ba608c6a3b70d",
+      "mergeCandidateObject": "564d2ac24f1a1280503356285a8ba608c6a3b70d",
+      "identical": true
+    },
+    "architecture/components.md": {
+      "sourceCandidateObject": "90e5e2c3acfa8804eb74455128bc7d471e6f208f",
+      "mergeCandidateObject": "90e5e2c3acfa8804eb74455128bc7d471e6f208f",
+      "identical": true
+    },
+    "package.json": {
+      "sourceCandidateObject": "fb261bb187f132c88abc77bb9ab09b8d073d696b",
+      "mergeCandidateObject": "fb261bb187f132c88abc77bb9ab09b8d073d696b",
+      "identical": true
+    },
+    "pnpm-lock.yaml": {
+      "sourceCandidateObject": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec",
+      "mergeCandidateObject": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec",
+      "identical": true
+    },
+    "Dockerfile": {
+      "sourceCandidateObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+      "mergeCandidateObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+      "identical": true
+    },
+    "Dockerfile.hosted": {
+      "sourceCandidateObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "mergeCandidateObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "identical": true
+    },
+    "tsconfig.build.json": {
+      "sourceCandidateObject": "1bba4a3987dbf3fd02308d74c0da5154faed21b0",
+      "mergeCandidateObject": "1bba4a3987dbf3fd02308d74c0da5154faed21b0",
+      "identical": true
+    },
+    "tsconfig.json": {
+      "sourceCandidateObject": "229ff3b3551b7bbc1bacd835255cf52969cec05e",
+      "mergeCandidateObject": "229ff3b3551b7bbc1bacd835255cf52969cec05e",
+      "identical": true
+    },
+    "tsconfig.user-portal.json": {
+      "sourceCandidateObject": "9d3be27ea030b3165505f23a48020ef8082eca85",
+      "mergeCandidateObject": "9d3be27ea030b3165505f23a48020ef8082eca85",
+      "identical": true
+    }
+  },
+  "pendingReason": "A generated docs/metrics record may create the final docs-only head; do not bind current checker/final approval until root supplies final pin.",
+  "actualMergeBase": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "managerFinalTextReview": "pending",
+  "newPolicyReport": "one authoritative comparison in main; exactly Validation and Quality review supporting comments",
+  "runtimeEquivalence": "823explicit runtime/test/build inputs in manager report; no blanket old1086map claim"
+}

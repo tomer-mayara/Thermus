@@ -1,0 +1,2166 @@
+{
+  "generatedAt": "2026-10-24T22:28:54.587617+00:00",
+  "head": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+  "base": "7d01d2fb61c1ee0faebd1a1b78819902f832f5f4",
+  "reviewScope": "Independent final local quality review after new-main merge and immutable metrics history record. No source/test edit, tests, builds, metrics rerun, refs or PR action by reviewer. Human architect approval and full merge/release eligibility remain manager conditions.",
+  "freshPinsVerified": true,
+  "processOutcomes": [
+    {
+      "name": "Delta",
+      "status": "goal miss"
+    },
+    {
+      "name": "Review",
+      "status": "goal miss"
+    },
+    {
+      "name": "CRAP",
+      "status": "goal miss"
+    },
+    {
+      "name": "Architecture",
+      "status": "passed"
+    }
+  ],
+  "commandExits": [
+    {
+      "name": "snapshot-base",
+      "exit": 0
+    },
+    {
+      "name": "snapshot",
+      "exit": 0
+    },
+    {
+      "name": "process",
+      "exit": 1
+    },
+    {
+      "name": "crap",
+      "exit": 1
+    },
+    {
+      "name": "habit",
+      "exit": 1
+    }
+  ],
+  "currentAttemptToolFailures": [],
+  "localTier": {
+    "tier": "T2",
+    "eligibility": "eligible",
+    "blockers": [],
+    "factsToDeclare": []
+  },
+  "maintainability": {
+    "measuredProduction": 46,
+    "below85": 43,
+    "aboveOrEqual85": 3,
+    "notMeasured": [
+      "src/interfaces/web/account/members-style.ts",
+      "src/logs/audit/destination-settings-store.ts"
+    ],
+    "otherFilesWithoutGoal": 115,
+    "belowGoalRows": [
+      {
+        "path": "src/app/application.ts",
+        "score": 54.75315119138496,
+        "retainedReason": "Keep hosted/local composition and concurrent MCP/storage cleanup with visible failure ownership."
+      },
+      {
+        "path": "src/app/fetch-tool.ts",
+        "score": 67.74490131344933,
+        "retainedReason": "Keep shared renderer/cleaner and tool dependencies explicit in application composition."
+      },
+      {
+        "path": "src/app/hosted-workos-application.ts",
+        "score": 56.20859397680054,
+        "retainedReason": "Keep resource acquisition, failure disposal and ownership transfer in the hosted composition boundary."
+      },
+      {
+        "path": "src/app/logging-storage.ts",
+        "score": 75.93874390720484,
+        "exception": {
+          "bound": 60.0,
+          "reason": "Optional hosted storage composition keeps validation, safe failure, lazy adapter loading, and service/key wiring in one small boundary. Its three paths are unchanged; splitting construction from cleanup would hide ownership.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "Optional hosted storage composition keeps validation, safe failure, lazy adapter loading, and service/key wiring in one small boundary. Its three paths are unchanged; splitting construction from cleanup would hide ownership."
+      },
+      {
+        "path": "src/index.ts",
+        "score": 60.268250151030934,
+        "retainedReason": "Keep startup, signal handling and the disposal deadline visible in one process entry point."
+      },
+      {
+        "path": "src/interfaces/cli/local-auth-command.ts",
+        "score": 49.98602413969282,
+        "retainedReason": "Keep existing command dispatch and cleanup order; narrow System role changes do not justify an unrelated split."
+      },
+      {
+        "path": "src/interfaces/mcp/fetch-tool-schema.ts",
+        "score": 70.2186442498594,
+        "retainedReason": "Keep named input validation and bounded public tool contract together; MI improves over main."
+      },
+      {
+        "path": "src/interfaces/mcp/fetch-tool-server.ts",
+        "score": 44.74554675681968,
+        "retainedReason": "Keep tool registration, admission, public outcome mapping and trusted completion capture in one request boundary."
+      },
+      {
+        "path": "src/interfaces/mcp/tool-completion-record.ts",
+        "score": 83.11809545265797,
+        "retainedReason": "Keep public completion projection and failure mapping at the MCP boundary; file MI improves substantially over main."
+      },
+      {
+        "path": "src/interfaces/user-portal/portal.ts",
+        "score": 47.012305725672505,
+        "retainedReason": "Keep the existing portal navigation/hydration owner; file MI is unchanged."
+      },
+      {
+        "path": "src/interfaces/web/account/account-form.ts",
+        "score": 61.60432516158119,
+        "retainedReason": "Keep exact fields, CSRF/form values and shared parser behavior in the existing form boundary; file MI is unchanged."
+      },
+      {
+        "path": "src/interfaces/web/account/account-routes.ts",
+        "score": 60.07546058335585,
+        "retainedReason": "Keep account dispatch and Admin-only logging route composition in the existing account HTTP boundary."
+      },
+      {
+        "path": "src/interfaces/web/account/administration-pages.ts",
+        "score": 64.89901264910168,
+        "retainedReason": "Keep existing administration HTML assembly and escaping together; file MI is unchanged."
+      },
+      {
+        "path": "src/interfaces/web/account/administration-routes.ts",
+        "score": 56.14187606413681,
+        "retainedReason": "Keep verified actor, operation outcome and trusted audit capture together; no alternate authority path."
+      },
+      {
+        "path": "src/interfaces/web/account/logging-form.ts",
+        "score": 73.90121040809896,
+        "exception": {
+          "bound": 73.0,
+          "reason": "One small form parser combines the shared CSRF and exact-field check with optional checkbox and typed field validation. Each guard rejects a distinct invalid request; a second parser framework would duplicate the existing owner.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "One small form parser combines the shared CSRF and exact-field check with optional checkbox and typed field validation. Each guard rejects a distinct invalid request; a second parser framework would duplicate the existing owner."
+      },
+      {
+        "path": "src/interfaces/web/account/logging-page.ts",
+        "score": 72.85861970023612,
+        "exception": {
+          "bound": 72.0,
+          "reason": "The native form and fixed recovery notice stay with their HTML escaping and write-only token projection. The form reuses the current page layout; extracting individual markup fields would spread one small page.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "The native form and fixed recovery notice stay with their HTML escaping and write-only token projection. The form reuses the current page layout; extracting individual markup fields would spread one small page."
+      },
+      {
+        "path": "src/interfaces/web/account/logging-routes.ts",
+        "score": 47.791505447861134,
+        "exception": {
+          "bound": 47.0,
+          "reason": "This boundary keeps current Admin authority, request checks, safe outcome mapping and trusted audit capture together. Read, Save and Test stay separate; the route callback has thirteen paths, and each mutation has eight. Tests cover refusals, uncertain writes and throwing capture. Two form-guard copies do not justify a parser or dispatch framework.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "This boundary keeps current Admin authority, request checks, safe outcome mapping and trusted audit capture together. Read, Save and Test stay separate; the route callback has thirteen paths, and each mutation has eight. Tests cover refusals, uncertain writes and throwing capture. Two form-guard copies do not justify a parser or dispatch framework."
+      },
+      {
+        "path": "src/interfaces/web/account/logging-test-page.ts",
+        "score": 71.8038342317498,
+        "exception": {
+          "bound": 71.0,
+          "reason": "Two typed lookup tables keep every safe sender and operation notice exhaustive in one small presentation boundary. The sole function has two paths. Splitting fixed messages into more files would spread one outcome contract without reducing decisions.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "Two typed lookup tables keep every safe sender and operation notice exhaustive in one small presentation boundary. The sole function has two paths. Splitting fixed messages into more files would spread one outcome contract without reducing decisions."
+      },
+      {
+        "path": "src/interfaces/web/account/members-page-layout.ts",
+        "score": 83.0401390680943,
+        "retainedReason": "Keep the small existing member/navigation layout and explicit logging link together rather than adding a page framework."
+      },
+      {
+        "path": "src/logs/audit/audit-collector-state.ts",
+        "score": 59.506041448660795,
+        "exception": {
+          "bound": 59.0,
+          "reason": "Two small calculations own positive bound validation and typed retry eligibility, exponential delay, jitter and Retry-After precedence. They have four and eight paths. State records stay with these limits; a policy hierarchy or per-field modules would add structure without reducing the rules.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "Two small calculations own positive bound validation and typed retry eligibility, exponential delay, jitter and Retry-After precedence. They have four and eight paths. State records stay with these limits; a policy hierarchy or per-field modules would add structure without reducing the rules."
+      },
+      {
+        "path": "src/logs/audit/audit-collector.ts",
+        "score": 40.46904539386636,
+        "exception": {
+          "bound": 40.0,
+          "reason": "One queue owner keeps admission, tenant FIFO, one item and byte account, authorization, retry, fixed age and physical settlement consistent. Nineteen functions have at most eleven paths; the short authorization frame prevents a destination or event alias from surviving a send wait. Moving each state or counter into another owner would obscure release-once and cancellation rules. Focused tests cover overload, deadlines, revisions and each close phase.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "One queue owner keeps admission, tenant FIFO, one item and byte account, authorization, retry, fixed age and physical settlement consistent. Nineteen functions have at most eleven paths; the short authorization frame prevents a destination or event alias from surviving a send wait. Moving each state or counter into another owner would obscure release-once and cancellation rules. Focused tests cover overload, deadlines, revisions and each close phase."
+      },
+      {
+        "path": "src/logs/audit/audit-content.ts",
+        "score": 66.03646029274161,
+        "exception": {
+          "bound": 64.0,
+          "reason": "Recognized credential redaction and the bounded exported text copy share one content-safety owner. Six short functions have at most six paths. Recognized bounded text enclosures preserve public syntax; validated URLs and ambiguous text retain full query-value redaction. Byte accounting reserves JSON escaping and the marker. Regression cases cover raw punctuation, escaped or split credentials, Unicode, and malformed enclosures. A general document parser or separate file for each pattern would hide the fixed policy.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "Recognized credential redaction and the bounded exported text copy share one content-safety owner. Six short functions have at most six paths. Recognized bounded text enclosures preserve public syntax; validated URLs and ambiguous text retain full query-value redaction. Byte accounting reserves JSON escaping and the marker. Regression cases cover raw punctuation, escaped or split credentials, Unicode, and malformed enclosures. A general document parser or separate file for each pattern would hide the fixed policy."
+      },
+      {
+        "path": "src/logs/audit/audit-event-projection.ts",
+        "score": 36.99712939607105,
+        "exception": {
+          "bound": 36.9,
+          "reason": "This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference."
+      },
+      {
+        "path": "src/logs/audit/audit-https-connection.ts",
+        "score": 49.28627953548048,
+        "exception": {
+          "bound": 49.0,
+          "reason": "One TLS owner keeps handshake approval, actual peer checks, cancellation, and awaited socket disposal in the same lifetime. Its largest function has four paths; unit and real TLS cases cover the order before HTTP data.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "One TLS owner keeps handshake approval, actual peer checks, cancellation, and awaited socket disposal in the same lifetime. Its largest function has four paths; unit and real TLS cases cover the order before HTTP data."
+      },
+      {
+        "path": "src/logs/audit/audit-snapshot-state.ts",
+        "score": 67.58503629937391,
+        "exception": {
+          "bound": 67.0,
+          "reason": "Small state contracts and pure projections keep fixed limits, enabled/revision validation and detached bounded AuditEvent ownership explicit. Four functions have at most five paths. A cache framework or per-field modules would spread one metadata contract.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "Small state contracts and pure projections keep fixed limits, enabled/revision validation and detached bounded AuditEvent ownership explicit. Four functions have at most five paths. A cache framework or per-field modules would spread one metadata contract."
+      },
+      {
+        "path": "src/logs/audit/audit-snapshots.ts",
+        "score": 51.63520998785902,
+        "exception": {
+          "bound": 51.0,
+          "reason": "One owner keeps activity admission, bounded metadata, freshness, backoff, physical reads, deadlines and shutdown consistent. The load function has ten paths after the optional successful-observation hook; failure isolation must not invalidate valid metadata. Splitting its shared reservations or observation checks would obscure lifetime and authority.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "One owner keeps activity admission, bounded metadata, freshness, backoff, physical reads, deadlines and shutdown consistent. The load function has ten paths after the optional successful-observation hook; failure isolation must not invalidate valid metadata. Splitting its shared reservations or observation checks would obscure lifetime and authority."
+      },
+      {
+        "path": "src/logs/audit/bounded-sql-runtime.ts",
+        "score": 41.89086619745289,
+        "exception": {
+          "bound": 41.0,
+          "reason": "One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership."
+      },
+      {
+        "path": "src/logs/audit/destination-credential-codec.ts",
+        "score": 57.15224361618008,
+        "exception": {
+          "bound": 57.0,
+          "reason": "The compact codec keeps key copying, nonce and tag layout, tenant authenticated data and fail-closed decryption in one owner. Its largest function has four paths. Splitting cryptographic framing would obscure the invariant.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "The compact codec keeps key copying, nonce and tag layout, tenant authenticated data and fail-closed decryption in one owner. Its largest function has four paths. Splitting cryptographic framing would obscure the invariant."
+      },
+      {
+        "path": "src/logs/audit/destination-endpoint.ts",
+        "score": 69.85659655367279,
+        "exception": {
+          "bound": 69.0,
+          "reason": "Syntax and literal-address checks need distinct guards. A range table replaces repeated IPv4 branches; no DNS or socket policy is added here. Focused cases cover malformed and private destinations without a general URL framework.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "Syntax and literal-address checks need distinct guards. A range table replaces repeated IPv4 branches; no DNS or socket policy is added here. Focused cases cover malformed and private destinations without a general URL framework."
+      },
+      {
+        "path": "src/logs/audit/destination-settings-service.ts",
+        "score": 41.69472240093922,
+        "exception": {
+          "bound": 41.0,
+          "reason": "One owner keeps validated credential recovery, atomic Save, saved Test and fresh export authorization together. Test has fourteen paths; export authorization has ten for distinct unavailable, changed, aborted and credential outcomes. One fresh version supplies all dispatch fields. Splitting credentials or revision checks into another service would weaken visible ownership.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "One owner keeps validated credential recovery, atomic Save, saved Test and fresh export authorization together. Test has fourteen paths; export authorization has ten for distinct unavailable, changed, aborted and credential outcomes. One fresh version supplies all dispatch fields. Splitting credentials or revision checks into another service would weaken visible ownership."
+      },
+      {
+        "path": "src/logs/audit/destination-test.ts",
+        "score": 73.83399132073536,
+        "exception": {
+          "bound": 73.0,
+          "reason": "One small lifetime owner keeps four-slot admission, caller deadline, cancellation and late callback settlement together. Its largest function has three paths. Moving timer or slot cleanup to another owner would obscure when admission is released.",
+          "expires": "2026-12-24"
+        },
+        "retainedReason": "One small lifetime owner keeps four-slot admission, caller deadline, cancellation and late callback settlement together. Its largest function has three paths. Moving timer or slot cleanup to another owner would obscure when admission is released."
+      },
+      {
+        "path": "src/logs/audit/otlp-audit-encoding.ts",
+        "score": 54.626113259105146,
+        "exception": {
+          "bound": 54.0,
+          "reason": "Named OTLP fields now include bounded public input and result copies and the Save/Test action variant. Timestamp conversion and encoded byte validation remain one wire-format boundary. The largest function has fifteen paths for four event variants; focused format and real Collector cases cover the contract. Splitting individual attributes would spread one format without reducing its rules.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "Named OTLP fields now include bounded public input and result copies and the Save/Test action variant. Timestamp conversion and encoded byte validation remain one wire-format boundary. The largest function has fifteen paths for four event variants; focused format and real Collector cases cover the contract. Splitting individual attributes would spread one format without reducing its rules."
+      },
+      {
+        "path": "src/logs/audit/otlp-audit-request.ts",
+        "score": 60.36464327202974,
+        "exception": {
+          "bound": 60.0,
+          "reason": "The request owner keeps the checked socket, bounded response collection, cancellation, and response settlement together. Callbacks have at most five paths. A request framework would obscure the no-global-agent guarantee and cleanup ownership.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "The request owner keeps the checked socket, bounded response collection, cancellation, and response settlement together. Callbacks have at most five paths. A request framework would obscure the no-global-agent guarantee and cleanup ownership."
+      },
+      {
+        "path": "src/logs/audit/otlp-audit-response.ts",
+        "score": 47.92219396974867,
+        "exception": {
+          "bound": 47.0,
+          "reason": "Success shape, partial rejection, status classification, and Retry-After limits belong to one OTLP result policy. The largest functions have nine paths and focused wire cases. Splitting status and body rules would make their required precedence harder to review.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "Success shape, partial rejection, status classification, and Retry-After limits belong to one OTLP result policy. The largest functions have nine paths and focused wire cases. Splitting status and body rules would make their required precedence harder to review."
+      },
+      {
+        "path": "src/logs/audit/otlp-audit-sender.ts",
+        "score": 64.71989012659888,
+        "exception": {
+          "bound": 64.0,
+          "reason": "One sender owns synchronous payload preparation, safe failure mapping, caller outcome and physical cleanup. Functions have at most six paths. Clearable request state is needed while native DNS ignores cancellation; separating its admission and cleanup would hide that lifetime.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "One sender owns synchronous payload preparation, safe failure mapping, caller outcome and physical cleanup. Functions have at most six paths. Clearable request state is needed while native DNS ignores cancellation; separating its admission and cleanup would hide that lifetime."
+      },
+      {
+        "path": "src/logs/audit/pg-destination-settings-store.ts",
+        "score": 54.212735073143314,
+        "exception": {
+          "bound": 54.0,
+          "reason": "The compact adapter keeps atomic SQL, expected-revision outcomes and row mapping together. Unit mapping and real PostgreSQL acceptance cover separate concerns; splitting SQL constants or mappings would spread the same invariant.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "The compact adapter keeps atomic SQL, expected-revision outcomes and row mapping together. Unit mapping and real PostgreSQL acceptance cover separate concerns; splitting SQL constants or mappings would spread the same invariant."
+      },
+      {
+        "path": "src/logs/audit/public-audit-destination.ts",
+        "score": 60.33075525288621,
+        "exception": {
+          "bound": 60.0,
+          "reason": "One destination boundary keeps URL and auth checks, all-answer public IP policy, and pinned peer comparison together. Its largest function has 13 paths covered by focused refusal cases. Splitting each guard would hide the connection policy.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "One destination boundary keeps URL and auth checks, all-answer public IP policy, and pinned peer comparison together. Its largest function has 13 paths covered by focused refusal cases. Splitting each guard would hide the connection policy."
+      },
+      {
+        "path": "src/logging/console-logger.ts -> src/logs/system/console-system-log-sink.ts",
+        "score": 82.99873966825315,
+        "exception": {
+          "bound": 82.0,
+          "reason": "Renamed console adapter preserves its small color map, formatting and Writable output. Removing logger inheritance improves MI from 79.6 to 83.0; splitting its two output functions would hide one format contract.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "Renamed console adapter preserves its small color map, formatting and Writable output. Removing logger inheritance improves MI from 79.6 to 83.0; splitting its two output functions would hide one format contract."
+      },
+      {
+        "path": "src/logging/otel-logger.ts -> src/logs/system/otel-system-log-sink.ts",
+        "score": 81.95776416845449,
+        "exception": {
+          "bound": 81.0,
+          "reason": "Renamed OTel adapter preserves the severity map and one emit operation. Removing logger inheritance improves MI from 76.8 to 82.0. A separate mapping owner would add indirection without a distinct lifetime or invariant.",
+          "expires": "2026-12-23"
+        },
+        "retainedReason": "Renamed OTel adapter preserves the severity map and one emit operation. Removing logger inheritance improves MI from 76.8 to 82.0. A separate mapping owner would add indirection without a distinct lifetime or invariant."
+      },
+      {
+        "path": "src/logging/base-logger.ts -> src/logs/system/system-logger.ts",
+        "score": 56.24377370310303,
+        "retainedReason": "Keep level filtering, caller location and safe failure rendering with the concrete System logger and explicit sink role."
+      },
+      {
+        "path": "src/runtime/config/logging-storage-config.ts",
+        "score": 59.990871970671556,
+        "exception": {
+          "bound": 59.0,
+          "reason": "The settings reader keeps required URI, canonical key and PEM validation with safe variable-only diagnostics. Its input rules need distinct branches and are covered by focused cases; a new validation framework would add complexity.",
+          "expires": "2026-12-22"
+        },
+        "retainedReason": "The settings reader keeps required URI, canonical key and PEM validation with safe variable-only diagnostics. Its input rules need distinct branches and are covered by focused cases; a new validation framework would add complexity."
+      },
+      {
+        "path": "src/runtime/http/fetch-exchange.ts",
+        "score": 59.465211106816625,
+        "retainedReason": "Keep forwarding, cancellation and HTTP exchange cleanup together; narrow logger role/import changes preserve that lifetime."
+      },
+      {
+        "path": "src/runtime/http/server.ts",
+        "score": 68.52365171422865,
+        "retainedReason": "Keep listener, socket and shutdown state together in the existing HTTP server lifetime owner."
+      }
+    ],
+    "exceptionCounts": {
+      "mi": 26,
+      "crap": 1
+    },
+    "narrowExceptionCorrection": {
+      "oldHead": "c28083c92db6a8eff82e9294f1fd2592c5e4d693",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "oldBound": 37,
+      "newBound": 36.9,
+      "rawScore": 36.99712939607105,
+      "expiry": "2026-12-24",
+      "scope": "Only bound and exact-score rationale changed. Same ownership reason, same expiry, no global rule/baseline/source/test change."
+    },
+    "notMeasuredTotal": 11,
+    "additionalNonproductionNotMeasured": [
+      "docs/api-surface/src/app/fetch-tool.d.ts",
+      "docs/api-surface/src/index.d.ts",
+      "docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts",
+      "docs/api-surface/src/interfaces/web/account/account-form.d.ts",
+      "docs/api-surface/src/logs/audit/audit-log.d.ts",
+      "docs/api-surface/src/logs/audit/audit-send.d.ts",
+      "docs/api-surface/src/logs/audit/destination-settings-service.d.ts",
+      "docs/api-surface/src/logs/audit/otlp-audit-sender.d.ts",
+      "docs/api-surface/src/logs/system/system-logger.d.ts"
+    ],
+    "appliedExceptionReasons": 25,
+    "unusedButRetainedExceptionReason": "26 MI + 1 CRAP entries remain committed. The checker uses 25 exceptions: 24 new-file MI and the encoder CRAP bound. The two moved System sink MI entries remain reviewed but do not need a new-file exemption after move detection."
+  },
+  "review": {
+    "summary": {
+      "filesChanged": 63,
+      "filesAdded": 109,
+      "filesDeleted": 9,
+      "high": 13,
+      "medium": 28,
+      "low": 5,
+      "improvements": 3
+    },
+    "newFindingsVersus380": [],
+    "retainedHighFindings": [
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "src/app/hosted-workos-application.ts",
+        "message": "Maintainability index: 62 -> 56 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 62.161664960403826,
+        "after": 56.20859397680054,
+        "retainedReason": "Keep resource acquisition, failure disposal, shared composition, and ownership transfer visible in one hosted boundary."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "line": 19,
+        "message": "Maintainability too low: got 46 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep current-Admin authority, exact request checks, safe Save/Test outcomes and trusted capture at one route owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/audit-collector.ts",
+        "line": 11,
+        "message": "Maintainability too low: got 40 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep tenant FIFO, shared admission/bytes, pre-send authority, bounded retry, payload lifetime and release-once cleanup in one queue owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/audit-snapshots.ts",
+        "line": 16,
+        "message": "Maintainability too low: got 50 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep activity admission, freshness/backoff, physical reads and shutdown reservations with the snapshot lifetime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/bounded-sql-runtime.ts",
+        "line": 48,
+        "message": "Maintainability too low: got 42 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep SQL admission, deadlines, late native work and disposal with one SQL runtime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-credential-codec.ts",
+        "line": 3,
+        "message": "Maintainability too low: got 57 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep copied key, nonce/tag framing, tenant-bound authenticated data and fail-closed decryption in one codec."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 36,
+        "message": "Maintainability too low: got 46 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-test.ts",
+        "line": 16,
+        "message": "Maintainability too low: got 55 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep four-slot admission, caller deadline, cancellation and physical settlement in one lifetime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/otlp-audit-sender.ts",
+        "line": 60,
+        "message": "Maintainability too low: got 71 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep payload preparation, safe result mapping, caller outcome and physical cleanup with the sender."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/pg-destination-settings-store.ts",
+        "line": 15,
+        "message": "Maintainability too low: got 56 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep atomic SQL, expected revisions and row-to-outcome mapping in one adapter."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/system/console-system-log-sink.ts",
+        "line": 22,
+        "message": "Maintainability too low: got 81 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep console severity/color/format/Writable mapping in one output adapter; inheritance removal improves file MI."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/system/system-logger.ts",
+        "line": 26,
+        "message": "Maintainability too low: got 55 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep level filtering, caller location, safe failure rendering and explicit sink dispatch as one System diagnostic contract."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "test/unit/mcp/tool-completion-record.test.ts",
+        "message": "Maintainability index: 68 -> 58 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 67.72686473113363,
+        "after": 58.44030063121482,
+        "retainedReason": "Test-only file: no production MI goal. Focused request/completion cases verify one behavior owner; do not split cases only for the score."
+      }
+    ],
+    "unchangedFileFindings": 0,
+    "retainedFindings": [
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "src/app/hosted-workos-application.ts",
+        "message": "Maintainability index: 62 -> 56 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 62.161664960403826,
+        "after": 56.20859397680054,
+        "retainedReason": "Keep resource acquisition, failure disposal, shared composition, and ownership transfer visible in one hosted boundary."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "line": 19,
+        "message": "Maintainability too low: got 46 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep current-Admin authority, exact request checks, safe Save/Test outcomes and trusted capture at one route owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/audit-collector.ts",
+        "line": 11,
+        "message": "Maintainability too low: got 40 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep tenant FIFO, shared admission/bytes, pre-send authority, bounded retry, payload lifetime and release-once cleanup in one queue owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/audit-snapshots.ts",
+        "line": 16,
+        "message": "Maintainability too low: got 50 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep activity admission, freshness/backoff, physical reads and shutdown reservations with the snapshot lifetime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/bounded-sql-runtime.ts",
+        "line": 48,
+        "message": "Maintainability too low: got 42 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep SQL admission, deadlines, late native work and disposal with one SQL runtime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-credential-codec.ts",
+        "line": 3,
+        "message": "Maintainability too low: got 57 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep copied key, nonce/tag framing, tenant-bound authenticated data and fail-closed decryption in one codec."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 36,
+        "message": "Maintainability too low: got 46 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/destination-test.ts",
+        "line": 16,
+        "message": "Maintainability too low: got 55 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep four-slot admission, caller deadline, cancellation and physical settlement in one lifetime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/otlp-audit-sender.ts",
+        "line": 60,
+        "message": "Maintainability too low: got 71 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep payload preparation, safe result mapping, caller outcome and physical cleanup with the sender."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/audit/pg-destination-settings-store.ts",
+        "line": 15,
+        "message": "Maintainability too low: got 56 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep atomic SQL, expected revisions and row-to-outcome mapping in one adapter."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/system/console-system-log-sink.ts",
+        "line": 22,
+        "message": "Maintainability too low: got 81 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep console severity/color/format/Writable mapping in one output adapter; inheritance removal improves file MI."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "new-violation:maintainability",
+        "file": "src/logs/system/system-logger.ts",
+        "line": 26,
+        "message": "Maintainability too low: got 55 (min: 85)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep level filtering, caller location, safe failure rendering and explicit sink dispatch as one System diagnostic contract."
+      },
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "test/unit/mcp/tool-completion-record.test.ts",
+        "message": "Maintainability index: 68 -> 58 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 67.72686473113363,
+        "after": 58.44030063121482,
+        "retainedReason": "Test-only file: no production MI goal. Focused request/completion cases verify one behavior owner; do not split cases only for the score."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/app/application.ts",
+        "message": "Cyclomatic complexity too high: got 48 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep hosted/local composition and concurrent MCP/storage cleanup with visible failure ownership."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/app/hosted-workos-application.ts",
+        "message": "Too many Lines of code (176 > 150)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep resource acquisition, failure disposal, shared composition, and ownership transfer visible in one hosted boundary."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep tool registration, admission, public outcome mapping and trusted completion capture in one request boundary."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "message": "Too many Lines of code (167 > 150)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep tool registration, admission, public outcome mapping and trusted completion capture in one request boundary."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "complexity-regression",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "line": 35,
+        "subject": "callTool",
+        "message": "Cyclomatic complexity: 10 -> 15 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 10,
+        "after": 15,
+        "retainedReason": "Keep tool registration, admission, public outcome mapping and trusted completion capture in one request boundary."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "complexity-regression",
+        "file": "src/interfaces/mcp/fetch-tool-server.ts",
+        "line": 96,
+        "subject": "safeFailure",
+        "message": "Cyclomatic complexity: 8 -> 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 8,
+        "after": 11,
+        "retainedReason": "Keep tool registration, admission, public outcome mapping and trusted completion capture in one request boundary."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "complexity-regression",
+        "file": "src/interfaces/web/account/administration-routes.ts",
+        "line": 157,
+        "subject": "AdministrationRoutes::changeOnPost",
+        "message": "Cyclomatic complexity: 10 -> 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 10,
+        "after": 11,
+        "retainedReason": "Keep verified actor, operation outcome and trusted audit capture together; no alternate authority path."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/interfaces/web/account/logging-form.ts",
+        "line": 6,
+        "subject": "loggingForm",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11,
+        "retainedReason": "One small form parser combines the shared CSRF and exact-field check with optional checkbox and typed field validation. Each guard rejects a distinct invalid request; a second parser framework would duplicate the existing owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "message": "Cyclomatic complexity too high: got 44 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep current-Admin authority, exact request checks, safe Save/Test outcomes and trusted capture at one route owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "line": 30,
+        "subject": "logging-routes\\LoggingRoutes.",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13,
+        "retainedReason": "Keep current-Admin authority, exact request checks, safe Save/Test outcomes and trusted capture at one route owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/audit-collector.ts",
+        "message": "Cyclomatic complexity too high: got 70 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep tenant FIFO, shared admission/bytes, pre-send authority, bounded retry, payload lifetime and release-once cleanup in one queue owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/logs/audit/audit-collector.ts",
+        "message": "Too many Lines of code (153 > 150)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep tenant FIFO, shared admission/bytes, pre-send authority, bounded retry, payload lifetime and release-once cleanup in one queue owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/audit-collector.ts",
+        "line": 29,
+        "subject": "AuditCollector::admit",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11,
+        "retainedReason": "Keep tenant FIFO, shared admission/bytes, pre-send authority, bounded retry, payload lifetime and release-once cleanup in one queue owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/audit-event-projection.ts",
+        "message": "Cyclomatic complexity too high: got 54 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/audit-event-projection.ts",
+        "line": 30,
+        "subject": "inputOf",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13,
+        "retainedReason": "This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/audit-event-projection.ts",
+        "line": 62,
+        "subject": "projectAdministrationChange",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11,
+        "retainedReason": "This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/audit-snapshots.ts",
+        "message": "Cyclomatic complexity too high: got 49 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep activity admission, freshness/backoff, physical reads and shutdown reservations with the snapshot lifetime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/bounded-sql-runtime.ts",
+        "message": "Cyclomatic complexity too high: got 46 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep SQL admission, deadlines, late native work and disposal with one SQL runtime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/logs/audit/bounded-sql-runtime.ts",
+        "message": "Too many Lines of code (173 > 150)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep SQL admission, deadlines, late native work and disposal with one SQL runtime owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-endpoint.ts",
+        "line": 3,
+        "subject": "validDestinationEndpoint",
+        "message": "New function with cyclomatic complexity 14 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 14,
+        "retainedReason": "Syntax and literal-address checks need distinct guards. A range table replaces repeated IPv4 branches; no DNS or socket policy is added here. Focused cases cover malformed and private destinations without a general URL framework."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:cyclomatic_complexity",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "message": "Cyclomatic complexity too high: got 78 (max: 40)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:max_loc",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "message": "Too many Lines of code (153 > 150)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 99,
+        "subject": "DestinationSettingsService::save",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13,
+        "retainedReason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 65,
+        "subject": "DestinationSettingsService::testSaved",
+        "message": "New function with cyclomatic complexity 14 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 14,
+        "retainedReason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "line": 137,
+        "subject": "invalidInput",
+        "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 11,
+        "retainedReason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/otlp-audit-encoding.ts",
+        "line": 22,
+        "subject": "eventAttributes",
+        "message": "New function with cyclomatic complexity 15 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 15,
+        "retainedReason": "Named OTLP fields now include bounded public input and result copies and the Save/Test action variant. Timestamp conversion and encoded byte validation remain one wire-format boundary. The largest function has fifteen paths for four event variants; focused format and real Collector cases cover the contract. Splitting individual attributes would spread one format without reducing its rules."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-violation:lloc_by_method",
+        "file": "src/logs/audit/otlp-audit-request.ts",
+        "line": 8,
+        "message": "LLOC too high in method requestAuditExport(): got 21 (max: 20)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "The request owner keeps the checked socket, bounded response collection, cancellation, and response settlement together. Callbacks have at most five paths. A request framework would obscure the no-global-agent guarantee and cleanup ownership."
+      },
+      {
+        "kind": "regression",
+        "severity": "medium",
+        "rule": "new-complex-function",
+        "file": "src/logs/audit/public-audit-destination.ts",
+        "line": 24,
+        "subject": "parseAuditDestination",
+        "message": "New function with cyclomatic complexity 13 (threshold: 10)",
+        "suggestion": "Extract smaller, well-named functions to reduce decision points",
+        "before": 0,
+        "after": 13,
+        "retainedReason": "One destination boundary keeps URL and auth checks, all-answer public IP policy, and pinned peer comparison together. Its largest function has 13 paths covered by focused refusal cases. Splitting each guard would hide the connection policy."
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/index.ts",
+        "message": "Efferent coupling too high: got 11 (max: 10)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep startup, signal handling and the disposal deadline visible in one process entry point. Keep named collaborators/types explicit; the owner checker has no blocking forbidden edge or new owner-cycle result."
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "message": "Efferent coupling too high: got 15 (max: 10)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep current-Admin authority, exact request checks, safe Save/Test outcomes and trusted capture at one route owner. Keep named collaborators/types explicit; the owner checker has no blocking forbidden edge or new owner-cycle result."
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/logs/audit/audit-collector.ts",
+        "message": "Efferent coupling too high: got 12 (max: 10)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep tenant FIFO, shared admission/bytes, pre-send authority, bounded retry, payload lifetime and release-once cleanup in one queue owner. Keep named collaborators/types explicit; the owner checker has no blocking forbidden edge or new owner-cycle result."
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/logs/audit/otlp-audit-sender.ts",
+        "message": "Efferent coupling too high: got 12 (max: 10)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep payload preparation, safe result mapping, caller outcome and physical cleanup with the sender. Keep named collaborators/types explicit; the owner checker has no blocking forbidden edge or new owner-cycle result."
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "new-violation:efferent_coupling",
+        "file": "src/runtime/http/server.ts",
+        "message": "Efferent coupling too high: got 11 (max: 10)",
+        "before": 0,
+        "after": 0,
+        "retainedReason": "Keep listener, socket and shutdown state together in the existing HTTP server lifetime owner. Keep named collaborators/types explicit; the owner checker has no blocking forbidden edge or new owner-cycle result."
+      }
+    ],
+    "newFindingsVersusPriorFinal": [],
+    "comparison": {
+      "priorHead": "785d2076e2db23b40b338c0e3e83b3e1ce857c6e",
+      "priorBase": "b03e2d2c1ae55eed1d31e808e9a2dd65a6483220",
+      "fileCountsChange": "changed 59 \u2192 63, added 104 \u2192 109, deleted 9 \u2192 9; four regenerated existing and five added declaration snapshots account for the difference.",
+      "regressionFindingsIdentical": true,
+      "rawHeadFileScoresIdentical": true,
+      "all437CrapRowsIdentical": true,
+      "habitCountsIdentical": true
+    }
+  },
+  "crap": {
+    "rows": 437,
+    "changeCounts": {
+      "changed": 36,
+      "new": 211,
+      "unchanged": 190
+    },
+    "knownLimitViolations": 0,
+    "measuredTargetMisses": 1,
+    "measuredTargetMissReason": "Changed callTool = 15.000006075 exceeds the displayed target 15 but meets its required strict 30 bound. New eventAttributes = 15 meets the inclusive 15 target.",
+    "requiredNumericMisses": [],
+    "unknownTotal": 10,
+    "requiredNewUnknown": 7,
+    "unknownRows": [
+      {
+        "file": "src/logs/audit/otlp-audit-encoding.ts",
+        "function": "encodeAuditEvent",
+        "change": "new",
+        "paths": 4,
+        "crapBound": [
+          4,
+          20
+        ],
+        "reason": "Verified source-to-emitted coverage correspondence remains absent. Bound [4,20] does not prove the new target 15; retain the explicit CRAP 20 exception, focused encoding/Collector evidence, and expiry 2026-12-23. No report is edited."
+      },
+      {
+        "file": "src/logs/audit/audit-content.ts",
+        "function": "captureAuditResult",
+        "change": "new",
+        "paths": 3,
+        "crapBound": [
+          3,
+          12
+        ],
+        "reason": "Source correspondence is unknown; three paths prove bound [3,12], within 15 at any coverage share. Existing boundary/Unicode/redaction tests give behavior evidence, not a measured coverage percentage."
+      },
+      {
+        "file": "src/index.ts",
+        "function": "arm",
+        "change": "unchanged",
+        "paths": 2,
+        "crapBound": [
+          2,
+          6
+        ],
+        "reason": "Unchanged entry-point deadline callback. Keep unknown coverage explicit; not a new-goal escalation."
+      },
+      {
+        "file": "src/app/logging-storage.ts",
+        "function": "composeLoggingStorage",
+        "change": "new",
+        "paths": 1,
+        "crapBound": [
+          1,
+          2
+        ],
+        "reason": "Source correspondence is unknown; one path proves bound [1,2], within 15 at any coverage share. Do not call the coverage measured or 100%."
+      },
+      {
+        "file": "src/index.ts",
+        "function": "(anonymous)",
+        "change": "unchanged",
+        "paths": 1,
+        "crapBound": [
+          1,
+          2
+        ],
+        "reason": "Unchanged entry-point deadline callback. Keep unknown coverage explicit; not a new-goal escalation."
+      },
+      {
+        "file": "src/index.ts",
+        "function": "(anonymous)",
+        "change": "unchanged",
+        "paths": 1,
+        "crapBound": [
+          1,
+          2
+        ],
+        "reason": "Unchanged entry-point deadline callback. Keep unknown coverage explicit; not a new-goal escalation."
+      },
+      {
+        "file": "src/logs/audit/audit-content.ts",
+        "function": "redactAuditText",
+        "change": "new",
+        "paths": 1,
+        "crapBound": [
+          1,
+          2
+        ],
+        "reason": "Source correspondence is unknown; one path proves bound [1,2], within 15 at any coverage share. Do not call the coverage measured or 100%."
+      },
+      {
+        "file": "src/logs/audit/audit-content.ts",
+        "function": "redactAuditUrl",
+        "change": "new",
+        "paths": 1,
+        "crapBound": [
+          1,
+          2
+        ],
+        "reason": "Source correspondence is unknown; one path proves bound [1,2], within 15 at any coverage share. Do not call the coverage measured or 100%."
+      },
+      {
+        "file": "src/logs/audit/otlp-audit-request.ts",
+        "function": "requestAuditExport",
+        "change": "new",
+        "paths": 1,
+        "crapBound": [
+          1,
+          2
+        ],
+        "reason": "Source correspondence is unknown; one path proves bound [1,2], within 15 at any coverage share. Do not call the coverage measured or 100%."
+      },
+      {
+        "file": "src/logs/audit/pg-destination-settings-store.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "crapBound": [
+          1,
+          2
+        ],
+        "reason": "Source correspondence is unknown; one path proves bound [1,2], within 15 at any coverage share. Do not call the coverage measured or 100%."
+      }
+    ],
+    "coverageMeaning": "Verified selected unit+integration V8 own-character share approximates path coverage; no source-correspondence guess or coverage edit.",
+    "comparison": "All 437 rows, numeric values, classifications and unknown identities are byte-for-byte equal to prior final report rows."
+  },
+  "habit": {
+    "total": 377,
+    "counts": {
+      "high-complexity": 24,
+      "non-null-assertion": 18,
+      "oversized-function": 1,
+      "too-many-parameters": 7,
+      "unused-variable": 1,
+      "non-essential-comment": 310,
+      "oversized-file": 16
+    },
+    "previous380": {
+      "high-complexity": 24,
+      "non-null-assertion": 18,
+      "oversized-function": 1,
+      "too-many-parameters": 7,
+      "unused-variable": 1,
+      "non-essential-comment": 307,
+      "oversized-file": 15
+    },
+    "delta": {
+      "high-complexity": 0,
+      "non-null-assertion": 0,
+      "oversized-function": 0,
+      "too-many-parameters": 0,
+      "unused-variable": 0,
+      "non-essential-comment": 3,
+      "oversized-file": 1
+    },
+    "newRetainedReasons": {
+      "non-essential-comment": "Three new audit-content comments state the enclosure/fallback safety rule, why escaped quotes must not restart a scan, and the validated-URL caller precondition. They explain constraints that the code alone does not establish.",
+      "oversized-file": "The capture unit file now crosses 200 lines. Parameterized boundary, malformed input, Unicode and byte-budget examples cover one Audit capture owner. Keep cohesive behavior cases instead of a mechanical split."
+    },
+    "otherRetainedReasons": [
+      "24 high-complexity sites keep distinct authority, admission, retry, request and lifetime decisions at their owners; largest new functions remain below 25 paths.",
+      "18 non-null assertions are in existing focused tests and fixture assertions, not production runtime.",
+      "One oversized MCP server factory retains its request lifecycle and outcome mapping.",
+      "Seven parameter sites keep distinct explicit collaborators or typed formatting fields; a parameter bag would hide roles.",
+      "The unused entry-point deadline using binding registers disposal; removing it changes cleanup.",
+      "Retained comments state boundary/security/lifetime or test-environment reasons. The remaining oversized files keep existing composition, fixture or test concerns."
+    ],
+    "snooze": [],
+    "comparison": "All 377 findings retain the prior scoped reasons; no new finding from policy merge, snapshots or metrics history record."
+  },
+  "redactionEffect": {
+    "fileMi": {
+      "src/logs/audit/audit-content.ts": {
+        "previous": 64.62654022945748,
+        "current": 66.03646029274161
+      },
+      "src/logs/audit/audit-event-projection.ts": {
+        "previous": 37.00345954582384,
+        "current": 36.99712939607105
+      }
+    },
+    "numericCrap": {
+      "redactParameter": 3.091964817,
+      "redactTextMatch": 6.000878004,
+      "prefixWithin": 4,
+      "inputOf": 13.103787125
+    },
+    "retainedLimits": "Complete recognized enclosures define boundaries. One-level Markdown only; richer syntax keeps conservative whole-query redaction and may lose public syntax without setting truncated. No general parser/arbitrary-secret-free/lossless-all-format claim."
+  },
+  "architectureQualityLimits": {
+    "coarseCycles": "1\u21921",
+    "modularity": "0.39\u21920.34",
+    "crossShare": "0.15\u21920.31",
+    "unchangedUnresolvedDependency": "Portal main.ts \u2192 style.css unresolved on both revisions. Incomplete community edge evidence does not prove removed/new imports.",
+    "ownerCheck": "Fresh checker has no undeclared facts or blocking owner edge/cycle result.",
+    "baseCrap": "Base bands derived with head coverage are estimates, not measured base coverage."
+  },
+  "failedAttemptsRetained": {
+    "metricRounding": "pr245-merge-metric-rounding: c280 checker blocked by raw 36.997 < bound 37.",
+    "staleCoverage": "pr245-merge-stale-coverage: c280-bound coverage was rejected on 785d; this is a failed evidence attempt, not an exception. Fresh785d unit/integration coverage now passed.",
+    "diskFailure": "pr245-merge-disk-failure: container ENOSPC failure retained separately. This quality review does not mark its retry/hosted gates passed.",
+    "reportWrapper": "tier-combined-output.log retains an initial wrapper JSON parse failure because permitted compiler stderr was mixed with checker stdout. Checker itself exited 0; pure stdout tier.json and separate tier.stderr.log now prove the final result. Do not call it a failed required gate or erase it."
+  },
+  "gateLimits": "Earlier source-gate input bindings remain historical. New-main policy/config/tool inputs differ. This final review verifies quality pins and accepted coverage compatibility; the maintained Validation report owns final functional/image gate selection, provenance and completion.",
+  "reportFingerprintsSha256": {
+    "snapshot-base.json": "ddce66de3154b5b6d6ed1de4772fe41d19a2216ebd653ca2ab9b5653cf43a058",
+    "snapshot.json": "eb42722ad3ea172a85321e363217c4986bc635d77fd404627a3e196c72b2c5cb",
+    "process.json": "e588e14a3d8f54b1e5e19b5fa25b34dfc6d4f70c66d33802f928a53d39aa9fc5",
+    "crap.json": "237edaed9f13591998c46da45e11df289d887915769ea42625601fd6ae5ebe06",
+    "review.json": "23672bb8fb852fc25ff0fb6cbe9152bab13006e3d8e6d48f9ea98f504ff32ed6",
+    "tier.json": "24b3193d0f0fccb7f328956094dbd3c4b9fae7aa3382cdb0e874e8a45d2d66ab",
+    "habit.log": "23932d54e25f59d09afd13f61cb60060feab2d40b244bc301de147483209d124",
+    "metrics-exits.json": "d94714f37fbad0aa3f42655fcb5a4b97e136f8f9fc0cea336d26687735b646ba",
+    "tier.stderr.log": "c44e39aa090816ab05975c9905c56e196cb961bbe2ca70ab012bfc16896bba1b",
+    "tier-command.json": "92d542c3970691693a23e8d09fb20f3de43c6a35b21befbb491c4e810892d0ed"
+  },
+  "exceptionFileSha256": "10374033af321fa5c90fa970611dc8dbf4e4c926c36f83ca6b1871277e9f9373",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.component_set",
+        "fact": "audit-logs added (roots src/logs/audit/)"
+      },
+      {
+        "key": "architecture.component_set",
+        "fact": "logging removed (roots src/logging/)"
+      },
+      {
+        "key": "architecture.component_set",
+        "fact": "system-logs added (roots src/logs/system/)"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "app -> system-logs (runtime) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "app -> audit-logs (runtime) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "web -> audit-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "mcp -> system-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "mcp -> audit-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "http -> system-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "cli -> system-logs (type) added"
+      },
+      {
+        "key": "architecture.dependency_added",
+        "fact": "audit-logs -> organizations (type) added"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/system/system-logger.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/destination-settings-service.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/audit-log.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/otlp-audit-sender.ts"
+      },
+      {
+        "key": "architecture.public_module_added",
+        "fact": "src/logs/audit/audit-send.ts"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/index.ts (+4 -3 lines)",
+        "detail": "diff --git a/docs/api-surface/src/index.d.ts b/docs/api-surface/src/index.d.ts\nindex 81f3caab..cfe716c6 100644\n--- a/docs/api-surface/src/index.d.ts\n+++ b/docs/api-surface/src/index.d.ts\n@@ -1,4 +1,5 @@\n-import { type Application, type ApplicationLogger } from './app/application.ts';\n+import { type SystemLog } from './logs/system/system-logger.ts';\n+import { type Application } from './app/application.ts';\n import { type ListenAddress } from './runtime/config/deployment-config.ts';\n type Environment = Readonly<Record<string, string | undefined>>;\n export interface ProcessSignals {\n@@ -8,10 +9,10 @@ export interface ProcessSignals {\n export interface ServeOptions {\n     readonly listen: ListenAddress;\n     readonly publicBaseUrl: string;\n-    readonly logger: ApplicationLogger;\n+    readonly logger: SystemLog;\n     readonly signals: ProcessSignals;\n }\n-export declare function serve(environment: Environment, logger: ApplicationLogger, signals: ProcessSignals): Promise<void>;\n+export declare function serve(environment: Environment, logger: SystemLog, signals: ProcessSignals): Promise<void>;\n export declare function serveApplication(open: () => Application | Promise<Application>, options: ServeOptions): Promise<void>;\n export type StopSignal = Disposable & {\n     readonly received: Promise<NodeJS.Signals>;\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/interfaces/mcp/fetch-tool-schema.ts (+0 -4 lines)",
+        "detail": "diff --git a/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts b/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts\nindex 8baae0b1..d2b80a84 100644\n--- a/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts\n+++ b/docs/api-surface/src/interfaces/mcp/fetch-tool-schema.d.ts\n@@ -22,7 +22,3 @@ export declare function parseFetchToolArguments(value: unknown): Promise<{\n     url: string;\n     reason: string;\n } | undefined>;\n-export declare function fieldStatus(value: unknown, bounds: {\n-    minLength: number;\n-    maxLength: number;\n-}): 'valid' | 'missing' | 'not_string' | 'empty' | 'too_long';\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/interfaces/web/account/account-form.ts (+1 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/interfaces/web/account/account-form.d.ts b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\nindex bac5060e..555ac53c 100644\n--- a/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n+++ b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n@@ -18,3 +18,4 @@ export declare function selectionIn(form: URLSearchParams, csrfToken: string, de\n export declare function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal;\n export declare function invitationChangeIn(form: URLSearchParams, csrfToken: string): InvitationChangeRequest | FormRefusal;\n export declare function readForm(request: Request): Promise<URLSearchParams | FormRefusal>;\n+export declare function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal;\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/app/fetch-tool.ts (+5 -4 lines)",
+        "detail": "diff --git a/docs/api-surface/src/app/fetch-tool.d.ts b/docs/api-surface/src/app/fetch-tool.d.ts\nindex 2e4f3d46..421cf5c1 100644\n--- a/docs/api-surface/src/app/fetch-tool.d.ts\n+++ b/docs/api-surface/src/app/fetch-tool.d.ts\n@@ -1,8 +1,9 @@\n-import type { ApplicationLogger } from './application.ts';\n+import type { AuditLog } from '../logs/audit/audit-log.ts';\n+import type { SystemLog } from '../logs/system/system-logger.ts';\n import { type ToolOperations } from '../interfaces/mcp/fetch-tool-server.ts';\n import type { RequestServerBuilder } from '../interfaces/mcp/mcp-server.ts';\n type Environment = Readonly<Record<string, string | undefined>>;\n export type { ToolOperations } from '../interfaces/mcp/fetch-tool-server.ts';\n-export declare function createToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations;\n-export declare function createHostedToolOperations(environment: Environment, logger: ApplicationLogger): ToolOperations;\n-export declare function fetchToolServers(operations: ToolOperations, logger: ApplicationLogger): RequestServerBuilder;\n+export declare function createToolOperations(environment: Environment, logger: SystemLog): ToolOperations;\n+export declare function createHostedToolOperations(environment: Environment, logger: SystemLog): ToolOperations;\n+export declare function fetchToolServers(operations: ToolOperations, logger: SystemLog, audit?: Pick<AuditLog, 'toolCompleted'>): RequestServerBuilder;\n"
+      },
+      {
+        "key": "architecture.registry_view_changed",
+        "fact": "architecture/components.md: 2 views added, 4 views edited"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: @opentelemetry/api-logs"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: pg"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "config: node:crypto"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "config: node:fs/promises"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: node:path"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: node:stream"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "system-logs: node:url"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:crypto"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:dns"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:dns/promises"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:https"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:net"
+      },
+      {
+        "key": "dependencies.external_import_added",
+        "fact": "audit-logs: node:tls"
+      },
+      {
+        "key": "dependencies.keys_changed",
+        "fact": "package.json: dependencies.pg added"
+      },
+      {
+        "key": "dependencies.keys_changed",
+        "fact": "package.json: devDependencies.@types/pg added"
+      }
+    ],
+    "summary": "T2: component set changed for 3 components; 8 allowed edges added or widened; 5 public modules added; declarations changed in 4 public modules; 2 registry views added, 4 registry views edited; 13 external imports added; 2 dependency keys added or removed"
+  },
+  "coverage": {
+    "capturedCommit": "1e6077ceae7435aed924d5f35051e081980a74de",
+    "finalHead": "a3aef3f2633145c685feccd136f8638ce08d58d7",
+    "status": "verified",
+    "suites": [
+      "unit",
+      "integration"
+    ],
+    "sourceFingerprint": "34bab321c6d36d617f28700378ba35e5c15f351b99e747ea7a4a32b4c06475cb",
+    "inputsFingerprint": "fff78cf2adb7152d40338b0a9843a5b1ecec0b8e76cbf99930da878a2a5569d1",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "processes": 697,
+    "runRecord": "../pr245-current-main/coverage-checks.json",
+    "counts": {
+      "backendUnit": 3051,
+      "portalUnit": 29,
+      "integration": 1069,
+      "fail": 0,
+      "skip": 0
+    },
+    "limit": "The capture at 1e6077ce is reused after a docs-only immutable metrics record. Final tools verified compatible input fingerprints, not commit identity alone. Coverage still has ten unbound source-function mappings."
+  },
+  "checkerDiagnostic": {
+    "exit": 0,
+    "stderr": "pr-review-check: ignored 33 compiler errors in 2 files that public_surface does not list",
+    "reason": "The declaration emitter permits errors only outside its listed surface. 33 TS2883 diagnostics concern unchanged Better Auth runtime and CSS selector modules; all 48 public snapshots regenerated and API --check passed. This does not prove that every unlisted declaration emits cleanly."
+  },
+  "informationalDispositions": [
+    {
+      "note": "48 public modules, 4 snapshots changed, 5 added",
+      "reason": "The committed surface inventory is 48: 43 base modules, 5 added modules, 4 existing declarations changed. Generator and --check pass; added modules and changed declarations are T2 facts, not a second runtime capability."
+    },
+    {
+      "note": "allowed edge removed: app -> logging (runtime)",
+      "reason": "The old logging owner splits into system-logs and audit-logs. App retains the diagnostic operation through explicit SystemLogger/sink composition and separately composes Audit services. Only the old owner edge is removed; diagnostics remain."
+    },
+    {
+      "note": "declaration snapshot added: src/logs/system/system-logger.ts",
+      "reason": "Concrete SystemLogger, narrowed info/error role, output sink and log record; sink composition preserves formatting and error propagation. Snapshot text records the existing reviewed source contract; generation adds no runtime call. The module addition is already a T2 fact."
+    },
+    {
+      "note": "declaration snapshot added: src/logs/audit/destination-settings-service.ts",
+      "reason": "Current-Admin settings service, tenant-bound credentials, atomic revisions, required saved-Test sender and fresh export authorization. Snapshot text records the existing reviewed source contract; generation adds no runtime call. The module addition is already a T2 fact."
+    },
+    {
+      "note": "declaration snapshot added: src/logs/audit/audit-log.ts",
+      "reason": "Explicit bounded nonthrowing customer events with supported named input/result/administration/destination fields. Snapshot text records the existing reviewed source contract; generation adds no runtime call. The module addition is already a T2 fact."
+    },
+    {
+      "note": "declaration snapshot added: src/logs/audit/otlp-audit-sender.ts",
+      "reason": "One-shot outcome and tracked-start sender operations, with physical settlement separate from the caller outcome. Snapshot text records the existing reviewed source contract; generation adds no runtime call. The module addition is already a T2 fact."
+    },
+    {
+      "note": "declaration snapshot added: src/logs/audit/audit-send.ts",
+      "reason": "Destination, safe outcomes, tracked attempt lifetime, sender role and fixed send bounds. Snapshot text records the existing reviewed source contract; generation adds no runtime call. The module addition is already a T2 fact."
+    },
+    {
+      "note": "external import removed: logging: @opentelemetry/api-logs",
+      "reason": "This allowance moves with unchanged System diagnostic ownership from logging to system-logs. The package/builtin dependency remains declared there; no runtime dependency is claimed removed."
+    },
+    {
+      "note": "external import removed: logging: node:path",
+      "reason": "This allowance moves with unchanged System diagnostic ownership from logging to system-logs. The package/builtin dependency remains declared there; no runtime dependency is claimed removed."
+    },
+    {
+      "note": "external import removed: logging: node:stream",
+      "reason": "This allowance moves with unchanged System diagnostic ownership from logging to system-logs. The package/builtin dependency remains declared there; no runtime dependency is claimed removed."
+    },
+    {
+      "note": "external import removed: logging: node:url",
+      "reason": "This allowance moves with unchanged System diagnostic ownership from logging to system-logs. The package/builtin dependency remains declared there; no runtime dependency is claimed removed."
+    },
+    {
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/change-records.ts",
+      "reason": "Administration capture passes a function explicitly rather than a former recorder object and keeps the roleless revoke mapping. Named action/target/role/outcome declarations stay identical; no new exported declaration is implied by the internal call change."
+    },
+    {
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/change-records.ts)",
+      "reason": "This unchanged module imports the changed change-record owner. Its generated declaration bytes are identical. The importer note does not prove a new user contract or authority change."
+    },
+    {
+      "note": "size.production_lines_note_above: 2200 production lines, above the limit of 400",
+      "reason": "The full Slice 2 integration includes settings storage, diagnostics separation, saved Test, capture, snapshots and bounded delivery across the preserved stack. 2,200 production diff lines exceed 400; retain the full scope and review each responsibility. Splitting history to evade the count would not reduce this candidate."
+    },
+    {
+      "note": "size.total_lines_note_above: 12903 lines without generated files, above the limit of 1500",
+      "reason": "The full stack includes required acceptance/unit/integration/support evidence and affected design/implementation/release records. 12,903 non-generated diff lines exceed 1,500; retain them with concise report links, not a weaker threshold."
+    },
+    {
+      "note": "ratchet.maintainability_index.existing_file_drop_note_at: src/app/hosted-workos-application.ts: 62.161664960403826 to 56.20859397680054",
+      "reason": "Keep resource acquisition, failure disposal, shared composition, and ownership transfer visible in one hosted boundary. The raw drop 62.1616649604 \u2192 56.2085939768 is visible; it is a note under trusted current-main policy, not an 85-goal pass."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/app/hosted-workos-application.ts: Maintainability index: 62 -> 56 (below 85 is hard to maintain)",
+      "reason": "Keep resource acquisition, failure disposal, shared composition, and ownership transfer visible in one hosted boundary. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/interfaces/web/account/logging-routes.ts: Maintainability too low: got 46 (min: 85)",
+      "reason": "Keep current-Admin authority, exact request checks, safe Save/Test outcomes and trusted capture at one route owner. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/audit-collector.ts: Maintainability too low: got 40 (min: 85)",
+      "reason": "Keep tenant FIFO, shared admission/bytes, pre-send authority, bounded retry, payload lifetime and release-once cleanup in one queue owner. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/audit-snapshots.ts: Maintainability too low: got 50 (min: 85)",
+      "reason": "Keep activity admission, freshness/backoff, physical reads and shutdown reservations with the snapshot lifetime owner. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/bounded-sql-runtime.ts: Maintainability too low: got 42 (min: 85)",
+      "reason": "Keep SQL admission, deadlines, late native work and disposal with one SQL runtime owner. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/destination-credential-codec.ts: Maintainability too low: got 57 (min: 85)",
+      "reason": "Keep copied key, nonce/tag framing, tenant-bound authenticated data and fail-closed decryption in one codec. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/destination-settings-service.ts: Maintainability too low: got 46 (min: 85)",
+      "reason": "Keep validated credentials, atomic Save, saved Test and fresh dispatch authority with one settings owner. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/destination-test.ts: Maintainability too low: got 55 (min: 85)",
+      "reason": "Keep four-slot admission, caller deadline, cancellation and physical settlement in one lifetime owner. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/otlp-audit-sender.ts: Maintainability too low: got 71 (min: 85)",
+      "reason": "Keep payload preparation, safe result mapping, caller outcome and physical cleanup with the sender. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/audit/pg-destination-settings-store.ts: Maintainability too low: got 56 (min: 85)",
+      "reason": "Keep atomic SQL, expected revisions and row-to-outcome mapping in one adapter. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/system/console-system-log-sink.ts: Maintainability too low: got 81 (min: 85)",
+      "reason": "Keep console severity/color/format/Writable mapping in one output adapter; inheritance removal improves file MI. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    },
+    {
+      "note": "ratchet.review_findings_high: src/logs/system/system-logger.ts: Maintainability too low: got 55 (min: 85)",
+      "reason": "Keep level filtering, caller location, safe failure rendering and explicit sink dispatch as one System diagnostic contract. Retain the high finding; class-level and raw file MI are distinct. Current-main makes this a note, while the independent T2 facts and applicable exceptions remain."
+    }
+  ],
+  "policyAnswers": [
+    {
+      "key": "protected_paths.policy",
+      "question": "Does this change what the checks enforce, or who decides? Record the new rule and why.",
+      "answer": "The Slice 2 rules name System/Audit owners, exact allowed imports, forbidden cross-log edges, new public modules and the separate PostgreSQL/Collector gates. Existing habit import guards move with the logging owners. Current-main architecture-facts, snapshot verification, skip/todo blocking and report rules are retained without weakening. The only final bound correction is the explicit projection MI 37 \u2192 36.9 exception with unchanged expiry; global thresholds/baseline are unchanged. Source/fixture selection does not run broader suites by a wrapper. T2 facts require independent current-candidate human architect approval."
+    },
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise.",
+      "answer": "Current Admins can read/Save/Test a tenant-scoped destination. Public UI describes best-effort export, limits and Test meaning; customer capture carries named bounded redacted input/result, and System messages remain private. SystemLog replaces ApplicationLogger at process/tool composition; Audit capture is an optional composition dependency; the schema field-status helper is no longer exported, and account-form exports a shared exact-field parser. Generated snapshots expose these actual public differences and no declaration change for organization modules. MCP success/failure and ordinary auth authority retain their public outcomes."
+    },
+    {
+      "key": "protected_paths.deploy_and_data",
+      "question": "What changes in the image, the runtime, or the stored data, and how is it rolled back? Record the recovery step.",
+      "answer": "The stack adds server-only optional PostgreSQL/key/CA settings, a restricted tenant-scoped forced-RLS settings migration, lazy bounded SQL runtime, packaged pg adapter and offline synthetic hosted-image probe. The database stores destination configuration/revisions/encrypted credential only, not event history. Rollback/recovery keeps hosted maintenance or Audit disabled, preserves key/tenant compatibility and has owner-reviewed restore/reconcile procedures; no migration or deployment was executed by this work. The test fixture removes its own anonymous volume at cleanup; no production storage policy changes. Activation/release and a real selected destination smoke remain separate owner holds."
+    },
+    {
+      "key": "protected_paths.security",
+      "question": "Does this change admission, trust, permissions, or what untrusted content can reach? Record the guarantee that holds after the change.",
+      "answer": "Current Admin authority, organization/actor binding, CSRF and exact bounded form fields guard settings mutations. Tenant-bound authenticated encryption keeps token content out of public settings/UI/events. Fresh saved revision/enabled/credential data authorizes each dispatch; snapshots admit work but cannot authorize sending. Public IP/DNS/peer and verified-TLS checks precede credentials/events; no redirect credential forwarding is added. Raw recognized query values remain redacted; defined enclosure recognition preserves public syntax and richer syntax falls back conservatively. Fixed bytes/admission/deadlines/settlement and cancellation clearing bound private data lifetimes. No general secret-free claim or owner rollout approval is made."
+    }
+  ],
+  "dependencyAnswer": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim.",
+  "tierReasonDispositions": [
+    {
+      "tier": "T2",
+      "key": "architecture.component_set",
+      "fact": "audit-logs added (roots src/logs/audit/)",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.component_set",
+      "fact": "logging removed (roots src/logging/)",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.component_set",
+      "fact": "system-logs added (roots src/logs/system/)",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "app -> system-logs (runtime) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "app -> audit-logs (runtime) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "web -> audit-logs (type) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "mcp -> system-logs (type) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "mcp -> audit-logs (type) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "http -> system-logs (type) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "cli -> system-logs (type) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.dependency_added",
+      "fact": "audit-logs -> organizations (type) added",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/system/system-logger.ts",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/destination-settings-service.ts",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/audit-log.ts",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/otlp-audit-sender.ts",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/logs/audit/audit-send.ts",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/index.ts (+4 -3 lines)",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/interfaces/mcp/fetch-tool-schema.ts (+0 -4 lines)",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/interfaces/web/account/account-form.ts (+1 -0 lines)",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/app/fetch-tool.ts (+5 -4 lines)",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 2 views added, 4 views edited",
+      "disposition": "The full integration deliberately declares this architecture change. See its exact fact/declaration diff and the authoritative main Architecture comparison; generation or a moved type alone does not create a runtime behavior."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.container",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.external",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.deployment",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.crossCutting",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.component",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.policy",
+      "fact": ".habit-hooks/eslint.config.mjs",
+      "disposition": "The Slice 2 rules name System/Audit owners, exact allowed imports, forbidden cross-log edges, new public modules and the separate PostgreSQL/Collector gates. Existing habit import guards move with the logging owners. Current-main architecture-facts, snapshot verification, skip/todo blocking and report rules are retained without weakening. The only final bound correction is the explicit projection MI 37 \u2192 36.9 exception with unchanged expiry; global thresholds/baseline are unchanged. Source/fixture selection does not run broader suites by a wrapper. T2 facts require independent current-candidate human architect approval."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.policy",
+      "fact": "docs/implementation/pr-review-rules.yaml",
+      "disposition": "The Slice 2 rules name System/Audit owners, exact allowed imports, forbidden cross-log edges, new public modules and the separate PostgreSQL/Collector gates. Existing habit import guards move with the logging owners. Current-main architecture-facts, snapshot verification, skip/todo blocking and report rules are retained without weakening. The only final bound correction is the explicit projection MI 37 \u2192 36.9 exception with unchanged expiry; global thresholds/baseline are unchanged. Source/fixture selection does not run broader suites by a wrapper. T2 facts require independent current-candidate human architect approval."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.contracts",
+      "fact": "src/index.ts",
+      "disposition": "Current Admins can read/Save/Test a tenant-scoped destination. Public UI describes best-effort export, limits and Test meaning; customer capture carries named bounded redacted input/result, and System messages remain private. SystemLog replaces ApplicationLogger at process/tool composition; Audit capture is an optional composition dependency; the schema field-status helper is no longer exported, and account-form exports a shared exact-field parser. Generated snapshots expose these actual public differences and no declaration change for organization modules. MCP success/failure and ordinary auth authority retain their public outcomes."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.contracts",
+      "fact": "src/interfaces/mcp/fetch-tool-schema.ts",
+      "disposition": "Current Admins can read/Save/Test a tenant-scoped destination. Public UI describes best-effort export, limits and Test meaning; customer capture carries named bounded redacted input/result, and System messages remain private. SystemLog replaces ApplicationLogger at process/tool composition; Audit capture is an optional composition dependency; the schema field-status helper is no longer exported, and account-form exports a shared exact-field parser. Generated snapshots expose these actual public differences and no declaration change for organization modules. MCP success/failure and ordinary auth authority retain their public outcomes."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.deploy_and_data",
+      "fact": ".env.example",
+      "disposition": "The stack adds server-only optional PostgreSQL/key/CA settings, a restricted tenant-scoped forced-RLS settings migration, lazy bounded SQL runtime, packaged pg adapter and offline synthetic hosted-image probe. The database stores destination configuration/revisions/encrypted credential only, not event history. Rollback/recovery keeps hosted maintenance or Audit disabled, preserves key/tenant compatibility and has owner-reviewed restore/reconcile procedures; no migration or deployment was executed by this work. The test fixture removes its own anonymous volume at cleanup; no production storage policy changes. Activation/release and a real selected destination smoke remain separate owner holds."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.deploy_and_data",
+      "fact": "docker/verify-hosted-runtime.mjs",
+      "disposition": "The stack adds server-only optional PostgreSQL/key/CA settings, a restricted tenant-scoped forced-RLS settings migration, lazy bounded SQL runtime, packaged pg adapter and offline synthetic hosted-image probe. The database stores destination configuration/revisions/encrypted credential only, not event history. Rollback/recovery keeps hosted maintenance or Audit disabled, preserves key/tenant compatibility and has owner-reviewed restore/reconcile procedures; no migration or deployment was executed by this work. The test fixture removes its own anonymous volume at cleanup; no production storage policy changes. Activation/release and a real selected destination smoke remain separate owner holds."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.security",
+      "fact": "src/interfaces/web/account/account-form.ts",
+      "disposition": "Current Admin authority, organization/actor binding, CSRF and exact bounded form fields guard settings mutations. Tenant-bound authenticated encryption keeps token content out of public settings/UI/events. Fresh saved revision/enabled/credential data authorizes each dispatch; snapshots admit work but cannot authorize sending. Public IP/DNS/peer and verified-TLS checks precede credentials/events; no redirect credential forwarding is added. Raw recognized query values remain redacted; defined enclosure recognition preserves public syntax and richer syntax falls back conservatively. Fixed bytes/admission/deadlines/settlement and cancellation clearing bound private data lifetimes. No general secret-free claim or owner rollout approval is made."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.security",
+      "fact": "src/runtime/config/logging-storage-config.ts",
+      "disposition": "Current Admin authority, organization/actor binding, CSRF and exact bounded form fields guard settings mutations. Tenant-bound authenticated encryption keeps token content out of public settings/UI/events. Fresh saved revision/enabled/credential data authorizes each dispatch; snapshots admit work but cannot authorize sending. Public IP/DNS/peer and verified-TLS checks precede credentials/events; no redirect credential forwarding is added. Raw recognized query values remain redacted; defined enclosure recognition preserves public syntax and richer syntax falls back conservatively. Fixed bytes/admission/deadlines/settlement and cancellation clearing bound private data lifetimes. No general secret-free claim or owner rollout approval is made."
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": ".code-quality-exceptions.yaml",
+      "disposition": "Retain explicit exception bounds/expiries and affected test-gate policy review. Gate removals are path/report updates with the separate runtime gates retained; no selected check or required human review is removed."
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md",
+      "disposition": "Retain explicit exception bounds/expiries and affected test-gate policy review. Gate removals are path/report updates with the separate runtime gates retained; no selected check or required human review is removed."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: @opentelemetry/api-logs",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: pg",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "config: node:crypto",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "config: node:fs/promises",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: node:path",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: node:stream",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "system-logs: node:url",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:crypto",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:dns",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:dns/promises",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:https",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:net",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.external_import_added",
+      "fact": "audit-logs: node:tls",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.keys_changed",
+      "fact": "package.json: dependencies.pg added",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "dependencies.keys_changed",
+      "fact": "package.json: devDependencies.@types/pg added",
+      "disposition": "pg 8.23.1 and @types/pg 8.23.1 are pinned in the manifest/lockfile for the optional PostgreSQL settings adapter. The driver runs only in hosted configured storage; local composition does not load it. Node crypto owns key/nonce handling, DNS/net/HTTPS/TLS support bounded validated delivery, and fs/promises reads server-trusted CA configuration. OTel/path/stream/url allowances move with System diagnostics, retaining the same upstream OTel package. These are explicit dependency facts, not a live storage/delivery claim."
+    },
+    {
+      "tier": "T1",
+      "key": "public_surface",
+      "fact": "docs/reference/mcp-fetch-tool.md",
+      "disposition": "The MCP contract document explains full bounded customer capture and the private System/customer Audit distinction. Runtime auth and tool response outcomes stay within the reviewed contract; this document remains a client-facing promise requiring review."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/app/logging-storage.ts covered by \"Optional hosted storage composition keeps validation, safe failure, lazy adapter loading, and service/key wiring in one small boundary. Its three paths are unchanged; splitting construction from cleanup would hide ownership.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-form.ts covered by \"One small form parser combines the shared CSRF and exact-field check with optional checkbox and typed field validation. Each guard rejects a distinct invalid request; a second parser framework would duplicate the existing owner.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-page.ts covered by \"The native form and fixed recovery notice stay with their HTML escaping and write-only token projection. The form reuses the current page layout; extracting individual markup fields would spread one small page.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-routes.ts covered by \"This boundary keeps current Admin authority, request checks, safe outcome mapping and trusted audit capture together. Read, Save and Test stay separate; the route callback has thirteen paths, and each mutation has eight. Tests cover refusals, uncertain writes and throwing capture. Two form-guard copies do not justify a parser or dispatch framework.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/interfaces/web/account/logging-test-page.ts covered by \"Two typed lookup tables keep every safe sender and operation notice exhaustive in one small presentation boundary. The sole function has two paths. Splitting fixed messages into more files would spread one outcome contract without reducing decisions.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-collector-state.ts covered by \"Two small calculations own positive bound validation and typed retry eligibility, exponential delay, jitter and Retry-After precedence. They have four and eight paths. State records stay with these limits; a policy hierarchy or per-field modules would add structure without reducing the rules.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-collector.ts covered by \"One queue owner keeps admission, tenant FIFO, one item and byte account, authorization, retry, fixed age and physical settlement consistent. Nineteen functions have at most eleven paths; the short authorization frame prevents a destination or event alias from surviving a send wait. Moving each state or counter into another owner would obscure release-once and cancellation rules. Focused tests cover overload, deadlines, revisions and each close phase.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-content.ts covered by \"Recognized credential redaction and the bounded exported text copy share one content-safety owner. Six short functions have at most six paths. Recognized bounded text enclosures preserve public syntax; validated URLs and ambiguous text retain full query-value redaction. Byte accounting reserves JSON escaping and the marker. Regression cases cover raw punctuation, escaped or split credentials, Unicode, and malformed enclosures. A general document parser or separate file for each pattern would hide the fixed policy.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-event-projection.ts covered by \"This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-https-connection.ts covered by \"One TLS owner keeps handshake approval, actual peer checks, cancellation, and awaited socket disposal in the same lifetime. Its largest function has four paths; unit and real TLS cases cover the order before HTTP data.\" until 2026-12-23",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-snapshot-state.ts covered by \"Small state contracts and pure projections keep fixed limits, enabled/revision validation and detached bounded AuditEvent ownership explicit. Four functions have at most five paths. A cache framework or per-field modules would spread one metadata contract.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/audit-snapshots.ts covered by \"One owner keeps activity admission, bounded metadata, freshness, backoff, physical reads, deadlines and shutdown consistent. The load function has ten paths after the optional successful-observation hook; failure isolation must not invalidate valid metadata. Splitting its shared reservations or observation checks would obscure lifetime and authority.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/bounded-sql-runtime.ts covered by \"One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-credential-codec.ts covered by \"The compact codec keeps key copying, nonce and tag layout, tenant authenticated data and fail-closed decryption in one owner. Its largest function has four paths. Splitting cryptographic framing would obscure the invariant.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-endpoint.ts covered by \"Syntax and literal-address checks need distinct guards. A range table replaces repeated IPv4 branches; no DNS or socket policy is added here. Focused cases cover malformed and private destinations without a general URL framework.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-settings-service.ts covered by \"One owner keeps validated credential recovery, atomic Save, saved Test and fresh export authorization together. Test has fourteen paths; export authorization has ten for distinct unavailable, changed, aborted and credential outcomes. One fresh version supplies all dispatch fields. Splitting credentials or revision checks into another service would weaken visible ownership.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/destination-test.ts covered by \"One small lifetime owner keeps four-slot admission, caller deadline, cancellation and late callback settlement together. Its largest function has three paths. Moving timer or slot cleanup to another owner would obscure when admission is released.\" until 2026-12-24",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-encoding.ts covered by \"Named OTLP fields now include bounded public input and result copies and the Save/Test action variant. Timestamp conversion and encoded byte validation remain one wire-format boundary. The largest function has fifteen paths for four event variants; focused format and real Collector cases cover the contract. Splitting individual attributes would spread one format without reducing its rules.\" until 2026-12-23",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-request.ts covered by \"The request owner keeps the checked socket, bounded response collection, cancellation, and response settlement together. Callbacks have at most five paths. A request framework would obscure the no-global-agent guarantee and cleanup ownership.\" until 2026-12-23",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-response.ts covered by \"Success shape, partial rejection, status classification, and Retry-After limits belong to one OTLP result policy. The largest functions have nine paths and focused wire cases. Splitting status and body rules would make their required precedence harder to review.\" until 2026-12-23",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-sender.ts covered by \"One sender owns synchronous payload preparation, safe failure mapping, caller outcome and physical cleanup. Functions have at most six paths. Clearable request state is needed while native DNS ignores cancellation; separating its admission and cleanup would hide that lifetime.\" until 2026-12-23",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/pg-destination-settings-store.ts covered by \"The compact adapter keeps atomic SQL, expected-revision outcomes and row mapping together. Unit mapping and real PostgreSQL acceptance cover separate concerns; splitting SQL constants or mappings would spread the same invariant.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/public-audit-destination.ts covered by \"One destination boundary keeps URL and auth checks, all-answer public IP policy, and pinned peer comparison together. Its largest function has 13 paths covered by focused refusal cases. Splitting each guard would hide the connection policy.\" until 2026-12-23",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/runtime/config/logging-storage-config.ts covered by \"The settings reader keeps required URI, canonical key and PEM validation with safe variable-only diagnostics. Its input rules need distinct branches and are covered by focused cases; a new validation framework would add complexity.\" until 2026-12-22",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/logs/audit/otlp-audit-encoding.ts#encodeAuditEvent: [4, 20] covered by \"The prior verified capture could not bind emitted encoder coverage to its source identity. The four source paths bound unknown-coverage CRAP to [4, 20], so the new-function target of 15 is unproved unless the current capture resolves it. Focused encoding and real Collector cases cover behavior; keep the small wire boundary without editing coverage or splitting it to evade the mapping limit.\" until 2026-12-23",
+      "disposition": "Retain the quoted bounded exception reason and stated expiry. This is a permitted goal miss/unknown bound, not a numeric goal pass or a tool failure."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.dependencyRisk",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
+      "disposition": "This flag describes the complete Slice 2 increment against current main, including datastore/destination, component/contract/lifetime/trust changes and policy declarations. Keep its full summary and all applicable human review; a flag can only raise the tier."
+    }
+  ],
+  "remoteReviewLimit": "Manager-provided final remote read reports reviews[], with no remote statuses/check runs and mergeable = true. This agent does not establish current-candidate human approval from those fields; the manager must verify trusted approval evidence and other holds.",
+  "artifactLinks": {
+    "base": "..",
+    "qualityReview": "../quality/quality-review.md",
+    "json": "../quality/quality-review.json",
+    "process": "../quality/process.md",
+    "crap": "../quality/crap.json",
+    "tier": "../quality/tier.json"
+  }
+}
