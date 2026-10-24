@@ -72,3 +72,19 @@ for (const change of [{ action: 'save' as const, outcome: 'saved' as const }, { 
     assert.doesNotMatch(encoded, /private|endpoint|token|settings|enabled|file|synthetic|destination.revision/);
   });
 }
+
+test('Given a roleless invitation revoke, when projected and encoded, then OTLP keeps only the named invitation metadata', () => {
+  const events: AuditEvent[] = [];
+  const audit = new AuditLog({ writeAuditEvent: (value) => { events.push(value); } });
+  audit.administrationChanged({ timestamp: event.timestamp, organizationId: event.organizationId, actor: event.actor, action: 'revoke-invitation', target: { invitationId: 'invitation-a' }, outcome: 'applied' });
+  assert.equal(events.length, 1);
+  const encoded = encodeAuditEvent(events[0]).toString();
+  const record = JSON.parse(encoded).resourceLogs[0].scopeLogs[0].logRecords[0];
+  assert.equal(record.eventName, 'organization.changed');
+  assert.equal(record.body.stringValue, 'organization.changed');
+  assert.deepEqual(Object.fromEntries(record.attributes.map((attribute: { key: string; value: unknown }) => [attribute.key, attribute.value])), {
+    'organization.id': { stringValue: 'org-a' }, 'actor.authority': { stringValue: 'workos' }, 'actor.subject': { stringValue: 'user-a' },
+    action: { stringValue: 'revoke-invitation' }, 'target.invitation_id': { stringValue: 'invitation-a' }, outcome: { stringValue: 'applied' },
+  });
+  assert.doesNotMatch(encoded, /target.email|"role"|operation.id|tool.name|duration.ms|input\.|result\./);
+});
