@@ -26,6 +26,7 @@ export const noticeHeaders = {
 export interface Setup {
   readonly publicBaseUrl?: string;
   readonly logging?: HostedAccountRoutesOptions['logging'];
+  readonly audit?: HostedAccountRoutesOptions['audit'];
   readonly sessions?: ReadonlyMap<string, ConfiguredSession>;
   readonly otherSession?: BrowserSessionState;
   readonly decisions?: ReadonlyMap<string, ConfiguredAccess>;
@@ -49,6 +50,7 @@ export function serve(setup: Setup) {
     organizations,
     reportFailure: (report) => failures.push(report),
     logging: setup.logging,
+    audit: setup.audit,
     operation,
   });
   return { routes, session, resolver, organizations, operations, failures };

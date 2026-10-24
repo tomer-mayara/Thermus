@@ -1,4 +1,5 @@
 import { LoggingRoutes, type LoggingRoutesOptions } from './logging-routes.ts';
+import type { AuditLog } from '../../../logs/audit/audit-log.ts';
 import { waitForRequest } from '../../../runtime/http/request-cancellation.ts';
 import type { AccessResolver, RequestContext } from '../../../accounts/identity/access-context.ts';
 import type { OrganizationAdministration } from '../../../accounts/organizations/organization-administration.ts';
@@ -29,6 +30,7 @@ export interface HostedAccountRoutesOptions {
   readonly operation?: AccountOperation;
   readonly signupUrl?: string;
   readonly logging?: LoggingRoutesOptions['service'];
+  readonly audit?: Pick<AuditLog, 'administrationChanged' | 'destinationChanged'>;
 }
 
 export class HostedAccountRoutes {
@@ -58,8 +60,8 @@ export class HostedAccountRoutes {
       selection: new URL('organizations/select', publicBaseUrl).pathname,
     };
     this.destinations = new ReturnDestinations(publicBaseUrl, this.paths.organizations);
-    this.logging = new LoggingRoutes({ publicBaseUrl, organizationsPage: this.paths.organizations, service: options.logging });
-    this.administration = new AdministrationRoutes({ publicBaseUrl, organizations: this.organizations, organizationsPage: this.paths.organizations });
+    this.logging = new LoggingRoutes({ publicBaseUrl, organizationsPage: this.paths.organizations, service: options.logging, audit: options.audit });
+    this.administration = new AdministrationRoutes({ publicBaseUrl, organizations: this.organizations, organizationsPage: this.paths.organizations, audit: options.audit });
   }
 
   async handle(request: Request): Promise<Response> {

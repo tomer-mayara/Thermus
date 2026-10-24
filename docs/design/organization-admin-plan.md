@@ -1,13 +1,15 @@
 # Organization administration plan
 
-Plan reviewed: 23 October 2026. Status: design with merged Slice 1 implementation
+Plan reviewed: 24 October 2026. Status: design with merged Slice 1 implementation
 recorded under its tickets. Release prerequisites remain; merged does not mean
 released or cut over. This revision records the audit API foundation and the
 organization settings UI implemented in [open PR #238](https://github.com/tomer-mayara/Thermus/pull/238).
 The S2-02a candidate adds an isolated one-shot OTLP sender; see its
-[implementation record](../implementation/admin-s2-02a.md). Production capture,
-queued delivery, and the optional Test action remain planned. This candidate is
-not release evidence.
+[implementation record](../implementation/admin-s2-02a.md). S2-02b adds the saved-destination Test. The S2-03a candidate adds bounded customer
+capture at MCP and protected Admin boundaries; see its
+[implementation record](../implementation/admin-s2-03a.md). Its default sink drops
+events. Activity-driven settings snapshots and queued delivery remain S2-03b/c.
+This candidate is not release evidence.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -54,12 +56,12 @@ now retires those grant writes and inferred MFA checks, uses User/Admin, and add
 named creation plus the combined Members page. The ticket records give its
 checks and remaining release holds. S2-01a implements the private audit destination
 settings store and bounded SQL runtime. S2-01b in PR #238 implements the Admin
-settings page and Save; this foundation branch does not contain that later ticket.
-The S2-02a candidate implements the isolated sender. Customer audit capture,
-connection Test, and queued production delivery remain planned.
-Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
-include URL origin/path and reason in operator output; Slice 2 must remove that
-content from operator completion records.
+settings page and Save. S2-02a implements the isolated sender, and S2-02b adds
+the saved-destination Test. The S2-03a candidate captures customer tool/Admin
+events through a supplied sink. Its default sink drops events until S2-03b/c add
+settings snapshots and bounded dispatch.
+[Tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
+now omit tool URLs, queries, reasons, and results from operator output.
 
 Start from [signup](../../src/accounts/providers/workos/workos-signup.ts),
 [role mapping](../../src/accounts/providers/workos/hosted-role-mapping.ts),
@@ -561,15 +563,16 @@ operators use them; customers have no access. `src/logs/system/` owns
 `SystemLogger` and its ConsoleSystemLogSink/OtelSystemLogSink output roles.
 SystemLogger prepares severity, time, failure text, and automatic source file
 and line enrichment before its synchronous sink call. Existing account change records in this output
-remain internal. S2-03a will add separate customer audit events.
+remain internal. S2-03a adds separate customer audit capture through a supplied sink.
 
 Audit logs are the customer organization Admin feature. `src/logs/audit/` owns
 the destination store/runtime and the concrete event-specific `AuditLog` class.
-`AuditEventSink` separates this projection from destination delivery. Its unwired
-`toolCompleted` and `administrationChanged` methods accept metadata only.
-S2-03a must extend tool events with redacted, bounded input and result before
-production capture or export. Add administration event methods only as the
-actions ship. Audit events have no generic `info`/`error` API and no automatic source or stack metadata. Never
+`AuditEventSink` separates this projection from destination delivery. S2-03a
+extends `toolCompleted` with validated input and final public result copies. The
+event owner redacts recognized credentials and bounds serialized UTF-8 bytes.
+Invitation and Audit logs actions use event-specific metadata methods. Capture
+uses independently trusted boundary context; the default sink drops each event.
+Add administration event methods only as the actions ship. Audit events have no generic `info`/`error` API and no automatic source or stack metadata. Never
 repurpose a system logger or its OTel adapter, or share their output stream with
 audit delivery. Shared classes under `src/logs/` are appropriate only for real
 common behavior; these roles require no shared base class.
@@ -587,8 +590,9 @@ sink plugin framework, or generic settings backend in Slice 2.
 
 Slice 2 promises no in-app log viewer. S2-01b implements the Audit logs settings
 UI and Save in PR #238. S2-02b adds the optional saved-destination Test
-with one synthetic event. Production tool/admin capture and queued delivery remain planned;
-S2-03a owns MCP/admin capture, redaction, and truncation.
+with one synthetic event. S2-03a adds MCP/admin capture, redaction, and truncation
+through a supplied sink. It establishes no production settings snapshot or
+Collector dispatch for those captured events.
 The technical database, role, SQL table, and environment names remain compatible,
 including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
 
@@ -1884,10 +1888,10 @@ Scenario: Preserve a completed administration action when capture fails
   Then its public outcome stays complete and the action is not replayed
 ```
 
-**Gap / expected red.** The audit API foundation exists, but production customer
+**Gap / expected red at the parent.** The audit API foundation exists, but production customer
 completion capture is absent. Existing account change records still use the
-internal system output and do not establish a customer audit stream. Fetch completion records
-currently expose URL origin/path and reason; the privacy case should be red there. Search
+internal system output and do not establish a customer audit stream. Fetch completion records at the parent
+expose URL origin/path and reason; the privacy case should be red there. Search
 already omits content from operator completion output and must stay green.
 `ChangeRecorder.record()`, invoked by `ChangeRecording.keep()`, can currently throw
 after a completed write; its new sink-failure behavior needs a focused red, not a
@@ -1930,18 +1934,21 @@ blanket logger rewrite.
 [`tool-completion-record.ts`](../../src/interfaces/mcp/tool-completion-record.ts),
 [`change-records.ts`](../../src/accounts/organizations/change-records.ts), and
 `src/app/application.ts` record composition. The event-specific `AuditLog` API foundation lives in
-`src/logs/audit/`. Its current metadata-only `toolCompleted` contract must gain
-redacted, bounded input and result before runtime capture or export. Production
-capture, event redaction, truncation, and sink wiring
-remain this ticket's work; the API alone does not deliver events. Reuse `test/unit/mcp/tool-completion-record.test.ts`,
+`src/logs/audit/`. S2-03a extends the parent metadata-only `toolCompleted`
+contract with redacted, bounded input and result and wires runtime capture through
+a supplied sink. Event projection and sink wiring do not establish delivery;
+the default sink drops events until S2-03b/c supplies snapshots and dispatch. Reuse `test/unit/mcp/tool-completion-record.test.ts`,
 `test/integration/mcp/tool-completion-record.test.ts`,
 `test/integration/mcp/fetch-tool-server.test.ts`, and organization-change cases. Real
 MCP/audit or organization/audit collaboration is integration; acceptance checks
 observable customer versus operator outputs through shared support drivers.
 
-**Done.** Final-content, redaction, UTF-8, operator-isolation, trusted-routing, and
-non-throwing completion acceptance passes. This ticket may use a controlled sink; it does
-not claim snapshot loading or delivery, owned by 03b/c.
+**Implementation candidate.** The [S2-03a record](../implementation/admin-s2-03a.md)
+describes the supplied capture sink, trusted boundary context, fixed byte bounds,
+and completion isolation. The default sink drops events. Final-content, redaction,
+UTF-8, operator-isolation, trusted-routing, and non-throwing specifications must
+pass on the complete candidate. Controlled-sink evidence does not establish
+snapshot loading or delivery, owned by 03b/c.
 
 #### S2-03b — Activity-driven settings snapshots
 

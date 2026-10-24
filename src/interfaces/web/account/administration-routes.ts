@@ -1,9 +1,12 @@
 import type { RequestContext } from '../../../accounts/identity/access-context.ts';
-import { UnconfirmedChangeError, type ChangeResult } from '../../../accounts/organizations/change-records.ts';
+import { UnconfirmedChangeError, type ChangeOutcome, type ChangeResult } from '../../../accounts/organizations/change-records.ts';
+import type { AuditLog, AdministrationChange } from '../../../logs/audit/audit-log.ts';
 import type {
   Actor,
   AdministrationRefusal,
   OrganizationAdministration,
+  InvitationSendRequest,
+  InvitationChangeRequest,
 } from '../../../accounts/organizations/organization-administration.ts';
 import { invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
 import { accessDeniedPage, noticePage, seeOther, unconfirmedInvitationPage, type NoticeName } from './account-pages.ts';
@@ -22,17 +25,20 @@ export interface AdministrationRoutesOptions {
   readonly publicBaseUrl: string;
   readonly organizations: AdministrationService;
   readonly organizationsPage: string;
+  readonly audit?: Pick<AuditLog, 'administrationChanged'>;
 }
 
 interface AdministrationScope {
   readonly actor: Actor;
   readonly organizationId: string;
   readonly csrfToken: string;
+  readonly tenantId: string;
 }
 
 type ScopedRoute = (request: Request, scope: AdministrationScope) => Promise<Response>;
 
 interface ChangeRoute<Fields extends { readonly organizationId: string }> {
+  readonly action: AdministrationChange['action'];
   readonly parse: (form: URLSearchParams, csrfToken: string) => Fields | FormRefusal;
   readonly change: (actor: Actor, fields: Fields) => Promise<ChangeResult>;
 }
@@ -65,9 +71,11 @@ export class AdministrationRoutes {
   private readonly organizationsPage: string;
   private readonly paths: AdministrationPaths;
   private readonly routes: ReadonlyMap<string, ScopedRoute>;
+  private readonly audit?: Pick<AuditLog, 'administrationChanged'>;
 
   constructor(options: AdministrationRoutesOptions) {
     this.organizations = options.organizations;
+    this.audit = options.audit;
     this.organizationsPage = options.organizationsPage;
     this.publicOrigin = new URL(options.publicBaseUrl).origin;
     const pathOf = (relative: string) => new URL(relative, options.publicBaseUrl).pathname;
@@ -100,7 +108,7 @@ export class AdministrationRoutes {
   private async withScope(request: Request, signedIn: { session: SignedInBrowserSession; context: RequestContext }, route: ScopedRoute): Promise<Response> {
     const { session, context } = signedIn;
     if (context.organizationId === undefined) return accessDeniedPage(this.organizationsPage);
-    return route(request, { actor: { user: context.user }, organizationId: context.organizationId, csrfToken: session.csrfToken });
+    return route(request, { actor: { user: context.user }, tenantId: context.tenantId, organizationId: context.organizationId, csrfToken: session.csrfToken });
   }
 
   private membersPage(request: Request, scope: AdministrationScope): Promise<Response> {
@@ -125,15 +133,15 @@ export class AdministrationRoutes {
   }
 
   private sendInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationIn, change: (actor, fields) => this.organizations.sendInvitation(actor, fields) });
+    return this.changeOnPost(request, scope, { action: 'invite', parse: invitationIn, change: (actor, fields) => this.organizations.sendInvitation(actor, fields) });
   }
 
   private resendInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.resendInvitation(actor, fields) });
+    return this.changeOnPost(request, scope, { action: 'resend-invitation', parse: invitationChangeIn, change: (actor, fields) => this.organizations.resendInvitation(actor, fields) });
   }
 
   private revokeInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
-    return this.changeOnPost(request, scope, { parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields) });
+    return this.changeOnPost(request, scope, { action: 'revoke-invitation', parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields) });
   }
 
   private async page<Overview extends object>(request: Request, read: () => Promise<Overview | AdministrationRefusal>, render: (overview: Overview) => Response): Promise<Response> {
@@ -146,21 +154,38 @@ export class AdministrationRoutes {
   // The origin check comes before the body is read, so that the service reads no form and gets no change from another
   // site. A form for another organization than the one of the session is out of date: the session switched after the
   // page was shown. The service gets only the fields of the change, without the form token.
-  private async changeOnPost<Fields extends { readonly organizationId: string }>(request: Request, scope: AdministrationScope, route: ChangeRoute<Fields>): Promise<Response> {
+  private async changeOnPost<Fields extends InvitationSendRequest | InvitationChangeRequest>(request: Request, scope: AdministrationScope, route: ChangeRoute<Fields>): Promise<Response> {
     if (request.method !== 'POST') return noticePage('methodNotAllowed', { Allow: 'POST' });
     if (request.headers.get('Origin') !== this.publicOrigin) return noticePage('forgedRequest');
     const form = await readForm(request);
     const fields = typeof form === 'string' ? form : route.parse(form, scope.csrfToken);
     if (typeof fields === 'string') return noticePage(fields);
-    if (fields.organizationId !== scope.organizationId) return noticePage('changeStale');
+    if (fields.organizationId !== scope.organizationId) {
+      this.keep(scope, route.action, fields, 'stale');
+      return noticePage('changeStale');
+    }
     let outcome: ChangeResult;
     try {
       outcome = await route.change(scope.actor, fields);
     } catch (cause) {
+      this.keep(scope, route.action, fields, cause instanceof UnconfirmedChangeError ? 'unknown' : 'failed');
       if (cause instanceof UnconfirmedChangeError) return unconfirmedInvitationPage(this.paths.members);
       throw cause;
     }
+    this.keep(scope, route.action, fields, outcome);
     if (outcome === 'applied' || outcome === 'unchanged') return seeOther(new URL(this.paths.members, this.publicOrigin).href);
     return noticePage(REFUSAL_NOTICES[outcome]);
+  }
+
+  private keep(scope: AdministrationScope, action: AdministrationChange['action'], fields: InvitationSendRequest | InvitationChangeRequest, outcome: ChangeOutcome): void {
+    try {
+      this.audit?.administrationChanged({
+        timestamp: new Date().toISOString(), organizationId: scope.tenantId, actor: scope.actor.user, action, outcome,
+        target: 'email' in fields ? { email: fields.email } : { invitationId: fields.invitationId },
+        ...('role' in fields && (fields.role === 'user' || fields.role === 'admin') ? { role: fields.role } : {}),
+      });
+    } catch {
+      // Capture failure must not replace a completed action or cause its write to run again.
+    }
   }
 }

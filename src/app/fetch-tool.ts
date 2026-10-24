@@ -1,3 +1,4 @@
+import type { AuditLog } from '../logs/audit/audit-log.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import { AdRulesFileError, readAdRulesFile } from '../runtime/config/ad-rules-file.ts';
 import { CleanHtmlAdsAdblockRs } from '../pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
@@ -54,8 +55,8 @@ export function createHostedToolOperations(environment: Environment, logger: Sys
   return { fetch: capacity.wrap(operations.fetch), search: capacity.wrap(operations.search) };
 }
 
-export function fetchToolServers(operations: ToolOperations, logger: SystemLog): RequestServerBuilder {
-  return (context, lifetime) => createFetchToolServer(context, { operations, logger }, lifetime);
+export function fetchToolServers(operations: ToolOperations, logger: SystemLog, audit?: Pick<AuditLog, 'toolCompleted'>): RequestServerBuilder {
+  return (context, lifetime) => createFetchToolServer(context, { operations, logger, audit }, lifetime);
 }
 
 // One line for each code in the life of the server keeps the log short when the renderer stays missing.

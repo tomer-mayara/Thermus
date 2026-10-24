@@ -158,10 +158,6 @@ describe('Self-hosted getURLAsMarkdown with real Better Auth access and the prod
         subject: setup.userIds.get(alice.email),
         tenantId: tenant,
         tool: 'getURLAsMarkdown',
-        url: 'https://source.example/Start',
-        urlStatus: 'valid',
-        reason,
-        reasonStatus: 'valid',
         status: 'success',
       })));
       const steps = stepRecordsIn(server.lines.join('\n'));

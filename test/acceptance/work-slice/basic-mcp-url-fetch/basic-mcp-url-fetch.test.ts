@@ -85,10 +85,6 @@ function assertSuccessRecord(completion: Record<string, unknown>): void {
     subject: 'synthetic-user',
     tenantId: 'synthetic-workspace',
     tool: 'getURLAsMarkdown',
-    url: storyUrl,
-    urlStatus: 'valid',
-    reason,
-    reasonStatus: 'valid',
     status: 'success',
   });
 }

@@ -8,8 +8,8 @@ const context = { timestamp: '2026-10-23T12:00:00Z', organizationId: 'org-a', ac
 test('Given extra caller fields, when a tool completes, then only the tool audit contract is emitted', () => {
   const events: AuditEvent[] = [];
   const audit = new AuditLog({ writeAuditEvent: (event) => { events.push(event); } });
-  audit.toolCompleted({ ...context, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3 });
-  assert.deepEqual(events, [{ timestamp: context.timestamp, organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, eventName: 'mcp.tool.completed', operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3 }]);
+  audit.toolCompleted({ ...context, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3, input: { query: 'public query', reason: 'public reason' }, result: 'public result' });
+  assert.deepEqual(events, [{ timestamp: context.timestamp, organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, eventName: 'mcp.tool.completed', operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3, input: { query: 'public query', reason: 'public reason' }, result: { text: 'public result', originalBytes: 13, capturedBytes: 13, truncated: false } }]);
 });
 
 test('Given invitation target extras, when administration changes, then nested fields and absent role are projected', () => {
@@ -30,7 +30,7 @@ test('Given an email target and role, when administration changes, then the name
 
 test('Given a sink that throws, when an explicit audit event is recorded, then the completed action can continue', () => {
   const audit = new AuditLog({ writeAuditEvent: () => { throw new Error('private sink detail'); } });
-  assert.doesNotThrow(() => audit.toolCompleted({ ...context, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3 }));
+  assert.doesNotThrow(() => audit.toolCompleted({ ...context, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3, input: { query: 'public query', reason: 'public reason' }, result: 'public result' }));
   assert.doesNotThrow(() => audit.administrationChanged({ ...context, action: 'resend-invitation', target: { invitationId: 'invitation-a' }, outcome: 'applied' }));
 });
 

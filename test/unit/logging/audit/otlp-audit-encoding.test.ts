@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
+import { AuditLog } from '../../../../src/logs/audit/audit-log.ts';
 import { encodeAuditEvent } from '../../../../src/logs/audit/otlp-audit-encoding.ts';
 
-const event: AuditEvent = { eventName: 'mcp.tool.completed', timestamp: '2026-10-23T12:00:00.123456789Z', organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3 };
+const event: AuditEvent = { eventName: 'mcp.tool.completed', timestamp: '2026-10-23T12:00:00.123456789Z', organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3, input: { query: 'public query', reason: 'public reason' }, result: { text: 'public result', originalBytes: 13, capturedBytes: 13, truncated: false } };
 
 test('Given a tool audit event with injected system fields, when encoded, then only named audit metadata reaches OTLP', () => {
   const encoded = encodeAuditEvent({ ...event, file: '/private/source.ts', line: 4, stack: 'private stack', actor: { ...event.actor, stack: 'private actor stack' } } as AuditEvent);
@@ -40,3 +41,34 @@ test('Given a destination Test record with injected diagnostics, when encoded, t
   assert.equal(record.attributes.find((attribute: { key: string }) => attribute.key === 'synthetic.type').value.stringValue, 'destination_test');
   assert.doesNotMatch(encoded, /operation-a|search|duration.ms|private|secret|endpoint|token|file|line/);
 });
+
+test('Given captured input and result, when encoded, then OTLP retains public content and result size metadata', () => {
+  const events: AuditEvent[] = [];
+  const audit = new AuditLog({ writeAuditEvent: (event) => { events.push(event); } });
+  audit.toolCompleted({ timestamp: event.timestamp, organizationId: event.organizationId, actor: event.actor, operationId: 'operation-a', tool: 'search', status: 'success', durationMs: 3, input: { query: 'public query', reason: 'public reason' }, result: 'final public text' });
+  const record = JSON.parse(encodeAuditEvent(events[0]).toString()).resourceLogs[0].scopeLogs[0].logRecords[0];
+  const attributes = Object.fromEntries(record.attributes.map((attribute: { key: string; value: unknown }) => [attribute.key, attribute.value]));
+  assert.deepEqual(attributes['input.query'], { stringValue: 'public query' });
+  assert.deepEqual(attributes['input.reason'], { stringValue: 'public reason' });
+  assert.deepEqual(attributes['result.text'], { stringValue: 'final public text' });
+  assert.deepEqual(attributes['result.original_bytes'], { doubleValue: 17 });
+  assert.deepEqual(attributes['result.captured_bytes'], { doubleValue: 17 });
+  assert.deepEqual(attributes['result.truncated'], { boolValue: false });
+});
+
+for (const change of [{ action: 'save' as const, outcome: 'saved' as const }, { action: 'test' as const, outcome: 'tested' as const }]) {
+  test(`Given destination ${change.action} metadata with injected settings, when encoded, then OTLP has only the action and outcome`, () => {
+    const events: AuditEvent[] = [];
+    const audit = new AuditLog({ writeAuditEvent: (value) => { events.push(value); } });
+    audit.destinationChanged({ timestamp: event.timestamp, organizationId: event.organizationId, actor: event.actor, ...change });
+    const encoded = encodeAuditEvent({ ...events[0], endpoint: 'https://private.example', token: 'private-token', settings: { enabled: true }, file: '/private.ts' } as unknown as AuditEvent).toString();
+    const record = JSON.parse(encoded).resourceLogs[0].scopeLogs[0].logRecords[0];
+    assert.equal(record.eventName, 'audit.destination.changed');
+    assert.equal(record.body.stringValue, 'audit.destination.changed');
+    assert.deepEqual(Object.fromEntries(record.attributes.map((attribute: { key: string; value: unknown }) => [attribute.key, attribute.value])), {
+      'organization.id': { stringValue: 'org-a' }, 'actor.authority': { stringValue: 'workos' }, 'actor.subject': { stringValue: 'user-a' },
+      action: { stringValue: change.action }, outcome: { stringValue: change.outcome },
+    });
+    assert.doesNotMatch(encoded, /private|endpoint|token|settings|enabled|file|synthetic|destination.revision/);
+  });
+}

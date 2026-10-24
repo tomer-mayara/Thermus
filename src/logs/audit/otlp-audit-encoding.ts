@@ -1,7 +1,7 @@
 import type { AuditEvent } from './audit-log.ts';
 import { AUDIT_SEND_LIMITS, AuditSendFailure } from './audit-send.ts';
 
-type Attribute = { key: string; value: { stringValue: string } | { doubleValue: number } };
+type Attribute = { key: string; value: { stringValue: string } | { doubleValue: number } | { boolValue: boolean } };
 
 function stringAttribute(key: string, value: string): Attribute {
   if (typeof value !== 'string') throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'invalid_event' });
@@ -25,7 +25,17 @@ function eventAttributes(event: AuditEvent): Attribute[] {
   }
   if (event.eventName === 'mcp.tool.completed') {
     if (!Number.isFinite(event.durationMs) || event.durationMs < 0) throw new Error();
-    return [stringAttribute('operation.id', event.operationId), stringAttribute('tool.name', event.tool), stringAttribute('outcome', event.status), { key: 'duration.ms', value: { doubleValue: event.durationMs } }];
+    const input = event.tool === 'getURLAsMarkdown'
+      ? stringAttribute('input.url', event.input.url)
+      : stringAttribute('input.query', event.input.query);
+    const result = event.result;
+    if (typeof result.truncated !== 'boolean' || !Number.isSafeInteger(result.originalBytes) || !Number.isSafeInteger(result.capturedBytes) || result.originalBytes < 0 || result.capturedBytes !== Buffer.byteLength(result.text)) throw new Error();
+    return [stringAttribute('operation.id', event.operationId), stringAttribute('tool.name', event.tool), stringAttribute('outcome', event.status), { key: 'duration.ms', value: { doubleValue: event.durationMs } },
+      input, stringAttribute('input.reason', event.input.reason), stringAttribute('result.text', result.text),
+      { key: 'result.original_bytes', value: { doubleValue: result.originalBytes } }, { key: 'result.captured_bytes', value: { doubleValue: result.capturedBytes } }, { key: 'result.truncated', value: { boolValue: result.truncated } }];
+  }
+  if (event.eventName === 'audit.destination.changed') {
+    return [stringAttribute('action', event.action), stringAttribute('outcome', event.outcome)];
   }
   if (event.eventName !== 'organization.changed') throw new Error();
   const target = 'email' in event.target ? stringAttribute('target.email', event.target.email) : stringAttribute('target.invitation_id', event.target.invitationId);

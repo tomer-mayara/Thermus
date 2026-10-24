@@ -10,12 +10,12 @@
     "sensitiveBehavior": true,
     "dependencyRisk": true,
     "policy": true,
-    "crossCutting": false,
+    "crossCutting": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The complete candidate combines PR240 with the PR238 settings-page dependency and adds optional saved-destination Test. Current Admin web requests resolve trusted tenant and actor, then validate Origin, CSRF and exact fields. Audit logs owns one full saved snapshot, credential recovery, the one-shot synthetic event, and post-send revision confirmation. A four-operation lifetime bounds caller work and retains late reads; the sender independently retains native work until cleanup. App supplies the service and owns SQL disposal. System logs remains an internal, distinct typed output. Six registry drawings change relative to PR240; full-main review also retains inherited storage, container, external, contract, deployment, policy and dependency impact. No new paid resource, MFA, capture, queue, automatic retry, polling or destination Test gate for Enable is added. System diagnostics retain PR240 explicit SystemLogSink composition with unchanged output and failure behavior. The settings service now requires DestinationTestSender and no longer selects a concrete transport. App composition and the real process probe supply OtlpAuditSender; read/save tests supply a role double. No runtime authority, saved Test, or admission policy changes.",
+    "summary": "The complete candidate adds S2-03a customer event capture to the inherited settings and sender stack. MCP captures only validated input and final public text; web captures shipped invitation and Audit logs actions using current trusted tenant and actor. AuditLog owns named projection, recognized credential redaction, UTF-8 bounds and non-throwing capture. App supplies a discard sink until activity snapshots and bounded dispatch in S2-03b/c. System completion output removes URL, query, reason and results. ChangeRecording isolates local recorder failure from completed or unconfirmed directory work. Three registry drawings change relative to PR241; inherited storage, external sender, contract, deployment, dependency and policy impact remain in the complete-main review. No paid resource, MFA, new WorkOS operation, durable audit storage, queue, retry or continuous customer export is added. The logging object CR remains applied: concrete SystemLogger uses distinct console/OTel SystemLogSink roles, with unchanged preparation and output behavior. DestinationSettingsService requires its sender; app composition supplies the real sender and tests use explicit roles. This restack preserves the original capture behavior and all prior PR238 inclusion.",
     "views": [
       "context",
       "containers",
@@ -90,6 +90,18 @@
       "test/support/in-process/logging-destination-test-site.ts",
       "test/support/processes/audit-destination-test-probe.ts",
       "docs/implementation/admin-s2-02b.md",
+      "src/logs/audit/audit-content.ts",
+      "src/logs/audit/audit-event-projection.ts",
+      "src/interfaces/mcp/fetch-tool-server.ts",
+      "src/interfaces/mcp/tool-completion-record.ts",
+      "src/interfaces/web/account/administration-routes.ts",
+      "src/accounts/organizations/change-records.ts",
+      "test/acceptance/mcp/customer-tool-capture.test.ts",
+      "test/acceptance/logging/audit/administration-capture.test.ts",
+      "test/unit/logging/audit/audit-capture.test.ts",
+      "test/integration/hosted-admin/account-routes-audit.test.ts",
+      "test/unit/organizations/change-records.test.ts",
+      "docs/implementation/admin-s2-03a.md",
       "docs/implementation/logs-object-refactor-change-request.md"
     ]
   }

@@ -44,10 +44,6 @@ test('Given the real MCP operation and pipeline, when the client calls the fetch
     subject: context.user.subject,
     tenantId: context.tenantId,
     tool: 'getURLAsMarkdown',
-    url: 'https://source.example/a%2fb',
-    urlStatus: 'valid',
-    reason,
-    reasonStatus: 'valid',
     status: 'success',
     durationMs: record.durationMs,
   });

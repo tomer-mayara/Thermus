@@ -7,6 +7,8 @@ const completion: AuditEvent = {
   eventName: 'mcp.tool.completed', timestamp: '2026-10-23T12:34:56.789Z',
   organizationId: 'runtime-org', actor: { authority: 'runtime', subject: 'admin' },
   operationId: 'runtime-operation', tool: 'search', status: 'success', durationMs: 12,
+  input: { query: 'runtime query', reason: 'runtime reason' },
+  result: { text: 'runtime result', originalBytes: 14, capturedBytes: 14, truncated: false },
 };
 
 test('Given a trusted public-address TLS receiver, when None and Bearer events are sent, then only the supplied audit data and auth reach that socket', { timeout: 120_000 }, async (t) => {

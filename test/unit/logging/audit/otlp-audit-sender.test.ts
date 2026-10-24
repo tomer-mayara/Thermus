@@ -7,7 +7,7 @@ import { EventEmitter } from 'node:events';
 import { OtlpAuditSender } from '../../../../src/logs/audit/otlp-audit-sender.ts';
 import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 
-const event: AuditEvent = { eventName: 'mcp.tool.completed', timestamp: '2026-10-23T12:00:00Z', organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, operationId: 'op-a', tool: 'search', status: 'success', durationMs: 3 };
+const event: AuditEvent = { eventName: 'mcp.tool.completed', timestamp: '2026-10-23T12:00:00Z', organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, operationId: 'op-a', tool: 'search', status: 'success', durationMs: 3, input: { query: 'public query', reason: 'public reason' }, result: { text: 'public result', originalBytes: 13, capturedBytes: 13, truncated: false } };
 const destination = { endpoint: 'https://collector.example/v1/logs', auth: { type: 'none' as const } };
 
 class HandshakeSocketStub extends EventEmitter {
@@ -100,5 +100,27 @@ for (const code of ['CERT_HAS_EXPIRED', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE', 'UNAB
     t.mock.method(dns, 'lookup', async () => [{ address: '8.8.8.8', family: 4 }]);
     t.mock.method(tls, 'connect', () => { throw Object.assign(new Error('private certificate details'), { code }); });
     assert.deepEqual(await new OtlpAuditSender().send(destination, event), { kind: 'permanent_failure', reason: 'tls' });
+  });
+}
+
+for (const invalid of [
+  { truncated: 'private invalid flag' },
+  { originalBytes: -1 },
+  { originalBytes: 1.5 },
+  { originalBytes: Number.POSITIVE_INFINITY },
+  { capturedBytes: -1 },
+  { capturedBytes: 1.5 },
+  { capturedBytes: 12 },
+  { text: { private: 'not public text' } },
+]) {
+  test(`Given invalid result metadata ${JSON.stringify(invalid)}, when submitted, then a safe refusal occurs before transport`, async (t) => {
+    const lookup = t.mock.method(dns, 'lookup', async () => { throw new Error('must not resolve'); });
+    const request = t.mock.method(https, 'request', () => { throw new Error('must not send'); });
+    const malformed = { ...event, result: { ...event.result, ...invalid } } as unknown as AuditEvent;
+    const outcome = await new OtlpAuditSender().send(destination, malformed);
+    assert.deepEqual(outcome, { kind: 'permanent_failure', reason: 'invalid_event' });
+    assert.doesNotMatch(JSON.stringify(outcome), /private|public result|org-a|user-a/);
+    assert.equal(lookup.mock.calls.length, 0);
+    assert.equal(request.mock.calls.length, 0);
   });
 }

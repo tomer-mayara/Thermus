@@ -152,10 +152,6 @@ function assertFetchLog(log: RecordingLog, user: FakeUser): void {
     subject: user.id,
     tenantId: `workos:client_test:${acme}`,
     tool: 'getURLAsMarkdown',
-    url: storyUrl,
-    urlStatus: 'valid',
-    reason,
-    reasonStatus: 'valid',
     status: 'success',
   });
 }

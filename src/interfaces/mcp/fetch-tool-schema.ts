@@ -18,14 +18,3 @@ export async function parseFetchToolArguments(value: unknown): Promise<{ url: st
   if (parsed.issues !== undefined || !isValidFetchUrl(parsed.value.url)) return undefined;
   return parsed.value;
 }
-
-export function fieldStatus(value: unknown, bounds: { minLength: number; maxLength: number }): 'valid' | 'missing' | 'not_string' | 'empty' | 'too_long' {
-  if (value === undefined) return 'missing';
-  if (typeof value !== 'string') return 'not_string';
-  let length = 0;
-  for (const _point of value) {
-    length += 1;
-    if (length > bounds.maxLength) return 'too_long';
-  }
-  return length < bounds.minLength ? 'empty' : 'valid';
-}

@@ -1,4 +1,5 @@
 import type { SystemLog } from '../logs/system/system-logger.ts';
+import { AuditLog } from '../logs/audit/audit-log.ts';
 import type { LocalAuthPages } from '../interfaces/web/auth/better-auth/local-auth-pages.ts';
 import type { AccessResolver } from '../accounts/identity/access-context.ts';
 import type { Billing } from '../accounts/billing/billing.ts';
@@ -52,6 +53,7 @@ export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
   // Keeps the basic records of the privileged account changes.
   readonly changeRecords: ChangeRecorder;
+  readonly audit?: Pick<AuditLog, 'administrationChanged' | 'destinationChanged'>;
   // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.
   readonly billing: Billing;
   readonly operation?: AccountOperation;
@@ -76,7 +78,7 @@ export function operatorFailureReporter(logger: SystemLog): FailureReporter {
 async function createSelfHostedApplication(config: SelfHostedConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   // The rules load before the data directory opens, so a rules failure holds no resource and changes no data.
   const { createToolOperations, fetchToolServers } = await import('./fetch-tool.ts');
-  const buildServer = fetchToolServers(createToolOperations(environment, logger), logger);
+  const buildServer = fetchToolServers(createToolOperations(environment, logger), logger, discardAuditLog());
   const { openBetterAuthRuntime } = await import('../accounts/providers/better-auth/better-auth-runtime.ts');
   const { BetterAuthProvider } = await import('../accounts/providers/better-auth/better-auth-provider.ts');
   const { LocalAuthPages, localPagePaths } = await import('../interfaces/web/auth/better-auth/local-auth-pages.ts');
@@ -143,6 +145,11 @@ export function accountChangeRecorder(logger: SystemLog): ChangeRecorder {
   return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 
+// Capture is wired now. Activity settings and bounded export replace this sink in S2-03b/c.
+export function discardAuditLog(): AuditLog {
+  return new AuditLog({ writeAuditEvent: () => {} });
+}
+
 export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging'] }): Application {
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
@@ -153,6 +160,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     operation: account.operation,
     signupUrl: account.signupUrl,
     logging: loggingStorage?.service,
+    audit: account.audit,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
   const shutdown = new AbortController();

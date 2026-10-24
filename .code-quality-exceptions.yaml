@@ -41,8 +41,8 @@ exceptions:
     expires: 2026-12-23
   - path: src/logs/audit/otlp-audit-encoding.ts
     metric: mi
-    bound: 59
-    reason: Named event projection, including the explicit synthetic Test variant, timestamp conversion, and the encoded byte limit form one small OTLP translation boundary. Each function has at most eight paths. Separate files for these wire fields would spread the same format contract.
+    bound: 54
+    reason: Named OTLP fields now include bounded public input and result copies and the Save/Test action variant. Timestamp conversion and encoded byte validation remain one wire-format boundary. The largest function has fifteen paths for four event variants; focused format and real Collector cases cover the contract. Splitting individual attributes would spread one format without reducing its rules.
     expires: 2026-12-23
   - path: src/logs/audit/otlp-audit-request.ts
     metric: mi
@@ -76,8 +76,8 @@ exceptions:
     expires: 2026-12-22
   - path: src/interfaces/web/account/logging-routes.ts
     metric: mi
-    bound: 51
-    reason: This boundary keeps current Admin authority, request checks, safe failure mapping and native recovery together. Read, Save and Test are separate operations with at most nine paths; tests cover refusals, uncertain writes and safe fixed Test outcomes. Save and Test share only two copies of form guards, so no parser or dispatch framework is added.
+    bound: 47
+    reason: This boundary keeps current Admin authority, request checks, safe outcome mapping and trusted audit capture together. Read, Save and Test stay separate; the route callback has thirteen paths, and each mutation has eight. Tests cover refusals, uncertain writes and throwing capture. Two form-guard copies do not justify a parser or dispatch framework.
     expires: 2026-12-22
   - path: src/logs/audit/destination-credential-codec.ts
     metric: mi
@@ -103,4 +103,14 @@ exceptions:
     metric: mi
     bound: 71
     reason: Two typed lookup tables keep every safe sender and operation notice exhaustive in one small presentation boundary. The sole function has two paths. Splitting fixed messages into more files would spread one outcome contract without reducing decisions.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-content.ts
+    metric: mi
+    bound: 64
+    reason: Recognized credential redaction and the bounded exported text copy share one content-safety owner. Four short functions have at most four paths. Byte accounting reserves JSON escaping and the marker, and regressions cover split credentials and Unicode. A general serializer or separate file for each pattern would hide the fixed policy.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-event-projection.ts
+    metric: mi
+    bound: 37
+    reason: This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP.
     expires: 2026-12-24

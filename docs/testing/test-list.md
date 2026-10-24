@@ -295,8 +295,8 @@ Four regression cases also abort during error inspection. They require the
 cancellation result and one correlated `cancelled` completion that omits
 private data for allowlisted, typed, unknown, and throwing-inspection paths.
 `test/unit/mcp/search.test.ts` checks typed result projection.
-`test/unit/mcp/tool-completion-record.test.ts` proves that search completion
-formatting reads no argument properties, even when they have throwing getters.
+`test/unit/mcp/tool-completion-record.test.ts` proves that fetch and search
+completion formatting uses only stable metadata. It receives no argument object.
 
 The [SEARCH-05 record](../implementation/search-05.md) gives the earlier runs
 and limits. [SEARCH-09](../implementation/search-09.md) records the stronger
@@ -948,14 +948,28 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Keeps caller location in system output; an audit event does not enter that stream
 [V] Preserves the completed action when a synchronous audit sink throws
 [V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
-[] Add production capture with redacted, bounded tool inputs and results, then OTLP delivery under the [Slice 2 plan](../design/organization-admin-plan.md)
+
+**Customer capture and operator content isolation — S2-03a candidate**
+
+The [capture record](../implementation/admin-s2-03a.md) describes the fixed bounds,
+trusted routing, and controlled-sink limits. These specifications capture produced
+content; they establish no client receipt, settings snapshot, or delivery.
+
+- `test/acceptance/mcp/customer-tool-capture.test.ts` specifies final fetch/search text, empty success, safe errors, cancellation, search withholding, tenant isolation against forged metadata, and sink throw/refusal through real MCP HTTP and pipeline collaboration.
+- `test/unit/logging/audit/audit-capture.test.ts` specifies named-field projection, recognized credential fields and URL parameters, unchanged valid input, JSON/UTF-8 budgets, Unicode truncation, metadata refusal, and non-throwing sink admission.
+- `test/acceptance/logging/audit/administration-capture.test.ts` specifies signed-in invitation and Audit logs Save/Test metadata, separation of synthetic Test records, and preservation of completed writes after sink throw/refusal or an internal recorder failure.
+- `test/integration/hosted-admin/account-routes-audit.test.ts` specifies invitation send/resend/revoke, stale A naming B routing, failed/unconfirmed phases, Audit logs Save/Test without settings-read capture, and isolation from a throwing capture API.
+- `test/unit/organizations/change-records.test.ts` specifies preservation of a completed provider write and original check/provider failure when post-write recording throws.
+- `test/integration/mcp/tool-completion-record.test.ts` and `test/unit/mcp/tool-completion-record.test.ts` specify content-free operator records. The renderer setup, HTTP fetch, and renderer runtime specifications retain this privacy assertion.
+
+[] Activity-driven settings snapshots and bounded Collector dispatch remain S2-03b/c under the [Slice 2 plan](../design/organization-admin-plan.md)
 
 **Customer audit Collector sender — S2-02a candidate**
 
 The [sender record](../implementation/admin-s2-02a.md) gives the public contract,
 fixed bounds, and evidence limits. These specifications exercise the isolated
-sender. The saved-destination Test is specified below. Production tool/admin
-capture, queue dispatch, and live endpoint release checks remain separate work.
+sender. The saved-destination Test is specified below. Customer capture is
+specified above; queue dispatch and live endpoint release checks remain separate work.
 
 - `test/acceptance/logging/audit/audit-sender.test.ts` specifies refusal of a private destination without disclosure of event or credentials.
 - `test/unit/logging/audit/public-audit-destination.test.ts` specifies HTTPS syntax, None/Bearer validation, public IPv4/IPv6 policy, mixed or changed DNS answers, answer limits, and exact peer address comparison.
@@ -986,7 +1000,8 @@ complete candidate review records their local results.
 
 The PostgreSQL settings group remains `npm run test:logging:postgres`. Neither
 controlled Collector proof nor a successful Test proves continued delivery or
-durable storage. Tool/admin capture and aggregate queue bounds belong to S2-03.
+durable storage. Tool/admin capture uses a controlled sink in S2-03a; activity-driven
+settings snapshots and aggregate queue bounds belong to S2-03b/c.
 
 **System sink contract** (`test/acceptance/logging/system/system-log-sink.test.ts`, `test/unit/logging/system/system-logger.test.ts`)
 
@@ -1485,7 +1500,7 @@ validator became part of the separate page-fetch package.
 [V] Checks string types, required fields, extra properties, URL semantics, reason whitespace, and code-point limits; accepted inputs are not truncated
 [V] Checks exact projected text, safe argument/unknown-tool errors, and one completion attempt per dispatched call
 [V] Keeps operation errors and logger failures from exposing causes, replacing results, or repeating work
-[V] Formats trusted caller fields, URL origin/path, bounded verbatim reason or field-status codes, and escaped line breaks; omits unknown tool names, raw arguments, credentials, and causes
+[V] Formats trusted caller fields, operation, tool, status, and duration; omits tool URL, query, reason, result, unknown tool names, raw arguments, credentials, and causes
 
 **Protected neutral fetch operation** (`test/integration/page-fetch/fetch-page.test.ts`)
 

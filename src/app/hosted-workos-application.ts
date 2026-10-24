@@ -1,4 +1,5 @@
 import type { SystemLog } from '../logs/system/system-logger.ts';
+import type { AuditLog } from '../logs/audit/audit-log.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
@@ -6,6 +7,7 @@ import {
   accountChangeRecorder,
   accountFailureReporter,
   composeHostedApplication,
+  discardAuditLog,
   operatorFailureReporter,
   type Application,
   type HostedProviderParts,
@@ -34,6 +36,7 @@ export interface WorkOSConnection {
 export interface WorkOSApplicationParts {
   readonly logger: SystemLog;
   readonly loggingStorage?: HostedLoggingStorage;
+  readonly audit?: AuditLog;
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
@@ -60,7 +63,8 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   await using resources = new AsyncDisposableStack();
   const loggingStorage = await openLoggingStorage(environment, logger);
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
-  const application = await composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers(operations, logger), signup, loggingStorage });
+  const audit = discardAuditLog();
+  const application = await composeWorkOSApplication(config, connection, { logger, audit, buildServer: fetchToolServers(operations, logger, audit), signup, loggingStorage });
   resources.move();
   return portal.withApplication(application);
 }
@@ -91,6 +95,7 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
   return composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
+    audit: parts.audit ?? discardAuditLog(),
     billing,
     operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
