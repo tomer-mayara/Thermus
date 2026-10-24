@@ -28,7 +28,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/system/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
-| Audit Collector | `npm run test:logging:collector` | `dist/test/integration/logging/audit/audit-sender.runtime.js` | Docker Engine and OpenSSL. Pinned image pulls need network access or a local cache. The isolated test network has no outbound access. No live credentials. |
+| Audit Collector | `npm run test:logging:collector` | Audit sender integration and hosted audit journey acceptance `.runtime.js` files | Docker Engine and OpenSSL. Pinned image pulls need network access or a local cache. The isolated test network has no outbound access. No live credentials. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
@@ -293,10 +293,11 @@ changed source affects their behavior:
   exercises real PostgreSQL; ordinary test globs do not select its `.runtime.ts`
   files. Docker image builds do not start nested PostgreSQL containers.
 - `npm run test:logging:collector` for the customer Audit sender's encoding,
-  protocol outcomes, transport or public-address/TLS policy. This dedicated gate
+  protocol outcomes, transport, public-address/TLS policy, or integrated
+  browser/MCP export journey. This dedicated gate
   uses a real TLS receiver and open-source Collector on an isolated container
   network. It preserves production address and hostname checks. Ordinary globs
-  do not select its `.runtime.ts` file; image builds do not start nested Collector
+  do not select its `.runtime.ts` files; image builds do not start nested Collector
   containers. Run it for the Slice 2 release too. An actual destination smoke
   check remains a separate release requirement.
 

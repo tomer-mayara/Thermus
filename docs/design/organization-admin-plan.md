@@ -3,7 +3,7 @@
 Plan reviewed: 24 October 2026. Status: design with merged Slice 1 implementation
 recorded under its tickets. Release prerequisites remain; merged does not mean
 released or cut over. This revision records the audit API foundation and the
-organization settings UI implemented in [open PR #238](https://github.com/tomer-mayara/Thermus/pull/238).
+organization settings UI implemented in [PR #238](https://github.com/tomer-mayara/Thermus/pull/238).
 The S2-02a candidate adds an isolated one-shot OTLP sender; see its
 [implementation record](../implementation/admin-s2-02a.md). S2-02b adds the
 saved-destination Test. The S2-03a candidate adds bounded customer
@@ -13,7 +13,10 @@ adds activity-driven settings snapshots; see its
 [implementation record](../implementation/admin-s2-03b.md). S2-03c adds bounded
 queued delivery and fresh attempt authorization; see its
 [implementation record](../implementation/admin-s2-03c.md).
-This candidate is not release evidence.
+The S2-04 development candidate adds integrated proof and owner recovery procedures;
+see its [implementation record](../implementation/admin-s2-04.md) and
+[notice review](../implementation/admin-s2-04-notice-review.md). Candidate records
+do not establish merge, deployment, release, or completion of owner gates.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -833,10 +836,13 @@ headroom; external SQL must add no unexpected cost.
 Free requires [our own regular backups](https://supabase.com/docs/guides/platform/backups):
 logical exports of Thermus's private schema and needed role/grants, encrypted to
 existing operator-owned persistent storage outside the service/project at $0
-added cost. Set owner/cadence/retention/key recovery and drill a scoped restore
-before release; never export/overwrite other applications' data. Before restoring,
-stop export dispatch and clear in-memory pending work. Restored export stays
-disabled until an Admin reviews and explicitly re-enables its destination. Hold
+added cost. Follow the [S2-04 owner procedure](../implementation/admin-s2-04.md#choose-the-backup-owner-and-storage),
+select owner/cadence/retention/key recovery, and drill a scoped restore before
+release; never export/overwrite other applications' data. Before restoring,
+stop every export dispatch/settings writer and clear in-memory pending work.
+Restore first in isolation; disable restored rows and assign fresh revisions
+before storage-enabled restart. Restored export stays disabled until a current
+Admin reviews and explicitly re-enables its destination. Hold
 member reductions and later MFA admission until the operator resolves ambiguous
 state with independent evidence, not restored rows or an unchanged WorkOS read
 alone. Add no backup service/framework.
@@ -881,8 +887,9 @@ Plain `pg` SQL needs none of the Supabase [publishable/secret or legacy
 3. In [Connect → Session pooler](https://supabase.com/docs/guides/database/connecting-to-postgres),
    copy and recheck the selected project's details at rollout. The authenticated
    view showed host `aws-1-us-west-2.pooler.supabase.com`, port `5432`, database
-   `postgres`, and free IPv4-proxied session pooling. No connection was tested;
-   the direct IPv4 add-on is not needed. For the restricted role, use
+   `postgres`, and free IPv4-proxied session pooling. That dated inspection
+   tested no SQL connection. The S2-04 record now retains a TLS-only preflight
+   and its verification limit; the direct IPv4 add-on is not needed. For the restricted role, use
    `thermus_logging.rnqktgtgrvvqptbaosth` and its URL-encoded role password. The supplied
    HTTPS API URL is not the DB URI. Require certificate
    and hostname verification: use default trust when valid, or the
@@ -1523,9 +1530,13 @@ The [audit log rules](#audit-logs--slice-2), [storage
 rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supabase--slice-2)
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
-another slice names a group. The S2-01a record and linked S2-01b candidate below
-state the implemented settings scope and verification limits. S2-02, S2-03, and
-S2-04 remain planned.
+another slice names a group. S2-01a/b, S2-02a/b, and S2-03a/b/c have
+implementation candidates and linked records below, including saved-destination
+Test, content capture, snapshots, and bounded delivery. S2-04 is the current
+integrated-verification and owner-procedure candidate. These statuses do not
+claim that a candidate is merged, deployed, released, or ticket-complete. Actual
+storage, Collector, recovery, notice approval, capacity, and Slice 1 release
+proof remain separate gates; see the [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds).
 
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
@@ -1565,9 +1576,10 @@ adapter, bounded runtime, hosted configuration/lifecycle integration, and review
 scoped schema/role setup for destination settings only. It adds no audit event
 writer, event table, or durable export buffer. See
 [scope and verification limits](../implementation/admin-s2-01a.md).
-S2-01b in PR #238 adds the Admin settings page and Save. Capture, Test, and OTLP
-delivery remain planned. Actual Supabase setup and TLS/grant/backup/restore/$0
-proof remain S2-04 owner gates.
+S2-01b in PR #238 adds the Admin settings page and Save. S2-02a/b and
+S2-03a/b/c candidates add the sender, Test, capture, snapshots, and delivery;
+see their implementation records below. Actual Supabase setup and
+TLS/grant/backup/restore/$0 proof remain S2-04 owner gates.
 
 **Acceptance specification first:**
 
@@ -1653,8 +1665,8 @@ read and save through the tenant-bound settings service and PostgreSQL store.
 Current Admin access, origin/CSRF, token encryption/no echo, organization isolation,
 and revision conflicts have source acceptance coverage. The
 [implementation record](https://github.com/tomer-mayara/Thermus/blob/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81/docs/implementation/admin-s2-01b.md)
-records checks and limits. This is unmerged implementation, not deployed access
-or proof of customer delivery. The S2-02b candidate adds Test; S2-03 adds capture and dispatch.
+records checks and limits. This implementation record does not establish current
+merge status, deployed access, or customer delivery. The S2-02b candidate adds Test; S2-03 adds capture and dispatch.
 
 **Acceptance specification first:**
 
@@ -2117,6 +2129,15 @@ do not establish a gate pass.
 
 #### S2-04 — Integrated proof, owner rollout, and release
 
+**Development status.** The [S2-04 record](../implementation/admin-s2-04.md) separates
+controlled verification and a disposable local recovery drill from actual owner
+rollout and release evidence. The [notice review](../implementation/admin-s2-04-notice-review.md)
+records Slice 2 disclosure differences; it supplies no new legal approval.
+The approved Slice 1 public policies were published. The S2-04 record identifies
+a fresh deployed S1 candidate; deployment alone does not close runtime
+release/cutover or the [recorded native/mailbox holds](../implementation/admin-s1-staging-release-verification.md).
+This candidate does not claim the Done conditions below.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -2133,8 +2154,9 @@ Scenario: Use Audit logs while the product stays available
 **Gap / expected red.** The integrated journey may already pass after 01–03. Treat a passing
 journey as characterization. Specify only missing product behavior red in its owning ticket
 before its focused fix. Legal approval, configuration, actual TLS/isolation, backup/restore,
-provider, and cost evidence are manual proofs, not tests of documents. This planning
-revision claims none of those proofs ran.
+provider, and cost evidence are manual proofs, not tests of documents. The
+[S2-04 evidence ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+records which proofs ran and which release holds remain.
 
 **Ordered verification and TDD steps:**
 
@@ -2147,7 +2169,7 @@ revision claims none of those proofs ran.
 2. Follow ordered owner setup on the selected existing project. Account eligibility is already
    resolved; recheck usage/headroom before rollout, not project selection. Prove actual
    verified TLS/hostname, restricted role/private-schema rights, persistence, and no access to
-   unrelated application data. Confirm service-scoped secrets and optional CA path without
+   unrelated application data. Confirm service-scoped secrets and the required official CA path without
    recording values. Exercise acquisition/query stalls, idle disconnect, pause/quota/reconnect
    behavior, and MCP availability through controlled faults. Do not pause or exhaust the
    shared project; actual live proof is scoped TLS/role/isolation/persistence.

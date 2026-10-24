@@ -1049,6 +1049,23 @@ retains owner rollout and release prerequisites.
 [V] A sink failure escapes synchronously; a filtered DEBUG call never writes
 [V] Type checks keep system records and sinks separate from audit events and sinks
 
+**Integrated customer audit journey and help — S2-04 candidate**
+
+The [verification record](../implementation/admin-s2-04.md) separates controlled
+source proof from actual owner setup, recovery, and release evidence.
+
+- `test/acceptance/logging/audit/hosted-audit-journey.runtime.ts` specifies password Admin browser sign-in, disabled Save, one saved Test, Enable, activity-driven loading, full MCP results, bounded redacted audit content, invitation actions, and receipt of the expected records in a real Collector's file output. It also checks unchanged product access and separation from system output. Run `npm run test:logging:collector` for this dedicated acceptance case and the sender integration cases.
+- `test/acceptance/logging/hosted-destination-settings.test.ts` adds the visible export disclosure before Save: input/result content, redaction limits, truncation, and best-effort loss/duplicates.
+- `test/unit/html/logging-routes.test.ts` adds the named help region and its placement before the settings form.
+
+The journey uses controlled WorkOS password exchange, settings storage, and tool
+operations. Native DNS, verified TLS, OTLP, and Collector receipt are real on the
+isolated test network. It characterizes existing collaboration; the new help
+specifications first fail without the source change. Local browser and recovery
+drills are manual evidence in the verification record, not tests of document text.
+No controlled pass closes live provider, SQL isolation, backup custody, legal,
+cost, or deployment holds.
+
 **System console logger** (`test/unit/logging/system/console-logger.test.ts`)
 
 [V] Writes one line to stderr by default or to a supplied writable stream

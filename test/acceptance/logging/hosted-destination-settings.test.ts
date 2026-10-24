@@ -27,6 +27,25 @@ test('Given a password-authenticated current Admin, when the Admin opens Audit l
   assert.match(members.body, /href="[^"]*logging"[^>]*>Audit logs/);
 });
 
+test('Given an Admin who can enable export, when Audit logs opens, then help explains the content and delivery limits before Save', async (t) => {
+  const { browser } = await loggingSite(t);
+  const page = await browser.open('logging');
+  assert.equal(page.status, 200);
+  assert.match(page.body, /What export includes/);
+  assert.match(page.body, /tool inputs and results or errors/);
+  assert.match(page.body, /search queries, requested URLs, fetched text, and reasons/);
+  assert.match(page.body, /administration metadata/);
+  assert.match(page.body, /recognized credential fields and credential-bearing URL parameters/);
+  assert.match(page.body, /free text can still contain secrets/);
+  assert.match(page.body, /Oversized exported results are truncated/);
+  assert.match(page.body, /original and captured sizes in bytes/);
+  assert.match(page.body, /tool results stay complete/);
+  assert.match(page.body, /Logs can be lost/);
+  assert.match(page.body, /retries can create duplicates/);
+  assert.match(page.body, /Test is optional and sends one synthetic event/);
+  assert.match(page.body, /Test proves neither continued delivery nor durable storage/);
+});
+
 for (const role of ['user', 'revoked-admin'] as const) {
   test(`Given ${role} access, when a browser opens Audit logs or submits its Save operation, then current Admin access is required`, async (t) => {
     const site = await serveWorkOSSite(t, {

@@ -17,6 +17,11 @@ export function loggingPage(page: LoggingPage): Response {
   return membersPageLayout(page.navigation, `<div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Audit logs</h1></div>
 <section class="invite-card" aria-labelledby="destination-heading"><h2 id="destination-heading">Audit log destination</h2>
 <p>Save one destination for your organization's audit logs. Thermus system logs are internal.</p>
+<aside aria-labelledby="export-help-heading"><h3 id="export-help-heading">What export includes</h3>
+<p>Enabled export includes tool inputs and results or errors: search queries, requested URLs, fetched text, and reasons. It also includes administration metadata for supported actions.</p>
+<p>Thermus redacts recognized credential fields and credential-bearing URL parameters. Other free text can still contain secrets. Sign-in forms, cookies, Authorization headers, and the destination token are excluded.</p>
+<p>Input and result exports have size limits. Oversized exported results are truncated, with a marker and original and captured sizes in bytes. Your tool results stay complete.</p>
+<p>Delivery is best effort. Logs can be lost during overload, outages, or restart, and retries can create duplicates. Receipt and storage are not guaranteed.</p></aside>
 <form method="post" action="${escapeHtml(page.action)}">
 ${hiddenField('csrf_token', page.csrfToken)}${hiddenField('organization_id', page.tenantId)}${hiddenField('expected_revision', settings.revision ?? '')}
 <label for="logging-endpoint">Collector endpoint</label><input id="logging-endpoint" name="endpoint" type="url" maxlength="2048" required value="${escapeHtml(settings.endpoint)}">

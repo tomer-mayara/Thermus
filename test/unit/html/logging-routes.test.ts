@@ -22,6 +22,18 @@ test('Given a password Admin, when Audit logs is read, then the disabled native 
   assert.match(html, /Audit log destination/);
   assert.equal(response.status, 200); assert.match(html, /name="token"/); assert.match(html, /name="expected_revision"/); assert.doesNotMatch(html, /name="enabled"[^>]*checked/);
 });
+test('Given an Admin reading Audit logs, when the page renders, then named export help precedes the settings form', async () => {
+  const { routes } = fixture();
+  const handler = routes.handlerFor('/nested/logging');
+  assert.ok(handler);
+  const response = await handler(new Request('https://example.test/nested/logging'), session, context);
+  const html = await response.text();
+  assert.match(html, /<aside aria-labelledby="export-help-heading"><h3 id="export-help-heading">What export includes<\/h3>/);
+  assert.ok(html.indexOf('export-help-heading') < html.indexOf('<form'));
+  assert.match(html, /Input and result exports have size limits/);
+  assert.match(html, /free text can still contain secrets/);
+  assert.match(html, /retries can create duplicates/);
+});
 test('Given a valid form, when Save runs, then only the trusted tenant and settings reach the service', async () => {
   const { routes, writes, request } = fixture();
   assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ enabled: 'on' }), session, context)).status, 303);

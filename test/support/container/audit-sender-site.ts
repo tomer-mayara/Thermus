@@ -8,7 +8,9 @@ import type { TestContext } from 'node:test';
 import { promisify } from 'node:util';
 import type { AuditEvent } from '../../../src/logs/audit/audit-log.ts';
 import type { AuditDestination, AuditSendOutcome } from '../../../src/logs/audit/audit-send.ts';
-import { auditSenderRuntime } from '../processes/module-paths.ts';
+import { auditSenderRuntime, repositoryRoot } from '../processes/module-paths.ts';
+import { fileURLToPath } from 'node:url';
+import type { HostedAuditJourneyResult } from '../in-process/hosted-audit-journey-site.ts';
 import { docker, dockerOutput } from './docker-cli.ts';
 
 const nodeImage = 'node:24.20.0-bookworm-slim';
@@ -211,6 +213,28 @@ export async function openAuditSenderSite(t: TestContext, kind: 'receiver' | 'co
     address, token, collectorImage,
     endpoint: 'https://collector.audit.test:4318/v1/logs',
     bearerEndpoint: 'https://collector.audit.test:4319/v1/logs',
+    async publicJourney(): Promise<HostedAuditJourneyResult> {
+      const client = `${network}-journey-client`;
+      containers.push(client);
+      await writeFile(join(directory, 'public-journey.json'), JSON.stringify({ endpoint: 'https://collector.audit.test:4319/v1/logs', token }));
+      const mounts = [
+        [auditSenderRuntime.source, '/workspace/src'],
+        [auditSenderRuntime.support, '/workspace/test/support'],
+        [fileURLToPath(new URL('node_modules', repositoryRoot)), '/workspace/node_modules'],
+        [fileURLToPath(new URL('package.json', repositoryRoot)), '/workspace/package.json'],
+      ].flatMap(([source, target]) => ['--mount', `type=bind,source=${source},target=${target},readonly`]);
+      await command(['create', '--name', client, '--network', network,
+        '--add-host', `collector.audit.test:${address}`, '-e', 'NODE_EXTRA_CA_CERTS=/fixture/server.crt', ...mounts,
+        nodeImage, 'node', ...(auditSenderRuntime.extension === 'ts' ? ['--experimental-transform-types'] : []),
+        `/workspace/test/support/processes/hosted-audit-journey-probe.${auditSenderRuntime.extension}`]);
+      await command(['cp', directory, `${client}:/fixture`]);
+      const output = await command(['start', '-a', client]);
+      const exitCode = await command(['inspect', client, '--format', '{{.State.ExitCode}}']);
+      if (exitCode !== '0') throw new Error(`The public audit journey exited with ${exitCode}: ${output}`);
+      const resultPath = join(directory, 'public-journey-result.json');
+      await command(['cp', `${client}:/fixture/public-journey-result.json`, resultPath]);
+      return JSON.parse(await readFile(resultPath, 'utf8'));
+    },
     async exportCapturedTool(): Promise<{ exported: AuditSendOutcome; tested: { status: string; outcome?: AuditSendOutcome }; saves: number; dispatchReads: number; productResultBytes: number }> {
       const client = `${network}-capture-client-${containers.length}`;
       containers.push(client);

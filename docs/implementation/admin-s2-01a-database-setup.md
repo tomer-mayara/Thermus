@@ -5,7 +5,7 @@ destination settings. It does not authorize a new project, plan upgrade, or unre
 change. The deployment operator performs setup. Customer Admins do not receive
 database credentials. System logs remain internal engineering output. Slice 2
 customers receive audit events through their configured organization Collector;
-this setup adds no delivery or in-app viewer. The existing SQL role/table and
+this setup alone adds no delivery or in-app viewer. The existing SQL role/table and
 environment names stay compatible. S2-04 must complete the live rollout and recovery proof.
 
 ## Review scope before applying SQL
@@ -61,6 +61,11 @@ credential encryption and recovery behavior.
 If the endpoint needs a dedicated official CA, obtain the correct PEM bundle
 and set `DATABASE_CA_CERT_PATH` to a readable server secret-file path. Otherwise
 use the platform trust store. Never disable certificate or hostname verification.
+The [24 October S2-04 preflight](admin-s2-04.md#evidence-and-release-holds)
+confirmed that the observed pooler needs the official Supabase CA with Node
+24.20.0: default trust refused it, the official CA verified it, and a wrong
+hostname was refused. Download the current certificate through the selected
+project's database settings and stage its server path before activation.
 Local fixture certificates and keys are test-only and must not be deployed.
 No Supabase API key, `SUPABASE_URL`, Auth SDK, or CLI token is needed at runtime.
 
@@ -78,12 +83,16 @@ tenant isolation, bounded acquisition/query failure, and MCP availability during
 outage. Confirm that database size, connections, egress, and Render network use
 stay within existing $0 capacity. Record only nonsecret facts and variable names.
 
-Assign an owner, cadence, and retention for encrypted logical backups of this
-private schema and its required role/grants to existing operator-owned storage
-outside the project. Preserve the encryption key separately. Drill a scoped
-restore without exporting or replacing another application's data. Before
-restore, stop export dispatch and clear pending in-memory work. Restored export
-must stay disabled until an Admin reviews and explicitly enables the destination.
+Follow the [S2-04 encrypted backup, scoped restore, and key recovery procedure](admin-s2-04.md#choose-the-backup-owner-and-storage).
+Its proposed owner, cadence, retention, and outside-project existing storage
+remain pending owner selection. Preserve the application key separately from
+the database archive and the wrapping secret separately from the archive.
+Before restore, stop every dispatch/settings writer and clear pending memory
+work. Restore into an isolated recovery database first. Disable recovered rows
+and assign fresh revisions before any storage-enabled restart. Copy only the
+reviewed private data in one scoped transaction; preserve unrelated project
+objects/data. Each current Admin must review and explicitly Enable their
+destination afterward. The local procedure drill does not close live gates.
 
 These are S2-04 rollout gates. Local PostgreSQL acceptance does not satisfy them.
 A pause, outage, or quota failure must stop storage-dependent writes and export;
