@@ -6,7 +6,9 @@ import type { CrapRow } from './crap-rows.ts';
 import { exceptionsPath } from './exceptions.ts';
 import type { ArchitectureImpact } from './impact.ts';
 import type { MetricsFiles } from './metrics-files.ts';
+import type { Rules } from './rules.ts';
 import type { SnapshotPair } from './snapshots.ts';
+import type { SnapshotOutcome } from './surface-snapshot.ts';
 import type { Change } from './types.ts';
 
 const snoozePath = '.habit-hooks/snooze.json';
@@ -19,8 +21,16 @@ export interface Revisions {
   readonly mergeBase: string;
 }
 
+// The text of one file at the merge base and at HEAD. A side is absent where the file does not exist.
+export interface FilePair {
+  readonly base?: string;
+  readonly head?: string;
+}
+
 // The check reads files from git, so an uncommitted change is not part of the candidate. sourcePaths holds every
-// path under src/ at HEAD; sources holds the TypeScript files among them.
+// path under src/ at HEAD; sources holds the TypeScript files among them. registry and manifest are the files that the
+// sections architecture and dependencies of the merge base name. declarationSnapshots compares the declaration
+// snapshots of both revisions.
 export interface Candidate extends Revisions {
   readonly changes: readonly Change[];
   readonly numstat: readonly NumstatRow[];
@@ -36,6 +46,9 @@ export interface Candidate extends Revisions {
   readonly metrics?: MetricsFiles;
   readonly dirty: boolean;
   readonly impact?: ArchitectureImpact;
+  readonly registry?: FilePair;
+  readonly manifest?: FilePair;
+  readonly declarationSnapshots?: SnapshotOutcome;
 }
 
 export function revisionsOf(root: string, base: string): Revisions {
@@ -67,4 +80,16 @@ export function candidateOf(root: string, revisions: Revisions, production: read
     exceptions: files.get(exceptionsPath),
     today: git(root, ['show', '-s', '--format=%cI', revisions.head], 'git show could not read the committer date of HEAD.').slice(0, 10),
   };
+}
+
+// The rules of the merge base name the files. Rules before 2026-10-24 name none, so the check reads none.
+export function architectureFilesOf(root: string, revisions: Revisions, rules: Pick<Rules, 'architecture' | 'dependencies'>): Pick<Candidate, 'registry' | 'manifest'> {
+  return {
+    registry: rules.architecture && filePairOf(root, revisions, rules.architecture.registry),
+    manifest: rules.dependencies && filePairOf(root, revisions, rules.dependencies.manifest),
+  };
+}
+
+function filePairOf(root: string, revisions: Revisions, path: string): FilePair {
+  return { base: blobsAt(root, revisions.mergeBase, [path]).get(path), head: blobsAt(root, revisions.head, [path]).get(path) };
 }

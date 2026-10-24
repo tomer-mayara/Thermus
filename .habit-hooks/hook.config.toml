@@ -11,6 +11,7 @@ files = [
   "!**/dist/**",
   "!coverage/**",
   "!tools/code-review-agents/**",
+  "!docs/api-surface/**",
 ]
 
 [sensors.eslint]

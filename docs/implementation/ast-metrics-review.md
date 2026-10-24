@@ -113,8 +113,10 @@ base SHAs, use accessible evidence links, and refresh the same comments after
 candidate changes. Mark stale results and preserve evidence and approval history.
 Do not paste unchanged full reports into the description. This report structure
 does not narrow the global dependency graph or the context needed for correct
-analysis. Required metric assessment or a permitted exception needs at least
-T1 Team review, unless architecture independently requires T2 Need architect.
+analysis. A permitted exception that the candidate uses needs at least
+T1 Team review, unless architecture independently requires T2 Need architect;
+an MI drop on an existing file and a retained high finding are notes since
+2026-10-24, with their reasons in Quality review.
 Tool failure or missing required evidence blocks merge; approval cannot waive it.
 MI applies to production files and CRAP to functions. Optional component
 summaries do not create a component CRAP score or a new numeric escalation rule.

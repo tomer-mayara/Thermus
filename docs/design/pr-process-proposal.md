@@ -1,5 +1,8 @@
 # Pull request process proposal
 
+Status note, 2026-10-24: the tier selection changed; architecture facts now
+select the tier, as the [design record](pr-review-architecture-facts.md) explains.
+
 Status: approved for implementation, 2026-10-21. The implementation updates
 [AGENTS.md](../../AGENTS.md), the [review playbook](../implementation/pr-review-playbook.md),
 rules, checker, test and metric policies, registry workflow, and pull request

@@ -11,9 +11,21 @@ The highest review tier and local eligibility (eligible or blocked) are separate
 All reasons are retained. A failure never hides the required review tier.
 The trusted merge-base policy governs; HEAD only declares candidate facts.
 
---impact is a JSON declaration bound to HEAD and the merge base, with every
-classification flag, architecture summary, checked views, and evidence.
-Missing impact blocks automatic merge and requires at least T1 Team review.
+When the merge-base rules have an architecture section, architecture facts
+from both revisions select T2 Need architect: a changed component set, an
+added or widened allowed edge, a new public module, a changed declaration
+snapshot, a changed Mermaid view of the registry, or a new decision record.
+An added or removed dependency key and an added external import are T1 Team
+review. The rules give the outcome of the size, an MI drop, a retained high
+finding, and a new skip or todo marker. Earlier rules keep their outcomes.
+When the HEAD rules name public_surface.snapshots, the check regenerates the
+declaration snapshots of HEAD; a stale, missing, or orphan snapshot blocks.
+
+--impact is a JSON declaration bound to HEAD and the merge base, with exactly
+the classification flags, an architecture summary, checked views, and evidence.
+The merge-base rules give the tier of each flag. An architecture fact without
+an architect flag blocks. Missing impact blocks automatic merge and requires
+at least T1 Team review.
 The trusted policy selects required metrics; missing required files block.
 Local eligibility does not prove GitHub checks, holds, or human approvals.
 
