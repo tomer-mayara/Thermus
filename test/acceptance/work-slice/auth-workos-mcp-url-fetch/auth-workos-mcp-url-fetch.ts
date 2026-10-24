@@ -1,3 +1,4 @@
+import { SystemLogger, type SystemLog } from '../../../../src/logs/system/system-logger.ts';
 // The auth WorkOS MCP URL fetch work slice: a manual run of the hosted edition with the real WorkOS provider, the fetch
 // tool, and Axiom logs, not a test. See README.md here.
 // This file is the entry point of the slice and also exports its composition for the tests. It runs only when it is
@@ -7,12 +8,12 @@ import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Application, ApplicationLogger, RouteConfig } from '../../../../src/app/application.ts';
+import type { Application, RouteConfig } from '../../../../src/app/application.ts';
 import { loadDeploymentConfig } from '../../../../src/runtime/config/deployment-config.ts';
 import { createToolOperations, fetchToolServers } from '../../../../src/app/fetch-tool.ts';
 import { assertHostedRenderer } from '../../../../src/app/hosted-renderer-startup.ts';
 import { composeWorkOSApplication, openWorkOSConnection, type WorkOSConnection } from '../../../../src/app/hosted-workos-application.ts';
-import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
+import { ConsoleSystemLogSink } from '../../../../src/logs/system/console-system-log-sink.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { LocalHttpsSite } from '../../../support/hosted-live/local-https-site.ts';
 import { connectScope, localOrigin } from '../../../support/hosted-live/settings.ts';
@@ -39,13 +40,13 @@ const axiomDatasetPage = 'https://app.axiom.co/thermus-ai-spao/datasets/system-l
 
 const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
-  process.exitCode = await run(new ConsoleLogger());
+  process.exitCode = await run(new SystemLogger(new ConsoleSystemLogSink()));
 }
 
 // Production also composes the hosted edition with the fetch tool, in openWorkOSApplication. The slice has its own
 // composition root for two parts that only the slice has. The fetch operation spy logs the full URL and the
 // Markdown of each fetch. The onboarding policy is the fixed verified-Google policy of the slice organization.
-export async function composeWorkSliceApplication(parts: WorkSliceParts, logger: ApplicationLogger): Promise<Application> {
+export async function composeWorkSliceApplication(parts: WorkSliceParts, logger: SystemLog): Promise<Application> {
   const { config, connection, environment } = parts;
   const organizationId = environment.THERMUS_SLICE_ORGANIZATION_ID?.trim();
   if (!organizationId) throw new Error('Set THERMUS_SLICE_ORGANIZATION_ID to the WorkOS organization of this slice');
@@ -54,7 +55,7 @@ export async function composeWorkSliceApplication(parts: WorkSliceParts, logger:
   return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers({ ...operations, fetch: operation }, logger), onboarding: { organizationId } });
 }
 
-async function run(consoleLog: ConsoleLogger): Promise<number> {
+async function run(consoleLog: SystemLogger): Promise<number> {
   try {
     await serveWorkSlice();
     return 0;

@@ -1,3 +1,4 @@
+import type { SystemLog } from '../../../src/logs/system/system-logger.ts';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
@@ -7,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import type { SignupDocuments } from '../../../src/accounts/organizations/signup-activation.ts';
-import { createApplication, type Application, type ApplicationLogger } from '../../../src/app/application.ts';
+import { createApplication, type Application } from '../../../src/app/application.ts';
 import { loadDeploymentConfig } from '../../../src/runtime/config/deployment-config.ts';
 import { startHttpServer, type HttpServer } from '../../../src/runtime/http/server.ts';
 import { OperatorLogSpy } from '../doubles/application/operator-log-spy.ts';
@@ -49,10 +50,10 @@ interface LocalHttpsSiteOptions {
   readonly certificate?: TlsCertificate;
   // The logger of the Thermus listener and of the default application. With this option, the log of the site stays
   // empty.
-  readonly logger?: ApplicationLogger;
+  readonly logger?: SystemLog;
   // Opens the application behind the front. It gets the logger option, or else the log of the site. The default is the
   // hosted composition with the staging settings, the trusted rules fixture, and a random cookie password.
-  readonly application?: (logger: ApplicationLogger) => Promise<Application>;
+  readonly application?: (logger: SystemLog) => Promise<Application>;
 }
 
 // The HTTPS front sends every live gate request to the production application, including portal and health requests.
@@ -80,7 +81,7 @@ export class LocalHttpsSite {
     const certificateDirectory = owned.adopt(await mkdtemp(join(tmpdir(), 'thermus-hosted-live-')), (path) => rm(path, { recursive: true, force: true }));
     const log = new OperatorLogSpy();
     const logger = options.logger ?? log;
-    const openApplication = options.application ?? ((applicationLogger: ApplicationLogger) => stagingApplication(settings, applicationLogger, options));
+    const openApplication = options.application ?? ((applicationLogger: SystemLog) => stagingApplication(settings, applicationLogger, options));
     let listenerDrain: Promise<void> | undefined;
     let drained = Promise.resolve<PromiseSettledResult<void>>({ status: 'fulfilled', value: undefined });
     // The site owns the listener even when custom application cleanup ignores its drain or fails.
@@ -115,7 +116,7 @@ export class LocalHttpsSite {
   }
 }
 
-async function stagingApplication(settings: HostedLiveSettings, logger: ApplicationLogger, options: Pick<LocalHttpsSiteOptions, 'rendererExecutable' | 'signupDocuments'>): Promise<Application> {
+async function stagingApplication(settings: HostedLiveSettings, logger: SystemLog, options: Pick<LocalHttpsSiteOptions, 'rendererExecutable' | 'signupDocuments'>): Promise<Application> {
   const executable = options.rendererExecutable ?? process.env.LIGHTPANDA_BIN;
   const documents = options.signupDocuments;
   const environment = {

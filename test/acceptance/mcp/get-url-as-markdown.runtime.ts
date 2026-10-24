@@ -201,7 +201,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
       assert.equal(typeof durationMs, 'number');
       assert.deepEqual(record, {
         event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`, subject: site.subject, tenantId: tenant,
-        tool: 'getURLAsMarkdown', url, urlStatus: 'valid', reason, reasonStatus: 'valid', status: 'success',
+        tool: 'getURLAsMarkdown', status: 'success',
       });
       assert.doesNotMatch(site.server.completionLines().join('\n'), /Runtime story|Hidden instruction|Final host target/);
     });
@@ -245,7 +245,7 @@ describe('getURLAsMarkdown with the pinned renderer, the real pipeline, and real
     assert.deepEqual(source.requests, ['/Start?private-query=yes']);
     assert.deepEqual(destination.requests, ['/directory/page']);
     assert.deepEqual(pagesSeen(site), [{ requestedUrl, finalUrl: `${destination.origin}/directory/page#private-fragment` }]);
-    assert.deepEqual(site.server.completionRecords().map(({ url, status }) => ({ url, status })), [{ url: `${source.hostnameOrigin}/Start`, status: 'success' }]);
+    assert.deepEqual(site.server.completionRecords().map(({ url, status }) => ({ url, status })), [{ url: undefined, status: 'success' }]);
     assert.doesNotMatch(site.server.completionLines().join('\n'), /private-query|private-fragment|127\.0\.0\.1/);
   });
 

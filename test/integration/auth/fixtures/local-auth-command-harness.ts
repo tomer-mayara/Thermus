@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { LocalAuthSettings, OpenedLocalAdministration } from '../../../../src/accounts/identity/local-user-administration.ts';
 import { runLocalAuthCommand, type HiddenInput } from '../../../../src/interfaces/cli/local-auth-command.ts';
 import { BetterAuthUserAdministration } from '../../../../src/accounts/providers/better-auth/better-auth-user-administration.ts';
-import { BaseLogger } from '../../../../src/logging/base-logger.ts';
+import { SystemLogger } from '../../../../src/logs/system/system-logger.ts';
 import { LocalProviderDouble } from '../../../support/doubles/auth/local-provider-double.ts';
 
 export const environment = {
@@ -64,7 +64,7 @@ export async function run(args: readonly string[], options: { opener?: Administr
     environment: options.environment ?? environment,
     input,
     output: { write: (text) => { output += text; } },
-    logger: { error: (failure) => { errors.push(BaseLogger.messageOf(failure)); } },
+    logger: { error: (failure) => { errors.push(SystemLogger.messageOf(failure)); } },
     openAdministration: opener.open,
   });
   return { code, output, errors: errors.join('\n'), prompts: input.prompts };

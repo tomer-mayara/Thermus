@@ -1,7 +1,16 @@
 # Organization administration plan
 
-Plan date: 22 October 2026. Status: design with implementation progress recorded
-under each Slice 1 ticket. Implementation does not imply release or cutover.
+Plan reviewed: 24 October 2026. Slice 1 implementation is merged; its release
+prerequisites remain. The combined Slice 2 candidate includes settings, Save/Test,
+capture, snapshots, delivery, visible help, and controlled integration proof.
+The [Slice 2 review and remaining work](#slice-2-review-and-remaining-work)
+records the redaction correction, the single stack integration path, and merge checks.
+The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+owns the separate activation requirements. PR #245 records the code integration;
+Slice 2 release remains separate.
+Ticket records describe their historical increments; their earlier missing
+features are not the status of the combined candidate. Merged does not mean
+released, and passing controlled tests does not complete owner gates.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -15,10 +24,10 @@ access. Admin also manages the organization features shipped in that slice.
 Current organizations/accounts are internal/test only; make a clean User/Admin
 transition, without a legacy customer migration or customer Super Admin role.
 
-| Slice | Shipped scope |
+| Slice | Scope at completion |
 |---|---|
 | 1 — Basic Admin portal | Narrow provider boundary, User/Admin roles, named organization and first Admin, creator agreement, active-member list, native invitations/acceptance, and workspace selection. Product + Members navigation; no member removal, role changes, MFA gate, flags, factors, or policy UI/state. |
-| 2 — Collector export | Slice 1 plus Logging settings, safe content capture, and bounded best-effort export. Password only; no MFA dependency or member-reduction coordinator. |
+| 2 — Collector export | Slice 1 plus Audit logs settings, safe content capture, and bounded best-effort export. Password only; no MFA dependency or member-reduction coordinator. |
 | 2.5 — Member removal | Slice 2 plus Remove, including self-removal, with durable last-active-Admin protection. Password only; no role changes or MFA features. |
 | 3 — Role changes and MFA | Change role reuses the Slice 2.5 coordinator and may ship independently of MFA. The separate MFA branch adds organization Security and personal factor controls after its free-entitlement/behavior gate passes. |
 
@@ -43,13 +52,19 @@ under this rule.
 Planning baseline, before S1-01: signup was disabled by default and created a
 personal workspace with User. Grants distinguished User, Admin, and Super Admin.
 Account pages managed grants/invitations; administration required MFA, with proof
-limited to Required-policy Password sign-in. The stacked Slice 1 implementation
+limited to Required-policy Password sign-in. The merged Slice 1 implementation
 now retires those grant writes and inferred MFA checks, uses User/Admin, and adds
 named creation plus the combined Members page. The ticket records give its
-checks and remaining release holds. Customer destination storage/export routing
-do not exist. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
-include URL origin/path and reason in operator output; Slice 2 must remove that
-content from operator completion records.
+checks and remaining release holds. S2-01a implements the private audit destination
+settings store and bounded SQL runtime. S2-01b in PR #238 implements the Admin
+settings page and Save. S2-02a implements the isolated sender, and S2-02b adds
+the saved-destination Test. The S2-03a candidate captures customer tool/Admin
+events through a supplied sink. S2-03b adds fresh enabled/revision snapshots from
+activity-driven settings reads. Unknown, disabled, or expired snapshots drop the
+current event. S2-03c connects the revision-bound handoff to bounded memory
+admission and current-version dispatch.
+[Tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
+now omit tool URLs, queries, reasons, and results from operator output.
 
 Start from [signup](../../src/accounts/providers/workos/workos-signup.ts),
 [role mapping](../../src/accounts/providers/workos/hosted-role-mapping.ts),
@@ -64,7 +79,8 @@ Keep permission checks, origin/CSRF protection, escaping, and non-cacheable resp
 | WorkOS adapter | Provider translation, callbacks/session sealing, and provider facts. WorkOS remains identity/membership truth and owns identities, organizations, memberships, roles, invitation delivery, and factor secrets. |
 | Web/account | Native forms, browser sessions, selected organization, safe responses, and Slice 3 browser MFA proof. |
 | Destination settings | Slice 2 tenant settings, revisions, and encrypted credential references. |
-| Logging/app lifecycle | Customer capture, bounded delivery, and shutdown. |
+| System logs | Internal engineering diagnostics in `src/logs/system/`; no customer access. |
+| Audit logs/app lifecycle | Customer audit events, destination settings in `src/logs/audit/`, and bounded OTLP delivery and shutdown. |
 
 Reuse [identity/access](../../src/accounts/identity/access-context.ts),
 [BrowserSession](../../src/accounts/identity/browser-session.ts), and
@@ -121,7 +137,7 @@ implement no local features here.
 ## Journeys and native UI
 
 Follow [portal design](portal-design.md): existing assets, local IBM Plex fonts,
-and approved palette. Members, Logging, and later Security are Admin navigation.
+and approved palette. Members, Audit logs, and later Security are Admin navigation.
 Account security adds MFA only in Slice 3. Browser workspace selection does not
 change an existing MCP client's workspace.
 
@@ -184,7 +200,7 @@ Pending invitations
 nia@example.com          Admin    3 days left    [Resend] [Revoke]
 ```
 
-Slice 2 adds Logging navigation. Slice 2.5 adds `[Remove]` on member rows.
+Slice 2 adds Audit logs navigation. Slice 2.5 adds `[Remove]` on member rows.
 Slice 3 adds `[Change role]`; Security navigation appears with the MFA branch.
 Add security to the Admin role description only when that branch ships.
 
@@ -216,7 +232,7 @@ Unknown result: We could not confirm the removal. [Check current status]
 After self-removal: [Choose workspace] [Sign out]
 
 Slice 3 — Change jo@example.com's role · Current role: User
-( ) Admin — product/MCP, members, and logging
+( ) Admin — product/MCP, members, and Audit logs
 (*) User — product/MCP
 [Cancel]                                                   [Save role]
 Last Admin: Another Admin must join before you change to User.
@@ -228,7 +244,7 @@ Unknown result: We could not confirm the role change. [Check current status]
 
 ```text
 Thermus       Workspace [Acme Labs v]             Alex  [Sign out]
-Connect your agent | Members | Security | Logging
+Connect your agent | Members | Security | Audit logs
                                --------
 Security for Acme Labs
 [ ] Require MFA for all Admins
@@ -267,13 +283,23 @@ Recovery: Replace and verify your authenticator before continuing.
 Explain blocked removal without naming other organizations. A failed requirement
 read shows an error and refuses removal. Replacement reuses setup/verification.
 
-### Logging — Slice 2
+### Audit logs UI — Slice 2
+
+The [audit log rules](#audit-logs--slice-2) define customer access and event safety.
+An Admin selects the organization, opens **Audit logs**, and saves its Collector
+endpoint, None/Bearer authentication, and Enable setting. Each load and Save checks
+current Admin permission for that organization; a submitted organization ID is not
+authority. S2-01b implements the page and Save, S2-02b implements optional Test,
+and S2-03c implements bounded delivery. The mock shows the combined Slice 2 candidate.
+The server must have the private settings connection and encryption key from
+[owner setup](#owner-setup-for-supabase--slice-2). Admins enter their Collector
+credentials in this page; they do not receive the server's database credentials.
 
 ```text
 Thermus       Workspace [Acme Labs v]             Alex  [Sign out]
-Connect your agent | Members | Logging
+Connect your agent | Members | Audit logs
                                -------
-Logging destination
+Audit logs destination
 [ ] Enable export
 Collector endpoint [ https://collector.example.com/v1/logs       ]
 Connection: HTTPS · OTLP/HTTP JSON
@@ -533,7 +559,59 @@ binding, consent registry, or reset-related MCP sign-out. Keep valid-token,
 organization, current active membership/role, and permission checks. Gate web
 paths, not the shared `AccessResolver`; the browser MCP guide follows portal rules.
 
-### Customer logging — Slice 2
+### Audit logs — Slice 2
+
+System logs are the current Thermus engineering diagnostics. Only Thermus
+operators use them; customers have no access. `src/logs/system/` owns
+`SystemLogger` and its ConsoleSystemLogSink/OtelSystemLogSink output roles.
+SystemLogger prepares severity, time, failure text, and automatic source file
+and line enrichment before its synchronous sink call. Existing account change records in this output
+remain internal. S2-03a adds separate customer audit capture through a supplied sink.
+
+Audit logs are the customer organization Admin feature. `src/logs/audit/` owns
+the destination store/runtime and the concrete event-specific `AuditLog` class.
+`AuditEventSink` separates this projection from destination delivery. S2-03a
+extends `toolCompleted` with validated input and final public result copies. The
+event owner redacts recognized credentials and bounds serialized UTF-8 bytes.
+Invitation and Audit logs actions use event-specific metadata methods. Capture
+uses independently trusted boundary context. S2-03b gates hosted capture on
+fresh enabled/revision metadata. S2-03c supplies bounded asynchronous dispatch
+with a fresh full-version authorization read before each attempt.
+Add administration event methods only as the actions ship. Audit events have no generic `info`/`error` API and no automatic source or stack metadata. Never
+repurpose a system logger or its OTel adapter, or share their output stream with
+audit delivery. Shared classes under `src/logs/` are appropriate only for real
+common behavior; these roles require no shared base class.
+
+Slice 2's first production audit sink sends OpenTelemetry OTLP/HTTP JSON to the
+organization's configured Collector. The existing `AuditEventSink.writeAuditEvent`
+contract separates event capture/projection from delivery. S2-03c implements this
+sink with bounded memory admission and dispatch through the S2-02a sender;
+the synchronous call does not wait for export. `DestinationSettingsStore` is a
+separate settings port, not an event sink. The Slice 2 PostgreSQL settings store
+holds only destination configuration, never audit history or an event buffer.
+A future SQL or other sink adapter can use the same event contract without
+changing capture. Add no such adapter, fan-out,
+sink plugin framework, or generic settings backend in Slice 2.
+
+Slice 2 promises no in-app log viewer. S2-01b implements the Audit logs settings
+UI and Save in PR #238. S2-02b adds the optional saved-destination Test
+with one synthetic event. S2-03a adds MCP/admin capture, redaction, and truncation
+through a supplied sink. S2-03b adds hosted activity-driven settings snapshots;
+S2-03c adds customer completion dispatch; its queue can drop work, and receipt
+or durable Collector storage is not guaranteed.
+The technical database, role, SQL table, and environment names remain compatible,
+including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
+
+**Why SQL remains.** Destination configuration must survive restart and be shared
+across application instances. The Admin page in S2-01b calls
+`DestinationSettingsService`, which uses `DestinationSettingsStore` for reads and
+atomic revision saves. `PgDestinationSettingsStore` implements those operations;
+`BoundedSqlRuntime` owns the pool, deadlines, admission, and cleanup. These are
+required settings dependencies, not dead event-storage classes. The S2-01a
+foundation opens and closes them before S2-01b adds browser reads/writes. Keep
+them; there is no SQL audit-event writer or event table to delete. Export uses
+the separate `AuditEventSink` boundary and reads settings without writing events
+to that store.
 
 Current Admin permission and password authentication authorize settings/Test.
 The later MFA branch adds its portal session gate without changing this export
@@ -544,7 +622,11 @@ public results/errors: search queries, requested URLs, fetched text, and reasons
 plus administration metadata. No content checkbox or metadata-only mode. Exclude
 internal HTTP traffic, sign-in forms, cookies, Authorization headers, and logging
 tokens. Redact known credential fields/recognized credential-bearing URL params;
-arbitrary free text cannot be promised secret-free.
+arbitrary free text cannot be promised secret-free. Redaction must preserve
+surrounding public content when its boundary is known, including JSON sibling
+fields and enclosing Markdown. Do not treat over-redaction of an admitted event
+as allowed best-effort delivery loss. Keep ambiguous credential text redacted;
+do not fix content loss by exposing part of a credential.
 
 Capture one structured customer completion event at the
 [MCP boundary](../../src/interfaces/mcp/fetch-tool-server.ts): validated
@@ -560,7 +642,7 @@ customer sink, not operator/Render diagnostics or export-error feedback. This is
 a focused completion-record change, not a system-logger rewrite.
 
 Administration events cover Thermus-handled member, role, invitation, organization
-MFA-policy, and logging actions as each ships. Use independently trusted tenant/
+MFA-policy, and audit destination actions as each ships. Use independently trusted tenant/
 actor context; a request-supplied organization ID is not routing authority. A denied
 request from Org A naming Org B must not send metadata to B's Collector without
 independently established B context. Unattributable attempts stay in sanitized
@@ -586,58 +668,92 @@ At event creation, use an available per-org settings snapshot. Disabled/unknown
 snapshots drop that event; never retain it for later Enable. Bind queued work to
 tenant/revision. Eligible trusted-tenant activity schedules asynchronous loading
 of missing or due-for-refresh snapshots, including cached-disabled values. Allow
-one in-flight load per org and bound admitted work, time, and resources. Never
-await this snapshot refresh in a tool/admin response path. A successful load affects future captures
-only; never revive old content/revisions. Idle tenants cause no reads. S2-03
-chooses/documents fixed refresh/backoff bounds; add no general cache framework.
+one in-flight load per org and bound admitted work, time, and resources. Keep only
+enabled/revision metadata in snapshots, never endpoints or credentials. Bound resident
+snapshot/backoff items and bytes; evict through activity, treating evicted orgs as
+unknown. Late loads cannot restore evicted or shutdown state. Never await refresh
+in a tool/admin response. Successful loads affect future captures only; never revive
+old content/revisions. Idle tenants cause no reads. S2-03 fixes refresh/backoff
+bounds; add no general cache framework. A failed refresh makes the
+capture snapshot unknown until a later activity-driven load succeeds; retain only
+bounded backoff bookkeeping. Pending items still use their separate current-store
+dispatch checks; no dropped content is revived.
 
 Customer sink failure cannot change tool results or fail/replay completed admin
-actions. Isolate it from throwing post-write `ChangeRecording.record` calls and
-tool execution; capture/enqueue remains bounded.
+actions. Isolate it from throwing post-write `ChangeRecorder.record()` calls made
+by `ChangeRecording.keep()` and from tool execution; capture/enqueue remains bounded.
+Exclude sender responses, retries, and settings-read diagnostics from customer
+capture. An Audit logs action may record one administration event; the labelled
+synthetic Test record is separate. Export work must not capture itself.
 
 **Settings and Test.** Use one public HTTPS Collector endpoint, None or one Bearer
 token, native radios, and a write-only Token field. No private-network destination,
 custom auth headers, or client certificate. One validated Save atomically applies
 endpoint, auth, and Enable; failed validation applies nothing. New settings start
 disabled until explicitly enabled. Every actual change, including toggles, updates
-one revision; unchanged Save does not. No draft/active copies. None removes the
-saved token. Blank Bearer retains it only for unchanged endpoint/auth; changed
+one revision; unchanged Save, including re-entering the same token, does not.
+The destination owner decides semantic equality and preserves ciphertext on a
+no-op; the store atomically checks revision and writes. No draft/active copies.
+None removes the saved token. Blank Bearer retains it only for unchanged endpoint/auth; changed
 endpoint + Bearer needs a replacement. Encrypt secrets server-side with a key
-outside the store; never echo them. All writes reject stale forms/revisions.
+outside the store; never echo them. All writes reject stale forms/revisions. A Save
+timeout can leave its commit unconfirmed; show that outcome and reload current
+settings/revision before another write. A timed-out Save may commit after that
+read; subsequent writes still require atomic expected-revision checks. Never
+automatically replay the Save.
 
 Optional Test uses the saved version, works disabled, sends a labelled synthetic
-event, and never saves/enables. Save unsaved input first. Ignore late results after
-a revision change. Keep no history/dashboard/version controls. Show the submitted
-result; Test proves neither continued delivery nor durable storage and is never a
+event, and never saves/enables. Save unsaved input first. Freshly check the saved
+version before send and read its revision again after settlement, before producing
+the response.
+A mismatch or failed post-read suppresses the result; no browser polling is needed.
+Keep no history/dashboard/version controls. Show the submitted saved-version result;
+Test proves neither continued delivery nor durable storage and is never a
 prerequisite to enable.
 
 **Egress and revisions.** At actual connection, enforce public HTTPS/IP, allow
 Collector paths, reject userinfo/fragments/all queries, and follow zero redirects.
 Prevent private/loopback/metadata-service access and credential forwarding. Isolate
-customer TLS/headers from platform OTEL defaults; the pinned SDK can merge headers.
+customer TLS/headers from system OTel defaults; the pinned SDK can merge headers.
 Other protocols/query-auth are deferred.
 
 Async dispatch/retries read enabled/current revision across instances only when
-work exists, before send/retry; add no idle polling or keepalives. On settings
-change, including disable→enable, drop old-revision work; never retarget it. Stop
-new dispatch when a change is observed. In-flight sends may finish; cancel when
-possible, but sent data cannot be recalled. Settings-read failure stops export
-without blocking product. Synthetic tests share the bounds and submitted saved
+work exists. One fresh read of a full saved settings version supplies revision,
+enabled state, endpoint, and credential immediately before each attempt; recover
+the credential through the destination owner. The same read authorizes the attempt,
+with no second pre-send read or mixed versions. A later concurrent Save can race it. Drop old-revision work when a change,
+including disable→enable, is observed; never retarget it. Stop new dispatch then.
+Started attempts may finish; cancel when possible, but sent data cannot be recalled.
+Hold no SQL lock across network work; add no idle polling or keepalives.
+Settings-read failure stops export without blocking product. Synthetic tests share the bounds and submitted saved
 revision, with the explicit disabled-state exception.
 
 **Delivery and protocol.** Use a bounded in-memory queue, no durable queue/replay
 service/export worker. Slow/unavailable Collectors never delay tools or completed
 admin actions. Overload/restart can lose logs; retries may duplicate them. Bound
 global/tenant items/bytes, active destinations, concurrent sends, payload/response
-sizes, retries/time, and use the existing shutdown deadline.
+sizes, retries/time, and use the existing shutdown deadline. Item/byte accounting
+covers queued, settings-read-waiting, in-flight, and retry-backoff content. One age
+deadline starts at admission and includes failed reads, attempts, and backoff;
+never reset it. Release accounting once, after disposal. Bound connection/agent
+resources; add no per-tenant exporter pools.
 
 Follow [OTLP](https://opentelemetry.io/docs/specs/otlp/) and validate actual
-OTLP/HTTP JSON with None/Bearer. Parse bounded responses: full acceptance,
-acceptance with warning (zero rejected), partial rejection, failure, or unconfirmed
-outcome. A warning with zero rejected is not a retryable failure. Never retry
-partial/permanent failures. The pinned exporter's callback cannot establish partial
-acceptance; a narrow OTLP/HTTP JSON sender is allowed. Sanitize diagnostics and
-promise no universal receiver or direct Axiom/Grafana support.
+OTLP/HTTP JSON with None/Bearer: POST with `Content-Type: application/json`,
+lowerCamelCase fields, and decimal-string 64-bit timestamps. Acceptance requires
+HTTP 200, matching JSON content type, and a valid OTLP JSON response; `{}` is valid
+under those conditions. Parse full acceptance, zero-rejection warning, and partial
+rejection. A malformed HTTP 200 success body cannot confirm acceptance: return a
+typed non-success/unconfirmed outcome, without claiming rejection, and do not retry.
+Oversized responses are also nonretryable. Never retry warnings or partial rejection.
+Retry HTTP 429/502/503/504 only, never other 4xx/5xx; a bounded malformed or HTML
+error body does not override that status classification. The sender parses bounded
+`Retry-After` seconds or dates; the queue owns delay, jitter, and attempts. Honor
+the delay; drop work if it exceeds item lifetime rather than shorten it. Transport
+failures may be transient or unconfirmed under the bounded retry policy. The pinned
+exporter's callback cannot establish partial acceptance; a narrow OTLP/HTTP JSON
+sender is allowed. Sanitize diagnostics and promise no universal receiver or direct
+Axiom/Grafana support.
 
 ## Open gates and release procedure
 
@@ -672,13 +788,15 @@ data. WorkOS owns accounts/memberships; PostgreSQL holds only application facts:
 
 | Slice | Durable facts |
 |---|---|
-| 1 | No new app database: existing provider metadata/external IDs hold creation/legal recovery. No logging or MFA prerequisite. |
+| 1 | No new app database: existing provider metadata/external IDs hold creation/legal recovery. No Audit logs or MFA prerequisite. |
 | 2 | Collector endpoint/auth/enabled state, revision, and encrypted optional Bearer credential. No member-reduction coordinator yet. |
 | 2.5 | Per-org serialized-operation and unknown external-write records that survive crashes/restarts. |
 | 3 | Role changes reuse those records; MFA adds role-policy flags, factor associations, and scoped recovery state, never TOTP secrets. |
 
-Exported tool content and its bounded best-effort queue stay in memory, never in
-the database; store no TOTP secrets or general session registry.
+Thermus holds pending Slice 2 audit events, including tool content and
+administration metadata, only in bounded memory until it sends or drops them.
+It writes no audit history or event buffer to the PostgreSQL settings store.
+Store no TOTP secrets or general session registry.
 
 Use [Supabase Free operating limits](https://supabase.com/pricing): ongoing $0,
 500 MB database, shared CPU/500 MB RAM, 5 GB egress, two active Free projects, no published monthly
@@ -696,8 +814,11 @@ another PostgreSQL must not require UI/account-contract changes. Add no Supabase
 Auth, REST SDK, Edge Functions, ORM, self-run pooler, framework, or second adapter.
 
 The storage owner must bound admitted/pending DB work, connection acquisition and
-query durations, not just pool size. Handle idle-pool errors safely and release
-or destroy connections within the existing app shutdown deadline. Test stalled
+query durations, not just pool size. A caller timeout does not release outstanding
+work from accounting: retain it until disposed, release or destroy late-acquired
+clients, and ignore late results for the completed caller. Handle idle-pool errors
+safely and release or destroy connections within the existing app shutdown
+deadline. Test stalled
 acquisition/query and idle disconnect with MCP still available; see
 [`pg` pool](https://node-postgres.com/apis/pool) and
 [client](https://node-postgres.com/apis/client) behavior.
@@ -713,10 +834,15 @@ headroom; external SQL must add no unexpected cost.
 Free requires [our own regular backups](https://supabase.com/docs/guides/platform/backups):
 logical exports of Thermus's private schema and needed role/grants, encrypted to
 existing operator-owned persistent storage outside the service/project at $0
-added cost. Set owner/cadence/retention/key recovery and drill a scoped restore
-before release; never export/overwrite other applications' data. Before restoring,
-stop export dispatch and clear in-memory pending work. Restored export stays
-disabled until an Admin reviews and explicitly re-enables its destination. Hold
+added cost. Follow the [S2-04 owner procedure](../implementation/admin-s2-04.md#choose-the-backup-owner-and-storage),
+select owner/cadence/retention/key recovery, and drill a scoped restore before
+release; never export/overwrite other applications' data. Before restoring,
+stop every export dispatch/settings writer and clear in-memory pending work.
+Restore first in isolation; disable restored rows and assign fresh revisions
+before storage-enabled restart. Keep the current global key for a partial restore;
+clear incompatible restored credentials for Admin re-entry. Reconcile all
+affected Bearer rows before a global key replacement. Restored export stays disabled until a current
+Admin reviews and explicitly re-enables its destination. Hold
 member reductions and later MFA admission until the operator resolves ambiguous
 state with independent evidence, not restored rows or an unchanged WorkOS read
 alone. Add no backup service/framework.
@@ -730,13 +856,13 @@ Update deployment/pause/quota/reconnect/recovery runbooks during implementation.
 ### Owner setup for Supabase — Slice 2
 
 Owner means the Thermus deployment operator with Supabase/Render access. This is
-platform setup; customer Admins use Logging for Collector settings. These variables
-are a **planned S2-01 runtime contract**, absent from current code. Add validation/`.env.example`
-placeholders before rollout. Missing values disable Slice 2 storage/export;
+platform setup; customer Admins use Audit logs for Collector settings. S2-01a implements these server variables with validation and `.env.example`
+placeholders. See the [implementation](../implementation/admin-s2-01a.md) and
+[database owner runbook](../implementation/admin-s2-01a-database-setup.md). Missing values disable Slice 2 storage/export;
 preserve MCP and already-admitted portal product access under the outage rule
 above. Slice 1 needs no database setup.
 
-| Planned variable | Server runtime value |
+| Variable | Server runtime value |
 |---|---|
 | `DATABASE_URL` | PostgreSQL URI for the selected project's restricted runtime role. |
 | `LOGGING_DESTINATION_ENCRYPTION_KEY` | Independent cryptographically random 32 bytes, encoded as base64; stable across deploys and backed up outside the database. |
@@ -751,23 +877,25 @@ Plain `pg` SQL needs none of the Supabase [publishable/secret or legacy
    and keep added costs at $0; create/transfer/upgrade nothing. Connector OAuth is
    optional for Codex inspection, separate from PostgreSQL authentication; owner
    verification can supply the needed facts while connector access is denied.
-2. The implementer then prepares reviewed S2-01 setup. Apply its scoped migrations
-   and [restricted runtime `LOGIN` role](https://supabase.com/docs/guides/database/postgres/roles).
-   Proposed names are `thermus_app` and private schema `thermus_admin`; check them
-   against the existing database. Give the role its own password and only needed
+2. The implementer then prepares reviewed S2-01 setup. Apply the reviewed [scoped migration](../../sql/migrations/20261023211956_logging_destination_settings.sql).
+   The selected runtime role is `thermus_logging` and the private schema is
+   `thermus_admin`; check that both names are unused in the existing database.
+   The transaction fails on collisions and creates the role with `NOLOGIN`.
+   Provision its own password securely, then enable `LOGIN`; give it only needed
    rights. Keep privileged owner/`postgres` credentials for setup, never the app;
    leave existing shared-project data untouched.
 3. In [Connect → Session pooler](https://supabase.com/docs/guides/database/connecting-to-postgres),
    copy and recheck the selected project's details at rollout. The authenticated
    view showed host `aws-1-us-west-2.pooler.supabase.com`, port `5432`, database
-   `postgres`, and free IPv4-proxied session pooling. No connection was tested;
-   the direct IPv4 add-on is not needed. For the future restricted role, use
-   `thermus_app.rnqktgtgrvvqptbaosth` and its URL-encoded role password. The supplied
+   `postgres`, and free IPv4-proxied session pooling. That dated inspection
+   tested no SQL connection. The S2-04 record now retains a TLS-only preflight
+   and its verification limit; the direct IPv4 add-on is not needed. For the restricted role, use
+   `thermus_logging.rnqktgtgrvvqptbaosth` and its URL-encoded role password. The supplied
    HTTPS API URL is not the DB URI. Require certificate
    and hostname verification: use default trust when valid, or the
    [official CA for that endpoint](https://supabase.com/docs/guides/platform/ssl-enforcement)
-   if needed. Keep SSL query parameters out of `DATABASE_URL`. S2-01 explicitly
-   configures verified `pg` TLS and rejects all conflicting URL SSL options,
+   if needed. Keep all query parameters and fragments out of `DATABASE_URL`. S2-01a explicitly
+   configures verified `pg` TLS and rejects URL options,
    including `ssl`; examples are `sslmode`, `sslrootcert`, `sslcert`, and `sslkey`,
    which can [replace its SSL configuration](https://node-postgres.com/features/ssl).
 4. Generate the independent key locally, for example with `openssl rand -base64 32`.
@@ -825,7 +953,7 @@ provider outages, and safe errors. Maintain the component registry when affected
 Update [onboarding](../implementation/hosted-user-onboarding.md),
 [organization setup](../implementation/hosted-organization-setup.md),
 [signup recovery](../implementation/hosted-signup-recovery.md), and portal design
-with the relevant slice. Before Slice 2 export, approved privacy notice/Logging
+with the relevant slice. Before Slice 2 export, approved privacy notice/Audit logs
 help must explain input/result export. Slice 2.5 documents removal/uncertain-write
 recovery; Slice 3 role changes extend those procedures, while MFA separately needs
 validated identity/recovery steps and proof of retained-factor MCP safety.
@@ -880,7 +1008,7 @@ Do not repeat full checks for each substep. Add no redundant
 `npm run check`. Follow [AGENTS.md](../../AGENTS.md) for habit-hooks, component
 registry, architecture/quality review, and review eligibility. No checks described
 here have run for this plan revision. Slice 1 adds no database or later-slice
-logging, member reduction, role-change, or MFA feature.
+Audit logs, member reduction, role-change, or MFA feature.
 
 #### S1-01 — Shared boundary and retired grant writes
 
@@ -1234,7 +1362,7 @@ Existing native send/resend/revoke safeguards stay characterized.
 
 1. Add navigation and Members projection acceptance. Compose Product/Connect,
    Members, and the existing selector for Admin; User gets product navigation.
-   Keep Logging/Security and Remove/Change role absent. Extend needed directory/view
+   Keep Audit logs/Security and Remove/Change role absent. Extend needed directory/view
    facts for trusted You and expiry. Build a bounded complete paginated projection
    of active members and pending invitations. Failed/incomplete reads show safe
    failure, never partial/empty success.
@@ -1398,12 +1526,785 @@ cutover verifies before reopening. Release only Slice 1.
 
 ### Slice 2 — Collector settings and export
 
+The [audit log rules](#audit-logs--slice-2), [storage
+rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supabase--slice-2)
+remain the specification. These tickets split their implementation, not their guarantees.
+S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
+another slice names a group. All groups have implementation candidates and
+linked records below. S2-04 adds integrated controlled proof, visible help, and
+owner procedures. The combined candidate is not released. The review below
+owns code-merge work; the [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+owns actual storage, Collector, recovery, notice, capacity, and Slice 1 release proof.
+
+#### Slice 2 review and remaining work
+
+Reviewed source: `751c704063a153fba1b553c06369a3d72fe8a19d`, against main
+`b03e2d2c1ae55eed1d31e808e9a2dd65a6483220`, on 24 October 2026.
+The review checked all nine PRs and the combined source. It found one required
+source correction. It found no further material defect in the reviewed storage,
+authority, System/Audit separation, snapshots, or delivery paths. This is a
+review conclusion within that scope, not proof that no other defect exists.
+
+| Finding | Required action | State |
+|---|---|---|
+| P2: URL credential redaction consumes adjacent public content. A JSON result with `?token=PRIVATE` followed by a public sibling field loses that field; a Markdown link can lose its closing text. | Complete the [S2-03a correction](#s2-03a-correction--preserve-public-text-around-redacted-urls) in the final integration candidate. | Corrected in #245 after failing acceptance and unit cases. Complete quoted values, ordinary Markdown links and autolinks retain their boundaries; unsupported text keeps conservative redaction. The focused and affected audit groups pass; final gates are recorded with the PR. |
+| #237 conflicts with current main in `.pr-impact.json` and the base metrics record. | Use the complete #245 candidate as the merge target. PR240 already merged main and kept main's immutable metrics record. | The 24 October graph check confirms that main and all nine PR heads are ancestors of #245. Its merge is clean; no separate #237 repair is needed. |
+| #238 conflicts with the newer #239, but #241 includes its exact head `e64a49c6` through merge `c31f499f`. | Preserve that join in #245. After integration, verify #238 is marked merged through #245 and retain its evidence. | No separate repair, rebase, or duplicate settings implementation is needed. |
+| Required checks and review must cover the complete merge candidate. | Refresh local gates, quality and architecture evidence after the correction, and record independent authorized human T2 approval for the final head. | The owner reports architect approval of the reviewed stack. Main has no required GitHub status checks and the repository has no CI workflows; the denied status endpoint does not establish a missing required check. Local gates remain required. |
+| Some ticket prose still described Test/delivery as future work or checks as never run. | Use combined-candidate status here and preserve historical ticket records as history. | Corrected in this review update. |
+
+The dependency history is **#237 → #239 → #240 → #241 → #242 → #243 →
+#244 → #245**, with **#238 included by #241**. Deliver the complete stack by
+merging #245 into main with a merge commit. Preserve the ancestor heads and the
+#238 side parent. Recheck ancestry and current refs, then reconcile the included
+PRs as indirectly merged. Do not squash away the reviewed history or merge a
+broken intermediate candidate merely to close a PR. PR #245 remains Draft until
+its correction and required local checks are complete.
+
+The redaction correction is part of #245. Refresh its complete-candidate checks
+and required review before the single stack merge. Complete the linked S2-04 ledger
+before activation. Its live setup and owner obligations do not add code-merge
+prerequisites while the feature stays inactive.
+Absent server settings leave storage/export unavailable. The new-settings form
+defaults to disabled; an Admin can explicitly enable on the first Save. Existing
+saved enabled state persists across deployment. Merging code does not authorize
+setting secrets, deployment, or enabling export. A previous live observation
+recorded Render auto-deploy as off; recheck deployment settings before a merge.
+Backup cadence, retention, and delegate suggestions remain owner choices, not new
+product features. Use the existing runbooks rather than add another recovery system.
+
+**Simplicity decisions retained by this review:**
+
+| Part | Smallest correct scope |
+|---|---|
+| Settings and UI | One settings row per tenant, one Save, one optional saved Test; no draft copy, connection history, or viewer. |
+| Storage and secrets | Existing plain PostgreSQL port and encrypted Bearer token; no ORM, identity mirror, event database, or automatic key rotation. |
+| Customer capture | Explicit Audit methods and named fields; fix the URL redaction boundary within this owner, without a general document parser or System logger rewrite. |
+| Delivery | Keep the bounded snapshot, queue, and sender owners. Their different freshness, revision, and native-cleanup rules are needed for safe nonblocking export. Add no durable queue, worker, polling service, or second pre-send read. |
+| Verification | Keep existing failure cases plus focused regression cases. The integrated journey composes them; it need not repeat every failure matrix. |
+| Operations | Keep one release ledger and the existing scoped runbooks. Member removal stays in Slice 2.5; role changes and MFA stay in Slice 3. |
+
+#### Slice 2 ticket map
+
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
-| S2-01 | S1-05 | Connect the confirmed existing Free project through ordered [owner setup](#owner-setup-for-supabase--slice-2); add private SQL settings, validated runtime configuration/`.env.example`, and endpoint/auth/Enable/Save UI. | [Storage](#selected-supabase-postgresql) and [Save](#customer-logging--slice-2) rules pass. Recheck usage before rollout; stalled acquisition/query and idle disconnect stay bounded with MCP available. Prove tenant/revision, TLS/isolation, persistence, scoped restore/key recovery, and $0 runtime checks. |
-| S2-02 | S2-01 | OTLP/HTTP JSON sender and optional saved-destination Test. | Actual None/Bearer Collector integration passes protocol/egress rules, including zero-rejection warnings, partial rejection, disabled Test, and late results. |
-| S2-03 | S2-02 | Tool/admin customer capture, operator-content removal, snapshot loading, and bounded queue; document refresh/backoff/byte limits. | [Logging rules](#customer-logging--slice-2) pass: cold enabled restart, remote Enable with cached-off state, recovery after read failure, and later activity exporting after load; idle tenants do no reads. Test maximum-input/UTF-8 budgets, sink failure, tenant/revision isolation, and shutdown. |
-| S2-04 | S2-03 | Integrated verification, [owner rollout](#owner-setup-for-supabase--slice-2), runbooks, approved privacy/Logging help, and release. | Storage/logging/Collector rules pass; help explains content and best-effort limits. Product/Members/Logging ship without MFA or removal coordination. |
+| S2-01a | Merged Slice 1 identity/account implementation | Private settings store, bounded SQL runtime, and configuration. | Atomic tenant/revision contract and storage failure/lifecycle cases pass. |
+| S2-01b | S2-01a, S1-02, S1-04a | Current-Admin destination settings, encrypted credential, and Save UI. | Save, secret, authorization, and uncertain-result cases pass. |
+| S2-02a | Audit API foundation and existing runtime contracts | Narrow safe OTLP/HTTP JSON sender. | Actual-connection egress and bounded protocol outcomes pass. |
+| S2-02b | S2-01b, S2-02a | Optional Test of the saved destination. | Saved-revision, disabled Test, and late-result cases pass. |
+| S2-03a | S2-01b | Safe customer events and operator-content removal. | Final public content and shipped admin events have correct isolation and byte bounds. |
+| S2-03b | S2-01a, S2-03a | Activity-driven settings snapshots. | Cold start, remote Enable, read recovery, and no idle reads pass. |
+| S2-03c | S2-02a, S2-02b, S2-03b | Bounded queue, current-revision dispatch, and retries. | Isolation, overload, outage, retry, and shutdown cases pass. |
+| S2-04 | Implemented S2-01/02/03 and configured Slice 1 implementation | Integrated verification, owner rollout, documents, and release. | Full Slice 2 journey and actual storage/Collector/manual/legal/$0 proof pass. |
+
+The original recommended implementation order was **01a → 01b → 02a → 02b → 03a → 03b → 03c → 04**.
+The dependency table allows 02a independently of the settings store; the actual
+PR delivery path is recorded above. The existing Slice 1 source is the
+functional starting point; S1-05 release and cutover remain a hard gate for Slice 2 release,
+not a claim that merged code was released. Tickets are behavior increments, not
+requirements for eight packages, classes, or pull requests.
+
+**Execution rule for these tickets.** Begin each implementation ticket with its acceptance
+specification through public interfaces. Run it and record the missing behavior that makes
+it red. Then take one focused red → minimal green → refactor step at a time; run that test
+and keep earlier cases green. End with the acceptance case green in the same candidate. Use
+passing characterization for behavior that already works; never invent a red by breaking it.
+Do not leave long-lived failing ordinary tests, skips, or a new framework for later tickets.
+Select complete-candidate gates after the final change under the repository policy. Choose
+and document fixed numeric bounds in the ticket that owns them, then test the boundaries;
+add no customer numeric controls. Unit tests run only their own production package with
+other packages doubled at public interfaces. Interface tests check one public contract; real
+collaboration across packages is integration. DSL, drivers, sites, and external-system
+doubles use the existing `test/support` layout. Reviewed configuration, SQL setup,
+documents, and manual rollout proofs need no tests of file text or prose.
+
+#### S2-01a — Durable private settings store and bounded runtime
+
+**Implementation record.** S2-01a adds the server store contract, plain `pg`
+adapter, bounded runtime, hosted configuration/lifecycle integration, and reviewed
+scoped schema/role setup for destination settings only. It adds no audit event
+writer, event table, or durable export buffer. See
+[scope and verification limits](../implementation/admin-s2-01a.md).
+S2-01b in PR #238 adds the Admin settings page and Save. S2-02a/b and
+S2-03a/b/c candidates add the sender, Test, capture, snapshots, and delivery;
+see their implementation records below. Actual Supabase setup and
+TLS/grant/backup/restore/$0 proof remain S2-04 owner gates.
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario: Keep tenant settings across runtime restart
+  Given a hosted runtime with the scoped SQL store configured
+  When a settings change is saved for organization A and the runtime is reopened
+  Then A has the committed settings and revision and organization B is unchanged
+
+Scenario: Keep product access during storage failure
+  Given current WorkOS access and a real SQL connection or query that stalls
+  When settings are read through the new public store contract while a client calls MCP
+  Then the storage call returns within its deadline and MCP remains usable
+  And late database work remains bounded and is disposed
+```
+
+**Initial gap / expected red.** Before S2-01a, there was no private SQL settings
+store or runtime database configuration. The acceptance and focused tests were
+written against that gap. Existing MCP, WorkOS access, and shutdown behavior
+provide characterization. The implementation record above identifies the current
+scope; its review evidence records observed checks. Store acceptance uses the
+public contract; browser Save acceptance arrives in 01b.
+
+**Ordered TDD steps:**
+
+1. Red: focused runtime-configuration cases cover absent/partial values, PostgreSQL URI
+   validation, the independent base64 32-byte encryption key, and optional CA path. Green: add
+   the narrow settings reader and an explicit unavailable state that disables storage/export
+   without breaking MCP or admitted product access. Reject conflicting URL SSL options,
+   including `ssl`, `sslmode`, `sslrootcert`, `sslcert`, and `sslkey`; configure certificate
+   and hostname verification explicitly. Refactor diagnostics to expose variable names, never
+   values.
+2. Red: interface cases specify tenant-scoped read and atomic expected-revision Save,
+   including absence, concurrent first saves, stale writes, and disable→enable. The
+   destination owner supplies semantic no-op decisions; the store checks revision atomically.
+   Green: implement plain `pg` SQL for endpoint, auth, enabled state, encrypted
+   credential, and revision only, with one atomic statement per Save and one
+   revision per actual change.
+   Refactor to a portable narrow contract; no Supabase SDK, ORM, general repository, or second
+   adapter. Store/portal contracts expose no WorkOS or Supabase SDK types. Domain credential
+   decisions and encryption belong to 01b; the store persists their opaque value.
+3. Red: storage-owner cases stall acquisition and queries, exceed admitted and pending
+   capacity, and inject idle disconnects. Include late acquisition/query settlement after
+   caller timeout and verify accounting and disposal. Green: bound admission, pending work,
+   acquisition, query duration, and error handling. Keep actual work accounted until disposal,
+   release/destroy late clients, and ignore late caller results.
+   Refactor with these cases green; a pool maximum alone does not establish the bounds.
+4. Red: integration cases compose the real runtime/store and verify failure does not block MCP
+   or trigger health-check restarts. Green: own the pool in the existing app lifecycle and
+   close it within the shared 10-second shutdown deadline, including stalled work. Refactor
+   without a new lifecycle framework.
+5. Run real scoped PostgreSQL integration for persistence, competing saves, and tenant
+   isolation. Prepare reviewed schema/role setup and `.env.example` placeholders in
+   owner-setup order. Review migrations/configuration manually; source runtime behavior is the
+   test subject. Do not use privileged runtime credentials, mutate unrelated data, or treat
+   local SQL as actual rollout proof.
+
+**Homes and anchors.** Existing composition is
+[`hosted-workos-application.ts`](../../src/app/hosted-workos-application.ts) and
+[`application.ts`](../../src/app/application.ts); configuration starts at
+[`deployment-config.ts`](../../src/runtime/config/deployment-config.ts). `src/index.ts` owns
+the existing shutdown deadline. The destination settings contract, SQL adapter, and bounded
+runtime now live in `src/logs/audit/`; the settings reader is
+`src/runtime/config/logging-storage-config.ts`, composed by `src/app/logging-storage.ts`.
+The initial characterization anchors are `test/unit/config/deployment-config.test.ts`,
+`test/unit/application-lifecycle.test.ts`, and
+`test/acceptance/mcp/hosted-process-shutdown.test.ts` for characterization. Add focused
+store contract cases under `test/interface/`, real SQL collaboration under
+`test/integration/`, and the new public acceptance under `test/acceptance/`.
+
+**Done.** Atomic scoped storage and bounded runtime acceptance pass. Reviewed setup uses the
+selected existing project, private schema, and restricted runtime role. The app needs no
+Supabase API keys. Actual TLS/grant/backup/restore/$0 rollout proof is retained for 04;
+source/configuration completion does not pass that gate.
+
+#### S2-01b — Admin settings, encrypted credential, and atomic Save
+
+**Implementation status.** [PR #238](https://github.com/tomer-mayara/Thermus/pull/238)
+implements this ticket; reviewed source is
+[`e64a49c6`](https://github.com/tomer-mayara/Thermus/tree/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81).
+The [native page and route](https://github.com/tomer-mayara/Thermus/blob/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81/src/interfaces/web/account/logging-routes.ts)
+read and save through the tenant-bound settings service and PostgreSQL store.
+Current Admin access, origin/CSRF, token encryption/no echo, organization isolation,
+and revision conflicts have source acceptance coverage. The
+[implementation record](https://github.com/tomer-mayara/Thermus/blob/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81/docs/implementation/admin-s2-01b.md)
+records checks and limits. This implementation record does not establish current
+merge status, deployed access, or customer delivery. The S2-02b candidate adds Test; S2-03 adds capture and dispatch.
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario: Save one protected destination
+  Given a password-authenticated current Admin in organization A
+  When the Admin saves endpoint, Bearer token, and Enable together
+  Then rereading A shows that saved version and token presence without the token
+  And another tenant or stale form cannot change it
+
+Scenario: Show an uncertain Save honestly
+  Given a Save whose SQL commit result is unknown
+  When the browser receives the outcome
+  Then it shows an unconfirmed result with only a saved-state read link and no Save form
+  And it neither claims nothing changed nor blindly repeats the Save
+```
+
+**Initial gap / expected red.** Audit logs settings, encrypted credentials, and their
+native page did not exist before S2-01b. Save and protected reread were the initial
+red specifications. Keep current password, Admin permission,
+selected-org, origin/CSRF, escaping, and no-cache outcomes green. Do not require MFA or the
+later membership-reduction coordinator.
+
+**Ordered TDD steps:**
+
+1. Red: destination-owner unit cases cover one public HTTPS endpoint, None/Bearer, initial
+   disabled state, and all-or-nothing validation. Green: validate the settings operation and
+   call 01a's atomic Save. Keep endpoint syntax checks distinct from 02a's actual-connection
+   security. Refactor with no draft/active copy and no duplicated revision owner.
+2. Red: credential cases cover replacement, None clearing, and blank Bearer. Green: retain a
+   blank token only for unchanged endpoint/auth; changed endpoint with Bearer needs a new
+   token. Encrypt server-side with the external key and authenticate tenant binding so a
+   copied ciphertext cannot serve another tenant. Refactor the public read projection to token
+   presence only. Check wrong key, altered ciphertext, and tenant mismatch fail closed without
+   secret diagnostics.
+3. Red: public operation cases cover stale/no-op/concurrent Save, re-entering the same
+   token, and an uncertain commit. Include a timed-out Save that commits after the first
+   reload and a later competing expected-revision Save. Green: keep the revision when the
+   token and other settings are unchanged; randomized encryption alone must not create a
+   settings change. Preserve 01a's atomic revision/write contract and preserve existing
+   ciphertext on a semantic no-op. Distinguish definite refusal from unconfirmed outcome and
+   require a saved-state reload before the native page offers another Save form. Manually
+   submitted old forms still face atomic revision checks; no server write hold is needed.
+   A stale write must not overwrite the newer commit.
+   Do not add automatic write retry, a second settings history, or a member-operation log.
+   Refactor errors without echoing endpoint credentials, tokens, or SQL values.
+4. Red: web-boundary cases submit valid and forged forms, changed current roles, and tenant A
+   requests naming B. Green: derive authority from current trusted context and current Admin
+   permission, retain password access, check origin/CSRF, and reject stale revisions. Reuse
+   the existing neutral User/Admin access boundary; add no WorkOS permission/catalog change
+   for Audit logs. Use a double for a cross-package collaborator in unit cases; use integration
+   for real web/settings/account collaboration.
+5. Red: browser acceptance saves and rereads the new page. Green: add native None/ Bearer
+   radios, write-only Token, saved-token presence, Enable, Save, and Audit logs navigation for
+   Admins. Preserve root/nested paths, escaping, cookies, no-cache, and safe errors. Refactor
+   only after secret absence and atomic Save cases pass.
+
+**Homes and anchors.** Existing web owners are
+[`account-routes.ts`](../../src/interfaces/web/account/account-routes.ts),
+[`administration-routes.ts`](../../src/interfaces/web/account/administration-routes.ts), and
+[`account-form.ts`](../../src/interfaces/web/account/account-form.ts). Current membership
+checks start at
+[`organization-administration.ts`](../../src/accounts/organizations/organization-administration.ts).
+Navigation exists in `src/interfaces/user-portal/portal.ts` and
+`src/interfaces/web/account/members-page-layout.ts`. The destination service, credential
+codec, and Audit logs page are implemented in the linked S2-01b candidate. Reuse
+`test/integration/hosted-admin/` form/change patterns and
+`test/acceptance/auth/hosted-admin-journey.test.ts` browser/site patterns. Place focused new
+destination unit tests with that package, not in WorkOS tests.
+
+**Done.** Current Admins can save and read only their tenant's settings; all Save, revision,
+token, and unconfirmed-result cases pass. No credential reaches HTML, frontend
+configuration, operator logs, or responses. This ticket does not send a Collector request;
+Test arrives in 02b.
+
+#### S2-02a — Narrow safe OTLP/HTTP JSON sender
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario: Send one safe Collector request
+  Given a validated public HTTPS destination and None or Bearer auth supplied to the sender
+  When one projected audit event is submitted to the sender
+  Then the Collector receives valid OTLP/HTTP JSON with only the supplied auth
+  And the caller gets the bounded protocol outcome
+
+Scenario: Refuse an unsafe actual connection
+  Given a destination that resolves or changes to a private address
+  When the sender connects
+  Then no event or credential is sent to that address or a redirect target
+```
+
+**Candidate status.** The [S2-02a implementation record](../implementation/admin-s2-02a.md)
+and [PR #240](https://github.com/tomer-mayara/Thermus/pull/240) describe the
+isolated sender, its fixed bounds, and its evidence limits. The PR is based on
+the Audit API foundation in #239 and does not depend on the Save UI in #238. It
+does not establish production capture, queued dispatch, or release readiness.
+The actual endpoint smoke and live Supabase checks remain later release gates.
+
+**Original gap / expected red.** The internal OTel system adapter does not supply this audit sender,
+actual-connection policy, or complete response interpretation. The new sender
+acceptance specification failed before implementation.
+Existing system logging remains characterization; local HTTP receiver passes do not prove
+production public-HTTPS egress.
+
+**Ordered TDD steps:**
+
+1. Red: one sender-interface contract specifies full acceptance, warning with zero rejected
+   records, partial rejection, permanent failure, transient failure, and unconfirmed outcome.
+   Green: map the neutral audit event contract to OTLP/HTTP JSON through a narrow
+   one-shot public sender interface taking supplied destination/auth and returning typed
+   results. Keep OTLP encoding out of capture and projection. The sender does not load
+   settings or encrypted credentials; 02b/03c own that collaboration. Refactor without
+   callbacks that hide partial acceptance.
+2. Red: focused sender cases exercise public HTTPS, allowed paths, forbidden
+   userinfo/fragments/all queries, private/loopback/metadata IPs, IPv6, DNS changes, and
+   redirects. Green: validate DNS/IP before connection and ensure the socket uses a
+   validated address with TLS hostname verification; revalidate each new connection. Follow
+   zero redirects and permit no connection-time DNS bypass. Refactor policy where every
+   connection passes it. Website DNS preflight alone is insufficient.
+3. Red: protocol cases inspect POST, `application/json`, lowerCamelCase fields, decimal-string
+   64-bit timestamps, None/Bearer, and request/payload limits,
+   timeout/cancellation, response size/parse limits, and sanitized errors. Green: implement
+   those bounds and isolate customer TLS/headers from system OTel environment defaults.
+   Refactor with distinctive platform headers/tokens proving they never merge into a customer
+   request. Bound connection/agent resources without per-tenant exporter pools.
+4. Red: response cases cover HTTP 200 with matching JSON content type and valid `{}`,
+   HTTP 200 with malformed success JSON, HTTP 500 with `{}`, HTTP 503 with bounded
+   malformed/HTML error bodies, warnings/partial rejection, oversized bodies, and bounded
+   `Retry-After` seconds/date values. Green: apply the canonical status/content rules and
+   return typed outcomes. Malformed success/oversized responses cannot confirm acceptance
+   and are nonretryable; bounded error-body syntax must not override retryable HTTP status.
+   Refactor without raw bodies/auth in diagnostics or a retry loop: 03c owns delay/jitter,
+   attempts, and item lifetime.
+5. Verify None/Bearer OTLP/HTTP JSON with a separate minimal offline receiver and an
+   open-source Collector through a controlled transport seam where needed. The existing
+   fixture also starts Axiom output. Local protocol/caller integration is not production
+   egress proof. Separately run the unchanged connected-address/TLS guard with a controlled
+   public-address network/TLS fixture or equivalent permitted endpoint, plus an actual
+   endpoint smoke check before release. Add no allow-private/test bypass or paid receiver.
+
+**Homes and anchors.** The customer sender belongs to the existing audit owner in `src/logs/audit/`, separate from
+[`otel-system-log-sink.ts`](../../src/logs/system/otel-system-log-sink.ts). Inspect
+[`network-policy.ts`](../../src/pipelines/providers/website-fetcher/network-policy.ts) for
+existing DNS preflight, not proof of connected-address safety. Existing
+`test/interface/logging/system/otel-logger.test.ts` and
+`test/support/doubles/logging/otel-log-receiver.ts` show receiver patterns;
+`createOtlpFixture` also configures live Axiom export and is not an isolated
+production-egress fixture. The candidate keeps focused wire-format and sender cases
+under `test/unit/logging/audit/`, because their real source collaborators share one
+owner. Real sender/Collector collaboration is under `test/integration/logging/audit/`.
+Separate interface tests are not needed to repeat the same wire cases.
+
+**Done.** One-shot protocol and actual-connection security acceptance pass with None/Bearer
+evidence and fixed bounds. No universal receiver, direct Axiom/Grafana support, custom
+headers, client certificates, or alternate transport is promised.
+
+#### S2-02b — Optional Test of the saved destination
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario: Test a disabled saved destination
+  Given a current Admin and a saved disabled destination
+  When the Admin selects Test saved destination
+  Then one labelled synthetic event uses that saved version and its auth
+  And Test neither saves edits nor enables export
+
+Scenario: Ignore an old Test result
+  Given a Test in progress for a saved revision
+  When the post-settlement saved-revision read differs or fails
+  Then the response suppresses the obsolete or unconfirmed result
+```
+
+**Candidate implementation.** [PR #241](https://github.com/tomer-mayara/Thermus/pull/241)
+is stacked over #240 and includes the settings dependency from #238, merged
+into this branch.
+The [implementation record](../implementation/admin-s2-02b.md) describes the
+saved-only Test, bounded lifetime, and result suppression. Its linked PR evidence
+records local checks and technical review; current merge requirements are listed
+above. This is not a release record. The steps below
+preserve the acceptance and implementation order. A successful Test is never
+an Enable prerequisite.
+
+**Ordered TDD steps:**
+
+1. Red: destination-operation cases require current Admin authority, the submitted saved
+   revision, and a labelled synthetic record. Green: one fresh read of a full saved version
+   supplies revision, enabled state, endpoint, and credential for the pre-send decision.
+   Recover the credential through the destination owner and call 02a once, allowing the
+   explicit disabled-state exception. Refactor so Test cannot call Save, change
+   Enable, or use unsaved form values.
+2. Red: concurrent/repeated tests exceed admission, or a read fails/changes revision before
+   send. Green: bound Test work and use that single fresh saved-version read immediately
+   before the attempt; stop on failed reads or mismatch. Do not load settings and then issue
+   another pre-send read or mix versions. Reuse the sender's security, timeout, payload/response,
+   and cancellation bounds. Keep Test one-shot; no nested retries. 03c later proves the shared
+   aggregate delivery bounds.
+3. Red: web cases cover CSRF/origin refusal, unsaved input, each typed sender outcome, and
+   late result after a revision change. Green: show only the submitted current saved-version
+   result after a fresh post-settlement revision read; mismatch or failed post-read
+   suppresses it. Ask to Save unsaved edits first. Refactor without result
+   history, polling dashboard, or enable gate.
+4. Run browser/settings/sender integration for None/Bearer and disabled Test. A controlled
+   transport seam may reach a local Collector to verify protocol and synthetic labels; it
+   does not prove production egress. Retain 02a's separate unchanged-guard address/TLS proof;
+   add no allow-private/test bypass.
+
+**Homes and anchors.** The candidate extends the S2-01b destination service and
+Audit logs page with S2-02a's public sender contract. Existing route/form cases under
+`test/integration/hosted-admin/` supply security patterns. Use destination-package unit
+tests, a small Test contract where needed, and public browser acceptance under
+`test/acceptance/`; shared sites/drivers belong under `test/support`.
+
+**Done.** Saved-only, disabled, bounded, and late-result Test acceptance passes. UI text
+explains that Test proves neither continued delivery nor durable storage. Test changes no
+saved destination state.
+
+#### S2-03a — Customer capture and operator-content isolation
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario Outline: Capture only final public tool content for the trusted tenant
+  Given enabled settings and distinctive valid tool input in organization A
+  When the tool produces <outcome>
+  Then one customer event describes the validated input and final public outcome
+  And tool content reaches neither operator diagnostics nor another tenant
+
+  Examples:
+    | outcome       |
+    | success       |
+    | empty success |
+    | safe error    |
+    | cancelled     |
+    | withheld      |
+
+Scenario: Preserve a completed administration action when capture fails
+  Given a current Admin and a customer sink that throws or refuses work
+  When a shipped invitation or Audit logs action completes
+  Then its public outcome stays complete and the action is not replayed
+```
+
+**Gap / expected red at the parent.** The audit API foundation exists, but production customer
+completion capture is absent. Existing account change records still use the
+internal system output and do not establish a customer audit stream. Fetch completion records at the parent
+expose URL origin/path and reason; the privacy case should be red there. Search
+already omits content from operator completion output and must stay green.
+`ChangeRecorder.record()`, invoked by `ChangeRecording.keep()`, can currently throw
+after a completed write; its new sink-failure behavior needs a focused red, not a
+blanket logger rewrite.
+
+**Ordered TDD steps:**
+
+1. Red: MCP-boundary cases cover validated fetch/search input and final projected public text
+   after safe error/cancellation mapping. Green: emit one customer completion event from the
+   public boundary with trusted tenant/actor/operation. Preserve withheld and empty results.
+   Refactor without capturing invalid argument objects, unknown tools, `_meta`, raw
+   exceptions, or intermediate HTML.
+2. Red: event-owner cases exercise known credential fields and recognized credential-bearing
+   URL parameters. Green: redact them from exported input/result copies and diagnostics.
+   Refactor with no promise that arbitrary free text is secret-free; never inspect or export
+   cookies, auth headers, or sign-in forms.
+3. Red: maximum valid fetch/search inputs, JSON escaping, and multibyte results exceed fixed
+   result and serialized-event UTF-8 byte budgets. Green: reserve input/metadata space first,
+   truncate only the exported result at Unicode boundaries, and include original and captured
+   result UTF-8 byte sizes and an explicit marker. Refactor without changing product input
+   contracts, truncating client results, or adding chunks/general serialization.
+4. Red: distinctive fetch content appears in operator completion output. Green: retain stable
+   operation/tool/status/duration and opaque identity metadata while removing
+   URL/query/reason/result. Keep existing search privacy green. Refactor and verify
+   Render/operator/export-error paths contain none of that content.
+5. Red: shipped invitation send/resend/revoke and Audit logs actions capture metadata with
+   independently trusted org/actor context; denied A naming B must not route to B. Green: add
+   those events only. Unattributable attempts stay in sanitized operator diagnostics. Refactor
+   without adding future removal/MFA or global personal-factor/support events. Exclude
+   sender responses, retry work, and settings-read diagnostics from capture to prevent
+   recursion. One Audit logs action may yield one admin event; its synthetic Test is separate.
+6. Red: sink throw, full admission, and failed post-write recording affect a completed action
+   or tool result. Green: make customer capture/enqueue bounded and non-throwing and isolate
+   it from synchronous post-write `ChangeRecording` failures. Refactor while proving no
+   completed provider write is retried and no raw exception or tool content appears in
+   feedback about export failure.
+
+**Homes and anchors.** Start at
+[`fetch-tool-server.ts`](../../src/interfaces/mcp/fetch-tool-server.ts),
+[`tool-completion-record.ts`](../../src/interfaces/mcp/tool-completion-record.ts),
+[`change-records.ts`](../../src/accounts/organizations/change-records.ts), and
+`src/app/application.ts` record composition. The event-specific `AuditLog` API foundation lives in
+`src/logs/audit/`. S2-03a extends the parent metadata-only `toolCompleted`
+contract with redacted, bounded input and result and wires runtime capture through
+a supplied sink. Event projection and sink wiring do not establish delivery;
+the default sink drops events until S2-03b/c supplies snapshots and dispatch. Reuse `test/unit/mcp/tool-completion-record.test.ts`,
+`test/integration/mcp/tool-completion-record.test.ts`,
+`test/integration/mcp/fetch-tool-server.test.ts`, and organization-change cases. Real
+MCP/audit or organization/audit collaboration is integration; acceptance checks
+observable customer versus operator outputs through shared support drivers.
+
+**Implementation candidate.** The [S2-03a record](../implementation/admin-s2-03a.md)
+describes the supplied capture sink, trusted boundary context, fixed byte bounds,
+and completion isolation. In that historical increment the default sink drops
+events; the combined candidate uses 03b/c snapshots and dispatch. Recorded runs
+of the existing specifications passed, but the review found the redaction gap
+below. Controlled-sink evidence alone does not establish snapshot loading or delivery.
+
+##### S2-03a correction — Preserve public text around redacted URLs
+
+This is a correction to S2-03a, not a new export feature or a separate slice.
+The earlier URL-value expression in `src/logs/audit/audit-content.ts` consumed closing
+JSON/Markdown syntax and unrelated public text after a recognized credential.
+The following missing case failed before the correction:
+
+```gherkin
+Scenario: Redact a URL credential without deleting surrounding public output
+  Given an enabled tenant and validated input and a result with token=PRIVATE in a URL
+  And the URL is enclosed in JSON or Markdown followed by KEEP_PUBLIC
+  When the public completion is captured for Audit delivery
+  Then PRIVATE is absent from the exported input and result
+  And KEEP_PUBLIC and the unambiguous enclosing syntax are preserved
+  And the client receives its original complete result
+  And the small exported result has correct byte counts and truncated=false
+```
+
+BDD/TDD record:
+
+1. Add the failing public-boundary acceptance case above. Use the existing
+   MCP/audit driver; do not add a test framework or duplicate the full journey.
+2. Add focused failing capture/encoding cases for a JSON sibling field and a
+   Markdown link with adjacent public text. Keep encoded parameter names,
+   quoted/escaped credential values, Unicode, and result-boundary cases green.
+3. Correct the bounded redaction rule in its existing owner. An accepted URL
+   can contain quote or angle-bracket characters in its credential value: merely
+   treating every such character as a delimiter can expose the credential tail.
+   Preserve public text only with a known enclosing boundary; keep ambiguous
+   credential text redacted. Add no general serializer or per-tenant setting.
+4. Refactor with the focused tests green, then rerun the acceptance and selected
+   complete-candidate gates. Retain the new red/green evidence and refresh the
+   affected PR review.
+
+The final #245 correction follows this sequence. Its acceptance case checks exact
+public JSON/Markdown output, credential removal, and byte counts through
+`AuditLog`. Focused unit cases cover query, reason, result, raw URL punctuation,
+escaped and incomplete values, URI keys, and top-level quoted strings. The final
+focused run passed 59 cases; the affected audit groups passed 282. The manager
+retains red/green logs with the current candidate's separate full-gate evidence.
+
+A validated fetch URL uses the full query-value rule directly. Text recognition
+uses complete quoted values, ordinary Markdown destinations with at most one
+inner parenthesis level, and autolinks. Unrecognized or incomplete syntax keeps
+the conservative full-value rule and can still lose adjacent public syntax.
+This is not a general document parser or a promise that arbitrary text is free
+of secrets. Escaped quotes cannot start repeated enclosure scans; manual malformed
+input checks confirm that the draft's slow scan was removed. Those timing samples
+are not a latency guarantee.
+
+#### S2-03b — Activity-driven settings snapshots
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario: Learn settings without waiting in the product path
+  Given a cold runtime or cached-disabled organization with remote Enable
+  When eligible trusted-tenant activity occurs
+  Then the current event is dropped if its snapshot is unknown or disabled
+  And a bounded asynchronous load makes later activity use the new saved revision
+
+Scenario: Recover from a failed load without idle reads
+  Given a settings read that fails and then recovers
+  When later eligible activity reaches the fixed retry/refresh boundary
+  Then loading recovers for future events and idle tenants cause no reads
+```
+
+**Gap / expected red at the parent.** There is no activity-driven customer settings snapshot owner.
+Cold-start, cached-disabled refresh, and recovery cases should be red. The 03a capture
+contract and product response isolation stay green.
+
+**Ordered TDD steps:**
+
+1. Red: snapshot-owner cases start unknown, enabled, and disabled with a controlled
+   clock/store. Green: capture uses only the available snapshot and binds admitted events to
+   tenant/revision; unknown/disabled drops now. Refactor with no retained pre-Enable content
+   and no settings read awaited by MCP/admin responses.
+2. Red: repeated eligible activity starts overlapping missing/due loads or exceeds admitted
+   resources; include late loads after eviction/shutdown. Green: one in-flight load per org
+   with fixed global/load/time bounds and
+   asynchronous scheduling. Bound resident snapshot/backoff items and bytes, retaining only
+   enabled/revision metadata, never endpoint/token. Evict through activity; an evicted org
+   becomes unknown; late loads cannot restore evicted/shutdown state. Refactor
+   without a cache framework, idle timer, keepalive, or tenant polling service.
+3. Red: an instance caches disabled settings while another enables them. Green: refresh
+   cached-disabled values on eligible activity under fixed freshness bounds. A successful load
+   affects future captures only. Refactor and prove it never revives the event that caused
+   loading or any old revision's content.
+4. Red: failed/slow reads and repeated activity defeat backoff or leak work. Green: a
+   failed refresh leaves no usable capture snapshot until a later activity-driven
+   load succeeds. Retain only bounded backoff bookkeeping and enforce fixed deadlines.
+   Pending queue items keep their separate current-store checks; never revive dropped
+   content. Refactor with cancellation and safe shutdown; store failure cannot alter
+   tool/admin outcomes or trigger a Node restart.
+5. Run real capture/snapshot/store collaboration for cold enabled restart, remote Enable,
+   failure/recovery, and two tenants. Use explicit controlled completion signals rather than
+   sleep-based timing assertions. Verify no reads during an idle interval and document the
+   chosen refresh/backoff/admission bounds.
+
+**Homes and anchors.** Add the proposed narrow snapshot owner beside customer capture,
+consuming the 01a public store contract and 03a sink boundary. Existing
+`test/support/in-process/` sites and `test/support/doubles/logging/` show support roles.
+Keep owner units with audit, real cross-package collaboration under `test/integration/`,
+and public cold/recovery acceptance under `test/acceptance/`. Snapshot freshness is not
+authority to dispatch; 03c owns current store checks.
+
+**Implementation candidate.** The [S2-03b record](../implementation/admin-s2-03b.md)
+describes the snapshot owner, fixed resource bounds, failure behavior, and shutdown.
+Cold/disabled/expired activity drops the current event; loads affect future capture
+only. That slice used a refusing downstream sink; S2-03c supplies dispatch.
+The linked PR records its acceptance and complete-candidate execution evidence;
+refresh applicable evidence when its candidate changes.
+
+#### S2-03c — Bounded queue and current-revision dispatch
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario: Export a captured event through the audit sink
+  Given AuditLog has the bounded Collector sink and enabled saved settings
+  When a redacted bounded event is admitted through AuditEventSink
+  Then dispatch sends it through the S2-02a sender to the configured Collector
+  And it writes no audit event or export buffer to SQL
+
+Scenario: Drop old work after a settings change
+  Given queued work for organization A and saved revision R
+  When another instance changes A before the fresh attempt-authorization read
+  Then dispatch reads the changed settings and drops R before send or retry
+  And it never retargets R to the new destination
+
+Scenario: Keep product and shutdown bounded during overload
+  Given a slow or failed Collector and a full customer queue
+  When tools and Admin actions complete and the app then shuts down
+  Then their outcomes remain usable and export stops within the app deadline
+```
+
+**Gap / expected red at the S2-03b parent.** There is no customer queue or
+revision-aware dispatcher. Overload
+and cross-instance change cases should be red. Keep 02a one-shot protocol, 02b saved Test,
+and 03a/b capture/loading outcomes green.
+
+**Ordered TDD steps:**
+
+1. Red: sink-contract cases require `writeAuditEvent` to return after bounded memory
+   admission without waiting for SQL or network work. Queue-owner cases exceed global/tenant
+   item and serialized-byte budgets, active destinations, concurrency, and payload bounds.
+   Green: implement the existing `AuditEventSink` seam; one shared item/byte account covers
+   queued, settings-read-waiting, in-flight, and retry-backoff content. Drop overload without
+   blocking product calls and release accounting once after disposal. Refactor with tenant/
+   global bounds and isolation, with no durable queue, worker service, or replay.
+2. Red: another store instance changes revision after enqueue or between attempts. Green: when
+   work exists, one fresh read of a full saved version supplies revision, enabled state,
+   endpoint, and credential immediately before the attempt. Recover the credential through
+   the destination owner. This one read authorizes the attempt; do not add another pre-send
+   read or mix versions. A later concurrent Save may race it. A cached snapshot cannot authorize
+   dispatch. Drop old work on any change, including disable→enable,
+   and never retarget it. Refactor short reads with no transaction held across network work
+   and no idle polling.
+3. Red: settings reads fail or destination changes during a send. Green: stop new dispatch on
+   failed reads or observed change, cancel in-flight work when possible, and retain the limit
+   that sent data cannot be recalled. Refactor with bounded read work and no tool/admin-path
+   wait or product failure.
+4. Red: repeated read failures with continued traffic, delayed retries, and sender outcomes
+   retain content too long or reset its lifetime. Green: one age deadline from admission
+   covers failed reads, attempts, and backoff without reset. This owner alone schedules
+   delay/jitter/attempts from 02a's typed retry classification. Honor bounded `Retry-After`;
+   drop if its delay exceeds remaining lifetime. Test HTTP 500 versus 503 and bounded
+   retention. Refactor without sender/Test retry loops; document loss/duplicates.
+5. Red: concurrent Test/export exceed aggregate delivery limits. Green: share applicable
+   admission/concurrency/security bounds. Keep 02b's saved-revision checks, ignored late Test
+   results, and explicit disabled exception green. Refactor while keeping Test one-shot and
+   independent of enabling export.
+6. Red: shutdown during acquisition/read/send/backoff retains work past the shared deadline.
+   Green: stop admission/dispatch, clear pending memory, cancel bounded work, and close owned
+   resources within the existing 10 seconds. Refactor and run composed MCP/admin/SQL/Collector
+   outage and shutdown integration. Do not extend the global deadline or make a healthy
+   process fail health checks.
+
+**Homes and anchors.** Queue/dispatcher are proposed audit owners in `src/logs/audit/` composed via
+`src/app/hosted-workos-application.ts` and `src/app/application.ts`; use `src/index.ts`'s
+existing deadline. Supply this sink to `AuditLog`; keep its event contract separate
+from the 01a settings port. Build from 01a/02a/03b public contracts, not WorkOS or `pg` internals.
+Put queue units under `test/unit/logging/audit/`, real collaboration under
+`test/integration/logging/audit/`, and public isolation/overload/shutdown acceptance
+under `test/acceptance/logging/audit/`. Reuse existing
+process/MCP drivers rather than create a parallel shutdown harness.
+
+**Implementation candidate.** The [S2-03c record](../implementation/admin-s2-03c.md)
+describes the implemented bounds, authority, retry rules, observations, and cleanup.
+One account covers queued, reading, sending, and backoff content: 128/16 global/tenant
+items, 8 MiB/1 MiB serialized envelopes, 131,072-byte events, 32 tenants, and two
+active exports with one per tenant. Age is 30 seconds, reads have 2.5 seconds, and
+three authorization cycles include temporary read failures and busy outcomes.
+Backoff starts at 250 ms, doubles to a two-second base cap, and adds up to 25%
+jitter. Retry-After is honored or work is dropped when the remaining age cannot
+fit it. A read deadline drops work; an unresolved physical operation keeps its
+charged reservation after content is cleared.
+
+Successful current snapshot loads notify existing work of an observed revision;
+failed loads do not. Disabled/absent observations cancel all old work, and other
+revisions cancel mismatches. This is activity-scoped, with no Save/Test broadcast
+or global revision order. Native sender admission (four) and SQL admission (two
+active/four pending) are shared by Test and export; their operation limits remain
+separate. Product results stay independent of export. Complete-candidate results
+and review are recorded in the PR and local review index; source specifications
+do not establish a gate pass.
+
+#### S2-04 — Integrated proof, owner rollout, and release
+
+**Development status.** The [S2-04 record](../implementation/admin-s2-04.md) separates
+controlled verification and a disposable local recovery drill from actual owner
+rollout and release evidence. The [notice review](../implementation/admin-s2-04-notice-review.md)
+records Slice 2 disclosure differences; it supplies no new legal approval.
+The approved Slice 1 public policies were published. The S2-04 record identifies
+a fresh deployed S1 candidate; deployment alone does not close runtime
+release/cutover or the [recorded native/mailbox holds](../implementation/admin-s1-staging-release-verification.md).
+This candidate does not claim the Done conditions below.
+
+**Acceptance specification first:**
+
+```gherkin
+Scenario: Use Audit logs while the product stays available
+  Given configured Slice 1 implementation and completed Slice 2 implementation groups
+  And a current password-authenticated Admin, reachable Collector, and available capacity
+  When the Admin saves a disabled destination, Tests it once, and enables it
+  And eligible activity loads the saved revision after Enable
+  And subsequent MCP and shipped Admin actions use an available enabled snapshot
+  Then the saved tenant receives bounded tool content and administration metadata
+  And operator output excludes tool content and product outcomes stay independent
+```
+
+**Gap / expected red.** The integrated journey may already pass after 01–03. Treat a passing
+journey as characterization. Specify only missing product behavior red in its owning ticket
+before its focused fix. Legal approval, configuration, actual TLS/isolation, backup/restore,
+provider, and cost evidence are manual proofs, not tests of documents. The
+[S2-04 evidence ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+records which proofs ran and which release holds remain.
+
+**Ordered verification and TDD steps:**
+
+1. Compose the journey through public browser/MCP/Collector interfaces using existing support
+   roles. Reference the owning tickets' failure and boundary scenarios rather than duplicate
+   their matrices. Integration needs implemented groups and configured Slice 1, not a
+   completed Slice 1 release. Fix a discovered source gap red →
+   green → refactor in its owner, then rerun the journey. A controlled receiver pass does not
+   replace actual Collector proof.
+2. Follow ordered owner setup on the selected existing project. Account eligibility is already
+   resolved; recheck usage/headroom before rollout, not project selection. Prove actual
+   verified TLS/hostname, restricted role/private-schema rights, persistence, and no access to
+   unrelated application data. Confirm service-scoped secrets and the required official CA path without
+   recording values. Exercise acquisition/query stalls, idle disconnect, pause/quota/reconnect
+   behavior, and MCP availability through controlled faults. Do not pause or exhaust the
+   shared project; actual live proof is scoped TLS/role/isolation/persistence.
+3. Set the owner, cadence, retention, and key recovery for encrypted scoped logical backups to
+   existing operator-owned persistent storage outside the project at $0 added cost. Drill a
+   scoped restore without touching other applications. Stop dispatch and clear pending work
+   before restore; restored export stays disabled until an Admin reviews and explicitly
+   re-enables it. Prove the external key can recover credentials; retain only nonsecret
+   evidence and safe procedures.
+4. Confirm database size/connections/egress and existing Render network headroom under
+   realistic bounded load. Keep added ongoing cost $0; no new project, upgrade, trial, paid
+   add-on, artificial keepalive, or backup framework. Update deployment, outage/pause/quota,
+   reconnect, key-loss, and restore runbooks.
+5. Obtain approved privacy notice and Audit logs help explaining input/result export, recognized
+   redaction limits, truncation, best-effort loss/duplicates, and Test's limited meaning.
+   Verify native desktop/mobile/accessibility, role navigation, and secret-free errors. Update
+   affected setup/portal/operations documents.
+6. Run complete-candidate checks, habit-hooks, architecture/registry and quality review,
+   review classification, and required approval under repository policy. Retain actual versus
+   controlled/live/manual evidence and unrun limits. Release only after the actual S1-05
+   release/cutover exit and all Slice 2 gates pass.
+
+**Homes and anchors.** Extend public acceptance under `test/acceptance/` with shared
+DSL/browser/MCP/Collector drivers and in-process/process sites under `test/support`. Use
+existing hosted-live commands only for applicable provider proof. The canonical owner-setup,
+storage, audit log, and release sections own manual obligations; update linked
+implementation/runbook/portal documents in the implementation candidates. No tests of
+prose/configuration or new general verification framework are needed.
+
+**Done.** All three ticket groups and the integrated journey are green; actual
+SQL/TLS/isolation/persistence/restore/key/$0 and Collector proof, approved privacy help,
+manual checks, required gates, and approvals are complete. Slice 1 is actually released.
+Ship Product/Members/Audit logs only: no member removal, role changes, MFA, Supabase Auth/REST,
+identity mirror, or membership-reduction coordinator.
 
 ### Slice 2.5 — Password-only membership removal
 

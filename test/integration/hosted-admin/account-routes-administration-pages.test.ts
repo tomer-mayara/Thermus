@@ -21,7 +21,7 @@ describe('HostedAccountRoutes combined Members page', () => {
       assert.match(body, /Active product members: 1/);
       assert.match(body, /ann@example\.com: active\. Roles: User, Admin\./);
       assert.match(body, /dora@example\.com: active\. Roles: none\./);
-      assert.doesNotMatch(body, /ivy@example\.com|old@example\.com|Change role|Remove member|Logging|Security|<script/);
+      assert.doesNotMatch(body, /ivy@example\.com|old@example\.com|Change role|Remove member|Security|<script/);
       assert.deepEqual(organizations.administrationCalls.map(({ operation, actor, request }) => [operation, actor, request]), [
         ['memberOverview', { user: ann }, 'org-a'], ['invitationOverview', { user: ann }, 'org-a'],
       ]);
@@ -162,6 +162,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.deepEqual([...new Set(formsIn(body).map(({ action }) => action))], ['/team/invitations/send', '/team/invitations/resend', '/team/invitations/revoke']);
     assert.match(body, /href="\/team\/">Product \/ Connect<\/a>/);
     assert.match(body, /href="\/team\/members" aria-current="page">Members<\/a>/);
+    assert.match(body, /href="\/team\/logging" >Audit logs<\/a>/);
     assert.match(body, /href="\/team\/organizations">Switch workspace<\/a>/);
     assert.equal((await routes.handle(accountRequest('/team/invitations', 'session=ann'))).headers.get('Location'), 'https://thermus.example/team/members');
   });

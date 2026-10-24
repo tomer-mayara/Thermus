@@ -80,7 +80,7 @@ describe('Renderer setup reports in the operator log', () => {
     const diagnostics = site.server.errorLines().filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
     assert.deepEqual(diagnostics.map(({ operationId }) => operationId), site.server.completionRecords().map(({ operationId }) => operationId));
     assert.deepEqual(site.server.completionRecords().map(({ url, status }) => ({ url, status })), [1, 2].map(() => ({
-      url: 'https://93.184.216.34/private-path', status: 'fetch_failed',
+      url: undefined, status: 'fetch_failed',
     })));
     assert.deepEqual(site.server.errorLines().filter((line) => !line.startsWith('{')), [missingReport]);
     assertNoRequestData(site.server.errorLines(), setup, executable);

@@ -1,3 +1,5 @@
+import type { AuditLog, ToolCompletion } from '../../logs/audit/audit-log.ts';
+import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { randomUUID } from 'node:crypto';
 import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../../accounts/identity/access-context.ts';
@@ -10,11 +12,6 @@ import { formatToolCompletion, type CompletionStatus } from './tool-completion-r
 import type { McpRequestLifetime } from './mcp-server.ts';
 import { PageFetchFailure } from '../../pipelines/page-fetch/fetch-failure.ts';
 
-interface CompletionLogger {
-  info(record: string): void;
-  error(record: string): void;
-}
-
 export interface ToolOperations {
   readonly fetch: FetchOperation;
   readonly search: SearchOperation;
@@ -22,7 +19,8 @@ export interface ToolOperations {
 
 export function createFetchToolServer(context: RequestContext, dependencies: {
   operations: ToolOperations;
-  logger: CompletionLogger;
+  logger: SystemLog;
+  audit?: Pick<AuditLog, 'toolCompleted'>;
 }, lifetime?: McpRequestLifetime): Server {
   const server = new Server({ name: 'thermus', version: '0.0.0' }, { capabilities: { tools: {} } });
   server.setRequestHandler('tools/list', () => ({ tools: [{
@@ -40,16 +38,19 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
     const call = request.params;
     const signal = lifetime === undefined ? requestContext.mcpReq.signal : AbortSignal.any([requestContext.mcpReq.signal, lifetime.signal]);
     let status: CompletionStatus = 'processing_failed';
+    let validated: { tool: 'search'; input: { query: string; reason: string } } | { tool: 'getURLAsMarkdown'; input: { url: string; reason: string } } | undefined;
+    let projected: CallToolResult | undefined;
     try {
       if (call.name === 'search') {
         const args = await parseSearchToolArguments(call.arguments);
         if (args === undefined) throw new Error('Invalid tool arguments');
+        validated = { tool: 'search', input: { query: args.query, reason: args.reason } };
         signal.throwIfAborted();
         const outcome = await dependencies.operations.search(args.query, context, { signal, operationId });
         signal.throwIfAborted();
         const result = projectSearchOutcome(outcome);
         status = result.isError ? 'withheld' : 'success';
-        return server.projectCallToolResult(result, undefined);
+        return projected = server.projectCallToolResult(result, undefined);
       }
       if (call.name !== 'getURLAsMarkdown') {
         status = 'unknown_tool';
@@ -57,21 +58,31 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
       }
       const args = await parseFetchToolArguments(call.arguments);
       if (args === undefined) throw new Error('Invalid tool arguments');
+      validated = { tool: 'getURLAsMarkdown', input: { url: args.url, reason: args.reason } };
       signal.throwIfAborted();
       const markdown = await dependencies.operations.fetch(args.url, context, { signal, operationId });
       signal.throwIfAborted();
       if (typeof markdown !== 'string') throw new Error('Page processing failed');
       status = 'success';
-      return server.projectCallToolResult({ content: [{ type: 'text', text: markdown }] }, undefined);
+      return projected = server.projectCallToolResult({ content: [{ type: 'text', text: markdown }] }, undefined);
     } catch (error) {
       if (status === 'unknown_tool') throw error;
       const failure = safeFailure(error, signal, call.name === 'search');
       status = failure.status;
       const result: CallToolResult = { content: [{ type: 'text', text: failure.message }], isError: true };
-      return server.projectCallToolResult(result, undefined);
+      return projected = server.projectCallToolResult(result, undefined);
     } finally {
+      const durationMs = Math.max(0, performance.now() - startedAt);
+      if (dependencies.audit !== undefined && validated !== undefined && projected !== undefined && status !== 'invalid_arguments' && status !== 'unknown_tool') {
+        captureCompletion(dependencies.audit, {
+          ...validated, timestamp: new Date().toISOString(), organizationId: context.tenantId,
+          actor: { authority: context.user.authority, subject: context.user.subject },
+          operationId, status, durationMs,
+          result: projected.content.filter((entry) => entry.type === 'text').map((entry) => entry.text).join(''),
+        });
+      }
       emitCompletion(dependencies.logger, formatToolCompletion(context, {
-        operationId, name: call.name, arguments: call.arguments, status, durationMs: Math.max(0, performance.now() - startedAt),
+        operationId, name: call.name, status, durationMs,
       }));
     }
   };
@@ -84,20 +95,29 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
 
 function safeFailure(error: unknown, signal: AbortSignal, search: boolean): { status: CompletionStatus; message: string } {
   if (search) return safeSearchFailure(error, signal);
-  if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) return { status: 'cancelled', message: 'Request cancelled' };
-  if (error instanceof PageFetchFailure) return { status: 'fetch_failed', message: error.publicMessage };
-  const failures = {
-    'Server busy. Try again later.': 'busy',
-    'Invalid tool arguments': 'invalid_arguments',
-    'Access denied': 'access_denied',
-    'Page fetch failed': 'fetch_failed',
-    'Page processing failed': 'processing_failed',
-  } as const;
-  if (error instanceof Error && Object.hasOwn(failures, error.message)) {
-    const message = error.message as keyof typeof failures;
-    return { status: failures[message], message };
+  let failure: { status: CompletionStatus; message: string } = { status: 'processing_failed', message: 'Page processing failed' };
+  try {
+    if (signal.aborted || (error instanceof Error && error.name === 'AbortError')) {
+      failure = { status: 'cancelled', message: 'Request cancelled' };
+    } else if (error instanceof PageFetchFailure) {
+      failure = { status: 'fetch_failed', message: error.publicMessage };
+    } else {
+      const failures = {
+        'Server busy. Try again later.': 'busy',
+        'Invalid tool arguments': 'invalid_arguments',
+        'Access denied': 'access_denied',
+        'Page fetch failed': 'fetch_failed',
+        'Page processing failed': 'processing_failed',
+      } as const;
+      const message = error instanceof Error ? error.message : undefined;
+      if (typeof message === 'string' && Object.hasOwn(failures, message)) {
+        failure = { status: failures[message as keyof typeof failures], message };
+      }
+    }
+  } catch {
+    // An untrusted error can throw when its fields are read.
   }
-  return { status: 'processing_failed', message: 'Page processing failed' };
+  return signal.aborted ? { status: 'cancelled', message: 'Request cancelled' } : failure;
 }
 
 function safeSearchFailure(error: unknown, signal: AbortSignal): { status: CompletionStatus; message: string } {
@@ -126,7 +146,7 @@ function safeSearchFailure(error: unknown, signal: AbortSignal): { status: Compl
   return signal.aborted ? { status: 'cancelled', message: 'Request cancelled' } : failure;
 }
 
-function emitCompletion(logger: CompletionLogger, record: string): void {
+function emitCompletion(logger: SystemLog, record: string): void {
   try {
     logger.info(record);
   } catch {
@@ -135,5 +155,13 @@ function emitCompletion(logger: CompletionLogger, record: string): void {
     } catch {
       // Completion records are best effort. Logging cannot change a tool result.
     }
+  }
+}
+
+function captureCompletion(audit: Pick<AuditLog, 'toolCompleted'> | undefined, completion: ToolCompletion): void {
+  try {
+    audit?.toolCompleted(completion);
+  } catch {
+    // Customer capture cannot change a completed tool result.
   }
 }

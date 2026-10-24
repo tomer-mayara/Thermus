@@ -1,7 +1,7 @@
+import type { SystemLog } from '../../../../src/logs/system/system-logger.ts';
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { StreamableHTTPClientTransport, type CallToolResult, type Client } from '@modelcontextprotocol/client';
-import type { ApplicationLogger } from '../../../../src/app/application.ts';
 import { loadDeploymentConfig } from '../../../../src/runtime/config/deployment-config.ts';
 import { startHttpServer } from '../../../../src/runtime/http/server.ts';
 import { fetchToolInputSchema } from '../../../../src/interfaces/mcp/fetch-tool-schema.ts';
@@ -45,7 +45,7 @@ const ada: FakeUser = { id: 'user_01ADA', email: 'ada@example.com', firstName: '
 const ben: FakeUser = { id: 'user_01BEN', email: 'ben@example.com', firstName: 'Ben' };
 const dee: FakeUser = { id: 'user_01DEE', email: 'dee@example.com', firstName: 'Dee' };
 
-interface RecordingLog extends ApplicationLogger {
+interface RecordingLog extends SystemLog {
   readonly lines: string[];
 }
 
@@ -152,10 +152,6 @@ function assertFetchLog(log: RecordingLog, user: FakeUser): void {
     subject: user.id,
     tenantId: `workos:client_test:${acme}`,
     tool: 'getURLAsMarkdown',
-    url: storyUrl,
-    urlStatus: 'valid',
-    reason,
-    reasonStatus: 'valid',
     status: 'success',
   });
 }

@@ -1,18 +1,18 @@
-import type { ApplicationLogger } from '../../../../src/app/application.ts';
-import { BaseLogger } from '../../../../src/logging/base-logger.ts';
+import type { SystemLog } from '../../../../src/logs/system/system-logger.ts';
+import { SystemLogger } from '../../../../src/logs/system/system-logger.ts';
 import type { FetchOperation } from '../../../../src/interfaces/mcp/get-url-as-markdown.ts';
 
 // The Markdown of the completed line is cut at this many code points.
 export const MARKDOWN_LOG_LIMIT = 64 * 1024;
 
-export function fetchOperationSpy(operation: FetchOperation, logger: ApplicationLogger, limit = MARKDOWN_LOG_LIMIT): FetchOperation {
+export function fetchOperationSpy(operation: FetchOperation, logger: SystemLog, limit = MARKDOWN_LOG_LIMIT): FetchOperation {
   return async (url, context, execution) => {
     logger.info(`work-slice fetch started: ${url}`);
     let markdown: string;
     try {
       markdown = await operation(url, context, execution);
     } catch (error) {
-      logger.error(`work-slice fetch failed: ${url}: ${BaseLogger.messageOf(error)}`);
+      logger.error(`work-slice fetch failed: ${url}: ${SystemLogger.messageOf(error)}`);
       throw error;
     }
     logger.info(completedLine(url, markdown, limit));

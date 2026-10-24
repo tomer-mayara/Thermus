@@ -163,7 +163,7 @@ describe('Renderer setup reports of the neutral page fetch operation', () => {
     const lines = { info: [] as string[], error: [] as string[] };
     const server = createFetchToolServer(context, {
       operations: { fetch: createGetURLAsMarkdown(createFetchPage(dependencies)), search: async () => ({ status: 'released', markdown: 'test search' }) },
-      logger: { info: (line) => lines.info.push(line), error: (line) => lines.error.push(line) },
+      logger: { info: (line) => lines.info.push(line), error: (line) => lines.error.push(String(line)) },
     });
     const client = await connectedClient(t, server);
 

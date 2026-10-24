@@ -1,26 +1,43 @@
-# OTel logger tests
+# OTel system logger tests
 
-These tests verify `OtelLogger` in `src/logging/otel-logger.ts`. The adapter sends
-each accepted message to a supplied OpenTelemetry logger.
+These tests verify `OtelSystemLogSink` in
+`src/logs/system/otel-system-log-sink.ts`. The adapter sends
+each accepted internal engineering message to a supplied OpenTelemetry logger.
+Customers have no access to this stream. These tests do not verify customer
+Audit logs, whose event-specific API and destination runtime are owned by
+`src/logs/audit/`. Production audit capture and content safety remain
+[S2-03a](../design/organization-admin-plan.md#s2-03a--customer-capture-and-operator-content-isolation);
+never reuse this adapter or stream for audit delivery.
 
 ## Contract
 
-`OtelLogger` extends `BaseLogger`. Its constructor takes an OpenTelemetry logger
-that supports `emit`, followed by an optional `LogLevel` that defaults to INFO:
+`SystemLogger` takes a required synchronous `SystemLogSink` and an optional
+`LogLevel` that defaults to INFO. It prepares a `SystemLogRecord` with `level`,
+local timestamp text `time`, and `message` with the caller file and line before
+it calls `writeSystemLog(record)`. Source enrichment belongs only to the system
+logger; audit events add no automatic source or stack metadata. The distinct
+`writeSystemLog` and `writeAuditEvent` roles keep their types separate.
+
+`OtelSystemLogSink` takes an OpenTelemetry logger that supports `emit`:
 
 ```ts
-const logger = new OtelLogger(provider.getLogger('thermus'), LogLevel.INFO);
+const sink = new OtelSystemLogSink(provider.getLogger('thermus'));
+const logger = new SystemLogger(sink, LogLevel.INFO);
 logger.info('The server started.');
 ```
 
-It keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. `error`
-and `fatal` accept a message or a failure. `BaseLogger` renders an `Error` as
+`SystemLogger` keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. `error`
+and `fatal` accept a message or a failure. `SystemLogger` renders an `Error` as
 its message, a `SuppressedError` as both messages, and another value as its
-text; `BaseLogger.messageOf()` gives the same text to a caller that composes a
+text; `SystemLogger.messageOf()` gives the same text to a caller that composes a
 longer line. Each accepted call emits one plain log body with the caller file,
-line, and original message. The caller owns the SDK provider, exporter, flush,
-and shutdown. The adapter does not read Axiom settings or install a global
-provider.
+line, and original message. The sink ignores the formatted local time; the SDK
+assigns its event timestamp. `writeSystemLog` completes synchronously and lets
+write failures escape to the caller. Return from this call does not mean that
+network delivery is complete. Composition owns the SDK provider, exporter,
+flush, and shutdown. The adapter does not read Axiom settings or install a
+global provider. Production continues to use `ConsoleSystemLogSink`, which
+writes to stderr and accepts a custom `Writable`.
 
 | Method | Severity number | Severity text |
 | --- | --- | --- |
@@ -45,7 +62,7 @@ Set the Axiom settings below before running the acceptance or interface files.
 Use the focused build command:
 
 ```sh
-npm run build && node --test dist/test/acceptance/logging/otel-logger.test.js dist/test/unit/logging/otel-logger.test.js dist/test/interface/logging/otel-logger.test.js
+npm run build && node --test dist/test/acceptance/logging/system/otel-logger.test.js dist/test/unit/logging/system/otel-logger.test.js dist/test/interface/logging/system/otel-logger.test.js
 ```
 
 The OpenTelemetry API, SDK, and HTTP exporter are pinned to 0.223.0. The API is
@@ -72,7 +89,7 @@ values take precedence. Keep the file and its credentials out of version
 control and test reports.
 
 The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
-uses the production `OtelLogger` through `openAxiomLogging()` in
+uses the production `OtelSystemLogSink` through `openAxiomLogging()` in
 `test/support/in-process/axiom-test-export.ts`. It reads the same settings with the same
 reader and exports to the same test dataset. The log lines go to Axiom only.
 The console gets only the export failure lines: one line for each refused or
@@ -89,7 +106,7 @@ regular logger tests, so those suites also need Axiom settings and network
 access. `npm run check` runs the offline unit coverage; it does not select these
 logger acceptance and interface files.
 
-`test/interface/logging/otel-logger-axiom.live.ts` provides an additional test
+`test/interface/logging/system/otel-logger-axiom.live.ts` provides an additional test
 with a unique INFO message. It is separate from normal test globs and uses the
 same test dataset and settings:
 

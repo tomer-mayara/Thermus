@@ -411,21 +411,34 @@ does not rewrite an earlier completed step record. The hosted slot stays owned t
 Readers select the event type and operation ID. With a healthy sink, each
 entered step has one exact event and each dispatched call has one actual MCP
 completion; a step event cannot resolve `firstCompletion`. Step records contain
-no request or page content. Legacy completion path/reason privacy limits below
-remain unchanged.
+no request or page content. Completion records below use the same content
+exclusion.
 
 ## Completion records
 
 Every envelope-valid dispatched call attempts one JSON-encoded completion
-record in `finally`. The fetch projection includes the trusted authority, subject, and tenant; the
-operation ID; the recognized tool label or a fixed unknown label; safe input fields or field-status
-codes; the completion status; and elapsed time. A safe URL omits userinfo, query,
-and fragment. A reason is included only when it is a bounded, structurally valid
-string. JSON encoding escapes line breaks.
+record in `finally`. Fetch and search use the trusted authority, subject, and
+tenant; the operation ID; the recognized tool label or a fixed unknown label;
+the completion status; and elapsed time. The formatter receives no argument
+object. These internal System records omit URL, query, reason, result, raw
+exceptions, and request metadata, including for invalid arguments.
 
-Search selects its own projection before reading any argument field. Its
-[completion records](mcp-search-tool.md#execution-and-logging) omit query,
-reason, URL, page, and failure data, including for invalid search arguments.
+A separate customer `AuditLog` captures validated input and final public text
+after SDK projection and safe failure/cancellation mapping. It uses the trusted
+context, redacts recognized credentials, and bounds only the exported copy.
+Invalid arguments and unknown tools have no customer event. The client result
+stays complete; fetch withholding retains its existing empty-success projection.
+Hosted capture uses activity-driven enabled/revision snapshots when settings
+storage is available. Cold, disabled, or expired snapshots drop the current
+event; loads affect only future activity and never wait in the tool response.
+Hosted storage supplies bounded asynchronous delivery. Each attempt reads one
+current saved version and requires its enabled state and exact captured revision;
+old work is dropped without retargeting. Queue pressure, expiry, and failures can
+lose events, and retries can duplicate them. Product responses do not wait for
+export. Capture does not prove client receipt or Collector storage. See the
+[dispatch record](../implementation/admin-s2-03c.md) for fixed bounds and lifetime.
+See the [capture record](../implementation/admin-s2-03a.md) for fixed bounds and
+[search records](mcp-search-tool.md#execution-and-logging) for the search contract.
 
 Dispatch generates the UUID with Node `randomUUID` before tool-name and argument
 checks. Dispatched unknown, invalid, denied, busy, and cancelled calls therefore

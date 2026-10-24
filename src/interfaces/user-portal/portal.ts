@@ -93,7 +93,7 @@ function showWorkspaceNavigation(container: HTMLElement, roles: readonly string[
   navigation.className = 'workspace-navigation';
   navigation.setAttribute('aria-label', 'Workspace');
   navigation.innerHTML = `<a href="./" aria-current="page">Product / Connect</a>
-    ${roles.includes('admin') ? '<a href="members">Members</a>' : ''}
+    ${roles.includes('admin') ? '<a href="members">Members</a><a href="logging">Audit logs</a>' : ''}
     <a href="organizations">Switch workspace</a>`;
   container.querySelector('.auth-container')?.prepend(navigation);
 }

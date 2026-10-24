@@ -498,6 +498,7 @@ pnpm test:acceptance  # clean build, then node --test on dist/test/acceptance/
 pnpm test:interface   # clean build, then node --test on dist/test/interface/
 pnpm test:container   # clean build, then the self-hosted container gate without outbound access
 pnpm test:container:hosted # clean build, then the final Linux AMD64 hosted image gate
+pnpm test:logging:collector # audit sender and browser/MCP journey with a real Collector; needs Docker and OpenSSL
 pnpm build:hosted     # offline checks, integration selection, and local renderer gate; needs pinned LIGHTPANDA_BIN and OpenSSL
 pnpm test:hosted-live # clean build, portal build, then the hosted live gate; needs WorkOS staging settings, Playwright Chromium, and the pinned LIGHTPANDA_BIN
 pnpm test:mcp:renderer # clean build, then local fetch and search renderer gates; needs pinned LIGHTPANDA_BIN
@@ -559,6 +560,17 @@ sends one additional test log to `system-log-test`. Normal suite commands do not
 select this separate file, but their OTel logger tests also export to that dataset.
 The [OTel logger test guide](docs/testing/otel-logger.md) gives the settings, which
 the tests read from the environment or the repository's `.env.local`.
+
+`pnpm test:logging:collector` checks the customer Audit sender and the integrated
+Admin browser/MCP journey against an isolated TLS receiver and open-source Collector.
+It needs Docker and OpenSSL, with network
+access only to obtain the pinned container images when they are not cached.
+The test network has no outbound access. The tests use real sockets and hostname
+verification; they do not relax the sender's public-address policy. This checks
+the sender, capture, and dispatch through real Collector receipt. The journey uses
+controlled identity, storage, and tool operations. It does not prove an Admin's
+live destination or durable storage. These `.runtime.ts` files run only through
+this dedicated command.
 
 `npm run check` runs type checking, unit tests, portal acceptance tests, and
 builds the portal bundle. Portal tests

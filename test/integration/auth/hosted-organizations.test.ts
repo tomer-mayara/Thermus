@@ -8,7 +8,7 @@ import { formLabelled, formsIn, HostedBrowser } from '../../support/drivers/brow
 import { contextAt, destinationPaths, statusesOf } from '../../support/dsl/hosted-access.ts';
 import { hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { member, members, userOf } from '../../support/fixtures/hosted-members.ts';
-import { hostedFetchSettings, hostedStartupLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
+import { hostedFetchSettings, hostedStartupLine, hostedStorageUnavailableLine, workOSSettingsFor } from '../../support/fixtures/hosted-placeholder.ts';
 import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 import { openOrganizationSite } from '../../support/in-process/hosted-organization-site.ts';
 import type { ProbeReport } from '../../support/doubles/mcp/protected-tool-spy.ts';
@@ -166,6 +166,6 @@ describe('Hosted organization onboarding and selection with the real routes and 
       assert.deepEqual(answer.cookies, []);
       assert.doesNotMatch(answer.body, /<form/);
     }
-    assert.deepEqual(logger.lines, [`INFO ${hostedStartupLine}`]);
+    assert.deepEqual(logger.lines, [`INFO ${hostedStartupLine}`, `ERROR ${hostedStorageUnavailableLine}`]);
   });
 });

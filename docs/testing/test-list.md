@@ -295,8 +295,8 @@ Four regression cases also abort during error inspection. They require the
 cancellation result and one correlated `cancelled` completion that omits
 private data for allowlisted, typed, unknown, and throwing-inspection paths.
 `test/unit/mcp/search.test.ts` checks typed result projection.
-`test/unit/mcp/tool-completion-record.test.ts` proves that search completion
-formatting reads no argument properties, even when they have throwing getters.
+`test/unit/mcp/tool-completion-record.test.ts` proves that fetch and search
+completion formatting uses only stable metadata. It receives no argument object.
 
 The [SEARCH-05 record](../implementation/search-05.md) gives the earlier runs
 and limits. [SEARCH-09](../implementation/search-09.md) records the stronger
@@ -941,12 +941,133 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Accepts 0 seats and `Number.MAX_SAFE_INTEGER` seats and confirms the free plan with no billed seat
 [V] Gives frozen state records that keep the free state
 
-**Audit Trail**
+**Customer audit logs — API foundation** (`test/acceptance/logging/audit/audit-log.test.ts`, `test/unit/logging/audit/audit-log.test.ts`)
 
-[] Support OTLP protocol
-[] Generate a user token we can use in audit trail
+[V] Emits named tool and invitation events to a separate audit sink
+[V] Projects explicit actor and target fields and excludes extra source, line, stack, and message fields
+[V] Keeps caller location in system output; an audit event does not enter that stream
+[V] Preserves the completed action when a synchronous audit sink throws
+[V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
+[V] Redacts credential URLs while preserving adjacent public JSON fields and ordinary Markdown syntax, with exact exported byte counts
 
-**Console logger** (`test/unit/logging/console-logger.test.ts`)
+**Customer capture and operator content isolation — S2-03a candidate**
+
+The [capture record](../implementation/admin-s2-03a.md) describes the fixed bounds,
+trusted routing, and controlled-sink limits. These specifications capture produced
+content; they establish no client receipt, settings snapshot, or delivery.
+
+- `test/acceptance/mcp/customer-tool-capture.test.ts` specifies final fetch/search text, empty success, safe errors, cancellation, search withholding, tenant isolation against forged metadata, and sink throw/refusal through real MCP HTTP and pipeline collaboration.
+- `test/unit/logging/audit/audit-capture.test.ts` specifies named-field projection, recognized credential fields and URL parameters, unchanged valid input, JSON/UTF-8 budgets, Unicode truncation, metadata refusal, and non-throwing sink admission. Redaction cases preserve complete quoted values, URI keys, ordinary Markdown links and autolinks; raw URL punctuation and incomplete values remain private. Malformed escaped-quote input has a behavior case and a separate manual performance check.
+- `test/acceptance/logging/audit/administration-capture.test.ts` specifies signed-in invitation and Audit logs Save/Test metadata, separation of synthetic Test records, and preservation of completed writes after sink throw/refusal or an internal recorder failure.
+- `test/integration/hosted-admin/account-routes-audit.test.ts` specifies invitation send/resend/revoke, stale A naming B routing, failed/unconfirmed phases, Audit logs Save/Test without settings-read capture, and isolation from a throwing capture API.
+- `test/unit/organizations/change-records.test.ts` specifies preservation of a completed provider write and original check/provider failure when post-write recording throws.
+- `test/integration/mcp/tool-completion-record.test.ts` and `test/unit/mcp/tool-completion-record.test.ts` specify content-free operator records. The renderer setup, HTTP fetch, and renderer runtime specifications retain this privacy assertion.
+
+The S2-03b snapshots and S2-03c bounded dispatch are specified below.
+[] Owner rollout and release proof remain S2-04 under the [Slice 2 plan](../design/organization-admin-plan.md)
+
+**Customer audit Collector sender — S2-02a candidate**
+
+The [sender record](../implementation/admin-s2-02a.md) gives the public contract,
+fixed bounds, and evidence limits. These specifications exercise the isolated
+sender. The saved-destination Test is specified below. Customer capture is
+specified above; bounded dispatch is specified below. Live endpoint release
+checks remain separate work.
+
+- `test/acceptance/logging/audit/audit-sender.test.ts` specifies refusal of a private destination without disclosure of event or credentials.
+- `test/unit/logging/audit/public-audit-destination.test.ts` specifies HTTPS syntax, None/Bearer validation, public IPv4/IPv6 policy, mixed or changed DNS answers, answer limits, and exact peer address comparison.
+- `test/unit/logging/audit/otlp-audit-encoding.test.ts` specifies named event fields, decimal-string nanoseconds, administration targets, invalid events, the labelled synthetic Test record, and encoded request size.
+- `test/unit/logging/audit/otlp-audit-response.test.ts` specifies typed acceptance, warning, rejection, failure, malformed success, body size, and bounded Retry-After results.
+- `test/unit/logging/audit/otlp-audit-sender.test.ts` specifies one-shot orchestration, safe outcomes, cancellation, admission, and native DNS work lifetime.
+- `test/unit/logging/audit/audit-https-connection.test.ts` specifies pinned TLS address, hostname verification, peer refusal, and socket cleanup.
+- `test/unit/logging/audit/otlp-audit-request.test.ts` specifies explicit headers and checked socket, response and header overflow, unsupported success compression, cancellation before request, and disposal without combining oversized response data.
+- `test/integration/logging/audit/audit-sender.runtime.ts` specifies real TLS receiver and Collector None/Bearer collaboration, system-environment isolation, certificate and hostname failure, changed DNS, zero redirects, and cancellation recovery. Run `npm run test:logging:collector` with Docker Engine and OpenSSL. Its internal Docker bridge has public-shaped addresses; it does not contact a public Collector.
+
+The complete candidate's review evidence records execution results. Test source
+alone does not establish a passing local gate or Internet reachability.
+
+**Saved customer audit destination — settings and S2-02b Test candidate**
+
+The [Test record](../implementation/admin-s2-02b.md) describes the public operation,
+fixed bounds, and evidence limits. These are executable specifications; the
+complete candidate review records their local results.
+
+- `test/acceptance/logging/hosted-destination-settings.test.ts` specifies current password-authenticated Admin access, native protected Save, tenant and revision refusal, None/Bearer state, and safe unconfirmed Save recovery.
+- `test/unit/logging/destination-settings-service.test.ts` specifies public projection, tenant-bound credential recovery, exact endpoint/token validation, semantic no-op, stale Save refusal, and late commit handling.
+- `test/acceptance/logging/audit/destination-test.test.ts` specifies one labelled synthetic event from a disabled saved revision and suppression after that revision changes, with no settings write.
+- `test/acceptance/logging/hosted-destination-test.test.ts` specifies disabled saved None/Bearer Tests through hosted browser sessions at root and prefixed paths, unsaved edits, obsolete/unconfirmed result suppression, and Origin/CSRF/tenant/current Admin refusal.
+- `test/unit/logging/audit/destination-test.test.ts` specifies one full saved pre-read, saved credential use, unsaved/stale refusal, typed outcomes, post-read suppression, cancellation, five-second deadline, and retained four-slot Test admission while its callback or store reads remain pending.
+- `test/unit/html/logging-test-routes.test.ts` specifies trusted tenant/actor forwarding, method/Origin/CSRF/current Admin checks, exact fields, cancellation, and fixed safe text for operation and sender outcomes.
+- `test/integration/hosted-admin/account-routes-logging.test.ts` specifies current password Admin access before real settings/Test route collaboration, trusted actor/tenant forwarding, refreshed cookies, revoked access, and secret-safe failures.
+- `test/integration/logging/audit/audit-sender.runtime.ts` also specifies real routes, settings service, codec, sender, DNS/TLS, and Collector collaboration for disabled saved None/Bearer destinations. A supplied store and decided Admin context are its boundaries. It checks synthetic labels and unchanged settings. Run the complete `npm run test:logging:collector` group; its isolated public-shaped network is not proof of public Internet egress.
+
+The PostgreSQL settings group remains `npm run test:logging:postgres`. Neither
+controlled Collector proof nor a successful Test proves continued delivery or
+durable storage. Tool/admin capture uses a controlled sink in S2-03a; activity-driven
+settings snapshots and bounded dispatch are specified below.
+
+**Activity-driven audit settings snapshots — S2-03b candidate**
+
+The [snapshot record](../implementation/admin-s2-03b.md) gives fixed bounds and
+lifetime rules. The following source specifications use a controlled downstream
+sink; execution evidence belongs to the complete-candidate review.
+
+- `test/acceptance/logging/audit/activity-snapshots.test.ts` specifies cold enabled loading, remote Enable after cached disabled state, recovery on later activity, future-only capture, and no idle reads.
+- `test/acceptance/logging/audit/hosted-snapshot-composition.test.ts` specifies one shared snapshot between real hosted MCP and invitation routes, restart, remote Enable, unavailable reads, and two trusted tenants.
+- `test/unit/logging/audit/audit-snapshots.test.ts` specifies load deduplication, freshness/backoff, byte/count/admission bounds, absolute deadlines, unresolved-read reservations, eviction, detached immutable tenant/revision binding, and close.
+- `test/integration/auth/hosted-audit-snapshot-lifecycle.test.ts` specifies snapshot closure before hosted storage closure and exclusion of late read results.
+
+These checks do not prove queue admission, fresh-store dispatch authorization,
+network delivery, or Collector storage. The S2-03c specifications below cover
+the dispatch rules.
+
+**Bounded customer audit dispatch — S2-03c candidate**
+
+The [dispatch record](../implementation/admin-s2-03c.md) describes fixed bounds,
+authorization, retry, content lifetime, and shared native/SQL admission. These
+are source specifications; final execution and review belong to the PR and local
+review index.
+
+- `test/acceptance/logging/audit/collector-dispatch.test.ts` specifies capture through snapshots and the collector, fresh saved-revision checks, tenant isolation, no event SQL writes, and close.
+- `test/acceptance/logging/audit/hosted-customer-export.test.ts` specifies real hosted MCP/Admin capture and storage composition, complete product responses during overload/read failure, stale authorization, successful activity observation of remote Disable, and closure before storage.
+- `test/acceptance/logging/audit/export-destination.test.ts` specifies same-version credential authority and sender-owned payload disposal during held native DNS, with native admission retained until physical settlement.
+- `test/unit/logging/audit/audit-collector.test.ts` specifies synchronous admission, detached input, global/tenant item and serialized-byte accounting across all states, FIFO, fresh authorization per retry, three-cycle bounds, Retry-After, absolute read/age deadlines, charged reservations, and close during read/send/backoff.
+- `test/unit/logging/audit/audit-collector-observation.test.ts` specifies cancellation on successful current snapshot observations, absence of fabricated observations after read failure, no retained state for unknown tenants, and isolation from a throwing optional observation hook.
+- `test/unit/logging/audit/export-authorization.test.ts` specifies exactly one full-version read, exact enabled/revision checks, owner-controlled credential recovery, safe failure, and suppression after abort.
+- `test/unit/logging/audit/otlp-audit-sender.test.ts` adds separate outcome/physical settlement, safe unexpected error metadata, payload cancellation, and external abort-listener lifetime. Held-close warning cases check the same sent Buffer before and after abort, pending physical settlement, and the original warning when close completes without cancellation. The saved Test unit specifications retain their one-shot outcome behavior.
+- `test/integration/logging/audit/logging-storage-export.test.ts` specifies one production sender shared by export and Test, including four held native DNS operations and refusal until physical settlement.
+- `test/integration/logging/audit/audit-sender.runtime.ts` adds production storage factory, AuditLog, snapshots, queue, fresh authorization, and real Collector collaboration. Run `npm run test:logging:collector` for the complete dedicated group.
+- `test/acceptance/logging/audit/hosted-storage-failure.runtime.ts` adds a warm enabled snapshot followed by a real PostgreSQL table lock during dispatch authorization; MCP, Admin, and portal health remain usable and closure stays within the existing deadline. Run `npm run test:logging:postgres` for the complete dedicated group.
+
+The controlled Collector is an isolated fixture, not public Internet egress or
+production deployment proof. Best-effort export can lose or duplicate events;
+these checks do not prove continued receipt or durable receiver storage. S2-04
+retains owner rollout and release prerequisites.
+
+**System sink contract** (`test/acceptance/logging/system/system-log-sink.test.ts`, `test/unit/logging/system/system-logger.test.ts`)
+
+[V] An admitted call supplies one prepared record before it returns, with local time and the original caller file/line
+[V] A sink failure escapes synchronously; a filtered DEBUG call never writes
+[V] Type checks keep system records and sinks separate from audit events and sinks
+
+**Integrated customer audit journey and help — S2-04 candidate**
+
+The [verification record](../implementation/admin-s2-04.md) separates controlled
+source proof from actual owner setup, recovery, and release evidence.
+
+- `test/acceptance/logging/audit/hosted-audit-journey.runtime.ts` specifies password Admin browser sign-in, disabled Save, one saved Test, Enable, activity-driven loading, full MCP results, bounded redacted audit content, invitation actions, and receipt of the expected records in a real Collector's file output. It also checks unchanged product access and separation from system output. Run `npm run test:logging:collector` for this dedicated acceptance case and the sender integration cases.
+- `test/acceptance/logging/hosted-destination-settings.test.ts` adds the visible export disclosure before Save: input/result content, redaction limits, truncation, and best-effort loss/duplicates.
+- `test/unit/html/logging-routes.test.ts` adds the named help region and its placement before the settings form.
+
+The journey uses controlled WorkOS password exchange, settings storage, and tool
+operations. Native DNS, verified TLS, OTLP, and Collector receipt are real on the
+isolated test network. It characterizes existing collaboration; the new help
+specifications first fail without the source change. Local browser and recovery
+drills are manual evidence in the verification record, not tests of document text.
+No controlled pass closes live provider, SQL isolation, backup custody, legal,
+cost, or deployment holds.
+
+**System console logger** (`test/unit/logging/system/console-logger.test.ts`)
 
 [V] Writes one line to stderr by default or to a supplied writable stream
 [V] Includes the timestamp, level label, level color, message, and final newline
@@ -955,15 +1076,17 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Applies threshold changes, hides all levels at NONE, and resumes when the threshold is lowered
 [V] Writes the message of an `Error`, a string as it is, and the text of another value, such as a number or a plain object, from `error()` and `fatal()` after the caller file and line
 [V] Writes both messages of a `SuppressedError` from `error()` and `fatal()`: first the failure, then the cleanup failure; also for a nested `SuppressedError`
-[V] Gives the same text from `BaseLogger.messageOf()`, for a caller that composes a longer line
+[V] Gives the same text from `SystemLogger.messageOf()`, for a caller that composes a longer line
+[V] Preserves the local timestamp, leaves stdout untouched, and lets a synchronous output failure escape
 
-**OTel logger** ([test contract and commands](otel-logger.md))
+**System OTel logger** ([test contract and commands](otel-logger.md))
 
-[V] Preserves the log methods, default INFO level, thresholds, and caller location of `BaseLogger`
+[V] Preserves the log methods, default INFO level, thresholds, and caller location of `SystemLogger`
 [V] Maps each accepted level to an OpenTelemetry severity and preserves the message body
 [V] Exports OTLP log records through the SDK to a loopback receiver with the Axiom headers
 [V] Sends acceptance and interface log records to Axiom's `system-log-test` dataset on every run and checks the exporter result
 [V] Sends one additional test log to `system-log-test` through the separate live interface command
+[V] Lets a synchronous SDK emit failure escape
 
 **Renderer network policy**
 
@@ -1435,7 +1558,7 @@ validator became part of the separate page-fetch package.
 [V] Checks string types, required fields, extra properties, URL semantics, reason whitespace, and code-point limits; accepted inputs are not truncated
 [V] Checks exact projected text, safe argument/unknown-tool errors, and one completion attempt per dispatched call
 [V] Keeps operation errors and logger failures from exposing causes, replacing results, or repeating work
-[V] Formats trusted caller fields, URL origin/path, bounded verbatim reason or field-status codes, and escaped line breaks; omits unknown tool names, raw arguments, credentials, and causes
+[V] Formats trusted caller fields, operation, tool, status, and duration; omits tool URL, query, reason, result, unknown tool names, raw arguments, credentials, and causes
 
 **Protected neutral fetch operation** (`test/integration/page-fetch/fetch-page.test.ts`)
 
@@ -1925,14 +2048,14 @@ Run the applicable local renderer interface cases with the pinned runtime:
 npm run build && node --test dist/test/interface/website-fetcher-cancellation.test.js dist/test/interface/website-fetcher-http.test.js dist/test/interface/website-fetcher-network.test.js dist/test/interface/website-fetcher-readiness.test.js dist/test/interface/website-fetcher-redirects.test.js
 ```
 
-**Axiom logging** (`test/interface/logging/axiom-logging.test.ts`)
+**Axiom logging** (`test/interface/logging/system/axiom-logging.test.ts`)
 
-`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
+`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `SystemLogger` with `OtelSystemLogSink`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
 
 [V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets no line
 
 ```sh
-npm run build && node --test dist/test/interface/logging/axiom-logging.test.js
+npm run build && node --test dist/test/interface/logging/system/axiom-logging.test.js
 ```
 
 ## Acceptance

@@ -14,6 +14,7 @@ import { generatedOperationIdPattern } from '../../support/fixtures/execution-co
 import { SearchPipeline } from '../../../src/pipelines/search/search-pipeline.ts';
 import type { StepRecord } from '../../../src/pipelines/execution/step-record.ts';
 import { SearchFailure } from '../../../src/pipelines/search/search-failure.ts';
+import type { AuditLog, ToolCompletion } from '../../../src/logs/audit/audit-log.ts';
 import { PageFetchFailure } from '../../../src/pipelines/page-fetch/fetch-failure.ts';
 
 const context: RequestContext = {
@@ -21,19 +22,20 @@ const context: RequestContext = {
 };
 const validArgs = { url: 'HTTPS://Example.COM/Page?secret-query=yes#secret-fragment', reason: 'Read for the task' };
 
-async function connect(t: TestContext, options: { search?: SearchOperation; operation?: FetchOperation; infoFails?: boolean; errorFails?: boolean; lifetime?: McpRequestLifetime } = {}) {
+async function connect(t: TestContext, options: { search?: SearchOperation; operation?: FetchOperation; infoFails?: boolean; errorFails?: boolean; lifetime?: McpRequestLifetime; audit?: Pick<AuditLog, 'toolCompleted'> } = {}) {
   const calls: { url: string; context: RequestContext; execution: ExecutionContext }[] = [];
   const info: string[] = [];
   const completed = Promise.withResolvers<string>();
   const errors: string[] = [];
   const server = createFetchToolServer(context, {
+    audit: options.audit,
     operations: { search: options.search ?? (async () => ({ status: 'released', markdown: 'search' })), fetch: async (url, trusted, execution) => {
       calls.push({ url, context: trusted, execution });
       return options.operation?.(url, trusted, execution) ?? '# Exact\n';
     } },
     logger: {
       info: (entry) => { info.push(entry); if (completionLinesIn(entry).length === 1) completed.resolve(entry); if (options.infoFails) throw new Error('secret-info-error'); },
-      error: (entry) => { errors.push(entry); if (options.errorFails) throw new Error('secret-log-error'); },
+      error: (entry) => { errors.push(String(entry)); if (options.errorFails) throw new Error('secret-log-error'); },
     },
   }, options.lifetime);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
@@ -59,7 +61,7 @@ test('Given a fetch operation double, when the tool is listed and called, then i
   const entry = JSON.parse(info[0]);
   assert.match(entry.operationId, generatedOperationIdPattern);
   assert.equal(entry.operationId, calls[0]?.execution.operationId);
-  assert.equal(entry.reason, validArgs.reason);
+  assert.equal(Object.hasOwn(entry, 'reason'), false);
   assert.equal(entry.status, 'success');
   assert.equal(entry.subject, context.user.subject);
   assert.equal(typeof entry.durationMs, 'number');
@@ -394,3 +396,57 @@ for (const stage of ['outgoing', 'engine', 'incoming'] as const) {
     assert.doesNotMatch(site.info.join('') + JSON.stringify(records), /PRIVATE/);
   });
 }
+
+for (const tool of ['getURLAsMarkdown', 'search'] as const) {
+  test(`Given validated ${tool} input, when final public output is projected, then one trusted completion carries only input and public text`, async (t) => {
+    const completions: ToolCompletion[] = [];
+    const site = await connect(t, { audit: { toolCompleted: (completion) => { completions.push(completion); } } });
+    const args = tool === 'search' ? { query: 'PRIVATE query', reason: 'PRIVATE reason' } : validArgs;
+    const result = await site.client.callTool({ name: tool, arguments: args, _meta: { tenantId: 'forged-tenant' } });
+    assert.equal(completions.length, 1);
+    assert.deepEqual(completions[0].input, args);
+    assert.equal(completions[0].result, result.content[0].type === 'text' ? result.content[0].text : undefined);
+    assert.equal(completions[0].organizationId, context.tenantId);
+    assert.deepEqual(completions[0].actor, context.user);
+    assert.equal(completions[0].operationId, JSON.parse(site.info[0]).operationId);
+    assert.doesNotMatch(JSON.stringify(completions), /forged-tenant|_meta/);
+  });
+}
+
+test('Given invalid arguments or an unknown tool, when dispatched, then no customer completion is captured', async (t) => {
+  const completions: ToolCompletion[] = [];
+  const site = await connect(t, { audit: { toolCompleted: (completion) => { completions.push(completion); } } });
+  await site.client.callTool({ name: 'getURLAsMarkdown', arguments: { url: validArgs.url } });
+  await site.client.callTool({ name: 'search', arguments: { query: 'PRIVATE query' } });
+  await assert.rejects(site.client.callTool({ name: 'PRIVATE unknown', arguments: validArgs }));
+  assert.deepEqual(completions, []);
+});
+
+test('Given capture itself throws, when a tool completes, then its exact result and single operation remain', async (t) => {
+  const site = await connect(t, { audit: { toolCompleted: () => { throw new Error('PRIVATE audit failure'); } } });
+  assert.deepEqual(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs }), { content: [{ type: 'text', text: '# Exact\n' }] });
+  assert.equal(site.calls.length, 1);
+  assert.doesNotMatch(site.info.join('') + site.errors.join(''), /PRIVATE/);
+});
+
+for (const field of ['name', 'message']) {
+  test(`Given a fetch error with a throwing ${field} getter, when final public failure is captured, then its safe processing text and result remain`, async (t) => {
+    const completions: ToolCompletion[] = [];
+    const error = Object.defineProperty(new Error(), field, { get() { throw new Error('PRIVATE getter'); } });
+    const site = await connect(t, { operation: async () => { throw error; }, audit: { toolCompleted: (completion) => { completions.push(completion); } } });
+    assert.deepEqual(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs }), { content: [{ type: 'text', text: 'Page processing failed' }], isError: true });
+    assert.equal(completions.length, 1);
+    assert.equal(completions[0].result, 'Page processing failed');
+    assert.doesNotMatch(JSON.stringify(completions) + site.info.join(''), /PRIVATE getter/);
+  });
+}
+
+test('Given a fetch error message that changes after its first read, when final failure is captured, then only the checked message is returned and captured', async (t) => {
+  let reads = 0;
+  const completions: ToolCompletion[] = [];
+  const error = Object.defineProperty(new Error(), 'message', { get() { return reads++ === 0 ? 'Page fetch failed' : 'PRIVATE changed message'; } });
+  const site = await connect(t, { operation: async () => { throw error; }, audit: { toolCompleted: (completion) => { completions.push(completion); } } });
+  assert.deepEqual(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: validArgs }), { content: [{ type: 'text', text: 'Page fetch failed' }], isError: true });
+  assert.equal(reads, 1);
+  assert.equal(completions[0].result, 'Page fetch failed');
+});

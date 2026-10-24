@@ -1,3 +1,4 @@
+import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { STATUS_CODES, type IncomingMessage, type ServerResponse } from 'node:http';
 import { CLIENT_ADDRESS_HEADER } from './client-address.ts';
 
@@ -6,7 +7,7 @@ export type FetchHandler = (request: Request) => Promise<Response>;
 export interface Bridge {
   readonly handler: FetchHandler;
   readonly publicOrigin: string;
-  readonly logger: { error(message: string): void } | undefined;
+  readonly logger: Pick<SystemLog, 'error'> | undefined;
 }
 
 // In the absolute form, "*", "//", "\", or "#", a URL parser can find another host or a fragment.

@@ -1,8 +1,10 @@
+import type { SystemLog } from '../logs/system/system-logger.ts';
+import { AuditLog } from '../logs/audit/audit-log.ts';
 import type { LocalAuthPages } from '../interfaces/web/auth/better-auth/local-auth-pages.ts';
 import type { AccessResolver } from '../accounts/identity/access-context.ts';
 import type { Billing } from '../accounts/billing/billing.ts';
 import type { DeploymentConfig } from '../runtime/config/deployment-config.ts';
-import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation } from '../interfaces/web/account/account-routes.ts';
+import { HostedAccountRoutes, type AccountFailureReporter, type AccountOperation, type HostedAccountRoutesOptions } from '../interfaces/web/account/account-routes.ts';
 import type { BrowserSession } from '../accounts/identity/browser-session.ts';
 import type { FetchHandler } from '../runtime/http/server.ts';
 import { MCPServer, type FailureReporter } from '../interfaces/mcp/mcp-server.ts';
@@ -51,6 +53,7 @@ export interface HostedAccountParts {
   readonly reportFailure: AccountFailureReporter;
   // Keeps the basic records of the privileged account changes.
   readonly changeRecords: ChangeRecorder;
+  readonly audit?: Pick<AuditLog, 'administrationChanged' | 'destinationChanged'>;
   // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.
   readonly billing: Billing;
   readonly operation?: AccountOperation;
@@ -62,25 +65,20 @@ export interface Application {
   close(listenerDrain?: Promise<void>): Promise<void>;
 }
 
-export interface ApplicationLogger {
-  info(message: string): void;
-  error(message: string): void;
-}
-
 // The hosted provider reads its own settings from the environment, so no common setting turns it on.
-export async function createApplication(config: DeploymentConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+export async function createApplication(config: DeploymentConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   if (config.deployment === 'hosted') return createHostedApplication(config, logger, environment);
   return createSelfHostedApplication(config, logger, environment);
 }
 
-export function operatorFailureReporter(logger: ApplicationLogger): FailureReporter {
+export function operatorFailureReporter(logger: SystemLog): FailureReporter {
   return ({ step, cause }) => logger.error(`An MCP request failed unexpectedly in ${step}: ${String(cause)}`);
 }
 
-async function createSelfHostedApplication(config: SelfHostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+async function createSelfHostedApplication(config: SelfHostedConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   // The rules load before the data directory opens, so a rules failure holds no resource and changes no data.
   const { createToolOperations, fetchToolServers } = await import('./fetch-tool.ts');
-  const buildServer = fetchToolServers(createToolOperations(environment, logger), logger);
+  const buildServer = fetchToolServers(createToolOperations(environment, logger), logger, discardAuditLog());
   const { openBetterAuthRuntime } = await import('../accounts/providers/better-auth/better-auth-runtime.ts');
   const { BetterAuthProvider } = await import('../accounts/providers/better-auth/better-auth-provider.ts');
   const { LocalAuthPages, localPagePaths } = await import('../interfaces/web/auth/better-auth/local-auth-pages.ts');
@@ -133,21 +131,26 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
 }
 
 // The hosted edition loads its provider only here, as the self-hosted edition does.
-async function createHostedApplication(config: HostedConfig, logger: ApplicationLogger, environment: Environment): Promise<Application> {
+async function createHostedApplication(config: HostedConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   const { openWorkOSApplication } = await import('./hosted-workos-application.ts');
   return openWorkOSApplication(config, logger, environment);
 }
 
-export function accountFailureReporter(logger: ApplicationLogger): AccountFailureReporter {
+export function accountFailureReporter(logger: SystemLog): AccountFailureReporter {
   return ({ path, cause }) => logger.error(`An account request failed unexpectedly for ${path}: ${String(cause)}`);
 }
 
-// The operator log keeps the change records until hosted storage exists. JSON keeps each record on one line.
-export function accountChangeRecorder(logger: ApplicationLogger): ChangeRecorder {
+// These privileged changes are internal system diagnostics only. JSON keeps each record on one line.
+export function accountChangeRecorder(logger: SystemLog): ChangeRecorder {
   return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 
-export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts): Application {
+// Local operation and hosted operation without storage discard customer audit events.
+export function discardAuditLog(): AuditLog {
+  return new AuditLog({ writeAuditEvent: () => {} });
+}
+
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging'] }): Application {
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
     session: parts.session,
@@ -156,6 +159,8 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     reportFailure: account.reportFailure,
     operation: account.operation,
     signupUrl: account.signupUrl,
+    logging: loggingStorage?.service,
+    audit: account.audit,
   });
   const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
   const shutdown = new AbortController();
@@ -165,7 +170,11 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     return handle(new Request(request, { signal }));
   }, { close: () => {
     shutdown.abort(new DOMException('The hosted application is shutting down', 'AbortError'));
-    return parts.mcp.close();
+    const closing = [(async () => parts.mcp.close())(), (async () => loggingStorage?.close())()];
+    return Promise.allSettled(closing).then((results) => {
+      const failures = results.filter((result) => result.status === 'rejected').map((result) => result.reason);
+      if (failures.length > 0) throw new AggregateError(failures, 'Hosted application cleanup failed.');
+    });
   } });
 }
 

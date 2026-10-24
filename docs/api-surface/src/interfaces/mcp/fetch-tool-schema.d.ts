@@ -22,7 +22,3 @@ export declare function parseFetchToolArguments(value: unknown): Promise<{
     url: string;
     reason: string;
 } | undefined>;
-export declare function fieldStatus(value: unknown, bounds: {
-    minLength: number;
-    maxLength: number;
-}): 'valid' | 'missing' | 'not_string' | 'empty' | 'too_long';

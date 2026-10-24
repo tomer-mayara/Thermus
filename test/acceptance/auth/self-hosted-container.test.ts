@@ -161,7 +161,16 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
 
     assert.deepEqual(connections.map(({ pages }) => pages), [['/sign-in', '/consent'], ['/sign-in', '/consent']]);
     assert.deepEqual([fetchCall.content, fetchCall.isError], [[{ type: 'text', text: 'Page fetch failed: Renderer connection failed' }], true]);
-    assert.match(server.output, /"tool":"getURLAsMarkdown","url":"https:\/\/93\.184\.216\.34\/page".*"status":"fetch_failed"/);
+    const completions = server.completionRecords();
+    assert.equal(completions.length, 1);
+    const { operationId, durationMs, ...completion } = completions[0] as Record<string, unknown>;
+    assert.match(operationId as string, generatedOperationIdPattern);
+    assert.ok(typeof durationMs === 'number' && Number.isFinite(durationMs) && durationMs >= 0);
+    assert.deepEqual(completion, {
+      event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`,
+      subject: setup.userIds.get(alice.email), tenantId: tenant, tool: 'getURLAsMarkdown', status: 'fetch_failed',
+    });
+    assert.doesNotMatch(server.completionLines().join('\n'), /93\.184\.216\.34|Show the network limit|"url"|"query"|"reason"|"result"/);
     assert.doesNotMatch(server.output, /Renderer setup failure/);
     assert.notEqual(setup.clientIds[0], setup.clientIds[1]);
     assert.notEqual(jwtClaims(firstTokens[0] ?? '').sid, jwtClaims(firstTokens[1] ?? '').sid);
@@ -294,7 +303,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.match(operationId as string, generatedOperationIdPattern);
     assert.deepEqual(record, {
       event: 'mcp.tool.completed', authority: `better-auth:${tenant.slice('local:'.length)}`, subject: setup.userIds.get(alice.email), tenantId: tenant,
-      tool: 'getURLAsMarkdown', url, urlStatus: 'valid', reason: fetchReason, reasonStatus: 'valid', status: 'success',
+      tool: 'getURLAsMarkdown', status: 'success',
     });
     assert.doesNotMatch(server.completionLines().join('\n'), /Runtime story|Hidden instruction|Final host target/);
     assert.deepEqual(exit, { code: 0, signal: null });
@@ -315,7 +324,7 @@ describe('Self-hosted evaluation container without outbound access', { skip: gat
     assert.deepEqual(results.map(({ content, isError }) => [content, isError]), [
       'Page fetch failed', 'Page fetch failed', 'Page fetch failed: Renderer connection failed',
     ].map((text) => [[{ type: 'text', text }], true]));
-    assert.deepEqual(server.completionRecords().map(({ url, status }) => ({ url, status })), urls.map((url) => ({ url, status: 'fetch_failed' })));
+    assert.deepEqual(server.completionRecords().map(({ url, status }) => ({ url, status })), urls.map(() => ({ url: undefined, status: 'fetch_failed' })));
     assert.deepEqual(seamLines(server, 'renderer launch'), [`${containerPage}/story`]);
     assert.deepEqual([...seamLines(server, 'page connection'), ...seamLines(server, 'page request')], []);
     assert.deepEqual(exit, { code: 0, signal: null });

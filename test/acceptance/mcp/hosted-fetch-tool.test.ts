@@ -40,7 +40,7 @@ test('Given production hosted composition with trusted rules and a valid Connect
   assert.match(site.completions()[0]?.operationId as string, generatedOperationIdPattern);
   assert.deepEqual(site.completions().map(({ durationMs: _duration, operationId: _operationId, ...record }) => record), [{
     event: 'mcp.tool.completed', authority: 'workos:client_placeholder', subject: 'user_fetch', tenantId: 'workos:client_placeholder:org_fetch',
-    tool: params.name, url: 'https://source.example/story', urlStatus: 'valid', reason, reasonStatus: 'valid', status: 'success',
+    tool: params.name, status: 'success',
   }]);
   const steps = stepRecordsIn(site.lines.join('\n'));
   assert.deepEqual(steps.map(({ durationMs, ...record }) => {

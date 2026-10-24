@@ -16,7 +16,7 @@ describe('HTTP server handler errors', () => {
   for (const [failure, handler] of failingHandlers) {
     test(`Given a handler that ${failure} with request data in its error, when a request arrives, then the client gets a generic 500 and the log has no request data`, { timeout: 5_000 }, async (t) => {
       const messages: string[] = [];
-      const server = await serve(t, handler, { logger: { error: (message) => messages.push(message) } });
+      const server = await serve(t, handler, { logger: { error: (message) => messages.push(String(message)) } });
 
       const response = await fetch(new URL('/fail?code=secret-query', server.url), {
         method: 'POST',
@@ -39,7 +39,7 @@ describe('HTTP server handler errors', () => {
         await failure.promise;
         controller.error(new Error('Stream failed with secret-detail'));
       },
-    })), { logger: { error: (message) => messages.push(message) } });
+    })), { logger: { error: (message) => messages.push(String(message)) } });
 
     const reader = bodyReader(await fetch(new URL('/events', server.url)));
     const first = await reader.read();

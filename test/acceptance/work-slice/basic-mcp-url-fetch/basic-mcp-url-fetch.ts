@@ -1,15 +1,16 @@
+import { SystemLogger, type SystemLog } from '../../../../src/logs/system/system-logger.ts';
 // The basic MCP URL fetch work slice: a manual run with the mock provider and Axiom logs, not a test. See README.md here.
 // This file is the entry point of the slice and also exports its composition for the tests. It runs only when it is
 // executed directly, with the guard of src/index.ts, so that the tests can import it.
 // Start it with the launcher basic-mcp-url-fetch.sh in this folder, as README.md here says.
 import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application, type ApplicationLogger } from '../../../../src/app/application.ts';
+import { composeApplication, operatorFailureReporter, routeLocalRequests, type Application } from '../../../../src/app/application.ts';
 import { loadListenAddress, loadPublicUrls, type PublicUrls } from '../../../../src/runtime/config/deployment-config.ts';
 import { createToolOperations, fetchToolServers } from '../../../../src/app/fetch-tool.ts';
 import { assertHostedRenderer } from '../../../../src/app/hosted-renderer-startup.ts';
 import { serveApplication } from '../../../../src/index.ts';
-import { ConsoleLogger } from '../../../../src/logging/console-logger.ts';
+import { ConsoleSystemLogSink } from '../../../../src/logs/system/console-system-log-sink.ts';
 import { MCPServer } from '../../../../src/interfaces/mcp/mcp-server.ts';
 import { NoAuthProvider } from '../../../support/doubles/auth/no-auth-provider.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
@@ -21,12 +22,12 @@ const axiomDatasetPage = 'https://app.axiom.co/thermus-ai-spao/datasets/system-l
 
 const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
-  process.exitCode = await run(new ConsoleLogger());
+  process.exitCode = await run(new SystemLogger(new ConsoleSystemLogSink()));
 }
 
 // Production refuses to own only the mock provider and the page-text lines, so this is the composition root of the
 // slice. The slice has no OAuth provider and no pages, so their paths are not found.
-export function createWorkSliceApplication(environment: Environment, logger: ApplicationLogger): Application {
+export function createWorkSliceApplication(environment: Environment, logger: SystemLog): Application {
   const urls = loadPublicUrls(environment, 'self-hosted');
   const operations = createToolOperations(environment, logger);
   const operation = fetchOperationSpy(operations.fetch, logger);
@@ -49,7 +50,7 @@ async function notFound(): Promise<Response> {
   return new Response('Not Found', { status: 404 });
 }
 
-async function run(consoleLog: ConsoleLogger): Promise<number> {
+async function run(consoleLog: SystemLogger): Promise<number> {
   try {
     await serveWorkSlice();
     return 0;

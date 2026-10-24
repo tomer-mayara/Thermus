@@ -27,7 +27,8 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Integration | `npm run test:integration` | `dist/test/integration/**/*.test.js` | Offline. |
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
-| Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
+| Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/system/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
+| Audit Collector | `npm run test:logging:collector` | Audit sender integration and hosted audit journey acceptance `.runtime.js` files | Docker Engine and OpenSSL. Pinned image pulls need network access or a local cache. The isolated test network has no outbound access. No live credentials. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
@@ -35,6 +36,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
+| Logging PostgreSQL | `npm run test:logging:postgres` | Settings acceptance, hosted storage-failure acceptance, and settings integration `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
@@ -276,7 +278,7 @@ changed source affects their behavior:
 - `npm run test:container` for the self-hosted server and commands, including
   `src/index.ts`, `src/app/`, `src/accounts/`, `src/runtime/`,
   `src/interfaces/cli/`, `src/interfaces/mcp/`, `src/interfaces/web/`, and
-  `src/logging/`. During a move, select by both the deleted old path and the new
+  `src/logs/`. During a move, select by both the deleted old path and the new
   path; moving a provider or browser route does not remove its gate.
 - `npm run build:hosted` and `npm run test:container:hosted` for source that
   affects the hosted application, its portal, or its offline checks. The
@@ -286,6 +288,18 @@ changed source affects their behavior:
 - `npm run test:hosted-live` for source that affects hosted authentication
   or WorkOS organization reads and changes, when the staging settings are
   available. If they are unavailable, record that the gate did not run.
+- `npm run test:logging:postgres` for the private logging settings store,
+  SQL runtime, or its hosted configuration and lifetime. This separate gate
+  exercises real PostgreSQL; ordinary test globs do not select its `.runtime.ts`
+  files. Docker image builds do not start nested PostgreSQL containers.
+- `npm run test:logging:collector` for the customer Audit sender's encoding,
+  protocol outcomes, transport, public-address/TLS policy, or integrated
+  browser/MCP export journey. This dedicated gate
+  uses a real TLS receiver and open-source Collector on an isolated container
+  network. It preserves production address and hostname checks. Ordinary globs
+  do not select its `.runtime.ts` files; image builds do not start nested Collector
+  containers. Run it for the Slice 2 release too. An actual destination smoke
+  check remains a separate release requirement.
 
 The ordinary full suite includes the offline Better Auth interface proofs.
 No separate whole interface run is needed after `npm test` passes.

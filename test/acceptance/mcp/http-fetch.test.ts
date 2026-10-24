@@ -32,7 +32,7 @@ for (const era of mcpProtocolEras) {
     assert.equal(entry.authority, 'https://synthetic-auth.thermus.invalid');
     assert.equal(entry.subject, 'synthetic-user');
     assert.equal(entry.tenantId, 'synthetic-workspace');
-    assert.equal(entry.reason, validFetchArguments.reason);
+    assert.equal(Object.hasOwn(entry, 'reason'), false);
     assert.equal(entry.status, 'success');
     assert.doesNotMatch(site.records.join('\n'), /forged-|private-query|private-fragment|Source|Exact Markdown|arbitrary-test-token/);
   });
@@ -81,7 +81,7 @@ for (const era of mcpProtocolEras) {
     const reason = '😀'.repeat(2_000);
     assertTextResult(await site.client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason } }), exactMarkdown);
     assert.equal(site.fetchCalls[0]?.url, url);
-    assert.equal(JSON.parse(site.completionLines()[0]).reason, reason);
+    assert.equal(Object.hasOwn(JSON.parse(site.completionLines()[0]), 'reason'), false);
   });
 
   for (const failure of ['fetch', 'pipeline', 'oversized', 'absent-markdown', 'nonstring-markdown'] as const) {

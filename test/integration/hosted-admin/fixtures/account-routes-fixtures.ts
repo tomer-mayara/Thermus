@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { AccessDecision, AuthenticatedUser, RequestContext, RoleGrant } from '../../../../src/accounts/identity/access-context.ts';
-import { HostedAccountRoutes, type AccountFailureReport } from '../../../../src/interfaces/web/account/account-routes.ts';
+import { HostedAccountRoutes, type AccountFailureReport, type HostedAccountRoutesOptions } from '../../../../src/interfaces/web/account/account-routes.ts';
 import type { BrowserSessionState } from '../../../../src/accounts/identity/browser-session.ts';
 import type { AuthorizedOrganization } from '../../../../src/accounts/organizations/organization-administration.ts';
 import { AccessResolverSpy, type ConfiguredAccess } from '../../../support/doubles/auth/access-resolver-spy.ts';
@@ -25,6 +25,8 @@ export const noticeHeaders = {
 
 export interface Setup {
   readonly publicBaseUrl?: string;
+  readonly logging?: HostedAccountRoutesOptions['logging'];
+  readonly audit?: HostedAccountRoutesOptions['audit'];
   readonly sessions?: ReadonlyMap<string, ConfiguredSession>;
   readonly otherSession?: BrowserSessionState;
   readonly decisions?: ReadonlyMap<string, ConfiguredAccess>;
@@ -47,6 +49,8 @@ export function serve(setup: Setup) {
     accessResolver: resolver,
     organizations,
     reportFailure: (report) => failures.push(report),
+    logging: setup.logging,
+    audit: setup.audit,
     operation,
   });
   return { routes, session, resolver, organizations, operations, failures };

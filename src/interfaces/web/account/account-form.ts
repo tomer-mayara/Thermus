@@ -92,7 +92,7 @@ export async function readForm(request: Request): Promise<URLSearchParams | Form
 
 // The values of a form that has the form token of the session and exactly these other fields, each one time. The token
 // comes first, so that a forged post learns nothing about its other fields.
-function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal {
+export function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal {
   if (!isSessionToken(single(form.getAll('csrf_token')), csrfToken)) return 'forgedRequest';
   const allowed: ReadonlySet<string> = new Set(['csrf_token', ...names]);
   if ([...form.keys()].some((name) => !allowed.has(name))) return 'invalidRequest';

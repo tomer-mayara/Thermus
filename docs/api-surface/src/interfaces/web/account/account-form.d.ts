@@ -18,3 +18,4 @@ export declare function selectionIn(form: URLSearchParams, csrfToken: string, de
 export declare function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal;
 export declare function invitationChangeIn(form: URLSearchParams, csrfToken: string): InvitationChangeRequest | FormRefusal;
 export declare function readForm(request: Request): Promise<URLSearchParams | FormRefusal>;
+export declare function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal;

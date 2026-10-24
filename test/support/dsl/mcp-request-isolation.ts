@@ -19,7 +19,7 @@ export function assertRecord(record: Record<string, unknown> | undefined, subjec
   assert.equal(record.subject, subject);
   assert.equal(record.authority, 'https://identity.example');
   assert.equal(record.tenantId, `${subject}-tenant`);
-  assert.equal(record.url, `https://pages.example/${subject}`);
-  assert.equal(record.reason, `Read ${subject}'s separate page`);
+  for (const field of ['url', 'query', 'reason', 'result']) assert.equal(Object.hasOwn(record, field), false);
+  assert.doesNotMatch(JSON.stringify(record), /pages.example|separate page/);
   assert.equal(record.status, status);
 }

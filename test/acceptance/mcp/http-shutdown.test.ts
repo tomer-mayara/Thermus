@@ -44,7 +44,7 @@ for (const era of mcpProtocolEras) {
     });
     const server = new MCPServer({
       auth: { verifier: provider, accessResolver: provider, expectedResource: resource, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' },
-      buildServer: (context, lifetime) => createFetchToolServer(context, { operations: { fetch: operation, search: async () => { throw new Error('Unexpected search call'); } }, logger: { info: (record) => records.push(record), error: (record) => records.push(record) } }, lifetime),
+      buildServer: (context, lifetime) => createFetchToolServer(context, { operations: { fetch: operation, search: async () => { throw new Error('Unexpected search call'); } }, logger: { info: (record) => records.push(record), error: (record) => records.push(String(record)) } }, lifetime),
       reportFailure: () => {},
     });
     const providerResources = new AsyncDisposableStack();
@@ -117,12 +117,12 @@ for (const era of mcpProtocolEras) {
         expectedResource: resource,
         resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp',
       },
-      buildServer: (context, lifetime) => createFetchToolServer(context, { operations: { fetch: operation, search: async () => { throw new Error('Unexpected search call'); } }, logger: { info: (record) => records.push(record), error: (record) => records.push(record) } }, lifetime),
+      buildServer: (context, lifetime) => createFetchToolServer(context, { operations: { fetch: operation, search: async () => { throw new Error('Unexpected search call'); } }, logger: { info: (record) => records.push(record), error: (record) => records.push(String(record)) } }, lifetime),
       reportFailure: () => {},
     });
     const application = composeApplication((request) => server.fetch(request), server);
     const listener = await startHttpServer(application.handle, {
-      listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href, shutdownGraceMs: 3_000, logger: { error: (message) => failures.push(message) },
+      listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href, shutdownGraceMs: 3_000, logger: { error: (message) => failures.push(String(message)) },
     });
     let client: Client | undefined = undefined;
     t.after(async () => {

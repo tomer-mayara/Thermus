@@ -1,3 +1,4 @@
+import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { once } from 'node:events';
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo, Socket } from 'node:net';
@@ -10,7 +11,7 @@ export interface HttpServerOptions {
   readonly listen: ListenAddress;
   readonly publicBaseUrl: string;
   readonly shutdownGraceMs?: number;
-  readonly logger?: { error(message: string): void };
+  readonly logger?: Pick<SystemLog, 'error'>;
 }
 
 export interface HttpServer {

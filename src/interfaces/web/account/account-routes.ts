@@ -1,3 +1,5 @@
+import { LoggingRoutes, type LoggingRoutesOptions } from './logging-routes.ts';
+import type { AuditLog } from '../../../logs/audit/audit-log.ts';
 import { waitForRequest } from '../../../runtime/http/request-cancellation.ts';
 import type { AccessResolver, RequestContext } from '../../../accounts/identity/access-context.ts';
 import type { OrganizationAdministration } from '../../../accounts/organizations/organization-administration.ts';
@@ -27,6 +29,8 @@ export interface HostedAccountRoutesOptions {
   readonly reportFailure: AccountFailureReporter;
   readonly operation?: AccountOperation;
   readonly signupUrl?: string;
+  readonly logging?: LoggingRoutesOptions['service'];
+  readonly audit?: Pick<AuditLog, 'administrationChanged' | 'destinationChanged'>;
 }
 
 export class HostedAccountRoutes {
@@ -40,6 +44,7 @@ export class HostedAccountRoutes {
   private readonly paths: { readonly organizations: string; readonly selection: string };
   private readonly destinations: ReturnDestinations;
   private readonly administration: AdministrationRoutes;
+  private readonly logging: LoggingRoutes;
 
   constructor(options: HostedAccountRoutesOptions) {
     this.session = options.session;
@@ -55,7 +60,8 @@ export class HostedAccountRoutes {
       selection: new URL('organizations/select', publicBaseUrl).pathname,
     };
     this.destinations = new ReturnDestinations(publicBaseUrl, this.paths.organizations);
-    this.administration = new AdministrationRoutes({ publicBaseUrl, organizations: this.organizations, organizationsPage: this.paths.organizations });
+    this.logging = new LoggingRoutes({ publicBaseUrl, organizationsPage: this.paths.organizations, service: options.logging, audit: options.audit });
+    this.administration = new AdministrationRoutes({ publicBaseUrl, organizations: this.organizations, organizationsPage: this.paths.organizations, audit: options.audit });
   }
 
   async handle(request: Request): Promise<Response> {
@@ -91,6 +97,8 @@ export class HostedAccountRoutes {
     request.signal.throwIfAborted();
     if (decision.allowed !== true) return accessDeniedPage(this.paths.organizations);
     const context = requireTrustedTenant(frozenCopy(decision.context));
+    const logging = this.logging.handlerFor(path);
+    if (logging !== undefined) return logging(request, session, context);
     const administration = this.administration.handlerFor(path);
     if (administration !== undefined) return administration(request, session, context);
     if (this.operation === undefined) return noticePage('notFound');

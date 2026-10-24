@@ -79,14 +79,18 @@ export class ChangeRecording {
   // The record holds only these fields, so that no credential of the session or of an invitation reaches it.
   private keep(entry: ChangeEntry, outcome: ChangeOutcome): void {
     const { actor, organizationId, target, action, role } = entry;
-    this.records.record(Object.freeze({
-      time: this.clock().toISOString(),
-      actor: Object.freeze({ authority: actor.authority, subject: actor.subject }),
-      organizationId,
-      target: Object.freeze({ ...target }),
-      action,
-      ...(role === undefined ? {} : { role }),
-      outcome,
-    }));
+    try {
+      this.records.record(Object.freeze({
+        time: this.clock().toISOString(),
+        actor: Object.freeze({ authority: actor.authority, subject: actor.subject }),
+        organizationId,
+        target: Object.freeze({ ...target }),
+        action,
+        ...(role === undefined ? {} : { role }),
+        outcome,
+      }));
+    } catch {
+      // Recording cannot change the outcome or cause a completed directory write to be repeated.
+    }
   }
 }
