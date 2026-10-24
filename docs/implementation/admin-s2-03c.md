@@ -104,3 +104,23 @@ storage. S2-04 still requires the owner rollout, approved disclosure review,
 free-capacity checks, and deployment/recovery evidence. The approved legal bundle
 is unchanged. Release review must account for the newly enabled export of bounded
 customer content; prior implementation records describe their historical slices.
+
+
+## Logging object CR follow-up
+
+The [logging object CR](logs-object-refactor-change-request.md) keeps the sender's
+private attempt function and existing transport helpers. Its additional
+characterization retains the exact nonempty Buffer passed to the HTTP request.
+After a warning response, both promises remain pending while socket close is
+held. Abort clears that Buffer before close, returns cancellation, and leaves
+physical settlement pending. Without cancellation, close permits the original
+warning and settlement to finish. Both cases release close in cleanup.
+
+The restack retains the required settings sender and distinct System sink roles.
+Read, Save, and export-authorization test compositions now supply explicit local
+Test sender stubs. Production composition continues to share one real sender
+between saved Test and export. This follow-up changes no production behavior.
+The 26 existing sender cases and 50 related composition cases passed before the
+follow-up. The added checks characterize existing behavior; no false red step was
+introduced. Current local evidence is under
+`ast-report/logs-refactor-development/settlement-characterization/`.

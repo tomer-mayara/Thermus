@@ -2,12 +2,15 @@ import { AuditLog, type AuditEvent } from '../../../src/logs/audit/audit-log.ts'
 import { AuditSnapshots } from '../../../src/logs/audit/audit-snapshots.ts';
 import { AuditCollector } from '../../../src/logs/audit/audit-collector.ts';
 import { DestinationSettingsService } from '../../../src/logs/audit/destination-settings-service.ts';
+import type { DestinationTestSender } from '../../../src/logs/audit/destination-test.ts';
 import type { AuditDestination } from '../../../src/logs/audit/audit-send.ts';
 import { DestinationSettingsFake } from '../doubles/logging/destination-settings-fake.ts';
 
+const senderStub: DestinationTestSender = { send: async () => { throw new Error('Save and export authorization must not send a Test.'); } };
+
 export function composeAuditCollectorSite() {
   const store = new DestinationSettingsFake();
-  const service = new DestinationSettingsService(store, Buffer.alloc(32, 7));
+  const service = new DestinationSettingsService(store, Buffer.alloc(32, 7), senderStub);
   const sent: { destination: AuditDestination; event: AuditEvent }[] = [];
   const collector = new AuditCollector(service, { start: (destination, event) => {
     sent.push({ destination, event });

@@ -185,34 +185,86 @@ test('Given native work outlives its public timeout, when observed before dispos
   assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
 });
 
-test('Given a warning response and a socket whose close is pending, when the caller cancels, then the public result stays bounded and physical settlement still waits for close', async t => {
+function holdWarningSocketClose(t: import('node:test').TestContext) {
   const socket = new HandshakeSocketStub(); socket.remoteAddress = '8.8.8.8'; socket.autoClose = false;
+  const requestBodies: Buffer[] = [];
   t.mock.method(dns, 'lookup', async () => [{ address: '8.8.8.8', family: 4 }]);
   t.mock.method(tls, 'connect', () => { queueMicrotask(() => socket.emit('secureConnect')); return socket; });
   t.mock.method(https, 'request', (...args: unknown[]) => {
     const respond = args[1] as (response: unknown) => void;
     const response = Object.assign(new EventEmitter(), { statusCode: 200, headers: { 'content-type': 'application/json' } });
-    const request = Object.assign(new EventEmitter(), { end() {
+    const request = Object.assign(new EventEmitter(), { end(body: Buffer) {
+      requestBodies.push(body);
       respond(response);
       queueMicrotask(() => { response.emit('data', Buffer.from('{"partialSuccess":{"rejectedLogRecords":"0","errorMessage":"private warning"}}')); response.emit('end'); });
     } });
     return request;
   });
+  return {
+    socket, requestBodies,
+    releaseClose() { if (!socket.closed) { socket.closed = true; socket.emit('close'); } },
+  };
+}
+
+test('Given a warning response and a socket whose close is pending, when the caller cancels, then the sent payload is cleared before physical settlement', async t => {
+  const { socket, requestBodies, releaseClose } = holdWarningSocketClose(t);
   const controller = new AbortController();
   const attempt = new OtlpAuditSender().start(destination, event, controller.signal);
   let outcomeDone = false;
   let disposed = false;
   void attempt.outcome.then(() => { outcomeDone = true; });
   void attempt.settled.then(() => { disposed = true; });
-  await new Promise<void>(resolve => setImmediate(resolve));
-  assert.equal(socket.destroyed, true);
-  assert.equal(socket.closed, false);
-  assert.equal(outcomeDone, false);
-  assert.equal(disposed, false);
-  controller.abort();
-  assert.deepEqual(await attempt.outcome, { kind: 'cancelled' });
-  assert.equal(disposed, false);
-  socket.closed = true; socket.emit('close');
-  await attempt.settled;
+  try {
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(socket.destroyed, true);
+    assert.equal(socket.closed, false);
+    assert.equal(requestBodies.length, 1);
+    const body = requestBodies[0];
+    assert.ok(Buffer.isBuffer(body));
+    assert.ok(body.length > 0);
+    assert.match(body.toString('utf8'), /"eventName":"mcp.tool.completed"/);
+    assert.match(body.toString('utf8'), /public result/);
+    assert.equal(outcomeDone, false);
+    assert.equal(disposed, false);
+
+    controller.abort();
+
+    assert.equal(requestBodies[0], body);
+    assert.ok(body.every(byte => byte === 0));
+    assert.equal(socket.closed, false);
+    assert.deepEqual(await attempt.outcome, { kind: 'cancelled' });
+    assert.equal(disposed, false);
+  } finally {
+    controller.abort();
+    releaseClose();
+    assert.equal(await attempt.settled, undefined);
+  }
   assert.equal(disposed, true);
+});
+
+test('Given a warning response and a socket whose close is pending, when close completes without cancellation, then the original warning and physical settlement finish', async t => {
+  const { socket, requestBodies, releaseClose } = holdWarningSocketClose(t);
+  const attempt = new OtlpAuditSender().start(destination, event);
+  let outcomeDone = false;
+  let disposed = false;
+  void attempt.outcome.then(() => { outcomeDone = true; });
+  void attempt.settled.then(() => { disposed = true; });
+  try {
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(socket.destroyed, true);
+    assert.equal(socket.closed, false);
+    assert.equal(requestBodies.length, 1);
+    assert.match(requestBodies[0].toString('utf8'), /"eventName":"mcp.tool.completed"/);
+    assert.equal(outcomeDone, false);
+    assert.equal(disposed, false);
+
+    releaseClose();
+
+    assert.deepEqual(await attempt.outcome, { kind: 'warning' });
+    assert.equal(await attempt.settled, undefined);
+    assert.equal(disposed, true);
+  } finally {
+    releaseClose();
+    await attempt.settled;
+  }
 });

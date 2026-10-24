@@ -4,15 +4,18 @@ import dns from 'node:dns/promises';
 import { AuditLog } from '../../../../src/logs/audit/audit-log.ts';
 import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 import { DestinationSettingsService } from '../../../../src/logs/audit/destination-settings-service.ts';
+import type { DestinationTestSender } from '../../../../src/logs/audit/destination-test.ts';
 import { OtlpAuditSender } from '../../../../src/logs/audit/otlp-audit-sender.ts';
 import { DestinationSettingsFake } from '../../../support/doubles/logging/destination-settings-fake.ts';
+
+const senderStub: DestinationTestSender = { send: async () => { throw new Error('Save and export authorization must not send a Test.'); } };
 
 const desired = { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer' as const, enabled: true, token: 'saved-token' };
 
 test('Given queued work for one saved revision, when another instance changes that version, then authorization drops old work and recovers only the current tenant credential', async () => {
   const store = new DestinationSettingsFake();
-  const service = new DestinationSettingsService(store, Buffer.alloc(32, 6));
-  const other = new DestinationSettingsService(store, Buffer.alloc(32, 6));
+  const service = new DestinationSettingsService(store, Buffer.alloc(32, 6), senderStub);
+  const other = new DestinationSettingsService(store, Buffer.alloc(32, 6), senderStub);
   const saved = await service.save('tenant-a', desired);
   assert.equal(saved.status, 'saved'); if (saved.status !== 'saved') return;
   const savedRevision = saved.settings.revision;
