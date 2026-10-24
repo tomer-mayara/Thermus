@@ -251,7 +251,7 @@ flowchart TB
     storage_app["app · TypeScript<br/>Compose service<br/>Own SQL lifetime"]
     storage_web["web · TypeScript<br/>Audit logs read / Save / Test<br/>Trusted action capture"]
     storage_identity["identity · TypeScript<br/>Access contracts"]
-    storage_logging["audit-logs · TypeScript / pg<br/>Validate and protect token<br/>Atomic Save; saved-revision Test"]
+    storage_logging["audit-logs · TypeScript / pg<br/>Protect settings; activity snapshots<br/>Atomic Save; saved-revision Test"]
   end
   storage_data[("L2: PostgreSQL<br/>Private tenant settings")]
   storage_collector["External system: customer Collector<br/>One synthetic Test / OTLP HTTP JSON"]
@@ -300,7 +300,8 @@ App also constructs SystemLog and the hosted settings service/runtime. Audit-log
 retains a type-only ChangeOutcome dependency on organizations; that source edge
 is omitted here. The saved-destination Test uses the sender in production. MCP and protected web
 boundaries capture customer events through a supplied AuditLog. The composition
-uses a discard sink until settings snapshots and bounded dispatch are supplied.
+uses activity-driven enabled/revision snapshots when hosted settings storage is
+available. Its downstream sink refuses events until bounded dispatch is supplied.
 
 ```mermaid
 flowchart TB
@@ -308,7 +309,7 @@ flowchart TB
     logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings lifetime"]
     logs_mcp["mcp · TypeScript<br/>Final public capture<br/>Content-free diagnostics"]
     logs_web["web · TypeScript<br/>Trusted Admin capture<br/>Settings and invitation routes"]
-    logs_audit["audit-logs · TypeScript / pg<br/>Redact and bound events<br/>Settings, Test, one-shot sender"]
+    logs_audit["audit-logs · TypeScript / pg<br/>Redact, bound, and gate capture<br/>Activity snapshots; settings / Test"]
     logs_system["system-logs · TypeScript<br/>Internal diagnostics<br/>Caller location retained"]
   end
   logs_collector["External: customer Collector<br/>Synthetic Test / OTLP HTTPS"]
@@ -343,10 +344,16 @@ and synchronous sink failures. It imports no system logger. There is no shared
 base class or forwarding path between these owners.
 AuditLog needs no separate role interface while it has one implementation.
 AuditEventSink is the neutral destination contract: its synchronous
-`writeAuditEvent` call may refuse admission and does not await export. App supplies
-one AuditLog to hosted MCP and web routes; the self-hosted MCP composition also
-uses a discard sink. The default drops events. No queue, activity-driven settings
-snapshot, or customer completion dispatch is supplied in this candidate.
+`writeAuditEvent` call may refuse admission and does not await export. When hosted
+settings storage is available, app supplies one AuditLog backed by
+[AuditSnapshots](../src/logs/audit/audit-snapshots.ts) to MCP and web. The snapshot
+owner uses the existing settings store to load only enabled/revision metadata
+for future activity. Fresh enabled snapshots forward detached, frozen events
+with a saved revision to RevisionBoundAuditSink; its default refuses every event.
+Unknown, disabled, and expired snapshots drop the current event. Loading never
+waits in a product response and never revives the triggering content. Without
+hosted storage, and in the local edition, app retains the discard AuditLog.
+There is no customer completion queue or dispatch in this candidate.
 
 MCP captures validated fetch/search input and final public text after SDK
 projection and safe error/cancellation mapping. Invalid arguments, unknown tools,
@@ -358,6 +365,28 @@ context. Submitted organization IDs cannot route events. A stale A form naming B
 stays in A's trusted tenant context. Unattributable requests produce no customer
 event. A Test action event is separate from its labelled synthetic Test record.
 Settings reads and sender/retry diagnostics do not capture themselves.
+
+The [snapshot state owner](../src/logs/audit/audit-snapshot-state.ts) sets a
+30-second freshness period, five-second failure backoff, 2.5-second load deadline,
+two scheduled/active loads, 256 combined resident/load map entries, and 256 KiB of
+accounted metadata. Tenant IDs are at most 1,024 UTF-8 bytes; saved revisions are
+at most 128. Resident accounting reserves tenant bytes, the full revision
+allowance, and 128 bookkeeping bytes. A load also reserves tenant bytes and 256
+bookkeeping bytes, including its reference to an expired resident after eviction. This bounds retained fields and record counts; it does not
+measure JavaScript heap. Entries hold no endpoint, ciphertext, credential, or
+triggering content. Freshness/backoff eviction happens on activity, with no idle
+poll or refresh timer. Unexpired failure backoff cannot be evicted to bypass it.
+
+An absolute load deadline starts at admission; expired work cannot start a read or
+apply a result even if its timer has not run. Expiry invalidates capture but keeps
+an active read's global and per-tenant
+reservation until the underlying store promise settles. An identity check rejects
+late results after timeout, eviction, or close. Close cancels scheduled callbacks
+and deadlines, clears resident snapshots, and prevents new reads without waiting
+for an uncooperative store. At most two started unresolved read reservations can
+remain until settlement; the SQL owner bounds and closes its separate work.
+Snapshots are not authority for remote dispatch; S2-03c must freshly check saved
+settings before each attempt. See the [snapshot record](../docs/implementation/admin-s2-03b.md).
 
 The [projection owner](../src/logs/audit/audit-event-projection.ts) reserves
 serialized input/metadata space before assigning result space. Fixed limits are
@@ -504,8 +533,8 @@ the composed handler, and system-logs formats internal engineering diagnostics.
 Audit-logs owns the optional hosted settings service, credential protection,
 store, bounded SQL runtime, and saved-destination Test. Web calls the service
 for the trusted current tenant and actor. Test sends one synthetic event; the
-separate tool and administration capture uses a supplied sink. Its default drops
-events; customer completion dispatch remains absent.
+separate tool and administration capture shares hosted activity-driven snapshots.
+The downstream sink refuses events; customer completion dispatch remains absent.
 
 An **import dependency** points from an importer to the component whose module
 it imports. The rules count runtime and whole-statement type-only imports
@@ -859,7 +888,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, tenant destination validation and credential protection, atomic settings revisions, bounded saved-destination Tests, and one-shot Collector requests. | AuditLog event methods and AuditEventSink; public destination-settings service and Test outcomes, neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender. MCP and web capture bounded customer events through a supplied sink. The default sink drops them; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection and activity-driven settings snapshots, tenant destination validation and credential protection, atomic settings revisions, bounded saved-destination Tests, and one-shot Collector requests. | AuditLog event methods and AuditEventSink; public destination-settings service and Test outcomes, neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender. MCP and web capture bounded customer events through shared hosted activity-driven snapshots. The downstream sink refuses them; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
@@ -930,7 +959,8 @@ independent of SQL. The local edition does not open this pool.
 
 Hosted application close starts MCP cleanup and SQL cleanup together. The SQL
 runtime rejects new work, expires admitted calls and bounds pool closure within
-the existing process shutdown deadline. The settings datastore persists across
+the existing process shutdown deadline. Hosted composition first closes its
+snapshot owner so no new settings load can start or late result restore capture. The settings datastore persists across
 runtime closure; tool content and export queues are not stored here.
 
 ## Design choices and current soft spots
@@ -958,7 +988,8 @@ The following limits affect architectural decisions today:
   [accountChangeRecorder](../src/app/application.ts). Step records are explicitly
   [best effort](../src/pipelines/execution/step-record.ts). These streams provide
   no customer audit access. Separate customer capture is wired through a supplied
-  AuditLog with a discard default. Settings snapshots and bounded dispatch remain
+  AuditLog. Hosted activity-driven snapshots gate future capture; a default
+  downstream refusal still prevents completion dispatch. Bounded dispatch remains
   planned; Thermus does not store audit event history.
 - [BillingFree](../src/accounts/billing/billing-free.ts) returns a free plan and
   zero billed seats, including after seat updates. The billing role is a seam,

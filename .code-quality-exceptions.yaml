@@ -114,3 +114,13 @@ exceptions:
     bound: 37
     reason: This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP.
     expires: 2026-12-24
+  - path: src/logs/audit/audit-snapshots.ts
+    metric: mi
+    bound: 52
+    reason: One owner keeps activity-only admission, metadata accounting, freshness, backoff, physical read reservations, absolute deadlines and shutdown consistent. Each function has at most eight paths; splitting these shared lifetime invariants across more owners would hide the resource rule. Focused cases cover cold loads, failures, late completion, eviction and close.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-snapshot-state.ts
+    metric: mi
+    bound: 67
+    reason: Small state contracts and pure projections keep fixed limits, enabled/revision validation and detached bounded AuditEvent ownership explicit. Four functions have at most five paths. A cache framework or per-field modules would spread one metadata contract.
+    expires: 2026-12-24

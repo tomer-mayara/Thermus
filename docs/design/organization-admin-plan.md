@@ -5,10 +5,13 @@ recorded under its tickets. Release prerequisites remain; merged does not mean
 released or cut over. This revision records the audit API foundation and the
 organization settings UI implemented in [open PR #238](https://github.com/tomer-mayara/Thermus/pull/238).
 The S2-02a candidate adds an isolated one-shot OTLP sender; see its
-[implementation record](../implementation/admin-s2-02a.md). S2-02b adds the saved-destination Test. The S2-03a candidate adds bounded customer
+[implementation record](../implementation/admin-s2-02a.md). S2-02b adds the
+saved-destination Test. The S2-03a candidate adds bounded customer
 capture at MCP and protected Admin boundaries; see its
-[implementation record](../implementation/admin-s2-03a.md). Its default sink drops
-events. Activity-driven settings snapshots and queued delivery remain S2-03b/c.
+[implementation record](../implementation/admin-s2-03a.md). The S2-03b candidate
+adds activity-driven settings snapshots; see its
+[implementation record](../implementation/admin-s2-03b.md). Its downstream sink
+refuses events. Bounded queued delivery remains S2-03c.
 This candidate is not release evidence.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
@@ -58,8 +61,10 @@ checks and remaining release holds. S2-01a implements the private audit destinat
 settings store and bounded SQL runtime. S2-01b in PR #238 implements the Admin
 settings page and Save. S2-02a implements the isolated sender, and S2-02b adds
 the saved-destination Test. The S2-03a candidate captures customer tool/Admin
-events through a supplied sink. Its default sink drops events until S2-03b/c add
-settings snapshots and bounded dispatch.
+events through a supplied sink. S2-03b adds fresh enabled/revision snapshots from
+activity-driven settings reads. Unknown, disabled, or expired snapshots drop the
+current event. The downstream sink still refuses events until S2-03c adds bounded
+admission and dispatch.
 [Tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 now omit tool URLs, queries, reasons, and results from operator output.
 
@@ -571,7 +576,8 @@ the destination store/runtime and the concrete event-specific `AuditLog` class.
 extends `toolCompleted` with validated input and final public result copies. The
 event owner redacts recognized credentials and bounds serialized UTF-8 bytes.
 Invitation and Audit logs actions use event-specific metadata methods. Capture
-uses independently trusted boundary context; the default sink drops each event.
+uses independently trusted boundary context. S2-03b gates hosted capture on
+fresh enabled/revision metadata, with a downstream sink that refuses each event.
 Add administration event methods only as the actions ship. Audit events have no generic `info`/`error` API and no automatic source or stack metadata. Never
 repurpose a system logger or its OTel adapter, or share their output stream with
 audit delivery. Shared classes under `src/logs/` are appropriate only for real
@@ -591,8 +597,8 @@ sink plugin framework, or generic settings backend in Slice 2.
 Slice 2 promises no in-app log viewer. S2-01b implements the Audit logs settings
 UI and Save in PR #238. S2-02b adds the optional saved-destination Test
 with one synthetic event. S2-03a adds MCP/admin capture, redaction, and truncation
-through a supplied sink. It establishes no production settings snapshot or
-Collector dispatch for those captured events.
+through a supplied sink. S2-03b adds hosted activity-driven settings snapshots;
+S2-03c must still supply customer completion dispatch.
 The technical database, role, SQL table, and environment names remain compatible,
 including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
 
@@ -1967,7 +1973,7 @@ Scenario: Recover from a failed load without idle reads
   Then loading recovers for future events and idle tenants cause no reads
 ```
 
-**Gap / expected red.** There is no activity-driven customer settings snapshot owner.
+**Gap / expected red at the parent.** There is no activity-driven customer settings snapshot owner.
 Cold-start, cached-disabled refresh, and recovery cases should be red. The 03a capture
 contract and product response isolation stay green.
 
@@ -2006,9 +2012,11 @@ Keep owner units with audit, real cross-package collaboration under `test/integr
 and public cold/recovery acceptance under `test/acceptance/`. Snapshot freshness is not
 authority to dispatch; 03c owns current store checks.
 
-**Done.** Activity-only loading, one-in-flight bounds, cached-disabled refresh, future-only
-capture, recovery, and no-idle-read acceptance passes. Numeric limits and failure behavior
-are documented for 04 and remain internal engineering choices.
+**Implementation candidate.** The [S2-03b record](../implementation/admin-s2-03b.md)
+describes the snapshot owner, fixed resource bounds, failure behavior, and shutdown.
+Cold/disabled/expired activity drops the current event; loads affect future capture
+only. The downstream sink refuses events, so no customer dispatch is established.
+Acceptance and full-candidate execution evidence remain required before Ready.
 
 #### S2-03c — Bounded queue and current-revision dispatch
 

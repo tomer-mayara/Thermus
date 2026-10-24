@@ -962,7 +962,8 @@ content; they establish no client receipt, settings snapshot, or delivery.
 - `test/unit/organizations/change-records.test.ts` specifies preservation of a completed provider write and original check/provider failure when post-write recording throws.
 - `test/integration/mcp/tool-completion-record.test.ts` and `test/unit/mcp/tool-completion-record.test.ts` specify content-free operator records. The renderer setup, HTTP fetch, and renderer runtime specifications retain this privacy assertion.
 
-[] Activity-driven settings snapshots and bounded Collector dispatch remain S2-03b/c under the [Slice 2 plan](../design/organization-admin-plan.md)
+The S2-03b snapshot candidate is specified below.
+[] Bounded queue admission and Collector dispatch remain S2-03c under the [Slice 2 plan](../design/organization-admin-plan.md)
 
 **Customer audit Collector sender — S2-02a candidate**
 
@@ -1001,7 +1002,22 @@ complete candidate review records their local results.
 The PostgreSQL settings group remains `npm run test:logging:postgres`. Neither
 controlled Collector proof nor a successful Test proves continued delivery or
 durable storage. Tool/admin capture uses a controlled sink in S2-03a; activity-driven
-settings snapshots and aggregate queue bounds belong to S2-03b/c.
+settings snapshots are specified in S2-03b below; aggregate queue bounds and
+dispatch remain S2-03c.
+
+**Activity-driven audit settings snapshots — S2-03b candidate**
+
+The [snapshot record](../implementation/admin-s2-03b.md) gives fixed bounds and
+lifetime rules. The following source specifications use a controlled downstream
+sink; execution evidence belongs to the complete-candidate review.
+
+- `test/acceptance/logging/audit/activity-snapshots.test.ts` specifies cold enabled loading, remote Enable after cached disabled state, recovery on later activity, future-only capture, and no idle reads.
+- `test/acceptance/logging/audit/hosted-snapshot-composition.test.ts` specifies one shared snapshot between real hosted MCP and invitation routes, restart, remote Enable, unavailable reads, and two trusted tenants.
+- `test/unit/logging/audit/audit-snapshots.test.ts` specifies load deduplication, freshness/backoff, byte/count/admission bounds, absolute deadlines, unresolved-read reservations, eviction, detached immutable tenant/revision binding, and close.
+- `test/integration/auth/hosted-audit-snapshot-lifecycle.test.ts` specifies snapshot closure before hosted storage closure and exclusion of late read results.
+
+These checks do not prove queue admission, fresh-store dispatch authorization,
+network delivery, or Collector storage. S2-03c supplies those dispatch rules.
 
 **System sink contract** (`test/acceptance/logging/system/system-log-sink.test.ts`, `test/unit/logging/system/system-logger.test.ts`)
 

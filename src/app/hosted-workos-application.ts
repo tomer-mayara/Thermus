@@ -1,5 +1,7 @@
 import type { SystemLog } from '../logs/system/system-logger.ts';
-import type { AuditLog } from '../logs/audit/audit-log.ts';
+import { AuditLog } from '../logs/audit/audit-log.ts';
+import { AuditSnapshots, type AuditSnapshotsOptions, type RevisionBoundAuditSink } from '../logs/audit/audit-snapshots.ts';
+import type { ToolOperations } from './fetch-tool.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
@@ -36,7 +38,12 @@ export interface WorkOSConnection {
 export interface WorkOSApplicationParts {
   readonly logger: SystemLog;
   readonly loggingStorage?: HostedLoggingStorage;
+  // Explicit audit and tool-server overrides take precedence in development compositions.
   readonly audit?: AuditLog;
+  readonly toolOperations?: ToolOperations;
+  // Until S2-03c supplies dispatch, the default downstream refuses every admitted event.
+  readonly auditSink?: RevisionBoundAuditSink;
+  readonly snapshotOptions?: AuditSnapshotsOptions;
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
@@ -52,7 +59,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const { approvedOrganizationDocuments } = await import('../accounts/providers/workos/workos-approved-organization-documents.ts');
   const signup = { enabled: loadSelfServeSignupEnabled(environment), documents: approvedOrganizationDocuments };
   const connection = await openWorkOSConnection(config, logger, environment);
-  const { createHostedToolOperations, fetchToolServers } = await import('./fetch-tool.ts');
+  const { createHostedToolOperations } = await import('./fetch-tool.ts');
   const operations = createHostedToolOperations(environment, logger);
   if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
@@ -63,8 +70,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   await using resources = new AsyncDisposableStack();
   const loggingStorage = await openLoggingStorage(environment, logger);
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
-  const audit = discardAuditLog();
-  const application = await composeWorkOSApplication(config, connection, { logger, audit, buildServer: fetchToolServers(operations, logger, audit), signup, loggingStorage });
+  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage });
   resources.move();
   return portal.withApplication(application);
 }
@@ -89,17 +95,34 @@ export async function openWorkOSConnection(config: RouteConfig, logger: SystemLo
 }
 
 export async function composeWorkOSApplication(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts): Promise<Application> {
+  using owned = new DisposableStack();
+  const snapshots = parts.audit === undefined && parts.loggingStorage !== undefined
+    ? owned.adopt(new AuditSnapshots(parts.loggingStorage.store, parts.auditSink ?? { admit: () => false }, parts.snapshotOptions), (capture) => capture.close())
+    : undefined;
+  const audit = parts.audit ?? (snapshots === undefined ? discardAuditLog() : new AuditLog(snapshots));
+  let buildServer = parts.buildServer;
+  if (buildServer === undefined && parts.toolOperations !== undefined) {
+    const { fetchToolServers } = await import('./fetch-tool.ts');
+    buildServer = fetchToolServers(parts.toolOperations, parts.logger, audit);
+  }
+  let loggingStorage = parts.loggingStorage;
+  if (loggingStorage !== undefined && snapshots !== undefined) {
+    const storage = loggingStorage;
+    loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
+  }
   const { BillingFree } = await import('../accounts/billing/billing-free.ts');
   const billing = new BillingFree();
-  const providerParts = await workosProviderParts(config, connection, { ...parts, billing });
-  return composeHostedApplication(config, providerParts, {
+  const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing });
+  const application = composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
-    audit: parts.audit ?? discardAuditLog(),
+    audit,
     billing,
     operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
-  }, parts.loggingStorage);
+  }, loggingStorage);
+  owned.move();
+  return application;
 }
 
 async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {

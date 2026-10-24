@@ -428,8 +428,11 @@ after SDK projection and safe failure/cancellation mapping. It uses the trusted
 context, redacts recognized credentials, and bounds only the exported copy.
 Invalid arguments and unknown tools have no customer event. The client result
 stays complete; fetch withholding retains its existing empty-success projection.
-The default customer sink drops events. S2-03b/c must add settings snapshots
-and bounded delivery; capture does not prove client receipt or Collector storage.
+Hosted capture uses activity-driven enabled/revision snapshots when settings
+storage is available. Cold, disabled, or expired snapshots drop the current
+event; loads affect only future activity and never wait in the tool response.
+The downstream sink still refuses events. S2-03c must add bounded delivery;
+capture does not prove client receipt or Collector storage.
 See the [capture record](../implementation/admin-s2-03a.md) for fixed bounds and
 [search records](mcp-search-tool.md#execution-and-logging) for the search contract.
 

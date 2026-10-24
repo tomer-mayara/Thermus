@@ -145,7 +145,7 @@ export function accountChangeRecorder(logger: SystemLog): ChangeRecorder {
   return { record: (entry) => logger.info(`Account change record: ${JSON.stringify(entry)}`) };
 }
 
-// Capture is wired now. Activity settings and bounded export replace this sink in S2-03b/c.
+// Local operation and hosted operation without storage discard customer audit events.
 export function discardAuditLog(): AuditLog {
   return new AuditLog({ writeAuditEvent: () => {} });
 }
