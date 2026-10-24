@@ -304,12 +304,18 @@ including nested actor and target fields, to a supplied AuditEventSink.
 It adds no source location or exception stack, has no generic message method,
 and catches a synchronous sink failure. It imports no system logger. There is
 no shared base class or forwarding path between these owners.
+The neutral sink contract separates projection from delivery; its synchronous
+`writeAuditEvent` call does not await export. No production sink is wired, and
+there is no SQL audit event writer.
 
 The event API currently carries metadata only. S2-03a must add bounded, redacted
 MCP inputs and final public results before production capture. The customer
 feature will export to the organization's Collector configured by its Admins;
 there is no in-app event viewer in Slice 2. Storage and event projection share
 the audit owner, but neither calls the other in this foundation.
+`DestinationSettingsStore` stores endpoint, auth, enabled state, encrypted
+credential, and revision. It is a settings port, separate from AuditEventSink;
+the Slice 2 PostgreSQL settings store holds no audit history or event buffer.
 
 ### Selected C4 components: local authentication in the Node server
 

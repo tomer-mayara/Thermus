@@ -558,8 +558,18 @@ repurpose a system logger or its OTel adapter, or share their output stream with
 audit delivery. Shared classes under `src/logs/` are appropriate only for real
 common behavior; these roles require no shared base class.
 
-Slice 2 gives customers access through their configured organization Collector.
-It promises no in-app log viewer. This change ships no Audit logs UI or delivery;
+Slice 2's first production audit sink sends OpenTelemetry OTLP/HTTP JSON to the
+organization's configured Collector. The existing `AuditEventSink.writeAuditEvent`
+contract separates event capture/projection from delivery. S2-03c implements this
+sink with bounded memory admission and dispatch through the S2-02a sender;
+the synchronous call does not wait for export. `DestinationSettingsStore` is a
+separate settings port, not an event sink. The Slice 2 PostgreSQL settings store
+holds only destination configuration, never audit history or an event buffer.
+A future SQL or other sink adapter can use the same event contract without
+changing capture. Add no such adapter, fan-out,
+sink plugin framework, or generic settings backend in Slice 2.
+
+Slice 2 promises no in-app log viewer. This change ships no Audit logs UI or delivery;
 S2-03a still owns production MCP/admin capture, redaction, and truncation.
 The technical database, role, SQL table, and environment names remain compatible,
 including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
@@ -740,8 +750,10 @@ data. WorkOS owns accounts/memberships; PostgreSQL holds only application facts:
 | 2.5 | Per-org serialized-operation and unknown external-write records that survive crashes/restarts. |
 | 3 | Role changes reuse those records; MFA adds role-policy flags, factor associations, and scoped recovery state, never TOTP secrets. |
 
-Exported tool content and its bounded best-effort queue stay in memory, never in
-the database; store no TOTP secrets or general session registry.
+Thermus holds pending Slice 2 audit events, including tool content and
+administration metadata, only in bounded memory until it sends or drops them.
+It writes no audit history or event buffer to the PostgreSQL settings store.
+Store no TOTP secrets or general session registry.
 
 Use [Supabase Free operating limits](https://supabase.com/pricing): ongoing $0,
 500 MB database, shared CPU/500 MB RAM, 5 GB egress, two active Free projects, no published monthly
@@ -1507,7 +1519,9 @@ documents, and manual rollout proofs need no tests of file text or prose.
 
 **Implementation record.** S2-01a adds the server store contract, plain `pg`
 adapter, bounded runtime, hosted configuration/lifecycle integration, and reviewed
-scoped schema/role setup. See [scope and verification limits](../implementation/admin-s2-01a.md).
+scoped schema/role setup for destination settings only. It adds no audit event
+writer, event table, or durable export buffer. See
+[scope and verification limits](../implementation/admin-s2-01a.md).
 S2-01b and later Slice 2 behavior remains planned. Actual Supabase setup and
 TLS/grant/backup/restore/$0 proof remain S2-04 owner gates.
 
@@ -1545,7 +1559,8 @@ public contract; browser Save acceptance arrives in 01b.
 2. Red: interface cases specify tenant-scoped read and atomic expected-revision Save,
    including absence, concurrent first saves, stale writes, and disable→enable. The
    destination owner supplies semantic no-op decisions; the store checks revision atomically.
-   Green: implement plain `pg` SQL with one atomic statement per Save and one
+   Green: implement plain `pg` SQL for endpoint, auth, enabled state, encrypted
+   credential, and revision only, with one atomic statement per Save and one
    revision per actual change.
    Refactor to a portable narrow contract; no Supabase SDK, ORM, general repository, or second
    adapter. Store/portal contracts expose no WorkOS or Supabase SDK types. Domain credential
@@ -1664,7 +1679,7 @@ Test arrives in 02b.
 ```gherkin
 Scenario: Send one safe Collector request
   Given a validated public HTTPS destination and None or Bearer auth supplied to the sender
-  When one labelled event is submitted to the sender
+  When one projected audit event is submitted to the sender
   Then the Collector receives valid OTLP/HTTP JSON with only the supplied auth
   And the caller gets the bounded protocol outcome
 
@@ -1683,9 +1698,11 @@ production public-HTTPS egress.
 
 1. Red: one sender-interface contract specifies full acceptance, warning with zero rejected
    records, partial rejection, permanent failure, transient failure, and unconfirmed outcome.
-   Green: add a narrow one-shot public sender interface taking supplied destination/auth
-   and returning typed results. It does not load settings or encrypted credentials; 02b/03c
-   own that collaboration. Refactor without callbacks that hide partial acceptance.
+   Green: map the neutral audit event contract to OTLP/HTTP JSON through a narrow
+   one-shot public sender interface taking supplied destination/auth and returning typed
+   results. Keep OTLP encoding out of capture and projection. The sender does not load
+   settings or encrypted credentials; 02b/03c own that collaboration. Refactor without
+   callbacks that hide partial acceptance.
 2. Red: focused sender cases exercise public HTTPS, allowed paths, forbidden
    userinfo/fragments/all queries, private/loopback/metadata IPs, IPv6, DNS changes, and
    redirects. Green: validate DNS/IP before connection and ensure the socket uses a
@@ -1932,6 +1949,12 @@ are documented for 04 and remain internal engineering choices.
 **Acceptance specification first:**
 
 ```gherkin
+Scenario: Export a captured event through the audit sink
+  Given AuditLogger has the bounded Collector sink and enabled saved settings
+  When a redacted bounded event is admitted through AuditEventSink
+  Then dispatch sends it through the S2-02a sender to the configured Collector
+  And it writes no audit event or export buffer to SQL
+
 Scenario: Drop old work after a settings change
   Given queued work for organization A and saved revision R
   When another instance changes A before the fresh attempt-authorization read
@@ -1950,8 +1973,10 @@ and 03a/b capture/loading outcomes green.
 
 **Ordered TDD steps:**
 
-1. Red: queue-owner cases exceed global/tenant item and serialized-byte budgets, active
-   destinations, concurrency, and payload bounds. Green: one shared item/byte account covers
+1. Red: sink-contract cases require `writeAuditEvent` to return after bounded memory
+   admission without waiting for SQL or network work. Queue-owner cases exceed global/tenant
+   item and serialized-byte budgets, active destinations, concurrency, and payload bounds.
+   Green: implement the existing `AuditEventSink` seam; one shared item/byte account covers
    queued, settings-read-waiting, in-flight, and retry-backoff content. Drop overload without
    blocking product calls and release accounting once after disposal. Refactor with tenant/
    global bounds and isolation, with no durable queue, worker service, or replay.
@@ -1985,7 +2010,8 @@ and 03a/b capture/loading outcomes green.
 
 **Homes and anchors.** Queue/dispatcher are proposed audit owners in `src/logs/audit/` composed via
 `src/app/hosted-workos-application.ts` and `src/app/application.ts`; use `src/index.ts`'s
-existing deadline. Build from 01a/02a/03b public contracts, not WorkOS or `pg` internals.
+existing deadline. Supply this sink to `AuditLogger`; keep its event contract separate
+from the 01a settings port. Build from 01a/02a/03b public contracts, not WorkOS or `pg` internals.
 Put queue units under `test/unit/logging/`, real collaboration under `test/integration/`,
 and public isolation/overload/shutdown acceptance under `test/acceptance/`. Reuse existing
 process/MCP drivers rather than create a parallel shutdown harness.

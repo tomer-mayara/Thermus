@@ -20,6 +20,19 @@ no source location or stack. A synchronous sink failure cannot change the
 completed action. The caller must supply trusted organization and actor context;
 this API does not authenticate a caller or infer tenant authority.
 
+AuditEventSink is the provider-neutral event output boundary. The first
+production sink will send OpenTelemetry logs through OTLP/HTTP JSON to the
+organization's configured Collector. S2-03c will supply its bounded in-memory
+admission and dispatch through the S2-02a sender. Event callers keep the same
+AuditLog methods if another sink is added later.
+
+DestinationSettingsStore has a separate purpose: it saves Collector endpoint,
+authentication, enable state, and revision. Its PostgreSQL table holds only
+settings and an opaque credential. It contains no audit events or event buffer.
+A future SQL event sink would implement AuditEventSink; it would not use this
+settings table as an event store. No SQL event sink or sink-selection framework
+is added here.
+
 The audit API carries metadata only and has no production capture caller or
 exporter. S2-03a must add redacted, bounded tool input and final public result
 before production capture or enabled export. Queueing, OTLP delivery, destination
