@@ -4,7 +4,7 @@ export interface AuditDestination {
   readonly auth: { readonly type: 'none' } | { readonly type: 'bearer'; readonly token: string };
 }
 
-export type AuditFailureReason = 'invalid_destination' | 'unsafe_destination' | 'dns_limit' | 'invalid_auth' | 'invalid_event' | 'request_too_large' | 'http_status' | 'retry_after_exceeds_limit' | 'invalid_response' | 'response_too_large' | 'transport' | 'tls' | 'timeout';
+type AuditFailureReason = 'invalid_destination' | 'unsafe_destination' | 'dns_limit' | 'invalid_auth' | 'invalid_event' | 'request_too_large' | 'http_status' | 'retry_after_exceeds_limit' | 'invalid_response' | 'response_too_large' | 'transport' | 'tls' | 'timeout';
 
 /** Warning and rejection outcomes never include the receiver's raw diagnostic text. */
 export type AuditSendOutcome =

@@ -1731,7 +1731,9 @@ Scenario: Refuse an unsafe actual connection
 ```
 
 **Candidate status.** The [S2-02a implementation record](../implementation/admin-s2-02a.md)
-describes the isolated sender, its fixed bounds, and its evidence limits. It
+and [PR #240](https://github.com/tomer-mayara/Thermus/pull/240) describe the
+isolated sender, its fixed bounds, and its evidence limits. The PR is based on
+the Audit API foundation in #239 and does not depend on the Save UI in #238. It
 does not establish production capture, queued dispatch, or release readiness.
 The actual endpoint smoke and live Supabase checks remain later release gates.
 
@@ -1777,16 +1779,17 @@ production public-HTTPS egress.
    public-address network/TLS fixture or equivalent permitted endpoint, plus an actual
    endpoint smoke check before release. Add no allow-private/test bypass or paid receiver.
 
-**Homes and anchors.** The customer sender is a proposed audit owner in `src/logs/audit/`, separate from
+**Homes and anchors.** The customer sender belongs to the existing audit owner in `src/logs/audit/`, separate from
 [`otel-system-logger.ts`](../../src/logs/system/otel-system-logger.ts). Inspect
 [`network-policy.ts`](../../src/pipelines/providers/website-fetcher/network-policy.ts) for
 existing DNS preflight, not proof of connected-address safety. Existing
 `test/interface/logging/system/otel-logger.test.ts` and
 `test/support/doubles/logging/otel-log-receiver.ts` show receiver patterns;
 `createOtlpFixture` also configures live Axiom export and is not an isolated
-production-egress fixture. Add customer contract cases under `test/interface/logging/audit/`,
-focused sender units under `test/unit/logging/audit/`, and real sender/Collector collaboration
-under `test/integration/logging/audit/` as appropriate.
+production-egress fixture. The candidate keeps focused wire-format and sender cases
+under `test/unit/logging/audit/`, because their real source collaborators share one
+owner. Real sender/Collector collaboration is under `test/integration/logging/audit/`.
+Separate interface tests are not needed to repeat the same wire cases.
 
 **Done.** One-shot protocol and actual-connection security acceptance pass with None/Bearer
 evidence and fixed bounds. No universal receiver, direct Axiom/Grafana support, custom
