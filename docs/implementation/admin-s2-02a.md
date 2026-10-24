@@ -164,3 +164,54 @@ permit a later caller's bounded retry policy. Timeout and cancellation settle
 the caller while retained native work and socket cleanup remain charged to
 admission until settlement. This is best-effort transport, not durable delivery
 or release evidence.
+
+## Quality review
+
+The file inspection keeps the six boundaries below despite the MI goal of 85.
+Each has a bounded exception that expires on 2026-12-23 in
+[the exception file](../../.code-quality-exceptions.yaml). These are reviewed
+goal misses, not passing MI scores or human approval. No threshold or baseline
+is changed. The result contract file scores 111.6 and needs no exception.
+
+| File in `src/logs/audit/` | MI | Retained reason |
+| --- | --- | --- |
+| `public-audit-destination.ts` | 60.3 | URL, auth, DNS, and peer rules form one destination boundary; the largest function has 13 paths. |
+| `audit-https-connection.ts` | 49.3 | One owner keeps handshake approval, cancellation, and awaited socket disposal in order; functions have at most four paths. |
+| `otlp-audit-encoding.ts` | 60.7 | Named fields, timestamps, and the byte limit share one wire format; functions have at most seven paths. |
+| `otlp-audit-request.ts` | 60.4 | Checked socket use, response bounds, and settlement share one request lifetime; callbacks have at most five paths. |
+| `otlp-audit-response.ts` | 47.9 | Status, body, partial success, and retry delay need visible precedence; functions have at most nine paths. |
+| `otlp-audit-sender.ts` | 65.2 | Attempt order, deadline, and admission remain together until physical cleanup; functions have at most four paths. |
+
+The inherited storage exceptions and cleanup findings retain the ownership
+reasons in [S2-01a](admin-s2-01a.md#quality-review). The complete-candidate
+metrics process and review checker assess these together with the new sender.
+
+Habit-hooks identified an unused exported reason type. It is now private;
+`AuditSendOutcome` retains the same reason values. A Node TypeScript transform
+comparison confirms identical JavaScript before and after this type-only edit.
+The hosted build rechecks its types after the edit.
+
+Retained habit-hooks findings have these reasons:
+
+- The destination validator and response classifiers enforce distinct input
+  and protocol cases at their rule owners. Their branch counts are not reduced
+  by hiding guards in unrelated helpers.
+- The request's five parameters name its checked socket, URL, encoded body,
+  optional authorization, and lifetime signal. Only one production caller uses
+  this boundary; no new parameter bag or framework is needed. The four-argument
+  response test helper selects independent wire fields for concise cases.
+- The Docker site keeps one disposable network, certificates, containers, and
+  cleanup owner together. Its 210 lines include the Collector YAML fixture;
+  separating lifecycle state solely to reduce file length would add coupling.
+- The `using deadline` binding in `src/index.ts` exists for disposal, even
+  though its value is not read. Removing it would remove shutdown protection.
+- Inherited application, MCP registration, signal and integration files keep
+  their existing composition and lifecycle responsibilities. The ESLint file
+  holds one boundary policy; no lint rule is changed by this ticket.
+- Comments describe trust boundaries, explicit caller roles, physical work
+  after timeout, fixture isolation, and protocol limits. Existing contract,
+  DSL, startup, and package-boundary comments retain those purposes. No comment
+  supplies a test bypass or suppresses a rule.
+
+The snooze file stays empty. Manager review accepts these reasons subject to
+the complete candidate checks and independent human architect review.

@@ -19,3 +19,33 @@ exceptions:
     bound: 59
     reason: The settings reader keeps required URI, canonical key and PEM validation with safe variable-only diagnostics. Its input rules need distinct branches and are covered by focused cases; a new validation framework would add complexity.
     expires: 2026-12-22
+  - path: src/logs/audit/public-audit-destination.ts
+    metric: mi
+    bound: 60
+    reason: One destination boundary keeps URL and auth checks, all-answer public IP policy, and pinned peer comparison together. Its largest function has 13 paths covered by focused refusal cases. Splitting each guard would hide the connection policy.
+    expires: 2026-12-23
+  - path: src/logs/audit/audit-https-connection.ts
+    metric: mi
+    bound: 49
+    reason: One TLS owner keeps handshake approval, actual peer checks, cancellation, and awaited socket disposal in the same lifetime. Its largest function has four paths; unit and real TLS cases cover the order before HTTP data.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-encoding.ts
+    metric: mi
+    bound: 60
+    reason: Named event projection, timestamp conversion, and the encoded byte limit form one small OTLP translation boundary. Each function has at most seven paths. Separate files for these wire fields would spread the same format contract.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-request.ts
+    metric: mi
+    bound: 60
+    reason: The request owner keeps the checked socket, bounded response collection, cancellation, and response settlement together. Callbacks have at most five paths. A request framework would obscure the no-global-agent guarantee and cleanup ownership.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-response.ts
+    metric: mi
+    bound: 47
+    reason: Success shape, partial rejection, status classification, and Retry-After limits belong to one OTLP result policy. The largest functions have nine paths and focused wire cases. Splitting status and body rules would make their required precedence harder to review.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-sender.ts
+    metric: mi
+    bound: 65
+    reason: One sender owns attempt order, admission, caller deadline, and physical-work lifetime. Functions have at most four paths. Keeping these small operations together makes abandoned DNS and socket work visible until disposal.
+    expires: 2026-12-23
