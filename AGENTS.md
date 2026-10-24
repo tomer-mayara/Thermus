@@ -110,10 +110,44 @@ type, lint, and manual checks for those changes.
   The owner merges a pull request that adds a decision record under
   `architecture/decisions/`. A request for a draft stops before Ready and merge.
 
-### Architecture diff comment
+### Pull request report
 
-For a T2 pull request, prepare one concise architecture comparison comment
-before requesting human review. Update it when the candidate changes.
+Use the [report layout](docs/implementation/pr-review-playbook.md#report-layout)
+and the pull request template. Keep one short main description and exactly two
+maintained supporting comments, titled **Validation** and **Quality review**.
+The main description gives the problem and result, a short T0/T1/T2 review
+decision, all unresolved blockers and required decisions or human approval,
+and a footer with the current linked short SHA and links to both comments.
+Pending required human approval means the overall merge status is blocked.
+Aim for 200–300 words excluding Mermaid; keep every material fact even when
+more words are needed. Checker output and labels keep the full canonical names.
+
+Put selected checks, results, failure/retry history, coverage provenance,
+N/A or deferred reasons, and environment limits in Validation. Put all tier
+reasons and policy answers, impact evidence, metric findings and required
+retained-finding or exception reasons, habit-hooks, and approval/de-escalation
+evidence in Quality review. Link full reports that reviewers can access;
+a local filesystem path is not a GitHub artifact link. Do not repeat inherited
+full-stack metric tables: give concise inherited dispositions and full report
+links while retaining each required reason.
+
+Update these same comments for each candidate. Pin full candidate and applicable
+base SHAs in the evidence, mark stale evidence, and preserve prior evidence and
+approval history in linked versions or an audit record. If the description
+cannot be edited, use one maintained summary comment as its replacement; its
+chronological position cannot be guaranteed. Keep one authoritative architecture
+comparison in that main summary, not a duplicate supporting comment.
+
+### Architecture comparison
+
+For a T2 pull request, prepare a concise Architecture comparison in the main
+description before requesting human review when architecture changes. If
+production architecture is unchanged, state that once in the main summary and
+put the full assessment in Quality review; no diagram is required. Refresh the
+comparison when the candidate changes. In a stack, compare against the actual
+parent incrementally. Keep complete-candidate tier and trusted-main policy
+assessment separate and visible; an unchanged incremental architecture does
+not lower an inherited T2 requirement.
 
 - Pin the full PR head and actual merge-base SHAs; for a stack, find the merge
   base with its parent branch. Inventory every Mermaid block in
@@ -165,10 +199,11 @@ before requesting human review. Update it when the candidate changes.
   establish new runtime behavior. Name Level 2 container or deployment changes
   and flag any that the focused view does not explain. Maintain the registry
   as the current system map; keep comparison colors and historical annotations
-  in the PR comment.
-- Keep full pinned evidence and limits with the review artifacts. Link before
-  and after registry and code evidence; verify paths and line bounds. Save
-  versioned drafts, standalone Mermaid sources, renders, and review notes.
+  in the main Architecture comparison.
+- Keep full pinned provenance in a folded architecture section of Quality
+  review and linked review artifacts. Keep material behavior and delivery
+  limits near the drawing. Link before and after registry and code evidence;
+  verify paths and line bounds. Save versioned drafts, standalone Mermaid sources, renders, and review notes.
   Parse, render, and inspect at normal PR width, about 800 pixels, without
   zoom. If labels become too small, simplify the view and move stable context
   or composition to prose; retain relationships that explain the change.
@@ -179,9 +214,10 @@ before requesting human review. Update it when the candidate changes.
 - Obtain manager review, apply feedback in a new draft, rerender changed
   drawings, and record the fixes. Recheck PR revisions before publication;
   changed revisions require a refreshed comparison and manager review. Publish
-  or update the one comment, then read it back to verify its body.
+  or update the main summary and supporting comments, then read them back to
+  verify their bodies.
 
-This concise comment does not replace the wider architecture-impact check,
+This concise comparison does not replace the wider architecture-impact check,
 test evidence, required human approval, review tier, or merge policy.
 
 ## Review tier and merge eligibility
@@ -254,13 +290,15 @@ route names are input compatibility only, not active tiers.
    metric exceptions require at least T1 Team review. Findings unchanged by
    this pull request do not escalate its tier. Mark irrelevant production
    metrics N/A under the selection below; do not create empty evidence.
-4. **Record the result.** In the pull request's Review tier section, record
-   the tier, all reasons, blockers, and current candidate SHA. Apply the
-   canonical tier label printed by the checker. Summarize relevant changed
-   file/function findings, check results, and N/A reasons. Link retained full
-   reports and exceptions. Do not paste unchanged full reports. Check and
-   record architecture impact for every tier, using the component registry
-   workflow. Update the explanation, evidence, and labels after each change.
+4. **Record the result.** Use the report layout above. Put the short tier and
+   decision-driving reasons, blockers, required decisions and human approval,
+   and linked short candidate SHA in the main summary. Record every tier reason,
+   relevant changed file/function finding, and exception in Quality review;
+   record check results and N/A reasons in Validation. Apply the canonical tier
+   label printed by the checker. Link retained full reports; do not paste
+   unchanged full reports. Check and record architecture impact for every tier
+   with the component registry workflow. Refresh the summary, evidence, and
+   labels after each change.
 5. **Obtain review and eligibility.** T1 Team review needs an independent
    authorized human team member or owner. T2 Need architect needs an
    independent authorized human architect; one qualified reviewer can cover
@@ -319,12 +357,12 @@ commands, their reports, the configuration, and the limits of the tool.
    with `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.
    Simplify the functions with a low score or many decision paths. Keep the
    selected tests green. Measure again with the delta command, at most three
-   times. Record each remaining low score and its reason in the pull request
-   description. For a new file below 85, also add an entry with its path,
+   times. Record each remaining low score and its reason in Quality review.
+   For a new file below 85, also add an entry with its path,
    `metric: mi`, a bound, the reason, and an expiry date to
    `.code-quality-exceptions.yaml`; the review tier check reads it.
 4. Review. Correct each finding of severity high, or record its reason in
-   the pull request description. Refresh `.ast-metrics-baseline.yaml` with
+   Quality review. Refresh `.ast-metrics-baseline.yaml` with
    `pnpm exec node script/code-quality/ast-metrics-baseline.ts` only when
    the pull request changes the rules in `.ast-metrics.yaml`. Commit the
    baseline in the same pull request. A violation that is already on `main`
@@ -334,8 +372,8 @@ commands, their reports, the configuration, and the limits of the tool.
    selected suites, or with fewer decision paths. If you add or change a
    test, select the tests again from the new candidate. After a code change,
    collect coverage again as in step 2. Measure again with the same base, at
-   most three cycles. Then record each unresolved goal in the pull request
-   description: score or bound, paths, coverage, classification, and reason.
+   most three cycles. Then record each unresolved goal in Quality review:
+   score or bound, paths, coverage, classification, and reason.
    This includes an added function between 15 and 30, and a function with
    unknown identity or unknown coverage. An unchanged function can keep the
    reason `unchanged by this PR`. For an added or changed function that
@@ -348,7 +386,8 @@ commands, their reports, the configuration, and the limits of the tool.
    is not an exception: correct it.
 6. Final report. After the last fix, run the applicable process again on the
    complete candidate. Summarize relevant changed files and functions, goals,
-   findings, exceptions, and evidence limits in the pull request. Retain and
+   findings, exceptions, and evidence limits in Quality review. Put check
+   results and coverage provenance in Validation. Retain and
    link the complete `ast-report/process.md` and machine-readable reports as
    review artifacts. Keep graphs, legends, import evidence, and notices in
    those reports; do not copy the whole report into the pull request body.

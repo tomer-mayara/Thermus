@@ -1,33 +1,28 @@
-## Review tier
+## Description
 
-Tier: <T0 Auto merge / T1 Team review / T2 Need architect>
-Candidate: <head SHA>
-Impact declaration: <link to committed root .pr-impact.json at this head>
-Reasons: <all matching reasons; approved de-escalation evidence if any>
-Eligibility and blockers: <preliminary result; all unresolved blockers>
+<Problem and result in 2–3 sentences. Include any material behavior or delivery limit.>
 
-## Architecture impact
+<!-- For a stack, link the parent PR here. Remove optional sections that do not apply. -->
 
-Model updated: <yes/no; changed or checked views and canonical names>
-Delta: <relevant changes, or why current views remain accurate>
-Evidence and validation: <source/test links; Mermaid tool and result if changed>
+## Review
 
-## Checks and metrics
+**<T0 / T1 / T2>** — <short reason that drives the decision>
 
-Applicable checks: <results for this candidate; trusted N/A reasons>
-Relevant metric findings: <changed file/function findings or N/A>
-Reports and exceptions: <retained artifact links; reviewed exception evidence>
+Merge status: <eligible / blocked; pending required approval means blocked>.
+Blockers and required decisions: <list or none>.
+Required human approval: <current-candidate approval needed, with role, or none>.
 
-## Additional evidence for T2 Need architect
+### Architectural impact
 
-Container/external changes: <what changes, or none>
-Deployment, security, and data impact: <guarantees and recovery effects>
-Decision: <ADR for a lasting decision, or why none is needed>
+<Optional short impact statement. For unchanged architecture, one sentence in Review
+can replace both optional subsections. Full assessment is in Quality review.>
 
-<!-- Update and commit root .pr-impact.json with version, classification, and
-architecture; it must differ from the trusted base. The manager or Delamain session stamps
-actual base/head identities in the local check input. For local --impact checks, use a stamped copy as
-the checker guide specifies. PR body prose cannot replace the committed input.
-Labels record the tier; they do not establish eligibility. De-escalation needs manual
-higher-authority review/merge and all checks. Human approval and final
-eligibility come from the trusted process, not this template or a label. -->
+### Architecture comparison
+
+<Required for T2 when production architecture changes; useful in other tiers when needed.
+Name the comparison base/stack parent. Add focused L3 comparison with its named L2 boundary, then
+3–4 short before/after behavior notes. Keep material authority, failure, order,
+recovery, and delivery limits here. Omit this section when architecture is unchanged.>
+
+---
+Candidate: [<short SHA>](<commit URL>) · [Validation](<comment URL>) · [Quality review](<comment URL>)

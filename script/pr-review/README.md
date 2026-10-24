@@ -181,9 +181,21 @@ the complete process for every change. Required missing files block eligibility.
 Missing raw MI for a supported production implementation also blocks; a
 complete snapshot that explicitly reports no functions can establish N/A.
 
-Retain and link the full metric reports. The pull request description needs
-the tier, all relevant reasons, architecture impact, current check evidence,
-and any required decision or exception. Summarize relevant changed file and
-function findings. Do not paste unchanged full reports.
+Report the result under [AGENTS.md](../../AGENTS.md) and the
+[playbook's report guidance](../../docs/implementation/pr-review-playbook.md#report-layout).
+Keep the main description short, with the decision-driving tier reasons,
+visible blockers or required human decisions, and relevant architecture impact.
+Keep any required focused L3 comparison there.
+
+`Validation` holds check results, test selection, run provenance, failures and
+retries, N/A and deferred runs, and evidence limits. `Quality review` holds all
+tier reasons, policy answers, the impact declaration, relevant metrics and
+retained findings, each required exception reason, habit-hooks results, approval
+evidence, and collapsed architecture provenance. Link full reports there; do not
+paste unchanged full reports. Follow the linked guidance for full candidate and
+base SHAs, accessible evidence links, comment updates, stale results, and
+evidence and approval history. An actual-parent architecture comparison does
+not replace complete-candidate classification under the trusted main base.
+
 The label command uses exactly `T0 Auto merge`, `T1 Team review`, or
 `T2 Need architect`; labels select no approval authority.

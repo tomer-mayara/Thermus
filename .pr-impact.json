@@ -10,12 +10,12 @@
     "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
-    "policy": false,
+    "policy": true,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Only the Members page embedded CSS changes. Existing revoke forms receive a muted red background, border, and text with a brighter hover state. Resend, labels, focus outline, form destinations, submitted fields, authority checks, and handlers keep their behavior. The selector matches the existing root and prefixed invitations/revoke routes. No callable signature, public contract, dependency, component responsibility, resource lifetime, trust boundary, or deployment topology changes. The web ownership entry, hosted authentication components, member-read runtime view, and adjacent context/container/deployment views remain accurate. No registry diagram or prose edit is needed; no L4 comparison is needed.",
+    "summary": "This candidate changes PR reporting policy and its documentation only. It places the main review summary and any architecture comparison in the PR description, with Validation and Quality review as maintained evidence comments. Runtime code, public contracts, source ownership, dependencies, authority, resource lifetimes, trust boundaries, containers, and deployment topology do not change. Checked context, hosted/local containers and owner mapping, component scopes, runtime collaboration overview, and deployment views remain accurate. No registry edit or production callable-contract comparison is needed.",
     "views": [
       "context",
       "containers",
@@ -24,13 +24,12 @@
       "deployment"
     ],
     "evidence": [
-      "src/interfaces/web/account/members-style.ts",
-      "src/interfaces/web/account/members-page-layout.ts",
-      "src/interfaces/web/account/administration-pages.ts",
-      "src/interfaces/web/account/administration-routes.ts",
-      "architecture/components.md",
-      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
-      "test/acceptance/auth/hosted-invitations.test.ts"
+      "AGENTS.md",
+      ".github/pull_request_template.md",
+      "docs/implementation/pr-review-playbook.md",
+      "docs/implementation/component-registry-workflow.md",
+      "docs/implementation/pr-review-rules.yaml",
+      "architecture/components.md"
     ]
   }
 }

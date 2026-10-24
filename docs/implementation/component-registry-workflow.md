@@ -101,12 +101,27 @@ Before finishing, compare all affected views and their text once more:
 
 ## Finish the pull request
 
-After code and review fixes, add a concise **Architecture impact** section to
-the pull request description. Name the views changed or checked, the supporting
-evidence, and the validation results and limitations, including the Mermaid
-tool when diagrams changed. If no registry edit is needed, state why the final
-change leaves those views accurate. Do not edit the registry merely to show
-that you checked it. Do not copy the pull request history into it.
+After code and review fixes, use the
+[PR report layout](pr-review-playbook.md#report-layout). Put the concise
+**Architectural impact** statement and any required **Architecture comparison**
+in the main description. Put the full architecture assessment and comparison
+provenance in the folded architecture section of **Quality review**, with
+accessible evidence links. Name the views changed or checked, supporting
+evidence, validation results and limitations, and the Mermaid tool when diagrams
+changed. If no registry edit is needed, state why the final change leaves those
+views accurate. No diagram is required when production architecture is unchanged.
+Do not edit the registry merely to show that you checked it. Do not copy the
+pull request history into it.
+
+Follow the comparison guide in [AGENTS.md](../../AGENTS.md#architecture-comparison).
+Keep the authoritative drawing and material before/after behavior notes together
+in the main summary. Put diagram inventory, pinned revisions and evidence,
+versioned sources and renders, render checks, L4 rationale, and manager review in
+Quality review or its linked artifacts. In a stack, compare incrementally against
+the actual parent. Assess the complete candidate under trusted-main policy
+separately; unchanged incremental architecture does not lower inherited T2.
+Use the maintained summary-comment fallback only when the description cannot be
+edited; do not duplicate the authoritative comparison.
 
 After a later fix, check its architecture impact again and update the registry,
 diagrams, and pull request explanation when needed. Before Ready, requesting

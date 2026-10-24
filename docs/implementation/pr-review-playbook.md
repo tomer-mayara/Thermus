@@ -14,7 +14,8 @@ or merge authority.
 
 ## Select the highest matching tier
 
-Use these names in policy, tools, labels, templates, and reports:
+Use these full canonical names in policy, tools, checker output, and labels.
+The main PR summary displays only T0, T1, or T2:
 
 | Tier | Required review |
 | --- | --- |
@@ -160,28 +161,141 @@ CRAP is an estimate; it is not measured base coverage.
 
 ## Record and retain the result
 
-Use the [pull request template](../../.github/pull_request_template.md). Record
-the current tier, all reasons, blockers, architecture impact, selected checks,
-relevant changed file/function metrics, and exceptions. Explain N/A results.
-Retain complete reports as accessible artifacts or links, including graphs,
-legends, import evidence, and limitations. A short pull request summary does not
-shrink the analysis graph or remove required evidence. It replaces the previous
-requirement to paste every complete metrics report into the pull request body.
-The new process paths are `src/**`, `script/code-quality/**`,
-`.ast-metrics.yaml`, `.ast-metrics-baseline.yaml`, and
-`.code-quality-exceptions.yaml`. Source changes need full production evidence;
-source-free metric-tool changes need process/review with relevant checks. Other
-source-free changes, including prose, PR checker, and policy scripts, can mark
-production metrics N/A and use relevant build, type, lint, or manual checks and
-habit-hooks. Historical base rules retain broader process requirements for their
-candidate. Follow the [metrics guide](ast-metrics-review.md) and test selection
-policy.
+### Report layout
 
-Canonical tier labels use the exact names T0 Auto merge, T1 Team review, and
-T2 Need architect. Labels describe the result; they do not grant approval or
-eligibility. Keep the highest recorded tier unless an authorized independent reviewer for
-that tier approves a reasoned de-escalation. Recompute after every change.
-The manager reviews each subagent's work. An agent cannot supply required human review.
+Use the [pull request template](../../.github/pull_request_template.md). Keep one
+short main description and exactly two maintained supporting comments titled
+**Validation** and **Quality review**. The main description explains the change
+and the review decision; the comments retain the evidence needed to assess it.
+This layout changes evidence placement only. It does not reduce checks,
+thresholds, review authority, merge conditions, or the requested stopping point.
+
+#### Main description
+
+Aim for 200–300 words, excluding Mermaid. This is a soft target: never omit a
+material fact to meet it. Use this order:
+
+1. **Description:** two or three sentences on the problem, result, and any
+   material behavior or delivery limit. For a stack, add a parent PR link.
+2. **Review:** display T0, T1, or T2 and a short paragraph with the reasons that
+   drive the decision. Keep unresolved blockers, required decisions, and
+   required current-candidate human approval visible here. State eligibility
+   separately as the overall merge status: pending required human approval
+   means blocked, even if the local checker reports eligible. Full canonical
+   checker and label names remain unchanged.
+3. **Architectural impact**, an optional subsection under Review: a short
+   impact statement. If production architecture is unchanged, one sentence in
+   Review can replace both optional subsections; keep the full assessment in
+   Quality review. No diagram is required for unchanged architecture, including
+   an inherited T2 candidate.
+4. **Architecture comparison**, an optional subsection under Review, required
+   for T2 when production architecture changes and useful in other tiers when
+   needed: follow the diagram guide in
+   [AGENTS.md](../../AGENTS.md#architecture-comparison). Keep the focused L3 view with a named L2 boundary and three or four short before/after behavior
+   notes here. Name the comparison base and stack parent beside the drawing.
+   Keep material authority, payload, failure phase, ordering, recovery, replay,
+   lifetime, and delivery limits beside the drawing. A diagram
+   cannot replace those conditions. Put detailed provenance below.
+5. A footer with the current short SHA linked to the full commit, and direct
+   links to Validation and Quality review.
+
+For a stack, the comparison uses the actual parent's merge base and explains the
+incremental change. The complete candidate still uses the trusted-main policy
+for tier and merge assessment. State any inherited tier requirement visibly;
+an unchanged incremental architecture does not lower inherited T2. Give concise
+inherited metric dispositions and full report links instead of repeated
+full-stack metric tables. Retain every required finding and exception reason.
+
+Keep one authoritative comparison. Do not repeat it in an architecture comment.
+If technical access prevents editing the description, use one maintained summary
+comment with the same layout and links. Do not claim that a later comment can
+be inserted first in chronological order. State where the current summary is.
+
+#### Supporting comments
+
+Update the same two comments for each candidate; do not post a new pair after
+each check or fix. Pin full candidate and applicable base SHAs. Mark evidence
+from an earlier candidate as stale until verified for the new one. Preserve
+prior evidence, failures, and approval/de-escalation history in linked versions
+or an audit record; replacing a comment must not erase that history. Approval
+for an earlier SHA is history, not approval for the current candidate.
+
+Use accessible evidence URLs: pinned repository files, uploaded reports, or
+retained artifacts that reviewers can open. A local path such as `/Users/...`
+is not a GitHub artifact link. Check links and read back the published summary
+and both comments. If evidence cannot be shared, state that limit and keep any
+resulting missing-evidence blocker visible.
+
+The following sketches show placement. Omit irrelevant fields with a reason,
+combine related checks, and keep every applicable item from the policy.
+
+```markdown
+## Validation
+
+Candidate: <full head SHA and commit link>
+Bases: <trusted-main merge base; actual parent merge base for a stack>
+Selection: <complete-candidate paths, selected checks, and policy basis>
+
+| Check | Status and result | Evidence |
+| --- | --- | --- |
+| <selected command or manual check> | <pass/fail/pending; useful result> | <accessible link> |
+
+Failure and retry history: <failed attempts, fixes, and rerun results; audit link>
+N/A and deferred checks: <each reason allowed by trusted selection>
+Coverage provenance: <candidate, selected suites, report origin and compatibility, or N/A>
+Environment and delivery limits: <limits on what the results establish>
+Prior candidate evidence: <version/audit links; mark stale evidence>
+```
+
+```markdown
+## Quality review
+
+Candidate: <full head SHA and commit link>
+Bases: <trusted-main merge base; actual parent merge base for a stack>
+Tier: <full canonical name; all reasons, including inherited reasons>
+Eligibility: <result and blockers; local checker is preliminary>
+Impact: <committed .pr-impact.json link; base/head-bound check evidence>
+Policy answers: <applicable questions, before/after guarantees, and evidence>
+Metrics: <changed file/function results or trusted N/A reasons; full report links>
+Retained findings and exceptions: <each required reason, score/bound, path,
+coverage/classification, expiry and exception entry where required>
+Habit-hooks: <result; each retained enforced smell and its reason; empty snooze>
+Human approval: <required role, verified identity, current SHA/scope, or pending>
+De-escalation: <previous tier/reasons, authorized approval, or none; audit link>
+
+<details>
+<summary>Architecture assessment and comparison provenance</summary>
+
+<Changed/checked registry views and why they remain accurate; registry edit status>
+<Full pinned before/after revisions and links; all Mermaid blocks inventoried>
+<Actual-parent comparison scope; separate complete-candidate/trusted-main assessment>
+<Source, contract, caller, and test evidence; relevant L2/deployment effects>
+<L4 include/omit rationale and strongest changed contract/review question>
+<Versioned Mermaid sources, renders, normal-width inspection, byte-for-byte check>
+<Manager review, feedback, fixes, rerender checks, and evidence limits>
+<ADR or reason none is needed; production architecture unchanged when applicable>
+
+</details>
+
+Reports and history: <accessible full reports, exceptions, versions, approval audit>
+```
+
+Keep graphs, legends, import evidence, and limitations in the full reports. A
+short summary does not shrink the analysis graph or remove required evidence.
+The process paths are `src/**`, `script/code-quality/**`, `.ast-metrics.yaml`,
+`.ast-metrics-baseline.yaml`, and `.code-quality-exceptions.yaml`. Source changes
+need full production evidence; source-free metric-tool changes need
+process/review with relevant checks. Other source-free changes, including prose,
+PR checker, and policy scripts, can mark production metrics N/A and use relevant
+build, type, lint, or manual checks and habit-hooks. Historical base rules retain
+broader process requirements for their candidate. Follow the
+[metrics guide](ast-metrics-review.md) and test selection policy.
+
+Canonical labels remain T0 Auto merge, T1 Team review, and T2 Need architect.
+Labels do not grant approval or eligibility. Keep the highest recorded tier
+unless an authorized independent reviewer for that tier approves a reasoned
+de-escalation. Recompute after every change. The manager reviews each
+subagent's work. An agent cannot supply required human review.
 
 ## Complete the local process
 
