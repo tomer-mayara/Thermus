@@ -146,7 +146,7 @@ export class Workspace {
 export function outputOf(run: ProcessRun, what: string): string {
   if (run.error !== undefined) throw new CommandError(`${what} did not start: ${run.error.message}`);
   if (run.signal !== null) throw new CommandError(`${what} stopped with ${run.signal}${run.timedOut ? ' at its time limit' : ''}.`);
-  if (run.status !== 0) throw new CommandError(`${what} failed with exit status ${run.status}: ${firstLine(run.stderr) || firstLine(run.stdout) || 'no diagnostic'}`);
+  if (run.status !== 0) throw new CommandError(`${what} failed with exit status ${run.status}: ${lastLine(run.stderr) || lastLine(run.stdout) || 'no diagnostic'}`);
   return run.stdout;
 }
 
@@ -191,6 +191,7 @@ function onStopSignals(stop: (signal: StopSignal) => void): () => void {
   return () => { process.off('SIGINT', onInterrupt).off('SIGTERM', onTerminate); };
 }
 
-function firstLine(text: string): string {
-  return text.trim().split('\n')[0]?.trim() ?? '';
+// A command writes its notes first and its diagnostic last, so the last line names the failure.
+function lastLine(text: string): string {
+  return text.trim().split('\n').at(-1)?.trim() ?? '';
 }

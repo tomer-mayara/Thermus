@@ -304,6 +304,21 @@ pull request did not show as declaration changes. The numbers come from the
 model of the approved rules, before the implementation; a replay with the
 implemented checker can differ in detail.
 
+### Replay of the implemented checker
+
+On 2026-10-24, `script/pr-review/replay.ts` evaluated the implemented rules and
+checker over the same 31 pull requests, with each pull request's own impact
+flags. It classified 23: T0 4 (#218, #219, #234, #236), T1 11, T2 8 (#220 to
+#224, #226, #229, #237). The eight pull requests of the S2 audit-log stack
+(#238 to #245) could not be replayed: they add the source folders
+`src/logs/audit` and `src/logs/system`, which the rules under test do not list,
+so the checker stops with "has no component owner", as it does for a candidate
+that did not declare its component. The facts agreed with the estimate above:
+#220 to #222, #224 and #226 show changed declarations, #221, #224, #226 and
+#237 changed registry views, and #223 and #229 are T2 through inherited flags
+alone. Pull requests older than #220 show `public_surface.snapshots` blockers,
+because two listed modules did not exist yet at their revisions.
+
 ## Decisions
 
 The owner approved each decision as recommended on 2026-10-24.

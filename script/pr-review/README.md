@@ -363,6 +363,10 @@ then shows the tier with the flags that the author set. Then
 A pull request that changed an installed file gets a note in its row. A listed
 module that does not exist at a revision has no snapshot there, so its row
 shows `public_surface.snapshots.missing` blockers; the tier still counts.
+A pull request that adds a source folder which the installed rules do not list
+cannot be replayed: the checker stops with "has no component owner", as it
+does for a candidate that did not declare its component. The row records
+that failure.
 
 `--pr N` names a pull request of `--repo` (default `tomer-mayara/Thermus`)
 and needs `gh`: a merge commit gives head and base from its parents, a squash
