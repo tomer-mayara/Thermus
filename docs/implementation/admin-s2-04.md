@@ -19,6 +19,17 @@ The missing export help was specified by failing acceptance and focused unit
 tests before its implementation. The procedures below add no runtime behavior
 or backup framework.
 
+## Logging object CR restack
+
+The [logging object CR](logs-object-refactor-change-request.md) is implemented
+in PRs #240, #241, and #244 and restacked through this candidate. System output
+uses explicit sinks, settings require a sender, and held-close sender cases
+characterize payload clearing and settlement. The original help, integrated
+journey, owner ledger, and later redaction block are retained. This restack
+adds no runtime behavior. Current-candidate checks and reviews are recorded
+separately; CR implementation completion does not close the redaction block or
+any merge, activation, or release hold.
+
 ## Development proof
 
 - The dedicated Collector gate passes all nine cases, including the integrated

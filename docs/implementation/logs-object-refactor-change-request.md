@@ -2,9 +2,11 @@
 
 Date: 2026-10-24
 
-Reviewed HEAD: `b5e8ec09ee6a4a357811dcf5b1726119609e9e03`
+Review baseline: `b5e8ec09ee6a4a357811dcf5b1726119609e9e03`
 
-Status: Implementation in progress across PRs #240–#245. No human approval or merge is recorded.
+Status: CR implementation complete in PRs #240, #241, and #244; restacked
+through PR #245. Current-candidate checks and reviews are recorded separately.
+This status does not record merge or release.
 
 ## Purpose and scope
 
@@ -38,10 +40,40 @@ slices 2 and 3 depend on the existing APIs introduced by their assigned PRs.
 The implementation record in each PR must distinguish passing characterization,
 new-contract red/green steps, fresh checks, and outstanding gates.
 
+## Implementation outcome and evidence
+
+| Slice | Implementation record | Outcome |
+| --- | --- | --- |
+| System sink composition, PR #240 | [a8e7917](https://github.com/tomer-mayara/Thermus/commit/a8e7917147a00b30d5d2014c75e19ad2833d19fc) | Concrete SystemLogger requires SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output. All constructors, work slices, and SDK support use composition. |
+| Required settings sender, PR #241 | [243acef2](https://github.com/tomer-mayara/Thermus/commit/243acef2e92748e9cf54ed137b42f777f4cdea3f) | DestinationSettingsService requires its sender role. Production and the real process probe supply OtlpAuditSender; read/Save tests supply explicit roles. |
+| Sender characterization, PR #244 | [b2acfe82](https://github.com/tomer-mayara/Thermus/commit/b2acfe82e3c24529eca007a83b6999e655052e74) | Held-close warning cases check the same sent Buffer before and after abort, pending physical settlement, and the original warning without cancellation. New export-authorization callers supply explicit Test sender roles. |
+
+Existing system threshold, source, and failure-text characterizations passed
+before the refactor. The new injected-sink contract had a failing BDD acceptance
+specification and focused failing unit specifications before the implementation
+made them green. Settings injection used passing behavior characterization and
+typecheck to identify missing arguments. The sender's held-close checks passed
+against its existing behavior; no unchanged behavior was forced to fail.
+
+Development evidence is retained in each PR's review artifacts under
+`ast-report/logs-refactor-development/`: the system slice record, the
+`settings-injection/` record, and the `settlement-characterization/` record.
+These records state their local commands and limits. They do not replace checks
+or review of the current complete candidate.
+
+The changes preserve thresholds, local time, caller location, failure text,
+synchronous system write failures, nonthrowing audit capture, and sender limits
+and lifetime. The same production sender still serves saved Test and export.
+The private attempt function and transport helpers remain. No attempt class,
+common transport wrapper, logging framework, or production OTel activation was
+added. The known redaction defect remains a separate source correction and block
+in [S2-04](admin-s2-04.md); this CR does not repair or waive it.
+
 ## Imagined design discussion
 
-The following conversation is original, AI-authored synthesis. The voices use
-Robert C. Martin-inspired and Sandi Metz-inspired perspectives. Neither author
+The following conversation describes the review baseline above. It is original,
+AI-authored synthesis. The voices use Robert C. Martin-inspired and Sandi
+Metz-inspired perspectives. Neither author
 participated in this review or endorsed its conclusions. The dialogue is not a
 quotation or a claim about what either author would actually say.
 
@@ -112,11 +144,12 @@ The attempt needs their results, not more objects to configure.
 named-field mappings. An event subclass hierarchy adds no needed common behavior.
 Introduce polymorphism only when real callers and repeated variation justify it.
 
-## Evidence and current limits
+## Review baseline evidence and limits
 
 The review inspected all 24 files under `src/logs`, relevant composition,
 callers, and tests. It ran no tests or performance measurements. Existing tests
-below are characterization evidence to run later, not fresh passing results.
+below were characterization candidates at that review, not fresh passing
+results. The implementation outcome above records the later work.
 
 [SystemLogger](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/src/logs/system/system-logger.ts#L15)
 uses a template method. Its current output implementations have narrow write
@@ -160,9 +193,10 @@ specification and review.
 
 ## Owners and useful messages
 
-The table covers every current source file without requiring one class per file.
+The table covers every source file at the review baseline without requiring one
+class per file. Its pinned links retain the original names and proposed treatment.
 
-| Current files | Owner or role; proposed messages and treatment |
+| Files at the review baseline | Owner or role; proposed messages and treatment |
 | --- | --- |
 | [system-logger](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/src/logs/system/system-logger.ts), [console-system-logger](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/src/logs/system/console-system-logger.ts), [otel-system-logger](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/src/logs/system/otel-system-logger.ts) | SystemLogger owns threshold and record preparation. ConsoleSystemLogSink and OtelSystemLogSink implement synchronous `writeSystemLog(record)`. Keep `info`, `error`, other levels, `setLevel`, and static `messageOf`. |
 | [audit-log](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/src/logs/audit/audit-log.ts), [audit-event-projection](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/src/logs/audit/audit-event-projection.ts), [audit-content](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/src/logs/audit/audit-content.ts) | AuditLog owns the nonthrowing capture boundary through `toolCompleted`, `administrationChanged`, and `destinationChanged`. Keep named projection, redaction, and bounded-text functions. |
@@ -175,7 +209,9 @@ The table covers every current source file without requiring one class per file.
 
 ## Implementation slices and acceptance criteria
 
-All three slices are independent. Each source refactor follows its own
+The sections below retain the selected specification. The outcome record above
+states its completed implementation. Each slice changes a separate concern and
+uses the stack dependencies listed above. Each source refactor follows its own
 characterization; none requires a sender class. Apply
 [repository behavior-first guidance](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/docs/coding-principles.md#L9):
 establish passing characterization before structural changes. For a genuinely
@@ -300,12 +336,13 @@ handling, and exclusion of raw transport diagnostics from results and logs.
 
 ## Verification and completion boundary
 
-The proposal itself changed no runtime architecture. During implementation, apply the
+The initial proposal changed no runtime architecture. The implementation makes
+system output roles and settings construction dependencies explicit. Use the
 [registry workflow](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/docs/implementation/component-registry-workflow.md)
-and update only affected current-system prose or drawings when needed.
-Assess public contract and architecture impact from the complete candidate.
+to keep the current system map accurate when prose or drawings change. Assess
+public contract and architecture impact from the complete candidate.
 
-For a later candidate with any source change, run `npm test`, `npm run typecheck`, and
+For a complete candidate with any source change, run `npm test`, `npm run typecheck`, and
 `npm run build:user-portal`, plus the selected gates required by the
 [test gate policy](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/docs/implementation/test-gate-policy.md).
 For a standalone slice 3 candidate that changes only the sender unit tests,
@@ -316,8 +353,9 @@ Run each selected changed test locally, including applicable tests
 outside the ordinary suite. Do not add duplicate `npm run check`. Apply
 habit-hooks, applicable ast-metrics evidence, and review-tier rules from
 [AGENTS.md](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/AGENTS.md).
-The proposal records no test execution. Per-PR implementation evidence records
-checks and status; this CR grants no human approval, ADR, or merge decision.
+The initial review recorded no test execution. The implementation evidence above
+records later checks and their limits. Current-candidate checks and reviews stay
+with each PR; this CR grants no human approval, ADR, merge, or release decision.
 
 The inherited redaction defect recorded in
 [admin-s2-04](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/docs/implementation/admin-s2-04.md#L8)
