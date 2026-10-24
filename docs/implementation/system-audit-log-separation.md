@@ -33,6 +33,24 @@ A future SQL event sink would implement AuditEventSink; it would not use this
 settings table as an event store. No SQL event sink or sink-selection framework
 is added here.
 
+The downstream [S2-01b candidate, PR #238](https://github.com/tomer-mayara/Thermus/pull/238),
+was reviewed at `e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81`. Its production
+composition supplies DestinationSettingsService to the Admin Audit logs routes.
+Those routes read and save the selected organization's endpoint, auth, Enable,
+and token through DestinationSettingsStore. Current access, origin/CSRF, tenant
+binding, token encryption/no echo, and atomic revisions protect the operation.
+This is implemented in that open PR, not in this foundation branch or a confirmed
+deployment.
+
+Retain DestinationSettingsStore, PgDestinationSettingsStore, and
+BoundedSqlRuntime. Their concrete consumer in S2-01b needs durable settings,
+atomic revision checks, bounded SQL admission/deadlines, and cleanup. The current
+foundation owns startup and disposal before that ticket adds browser reads and
+writes. No SQL event writer or table exists to remove. Browser acceptance uses
+the real settings service with a store double; separate real PostgreSQL tests
+cover persistence and isolation. These checks do not prove deployed
+browser-to-Supabase access or OTLP delivery.
+
 The audit API carries metadata only and has no production capture caller or
 exporter. S2-03a must add redacted, bounded tool input and final public result
 before production capture or enabled export. Queueing, OTLP delivery, destination

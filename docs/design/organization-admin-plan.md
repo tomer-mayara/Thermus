@@ -2,9 +2,9 @@
 
 Plan reviewed: 23 October 2026. Status: design with merged Slice 1 implementation
 recorded under its tickets. Release prerequisites remain; merged does not mean
-released or cut over. This revision reviews and refines expanded Slice 2 planning;
-it records the audit API foundation and leaves capture, UI, and delivery tickets
-planned.
+released or cut over. This revision records the audit API foundation and the
+organization settings UI implemented in [open PR #238](https://github.com/tomer-mayara/Thermus/pull/238).
+Production capture, OTLP delivery, and the optional Test action remain planned.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -49,8 +49,11 @@ Account pages managed grants/invitations; administration required MFA, with proo
 limited to Required-policy Password sign-in. The merged Slice 1 implementation
 now retires those grant writes and inferred MFA checks, uses User/Admin, and adds
 named creation plus the combined Members page. The ticket records give its
-checks and remaining release holds. The private audit destination store and bounded SQL runtime are implemented in
-S2-01a. Customer audit capture, settings UI, and export delivery remain planned. Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
+checks and remaining release holds. S2-01a implements the private audit destination
+settings store and bounded SQL runtime. S2-01b in PR #238 implements the Admin
+settings page and Save; this foundation branch does not contain that later ticket.
+Customer audit capture, connection Test, and OTLP delivery remain planned.
+Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 include URL origin/path and reason in operator output; Slice 2 must remove that
 content from operator completion records.
 
@@ -68,7 +71,7 @@ Keep permission checks, origin/CSRF protection, escaping, and non-cacheable resp
 | Web/account | Native forms, browser sessions, selected organization, safe responses, and Slice 3 browser MFA proof. |
 | Destination settings | Slice 2 tenant settings, revisions, and encrypted credential references. |
 | System logs | Internal engineering diagnostics in `src/logs/system/`; no customer access. |
-| Audit logs/app lifecycle | Customer audit events, destination storage in `src/logs/audit/`, and planned bounded delivery and shutdown. |
+| Audit logs/app lifecycle | Customer audit events, destination settings in `src/logs/audit/`, and planned bounded OTLP delivery and shutdown. |
 
 Reuse [identity/access](../../src/accounts/identity/access-context.ts),
 [BrowserSession](../../src/accounts/identity/browser-session.ts), and
@@ -274,6 +277,14 @@ read shows an error and refuses removal. Replacement reuses setup/verification.
 ### Audit logs UI — Slice 2
 
 The [audit log rules](#audit-logs--slice-2) define customer access and event safety.
+An Admin selects the organization, opens **Audit logs**, and saves its Collector
+endpoint, None/Bearer authentication, and Enable setting. Each load and Save checks
+current Admin permission for that organization; a submitted organization ID is not
+authority. S2-01b implements the page and Save in PR #238. The mock below shows
+the complete Slice 2 target: optional Test and actual delivery are later tickets.
+The server must have the private settings connection and encryption key from
+[owner setup](#owner-setup-for-supabase--slice-2). Admins enter their Collector
+credentials in this page; they do not receive the server's database credentials.
 
 ```text
 Thermus       Workspace [Acme Labs v]             Alex  [Sign out]
@@ -569,10 +580,22 @@ A future SQL or other sink adapter can use the same event contract without
 changing capture. Add no such adapter, fan-out,
 sink plugin framework, or generic settings backend in Slice 2.
 
-Slice 2 promises no in-app log viewer. This change ships no Audit logs UI or delivery;
-S2-03a still owns production MCP/admin capture, redaction, and truncation.
+Slice 2 promises no in-app log viewer. S2-01b implements the Audit logs settings
+UI and Save in PR #238. Production capture and delivery remain planned;
+S2-03a owns MCP/admin capture, redaction, and truncation.
 The technical database, role, SQL table, and environment names remain compatible,
 including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
+
+**Why SQL remains.** Destination configuration must survive restart and be shared
+across application instances. The Admin page in S2-01b calls
+`DestinationSettingsService`, which uses `DestinationSettingsStore` for reads and
+atomic revision saves. `PgDestinationSettingsStore` implements those operations;
+`BoundedSqlRuntime` owns the pool, deadlines, admission, and cleanup. These are
+required settings dependencies, not dead event-storage classes. The S2-01a
+foundation opens and closes them before S2-01b adds browser reads/writes. Keep
+them; there is no SQL audit-event writer or event table to delete. Export uses
+the separate `AuditEventSink` boundary and reads settings without writing events
+to that store.
 
 Current Admin permission and password authentication authorize settings/Test.
 The later MFA branch adds its portal session gate without changing this export
@@ -1481,8 +1504,9 @@ The [audit log rules](#audit-logs--slice-2), [storage
 rules](#selected-supabase-postgresql), and [owner setup](#owner-setup-for-supabase--slice-2)
 remain the specification. These tickets split their implementation, not their guarantees.
 S2-01 means both S2-01a/b; S2-02 means both S2-02a/b; S2-03 means S2-03a/b/c wherever
-another slice names a group. The S2-01a implementation record below states its
-completed scope and verification limits; the remaining tickets stay planned.
+another slice names a group. The S2-01a record and linked S2-01b candidate below
+state the implemented settings scope and verification limits. S2-02, S2-03, and
+S2-04 remain planned.
 
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
@@ -1522,8 +1546,9 @@ adapter, bounded runtime, hosted configuration/lifecycle integration, and review
 scoped schema/role setup for destination settings only. It adds no audit event
 writer, event table, or durable export buffer. See
 [scope and verification limits](../implementation/admin-s2-01a.md).
-S2-01b and later Slice 2 behavior remains planned. Actual Supabase setup and
-TLS/grant/backup/restore/$0 proof remain S2-04 owner gates.
+S2-01b in PR #238 adds the Admin settings page and Save. Capture, Test, and OTLP
+delivery remain planned. Actual Supabase setup and TLS/grant/backup/restore/$0
+proof remain S2-04 owner gates.
 
 **Acceptance specification first:**
 
@@ -1601,6 +1626,17 @@ source/configuration completion does not pass that gate.
 
 #### S2-01b — Admin settings, encrypted credential, and atomic Save
 
+**Implementation status.** [PR #238](https://github.com/tomer-mayara/Thermus/pull/238)
+implements this ticket; reviewed source is
+[`e64a49c6`](https://github.com/tomer-mayara/Thermus/tree/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81).
+The [native page and route](https://github.com/tomer-mayara/Thermus/blob/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81/src/interfaces/web/account/logging-routes.ts)
+read and save through the tenant-bound settings service and PostgreSQL store.
+Current Admin access, origin/CSRF, token encryption/no echo, organization isolation,
+and revision conflicts have source acceptance coverage. The
+[implementation record](https://github.com/tomer-mayara/Thermus/blob/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81/docs/implementation/admin-s2-01b.md)
+records checks and limits. This is unmerged implementation, not deployed access
+or proof of customer delivery. S2-02b adds Test; S2-03 adds capture and dispatch.
+
 **Acceptance specification first:**
 
 ```gherkin
@@ -1617,8 +1653,9 @@ Scenario: Show an uncertain Save honestly
   And it neither claims nothing changed nor blindly repeats the Save
 ```
 
-**Gap / expected red.** Audit logs settings, encrypted credentials, and their native page do
-not exist. Save and protected reread should be red. Keep current password, Admin permission,
+**Initial gap / expected red.** Audit logs settings, encrypted credentials, and their
+native page did not exist before S2-01b. Save and protected reread were the initial
+red specifications. Keep current password, Admin permission,
 selected-org, origin/CSRF, escaping, and no-cache outcomes green. Do not require MFA or the
 later membership-reduction coordinator.
 
@@ -1662,7 +1699,7 @@ checks start at
 [`organization-administration.ts`](../../src/accounts/organizations/organization-administration.ts).
 Navigation exists in `src/interfaces/user-portal/portal.ts` and
 `src/interfaces/web/account/members-page-layout.ts`. The destination service, credential
-codec, and Audit logs page are proposed, not existing APIs. Reuse
+codec, and Audit logs page are implemented in the linked S2-01b candidate. Reuse
 `test/integration/hosted-admin/` form/change patterns and
 `test/acceptance/auth/hosted-admin-journey.test.ts` browser/site patterns. Place focused new
 destination unit tests with that package, not in WorkOS tests.
