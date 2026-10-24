@@ -168,6 +168,8 @@ public_surface:
       - src/logs/system/system-logger.ts
     audit-logs:
       - src/logs/audit/audit-log.ts
+      - src/logs/audit/otlp-audit-sender.ts
+      - src/logs/audit/audit-send.ts
     identity:
       - src/accounts/identity/access-context.ts
       - src/accounts/identity/browser-session.ts
@@ -347,7 +349,7 @@ dependency_graph:
     html-processing: [ node:crypto ]
     http: [ node:events, node:http, node:net ]
     system-logs: [ node:path, node:stream, node:url ]
-    audit-logs: [ node:crypto ]
+    audit-logs: [ node:crypto, node:dns, node:dns/promises, node:https, node:net, node:tls ]
     mcp: [ node:crypto ]
     page-fetch: [ node:os ]
     search: [ node:os ]

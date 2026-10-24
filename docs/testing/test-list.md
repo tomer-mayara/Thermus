@@ -950,6 +950,25 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
 [] Add production capture with redacted, bounded tool inputs and results, then OTLP delivery under the [Slice 2 plan](../design/organization-admin-plan.md)
 
+**Customer audit Collector sender — S2-02a candidate**
+
+The [sender record](../implementation/admin-s2-02a.md) gives the public contract,
+fixed bounds, and evidence limits. These specifications exercise the isolated
+sender. Production capture, the saved-destination Test action, queue dispatch,
+and live endpoint release checks remain separate work.
+
+- `test/acceptance/logging/audit/audit-sender.test.ts` specifies refusal of a private destination without disclosure of event or credentials.
+- `test/unit/logging/audit/public-audit-destination.test.ts` specifies HTTPS syntax, None/Bearer validation, public IPv4/IPv6 policy, mixed or changed DNS answers, answer limits, and exact peer address comparison.
+- `test/unit/logging/audit/otlp-audit-encoding.test.ts` specifies named event fields, decimal-string nanoseconds, administration targets, invalid events, and encoded request size.
+- `test/unit/logging/audit/otlp-audit-response.test.ts` specifies typed acceptance, warning, rejection, failure, malformed success, body size, and bounded Retry-After results.
+- `test/unit/logging/audit/otlp-audit-sender.test.ts` specifies one-shot orchestration, safe outcomes, cancellation, admission, and native DNS work lifetime.
+- `test/unit/logging/audit/audit-https-connection.test.ts` specifies pinned TLS address, hostname verification, peer refusal, and socket cleanup.
+- `test/unit/logging/audit/otlp-audit-request.test.ts` specifies explicit headers and checked socket, response and header overflow, unsupported success compression, cancellation before request, and disposal without combining oversized response data.
+- `test/integration/logging/audit/audit-sender.runtime.ts` specifies real TLS receiver and Collector None/Bearer collaboration, system-environment isolation, certificate and hostname failure, changed DNS, zero redirects, and cancellation recovery. Run `npm run test:logging:collector` with Docker Engine and OpenSSL. Its internal Docker bridge has public-shaped addresses; it does not contact a public Collector.
+
+The complete candidate's review evidence records execution results. Test source
+alone does not establish a passing local gate or Internet reachability.
+
 **System console logger** (`test/unit/logging/system/console-logger.test.ts`)
 
 [V] Writes one line to stderr by default or to a supplied writable stream

@@ -31,6 +31,7 @@
     "test:mcp:renderer": "npm run build && node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js dist/test/acceptance/mcp/search-pipeline.runtime.js",
     "test:mcp:search:live": "npm run build && node --test dist/test/acceptance/mcp/search-pipeline.live.js",
     "test:logging:postgres": "npm run build && node --test --test-concurrency=1 dist/test/acceptance/logging/audit/destination-settings.runtime.js dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js dist/test/integration/logging/audit/destination-settings.runtime.js",
+    "test:logging:collector": "npm run build && node --test --test-concurrency=1 dist/test/integration/logging/audit/audit-sender.runtime.js",
     "work-slice:basic-mcp-url-fetch": "tsx test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.ts",
     "work-slice:auth-workos-mcp-url-fetch": "tsx test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
     "dev:user-portal": "vite --config src/interfaces/user-portal/vite.config.ts",

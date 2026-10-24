@@ -56,3 +56,10 @@ export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.
 
 // The scoped owner setup used by the disposable PostgreSQL settings site.
 export const loggingSettingsMigration = fileURLToPath(new URL('sql/migrations/20261023211956_logging_destination_settings.sql', repositoryRoot));
+
+// The audit sender gate copies only source modules and test support into an isolated Docker network.
+export const auditSenderRuntime = {
+  source: fileURLToPath(new URL(fromSource ? 'src/' : 'dist/src/', repositoryRoot)),
+  support: fileURLToPath(new URL(fromSource ? 'test/support/' : 'dist/test/support/', repositoryRoot)),
+  extension,
+};

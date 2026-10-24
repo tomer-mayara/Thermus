@@ -4,7 +4,10 @@ Plan reviewed: 23 October 2026. Status: design with merged Slice 1 implementatio
 recorded under its tickets. Release prerequisites remain; merged does not mean
 released or cut over. This revision records the audit API foundation and the
 organization settings UI implemented in [open PR #238](https://github.com/tomer-mayara/Thermus/pull/238).
-Production capture, OTLP delivery, and the optional Test action remain planned.
+The S2-02a candidate adds an isolated one-shot OTLP sender; see its
+[implementation record](../implementation/admin-s2-02a.md). Production capture,
+queued delivery, and the optional Test action remain planned. This candidate is
+not release evidence.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -52,7 +55,8 @@ named creation plus the combined Members page. The ticket records give its
 checks and remaining release holds. S2-01a implements the private audit destination
 settings store and bounded SQL runtime. S2-01b in PR #238 implements the Admin
 settings page and Save; this foundation branch does not contain that later ticket.
-Customer audit capture, connection Test, and OTLP delivery remain planned.
+The S2-02a candidate implements the isolated sender. Customer audit capture,
+connection Test, and queued production delivery remain planned.
 Existing [tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 include URL origin/path and reason in operator output; Slice 2 must remove that
 content from operator completion records.
@@ -1726,8 +1730,14 @@ Scenario: Refuse an unsafe actual connection
   Then no event or credential is sent to that address or a redirect target
 ```
 
-**Gap / expected red.** Existing `OtelSystemLogger` does not supply this audit sender,
-actual-connection policy, or complete response interpretation. New sender acceptance is red.
+**Candidate status.** The [S2-02a implementation record](../implementation/admin-s2-02a.md)
+describes the isolated sender, its fixed bounds, and its evidence limits. It
+does not establish production capture, queued dispatch, or release readiness.
+The actual endpoint smoke and live Supabase checks remain later release gates.
+
+**Original gap / expected red.** Existing `OtelSystemLogger` does not supply this audit sender,
+actual-connection policy, or complete response interpretation. The new sender
+acceptance specification failed before implementation.
 Existing system logging remains characterization; local HTTP receiver passes do not prove
 production public-HTTPS egress.
 

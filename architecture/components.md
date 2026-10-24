@@ -272,7 +272,8 @@ trusted tenant ID and preserve ciphertext for semantic no-op decisions.
 
 Scope: one Thermus Node server container. Solid arrows show runtime calls or
 composition. Dashed arrows show type-only source dependencies. Audit event
-projection is implemented but has no production caller or exporter.
+projection and the one-shot Collector sender are implemented. Neither has a
+production event capture or export dispatch caller.
 
 ```mermaid
 flowchart TB
@@ -280,13 +281,15 @@ flowchart TB
     logs_app["Component: app<br/>Compose system diagnostics<br/>Open hosted audit settings / TypeScript"]
     logs_mcp["Component: mcp<br/>Tool completion diagnostics / TypeScript"]
     logs_system["Component: system-logs<br/>Internal diagnostics with caller location<br/>Console and OTel adapters / TypeScript"]
-    logs_audit["Component: audit-logs<br/>Explicit audit event projection - unwired<br/>Hosted destination settings / TypeScript and pg"]
+    logs_audit["Component: audit-logs<br/>Explicit audit event projection - unwired<br/>Hosted destination settings; one-shot OTLP sender<br/>TypeScript, pg, and Node TLS"]
     logs_org["Component: organizations<br/>Administration change outcomes / TypeScript"]
   end
+  logs_collector["External system: customer Collector<br/>Receives audit records / OTLP HTTP JSON over HTTPS"]
   logs_app -->|constructs and calls internal logger| logs_system
   logs_mcp -->|calls supplied SystemLog| logs_system
   logs_app ==>|opens and closes hosted settings runtime| logs_audit
   logs_audit -.->|ChangeOutcome type only| logs_org
+  logs_audit -->|explicit sender invocation only: POST one event| logs_collector
 ```
 
 HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-logger.ts)
@@ -313,11 +316,25 @@ there is no SQL audit event writer.
 The event API currently carries metadata only. S2-03a must add bounded, redacted
 MCP inputs and final public results before production capture. The customer
 feature will export to the organization's Collector configured by its Admins;
-there is no in-app event viewer in Slice 2. Storage and event projection share
-the audit owner, but neither calls the other in this foundation.
+there is no in-app event viewer in Slice 2. Storage, event projection, and the
+isolated sender share the audit owner.
+No production caller connects settings or event projection to the sender.
 `DestinationSettingsStore` stores endpoint, auth, enabled state, encrypted
 credential, and revision. It is a settings port, separate from AuditEventSink;
 the Slice 2 PostgreSQL settings store holds no audit history or event buffer.
+
+The isolated [OtlpAuditSender](../src/logs/audit/otlp-audit-sender.ts) accepts a
+supplied destination/auth record, projected AuditEvent, and optional AbortSignal.
+It sends one OTLP/HTTP JSON request and returns a typed bounded outcome. Its
+[destination policy](../src/logs/audit/public-audit-destination.ts) checks every
+DNS answer; its [TLS owner](../src/logs/audit/audit-https-connection.ts) pins the
+selected address and checks the actual peer and server certificate before HTTP
+content or auth. Redirects are refused. The sender owns four active slots per
+instance, no queue, and a five-second caller deadline. A cancelled or timed-out
+native DNS lookup retains its slot until it settles. No retry loop, settings
+lookup, or SystemLog dependency is part of this operation. See the
+[implementation record](../docs/implementation/admin-s2-02a.md) for protocol
+outcomes, fixed bounds, and the isolated fixture's evidence limits.
 
 ### Selected C4 components: local authentication in the Node server
 
@@ -766,7 +783,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; SystemLogger/LogLevel and ConsoleSystemLogger/OtelSystemLogger implementations selected at composition. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection and tenant destination settings with atomic revisions and bounded SQL work. | AuditLog event methods and AuditEventSink; neutral settings store, private pg adapter and SQL runtime. The metadata-only event API is unwired. No browser Save or customer export caller yet. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, tenant destination settings, and bounded one-shot Collector requests. | AuditLog event methods and AuditEventSink; neutral settings store, private pg adapter and SQL runtime; OtlpAuditSender. The metadata-only event API and sender have no production capture or dispatch caller. Browser Save remains a separate ticket. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
