@@ -841,7 +841,9 @@ select owner/cadence/retention/key recovery, and drill a scoped restore before
 release; never export/overwrite other applications' data. Before restoring,
 stop every export dispatch/settings writer and clear in-memory pending work.
 Restore first in isolation; disable restored rows and assign fresh revisions
-before storage-enabled restart. Restored export stays disabled until a current
+before storage-enabled restart. Keep the current global key for a partial restore;
+clear incompatible restored credentials for Admin re-entry. Reconcile all
+affected Bearer rows before a global key replacement. Restored export stays disabled until a current
 Admin reviews and explicitly re-enables its destination. Hold
 member reductions and later MFA admission until the operator resolves ambiguous
 state with independent evidence, not restored rows or an unchanged WorkOS read

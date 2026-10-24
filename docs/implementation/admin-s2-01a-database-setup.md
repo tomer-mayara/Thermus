@@ -91,7 +91,11 @@ Before restore, stop every dispatch/settings writer and clear pending memory
 work. Restore into an isolated recovery database first. Disable recovered rows
 and assign fresh revisions before any storage-enabled restart. Copy only the
 reviewed private data in one scoped transaction; preserve unrelated project
-objects/data. Each current Admin must review and explicitly Enable their
+objects/data. Keep the current deployment key for a partial restore; clear only
+approved restored credentials that cannot use it and require Admin re-entry.
+Before a global key replacement, inventory and reconcile all affected Bearer
+rows. Hold maintenance if scope or key compatibility is unresolved.
+Each current Admin must review and explicitly Enable their
 destination afterward. The local procedure drill does not close live gates.
 
 These are S2-04 rollout gates. Local PostgreSQL acceptance does not satisfy them.

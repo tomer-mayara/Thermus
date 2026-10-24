@@ -248,10 +248,21 @@ schema/database to recover this table.
    COMMIT;
    ```
 
-   Recover the matching application key separately. Check credential decryption
-   using the application codec in a protected local process; do not print tokens.
-   Require the original tenant binding. A wrong key or tenant must fail closed.
-   If key recovery fails, follow the key-loss procedure and keep export disabled.
+   Select the deployment key before import. One key serves every organization;
+   rows do not store a key version. For a tenant-scoped restore, retain the current
+   deployment key. Never replace it to match a partial backup: that can make
+   other organizations' credentials unreadable. A full-table replacement may use
+   the separately recovered backup key only after review confirms that every
+   remaining Bearer row is compatible with it.
+
+   Check each restored credential with the selected key and original tenant in a
+   protected process using the application codec; do not print tokens. A wrong
+   key or tenant must fail closed. If restored ciphertext cannot use the selected
+   key, obtain approval to reset only those restored rows to disabled
+   `auth = 'none', encrypted_credential = NULL` with fresh revisions. The Admin
+   must re-enter those credentials after recovery. Keep maintenance active if
+   key compatibility or reset scope is unresolved. This procedure adds no bulk
+   re-encryption. If the current key is lost, use the key-loss procedure below.
 5. Export only the reviewed disabled rows from the isolated table to a private
    CSV with an explicit column list. For a full private-table replacement, run
    the following in one owner `psql -X -v ON_ERROR_STOP=1` session on the selected
@@ -282,14 +293,17 @@ schema/database to recover this table.
    transaction; do not apply this full-table example.
 6. Before any storage-enabled restart, verify all restored rows are disabled,
    all restored revisions differ from the backup and pre-restore rows, ciphertext
-   is unchanged where the key is retained, and row counts and intended tenant set
-   match. Verify private schema grants, no unexpected runtime memberships or
+   is unchanged for compatible credentials, approved incompatible credentials
+   are cleared, and row counts and intended tenant set match. Recheck that every
+   remaining Bearer row can use the selected deployment key, including rows
+   outside a scoped restore. Verify private schema grants, no unexpected runtime memberships or
    elevated attributes, forced RLS and policies, and unchanged unrelated object
    inventory. Confirm runtime SELECT/INSERT/UPDATE but no DELETE, ownership, or
    DDL. Keep safe evidence; do not log row contents.
 7. Reprovision or recover only the dedicated runtime password through the secure
    owner process. Enable LOGIN only after the checks pass. Restore the verified
-   server variables and matching key, then start a fresh storage-enabled process.
+   server variables and the selected key, retaining the current deployment key
+   for a scoped restore. Then start a fresh storage-enabled process.
    Confirm fresh settings reads show disabled rows and no automatic export.
    Each current Admin must review their destination and credential, may Test it,
    and must explicitly Enable it with the fresh revision. Activity then refreshes
@@ -312,7 +326,12 @@ Keep export disabled until recovery and Admin review complete.
 If the key cannot be recovered, encrypted Bearer credentials are lost. Keep the
 old encrypted backup under its retention rule and mark its key unavailable.
 The owner and affected Admins select replacement credentials. Use the stopped
-writer/dispatch maintenance process above. The service refuses both reads and
+writer/dispatch maintenance process above. Before replacing the global key,
+inventory **all** current Bearer rows. The approved tenant set and count must
+cover every row whose ciphertext will become unusable. If approval covers only
+a subset, or any mixed-key state is unresolved, keep maintenance active and do
+not replace the key. There is no per-row key version or alternate-key fallback.
+The service refuses both reads and
 Saves of a row whose Bearer ciphertext cannot decrypt, so a replacement token
 submitted directly in the UI cannot repair that row. After preserving the
 scoped encrypted evidence, the owner resets only the reviewed affected rows to
@@ -321,7 +340,8 @@ scoped encrypted evidence, the owner resets only the reviewed affected rows to
 approved tenant set and verify the affected row count; do not run an unscoped
 reset on the shared project. This discards unusable credentials and leaves a
 disabled destination that the existing service can read. Install the new
-independent key, start fresh with those disabled rows, then require each current
+independent key only after all affected rows are reconciled and every remaining
+Bearer row can use it. Start fresh with the reset rows disabled, then require each current
 Admin to choose Bearer again, supply its replacement token, Test if desired, and
 explicitly Enable through the existing settings flow.
 Do not claim automatic key rotation, bulk re-encryption, or recovery of old
@@ -347,13 +367,20 @@ sentinel remains unchanged. It also checks that the scoped key-loss reset
 keeps the row disabled, removes unusable ciphertext, changes revision, and
 preserves the unrelated sentinel. No live service or production secret is used.
 
-The corrected drill passed all checks on 24 October 2026 with PostgreSQL
-17.10 (Homebrew). Its JSON result pins the source SHA, timestamps, and all 13 successful
-check outcomes. This local server version is distinct from the live project.
+The corrected first drill passed 13 checks on 24 October 2026 with PostgreSQL
+17.10 (Homebrew). A second version passed all 20 checks, including seven checks
+for global-key compatibility. It proves that an old-key partial restore cannot
+replace the current deployment key without breaking other rows. Clearing only
+the incompatible restored credential leaves the current-key rows unchanged and
+decryptable. Replacing the global key before reconciling those remaining rows
+makes them unreadable, which confirms the maintenance hold. Its JSON pins the
+source SHA, timestamps and outcomes. This local server version is distinct from
+the live project.
 
 Safe local evidence is retained under
 `ast-report/s2-04-development/operations/`: the replay recipe, archive object
-list, and timestamped result with source SHA and cleanup. Temporary databases,
+list, versioned drill results with source SHA and cleanup, and the global-key
+review. Both the original 13-check record and the 20-check record are retained. Temporary databases,
 keys, archives, and ciphertext are removed. The first attempt stopped before
 encryption because the local GnuPG agent could not use its long temporary path;
 the retained failure is followed by the corrected short-path attempt. This is a
