@@ -31,11 +31,15 @@ export function testCountsOf(diff: string): TestCounts {
   return { added: state.added, removedCases: state.removedCases, skippedOrTodo: [...state.skippedOrTodo] };
 }
 
-// Fewer test cases than at the merge base, or a new test that does not run, is T1 Team review.
-export function testReasons(tests: TestCounts): Reason[] {
+// Fewer test cases than at the merge base is T1 Team review. A new test that does not run is T1 Team review under the
+// earlier rules, and blocked under the rules of 2026-10-24: fix or delete the test.
+export function testReasons(tests: TestCounts, skipped: 'T1' | 'blocked'): Reason[] {
   const removed = tests.removedCases.length > tests.added ? tests.removedCases : [];
-  return [...removed, ...tests.skippedOrTodo.map((file) => `skipped or todo test added in ${file}`)]
-    .map((fact) => ({ tier: 'T1', key: 'size.test_counts', fact }));
+  const outcome = skipped === 'blocked' ? { blocking: true as const } : { tier: 'T1' as const };
+  return [
+    ...removed.map((fact): Reason => ({ tier: 'T1', key: 'size.test_counts', fact })),
+    ...tests.skippedOrTodo.map((file): Reason => ({ ...outcome, key: 'size.test_counts', fact: `skipped or todo test added in ${file}` })),
+  ];
 }
 
 function readLine(state: DiffState, line: string): void {

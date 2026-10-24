@@ -19,6 +19,7 @@ export function resultOf(candidate: Candidate, rules: LoadedRules, repository: s
     tier, tierName: tierNames[tier], eligibility: blockers.length === 0 ? 'eligible' : 'blocked', blockers,
     candidate: candidate.head,
     mergeBase: candidate.mergeBase,
+    architecture: analysis.architecture,
     reasons,
     questions: analysis.questions,
     changedPaths: candidate.changes,
@@ -30,6 +31,7 @@ export function resultOf(candidate: Candidate, rules: LoadedRules, repository: s
     factsToDeclare: analysis.factsToDeclare,
     declaredFacts: analysis.declared,
     surfaceDifferences: analysis.surface,
+    informational: analysis.informational,
     notes: notesOf(candidate, rules, analysis),
     label: labelCommand(tier, repository),
   };
@@ -40,7 +42,7 @@ function notesOf(candidate: Candidate, rules: LoadedRules, analysis: Analysis): 
     ...(candidate.dirty ? [dirtyNote] : []),
     ...rules.notes,
     ...analysis.notes,
-    ...(analysis.surface.length > 0 ? [surfaceNote] : []),
+    ...(analysis.compareByHand && analysis.surface.length > 0 ? [surfaceNote] : []),
     manualNote,
   ];
 }

@@ -1,9 +1,11 @@
 # PR review playbook
 
 Status: approved process implementation, 2026-10-21. This playbook adopts the
-[process proposal](../design/pr-process-proposal.md). [AGENTS.md](../../AGENTS.md)
-and the [test gate policy](test-gate-policy.md) give the required work. The
-[rules file](pr-review-rules.yaml) and
+[process proposal](../design/pr-process-proposal.md). Since 2026-10-24,
+architecture facts select the tier, as the
+[design record](../design/pr-review-architecture-facts.md) explains.
+[AGENTS.md](../../AGENTS.md) and the [test gate policy](test-gate-policy.md)
+give the required work. The [rules file](pr-review-rules.yaml) and
 [checker](../../script/pr-review/README.md) classify mechanical facts. Semantic
 claims need explicit evidence and human assessment when required.
 
@@ -23,26 +25,53 @@ The main PR summary displays only T0, T1, or T2:
 | T1 Team review | An independent authorized team member or owner approves the complete candidate. |
 | T2 Need architect | An independent authorized architect approves the complete candidate and its architecture impact. The owner can act as architect. |
 
-The author proposes a tier and records every matching reason. Apply the highest
-one. Anyone can escalate. An ambiguous classification needs at least T1 Team
-review; unresolved architecture questions need T2 Need architect and block
-eligibility until the impact is clear. De-escalation requires a reason and an
-independent reviewer authorized for the higher tier. Keep the previous tier and
-reasons in the review evidence when recording an approved de-escalation. It
-cannot remove a blocker or waive a required check.
+The checker establishes architecture facts from the code and the rules of the
+merge base and HEAD. A fact selects the tier. A file path alone does not call
+an architect. Quality signals inform the author and call no human. The author
+records every matching reason and applies the highest one. Anyone can escalate.
+An ambiguous classification needs at least T1 Team review; unresolved
+architecture questions need T2 Need architect and block eligibility until the
+impact is clear. De-escalation requires a reason and an independent reviewer
+authorized for the higher tier. Keep the previous tier and reasons in the review
+evidence when recording an approved de-escalation. It cannot remove a blocker
+or waive a required check.
 
 ### T2 Need architect
 
-Use T2 Need architect for a change that:
+Any one of these facts selects T2 Need architect. The checker establishes facts
+a to e and g from the two revisions. Fact f comes from the committed
+`.pr-impact.json`.
 
-- Adds or removes a C4 container, or changes its responsibility or communication.
-- Adds, removes, replaces, or materially changes an external integration.
-- Changes an observable contract across containers or with an external client,
-  including inputs, outputs, errors, compatibility, or important guarantees.
-- Changes deployment relationships, isolation, availability, shared resources,
-  or recovery guarantees.
-- Changes trust boundaries, data ownership, or an architecture-wide pattern for
-  authentication, resilience, or data handling.
+| Fact | Reason key | How the checker sees it |
+| --- | --- | --- |
+| a. The component set changes | `architecture.component_set` | `dependency_graph.components` differs between the rules of the merge base and of HEAD: an ID is added or removed, or a root moves. |
+| b. A dependency between components is added | `architecture.dependency_added` | `dependency_graph.allowed_edges` gains an entry, or a type-only edge becomes runtime. An edge that the rules do not list stays blocked. |
+| c. A module joins the public surface | `architecture.public_module_added` | `public_surface` gains a module: a file becomes a contract between components or with the outside. |
+| d. The declarations of a public module change | `architecture.declarations_changed` | The committed snapshot of the module under `docs/api-surface/` differs between the merge base and HEAD. The report gives the unified diff. |
+| e. A registry view changes | `architecture.registry_view_changed` | A Mermaid block of `architecture/components.md` is added, removed, or edited. A prose edit is not a fact. |
+| f. An architect flag | `impact.<flag>` | `.pr-impact.json` sets an architect flag of the next table. |
+| g. A decision record | `architecture.decision_record` | A file is added under `architecture/decisions/`. The owner merges the pull request. |
+
+Set each flag that matches the change, also when the checker finds no fact.
+Flags cover what code cannot show: topology, external systems, runtime order,
+and authority. A flag can raise the tier. It cannot lower it.
+
+| Architect flag | The change |
+| --- | --- |
+| `container` | Adds or removes a C4 container, or changes its responsibility or communication. |
+| `external` | Adds, removes, replaces, or materially changes an external integration. |
+| `contract` | Changes an observable contract across containers or with an external client, including inputs, outputs, errors, compatibility, or important guarantees. |
+| `deployment` | Changes deployment relationships, isolation, availability, shared resources, or recovery guarantees. |
+| `crossCutting` | Changes trust boundaries, data ownership, or an architecture-wide pattern for authentication, resilience, or data handling. |
+| `component` | Adds or removes a component, or materially changes its responsibility. |
+| `internalInterface` | Changes an interface, collaboration, or dependency between components within a container. |
+
+A fact a to e or g with every architect flag false is blocked
+(`architecture.undeclared_fact`) until the declaration names the change. The
+declaration summary is the first sentence that the architect reads.
+
+An added export of a public module is fact d. Keep public modules small, or list
+the smaller contract file in `public_surface` instead of a busy file.
 
 Examples include a new background worker, a replacement identity provider, a
 changed portal/server account contract, or a changed renderer public-destination
@@ -53,41 +82,68 @@ guarantee in the pull request; link an ADR or explain why none is needed.
 
 ### T1 Team review
 
-Use T1 Team review when no T2 Need architect reason applies and the change:
+Use T1 Team review when no T2 Need architect fact applies and any one of these
+reasons applies:
 
-- Adds or removes a component, or materially changes its responsibility.
-- Changes an interface, collaboration, or dependency between components within
-  a container.
-- Materially changes sensitive local behavior, data integrity, or recovery while
-  preserving approved architecture guarantees.
-- Adds a runtime library, or changes a library with material effects on behavior,
-  security, data handling, or recovery.
-- Changes development process, approval rules, quality policy, or their tools.
-- Needs human assessment of metric findings or a permitted metric exception.
+| Reason | Scope |
+| --- | --- |
+| Policy path | `AGENTS.md`, `CLAUDE.md`, `.github/**`, the rules file, this playbook, the registry workflow, `script/pr-review/**`, `script/code-quality/review/**`, `script/component-ownership.ts`, `.habit-hooks/**`, `.ast-metrics.yaml` |
+| Read path | `.code-quality-exceptions.yaml`, `.ast-metrics-baseline.yaml`, `.agent/**`. The test gate policy and the metrics review guide count only when the diff removes lines from them. |
+| New third-party code | A component gains an npm package or a Node builtin in `allowed_external_imports` or `allowed_node_builtins`. `package.json` gains or loses a dependency key. `pnpm-workspace.yaml`, `patches/**`, `tsconfig*.json`, `.npmrc`, `.nvmrc`, or `.gitmodules` changes. |
+| Deploy and data | `Dockerfile*`, `.dockerignore`, `compose.yaml`, `docker/**`, `migrations/**`, `.env.example` |
+| Security guarantee | The 13 entries of `protected_paths.security`: files whose behavior is a guarantee even when their declarations stay the same |
+| Client contract file | `src/index.ts` and `src/interfaces/mcp/fetch-tool-schema.ts` (`protected_paths.contracts`) |
+| Contract document | `docs/reference/**`. A prose edit cannot be told from a contract edit. |
+| Fewer test cases | The diff removes more test cases than it adds. |
+| Metric exception | The candidate uses a permitted entry of `.code-quality-exceptions.yaml`. |
+| Team flag | `.pr-impact.json` sets a team flag of the next table. |
 
-A static protected-path or public-surface touch is a conservative T1 Team review
-floor, including contract and deployment files. It does not establish that an
-observable contract or topology changes. Team review checks those questions
-against evidence and escalates actual architecture changes to T2 Need architect.
-Uncertain impact blocks eligibility. Answer each applicable policy question and
-state the new rule or the guarantee that remains accurate. Size, fewer tests,
-added skips or todos, an MI drop, and retained high findings need team
-assessment; these signals do not by themselves prove an architecture change.
-Keep the existing thresholds in the trusted rules.
+| Team flag | The change |
+| --- | --- |
+| `sensitiveBehavior` | Materially changes authorization, session behavior, other sensitive local behavior, data integrity, or recovery, while the approved architecture guarantees stay. |
+| `dependencyRisk` | Adds a runtime library, or changes a library with material effects on behavior, security, data handling, or recovery. |
+| `policy` | Changes the development process, approval rules, quality policy, or their tools. |
+
+Answer each applicable policy question and state the new rule or the guarantee
+that remains accurate. Team review checks the evidence and escalates an actual
+architecture change to T2 Need architect. Uncertain impact blocks eligibility.
 
 ### T0 Auto merge
 
-Use T0 Auto merge for contained changes with no higher-tier reason, such as a
-private helper refactor that preserves behavior, a focused test, an ordinary
-prose correction, or a configuration correction with no material boundary or
-sensitive-behavior effect. A routine compatible library patch can be semantically
-low risk. Dependency-file changes still have a T1 Team review floor under the
-rules. Obtain that human approval, or an authorized de-escalation, then let the
-authorized local session merge when the normal merge conditions pass.
+Use T0 Auto merge when no T2 Need architect fact and no T1 Team review reason
+applies. Examples are a change inside a component, a private helper refactor
+that preserves behavior, UI and CSS, a focused test, an ordinary prose
+correction, an internal edit of a public module whose declarations stay
+identical, a version-only dependency bump, and a registry prose fix. An
+authorized agent or session merges after all merge conditions pass.
 
 File type alone does not decide the tier. Documents can define contracts,
 configuration can change trust, and tests can weaken enforcement. Every tier
 needs an architecture impact check.
+
+### Notes without a tier
+
+The checker reports these signals as notes. They inform the author and call no
+human. Record the reason for each note in Quality review:
+
+- more than 400 production lines, or more than 1,500 total lines without
+  generated files;
+- an MI drop of five or more on an existing production file;
+- a retained high review finding on a changed production file;
+- a public module that the candidate touches while its declarations stay
+  identical;
+- a removed allowed edge or a removed public module;
+- a version-only dependency change or a lockfile-only change.
+
+### Stacked pull requests
+
+A stacked pull request takes its tier from the increment against its actual
+parent. Run the checker with `--base` set to the parent branch, and stamp the
+impact declaration with the same merge base. The impact flags describe the
+increment. The architecture of the parent is reviewed with the parent.
+Validation keeps the complete candidate against main visible: the test
+selection and the checks cover every change against `origin/main`. Merge the
+stack bottom-up, so that no increment lands before its parent.
 
 ## Establish merge eligibility
 
@@ -98,10 +154,23 @@ current candidate, all tiers require:
   gates pass under the trusted selection policy.
 - Architecture impact is recorded using the
   [component registry workflow](component-registry-workflow.md).
-- No hold, forbidden dependency, undeclared fact, required unresolved finding,
-  or missing evidence remains.
+- No hold, blocker of the next list, required unresolved finding, or missing
+  evidence remains.
 - Required independent human approvals cover the current head SHA and scope.
 - The candidate is mergeable and every required local check has a recorded pass.
+
+These results block merge at every tier:
+
+- a forbidden edge; an undeclared edge, component, external import, or public
+  module; a new cycle or a grown known cycle;
+- a stale, missing, orphan, or unverified declaration snapshot;
+- an architecture fact a to e or g while every architect flag is false;
+- a new skip or todo marker in a test: fix or delete the test;
+- a new production file below MI 85, or a CRAP goal miss, without a permitted
+  exception; an expired exception for a changed unit;
+- a non-empty habit-hooks snooze file;
+- the `uncertain` flag, a missing impact declaration, or missing required
+  metric evidence.
 
 Missing, pending, skipped, cancelled, failed, or unavailable required checks are
 not passes. N/A needs a reason allowed by trusted selection. A permitted metric
@@ -133,31 +202,44 @@ copy as `ast-report/impact.json` under the
 requires at least T1 Team review and blocks eligibility. Mechanical checks do
 not prove the truth of semantic claims.
 
-Historical rules remain authoritative for their candidate. The compatibility
-adapter preserves legacy higher-review requirements as T2 Need architect and
-legacy failure results as blockers. This conversion is only for historical
-input; it does not turn ordinary policy changes under the new policy into
-architecture changes. In particular, this migration cannot lower its own review
-requirement through the new HEAD rules.
+Historical rules remain authoritative for their candidate. A merge base whose
+rules predate 2026-10-24 keeps the earlier outcomes for its candidate: a touched
+public module, a size limit, an MI drop, a retained high finding, a new skip or
+todo marker, and a declared dependency fact are T1 Team review there, and
+`component` and `internalInterface` are team flags. The pull request that
+adopted the facts rules was classified under the earlier rules: T1 Team review
+for its policy paths. The compatibility adapter preserves legacy higher-review
+requirements of version 1 rules as T2 Need architect and legacy failure results
+as blockers. This conversion is only for historical input; it does not turn
+ordinary policy changes into architecture changes.
 
 Dependency checks use the complete source graph, including static, re-export,
 side-effect, dynamic, and type imports. Declare permitted new facts or remove
-them. Remove forbidden edges, new cycles, and growth of known cycles; a
-candidate declaration cannot permit them. The static checker lists affected
-public-surface modules; it does not emit or compare declaration snapshots and
-cannot prove an observable contract change from a file touch. Compare relevant
-exported declarations and behavior before and after the change, then explain
-whether observable guarantees change. The semantic impact evidence selects
-T2 Need architect when an actual cross-container or external contract changes.
+them. A declared component, edge, or public module is an architecture fact. A
+declared npm package or Node builtin is new third-party code. Remove forbidden
+edges, new cycles, and growth of known cycles; a candidate declaration cannot
+permit them.
+
+Each module of `public_surface` has a committed declaration snapshot under
+`docs/api-surface/`. When the exports of a public module change, run
+`pnpm exec node script/pr-review/api-surface.ts` and commit the files. The
+checker regenerates the snapshots at HEAD and blocks when a committed file is
+stale, missing, or an orphan. It reads the committed snapshots of the merge base
+from git and reports each module whose snapshot differs, with its unified diff,
+as fact d. The checker compares the text of the declarations; the human
+compares their meaning. Read each diff, check the behavior behind it, and record
+whether an observable guarantee changes. A touched module with identical
+declarations is a note. A file name alone never proves a contract change.
 
 Keep the approved absolute metric goals: production-file MI 85, each added or
 changed function below CRAP 30, and each added function at CRAP 15 or less. Use
 the existing checker and exception mechanism, with supported bounds where they
-prove a goal. An existing-file MI signal keeps its approved review threshold.
-MI is a file measure and CRAP is a function measure. Optional LOC-weighted
-component MI and counts of functions at CRAP 30 or more do not create a component
-CRAP score. No new component delta or percentage rule applies. Head-derived base
-CRAP is an estimate; it is not measured base coverage.
+prove a goal. An MI drop of five or more on an existing file is a note; record
+its reason in Quality review. MI is a file measure and CRAP is a function
+measure. Optional LOC-weighted component MI and counts of functions at CRAP 30
+or more do not create a component CRAP score. No new component delta or
+percentage rule applies. Head-derived base CRAP is an estimate; it is not
+measured base coverage.
 
 ## Record and retain the result
 
@@ -177,34 +259,40 @@ material fact to meet it. Use this order:
 
 1. **Description:** two or three sentences on the problem, result, and any
    material behavior or delivery limit. For a stack, add a parent PR link.
-2. **Review:** display T0, T1, or T2 and a short paragraph with the reasons that
-   drive the decision. Keep unresolved blockers, required decisions, and
-   required current-candidate human approval visible here. State eligibility
-   separately as the overall merge status: pending required human approval
-   means blocked, even if the local checker reports eligible. Full canonical
-   checker and label names remain unchanged.
+2. **Review:** display T0, T1, or T2 and the generated reason line: the
+   `Architecture:` line of the checker report (`architecture.summary` in the
+   JSON output). When a reason outside the facts drives the tier, such as a
+   policy path, name it too. Then copy the **Architecture facts** list of the
+   checker report: one bullet for each fact, with the declaration diffs folded
+   in a `<details>` block. Then give the summary of the committed
+   `.pr-impact.json`. Keep unresolved blockers, required
+   decisions, and required current-candidate human approval visible here.
+   State eligibility separately as the overall merge status: pending required
+   human approval means blocked, even if the local checker reports eligible.
+   Full canonical checker and label names remain unchanged.
 3. **Architectural impact**, an optional subsection under Review: a short
    impact statement. If production architecture is unchanged, one sentence in
    Review can replace both optional subsections; keep the full assessment in
-   Quality review. No diagram is required for unchanged architecture, including
-   an inherited T2 candidate.
+   Quality review. No diagram is required for unchanged architecture.
 4. **Architecture comparison**, an optional subsection under Review, required
-   for T2 when production architecture changes and useful in other tiers when
-   needed: follow the diagram guide in
-   [AGENTS.md](../../AGENTS.md#architecture-comparison). Keep the focused L3 view with a named L2 boundary and three or four short before/after behavior
-   notes here. Name the comparison base and stack parent beside the drawing.
+   when the checker reports fact a, b, c, or e or an architect flag applies, and
+   useful in other tiers when needed: follow the diagram guide in
+   [AGENTS.md](../../AGENTS.md#architecture-comparison). For fact d alone, the
+   folded declaration diffs and three or four short before/after behavior notes
+   are sufficient; no drawing is required. Keep the focused L3 view with a
+   named L2 boundary and three or four short before/after behavior notes here.
+   Name the comparison base and stack parent beside the drawing.
    Keep material authority, payload, failure phase, ordering, recovery, replay,
    lifetime, and delivery limits beside the drawing. A diagram
    cannot replace those conditions. Put detailed provenance below.
 5. A footer with the current short SHA linked to the full commit, and direct
    links to Validation and Quality review.
 
-For a stack, the comparison uses the actual parent's merge base and explains the
-incremental change. The complete candidate still uses the trusted-main policy
-for tier and merge assessment. State any inherited tier requirement visibly;
-an unchanged incremental architecture does not lower inherited T2. Give concise
-inherited metric dispositions and full report links instead of repeated
-full-stack metric tables. Retain every required finding and exception reason.
+For a stack, classify and compare the increment against the actual parent, as
+"Stacked pull requests" above says. Name the parent and its merge base beside
+the facts and the drawing. Give concise inherited metric dispositions and full
+report links instead of repeated full-stack metric tables. Retain every
+required finding and exception reason.
 
 Keep one authoritative comparison. Do not repeat it in an architecture comment.
 If technical access prevents editing the description, use one maintained summary
@@ -252,11 +340,12 @@ Prior candidate evidence: <version/audit links; mark stale evidence>
 
 Candidate: <full head SHA and commit link>
 Bases: <trusted-main merge base; actual parent merge base for a stack>
-Tier: <full canonical name; all reasons, including inherited reasons>
+Tier: <full canonical name; all reasons; for a stack, those of the increment>
 Eligibility: <result and blockers; local checker is preliminary>
 Impact: <committed .pr-impact.json link; base/head-bound check evidence>
 Policy answers: <applicable questions, before/after guarantees, and evidence>
 Metrics: <changed file/function results or trusted N/A reasons; full report links>
+Notes: <each informational note of the checker and its reason>
 Retained findings and exceptions: <each required reason, score/bound, path,
 coverage/classification, expiry and exception entry where required>
 Habit-hooks: <result; each retained enforced smell and its reason; empty snooze>
@@ -268,7 +357,8 @@ De-escalation: <previous tier/reasons, authorized approval, or none; audit link>
 
 <Changed/checked registry views and why they remain accurate; registry edit status>
 <Full pinned before/after revisions and links; all Mermaid blocks inventoried>
-<Actual-parent comparison scope; separate complete-candidate/trusted-main assessment>
+<Comparison and classification scope: the actual parent for a stack>
+<Each declaration diff and whether its meaning or behavior changes>
 <Source, contract, caller, and test evidence; relevant L2/deployment effects>
 <L4 include/omit rationale and strongest changed contract/review question>
 <Versioned Mermaid sources, renders, normal-width inspection, byte-for-byte check>

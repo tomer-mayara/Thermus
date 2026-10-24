@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "This candidate changes PR reporting policy and its documentation only. It places the main review summary and any architecture comparison in the PR description, with Validation and Quality review as maintained evidence comments. Runtime code, public contracts, source ownership, dependencies, authority, resource lifetimes, trust boundaries, containers, and deployment topology do not change. Checked context, hosted/local containers and owner mapping, component scopes, runtime collaboration overview, and deployment views remain accurate. No registry edit or production callable-contract comparison is needed.",
+    "summary": "This candidate changes the review policy and its tools only. The checker now selects T2 Need architect from architecture facts that it establishes from the two revisions: a changed component set, an added dependency between components, a module that joins the public surface, a changed declaration snapshot of a public module, a changed Mermaid view of the registry, or an added decision record. Committed declaration snapshots under docs/api-surface record the public interface of each listed module. The security path list shrinks to 13 guarantee files, size and maintainability signals become notes, a new skip or todo marker blocks, and a stacked pull request takes its tier from the increment against its parent. Runtime code, public contracts, source ownership, dependencies, authority, resource lifetimes, trust boundaries, containers, and deployment topology do not change: no file under src/ changes. The context, container, component, runtime, and deployment views of the registry remain accurate. No registry edit is needed.",
     "views": [
       "context",
       "containers",
@@ -24,11 +24,16 @@
       "deployment"
     ],
     "evidence": [
-      "AGENTS.md",
-      ".github/pull_request_template.md",
-      "docs/implementation/pr-review-playbook.md",
-      "docs/implementation/component-registry-workflow.md",
       "docs/implementation/pr-review-rules.yaml",
+      "script/pr-review/README.md",
+      "script/pr-review/rules.ts",
+      "script/pr-review/analysis.ts",
+      "script/pr-review/surface-snapshot.ts",
+      "script/pr-review/api-surface.ts",
+      "docs/api-surface",
+      "docs/design/pr-review-architecture-facts.md",
+      "AGENTS.md",
+      "docs/implementation/pr-review-playbook.md",
       "architecture/components.md"
     ]
   }

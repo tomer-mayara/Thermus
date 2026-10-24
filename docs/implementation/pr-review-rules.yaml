@@ -3,6 +3,12 @@
 # output and GitHub labels. Use short T0/T1/T2 prose display per the playbook.
 # A blocked check does not change the review tier. The manager or Delamain
 # session verifies local checks, required independent approvals, and holds.
+#
+# Since 2026-10-24 the sections architecture, impact, dependencies, and
+# public_surface.snapshots select the tier from architecture facts. A merge base
+# without them keeps the earlier outcomes for its candidate: a touched public
+# module, a size limit, an MI drop, a retained high finding, and a declared
+# dependency fact are T1 Team review there.
 version: 2
 status: adoption
 
@@ -36,7 +42,7 @@ scopes:
   generated:
     # not counted by the size check
     - docs/metrics/**
-    - docs/api-surface/** # to create
+    - docs/api-surface/** # the declaration snapshots of public_surface.snapshots
     - pnpm-lock.yaml
     - .ast-metrics-baseline.yaml
 
@@ -68,8 +74,6 @@ protected_paths:
       - .github/**
       - docs/implementation/pr-review-playbook.md
       - docs/implementation/pr-review-rules.yaml
-      - docs/api-surface/**
-      - docs/reference/**
       - script/pr-review/**
       - script/code-quality/review/**
       - .habit-hooks/**
@@ -85,8 +89,7 @@ protected_paths:
     tier: T1
     question: "Which new code runs in production or in the build, and who maintains it? Record the reason for the dependency."
     paths:
-      - package.json
-      - pnpm-lock.yaml
+      # package.json and pnpm-lock.yaml are under dependencies below
       - pnpm-workspace.yaml
       - patches/**
       - tsconfig*.json
@@ -106,38 +109,25 @@ protected_paths:
   security:
     tier: T1
     question: "Does this change admission, trust, permissions, or what untrusted content can reach? Record the guarantee that holds after the change."
+    # Files whose behavior is a guarantee even when their declarations do not
+    # change. Public contracts are under public_surface; a changed declaration
+    # is an architecture fact. On 2026-10-24 the list shrank from 28 entries
+    # over 101 source files to 13 entries over 33 source files; the
+    # sensitiveBehavior flag covers the rest.
     paths:
-      - src/accounts/identity/**
-      - src/accounts/providers/**
-      - src/accounts/billing/**
-      - src/accounts/organizations/**
-      - src/runtime/config/**
-      - src/interfaces/web/**
-      - src/interfaces/cli/**
-      - src/app/hosted-portal.ts
-      - src/app/hosted-renderer-startup.ts
-      - src/app/application.ts
-      - src/app/hidden-line-input.ts
-      - src/interfaces/user-portal/portal.ts
-      - src/interfaces/mcp/mcp-server.ts
-      - src/interfaces/mcp/identity-verifier-sdk-adapter.ts
-      - src/interfaces/mcp/protected-resource-endpoint.ts
-      - src/pipelines/page-fetch/fetch-page.ts
-      - src/pipelines/html-processing/prompt-injection-remover/**
+      - src/pipelines/providers/website-fetcher/network-policy.ts # which destinations may be fetched
+      - src/pipelines/html-processing/prompt-injection-remover/** # untrusted text that reaches the model
       - src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts
-      - src/pipelines/html-processing/html-to-markdown/plain-text-input.ts
-      - src/pipelines/html-processing/html-input-limit.ts
+      - src/pipelines/html-processing/html-input-limit.ts # resource limits
       - src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts
-      - src/runtime/http/server.ts
-      - src/runtime/http/fetch-exchange.ts
-      - src/runtime/http/client-address.ts
-      - src/pipelines/providers/website-fetcher/network-policy.ts
-      - src/pipelines/providers/website-fetcher/fetch-diagnostic.ts
-      - src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts
-      - src/pipelines/providers/search-engine/search-engine-brave-http.ts
-  # Three busy files carry one security concern each: fetch-page.ts, the
-  # lightpanda fetcher and the Brave engine. Moving the concern into a small
-  # file of its own shrinks the protected set to that file.
+      - src/interfaces/mcp/identity-verifier-sdk-adapter.ts # token verification
+      - src/interfaces/mcp/protected-resource-endpoint.ts
+      - src/accounts/identity/identity-verifier.ts
+      - src/accounts/providers/workos/session-cookies.ts # cookie sealing
+      - src/accounts/providers/workos/workos-signup.ts # one-time grant authority
+      - src/runtime/http/client-address.ts # trusted proxy address
+      - src/interfaces/web/account/account-form.ts # CSRF and bounded body parsing
+      - src/runtime/config/** # what the deployment trusts
 
   # A change to one of these paths needs T1 Team review.
 read_paths:
@@ -145,16 +135,26 @@ read_paths:
   paths:
     - .ast-metrics-baseline.yaml # the accepted native lint violations
     - .code-quality-exceptions.yaml # optional; the metric exceptions of check 4
+    - .agent/** # agent configuration
+  # A change to one of these documents needs T1 Team review only when the diff
+  # removes lines from it: a feature adds its gate section, a weaker gate
+  # removes text.
+  removal_paths:
     - docs/implementation/test-gate-policy.md # test-selection and gate policy
     - docs/implementation/ast-metrics-review.md # metrics selection and evidence policy
-    - .agent/** # agent configuration
   moved_by_stop_rule: [] # executable files of reverted T0 pull requests; the owner removes them after the fix
 
-# Surface candidates receive T1 Team review. The checker names changed modules
-# and direct same-owner imports; a human compares their exported declarations.
-# Actual cross-container/external contract changes are T2 Need architect through
-# the semantic impact declaration. Declaration snapshot comparison is not built.
+# The check compares the declaration snapshots of the listed modules: a changed
+# snapshot is the fact declarations_changed (T2 Need architect), and a touched
+# module whose snapshot is unchanged is a note. A human compares the meaning of
+# each diff. Under the rules of an earlier merge base, a touched module stays
+# T1 Team review and the check names the modules for a comparison by hand.
 public_surface:
+  # One declaration snapshot <module>.d.ts under snapshots for each module
+  # listed below, written by script/pr-review/api-surface.ts. The check
+  # regenerates them at HEAD, blocks when they are stale, and reports a module
+  # whose snapshot differs from the merge base as the fact declarations_changed.
+  snapshots: docs/api-surface
   contract_documents: docs/reference/**
   external:
     - src/index.ts
@@ -223,7 +223,7 @@ dependency_graph:
     subpath: "better-auth/oauth2 counts as better-auth"
     unresolved_relative_import: blocked
   triggers:
-    edge_not_listed: blocked # until the pull request lists it; the listing is T1 Team review through protected_paths
+    edge_not_listed: blocked # until the pull request lists it; the listing is the fact dependency_added (T2), and the rules file is a protected policy path
     type_edge_becomes_runtime: blocked # the same as a new edge
     runtime_edge_becomes_type: none # the kind is a maximum; a weaker use needs no change
     folder_not_listed: blocked # an undeclared component; all source files need one root or exact-file owner
@@ -362,6 +362,34 @@ dependency_graph:
     http: { roots: [ src/runtime/http/ ] }
     config: { roots: [ src/runtime/config/ ] }
 
+# The facts that the check establishes from the merge base and HEAD. Each is
+# T2 Need architect: an architect reviews the pull request. The check reads the
+# components, allowed edges, and public modules of both rules files, the
+# declaration snapshots and the registry of both revisions, and the changed paths.
+architecture:
+  component_set: T2 # dependency_graph.components differs: an id added or removed, or a root moved
+  dependency_added: T2 # an allowed edge is added, or a type edge becomes runtime
+  public_module_added: T2 # a module joins public_surface
+  declarations_changed: T2 # the declaration snapshot of a public module differs
+  registry_view_changed: T2 # a Mermaid block of the registry is added, removed, or edited; prose is not a fact
+  decision_record: T2 # a file is added under decisions
+  registry: architecture/components.md
+  decisions: architecture/decisions/**
+  undeclared_fact: blocked # a fact above while every architect flag of the impact declaration is false
+
+# The flags of .pr-impact.json and their tiers. A flag raises the tier; it
+# cannot lower it. uncertain is T1 and blocked.
+impact:
+  architect: [ container, external, contract, deployment, crossCutting, component, internalInterface ]
+  team: [ sensitiveBehavior, dependencyRisk, policy ]
+
+# Third-party code. A version change alone, and a lockfile change alone, are notes.
+dependencies:
+  manifest: package.json
+  lockfile: pnpm-lock.yaml
+  keys_changed: T1 # a dependency is added or removed in the manifest
+  external_import_added: T1 # a component gains an npm package or a Node builtin, declared in dependency_graph
+
 # Check 4. The author takes two snapshots with
 # script/code-quality/ast-metrics-snapshot.ts, one of the merge base and one
 # of the candidate. The check reads them with --base-snapshot and
@@ -379,7 +407,7 @@ ratchet:
   base_snapshot: ast-report/snapshot-base.json # the default output of the snapshot command with --base
   head_snapshot: ast-report/snapshot.json # the default output of the snapshot command without --base
   process_outcomes: ast-report/process.json # the default location of the JSON of ast-metrics-process.ts --json; the check reads it with --process; a failed or unavailable stage is blocked
-  review_findings: ast-report/review.json # the JSON that the review stage of the metrics process writes; the check reads it with --review after a completed Review stage; a high finding on a changed production file is T1, a finding on an unchanged file keeps the reason "unchanged by this PR"
+  review_findings: ast-report/review.json # the JSON that the review stage of the metrics process writes; the check reads it with --review after a completed Review stage; a high finding on a changed production file follows review_findings_high (a note; T1 under earlier rules), a finding on an unchanged file keeps the reason "unchanged by this PR"
   coverage_selection: docs/implementation/test-gate-policy.md # never collect a suite outside the complete candidate selection
   identity:
     key: the function identity and move detection of script/code-quality/ast-metrics-crap.ts
@@ -396,8 +424,9 @@ ratchet:
   maintainability_index:
     unit: production file # a test or support file has no rule
     new_file_below: 85 # blocked for a new file (status A) below this raw MI
-    existing_file_drop_read_at: 5 # T1 at a raw drop of five or more from the base snapshot; a renamed file continues its old path
+    existing_file_drop_note_at: 5 # a note at a raw drop of five or more from the base snapshot; a renamed file continues its old path; was T1 before 2026-10-24
     compare: raw values, no rounding
+  review_findings_high: note # a retained high finding on a changed production file is a note; the author records its reason; was T1 before 2026-10-24
   exceptions:
     file: .code-quality-exceptions.yaml # optional; a change needs T1 Team review through read_paths
     fields: [ unit, metric, bound, reason, expires, predecessor ] # the check reads path (the unit of mi) or function (<file>#<function>, the unit of crap), metric, bound, reason and expires (YYYY-MM-DD)
@@ -406,12 +435,13 @@ ratchet:
 
 # Check 5. Lines are additions plus deletions in the diff against the merge base.
 size:
-  production_lines_read_above: 400 # under scopes.production
-  total_lines_read_above: 1500 # all files minus scopes.generated
+  # Size is a note since 2026-10-24: it informs the author, it calls no human.
+  production_lines_note_above: 400 # under scopes.production
+  total_lines_note_above: 1500 # all files minus scopes.generated
   test_counts:
     source: added and removed test-call lines, skip markers, and todo markers in the diff
     fewer_tests_than_base: T1
-    more_skipped_or_todo_than_base: T1
+    more_skipped_or_todo_than_base: blocked # fix or delete the test; was T1 before 2026-10-24
   habit_hooks_snooze_non_empty: blocked # .habit-hooks/snooze.json stays []
   # Reference: pull requests #186 to #200 merged on 2026-10-19 and 2026-10-20.
   # 6 of the 15 changed src/. The largest changed 450 src lines in 8 files.

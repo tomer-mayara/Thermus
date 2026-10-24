@@ -3,10 +3,12 @@ import { changedPathsOf } from './changes.ts';
 import { coveringException, exceptionsOf, expiredReasons, type CodeQualityException } from './exceptions.ts';
 import { anyGlobMatches } from './globs.ts';
 import type { Rules } from './rules.ts';
+import { signalsOf } from './signals.ts';
 import type { SnapshotPair } from './snapshots.ts';
 import type { Change, Reason } from './types.ts';
 
 const key = 'ratchet.maintainability_index';
+const dropKeys = { T1: `${key}.existing_file_drop_read_at`, note: `${key}.existing_file_drop_note_at` };
 
 // today is the committer date of HEAD, so that a rerun of the same candidate gives the same tier.
 interface RatchetInput {
@@ -24,23 +26,27 @@ interface Context {
   readonly today: string;
 }
 
+// drop holds the values of a file whose raw MI dropped by the limit or more.
 interface FileOutcome {
   readonly line: string;
   readonly reasons: readonly Reason[];
+  readonly drop?: string;
 }
 
 interface RatchetOutcome {
   readonly reasons: Reason[];
   readonly lines: string[];
+  readonly notes: string[];
 }
 
 export function ratchetOutcome(input: RatchetInput, rules: Pick<Rules, 'scopes' | 'maintainability'>): RatchetOutcome {
   const entries = exceptionsOf(input.exceptions);
   const expired = expiredReasons(entries, changedPathsOf(input.changes), input.today);
-  if (input.snapshots === undefined) return { reasons: expired, lines: ['not checked: give --base-snapshot and --head-snapshot'] };
+  if (input.snapshots === undefined) return { reasons: expired, lines: ['not checked: give --base-snapshot and --head-snapshot'], notes: [] };
   const context = { production: rules.scopes.production, snapshots: input.snapshots, limits: rules.maintainability, entries, today: input.today };
   const files = productionChanges(input.changes, rules.scopes.production).map((change) => fileOutcomeOf(change, context));
-  return { reasons: [...files.flatMap((file) => file.reasons), ...expired], lines: files.map((file) => file.line) };
+  const drops = signalsOf(rules.maintainability.dropOutcome, dropKeys, files.flatMap((file) => file.drop ?? []));
+  return { reasons: [...files.flatMap((file) => file.reasons), ...drops.reasons, ...expired], lines: files.map((file) => file.line), notes: drops.notes };
 }
 
 // Both paths of a rename count. A deleted file has nothing to measure at HEAD.
@@ -73,8 +79,8 @@ function changedFileOutcome(change: Change, context: Context): FileOutcome {
   if (base === undefined) return missingMi(change, 'base', context);
   if (head === undefined) return missingMi(change, 'head', context);
   const values = `${shown}: ${base} to ${head}`;
-  const dropped = dropOf(base, head) >= context.limits.existingFileDropReadAt;
-  return { line: `changed: ${values}`, reasons: dropped ? [{ tier: 'T1', key: `${key}.existing_file_drop_read_at`, fact: values }] : [] };
+  const dropped = dropOf(base, head) >= context.limits.existingFileDropAt;
+  return { line: `changed: ${values}`, reasons: [], drop: dropped ? values : undefined };
 }
 
 // Binary subtraction of decimal values can give 4.999999999999993 for a drop of five, so the drop keeps six decimals.
