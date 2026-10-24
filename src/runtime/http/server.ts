@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../logs/system/system-log.ts';
+import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { once } from 'node:events';
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo, Socket } from 'node:net';

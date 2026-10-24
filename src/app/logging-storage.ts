@@ -1,5 +1,5 @@
 import { loadLoggingStorageConfig } from '../runtime/config/logging-storage-config.ts';
-import type { SystemLog } from '../logs/system/system-log.ts';
+import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
 
 // Stores customer audit destination settings, not system log output or audit history.

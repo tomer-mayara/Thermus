@@ -1,4 +1,4 @@
-import type { SystemLog } from '../logs/system/system-log.ts';
+import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { LocalAuthPages } from '../interfaces/web/auth/better-auth/local-auth-pages.ts';
 import type { AccessResolver } from '../accounts/identity/access-context.ts';
 import type { Billing } from '../accounts/billing/billing.ts';

@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../../../src/logs/system/system-log.ts';
+import type { SystemLog } from '../../../../src/logs/system/system-logger.ts';
 import { SystemLogger } from '../../../../src/logs/system/system-logger.ts';
 import type { FetchOperation } from '../../../../src/interfaces/mcp/get-url-as-markdown.ts';
 

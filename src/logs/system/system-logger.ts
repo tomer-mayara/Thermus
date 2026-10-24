@@ -1,4 +1,3 @@
-import type { SystemLog } from './system-log.ts';
 import { basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,7 +10,9 @@ export enum LogLevel {
   NONE,
 }
 
-export abstract class SystemLogger implements SystemLog {
+export type SystemLog = Pick<SystemLogger, 'info' | 'error'>;
+
+export abstract class SystemLogger {
   private level: LogLevel;
   private readonly loggerDirectory: string = import.meta.dirname;
 

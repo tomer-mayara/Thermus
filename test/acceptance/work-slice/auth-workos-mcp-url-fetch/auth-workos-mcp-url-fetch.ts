@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../../../src/logs/system/system-log.ts';
+import type { SystemLog } from '../../../../src/logs/system/system-logger.ts';
 // The auth WorkOS MCP URL fetch work slice: a manual run of the hosted edition with the real WorkOS provider, the fetch
 // tool, and Axiom logs, not a test. See README.md here.
 // This file is the entry point of the slice and also exports its composition for the tests. It runs only when it is

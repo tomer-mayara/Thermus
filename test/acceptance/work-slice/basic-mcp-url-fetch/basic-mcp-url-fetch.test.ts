@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../../../src/logs/system/system-log.ts';
+import type { SystemLog } from '../../../../src/logs/system/system-logger.ts';
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { StreamableHTTPClientTransport, type CallToolResult, type Client } from '@modelcontextprotocol/client';

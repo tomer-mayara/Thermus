@@ -289,8 +289,10 @@ flowchart TB
   logs_audit -.->|ChangeOutcome type only| logs_org
 ```
 
-HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-log.ts)
-contract for errors. The production entry selects
+HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-logger.ts)
+contract for errors. `SystemLog` is `Pick<SystemLogger, 'info' | 'error'>`,
+exported by the SystemLogger module. It accepts plain objects with those methods.
+The production entry selects
 [ConsoleSystemLogger](../src/logs/system/console-system-logger.ts) on stderr;
 [OtelSystemLogger](../src/logs/system/otel-system-logger.ts) remains an internal
 adapter, with no production exporter configured here. Both inherit caller

@@ -1,4 +1,4 @@
-import type { SystemLog } from '../logs/system/system-log.ts';
+import type { SystemLog } from '../logs/system/system-logger.ts';
 import { AdRulesFileError, readAdRulesFile } from '../runtime/config/ad-rules-file.ts';
 import { CleanHtmlAdsAdblockRs } from '../pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts';
 import { HtmlToMarkdownPipeline } from '../pipelines/html-processing/html-to-markdown-pipeline.ts';

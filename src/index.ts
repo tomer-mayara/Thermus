@@ -1,4 +1,4 @@
-import type { SystemLog } from './logs/system/system-log.ts';
+import type { SystemLog } from './logs/system/system-logger.ts';
 import { pathToFileURL } from 'node:url';
 import { createApplication, type Application } from './app/application.ts';
 import { loadDeploymentConfig, loadListenAddress, type ListenAddress } from './runtime/config/deployment-config.ts';

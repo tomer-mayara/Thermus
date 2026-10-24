@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../logs/system/system-log.ts';
+import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { STATUS_CODES, type IncomingMessage, type ServerResponse } from 'node:http';
 import { CLIENT_ADDRESS_HEADER } from './client-address.ts';
 

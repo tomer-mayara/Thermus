@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../logs/system/system-log.ts';
+import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { loadDeploymentConfig } from '../../runtime/config/deployment-config.ts';
 import type { LocalUserAdministration, LocalAccount, LocalAuthSettings, OpenedLocalAdministration, PasswordSource, RegisteredClient } from '../../accounts/identity/local-user-administration.ts';
 import { parseLocalAuthCommand, USAGE, UsageError, type LocalAuthCommand } from './local-auth-command-line.ts';

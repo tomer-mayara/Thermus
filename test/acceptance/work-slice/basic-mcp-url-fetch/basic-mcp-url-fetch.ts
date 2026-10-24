@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../../../src/logs/system/system-log.ts';
+import type { SystemLog } from '../../../../src/logs/system/system-logger.ts';
 // The basic MCP URL fetch work slice: a manual run with the mock provider and Axiom logs, not a test. See README.md here.
 // This file is the entry point of the slice and also exports its composition for the tests. It runs only when it is
 // executed directly, with the guard of src/index.ts, so that the tests can import it.

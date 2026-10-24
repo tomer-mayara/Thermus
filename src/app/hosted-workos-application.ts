@@ -1,4 +1,4 @@
-import type { SystemLog } from '../logs/system/system-log.ts';
+import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';

@@ -38,6 +38,6 @@ test('Given a sink that throws, when an explicit audit event is recorded, then t
 type PublicSurface<Value> = Pick<Value, keyof Value>;
 type Assignable<From, To> = [From] extends [To] ? true : false;
 type MustBeFalse<Value extends false> = Value;
-export type AuditCannotReplaceSystem = MustBeFalse<Assignable<PublicSurface<AuditLog>, import('../../../../src/logs/system/system-log.ts').SystemLog>>;
-export type SystemCannotReplaceAudit = MustBeFalse<Assignable<import('../../../../src/logs/system/system-log.ts').SystemLog, PublicSurface<AuditLog>>>;
+export type AuditCannotReplaceSystem = MustBeFalse<Assignable<PublicSurface<AuditLog>, import('../../../../src/logs/system/system-logger.ts').SystemLog>>;
+export type SystemCannotReplaceAudit = MustBeFalse<Assignable<import('../../../../src/logs/system/system-logger.ts').SystemLog, PublicSurface<AuditLog>>>;
 export type SystemLoggerCannotReplaceAudit = MustBeFalse<Assignable<import('../../../../src/logs/system/system-logger.ts').SystemLogger, PublicSurface<AuditLog>>>;

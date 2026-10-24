@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../logs/system/system-log.ts';
+import type { SystemLog } from '../../logs/system/system-logger.ts';
 import { randomUUID } from 'node:crypto';
 import { ProtocolError, ProtocolErrorCode, Server, type CallToolRequest, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import type { RequestContext } from '../../accounts/identity/access-context.ts';

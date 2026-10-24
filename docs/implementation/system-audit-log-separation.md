@@ -1,10 +1,31 @@
 # System and audit log separation review
 
-Review scope: the log-separation candidate against parent S2-01a commit
+Earlier review scope: the log-separation candidate against parent S2-01a commit
 `82f3d6049a23fe10fa9827379fd48863b584dbe3` (PR #237). The PR description and
-local review artifacts bind these results to the final committed candidate.
+local review artifacts bind those earlier results to their recorded candidate.
 The complete-candidate policy and metrics comparison uses main at
 `bb19a9887f3e58776278e516cce9e7aa18efee5c`, so it also includes parent S2-01a.
+
+## SystemLog type refactor scope
+
+The follow-up refactor exports `SystemLog` from
+[`system-logger.ts`](../../src/logs/system/system-logger.ts) as
+`Pick<SystemLogger, 'info' | 'error'>`. It removes the separate interface module
+and the `implements SystemLog` clause. Callers use type-only imports from the
+SystemLogger module. The `info` and `error` signatures stay the same, and plain
+objects with those methods remain compatible. Logger bodies and runtime wiring
+do not change.
+
+The system-logs owner and its protected public-surface entry remain in place;
+the protected entry now names `system-logger.ts`. The component, collaboration,
+runtime, container, and deployment views remain accurate. The registry source
+link and contract prose change; its Mermaid diagrams do not change. No callable
+contract shape changes, so no L4 detail is needed for this refactor.
+
+The results below describe the earlier log-separation and test-layout candidates.
+They are historical evidence, not validation of the follow-up type refactor.
+The manager must record fresh complete-candidate checks and review eligibility
+for the current head before requesting review or merge.
 
 ## Implemented scope and limits
 
@@ -63,7 +84,8 @@ Save/Test UI, and an in-app log viewer do not ship in this change. See the
 
 The complete-candidate checker identifies `src/index.ts` and its imported application
 boundary, `src/app/fetch-tool.ts`, and the new SystemLog/AuditLog contracts.
-SystemLog replaces local structural logger declarations. Its `error(unknown)`
+SystemLog replaced local structural logger declarations in the log-separation
+candidate. Its `error(unknown)`
 widens the old application, MCP, and HTTP declaration from `string`; the concrete
 system logger already accepted unknown failures. Existing callers and runtime
 outcomes stay the same. HTTP and CLI use only its error member.

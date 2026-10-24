@@ -170,7 +170,7 @@ to complete-candidate checks and independent architect approval.
 The S2-01a public-surface check identified `src/index.ts` and
 `src/app/fetch-tool.ts` because they import `application.ts`. This change updates
 their system logger dependencies. The former `ApplicationLogger` contract is
-replaced by `SystemLog` from `src/logs/system/system-log.ts`. Its diagnostic
+replaced by `SystemLog` from `src/logs/system/system-logger.ts`. Its diagnostic
 `error` input accepts `unknown`, which broadens the previous string input;
 existing diagnostic output and failure rendering are preserved. `Application`,
 routing, and tool behavior remain unchanged. In S2-01a,

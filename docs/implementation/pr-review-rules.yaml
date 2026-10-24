@@ -165,7 +165,7 @@ public_surface:
     - src/runtime/config/ad-rules-file.ts
   between_packages:
     system-logs:
-      - src/logs/system/system-log.ts
+      - src/logs/system/system-logger.ts
     audit-logs:
       - src/logs/audit/audit-log.ts
     identity:

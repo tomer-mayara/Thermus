@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../../src/logs/system/system-log.ts';
+import type { SystemLog } from '../../../src/logs/system/system-logger.ts';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { once } from 'node:events';
