@@ -101,14 +101,15 @@ Policy questions and guarantees:
 
 Test files now mirror these owners under `test/<type>/logging/system/` and
 `test/<type>/logging/audit/`. Destination settings and storage tests belong to
-audit. This layout change preserves test behavior and gate selection. The
-results below describe the earlier source and class changes; they do not claim
-a verification run of the later test-file move.
+audit. All 15 test moves preserve assertions, fixtures, behavior, and gate
+selection. Fresh verification on `b0b52fa4` passed as recorded below; the earlier
+source and class refactor history remains separate.
 
 ## Behavior and test evidence
 
-The work used passing characterization before system/storage moves and focused
-BDD/TDD cases for new audit behavior. The manager reports these focused results:
+The earlier source refactor used passing characterization before system/storage
+moves and focused BDD/TDD cases for new audit behavior. The manager reports
+these focused results:
 
 | Selection | Result |
 | --- | --- |
@@ -128,17 +129,20 @@ The type assertions compare public members, so private state cannot by itself
 prove separation from system logging. No production caller uses the removed
 role interface or implementation module.
 
-The full ordinary suite passed: 4,239 backend tests and 49 portal tests, with
-zero failures, cancellations, skips, or todo cases. `npm run typecheck` and
-`npm run build:user-portal` also passed. The real PostgreSQL gate passed 11 tests,
-and the self-hosted image gate passed 11 tests. The Linux AMD64 hosted image
-gate passed all seven tests. Its image build passed `npm run build:hosted`,
-including all 13 renderer checks. No separate duplicate hosted aggregate ran.
+Fresh test-layout verification on `b0b52fa4` passed 64 focused compiled ordinary
+logging tests, 11 PostgreSQL tests, and one live Axiom test with a fresh designated
+test export. The full ordinary suite passed 4,239 backend and 49 portal tests;
+typecheck and the portal build passed. The self-hosted image passed 11 tests,
+and the hosted image passed seven on its first attempt. Its nested
+`build:hosted` groups passed 2,645 backend units, 29 portal units, 20 portal
+acceptance, 1,047 integration, 119 acceptance, and 13 renderer checks. These groups had zero
+failures, cancellations, skips, or todo cases. See the
+[fresh layout verification logs](../../ast-report/logging-test-layout/).
 
-Before this consolidation, the first hosted-image build timed out during startup of the existing
-`/session` shutdown case, before
-its SIGTERM assertion. The full host suite and host build passed that case. The
-failed build log is retained. The complete image retry passed all seven checks,
+In the earlier source refactor, the first hosted-image build timed out during
+startup of the existing `/session` shutdown case, before its SIGTERM assertion.
+The full host suite and host build passed that case. The failed build log is
+retained. The complete image retry passed all seven checks,
 including all 119 build-time acceptance tests and the same startup case. The
 source, timeout, and assertions were unchanged. No other suite ran in this
 worktree during the retry; another workspace shared the local Docker builder.
@@ -146,11 +150,9 @@ The cause of the first startup timeout is not proved.
 
 Hosted-live is not selected: identity, membership, invitation, and authentication
 behavior stay the same. This change replaces their diagnostic type/import only.
-The earlier internal OTel/Axiom interface check passed; its system exporter,
-callers, and test inputs are unchanged by this consolidation, so that external
-proof is retained without another test export. Local PostgreSQL results do
-not prove a deployed Supabase migration, grants, or backup/restore. Those remain
-the owner rollout gates in the plan. The local input-match record binds the
+The fresh live Axiom check passed with one designated test export after the test
+move. Local PostgreSQL results do not prove a deployed Supabase migration, grants,
+or backup/restore. Those remain the owner rollout gates in the plan. The local input-match record binds the
 final candidate to the tested source, tests, and build inputs. Later evidence
 updates change prose only.
 
@@ -220,8 +222,13 @@ Habit-hooks reports are retained for review, with these scoped dispositions:
   integration cases retain their existing responsibilities. The slice changes
   types/imports or one guard, without adding a new responsibility to these files.
 
-The snooze file remains empty. The manager reviewed and retained these scoped
-dispositions and the complete-candidate metrics evidence.
+The fresh test-layout habit-hooks run exited 1 with the same findings after
+path normalization, including 148 comment findings; it found no new findings.
+The snooze file remains `[]`. Source is unchanged. The metrics and finding
+counts above describe the source review; the PR evidence binds the metrics
+reports to the final candidate.
+The manager reviewed and retained these scoped dispositions and the
+complete-candidate metrics evidence.
 
 ## Review status and local evidence
 
@@ -242,7 +249,7 @@ The following are **local workspace artifacts**, not GitHub download links:
 - [Base snapshot](../../ast-report/snapshot-base.json) and
   [head snapshot](../../ast-report/snapshot.json).
 - [Habit-hooks findings](../../ast-report/log-separation/habit-hooks-final.log).
-- [PostgreSQL gate log](../../ast-report/log-separation/postgres-focused.log).
+- [PostgreSQL gate log](../../ast-report/logging-test-layout/postgres.log).
 - [Review tier result](../../ast-report/log-separation/review-tier.json).
 - [Complete metrics process](../../ast-report/process.md), [process outcomes](../../ast-report/process.json),
   [CRAP rows](../../ast-report/crap.json), and [review findings](../../ast-report/review.json).
