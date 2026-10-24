@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { TestContext } from 'node:test';
-import { BoundedSqlRuntime } from '../../../src/logs/audit/bounded-sql-runtime.ts';
-import { PgDestinationSettingsStore } from '../../../src/logs/audit/pg-destination-settings-store.ts';
+import { BoundedSqlRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
 
 const revision = 'b0fd8b9d-c2df-4b31-bf56-50228825bb05';
 const previousRevision = '4a5c3911-ae48-4d71-8114-151e56ebbd28';

@@ -53,7 +53,7 @@ Set the Axiom settings below before running the acceptance or interface files.
 Use the focused build command:
 
 ```sh
-npm run build && node --test dist/test/acceptance/logging/otel-logger.test.js dist/test/unit/logging/otel-logger.test.js dist/test/interface/logging/otel-logger.test.js
+npm run build && node --test dist/test/acceptance/logging/system/otel-logger.test.js dist/test/unit/logging/system/otel-logger.test.js dist/test/interface/logging/system/otel-logger.test.js
 ```
 
 The OpenTelemetry API, SDK, and HTTP exporter are pinned to 0.223.0. The API is
@@ -97,7 +97,7 @@ regular logger tests, so those suites also need Axiom settings and network
 access. `npm run check` runs the offline unit coverage; it does not select these
 logger acceptance and interface files.
 
-`test/interface/logging/otel-logger-axiom.live.ts` provides an additional test
+`test/interface/logging/system/otel-logger-axiom.live.ts` provides an additional test
 with a unique INFO message. It is separate from normal test globs and uses the
 same test dataset and settings:
 

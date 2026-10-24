@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { LogLevel } from '../../../src/logs/system/system-logger.ts';
-import { OtelSystemLogger } from '../../../src/logs/system/otel-system-logger.ts';
-import { createOtlpFixture, logRecordsOf } from '../../support/doubles/logging/otel-log-receiver.ts';
+import { LogLevel } from '../../../../src/logs/system/system-logger.ts';
+import { OtelSystemLogger } from '../../../../src/logs/system/otel-system-logger.ts';
+import { createOtlpFixture, logRecordsOf } from '../../../support/doubles/logging/otel-log-receiver.ts';
 
 const testDataset = 'system-log-test';
 

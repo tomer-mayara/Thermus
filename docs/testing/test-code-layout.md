@@ -161,6 +161,12 @@ not from a former source folder name. Writer-only execution cases live in
 live in `test/integration/page-fetch/`. Private app support tests live in
 `test/unit/app/`.
 
+Logging tests mirror their source owners within each test type: internal
+diagnostics use `test/<type>/logging/system/`; customer audit events and
+destination settings use `test/<type>/logging/audit/`. This split preserves the
+test types and gate suffixes. Shared logging support keeps its role-based home
+under `test/support/`.
+
 Two axes stay apart. The top folders under `test/` give the test type.
 AGENTS.md decides the type by the packages that a test executes, not by the
 folder of its helpers. The folders under `S/` give the layer role. The four

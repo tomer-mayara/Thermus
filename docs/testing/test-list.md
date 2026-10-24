@@ -941,7 +941,7 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Accepts 0 seats and `Number.MAX_SAFE_INTEGER` seats and confirms the free plan with no billed seat
 [V] Gives frozen state records that keep the free state
 
-**Customer audit logs — API foundation** (`test/acceptance/logging/audit-log.test.ts`, `test/unit/logging/audit-log.test.ts`)
+**Customer audit logs — API foundation** (`test/acceptance/logging/audit/audit-log.test.ts`, `test/unit/logging/audit/audit-log.test.ts`)
 
 [V] Emits named tool and invitation events to a separate audit sink
 [V] Projects explicit actor and target fields and excludes extra source, line, stack, and message fields
@@ -950,7 +950,7 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
 [] Add production capture with redacted, bounded tool inputs and results, then OTLP delivery under the [Slice 2 plan](../design/organization-admin-plan.md)
 
-**System console logger** (`test/unit/logging/console-logger.test.ts`)
+**System console logger** (`test/unit/logging/system/console-logger.test.ts`)
 
 [V] Writes one line to stderr by default or to a supplied writable stream
 [V] Includes the timestamp, level label, level color, message, and final newline
@@ -1929,14 +1929,14 @@ Run the applicable local renderer interface cases with the pinned runtime:
 npm run build && node --test dist/test/interface/website-fetcher-cancellation.test.js dist/test/interface/website-fetcher-http.test.js dist/test/interface/website-fetcher-network.test.js dist/test/interface/website-fetcher-readiness.test.js dist/test/interface/website-fetcher-redirects.test.js
 ```
 
-**Axiom logging** (`test/interface/logging/axiom-logging.test.ts`)
+**Axiom logging** (`test/interface/logging/system/axiom-logging.test.ts`)
 
 `openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelSystemLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
 
 [V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets no line
 
 ```sh
-npm run build && node --test dist/test/interface/logging/axiom-logging.test.js
+npm run build && node --test dist/test/interface/logging/system/axiom-logging.test.js
 ```
 
 ## Acceptance

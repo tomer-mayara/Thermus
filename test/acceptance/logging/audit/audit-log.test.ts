@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Writable } from 'node:stream';
 import { runInNewContext } from 'node:vm';
-import { ConsoleSystemLogger } from '../../../src/logs/system/console-system-logger.ts';
-import { AuditLog } from '../../../src/logs/audit/audit-log.ts';
-import type { AuditEvent } from '../../../src/logs/audit/audit-log.ts';
+import { ConsoleSystemLogger } from '../../../../src/logs/system/console-system-logger.ts';
+import { AuditLog } from '../../../../src/logs/audit/audit-log.ts';
+import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 
 test('Given a controlled customer sink, when explicit audit actions are recorded, then only named customer events reach that sink', () => {
   const events: AuditEvent[] = [];

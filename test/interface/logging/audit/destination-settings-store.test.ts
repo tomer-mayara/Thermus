@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { BoundedSqlRuntime } from '../../../src/logs/audit/bounded-sql-runtime.ts';
-import { PgDestinationSettingsStore } from '../../../src/logs/audit/pg-destination-settings-store.ts';
+import { BoundedSqlRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
+import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
 
 test('Given a failed read, when database errors contain credentials, then the public result contains no database detail', async () => {
   const runtime = new BoundedSqlRuntime({ connect: async () => { throw new Error('secret-password'); }, end: async () => {}, on: () => {} });

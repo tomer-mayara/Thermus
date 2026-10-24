@@ -155,7 +155,7 @@ test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.sh   The laun
 test/support/in-process/axiom-test-export.ts          axiomTestSettings() and openAxiomLogging(settings, scopeName, console?)
 test/unit/test-support/fetch-operation-spy.test.ts    fetchOperationSpy(); until 2026-10-15 test/unit/work-slice/basic-mcp-url-fetch.test.ts
 test/unit/work-slice/basic-mcp-url-fetch-script.test.ts   The launcher script with a pnpm double
-test/interface/logging/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
+test/interface/logging/system/axiom-logging.test.ts          openAxiomLogging() against a loopback OTLP receiver
 ```
 
 The slice added these seams to `src/` by the owner's rule. When production has
@@ -342,7 +342,7 @@ for both protocol eras of `mcpProtocolEras`.
 
 ### Interface
 
-- `test/interface/logging/axiom-logging.test.ts`: `openAxiomLogging()` against
+- `test/interface/logging/system/axiom-logging.test.ts`: `openAxiomLogging()` against
   a loopback OTLP receiver, never Axiom: the headers, the scope name, and the
   record of one export, with no console line; a refused export with HTTP 401
   and a closed port each give one console line without the body, and `close()`
@@ -352,7 +352,7 @@ for both protocol eras of `mcpProtocolEras`.
 ### Commands
 
 ```bash
-npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/test-support/fetch-operation-spy.test.js dist/test/unit/logging/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/axiom-logging.test.js dist/test/acceptance/work-slice/basic-mcp-url-fetch/*.test.js
+npm run build && node --test dist/test/unit/work-slice/*.test.js dist/test/unit/test-support/fetch-operation-spy.test.js dist/test/unit/logging/system/console-logger.test.js dist/test/unit/config/deployment-config.test.js dist/test/integration/server-stop-signals.test.js dist/test/interface/logging/system/axiom-logging.test.js dist/test/acceptance/work-slice/basic-mcp-url-fetch/*.test.js
 ```
 
 ## Steps

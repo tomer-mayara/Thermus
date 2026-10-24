@@ -1,10 +1,10 @@
-import '../../support/processes/deny-network.ts';
+import '../../../support/processes/deny-network.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import type { Logger, LogRecord } from '@opentelemetry/api-logs';
-import { LogLevel } from '../../../src/logs/system/system-logger.ts';
-import { OtelSystemLogger } from '../../../src/logs/system/otel-system-logger.ts';
+import { LogLevel } from '../../../../src/logs/system/system-logger.ts';
+import { OtelSystemLogger } from '../../../../src/logs/system/otel-system-logger.ts';
 
 const levels = [
   { level: LogLevel.DEBUG, method: 'debug', severity: 5, label: 'DEBUG' },

@@ -99,6 +99,12 @@ Policy questions and guarantees:
   unchanged. Audit projection accepts only named fields. No system-to-customer
   forwarding path is introduced.
 
+Test files now mirror these owners under `test/<type>/logging/system/` and
+`test/<type>/logging/audit/`. Destination settings and storage tests belong to
+audit. This layout change preserves test behavior and gate selection. The
+results below describe the earlier source and class changes; they do not claim
+a verification run of the later test-file move.
+
 ## Behavior and test evidence
 
 The work used passing characterization before system/storage moves and focused

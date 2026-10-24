@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { AuditLog } from '../../../src/logs/audit/audit-log.ts';
-import type { AuditEvent } from '../../../src/logs/audit/audit-log.ts';
+import { AuditLog } from '../../../../src/logs/audit/audit-log.ts';
+import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 
 const context = { timestamp: '2026-10-23T12:00:00Z', organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a', stack: 'private actor stack' }, file: '/private/source.ts', line: 9, stack: 'private stack', eventName: 'caller.name' };
 
@@ -38,6 +38,6 @@ test('Given a sink that throws, when an explicit audit event is recorded, then t
 type PublicSurface<Value> = Pick<Value, keyof Value>;
 type Assignable<From, To> = [From] extends [To] ? true : false;
 type MustBeFalse<Value extends false> = Value;
-export type AuditCannotReplaceSystem = MustBeFalse<Assignable<PublicSurface<AuditLog>, import('../../../src/logs/system/system-log.ts').SystemLog>>;
-export type SystemCannotReplaceAudit = MustBeFalse<Assignable<import('../../../src/logs/system/system-log.ts').SystemLog, PublicSurface<AuditLog>>>;
-export type SystemLoggerCannotReplaceAudit = MustBeFalse<Assignable<import('../../../src/logs/system/system-logger.ts').SystemLogger, PublicSurface<AuditLog>>>;
+export type AuditCannotReplaceSystem = MustBeFalse<Assignable<PublicSurface<AuditLog>, import('../../../../src/logs/system/system-log.ts').SystemLog>>;
+export type SystemCannotReplaceAudit = MustBeFalse<Assignable<import('../../../../src/logs/system/system-log.ts').SystemLog, PublicSurface<AuditLog>>>;
+export type SystemLoggerCannotReplaceAudit = MustBeFalse<Assignable<import('../../../../src/logs/system/system-logger.ts').SystemLogger, PublicSurface<AuditLog>>>;

@@ -3,8 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider, type LogRecordExporter } from '@opentelemetry/sdk-logs';
-import { axiomExportHeaders, axiomTestSettings } from '../../support/in-process/axiom-test-export.ts';
-import { OtelSystemLogger } from '../../../src/logs/system/otel-system-logger.ts';
+import { axiomExportHeaders, axiomTestSettings } from '../../../support/in-process/axiom-test-export.ts';
+import { OtelSystemLogger } from '../../../../src/logs/system/otel-system-logger.ts';
 
 describe('OtelSystemLogger live Axiom OTLP interface', () => {
   let fixture: { provider: LoggerProvider; resultCodes: number[] } | undefined;

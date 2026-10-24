@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { hostedFetchSettings, workOSSettings } from '../../support/fixtures/hosted-placeholder.ts';
-import { dataDirectory } from '../../support/isolation/data-directory.ts';
-import { selfHostedServerSettings } from '../../support/in-process/local-runtime.ts';
-import { withPreload } from '../../support/processes/server-preloads.ts';
-import { ServerProcess } from '../../support/processes/server-process.ts';
+import { hostedFetchSettings, workOSSettings } from '../../../support/fixtures/hosted-placeholder.ts';
+import { dataDirectory } from '../../../support/isolation/data-directory.ts';
+import { selfHostedServerSettings } from '../../../support/in-process/local-runtime.ts';
+import { withPreload } from '../../../support/processes/server-preloads.ts';
+import { ServerProcess } from '../../../support/processes/server-process.ts';
 
 const storageCases: readonly Readonly<Record<string, string>>[] = [{}, { DATABASE_URL: 'postgresql://secret-user:secret-password@db.example/logging?sslmode=disable', LOGGING_DESTINATION_ENCRYPTION_KEY: 'secret-invalid-key' }];
 

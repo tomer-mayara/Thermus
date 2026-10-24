@@ -1771,12 +1771,12 @@ production public-HTTPS egress.
 [`otel-system-logger.ts`](../../src/logs/system/otel-system-logger.ts). Inspect
 [`network-policy.ts`](../../src/pipelines/providers/website-fetcher/network-policy.ts) for
 existing DNS preflight, not proof of connected-address safety. Existing
-`test/interface/logging/otel-logger.test.ts` and
+`test/interface/logging/system/otel-logger.test.ts` and
 `test/support/doubles/logging/otel-log-receiver.ts` show receiver patterns;
 `createOtlpFixture` also configures live Axiom export and is not an isolated
-production-egress fixture. Add customer contract cases under `test/interface/logging/`,
-focused sender units under `test/unit/logging/`, and real sender/Collector collaboration
-under `test/integration/` as appropriate.
+production-egress fixture. Add customer contract cases under `test/interface/logging/audit/`,
+focused sender units under `test/unit/logging/audit/`, and real sender/Collector collaboration
+under `test/integration/logging/audit/` as appropriate.
 
 **Done.** One-shot protocol and actual-connection security acceptance pass with None/Bearer
 evidence and fixed bounds. No universal receiver, direct Axiom/Grafana support, custom
@@ -2049,8 +2049,9 @@ and 03a/b capture/loading outcomes green.
 `src/app/hosted-workos-application.ts` and `src/app/application.ts`; use `src/index.ts`'s
 existing deadline. Supply this sink to `AuditLog`; keep its event contract separate
 from the 01a settings port. Build from 01a/02a/03b public contracts, not WorkOS or `pg` internals.
-Put queue units under `test/unit/logging/`, real collaboration under `test/integration/`,
-and public isolation/overload/shutdown acceptance under `test/acceptance/`. Reuse existing
+Put queue units under `test/unit/logging/audit/`, real collaboration under
+`test/integration/logging/audit/`, and public isolation/overload/shutdown acceptance
+under `test/acceptance/logging/audit/`. Reuse existing
 process/MCP drivers rather than create a parallel shutdown harness.
 
 **Done.** Bounded queue, current-revision sends/retries, outage, Test coexistence, and

@@ -4,8 +4,8 @@ import { Writable } from 'node:stream';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
-import { SystemLogger, LogLevel } from '../../../src/logs/system/system-logger.ts';
-import { ConsoleSystemLogger } from '../../../src/logs/system/console-system-logger.ts';
+import { SystemLogger, LogLevel } from '../../../../src/logs/system/system-logger.ts';
+import { ConsoleSystemLogger } from '../../../../src/logs/system/console-system-logger.ts';
 
 const ansi = '\u001b';
 const testFile = basename(fileURLToPath(import.meta.url));
@@ -84,7 +84,7 @@ test('Given a caller filename with parentheses, when INFO is logged, then the fu
 test('Given a caller beside the system logging directory, when INFO is logged, then its location is emitted', () => {
   const { logger, written } = capture();
   // The VM caller checks the directory prefix; it is not a built production script.
-  const filename = fileURLToPath(new URL('../../../src/logs/system-caller.fixture', import.meta.url));
+  const filename = fileURLToPath(new URL('../../../../src/logs/system-caller.fixture', import.meta.url));
 
   runInNewContext('logger.info("the call site")', { logger }, { filename });
 
