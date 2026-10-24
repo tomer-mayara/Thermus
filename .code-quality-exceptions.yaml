@@ -11,8 +11,8 @@ exceptions:
     expires: 2026-12-23
   - path: src/app/logging-storage.ts
     metric: mi
-    bound: 63
-    reason: Optional hosted storage composition keeps validation, safe failure and lazy adapter loading in one small boundary. Splitting its three paths would hide startup failure policy.
+    bound: 60
+    reason: Optional hosted storage composition keeps validation, safe failure, lazy adapter loading, and service/key wiring in one small boundary. Its three paths are unchanged; splitting construction from cleanup would hide ownership.
     expires: 2026-12-22
   - path: src/logs/audit/bounded-sql-runtime.ts
     metric: mi
@@ -64,3 +64,33 @@ exceptions:
     bound: 20
     reason: Verified capture records the emitted encoder called 29 times with full emitted coverage, but cannot bind that coverage to its source identity. The four source paths bound CRAP to [4, 20], so the new-function target of 15 is unproved. Focused encoding and real Collector cases cover behavior; keep the small wire boundary without editing coverage or splitting it to evade the mapping limit.
     expires: 2026-12-23
+  - path: src/interfaces/web/account/logging-form.ts
+    metric: mi
+    bound: 73
+    reason: One small form parser combines the shared CSRF and exact-field check with optional checkbox and typed field validation. Each guard rejects a distinct invalid request; a second parser framework would duplicate the existing owner.
+    expires: 2026-12-22
+  - path: src/interfaces/web/account/logging-page.ts
+    metric: mi
+    bound: 73
+    reason: The native form and fixed recovery notice stay with their HTML escaping and write-only token projection. The form reuses the current page layout; extracting individual markup fields would spread one small page.
+    expires: 2026-12-22
+  - path: src/interfaces/web/account/logging-routes.ts
+    metric: mi
+    bound: 58
+    reason: This boundary keeps Admin authority, request checks, safe failure mapping and native recovery together. Read and Save are separate methods with at most eight paths; tests cover refusals and uncertain writes.
+    expires: 2026-12-22
+  - path: src/logs/audit/destination-credential-codec.ts
+    metric: mi
+    bound: 57
+    reason: The compact codec keeps key copying, nonce and tag layout, tenant authenticated data and fail-closed decryption in one owner. Its largest function has four paths. Splitting cryptographic framing would obscure the invariant.
+    expires: 2026-12-22
+  - path: src/logs/audit/destination-endpoint.ts
+    metric: mi
+    bound: 69
+    reason: Syntax and literal-address checks need distinct guards. A range table replaces repeated IPv4 branches; no DNS or socket policy is added here. Focused cases cover malformed and private destinations without a general URL framework.
+    expires: 2026-12-22
+  - path: src/logs/audit/destination-settings-service.ts
+    metric: mi
+    bound: 43
+    reason: One owner keeps credential retention, validated public reads, semantic no-op and atomic expected-revision Save together. Guards distinguish definite refusal from uncertain writes. Splitting this short operation across new services would obscure its revision and credential rules.
+    expires: 2026-12-22

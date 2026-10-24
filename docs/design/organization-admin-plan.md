@@ -1654,7 +1654,7 @@ Scenario: Save one protected destination
 Scenario: Show an uncertain Save honestly
   Given a Save whose SQL commit result is unknown
   When the browser receives the outcome
-  Then it shows an unconfirmed result and requires a saved-state read before a write
+  Then it shows an unconfirmed result with only a saved-state read link and no Save form
   And it neither claims nothing changed nor blindly repeats the Save
 ```
 
@@ -1682,7 +1682,9 @@ later membership-reduction coordinator.
    token and other settings are unchanged; randomized encryption alone must not create a
    settings change. Preserve 01a's atomic revision/write contract and preserve existing
    ciphertext on a semantic no-op. Distinguish definite refusal from unconfirmed outcome and
-   require reload before another write. A stale write must not overwrite the newer commit.
+   require a saved-state reload before the native page offers another Save form. Manually
+   submitted old forms still face atomic revision checks; no server write hold is needed.
+   A stale write must not overwrite the newer commit.
    Do not add automatic write retry, a second settings history, or a member-operation log.
    Refactor errors without echoing endpoint credentials, tokens, or SQL values.
 4. Red: web-boundary cases submit valid and forged forms, changed current roles, and tenant A

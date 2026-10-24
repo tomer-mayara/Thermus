@@ -167,6 +167,7 @@ public_surface:
     system-logs:
       - src/logs/system/system-logger.ts
     audit-logs:
+      - src/logs/audit/destination-settings-service.ts
       - src/logs/audit/audit-log.ts
       - src/logs/audit/otlp-audit-sender.ts
       - src/logs/audit/audit-send.ts
@@ -270,6 +271,7 @@ dependency_graph:
     - { from: mcp, to: search, kind: runtime }
     - { from: mcp, to: execution, kind: type }
     - { from: web, to: identity, kind: runtime }
+    - { from: web, to: audit-logs, kind: type }
     - { from: web, to: http, kind: runtime }
     - { from: web, to: workos, kind: runtime }
     - { from: web, to: organizations, kind: runtime }
@@ -292,7 +294,7 @@ dependency_graph:
     - { from: http, to: system-logs, kind: type }
     - { from: cli, to: system-logs, kind: type }
     - { from: audit-logs, to: organizations, kind: type }
-    # 53 permitted owner edges on 2026-10-23; runtime includes public types.
+    # 54 permitted owner edges on 2026-10-23; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }

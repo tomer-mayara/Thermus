@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The complete candidate preserves S2-01a optional hosted PostgreSQL settings and PR239 separate system/audit owners, concrete AuditLog projection and derived SystemLog role. S2-02a adds a callable one-shot OtlpAuditSender inside audit-logs. It accepts supplied destination/auth and one projected event, encodes explicit OTLP HTTP JSON fields, pins a public DNS answer, validates certificate/hostname and actual peer before HTTP data, and follows no redirects. A private connection is not available through an override. Four slots per sender cover live and abandoned work until disposal; caller deadline is five seconds. Payload, response, headers, DNS answers and Retry-After are bounded. Typed outcomes exclude receiver text and secrets; only transient results authorize caller retry policy. Empty protobuf partial-success defaults are accepted; zero-rejection diagnostics and one rejected record remain distinct. No production sink, settings load, event capture, UI Test, queue, retries, shutdown integration or System log forwarding is added. The isolated Docker Collector gate exercises real unchanged production TLS/address checks, protocol/auth and failure behavior; it is not public Internet rollout proof. Existing settings SQL and application lifetime stay unchanged. No deployment, live resource, schema change, paid service or ADR is added by this ticket. Full-main classification retains inherited container/deployment/dependency facts. The focused architecture comparison uses actual stack parent PR239; main Revoke styling is included without architecture change. The registry records the callable but unwired sender. Public sender contracts and exact node imports are declared without relaxing owner exclusions. The System logging CR also replaces inheritance with an explicit synchronous SystemLogSink role. SystemLogger retains threshold, timestamp, caller location and failure preparation; console and OTel sinks own output. Every caller migrates to explicit composition. System output may still throw; Audit capture still contains sink failures. No common log record, production OTLP activation, shared transport or source metadata on Audit events is added. The later settings-injection and sender-settlement CR steps remain on their first dependent PRs.",
+    "summary": "The complete candidate combines PR240 sender and PR238 saved Audit settings. Current Admins read and save tenant-bound settings through web with origin/CSRF checks and encrypted credentials. Audit logs owns event projection, settings, and the isolated one-shot sender; System logs remains internal and separate. App supplies the settings service and owns its SQL lifetime. The sender has no production caller yet. This dependency merge adds no new Test operation, capture, queue, paid resource, schema, or deployment. Full-main review retains the inherited container, external, contract, deployment, policy and dependency impact. S2-02b implementation and final review are pending. System diagnostics now use concrete SystemLogger with a required synchronous SystemLogSink; console and OTel adapters own output, and every constructor is migrated. Preparation and System/Audit separation stay unchanged. This preserves the System sink CR inherited from PR240.",
     "views": [
       "context",
       "containers",
@@ -64,6 +64,23 @@
       "test/support/container/audit-sender-site.ts",
       "test/unit/logging/audit/otlp-audit-sender.test.ts",
       "docs/implementation/admin-s2-02a.md",
+      "src/logs/audit/destination-settings-service.ts",
+      "src/logs/audit/destination-credential-codec.ts",
+      "src/logs/audit/destination-endpoint.ts",
+      "src/interfaces/web/account/logging-routes.ts",
+      "src/interfaces/web/account/logging-form.ts",
+      "src/interfaces/web/account/logging-page.ts",
+      "src/interfaces/web/account/account-routes.ts",
+      "src/interfaces/web/account/account-form.ts",
+      "src/interfaces/user-portal/portal.ts",
+      "test/acceptance/logging/hosted-destination-settings.test.ts",
+      "test/integration/hosted-admin/account-routes-logging.test.ts",
+      "test/unit/logging/destination-settings-service.test.ts",
+      "test/unit/logging/destination-credential-codec.test.ts",
+      "test/unit/html/logging-form.test.ts",
+      "test/unit/html/logging-routes.test.ts",
+      "docs/implementation/admin-s2-01b.md",
+      "docs/implementation/system-audit-log-separation.md",
       "docs/implementation/logs-object-refactor-change-request.md"
     ]
   }

@@ -17,6 +17,7 @@ nav{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
 nav a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}
 nav a:hover,nav [aria-current]{color:#F3F2EE;text-decoration:underline}
 .members-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:"intro intro" "lists invite";gap:32px;align-content:start;align-items:start;padding-block:48px 72px}
+.logging-layout{grid-template-columns:minmax(0,720px);grid-template-areas:"intro" "invite"}
 .introduction{grid-area:intro}
 .eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}
 h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}
@@ -28,11 +29,11 @@ p,li,form{overflow-wrap:anywhere;min-width:0}
 .invite-card>p,.list-note{font-size:15px;color:#B4BAC0}
 .invite-card form{display:grid;gap:12px}
 label,legend{font-size:15px}
-input[type=email]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}
+input[type=email],input[type=url],input[type=password]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}
 fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}
 legend{padding:0;margin-bottom:6px}
 .role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}
-input[type=radio]{width:20px;height:20px;accent-color:#E8552A}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}
 button{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
 button:hover{border-color:#F3F2EE;background:#2C2D34}
 .invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}

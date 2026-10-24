@@ -45,6 +45,7 @@ interface AdministrationPaths {
   readonly resend: string;
   readonly revoke: string;
   readonly billing: string;
+  readonly logging: string;
 }
 
 const REFUSAL_NOTICES: Readonly<Record<Exclude<ChangeResult, 'applied' | 'unchanged'>, NoticeName>> = {
@@ -78,6 +79,7 @@ export class AdministrationRoutes {
       resend: pathOf('invitations/resend'),
       revoke: pathOf('invitations/revoke'),
       billing: pathOf('billing'),
+      logging: pathOf('logging'),
     };
     this.routes = new Map<string, ScopedRoute>([
       [this.paths.members, (request, scope) => this.membersPage(request, scope)],
@@ -110,7 +112,7 @@ export class AdministrationRoutes {
     }, (overview) => membersPage({
       ...overview, subject: scope.actor.user.subject, csrfToken: scope.csrfToken,
       actions: { send: this.paths.send, resend: this.paths.resend, revoke: this.paths.revoke },
-      navigation: { product: this.paths.product, members: this.paths.members, organizations: this.organizationsPage },
+      navigation: { product: this.paths.product, members: this.paths.members, organizations: this.organizationsPage, logging: this.paths.logging },
     }));
   }
 
