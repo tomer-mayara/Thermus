@@ -297,14 +297,14 @@ adapter, with no production exporter configured here. Both inherit caller
 location and severity behavior from SystemLogger. Existing account and tool
 completion diagnostics remain internal.
 
-The separate [AuditLog](../src/logs/audit/audit-log.ts) methods are
-`toolCompleted` and `administrationChanged`.
-[AuditLogger](../src/logs/audit/audit-logger.ts) copies named event fields,
+The concrete [AuditLog](../src/logs/audit/audit-log.ts) class exposes
+`toolCompleted` and `administrationChanged`. It copies named event fields,
 including nested actor and target fields, to a supplied AuditEventSink.
 It adds no source location or exception stack, has no generic message method,
 and catches a synchronous sink failure. It imports no system logger. There is
 no shared base class or forwarding path between these owners.
-The neutral sink contract separates projection from delivery; its synchronous
+AuditLog needs no separate role interface while it has one implementation.
+AuditEventSink is the neutral destination contract: it separates projection from delivery; its synchronous
 `writeAuditEvent` call does not await export. No production sink is wired, and
 there is no SQL audit event writer.
 

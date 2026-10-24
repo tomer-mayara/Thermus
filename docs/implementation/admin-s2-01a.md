@@ -6,7 +6,8 @@ Collector requests, or export dispatch. Those remain later Slice 2 work.
 WorkOS remains the source of user and organization access.
 
 The store and runtime belong to `src/logs/audit/`, alongside the distinct
-event-specific `AuditLog`/`AuditLogger` API foundation. This foundation adds no
+event-specific concrete `AuditLog` class. Its `AuditEventSink` destination
+contract separates event projection from later delivery. This foundation adds no
 production MCP/admin audit capture, redaction, truncation, UI, or delivery. Its
 `toolCompleted` and `administrationChanged` methods accept metadata only. S2-03a
 must extend tool events with redacted, bounded input and result before runtime

@@ -14,13 +14,15 @@ failure formatting, and automatic caller file/line enrichment. Existing account
 and MCP completion records remain internal. No system output forwards to audit.
 
 `src/logs/audit/` owns the moved destination settings store and bounded SQL
-runtime, plus the new AuditLog/AuditLogger foundation. The two audit methods
+runtime, plus the concrete AuditLog class. The two audit methods
 project named fields, including fresh nested actor and target records. They add
 no source location or stack. A synchronous sink failure cannot change the
 completed action. The caller must supply trusted organization and actor context;
 this API does not authenticate a caller or infer tenant authority.
 
-AuditEventSink is the provider-neutral event output boundary. The first
+AuditLog has one implementation and no duplicate role interface.
+AuditEventSink is the provider-neutral event output boundary; it is the
+meaningful seam for destinations that have different delivery rules. The first
 production sink will send OpenTelemetry logs through OTLP/HTTP JSON to the
 organization's configured Collector. S2-03c will supply its bounded in-memory
 admission and dispatch through the S2-02a sender. Event callers keep the same
@@ -112,7 +114,7 @@ BDD/TDD cases for new audit behavior. The manager reports these focused results:
 | Real PostgreSQL gate | 11 passed |
 
 Independent review reran the six audit tests with
-`node --import tsx --test test/unit/logging/audit-logger.test.ts test/acceptance/logging/audit-log.test.ts`.
+`node --import tsx --test test/unit/logging/audit-log.test.ts test/acceptance/logging/audit-log.test.ts`.
 They passed, including separate system/customer outputs, caller enrichment only
 on system output, nested field projection, and sink failure isolation.
 
@@ -139,7 +141,10 @@ identical to the final candidate.
 
 ## Quality review
 
-The head snapshot gives AuditLogger MI **88.19**, above the 85 goal.
+The numeric evidence below is historical: it predates consolidation into the
+single AuditLog class. The manager must replace it with final candidate
+measurements before review. The earlier projection class had MI **88.19**, above
+the 85 goal.
 Contract-only files have no executable MI. Changed or moved files below 85 are:
 
 | Files | Head MI | Retained reason |
@@ -167,7 +172,8 @@ are preserved from the parent. A low coupling finding in HTTP server rises to 11
 because it now imports the SystemLog type. Keep that explicit boundary instead of
 an anonymous duplicate. No baseline is refreshed.
 
-Every new or changed function meets its numeric CRAP goal. AuditLogger methods
+At that earlier snapshot, every new or changed function met its numeric CRAP
+goal. The projection methods
 have 100% unit coverage and scores at most 4. The largest changed score is 20
 (`src/index.ts#run`, four paths, zero unit coverage), below its 30 goal. The full
 ordinary and container gates exercise this process boundary; a unit-only report

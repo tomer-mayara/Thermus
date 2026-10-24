@@ -559,8 +559,8 @@ source file and line enrichment. Existing account change records in this output
 remain internal. S2-03a will add separate customer audit events.
 
 Audit logs are the customer organization Admin feature. `src/logs/audit/` owns
-the destination store/runtime and the distinct event-specific `AuditLog` and
-`AuditLogger` API foundation implemented in this change. Its unwired
+the destination store/runtime and the concrete event-specific `AuditLog` class.
+`AuditEventSink` separates this projection from destination delivery. Its unwired
 `toolCompleted` and `administrationChanged` methods accept metadata only.
 S2-03a must extend tool events with redacted, bounded input and result before
 production capture or export. Add administration event methods only as the
@@ -1907,7 +1907,7 @@ blanket logger rewrite.
 [`fetch-tool-server.ts`](../../src/interfaces/mcp/fetch-tool-server.ts),
 [`tool-completion-record.ts`](../../src/interfaces/mcp/tool-completion-record.ts),
 [`change-records.ts`](../../src/accounts/organizations/change-records.ts), and
-`src/app/application.ts` record composition. The event-specific `AuditLog`/`AuditLogger` API foundation lives in
+`src/app/application.ts` record composition. The event-specific `AuditLog` API foundation lives in
 `src/logs/audit/`. Its current metadata-only `toolCompleted` contract must gain
 redacted, bounded input and result before runtime capture or export. Production
 capture, event redaction, truncation, and sink wiring
@@ -1987,7 +1987,7 @@ are documented for 04 and remain internal engineering choices.
 
 ```gherkin
 Scenario: Export a captured event through the audit sink
-  Given AuditLogger has the bounded Collector sink and enabled saved settings
+  Given AuditLog has the bounded Collector sink and enabled saved settings
   When a redacted bounded event is admitted through AuditEventSink
   Then dispatch sends it through the S2-02a sender to the configured Collector
   And it writes no audit event or export buffer to SQL
@@ -2047,7 +2047,7 @@ and 03a/b capture/loading outcomes green.
 
 **Homes and anchors.** Queue/dispatcher are proposed audit owners in `src/logs/audit/` composed via
 `src/app/hosted-workos-application.ts` and `src/app/application.ts`; use `src/index.ts`'s
-existing deadline. Supply this sink to `AuditLogger`; keep its event contract separate
+existing deadline. Supply this sink to `AuditLog`; keep its event contract separate
 from the 01a settings port. Build from 01a/02a/03b public contracts, not WorkOS or `pg` internals.
 Put queue units under `test/unit/logging/`, real collaboration under `test/integration/`,
 and public isolation/overload/shutdown acceptance under `test/acceptance/`. Reuse existing

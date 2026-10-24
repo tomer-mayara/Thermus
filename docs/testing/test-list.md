@@ -941,13 +941,13 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Accepts 0 seats and `Number.MAX_SAFE_INTEGER` seats and confirms the free plan with no billed seat
 [V] Gives frozen state records that keep the free state
 
-**Customer audit logs — API foundation** (`test/acceptance/logging/audit-log.test.ts`, `test/unit/logging/audit-logger.test.ts`)
+**Customer audit logs — API foundation** (`test/acceptance/logging/audit-log.test.ts`, `test/unit/logging/audit-log.test.ts`)
 
 [V] Emits named tool and invitation events to a separate audit sink
 [V] Projects explicit actor and target fields and excludes extra source, line, stack, and message fields
 [V] Keeps caller location in system output; an audit event does not enter that stream
 [V] Preserves the completed action when a synchronous audit sink throws
-[V] Type checking rejects substitution between AuditLog and SystemLog
+[V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
 [] Add production capture with redacted, bounded tool inputs and results, then OTLP delivery under the [Slice 2 plan](../design/organization-admin-plan.md)
 
 **System console logger** (`test/unit/logging/console-logger.test.ts`)
