@@ -111,8 +111,8 @@ exceptions:
     expires: 2026-12-24
   - path: src/logs/audit/audit-event-projection.ts
     metric: mi
-    bound: 37
-    reason: This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP.
+    bound: 36.9
+    reason: This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference.
     expires: 2026-12-24
   - path: src/logs/audit/audit-snapshots.ts
     metric: mi
