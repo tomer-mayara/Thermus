@@ -113,16 +113,23 @@ BDD/TDD cases for new audit behavior. The manager reports these focused results:
 | Storage characterization before and after the move | 14 passed in each run |
 | Real PostgreSQL gate | 11 passed |
 
-Independent review reran the six audit tests with
-`node --import tsx --test test/unit/logging/audit-log.test.ts test/acceptance/logging/audit-log.test.ts`.
-They passed, including separate system/customer outputs, caller enrichment only
-on system output, nested field projection, and sink failure isolation.
+The class consolidation used those six passing cases as characterization before
+the refactor, then passed them again through the renamed source and compiled
+modules. Constructor and method bodies, event payloads, and the sink contract
+are byte-identical to the prior implementation. No missing behavior was invented
+to force a red test. Independent source and document review found no regression.
+The type assertions compare public members, so private state cannot by itself
+prove separation from system logging. No production caller uses the removed
+role interface or implementation module.
 
 The full ordinary suite passed: 4,239 backend tests and 49 portal tests, with
 zero failures, cancellations, skips, or todo cases. `npm run typecheck` and
-`npm run build:user-portal` also passed. `npm run build:hosted` passed, including
-its 13 renderer checks. The self-hosted image gate passed 11 tests. The first
-Linux AMD64 hosted-image build timed out during startup of the existing
+`npm run build:user-portal` also passed. The real PostgreSQL gate passed 11 tests,
+and the self-hosted image gate passed 11 tests. The Linux AMD64 hosted image
+gate passed all seven tests. Its image build passed `npm run build:hosted`,
+including all 13 renderer checks. No separate duplicate hosted aggregate ran.
+
+Before this consolidation, the first hosted-image build timed out during startup of the existing
 `/session` shutdown case, before
 its SIGTERM assertion. The full host suite and host build passed that case. The
 failed build log is retained. The complete image retry passed all seven checks,
@@ -133,18 +140,19 @@ The cause of the first startup timeout is not proved.
 
 Hosted-live is not selected: identity, membership, invitation, and authentication
 behavior stay the same. This change replaces their diagnostic type/import only.
-The real internal OTel/Axiom interface check passed. Local PostgreSQL results do
+The earlier internal OTel/Axiom interface check passed; its system exporter,
+callers, and test inputs are unchanged by this consolidation, so that external
+proof is retained without another test export. Local PostgreSQL results do
 not prove a deployed Supabase migration, grants, or backup/restore. Those remain
-the owner rollout gates in the plan. Later commits change prose only; the local
-input-match record verifies that the tested source, tests, and build inputs stay
-identical to the final candidate.
+the owner rollout gates in the plan. The local input-match record binds the
+final candidate to the tested source, tests, and build inputs. Later evidence
+updates change prose only.
 
 ## Quality review
 
-The numeric evidence below is historical: it predates consolidation into the
-single AuditLog class. The manager must replace it with final candidate
-measurements before review. The earlier projection class had MI **88.19**, above
-the 85 goal.
+The consolidated AuditLog file has MI **89.56**, above the 85 goal. Fresh complete
+unit coverage passed 2,645 backend and 29 portal tests. The audit constructor and
+both event methods have 100% coverage.
 Contract-only files have no executable MI. Changed or moved files below 85 are:
 
 | Files | Head MI | Retained reason |
@@ -172,8 +180,7 @@ are preserved from the parent. A low coupling finding in HTTP server rises to 11
 because it now imports the SystemLog type. Keep that explicit boundary instead of
 an anonymous duplicate. No baseline is refreshed.
 
-At that earlier snapshot, every new or changed function met its numeric CRAP
-goal. The projection methods
+Every new or changed function meets its numeric CRAP goal. AuditLog methods
 have 100% unit coverage and scores at most 4. The largest changed score is 20
 (`src/index.ts#run`, four paths, zero unit coverage), below its 30 goal. The full
 ordinary and container gates exercise this process boundary; a unit-only report
@@ -198,7 +205,7 @@ Habit-hooks reports are retained for review, with these scoped dispositions:
   collaborators. A new parameter bag would hide those roles.
 - One unused-variable finding: the `using deadline` binding in the entry point
   registers required disposal behavior. Removing it changes resource lifetime.
-- 149 comment findings: new comments state boundary, sink, and deferred-capture
+- 148 comment findings: new comments state boundary, sink, and deferred-capture
   invariants; retained source and characterization comments explain lifetime,
   security, or test constraints. Review these by file group; this is no global
   exemption for future comments.
@@ -219,7 +226,7 @@ no evidence blockers or undeclared facts. T2 reasons include the component/event
 contract change, the retained parent datastore boundary, protected policy and
 public surfaces, candidate size, existing exceptions, and retained high findings.
 The full reasons are retained in the machine-readable report. All selected local
-functional, type, and build gates pass. Merge remains blocked pending independent
+functional, type, and build gates passed. Merge remains blocked pending independent
 authorized human architect approval of the current candidate and retained
 quality findings. An agent review or label does not supply that approval. This
 task does not request merge.
@@ -237,6 +244,8 @@ The following are **local workspace artifacts**, not GitHub download links:
 - [Passing hosted-image retry](../../ast-report/log-separation/hosted-container.log).
 - [Complete check results](../../ast-report/log-separation/checks.json) and
   [tested input match](../../ast-report/log-separation/input-match.json).
+- [Class refactor checks](../../ast-report/audit-class-refactor/) and
+  [preserved behavior review](../../ast-report/audit-class-refactor/refactor-review.json).
 - [Architecture review artifacts](../../ast-report/log-separation/architecture/).
 
 The PR description gives the final candidate SHA and the pinned architecture
