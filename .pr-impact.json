@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The complete candidate preserves S2-01a optional hosted PostgreSQL settings and PR239 separate system/audit owners, concrete AuditLog projection and derived SystemLog role. S2-02a adds a callable one-shot OtlpAuditSender inside audit-logs. It accepts supplied destination/auth and one projected event, encodes explicit OTLP HTTP JSON fields, pins a public DNS answer, validates certificate/hostname and actual peer before HTTP data, and follows no redirects. A private connection is not available through an override. Four slots per sender cover live and abandoned work until disposal; caller deadline is five seconds. Payload, response, headers, DNS answers and Retry-After are bounded. Typed outcomes exclude receiver text and secrets; only transient results authorize caller retry policy. Empty protobuf partial-success defaults are accepted; zero-rejection diagnostics and one rejected record remain distinct. No production sink, settings load, event capture, UI Test, queue, retries, shutdown integration or System log forwarding is added. The isolated Docker Collector gate exercises real unchanged production TLS/address checks, protocol/auth and failure behavior; it is not public Internet rollout proof. Existing settings SQL and application lifetime stay unchanged. No deployment, live resource, schema change, paid service or ADR is added by this ticket. Full-main classification retains inherited container/deployment/dependency facts. The focused architecture comparison uses actual stack parent PR239; main Revoke styling is included without architecture change. The registry records the callable but unwired sender. Public sender contracts and exact node imports are declared without relaxing owner exclusions.",
+    "summary": "The complete candidate preserves S2-01a optional hosted PostgreSQL settings and PR239 separate system/audit owners, concrete AuditLog projection and derived SystemLog role. S2-02a adds a callable one-shot OtlpAuditSender inside audit-logs. It accepts supplied destination/auth and one projected event, encodes explicit OTLP HTTP JSON fields, pins a public DNS answer, validates certificate/hostname and actual peer before HTTP data, and follows no redirects. A private connection is not available through an override. Four slots per sender cover live and abandoned work until disposal; caller deadline is five seconds. Payload, response, headers, DNS answers and Retry-After are bounded. Typed outcomes exclude receiver text and secrets; only transient results authorize caller retry policy. Empty protobuf partial-success defaults are accepted; zero-rejection diagnostics and one rejected record remain distinct. No production sink, settings load, event capture, UI Test, queue, retries, shutdown integration or System log forwarding is added. The isolated Docker Collector gate exercises real unchanged production TLS/address checks, protocol/auth and failure behavior; it is not public Internet rollout proof. Existing settings SQL and application lifetime stay unchanged. No deployment, live resource, schema change, paid service or ADR is added by this ticket. Full-main classification retains inherited container/deployment/dependency facts. The focused architecture comparison uses actual stack parent PR239; main Revoke styling is included without architecture change. The registry records the callable but unwired sender. Public sender contracts and exact node imports are declared without relaxing owner exclusions. The System logging CR also replaces inheritance with an explicit synchronous SystemLogSink role. SystemLogger retains threshold, timestamp, caller location and failure preparation; console and OTel sinks own output. Every caller migrates to explicit composition. System output may still throw; Audit capture still contains sink failures. No common log record, production OTLP activation, shared transport or source metadata on Audit events is added. The later settings-injection and sender-settlement CR steps remain on their first dependent PRs.",
     "views": [
       "context",
       "containers",
@@ -46,8 +46,8 @@
       "docs/implementation/test-gate-policy.md",
       "docker/verify-hosted-runtime.mjs",
       "src/logs/system/system-logger.ts",
-      "src/logs/system/console-system-logger.ts",
-      "src/logs/system/otel-system-logger.ts",
+      "src/logs/system/console-system-log-sink.ts",
+      "src/logs/system/otel-system-log-sink.ts",
       "src/logs/audit/audit-log.ts",
       "test/acceptance/logging/audit/audit-log.test.ts",
       "test/unit/logging/audit/audit-log.test.ts",
@@ -63,7 +63,8 @@
       "test/integration/logging/audit/audit-sender.runtime.ts",
       "test/support/container/audit-sender-site.ts",
       "test/unit/logging/audit/otlp-audit-sender.test.ts",
-      "docs/implementation/admin-s2-02a.md"
+      "docs/implementation/admin-s2-02a.md",
+      "docs/implementation/logs-object-refactor-change-request.md"
     ]
   }
 }

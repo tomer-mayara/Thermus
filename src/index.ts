@@ -1,9 +1,9 @@
-import type { SystemLog } from './logs/system/system-logger.ts';
+import { SystemLogger, type SystemLog } from './logs/system/system-logger.ts';
 import { pathToFileURL } from 'node:url';
 import { createApplication, type Application } from './app/application.ts';
 import { loadDeploymentConfig, loadListenAddress, type ListenAddress } from './runtime/config/deployment-config.ts';
 import { startHttpServer } from './runtime/http/server.ts';
-import { ConsoleSystemLogger } from './logs/system/console-system-logger.ts';
+import { ConsoleSystemLogSink } from './logs/system/console-system-log-sink.ts';
 import { HiddenLineInput } from './app/hidden-line-input.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -22,10 +22,10 @@ export interface ServeOptions {
 
 const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
-  process.exitCode = await run(process.argv.slice(2), process.env, new ConsoleSystemLogger());
+  process.exitCode = await run(process.argv.slice(2), process.env, new SystemLogger(new ConsoleSystemLogSink()));
 }
 
-async function run(args: readonly string[], environment: Environment, logger: ConsoleSystemLogger): Promise<number> {
+async function run(args: readonly string[], environment: Environment, logger: SystemLogger): Promise<number> {
   if (args.length > 0) return runOperatorCommand(args, environment, logger);
   using deadline = environment.DEPLOYMENT === 'hosted' ? hostedShutdownDeadline(logger) : undefined;
   try {
@@ -38,7 +38,7 @@ async function run(args: readonly string[], environment: Environment, logger: Co
 }
 
 // Only an operator command loads the local commands, so the server start loads no local module before its edition branch.
-async function runOperatorCommand(args: readonly string[], environment: Environment, logger: ConsoleSystemLogger): Promise<number> {
+async function runOperatorCommand(args: readonly string[], environment: Environment, logger: SystemLogger): Promise<number> {
   const { runLocalAuthCommand } = await import('./interfaces/cli/local-auth-command.ts');
   const input = new HiddenLineInput(process.stdin, process.stderr);
   try {

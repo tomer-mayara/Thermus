@@ -3,7 +3,8 @@ import type { Writable } from 'node:stream';
 import { parseEnv } from 'node:util';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { BatchLogRecordProcessor, LoggerProvider, type LogRecordExporter } from '@opentelemetry/sdk-logs';
-import { OtelSystemLogger } from '../../../src/logs/system/otel-system-logger.ts';
+import { SystemLogger } from '../../../src/logs/system/system-logger.ts';
+import { OtelSystemLogSink } from '../../../src/logs/system/otel-system-log-sink.ts';
 import { systemErrorName } from '../../../src/pipelines/providers/website-fetcher/website-fetcher.ts';
 
 function loadLocalSettings(): NodeJS.ProcessEnv {
@@ -74,7 +75,7 @@ export function trackTestExports(output: LogRecordExporter): {
 }
 
 export interface AxiomLogging {
-  readonly logger: OtelSystemLogger;
+  readonly logger: SystemLogger;
   // Sends the records that wait in the batch, then stops the export. It rejects when an export failed.
   close(): Promise<void>;
 }
@@ -88,7 +89,7 @@ export function openAxiomLogging(settings: AxiomTestSettings, scopeName: string,
   const processor = new BatchLogRecordProcessor({ exporter: reported.exporter, scheduledDelayMillis: 1_000, exportTimeoutMillis: 10_000 });
   const provider = new LoggerProvider({ processors: [processor] });
   return {
-    logger: new OtelSystemLogger(provider.getLogger(scopeName)),
+    logger: new SystemLogger(new OtelSystemLogSink(provider.getLogger(scopeName))),
     close: async () => {
       await provider.shutdown();
       const failed = reported.failures();
@@ -98,7 +99,7 @@ export function openAxiomLogging(settings: AxiomTestSettings, scopeName: string,
 }
 
 // OTel 0.223 gives an export error only to its diagnostic logger, which is off. This line does not go through the
-// OtelSystemLogger, so it cannot loop back into OTel. It omits the error message and the body: they can repeat the request.
+// OtelSystemLogSink, so it cannot loop back into OTel. It omits the error message and the body: they can repeat the request.
 function reportFailedExports(output: LogRecordExporter, console: Writable): { exporter: LogRecordExporter; failures(): number } {
   let failures = 0;
   return {

@@ -969,6 +969,12 @@ and live endpoint release checks remain separate work.
 The complete candidate's review evidence records execution results. Test source
 alone does not establish a passing local gate or Internet reachability.
 
+**System sink contract** (`test/acceptance/logging/system/system-log-sink.test.ts`, `test/unit/logging/system/system-logger.test.ts`)
+
+[V] An admitted call supplies one prepared record before it returns, with local time and the original caller file/line
+[V] A sink failure escapes synchronously; a filtered DEBUG call never writes
+[V] Type checks keep system records and sinks separate from audit events and sinks
+
 **System console logger** (`test/unit/logging/system/console-logger.test.ts`)
 
 [V] Writes one line to stderr by default or to a supplied writable stream
@@ -979,6 +985,7 @@ alone does not establish a passing local gate or Internet reachability.
 [V] Writes the message of an `Error`, a string as it is, and the text of another value, such as a number or a plain object, from `error()` and `fatal()` after the caller file and line
 [V] Writes both messages of a `SuppressedError` from `error()` and `fatal()`: first the failure, then the cleanup failure; also for a nested `SuppressedError`
 [V] Gives the same text from `SystemLogger.messageOf()`, for a caller that composes a longer line
+[V] Preserves the local timestamp, leaves stdout untouched, and lets a synchronous output failure escape
 
 **System OTel logger** ([test contract and commands](otel-logger.md))
 
@@ -987,6 +994,7 @@ alone does not establish a passing local gate or Internet reachability.
 [V] Exports OTLP log records through the SDK to a loopback receiver with the Axiom headers
 [V] Sends acceptance and interface log records to Axiom's `system-log-test` dataset on every run and checks the exporter result
 [V] Sends one additional test log to `system-log-test` through the separate live interface command
+[V] Lets a synchronous SDK emit failure escape
 
 **Renderer network policy**
 
@@ -1950,7 +1958,7 @@ npm run build && node --test dist/test/interface/website-fetcher-cancellation.te
 
 **Axiom logging** (`test/interface/logging/system/axiom-logging.test.ts`)
 
-`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `OtelSystemLogger`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
+`openAxiomLogging()` of `test/support/in-process/axiom-test-export.ts` runs with the production `SystemLogger` with `OtelSystemLogSink`, the real OpenTelemetry SDK, and the OTLP HTTP exporter against a loopback OTLP receiver, never against Axiom. The test needs no Axiom settings and no public network access.
 
 [V] Given one INFO line, `close()` resolves after one OTLP JSON POST to `/v1/logs` with the Axiom `Authorization` and `X-Axiom-Dataset` headers, the scope name, and the record; the console gets no line
 

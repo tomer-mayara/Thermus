@@ -1,4 +1,14 @@
 exceptions:
+  - path: src/logs/system/console-system-log-sink.ts
+    metric: mi
+    bound: 82
+    reason: Renamed console adapter preserves its small color map, formatting and Writable output. Removing logger inheritance improves MI from 79.6 to 83.0; splitting its two output functions would hide one format contract.
+    expires: 2026-12-23
+  - path: src/logs/system/otel-system-log-sink.ts
+    metric: mi
+    bound: 81
+    reason: Renamed OTel adapter preserves the severity map and one emit operation. Removing logger inheritance improves MI from 76.8 to 82.0. A separate mapping owner would add indirection without a distinct lifetime or invariant.
+    expires: 2026-12-23
   - path: src/app/logging-storage.ts
     metric: mi
     bound: 63

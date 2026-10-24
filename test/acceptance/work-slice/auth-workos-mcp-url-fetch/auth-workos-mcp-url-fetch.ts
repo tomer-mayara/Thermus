@@ -1,4 +1,4 @@
-import type { SystemLog } from '../../../../src/logs/system/system-logger.ts';
+import { SystemLogger, type SystemLog } from '../../../../src/logs/system/system-logger.ts';
 // The auth WorkOS MCP URL fetch work slice: a manual run of the hosted edition with the real WorkOS provider, the fetch
 // tool, and Axiom logs, not a test. See README.md here.
 // This file is the entry point of the slice and also exports its composition for the tests. It runs only when it is
@@ -13,7 +13,7 @@ import { loadDeploymentConfig } from '../../../../src/runtime/config/deployment-
 import { createToolOperations, fetchToolServers } from '../../../../src/app/fetch-tool.ts';
 import { assertHostedRenderer } from '../../../../src/app/hosted-renderer-startup.ts';
 import { composeWorkOSApplication, openWorkOSConnection, type WorkOSConnection } from '../../../../src/app/hosted-workos-application.ts';
-import { ConsoleSystemLogger } from '../../../../src/logs/system/console-system-logger.ts';
+import { ConsoleSystemLogSink } from '../../../../src/logs/system/console-system-log-sink.ts';
 import { axiomTestSettings, openAxiomLogging } from '../../../support/in-process/axiom-test-export.ts';
 import { LocalHttpsSite } from '../../../support/hosted-live/local-https-site.ts';
 import { connectScope, localOrigin } from '../../../support/hosted-live/settings.ts';
@@ -40,7 +40,7 @@ const axiomDatasetPage = 'https://app.axiom.co/thermus-ai-spao/datasets/system-l
 
 const entry = process.argv[1];
 if (entry !== undefined && import.meta.url === pathToFileURL(entry).href) {
-  process.exitCode = await run(new ConsoleSystemLogger());
+  process.exitCode = await run(new SystemLogger(new ConsoleSystemLogSink()));
 }
 
 // Production also composes the hosted edition with the fetch tool, in openWorkOSApplication. The slice has its own
@@ -55,7 +55,7 @@ export async function composeWorkSliceApplication(parts: WorkSliceParts, logger:
   return composeWorkOSApplication(config, connection, { logger, buildServer: fetchToolServers({ ...operations, fetch: operation }, logger), onboarding: { organizationId } });
 }
 
-async function run(consoleLog: ConsoleSystemLogger): Promise<number> {
+async function run(consoleLog: SystemLogger): Promise<number> {
   try {
     await serveWorkSlice();
     return 0;

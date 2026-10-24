@@ -12,11 +12,22 @@ export enum LogLevel {
 
 export type SystemLog = Pick<SystemLogger, 'info' | 'error'>;
 
-export abstract class SystemLogger {
+export interface SystemLogRecord {
+  readonly level: LogLevel;
+  readonly time: string;
+  readonly message: string;
+}
+
+export interface SystemLogSink {
+  // Accept the record synchronously; delivery can finish later. Write failures escape.
+  writeSystemLog(record: SystemLogRecord): void;
+}
+
+export class SystemLogger {
   private level: LogLevel;
   private readonly loggerDirectory: string = import.meta.dirname;
 
-  constructor(level: LogLevel = LogLevel.INFO) {
+  constructor(private readonly sink: SystemLogSink, level: LogLevel = LogLevel.INFO) {
     this.level = level;
   }
 
@@ -55,11 +66,11 @@ export abstract class SystemLogger {
 
   private emit(level: LogLevel, message: unknown): void {
     if (level < this.level) return;
-    this.write(
+    this.sink.writeSystemLog({
       level,
-      this.formatTimestamp(new Date()),
-      this.withCallSite(SystemLogger.messageOf(message)),
-    );
+      time: this.formatTimestamp(new Date()),
+      message: this.withCallSite(SystemLogger.messageOf(message)),
+    });
   }
 
   private withCallSite(message: string): string {
@@ -133,10 +144,4 @@ export abstract class SystemLogger {
   private pad(value: number): string {
     return String(value).padStart(2, '0');
   }
-
-  protected abstract write(
-    level: LogLevel,
-    time: string,
-    message: string,
-  ): void;
 }

@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Writable } from 'node:stream';
 import { runInNewContext } from 'node:vm';
-import { ConsoleSystemLogger } from '../../../../src/logs/system/console-system-logger.ts';
+import { SystemLogger } from '../../../../src/logs/system/system-logger.ts';
+import { ConsoleSystemLogSink } from '../../../../src/logs/system/console-system-log-sink.ts';
 import { AuditLog } from '../../../../src/logs/audit/audit-log.ts';
 import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 
@@ -17,9 +18,9 @@ test('Given a controlled customer sink, when explicit audit actions are recorded
 
 test('Given separate system and customer outputs, when internal information and an audit action are logged, then only the system output has a caller location', () => {
   const written: string[] = [];
-  const system = new ConsoleSystemLogger(undefined, new Writable({
+  const system = new SystemLogger(new ConsoleSystemLogSink(new Writable({
     write(chunk, _encoding, done) { written.push(String(chunk)); done(); },
-  }));
+  })));
   const events: AuditEvent[] = [];
   const audit = new AuditLog({ writeAuditEvent: (event) => { events.push(event); } });
   runInNewContext('system.info("distinctive internal diagnostic")', { system }, { filename: 'internal-caller.js' });

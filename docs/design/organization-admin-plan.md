@@ -558,8 +558,9 @@ paths, not the shared `AccessResolver`; the browser MCP guide follows portal rul
 
 System logs are the current Thermus engineering diagnostics. Only Thermus
 operators use them; customers have no access. `src/logs/system/` owns
-`SystemLogger`, `ConsoleSystemLogger`, and `OtelSystemLogger`, including automatic
-source file and line enrichment. Existing account change records in this output
+`SystemLogger` and its ConsoleSystemLogSink/OtelSystemLogSink output roles.
+SystemLogger prepares severity, time, failure text, and automatic source file
+and line enrichment before its synchronous sink call. Existing account change records in this output
 remain internal. S2-03a will add separate customer audit events.
 
 Audit logs are the customer organization Admin feature. `src/logs/audit/` owns
@@ -1737,7 +1738,7 @@ the Audit API foundation in #239 and does not depend on the Save UI in #238. It
 does not establish production capture, queued dispatch, or release readiness.
 The actual endpoint smoke and live Supabase checks remain later release gates.
 
-**Original gap / expected red.** Existing `OtelSystemLogger` does not supply this audit sender,
+**Original gap / expected red.** The internal OTel system adapter does not supply this audit sender,
 actual-connection policy, or complete response interpretation. The new sender
 acceptance specification failed before implementation.
 Existing system logging remains characterization; local HTTP receiver passes do not prove
@@ -1780,7 +1781,7 @@ production public-HTTPS egress.
    endpoint smoke check before release. Add no allow-private/test bypass or paid receiver.
 
 **Homes and anchors.** The customer sender belongs to the existing audit owner in `src/logs/audit/`, separate from
-[`otel-system-logger.ts`](../../src/logs/system/otel-system-logger.ts). Inspect
+[`otel-system-log-sink.ts`](../../src/logs/system/otel-system-log-sink.ts). Inspect
 [`network-policy.ts`](../../src/pipelines/providers/website-fetcher/network-policy.ts) for
 existing DNS preflight, not proof of connected-address safety. Existing
 `test/interface/logging/system/otel-logger.test.ts` and

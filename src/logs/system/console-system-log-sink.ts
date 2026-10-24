@@ -1,5 +1,5 @@
 import type { Writable } from 'node:stream';
-import { SystemLogger, LogLevel } from './system-logger.ts';
+import { LogLevel, type SystemLogRecord, type SystemLogSink } from './system-logger.ts';
 
 const reset = '\u001b[0m';
 
@@ -19,19 +19,10 @@ function paint(level: LogLevel, text: string): string {
 }
 
 // Stderr keeps stdout free for command output.
-export class ConsoleSystemLogger extends SystemLogger {
-  constructor(
-    level: LogLevel = LogLevel.INFO,
-    private readonly output: Writable = process.stderr,
-  ) {
-    super(level);
-  }
+export class ConsoleSystemLogSink implements SystemLogSink {
+  constructor(private readonly output: Writable = process.stderr) {}
 
-  protected override write(
-    level: LogLevel,
-    time: string,
-    message: string,
-  ): void {
+  writeSystemLog({ level, time, message }: SystemLogRecord): void {
     const label: string = paint(level, LogLevel[level]);
     this.output.write(`[${time}] ${label} ${message}\n`);
   }

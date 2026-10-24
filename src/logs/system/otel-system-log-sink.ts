@@ -1,5 +1,5 @@
 import { SeverityNumber, type Logger } from '@opentelemetry/api-logs';
-import { SystemLogger, LogLevel } from './system-logger.ts';
+import { LogLevel, type SystemLogRecord, type SystemLogSink } from './system-logger.ts';
 
 const severity: Record<LogLevel, SeverityNumber> = {
   [LogLevel.DEBUG]: SeverityNumber.DEBUG,
@@ -10,19 +10,10 @@ const severity: Record<LogLevel, SeverityNumber> = {
   [LogLevel.NONE]: SeverityNumber.UNSPECIFIED,
 };
 
-export class OtelSystemLogger extends SystemLogger {
-  constructor(
-    private readonly output: Pick<Logger, 'emit'>,
-    level: LogLevel = LogLevel.INFO,
-  ) {
-    super(level);
-  }
+export class OtelSystemLogSink implements SystemLogSink {
+  constructor(private readonly output: Pick<Logger, 'emit'>) {}
 
-  protected override write(
-    level: LogLevel,
-    _time: string,
-    message: string,
-  ): void {
+  writeSystemLog({ level, message }: SystemLogRecord): void {
     this.output.emit({
       severityNumber: severity[level],
       severityText: LogLevel[level],

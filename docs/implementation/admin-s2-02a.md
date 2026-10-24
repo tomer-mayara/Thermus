@@ -1,5 +1,30 @@
 # S2-02a isolated audit Collector sender
 
+## System sink refactor follow-up
+
+The [logging object CR](logs-object-refactor-change-request.md) now changes the
+System output construction in this PR. SystemLogger is concrete and requires a
+SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink replace the subclasses;
+all source, test, SDK support, and executable work-slice callers use explicit
+composition. The old constructors and protected write hook are removed.
+SystemLog, log methods, threshold behavior, source location, failure text, and
+output formats are retained. System writes can throw; Audit capture still
+contains sink failures. No shared transport or production OTLP activation is
+added.
+
+Passing characterization preceded the refactor. The new sink BDD specification
+and focused unit specifications failed before the new contract existed. After
+implementation, 50 focused cases and eight work-slice cases passed, as did build
+and typecheck. The full candidate checks and metrics are being refreshed in
+`ast-report/logs-refactor-checks/pr240/`; the earlier results below are historical
+evidence for `4f3c8d99`, not results for the follow-up. No human approval is
+recorded.
+
+The exact sender-injection step belongs to #241, where the settings service first
+exists. The clearing/settlement characterization belongs to #244, where its
+tracked lifetime first exists. Restacking preserves that order and #241's merge
+of #238. System construction changes no L2 container or deployment topology.
+
 This candidate adds a callable one-shot sender in `src/logs/audit/`. It does
 not establish release readiness. No production caller connects AuditEventSink,
 destination settings, or MCP capture to this sender. The optional Test action,

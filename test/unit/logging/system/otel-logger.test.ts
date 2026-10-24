@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import type { Logger, LogRecord } from '@opentelemetry/api-logs';
-import { LogLevel } from '../../../../src/logs/system/system-logger.ts';
-import { OtelSystemLogger } from '../../../../src/logs/system/otel-system-logger.ts';
+import { SystemLogger, LogLevel } from '../../../../src/logs/system/system-logger.ts';
+import { OtelSystemLogSink } from '../../../../src/logs/system/otel-system-log-sink.ts';
 
 const levels = [
   { level: LogLevel.DEBUG, method: 'debug', severity: 5, label: 'DEBUG' },
@@ -14,13 +14,13 @@ const levels = [
   { level: LogLevel.FATAL, method: 'fatal', severity: 21, label: 'FATAL' },
 ] as const;
 
-function capture(level?: LogLevel): { logger: OtelSystemLogger; records: LogRecord[] } {
+function capture(level?: LogLevel): { logger: SystemLogger; records: LogRecord[] } {
   const records: LogRecord[] = [];
   const output: Pick<Logger, 'emit'> = { emit(record) { records.push(record); } };
-  return { logger: new OtelSystemLogger(output, level), records };
+  return { logger: new SystemLogger(new OtelSystemLogSink(output), level), records };
 }
 
-function logAll(logger: OtelSystemLogger): void {
+function logAll(logger: SystemLogger): void {
   for (const { method } of levels) logger[method](`${method} message`);
 }
 
@@ -93,4 +93,11 @@ test('Given an empty or Unicode multiline message, when INFO is logged, then the
   }
 
   assert.deepEqual(records.map((record) => record.body), messages.map((message) => `[application-caller.js:1]: ${message}`));
+});
+
+test('Given an OTel output that throws, when an admitted message is logged, then the same failure escapes synchronously', () => {
+  const failure = new Error('OTel emit failed');
+  const logger = new SystemLogger(new OtelSystemLogSink({ emit: () => { throw failure; } }));
+
+  assert.throws(() => logger.info('the output failed'), (error) => error === failure);
 });

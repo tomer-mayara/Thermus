@@ -1,7 +1,7 @@
 # OTel system logger tests
 
-These tests verify `OtelSystemLogger` in
-`src/logs/system/otel-system-logger.ts`. The adapter sends
+These tests verify `OtelSystemLogSink` in
+`src/logs/system/otel-system-log-sink.ts`. The adapter sends
 each accepted internal engineering message to a supplied OpenTelemetry logger.
 Customers have no access to this stream. These tests do not verify customer
 Audit logs, whose event-specific API and destination runtime are owned by
@@ -11,24 +11,33 @@ never reuse this adapter or stream for audit delivery.
 
 ## Contract
 
-`OtelSystemLogger` extends `SystemLogger`. Source file and line enrichment belongs
-only to the system logger; audit events add no automatic source or stack metadata.
-Its constructor takes an OpenTelemetry logger
-that supports `emit`, followed by an optional `LogLevel` that defaults to INFO:
+`SystemLogger` takes a required synchronous `SystemLogSink` and an optional
+`LogLevel` that defaults to INFO. It prepares a `SystemLogRecord` with `level`,
+local timestamp text `time`, and `message` with the caller file and line before
+it calls `writeSystemLog(record)`. Source enrichment belongs only to the system
+logger; audit events add no automatic source or stack metadata. The distinct
+`writeSystemLog` and `writeAuditEvent` roles keep their types separate.
+
+`OtelSystemLogSink` takes an OpenTelemetry logger that supports `emit`:
 
 ```ts
-const logger = new OtelSystemLogger(provider.getLogger('thermus'), LogLevel.INFO);
+const sink = new OtelSystemLogSink(provider.getLogger('thermus'));
+const logger = new SystemLogger(sink, LogLevel.INFO);
 logger.info('The server started.');
 ```
 
-It keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. `error`
+`SystemLogger` keeps `debug`, `info`, `warning`, `error`, `fatal`, and `setLevel`. `error`
 and `fatal` accept a message or a failure. `SystemLogger` renders an `Error` as
 its message, a `SuppressedError` as both messages, and another value as its
 text; `SystemLogger.messageOf()` gives the same text to a caller that composes a
 longer line. Each accepted call emits one plain log body with the caller file,
-line, and original message. The caller owns the SDK provider, exporter, flush,
-and shutdown. The adapter does not read Axiom settings or install a global
-provider.
+line, and original message. The sink ignores the formatted local time; the SDK
+assigns its event timestamp. `writeSystemLog` completes synchronously and lets
+write failures escape to the caller. Return from this call does not mean that
+network delivery is complete. Composition owns the SDK provider, exporter,
+flush, and shutdown. The adapter does not read Axiom settings or install a
+global provider. Production continues to use `ConsoleSystemLogSink`, which
+writes to stderr and accepts a custom `Writable`.
 
 | Method | Severity number | Severity text |
 | --- | --- | --- |
@@ -80,7 +89,7 @@ values take precedence. Keep the file and its credentials out of version
 control and test reports.
 
 The script of the [basic MCP URL fetch work slice](../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md)
-uses the production `OtelSystemLogger` through `openAxiomLogging()` in
+uses the production `OtelSystemLogSink` through `openAxiomLogging()` in
 `test/support/in-process/axiom-test-export.ts`. It reads the same settings with the same
 reader and exports to the same test dataset. The log lines go to Axiom only.
 The console gets only the export failure lines: one line for each refused or

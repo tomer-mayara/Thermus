@@ -295,12 +295,15 @@ flowchart TB
 HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-logger.ts)
 contract for errors. `SystemLog` is `Pick<SystemLogger, 'info' | 'error'>`,
 exported by the SystemLogger module. It accepts plain objects with those methods.
-The production entry selects
-[ConsoleSystemLogger](../src/logs/system/console-system-logger.ts) on stderr;
-[OtelSystemLogger](../src/logs/system/otel-system-logger.ts) remains an internal
-adapter, with no production exporter configured here. Both inherit caller
-location and severity behavior from SystemLogger. Existing account and tool
-completion diagnostics remain internal.
+The production entry composes SystemLogger with
+[ConsoleSystemLogSink](../src/logs/system/console-system-log-sink.ts) on stderr.
+SystemLogger filters by level and prepares local time, failure text, and caller
+location before it calls the synchronous `SystemLogSink.writeSystemLog` role.
+[OtelSystemLogSink](../src/logs/system/otel-system-log-sink.ts) maps that record
+to the SDK; composition owns SDK export, flush, and shutdown. It ignores the
+formatted local time because the SDK assigns its event timestamp. No production
+exporter is configured here. A synchronous sink failure still reaches its
+caller. Existing account and tool completion diagnostics remain internal.
 
 The concrete [AuditLog](../src/logs/audit/audit-log.ts) class exposes
 `toolCompleted` and `administrationChanged`. It copies named event fields,
@@ -782,7 +785,7 @@ surface and the narrower file-context restrictions.
 | `html-processing` — [`src/pipelines/html-processing/`](../src/pipelines/html-processing/) | Input/depth limits; ad removal; hidden-content/control sanitation; Brave result projection; Markdown conversion. Transformer subdirectories remain inside one owner. | ProcessHtmlStep and documented [HTML runner](../src/pipelines/html-processing/html-to-markdown-pipeline.ts); documented ad-cleaner construction and depth-limit error. App selects concrete transformations. |
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
-| `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; SystemLogger/LogLevel and ConsoleSystemLogger/OtelSystemLogger implementations selected at composition. |
+| `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
 | `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, tenant destination settings, and bounded one-shot Collector requests. | AuditLog event methods and AuditEventSink; neutral settings store, private pg adapter and SQL runtime; OtlpAuditSender. The metadata-only event API and sender have no production capture or dispatch caller. Browser Save remains a separate ticket. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |

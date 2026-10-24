@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
 import { SystemLogger, LogLevel } from '../../../../src/logs/system/system-logger.ts';
-import { ConsoleSystemLogger } from '../../../../src/logs/system/console-system-logger.ts';
+import { ConsoleSystemLogSink } from '../../../../src/logs/system/console-system-log-sink.ts';
 
 const ansi = '\u001b';
 const testFile = basename(fileURLToPath(import.meta.url));
@@ -19,7 +19,7 @@ const levels = [
 ] as const;
 
 function capture(level?: LogLevel): {
-  logger: ConsoleSystemLogger;
+  logger: SystemLogger;
   written: string[];
 } {
   const written: string[] = [];
@@ -29,10 +29,10 @@ function capture(level?: LogLevel): {
       done();
     },
   });
-  return { logger: new ConsoleSystemLogger(level, output), written };
+  return { logger: new SystemLogger(new ConsoleSystemLogSink(output), level), written };
 }
 
-function logAll(logger: ConsoleSystemLogger): void {
+function logAll(logger: SystemLogger): void {
   for (const { method } of levels) logger[method](`${method} message`);
 }
 
@@ -45,19 +45,23 @@ function callerLine(): number {
   return Number(found[1]);
 }
 
-test('Given a default logger, when INFO is logged, then stderr receives one formatted line', (t) => {
+test('Given a default logger, when INFO is logged, then stderr receives one formatted line with local time and stdout stays empty', (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date(2026, 0, 2, 3, 4, 5).getTime() });
+  const standard: string[] = [];
+  t.mock.method(process.stdout, 'write', (chunk: unknown): boolean => { standard.push(String(chunk)); return true; });
   const written: string[] = [];
   t.mock.method(process.stderr, 'write', (chunk: unknown): boolean => {
     written.push(String(chunk));
     return true;
   });
-  const logger = new ConsoleSystemLogger();
+  const logger = new SystemLogger(new ConsoleSystemLogSink());
 
   logger.debug('hidden message');
   logger.info('This is a test log message');
 
   assert.equal(written.length, 1);
-  assert.match(written[0], timestamp);
+  assert.ok(written[0].startsWith('[2026-01-02 03:04:05] '));
+  assert.deepEqual(standard, []);
   assert.ok(written[0].includes(`${ansi}[32mINFO${ansi}[0m`));
   assert.ok(written[0].endsWith(': This is a test log message\n'));
 });
@@ -188,3 +192,11 @@ for (const { kind, failure, gives, text } of failures) {
     assert.equal(SystemLogger.messageOf(failure), text);
   });
 }
+
+test('Given a console output that throws, when an admitted message is logged, then the same failure escapes synchronously', (t) => {
+  const failure = new Error('console write failed');
+  t.mock.method(process.stderr, 'write', () => { throw failure; });
+  const logger = new SystemLogger(new ConsoleSystemLogSink());
+
+  assert.throws(() => logger.info('the output failed'), (error) => error === failure);
+});
