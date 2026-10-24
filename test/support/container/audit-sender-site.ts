@@ -33,6 +33,21 @@ interface ReceivedRequest {
 
 interface ExportedRecord { readonly timeUnixNano: string }
 
+interface DestinationTestSubmission {
+  readonly endpoint: string;
+  readonly auth: 'none' | 'bearer';
+  readonly token: string;
+}
+
+interface DestinationTestResult {
+  readonly unsaved: { readonly status: number; readonly body: string };
+  readonly tested: { readonly status: number; readonly body: string };
+  readonly revision: string;
+  readonly unchanged: boolean;
+  readonly saves: number;
+  readonly settings: { readonly revision: string; readonly endpoint: string; readonly auth: 'none' | 'bearer'; readonly enabled: boolean; readonly tokenPresent: boolean };
+}
+
 function command(args: readonly string[]): Promise<string> {
   return dockerOutput(args, { signal: AbortSignal.timeout(90_000) });
 }
@@ -61,11 +76,26 @@ async function prepareFiles(directory: string): Promise<void> {
   await chmod(join(directory, 'output'), 0o777);
   await writeFile(join(directory, 'requests.ndjson'), '');
   await writeFile(join(directory, 'package.json'), '{"type":"module"}');
-  await mkdir(join(directory, 'app/src/logs'), { recursive: true });
+  await mkdir(join(directory, 'app/src/logs/audit'), { recursive: true });
   await mkdir(join(directory, 'app/test/support/processes'), { recursive: true });
   await mkdir(join(directory, 'app/test/support/container'), { recursive: true });
-  await cp(join(auditSenderRuntime.source, 'logs/audit'), join(directory, 'app/src/logs/audit'), { recursive: true });
+  for (const name of ['audit-send', 'audit-https-connection', 'public-audit-destination', 'otlp-audit-sender', 'otlp-audit-encoding', 'otlp-audit-request', 'otlp-audit-response', 'destination-credential-codec', 'destination-endpoint', 'destination-settings-service', 'destination-test']) {
+    await cp(join(auditSenderRuntime.source, `logs/audit/${name}.${auditSenderRuntime.extension}`), join(directory, `app/src/logs/audit/${name}.${auditSenderRuntime.extension}`));
+  }
   await cp(join(auditSenderRuntime.support, `processes/audit-sender-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-sender-probe.${auditSenderRuntime.extension}`));
+  await cp(join(auditSenderRuntime.support, `processes/audit-destination-test-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-destination-test-probe.${auditSenderRuntime.extension}`));
+  const web = join(directory, 'app/src/interfaces/web');
+  await mkdir(join(web, 'account'), { recursive: true });
+  for (const name of ['html-escape', 'page-html']) {
+    await cp(join(auditSenderRuntime.source, `interfaces/web/${name}.${auditSenderRuntime.extension}`), join(web, `${name}.${auditSenderRuntime.extension}`));
+  }
+  for (const name of ['logging-routes', 'logging-form', 'logging-page', 'logging-test-page', 'account-form', 'account-pages', 'members-page-layout', 'members-style', 'organization-selection-page', 'organization-selection-style']) {
+    await cp(join(auditSenderRuntime.source, `interfaces/web/account/${name}.${auditSenderRuntime.extension}`), join(web, `account/${name}.${auditSenderRuntime.extension}`));
+  }
+  await mkdir(join(directory, 'app/test/support/drivers/browser'), { recursive: true });
+  for (const name of ['hosted-browser', 'cookie-jar', 'html-entities']) {
+    await cp(join(auditSenderRuntime.support, `drivers/browser/${name}.${auditSenderRuntime.extension}`), join(directory, `app/test/support/drivers/browser/${name}.${auditSenderRuntime.extension}`));
+  }
   await cp(join(auditSenderRuntime.support, `container/audit-tls-receiver.${auditSenderRuntime.extension}`), join(directory, `app/test/support/container/audit-tls-receiver.${auditSenderRuntime.extension}`));
   await cp(join(directory, 'package.json'), join(directory, 'app/package.json'));
 }
@@ -172,6 +202,19 @@ export async function openAuditSenderSite(t: TestContext, kind: 'receiver' | 'co
     address, token, collectorImage,
     endpoint: 'https://collector.audit.test:4318/v1/logs',
     bearerEndpoint: 'https://collector.audit.test:4319/v1/logs',
+    async testSavedDestinations(submissions: readonly DestinationTestSubmission[]): Promise<DestinationTestResult[]> {
+      const client = `${network}-test-client-${containers.length}`;
+      containers.push(client);
+      await writeFile(join(directory, 'destination-tests.json'), JSON.stringify(submissions));
+      await command(['create', '--name', client, '--network', network,
+        '--add-host', `collector.audit.test:${address}`, '-e', 'NODE_EXTRA_CA_CERTS=/fixture/server.crt',
+        nodeImage, 'node', ...(auditSenderRuntime.extension === 'ts' ? ['--experimental-transform-types'] : []), `/fixture/app/test/support/processes/audit-destination-test-probe.${auditSenderRuntime.extension}`]);
+      await command(['cp', directory, `${client}:/fixture`]);
+      const result = await command(['start', '-a', client]);
+      const exitCode = await command(['inspect', client, '--format', '{{.State.ExitCode}}']);
+      if (exitCode !== '0') throw new Error(`The destination Test probe exited with ${exitCode}.`);
+      return JSON.parse(result);
+    },
     async send(submissions: readonly Submission[], options: { trustCertificate?: boolean } = {}): Promise<AuditSendOutcome[]> {
       const client = `${network}-client-${containers.length}`;
       containers.push(client);

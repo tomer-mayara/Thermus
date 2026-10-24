@@ -1,6 +1,12 @@
 import { DestinationCredentialCodec } from './destination-credential-codec.ts';
 import { validDestinationEndpoint } from './destination-endpoint.ts';
 import type { DestinationSettingsStore, StoredDestinationSettings } from './destination-settings-store.ts';
+import type { AuditSendOutcome } from './audit-send.ts';
+import { DestinationTestLifetime } from './destination-test.ts';
+import type { DestinationTestResult, DestinationTestSender } from './destination-test.ts';
+import { OtlpAuditSender } from './otlp-audit-sender.ts';
+
+export type { DestinationTestResult } from './destination-test.ts';
 
 export interface PublicDestinationSettings {
   readonly revision: string | null;
@@ -26,8 +32,40 @@ export type DestinationSettingsSaveResult =
 
 export class DestinationSettingsService {
   private readonly codec: DestinationCredentialCodec;
-  constructor(private readonly store: DestinationSettingsStore, key: Uint8Array) {
+  private readonly tests = new DestinationTestLifetime();
+  constructor(private readonly store: DestinationSettingsStore, key: Uint8Array, private readonly sender: DestinationTestSender = new OtlpAuditSender()) {
     this.codec = new DestinationCredentialCodec(key);
+  }
+
+  /** Tenant and actor come from the caller's current trusted Admin context. */
+  test(tenantId: string, input: DestinationSettingsSaveInput, actor: { readonly authority: string; readonly subject: string }, signal?: AbortSignal): Promise<DestinationTestResult> {
+    const desired = { ...input };
+    const trustedActor = { authority: actor.authority, subject: actor.subject };
+    return this.tests.run(control => this.testSaved(tenantId, desired, trustedActor, control), signal);
+  }
+
+  private async testSaved(tenantId: string, desired: DestinationSettingsSaveInput, actor: { readonly authority: string; readonly subject: string }, signal: AbortSignal): Promise<DestinationTestResult> {
+    const current = await this.readStored(tenantId);
+    if (signal.aborted) return { status: 'cancelled' };
+    if (current.status === 'unavailable') return { status: 'unavailable' };
+    if (current.status !== 'found') return { status: 'conflict' };
+    const settings = { ...current.settings };
+    const token = this.token(tenantId, settings);
+    if (token === null) return { status: 'unavailable' };
+    if (settings.revision !== desired.expectedRevision) return { status: 'conflict' };
+    if (!matchesSavedSettings(desired, settings)) return { status: 'unsaved' };
+    let outcome: AuditSendOutcome;
+    try {
+      outcome = await this.sender.send({ endpoint: settings.endpoint, auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } }, {
+        eventName: 'audit.destination.test', timestamp: new Date().toISOString(), organizationId: tenantId, actor, destinationRevision: settings.revision,
+      }, signal);
+    } catch { outcome = { kind: 'unconfirmed', reason: 'transport' }; }
+    if (signal.aborted) return { status: 'cancelled' };
+    const after = await this.readStored(tenantId);
+    if (signal.aborted) return { status: 'cancelled' };
+    if (after.status === 'unavailable') return { status: 'unconfirmed' };
+    if (after.status !== 'found' || after.settings.revision !== settings.revision) return { status: 'conflict' };
+    return { status: 'tested', revision: settings.revision, outcome };
   }
 
   async read(tenantId: string): Promise<DestinationSettingsReadResult> {
@@ -59,8 +97,9 @@ export class DestinationSettingsService {
     return { status: result.status };
   }
 
-  private readStored(tenantId: string) {
-    return this.store.read(tenantId).catch(() => ({ status: 'unavailable' as const }));
+  private async readStored(tenantId: string) {
+    try { return await this.store.read(tenantId); }
+    catch { return { status: 'unavailable' as const }; }
   }
 
   private token(tenant: string, settings: StoredDestinationSettings): string | null {
@@ -71,6 +110,10 @@ export class DestinationSettingsService {
     const token = this.codec.decrypt(tenant, settings.encryptedCredential);
     return token !== null && token !== '' && !invalidInput({ ...settings, expectedRevision: settings.revision, token }) ? token : null;
   }
+}
+
+function matchesSavedSettings(input: DestinationSettingsSaveInput, saved: StoredDestinationSettings): boolean {
+  return input.token === '' && input.endpoint === saved.endpoint && input.auth === saved.auth && input.enabled === saved.enabled;
 }
 
 function invalidInput(input: DestinationSettingsSaveInput): 'endpoint' | 'token' | 'settings' | undefined {

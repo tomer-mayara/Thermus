@@ -8,6 +8,7 @@ interface LoggingPage {
   readonly tenantId: string;
   readonly csrfToken: string;
   readonly action: string;
+  readonly testAction: string;
   readonly navigation: { readonly product: string; readonly members: string; readonly organizations: string; readonly logging: string };
 }
 
@@ -24,9 +25,12 @@ ${hiddenField('csrf_token', page.csrfToken)}${hiddenField('organization_id', pag
 <label><input type="radio" name="auth" value="bearer"${settings.auth === 'bearer' ? ' checked' : ''}> Bearer token</label></fieldset>
 <label for="logging-token">Token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192" value="">
 <p>${settings.tokenPresent ? 'A token is saved.' : 'No token is saved.'} Leave Token blank to keep a saved Bearer token only when the endpoint and authentication stay the same. A changed endpoint with Bearer needs a new token. None removes the saved token.</p>
-<label><input type="checkbox" name="enabled"${settings.enabled ? ' checked' : ''}> Enable export</label><button type="submit">Save</button></form></section>`, { title: 'Audit logs', current: 'logging' });
+<label><input type="checkbox" name="enabled"${settings.enabled ? ' checked' : ''}> Enable export</label><button type="submit">Save</button>
+<button type="submit" formaction="${escapeHtml(page.testAction)}" formnovalidate>Test saved destination</button></form>
+<p>Test is optional and sends one synthetic event to the saved destination, even when export is disabled. Save edits before Test. Test does not save settings or enable export.</p>
+<p>Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p></section>`, { title: 'Audit logs', current: 'logging' });
 }
 
-export function loggingNotice(title: string, message: string, status: number, loggingPath: string): Response {
-  return new Response(htmlDocument(title, [`<p>${message}</p>`, `<p><a href="${escapeHtml(loggingPath)}">Read saved settings</a></p>`]), { status, headers: NOTICE_HEADERS });
+export function loggingNotice(notice: { readonly title: string; readonly message: string; readonly status: number }, loggingPath: string): Response {
+  return new Response(htmlDocument(notice.title, [`<p>${notice.message}</p>`, `<p><a href="${escapeHtml(loggingPath)}">Read saved settings</a></p>`]), { status: notice.status, headers: NOTICE_HEADERS });
 }

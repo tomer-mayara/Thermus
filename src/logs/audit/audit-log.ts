@@ -21,11 +21,18 @@ export interface AdministrationChange extends AuditContext {
   readonly outcome: ChangeOutcome;
 }
 
+/** A synthetic record from an explicit saved-destination Test. */
+interface DestinationTestEvent extends AuditContext {
+  readonly destinationRevision: string;
+}
+
 export type AuditEvent =
   | (ToolCompletion & { readonly eventName: 'mcp.tool.completed' })
-  | (AdministrationChange & { readonly eventName: 'organization.changed' });
+  | (AdministrationChange & { readonly eventName: 'organization.changed' })
+  | (DestinationTestEvent & { readonly eventName: 'audit.destination.test' });
 
-/** No exporter is wired yet. A sink accepts a projected event without changing the action outcome. */
+/** No production capture is wired through this sink.
+ * It accepts projected events without changing action outcomes. */
 export interface AuditEventSink {
   /** Complete synchronously, for example by bounded enqueue; this contract does not await export. */
   writeAuditEvent(event: AuditEvent): void;

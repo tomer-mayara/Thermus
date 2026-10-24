@@ -586,7 +586,8 @@ changing capture. Add no such adapter, fan-out,
 sink plugin framework, or generic settings backend in Slice 2.
 
 Slice 2 promises no in-app log viewer. S2-01b implements the Audit logs settings
-UI and Save in PR #238. Production capture and delivery remain planned;
+UI and Save in PR #238. S2-02b adds the optional saved-destination Test
+with one synthetic event. Production tool/admin capture and queued delivery remain planned;
 S2-03a owns MCP/admin capture, redaction, and truncation.
 The technical database, role, SQL table, and environment names remain compatible,
 including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
@@ -1640,7 +1641,7 @@ Current Admin access, origin/CSRF, token encryption/no echo, organization isolat
 and revision conflicts have source acceptance coverage. The
 [implementation record](https://github.com/tomer-mayara/Thermus/blob/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81/docs/implementation/admin-s2-01b.md)
 records checks and limits. This is unmerged implementation, not deployed access
-or proof of customer delivery. S2-02b adds Test; S2-03 adds capture and dispatch.
+or proof of customer delivery. The S2-02b candidate adds Test; S2-03 adds capture and dispatch.
 
 **Acceptance specification first:**
 
@@ -1815,9 +1816,14 @@ Scenario: Ignore an old Test result
   Then the response suppresses the obsolete or unconfirmed result
 ```
 
-**Gap / expected red.** No saved-destination Test exists. Disabled Test and stale result
-handling should be red. Settings Save and existing web security remain passing
-characterization. A successful Test is never an Enable prerequisite.
+**Candidate implementation.** [PR #241](https://github.com/tomer-mayara/Thermus/pull/241)
+is stacked over #240 and includes the settings dependency from #238, merged
+into this branch.
+The [implementation record](../implementation/admin-s2-02b.md) describes the
+saved-only Test, bounded lifetime, and result suppression. Complete-candidate
+checks and review remain pending; this is not a release record. The steps below
+preserve the acceptance and implementation order. A successful Test is never
+an Enable prerequisite.
 
 **Ordered TDD steps:**
 
@@ -1843,8 +1849,8 @@ characterization. A successful Test is never an Enable prerequisite.
    does not prove production egress. Retain 02a's separate unchanged-guard address/TLS proof;
    add no allow-private/test bypass.
 
-**Homes and anchors.** Extend the proposed 01b destination operation and Audit logs page, using
-02a's public sender contract. Existing route/form cases under
+**Homes and anchors.** The candidate extends the S2-01b destination service and
+Audit logs page with S2-02a's public sender contract. Existing route/form cases under
 `test/integration/hosted-admin/` supply security patterns. Use destination-package unit
 tests, a small Test contract where needed, and public browser acceptance under
 `test/acceptance/`; shared sites/drivers belong under `test/support`.

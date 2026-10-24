@@ -30,3 +30,13 @@ test('Given an oversized audit field, when encoded, then no oversized request ca
 test('Given escaping expands a bounded field beyond request bytes, when encoded, then the request is refused', () => assert.throws(() => encodeAuditEvent({ ...event, organizationId: '\u0000'.repeat(50_000) })));
 test('Given invalid event discriminant, when encoded, then the event is refused', () => assert.throws(() => encodeAuditEvent({ ...event, eventName: 'system.error' } as unknown as AuditEvent)));
 test('Given invalid duration, when encoded, then the event is refused', () => assert.throws(() => encodeAuditEvent({ ...event, durationMs: Number.POSITIVE_INFINITY })));
+
+test('Given a destination Test record with injected diagnostics, when encoded, then OTLP explicitly labels synthetic work and copies only Test fields', () => {
+  const synthetic = { ...event, eventName: 'audit.destination.test', destinationRevision: 'saved-r1', endpoint: 'https://secret.example', token: 'private-token', file: '/private.ts', line: 12 } as unknown as AuditEvent;
+  const encoded = encodeAuditEvent(synthetic).toString();
+  const record = JSON.parse(encoded).resourceLogs[0].scopeLogs[0].logRecords[0];
+  assert.equal(record.eventName, 'audit.destination.test');
+  assert.equal(record.attributes.find((attribute: { key: string }) => attribute.key === 'destination.revision').value.stringValue, 'saved-r1');
+  assert.equal(record.attributes.find((attribute: { key: string }) => attribute.key === 'synthetic.type').value.stringValue, 'destination_test');
+  assert.doesNotMatch(encoded, /operation-a|search|duration.ms|private|secret|endpoint|token|file|line/);
+});

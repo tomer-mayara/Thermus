@@ -37,7 +37,7 @@ to the sender ticket. No Collector request or WorkOS catalog change is added.
 System logs (`src/logs/system/`) remain internal engineering diagnostics. Existing
 SystemLog wiring retains file and line information. Customers cannot access that
 stream. AuditLog has the named `toolCompleted` and `administrationChanged`
-methods; AuditLogger projects only explicit metadata fields to AuditEventSink,
+methods; AuditLog projects only explicit metadata fields to AuditEventSink,
 without source file, line, generic messages, or exception stacks. This event API
 has no production capture or exporter. The settings service is wired to the
 browser; it does not send events or call a System log sink. No event viewer is
@@ -79,7 +79,10 @@ bind the same tested source and metric inputs to the final prose-only commit. Fu
 under `ast-report/s2-01b-239-final/`. The runs below the current quality section
 describe the earlier candidate; they are not reused as current pass evidence.
 
-## Current maintainability and coverage review
+## Earlier maintainability and coverage review
+
+This section retains the S2-01b measurement history. It is not a measurement of
+the later S2-02b candidate; see its [review record](admin-s2-02b.md).
 
 The process completed all four stages without a tool failure. Delta reports a
 goal miss: 27 of 28 measured changed production files are below MI 85. Review
@@ -120,10 +123,10 @@ Each retained low file and its reason follows. Paths are relative to `src/`.
 | `logs/system/console-system-logger.ts` | 79.6 | Retain existing internal console formatting and safe error output. |
 | `interfaces/web/account/members-page-layout.ts` | 83.0 | Share one header and CSP owner across Members and Audit logs. |
 
-AuditLogger scores MI 88.2 and meets the file goal. Four files have no measured
-file MI: `interfaces/web/account/members-style.ts` is CSS text;
-`logs/audit/audit-log.ts`, `logs/audit/destination-settings-store.ts`, and
-`logs/system/system-log.ts` define contracts. MI is N/A for those files.
+The earlier report measured AuditLog at MI 88.2. Its contract-only file list
+predates the System/Audit source consolidation and does not describe the
+current concrete `AuditLog` file. The S2-02b candidate measures that file
+again; the earlier N/A list is not current quality evidence.
 
 The eight high native findings belong to the Audit routes, bounded SQL runtime,
 credential codec, settings service, PostgreSQL store, SystemLogger, console
@@ -298,7 +301,7 @@ The manager compared every checker-listed public surface before and after:
   caller file/line, stays unchanged. This contract is unchanged against PR239.
 - `src/logs/audit/audit-log.ts` adds the inherited named `toolCompleted` and
   `administrationChanged` event methods relative to main. Their fixed metadata
-  and synchronous sink contract are unchanged against PR239. AuditLogger adds
+  and synchronous sink contract are unchanged against PR239. AuditLog adds
   no source file, line, generic message, or stack fields. Production capture
   and export remain unwired.
 - `src/logs/audit/destination-settings-service.ts` adds the public tenant-scoped

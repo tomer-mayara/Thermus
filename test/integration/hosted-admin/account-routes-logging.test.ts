@@ -26,3 +26,55 @@ test('Given a secret-bearing collaborator exception, when Audit logs reads fail,
   const response = await routes.handle(accountRequest('/logging', 'session=ann'));
   assert.equal(response.status, 503); assert.doesNotMatch(await response.text(), /private-token/); assert.match(response.headers.get('Set-Cookie')!, /session=refreshed/); assert.deepEqual(failures, []);
 });
+
+test('Given password Admin access, when Test runs through account routes, then the fresh trusted context supplies tenant and actor and refreshed cookies survive', async () => {
+  const store = new DestinationSettingsFake();
+  const sent: unknown[] = [];
+  const service = new DestinationSettingsService(store, Buffer.alloc(32, 8), { send: async (destination, event) => { sent.push({ destination, event }); return { kind: 'accepted' }; } });
+  await service.save('tenant-org-a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: false });
+  const saved = await service.read('tenant-org-a'); assert.equal(saved.status, 'found');
+  if (saved.status !== 'found') return;
+  const revision = saved.settings.revision; assert.ok(revision);
+  const { routes, failures, resolver } = serveAdministration({}, { session: { mfaCompleted: false }, routes: { logging: service } });
+  const response = await routes.handle(accountRequest('/logging/test', 'session=ann', {
+    method: 'POST', headers: { Origin: 'https://thermus.example', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: revision, endpoint: saved.settings.endpoint, auth: 'none', token: '' }),
+  }));
+  assert.equal(response.status, 200);
+  assert.equal(resolver.calls.length, 1);
+  assert.equal(sent.length, 1);
+  assert.match(JSON.stringify(sent), /"subject":"user-ann"/);
+  assert.match(JSON.stringify(sent), /"organizationId":"tenant-org-a"/);
+  assert.match(response.headers.get('Set-Cookie') ?? '', /session=refreshed/);
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+  assert.equal(store.writes, 1);
+  assert.deepEqual(failures, []);
+});
+
+test('Given an old Admin form, when current access no longer grants Admin, then Test gets no read or send', async () => {
+  let tests = 0;
+  const { routes, resolver } = serveAdministration({}, { routes: { logging: {
+    read: async () => { throw new Error('Test must not read'); }, save: async () => ({ status: 'unavailable' }),
+    test: async () => { tests += 1; return { status: 'unavailable' }; },
+  }, decisions: new Map([['user-ann', { allowed: true, context: { user: { authority: 'current', subject: 'user-ann' }, tenantId: 'tenant-org-a', organizationId: 'org-a', grants: [], permissions: ['product:access'] } }]]) } });
+  const response = await routes.handle(accountRequest('/logging/test', 'session=ann', { method: 'POST' }));
+  assert.equal(response.status, 403);
+  assert.equal(resolver.calls.length, 1);
+  assert.equal(tests, 0);
+  assert.match(response.headers.get('Set-Cookie') ?? '', /session=refreshed/);
+  assert.equal(response.headers.get('Cache-Control'), 'no-store');
+});
+
+test('Given a secret-bearing Test failure, when account routes answer, then cookies survive and the failure reporter gets no cause', async () => {
+  const { routes, failures } = serveAdministration({}, { routes: { logging: {
+    read: async () => ({ status: 'unavailable' }), save: async () => ({ status: 'unavailable' }), test: async () => { throw new Error('private-token raw-receiver-diagnostic'); },
+  } } });
+  const response = await routes.handle(accountRequest('/logging/test', 'session=ann', {
+    method: 'POST', headers: { Origin: 'https://thermus.example', 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '' }),
+  }));
+  assert.equal(response.status, 503);
+  assert.match(response.headers.get('Set-Cookie') ?? '', /session=refreshed/);
+  assert.doesNotMatch(await response.text(), /private-token|raw-receiver-diagnostic/);
+  assert.deepEqual(failures, []);
+});

@@ -41,8 +41,8 @@ exceptions:
     expires: 2026-12-23
   - path: src/logs/audit/otlp-audit-encoding.ts
     metric: mi
-    bound: 60
-    reason: Named event projection, timestamp conversion, and the encoded byte limit form one small OTLP translation boundary. Each function has at most seven paths. Separate files for these wire fields would spread the same format contract.
+    bound: 59
+    reason: Named event projection, including the explicit synthetic Test variant, timestamp conversion, and the encoded byte limit form one small OTLP translation boundary. Each function has at most eight paths. Separate files for these wire fields would spread the same format contract.
     expires: 2026-12-23
   - path: src/logs/audit/otlp-audit-request.ts
     metric: mi
@@ -62,7 +62,7 @@ exceptions:
   - function: src/logs/audit/otlp-audit-encoding.ts#encodeAuditEvent
     metric: crap
     bound: 20
-    reason: Verified capture records the emitted encoder called 29 times with full emitted coverage, but cannot bind that coverage to its source identity. The four source paths bound CRAP to [4, 20], so the new-function target of 15 is unproved. Focused encoding and real Collector cases cover behavior; keep the small wire boundary without editing coverage or splitting it to evade the mapping limit.
+    reason: The prior verified capture could not bind emitted encoder coverage to its source identity. The four source paths bound unknown-coverage CRAP to [4, 20], so the new-function target of 15 is unproved unless the current capture resolves it. Focused encoding and real Collector cases cover behavior; keep the small wire boundary without editing coverage or splitting it to evade the mapping limit.
     expires: 2026-12-23
   - path: src/interfaces/web/account/logging-form.ts
     metric: mi
@@ -71,13 +71,13 @@ exceptions:
     expires: 2026-12-22
   - path: src/interfaces/web/account/logging-page.ts
     metric: mi
-    bound: 73
+    bound: 72
     reason: The native form and fixed recovery notice stay with their HTML escaping and write-only token projection. The form reuses the current page layout; extracting individual markup fields would spread one small page.
     expires: 2026-12-22
   - path: src/interfaces/web/account/logging-routes.ts
     metric: mi
-    bound: 58
-    reason: This boundary keeps Admin authority, request checks, safe failure mapping and native recovery together. Read and Save are separate methods with at most eight paths; tests cover refusals and uncertain writes.
+    bound: 51
+    reason: This boundary keeps current Admin authority, request checks, safe failure mapping and native recovery together. Read, Save and Test are separate operations with at most nine paths; tests cover refusals, uncertain writes and safe fixed Test outcomes. Save and Test share only two copies of form guards, so no parser or dispatch framework is added.
     expires: 2026-12-22
   - path: src/logs/audit/destination-credential-codec.ts
     metric: mi
@@ -91,6 +91,16 @@ exceptions:
     expires: 2026-12-22
   - path: src/logs/audit/destination-settings-service.ts
     metric: mi
-    bound: 43
-    reason: One owner keeps credential retention, validated public reads, semantic no-op and atomic expected-revision Save together. Guards distinguish definite refusal from uncertain writes. Splitting this short operation across new services would obscure its revision and credential rules.
+    bound: 42
+    reason: One owner keeps credential retention, validated reads, atomic revision Save and saved-version Test together. The named saved-form predicate separates one pure rule; Test orchestration has fourteen paths for distinct pre-read, send, post-read and cancellation outcomes. Keeping the operation visible preserves credential and revision order without another service.
     expires: 2026-12-22
+  - path: src/logs/audit/destination-test.ts
+    metric: mi
+    bound: 73
+    reason: One small lifetime owner keeps four-slot admission, caller deadline, cancellation and late callback settlement together. Its largest function has three paths. Moving timer or slot cleanup to another owner would obscure when admission is released.
+    expires: 2026-12-24
+  - path: src/interfaces/web/account/logging-test-page.ts
+    metric: mi
+    bound: 71
+    reason: Two typed lookup tables keep every safe sender and operation notice exhaustive in one small presentation boundary. The sole function has two paths. Splitting fixed messages into more files would spread one outcome contract without reducing decisions.
+    expires: 2026-12-24

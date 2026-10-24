@@ -20,6 +20,9 @@ function timestampNanos(timestamp: string): string {
 }
 
 function eventAttributes(event: AuditEvent): Attribute[] {
+  if (event.eventName === 'audit.destination.test') {
+    return [stringAttribute('synthetic.type', 'destination_test'), stringAttribute('destination.revision', event.destinationRevision)];
+  }
   if (event.eventName === 'mcp.tool.completed') {
     if (!Number.isFinite(event.durationMs) || event.durationMs < 0) throw new Error();
     return [stringAttribute('operation.id', event.operationId), stringAttribute('tool.name', event.tool), stringAttribute('outcome', event.status), { key: 'duration.ms', value: { doubleValue: event.durationMs } }];

@@ -954,12 +954,12 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 
 The [sender record](../implementation/admin-s2-02a.md) gives the public contract,
 fixed bounds, and evidence limits. These specifications exercise the isolated
-sender. Production capture, the saved-destination Test action, queue dispatch,
-and live endpoint release checks remain separate work.
+sender. The saved-destination Test is specified below. Production tool/admin
+capture, queue dispatch, and live endpoint release checks remain separate work.
 
 - `test/acceptance/logging/audit/audit-sender.test.ts` specifies refusal of a private destination without disclosure of event or credentials.
 - `test/unit/logging/audit/public-audit-destination.test.ts` specifies HTTPS syntax, None/Bearer validation, public IPv4/IPv6 policy, mixed or changed DNS answers, answer limits, and exact peer address comparison.
-- `test/unit/logging/audit/otlp-audit-encoding.test.ts` specifies named event fields, decimal-string nanoseconds, administration targets, invalid events, and encoded request size.
+- `test/unit/logging/audit/otlp-audit-encoding.test.ts` specifies named event fields, decimal-string nanoseconds, administration targets, invalid events, the labelled synthetic Test record, and encoded request size.
 - `test/unit/logging/audit/otlp-audit-response.test.ts` specifies typed acceptance, warning, rejection, failure, malformed success, body size, and bounded Retry-After results.
 - `test/unit/logging/audit/otlp-audit-sender.test.ts` specifies one-shot orchestration, safe outcomes, cancellation, admission, and native DNS work lifetime.
 - `test/unit/logging/audit/audit-https-connection.test.ts` specifies pinned TLS address, hostname verification, peer refusal, and socket cleanup.
@@ -968,6 +968,25 @@ and live endpoint release checks remain separate work.
 
 The complete candidate's review evidence records execution results. Test source
 alone does not establish a passing local gate or Internet reachability.
+
+**Saved customer audit destination — settings and S2-02b Test candidate**
+
+The [Test record](../implementation/admin-s2-02b.md) describes the public operation,
+fixed bounds, and evidence limits. These are executable specifications; the
+complete candidate review records their local results.
+
+- `test/acceptance/logging/hosted-destination-settings.test.ts` specifies current password-authenticated Admin access, native protected Save, tenant and revision refusal, None/Bearer state, and safe unconfirmed Save recovery.
+- `test/unit/logging/destination-settings-service.test.ts` specifies public projection, tenant-bound credential recovery, exact endpoint/token validation, semantic no-op, stale Save refusal, and late commit handling.
+- `test/acceptance/logging/audit/destination-test.test.ts` specifies one labelled synthetic event from a disabled saved revision and suppression after that revision changes, with no settings write.
+- `test/acceptance/logging/hosted-destination-test.test.ts` specifies disabled saved None/Bearer Tests through hosted browser sessions at root and prefixed paths, unsaved edits, obsolete/unconfirmed result suppression, and Origin/CSRF/tenant/current Admin refusal.
+- `test/unit/logging/audit/destination-test.test.ts` specifies one full saved pre-read, saved credential use, unsaved/stale refusal, typed outcomes, post-read suppression, cancellation, five-second deadline, and retained four-slot Test admission while its callback or store reads remain pending.
+- `test/unit/html/logging-test-routes.test.ts` specifies trusted tenant/actor forwarding, method/Origin/CSRF/current Admin checks, exact fields, cancellation, and fixed safe text for operation and sender outcomes.
+- `test/integration/hosted-admin/account-routes-logging.test.ts` specifies current password Admin access before real settings/Test route collaboration, trusted actor/tenant forwarding, refreshed cookies, revoked access, and secret-safe failures.
+- `test/integration/logging/audit/audit-sender.runtime.ts` also specifies real routes, settings service, codec, sender, DNS/TLS, and Collector collaboration for disabled saved None/Bearer destinations. A supplied store and decided Admin context are its boundaries. It checks synthetic labels and unchanged settings. Run the complete `npm run test:logging:collector` group; its isolated public-shaped network is not proof of public Internet egress.
+
+The PostgreSQL settings group remains `npm run test:logging:postgres`. Neither
+controlled Collector proof nor a successful Test proves continued delivery or
+durable storage. Tool/admin capture and aggregate queue bounds belong to S2-03.
 
 **System sink contract** (`test/acceptance/logging/system/system-log-sink.test.ts`, `test/unit/logging/system/system-logger.test.ts`)
 

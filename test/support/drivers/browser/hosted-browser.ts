@@ -118,13 +118,14 @@ export function listenerTransport(listenUrl: URL): BrowserTransport {
 // Reads the submitted hidden fields and checked radios, with the button text. Visible fields are filled by the caller.
 export function formsIn(html: string): PageForm[] {
   const forms = html.matchAll(/<form method="post" action="([^"]*)">([\s\S]*?)<\/form>/g);
-  return [...forms].map(([, action = '', content = '']) => ({
-    action: decodeHtml(action),
-    fields: Object.fromEntries([...content.matchAll(/<input type="(hidden|radio)" name="([^"]*)" value="([^"]*)"([^>]*)>/g)]
+  return [...forms].flatMap(([, action = '', content = '']) => {
+    const fields = Object.fromEntries([...content.matchAll(/<input type="(hidden|radio)" name="([^"]*)" value="([^"]*)"([^>]*)>/g)]
       .filter(([, type, , , attributes = '']) => type === 'hidden' || /\bchecked\b/.test(attributes))
-      .map(([, , name = '', value = '']) => [decodeHtml(name), decodeHtml(value)])),
-    label: decodeHtml(/<button type="submit">([^<]*)<\/button>/.exec(content)?.[1] ?? ''),
-  }));
+      .map(([, , name = '', value = '']) => [decodeHtml(name), decodeHtml(value)]));
+    return [...content.matchAll(/<button type="submit"([^>]*)>([^<]*)<\/button>/g)].map(([, attributes = '', label = '']) => ({
+      action: decodeHtml(/\bformaction="([^"]*)"/.exec(attributes)?.[1] ?? action), fields, label: decodeHtml(label),
+    }));
+  });
 }
 
 // The form of a page with this button text. The message gives only the button texts, because the fields hold the form

@@ -36,12 +36,14 @@ flowchart TB
   context_thermus["Software system: Thermus<br/>Authorized web-to-Markdown tools and account UI"]
   context_workos["External system: WorkOS / AuthKit<br/>Hosted identity and organizations"]
   context_public["External systems: public websites<br/>Includes Brave HTML search"]
+  context_collector["External system: customer Collector<br/>Receives an explicit saved-destination Test"]
   context_customer -->|uses tools through client| context_client
   context_customer -->|opens account and connection pages| context_thermus
   context_operator -->|configures installation / manages local accounts| context_thermus
   context_client -->|requests page fetch and search| context_thermus
   context_thermus -->|uses hosted identity and organizations| context_workos
   context_thermus -->|fetches public content| context_public
+  context_thermus -->|OTLP HTTP JSON / HTTPS Test| context_collector
 ```
 
 ## arc42 building-block view
@@ -65,12 +67,14 @@ flowchart TB
   end
   hosted_workos["External system: WorkOS / AuthKit<br/>Identity and organization services"]
   hosted_public["External systems: public websites<br/>Includes Brave HTML search"]
+  hosted_collector["External system: customer Collector<br/>Receives one synthetic Test event"]
   hosted_user -->|uses in browser| hosted_portal
   hosted_client -->|MCP over HTTP / bearer token| hosted_server
   hosted_portal -->|HTTP account routes| hosted_server
   hosted_server -->|serves portal assets over HTTP| hosted_portal
   hosted_server -->|SDK HTTPS / JWT key set| hosted_workos
   hosted_server -->|plain pg / verified TLS when configured| hosted_settings
+  hosted_server -->|explicit Test / OTLP HTTP JSON over HTTPS| hosted_collector
   hosted_server -->|execFile / stdout JSON| hosted_renderer
   hosted_renderer -->|HTTP / HTTPS page requests| hosted_public
 ```
@@ -115,7 +119,7 @@ roots, responsibilities, and public contracts.
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (settings service and runtime) |
+| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (settings, saved-destination Test, and runtime) |
 | Local server addition | `better-auth` |
 | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
 | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
@@ -234,26 +238,29 @@ form destinations. The portal uses a supplied current active-organization name
 read for workspace display; an absent or blank name returns unavailable rather
 than a fallback identity. Profile data does not grant access.
 
-### Selected C4 components: hosted Audit logs settings in the Node server
+### Selected C4 components: hosted Audit logs settings and Test in the Node server
 
 Scope: one hosted Node server container. Current Admins read and save their
-organization's destination through web routes. PostgreSQL is a supporting Level 2
-container. WorkOS remains the identity and organization authority.
+organization's destination and test its saved revision through web routes.
+PostgreSQL is a supporting Level 2 container; the customer Collector is an
+external system. WorkOS remains the identity and organization authority.
 
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph storage_server["Container: Thermus Node server · hosted"]
     storage_app["app · TypeScript<br/>Compose service<br/>Own SQL lifetime"]
-    storage_web["web · TypeScript<br/>Audit logs read / Save<br/>Admin and request checks"]
+    storage_web["web · TypeScript<br/>Audit logs read / Save / Test<br/>Admin and request checks"]
     storage_identity["identity · TypeScript<br/>Access contracts"]
-    storage_logging["audit-logs · TypeScript / pg<br/>Validate and protect token<br/>Atomic revision Save"]
+    storage_logging["audit-logs · TypeScript / pg<br/>Validate and protect token<br/>Atomic Save; saved-revision Test"]
   end
   storage_data[("L2: PostgreSQL<br/>Private tenant settings")]
+  storage_collector["External system: customer Collector<br/>One synthetic Test / OTLP HTTP JSON"]
   storage_app -.->|supplies| storage_web
   storage_app -.->|service / lifetime| storage_logging
   storage_web -.->|source dependency| storage_identity
-  storage_web -->|tenant read / Save| storage_logging
+  storage_web -->|trusted tenant read / Save / Test| storage_logging
   storage_logging -->|SQL / verified TLS| storage_data
+  storage_logging -->|saved Test only / HTTPS POST| storage_collector
   style storage_server fill:#fafafa,stroke:#777777,color:#222
 ```
 
@@ -279,32 +286,35 @@ The native browser response offers only a GET saved-state link, with no Save
 form or automatic retry. It adds no server-wide or session write hold. Every
 later Save, including a manual old-form submission and a late commit, remains
 subject to the atomic expected-revision rule.
-Endpoint validation checks syntax and literal addresses; actual-connection egress
-checks and Collector delivery belong to later work. No provider SDK enters the
+Save validates endpoint syntax and literal addresses. Test uses the sender's
+actual-connection address and TLS checks. No provider SDK enters the
 [store contract](../src/logs/audit/destination-settings-store.ts).
 
 ### Selected C4 components: system and audit logs in the Node server
 
-Scope: one Thermus Node server container. Solid arrows show runtime calls or
-composition. Dashed arrows show type-only source dependencies. Audit event
-projection and the one-shot Collector sender are implemented. Neither has a
-production event capture or export dispatch caller.
+Scope: one Thermus Node server container. Solid arrows show runtime calls;
+thick arrows show composition. Dashed arrows show type-only source dependencies.
+The saved-destination Test uses the sender in production. Tool and administration
+event projection has no production capture or export dispatch caller.
 
 ```mermaid
 flowchart TB
   subgraph logs_server["Container: Thermus Node server"]
-    logs_app["Component: app<br/>Compose system diagnostics<br/>Compose hosted audit settings / TypeScript"]
+    logs_app["Component: app<br/>Compose system diagnostics<br/>Compose hosted audit settings and Test / TypeScript"]
     logs_mcp["Component: mcp<br/>Tool completion diagnostics / TypeScript"]
     logs_system["Component: system-logs<br/>Internal diagnostics with caller location<br/>Console and OTel adapters / TypeScript"]
-    logs_audit["Component: audit-logs<br/>Explicit audit event projection - unwired<br/>Destination service and settings; one-shot OTLP sender<br/>TypeScript, pg, and Node TLS"]
+    logs_audit["Component: audit-logs<br/>Explicit audit event projection - unwired<br/>Destination settings and Test; one-shot OTLP sender<br/>TypeScript, pg, and Node TLS"]
+    logs_web["Component: web<br/>Admin read / Save / Test routes / TypeScript"]
     logs_org["Component: organizations<br/>Administration change outcomes / TypeScript"]
   end
   logs_collector["External system: customer Collector<br/>Receives audit records / OTLP HTTP JSON over HTTPS"]
   logs_app -->|constructs and calls internal logger| logs_system
   logs_mcp -->|calls supplied SystemLog| logs_system
-  logs_app ==>|supplies settings service; owns runtime| logs_audit
+  logs_app ==>|composes settings / Test service; owns SQL runtime| logs_audit
+  logs_app ==>|supplies settings service| logs_web
+  logs_web -->|trusted tenant read / Save / Test| logs_audit
   logs_audit -.->|ChangeOutcome type only| logs_org
-  logs_audit -->|explicit sender invocation only: POST one event| logs_collector
+  logs_audit -->|saved Test: POST one synthetic event| logs_collector
 ```
 
 HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-logger.ts)
@@ -334,13 +344,31 @@ there is no SQL audit event writer.
 The event API currently carries metadata only. S2-03a must add bounded, redacted
 MCP inputs and final public results before production capture. The customer
 feature will export to the organization's Collector configured by its Admins;
-there is no in-app event viewer in Slice 2. Web reads and saves through the
-destination service. Storage, credential protection, event projection, and the
-isolated sender share the audit owner.
-No production caller connects settings or event projection to the sender.
+there is no in-app event viewer in Slice 2. Web reads, saves, and tests through
+the destination service. Storage, credential protection, event projection, and
+the sender share the audit owner. The Test operation connects saved settings to
+the sender; tool and administration event projection remains unwired.
 `DestinationSettingsStore` stores endpoint, auth, enabled state, encrypted
 credential, and revision. It is a settings port, separate from AuditEventSink;
 the Slice 2 PostgreSQL settings store holds no audit history or event buffer.
+
+The [Test operation](../src/logs/audit/destination-settings-service.ts) takes the
+trusted tenant and actor from the protected web route. It compares submitted
+fields with one fresh full saved version, decrypts its credential, and sends one
+`audit.destination.test` event even when export is disabled. It neither calls
+Save nor changes Enable. A fresh post-settlement read must confirm the same
+revision before a sender outcome can leave the service. A changed or absent
+revision suppresses it; a failed read gives an unconfirmed result. No SQL lock
+spans the network attempt. A Save can race an attempt; sent data cannot be recalled.
+
+[DestinationTestLifetime](../src/logs/audit/destination-test.ts) permits four
+active operations per service and gives the caller a five-second total deadline.
+Cancellation reaches the sender. A cancelled or timed-out operation retains its
+Test slot until its callback, including late store reads, settles. Late reads
+cannot start a send. The sender can settle its caller before native DNS cleanup;
+its separate sender slot stays occupied until that work ends.
+The operation has no queue, retry loop, result history, or background polling.
+The later capture and dispatch work must supply shared aggregate delivery bounds.
 
 The isolated [OtlpAuditSender](../src/logs/audit/otlp-audit-sender.ts) accepts a
 supplied destination/auth record, projected AuditEvent, and optional AbortSignal.
@@ -433,7 +461,7 @@ flowchart TB
   tools --> fetching
   fetching --> external_web
   runtime -.->|construct, serve, record, close| interfaces
-  interfaces -->|web reads and saves tenant settings| runtime
+  interfaces -->|web reads / saves / tests tenant settings| runtime
   runtime -->|audit destination settings SQL| settings_data
 ```
 
@@ -450,8 +478,9 @@ search uses Brave HTML rather than a separate external API. Within the runtime
 group, app owns composition and lifetimes, config validates settings, HTTP serves
 the composed handler, and system-logs formats internal engineering diagnostics.
 Audit-logs owns the optional hosted settings service, credential protection,
-store, and bounded SQL runtime. Web calls the service for the trusted current
-tenant. The separate audit event API has no production capture or export caller.
+store, bounded SQL runtime, and saved-destination Test. Web calls the service
+for the trusted current tenant and actor. Test sends one synthetic event; the
+separate tool and administration event API has no production capture or export caller.
 
 An **import dependency** points from an importer to the component whose module
 it imports. The rules count runtime and whole-statement type-only imports
@@ -745,6 +774,8 @@ flowchart TB
   end
   deploy_settings[("Optional managed PostgreSQL<br/>Private thermus_admin schema<br/>Selected Supabase target; rollout unverified")]
   deploy_hosted_node -->|pg / verified TLS when configured| deploy_settings
+  deploy_collector["External system: customer Collector<br/>Saved-destination Test / OTLP HTTP JSON"]
+  deploy_hosted_node -->|explicit Test / HTTPS| deploy_collector
   deploy_workos["External system: WorkOS / AuthKit<br/>HTTPS identity / organization services"]
   deploy_public["External systems: public websites<br/>HTTP / HTTPS pages and Brave HTML"]
   deploy_hosted_node -->|HTTPS SDK / key set| deploy_workos
@@ -803,7 +834,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, tenant destination validation and credential protection, atomic settings revisions, and bounded one-shot Collector requests. | AuditLog event methods and AuditEventSink; public destination-settings service, neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender. Web reads and saves settings. The metadata-only event API and sender have no production capture or dispatch caller. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, tenant destination validation and credential protection, atomic settings revisions, bounded saved-destination Tests, and one-shot Collector requests. | AuditLog event methods and AuditEventSink; public destination-settings service and Test outcomes, neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender. Web reads, saves, and tests settings. Tool and administration events have no production capture or dispatch caller. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
