@@ -49,3 +49,8 @@ exceptions:
     bound: 65
     reason: One sender owns attempt order, admission, caller deadline, and physical-work lifetime. Functions have at most four paths. Keeping these small operations together makes abandoned DNS and socket work visible until disposal.
     expires: 2026-12-23
+  - function: src/logs/audit/otlp-audit-encoding.ts#encodeAuditEvent
+    metric: crap
+    bound: 20
+    reason: Verified capture records the emitted encoder called 29 times with full emitted coverage, but cannot bind that coverage to its source identity. The four source paths bound CRAP to [4, 20], so the new-function target of 15 is unproved. Focused encoding and real Collector cases cover behavior; keep the small wire boundary without editing coverage or splitting it to evade the mapping limit.
+    expires: 2026-12-23
