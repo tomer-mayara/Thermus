@@ -1,18 +1,26 @@
 # S2-04 integrated audit verification and rollout
 
-This development candidate is stacked on S2-03c in
-[PR #244](https://github.com/tomer-mayara/Thermus/pull/244). It prepares the
+This work follows S2-03c in [PR #244](https://github.com/tomer-mayara/Thermus/pull/244).
+PR #245 is the complete Slice 2 integration candidate against main. It prepares the
 [integrated verification and owner release work](../design/organization-admin-plan.md#s2-04--integrated-proof-owner-rollout-and-release).
 Source implementation, controlled proof, owner setup, and release are separate
 claims. This record does not mark S2-04 done or authorize deployment.
 
 The [24 October stack review](../design/organization-admin-plan.md#slice-2-review-and-remaining-work)
-found a redaction defect in inherited S2-03a: a URL credential can cause adjacent
-public text to be removed. It remains a required source correction. PR #245 was
-returned to Draft for the plan update and pending correction/review. The prior
-controlled proofs below remain evidence of the cases they ran, not a merge pass
-for this uncovered case. Stack repair, current required checks, and independent
-human approval remain separate from the activation ledger below.
+found a redaction defect in inherited S2-03a: a URL credential could remove
+adjacent public JSON fields or Markdown syntax. The #245 correction adds failing
+acceptance and unit cases, then preserves recognized enclosing boundaries while
+keeping complete query-value redaction for validated URLs and ambiguous text.
+The [correction record](admin-s2-03a.md#redaction-correction) states its syntax and
+performance limits. Current required checks and final-head human review remain
+separate from the activation ledger below.
+
+The graph check confirms that #245 contains current main and all nine stack
+heads, including #238 through #241. PR240 already resolved the old #237/main
+conflicts. Merge the full candidate once with a merge commit and verify that the
+included PRs are marked merged; no separate upstream repair or rebase is needed.
+Main's branch configuration has no required GitHub status checks, and the
+repository has no CI workflows. The required local gates remain in force.
 
 The public browser, MCP, and Collector journey characterizes existing behavior.
 The missing export help was specified by failing acceptance and focused unit
@@ -25,10 +33,10 @@ The [logging object CR](logs-object-refactor-change-request.md) is implemented
 in PRs #240, #241, and #244 and restacked through this candidate. System output
 uses explicit sinks, settings require a sender, and held-close sender cases
 characterize payload clearing and settlement. The original help, integrated
-journey, owner ledger, and later redaction block are retained. This restack
-adds no runtime behavior. Current-candidate checks and reviews are recorded
-separately; CR implementation completion does not close the redaction block or
-any merge, activation, or release hold.
+journey and owner ledger are retained. The structural CR did not change redaction;
+the separate correction belongs to merge preparation. Current-candidate
+checks and reviews are recorded separately. Neither CR completion nor the
+redaction fix supplies activation or release approval.
 
 ## Verification fixture cleanup
 
@@ -40,10 +48,11 @@ were the sole cause of the disk failure.
 The disposable PostgreSQL fixture now uses `docker rm -f --volumes` at cleanup
 to remove its anonymous data volume with its container. This repairs a test
 resource lifetime; production architecture and storage policy do not change.
-The manager reruns the complete selected checks after resource cleanup. The
-redaction correction and all merge, activation, and release holds remain open.
+The manager reruns the complete selected checks after the final source correction.
+The PR records their results and the current head. Activation and release holds
+remain in the ledger.
 
-## Development proof
+## Historical development proof before the redaction repair
 
 - The dedicated Collector gate passes all nine cases, including the integrated
   password-Admin browser journey: disabled Save, one saved Test, Enable, an
@@ -62,8 +71,9 @@ redaction correction and all merge, activation, and release holds remain open.
   portal tests, type checking, the portal build, 12 real PostgreSQL cases, and
   the nine Collector cases. The PR and `ast-report/s2-04-final/README.md` retain
   the final candidate SHA, selected container/build gates, quality results,
-  architecture review, and remaining holds. Test execution used the working
-  source that is committed in this candidate; the evidence retains that timing.
+  architecture review, and remaining holds for that earlier candidate. Those
+  runs used its working source before commit; their retained inputs and timing
+  do not establish passes for the later redaction repair.
 
 Development evidence is under `ast-report/s2-04-development/`; complete-candidate
 results are under `ast-report/s2-04-final/`. These records do not mark the ticket

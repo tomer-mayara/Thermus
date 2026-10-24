@@ -180,3 +180,71 @@ test('Given quoted or angle credential parameters in search input, when capture 
   assert.equal(event.result.text, 'Public result remains unchanged');
   assert.doesNotMatch(JSON.stringify(event), /PRIVATE|secret/);
 });
+
+for (const [result, expected] of [
+  ['{"url":"https://example.com/?token=PRIVATE","public":"visible"}', '{"url":"https://example.com/?token=[REDACTED]","public":"visible"}'],
+  ['{"message":"See https://example.com/?token=PRIVATE","keep":"KEEP_PUBLIC"}', '{"message":"See https://example.com/?token=[REDACTED]","keep":"KEEP_PUBLIC"}'],
+  ['"https://example.com/?token=PRIVATE"', '"https://example.com/?token=[REDACTED]"'],
+  ['{"https://example.com/?token=PRIVATE":"PUBLIC_VALUE","keep":"KEEP_PUBLIC"}', '{"https://example.com/?token=[REDACTED]":"PUBLIC_VALUE","keep":"KEEP_PUBLIC"}'],
+  ["{'url':'https://example.com/?token=PRIVATE','public':'visible'}", "{'url':'https://example.com/?token=[REDACTED]','public':'visible'}"],
+  ['[visible](https://example.com/?token=PRIVATE) suffix', '[visible](https://example.com/?token=[REDACTED]) suffix'],
+  ['[visible](https://example.com/?token=PRIVATE), suffix', '[visible](https://example.com/?token=[REDACTED]), suffix'],
+  ['[visible](https://example.com/?token=prefix(PRIVATE-tail)), suffix', '[visible](https://example.com/?token=[REDACTED]), suffix'],
+  ['<https://example.com/?token=PRIVATE> suffix', '<https://example.com/?token=[REDACTED]> suffix'],
+  ['https://example.com/?token="PRIVATE\\"tail" public', 'https://example.com/?token=[REDACTED] public'],
+  ["https://example.com/?token='PRIVATE\\'tail' public", 'https://example.com/?token=[REDACTED] public'],
+  ['https://example.com/?token=<PRIVATE> public', 'https://example.com/?token=[REDACTED] public'],
+] as const) {
+  test(`Given a credential URL in public text ${JSON.stringify(result)}, when capture runs, then only the credential value is replaced`, () => {
+    const [event] = capture({ ...context, tool: 'search', input: { query: result, reason: result }, result });
+    if (event?.eventName !== 'mcp.tool.completed') return assert.fail('Expected tool event');
+    assert.deepEqual(event.input, { query: expected, reason: expected });
+    assert.equal(event.result.text, expected);
+    assert.doesNotMatch(event.result.text, /PRIVATE|tail/);
+  });
+}
+
+for (const credential of ['prefix"PRIVATE-tail"', "prefix'PRIVATE-tail'", 'prefix<PRIVATE-tail>', 'PRIVATE(value)[with]{punctuation}']) {
+  test(`Given a validated fetch URL with raw value ${credential}, when capture runs, then its complete query credential is removed`, () => {
+    const url = `https://example.com/?token=${credential}&public=visible`;
+    const [event] = capture({ ...context, tool: 'getURLAsMarkdown', input: { url, reason: 'Read public content' }, result: 'Public result' });
+    if (event?.eventName !== 'mcp.tool.completed') return assert.fail('Expected tool event');
+    assert.deepEqual(event.input, { url: 'https://example.com/?token=[REDACTED]&public=visible', reason: 'Read public content' });
+  });
+}
+
+test('Given the result byte limit cuts a quoted URL credential after an escape, when capture runs, then its full captured value is removed', () => {
+  const prefix = 'https://example.com/?token="PRIVATE-' + 's'.repeat(80) + String.fromCharCode(92);
+  const result = '🦎'.repeat((AUDIT_CAPTURE_LIMITS.resultBytes - prefix.length) / 4) + 'x'.repeat((AUDIT_CAPTURE_LIMITS.resultBytes - prefix.length) % 4) + prefix + 'x"';
+  const [event] = capture({ ...context, tool: 'search', input: { query: 'query', reason: 'why' }, result });
+  if (event?.eventName !== 'mcp.tool.completed') return assert.fail('Expected tool event');
+  assert.doesNotMatch(event.result.text, /PRIVATE|ssssss/);
+  assert.match(event.result.text, /REDACTED/);
+  assert.ok(event.result.text.isWellFormed());
+  assert.ok(event.result.capturedBytes <= AUDIT_CAPTURE_LIMITS.resultBytes);
+  assert.equal(event.result.capturedBytes, Buffer.byteLength(event.result.text));
+  assert.equal(event.result.originalBytes, Buffer.byteLength(result));
+  assert.equal(event.result.truncated, true);
+});
+
+for (const value of ['prefix"PRIVATE-tail', 'prefix(PRIVATE-tail)', '"first"PRIVATE-tail', "'first'PRIVATE-tail", '<first>PRIVATE-tail']) {
+  test(`Given an ambiguous URL credential ${value}, when public text is captured, then redaction keeps the full query value private`, () => {
+    const url = `https://example.com/?token=${value}&ok=public`;
+    const [event] = capture({ ...context, tool: 'search', input: { query: `See ${url}`, reason: `Read ${url}` }, result: `Result ${url}` });
+    if (event?.eventName !== 'mcp.tool.completed') return assert.fail('Expected tool event');
+    const safeUrl = 'https://example.com/?token=[REDACTED]&ok=public';
+    assert.deepEqual(event.input, { query: `See ${safeUrl}`, reason: `Read ${safeUrl}` });
+    assert.equal(event.result.text, `Result ${safeUrl}`);
+    assert.doesNotMatch(JSON.stringify(event), /PRIVATE|first|prefix/);
+  });
+}
+
+test('Given an unclosed string of escaped quotes before a credential URL, when capture runs, then the full credential is removed and the prefix stays unchanged', () => {
+  const prefix = '"' + '\\"'.repeat(160);
+  const result = `${prefix}https://example.com/?token=PRIVATE`;
+  const [event] = capture({ ...context, tool: 'search', input: { query: 'public query', reason: 'public reason' }, result });
+  if (event?.eventName !== 'mcp.tool.completed') return assert.fail('Expected tool event');
+  assert.equal(event.result.text, `${prefix}https://example.com/?token=[REDACTED]`);
+  assert.equal(event.result.truncated, false);
+  assert.equal(event.result.capturedBytes, Buffer.byteLength(event.result.text));
+});

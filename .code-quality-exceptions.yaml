@@ -107,7 +107,7 @@ exceptions:
   - path: src/logs/audit/audit-content.ts
     metric: mi
     bound: 64
-    reason: Recognized credential redaction and the bounded exported text copy share one content-safety owner. Four short functions have at most four paths. Byte accounting reserves JSON escaping and the marker, and regressions cover split credentials and Unicode. A general serializer or separate file for each pattern would hide the fixed policy.
+    reason: Recognized credential redaction and the bounded exported text copy share one content-safety owner. Six short functions have at most six paths. Recognized bounded text enclosures preserve public syntax; validated URLs and ambiguous text retain full query-value redaction. Byte accounting reserves JSON escaping and the marker. Regression cases cover raw punctuation, escaped or split credentials, Unicode, and malformed enclosures. A general document parser or separate file for each pattern would hide the fixed policy.
     expires: 2026-12-24
   - path: src/logs/audit/audit-event-projection.ts
     metric: mi

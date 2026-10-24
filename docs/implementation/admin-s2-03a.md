@@ -79,6 +79,31 @@ Authorization headers, sign-in forms, and logging credentials are not capture
 inputs. Fixed pattern recognition cannot promise that arbitrary free text is
 secret-free. No general text serializer or product input-size change is added.
 
+### Redaction correction
+
+The final #245 integration candidate corrects a later review finding: a recognized
+URL credential could consume a following public JSON field or Markdown delimiter.
+The public `AuditLog` acceptance case failed first. Focused unit cases then cover
+quoted values and URI keys, public prefixes, ordinary Markdown links and titles,
+autolinks, raw URL punctuation, and escaped or incomplete credential values.
+The focused run passed 59 tests and the affected audit groups passed 282. The
+complete-candidate PR review owns the separate full-gate results.
+
+Validated `input.url` uses full query-value redaction. Text copies preserve complete
+quoted enclosures, ordinary Markdown destinations with at most one inner
+parenthesis level, and complete autolinks. Unsupported or incomplete markup uses
+the conservative full-value rule and can still lose adjacent public syntax.
+This bounded recognizer does not parse complete JSON or Markdown documents.
+It preserves the credential-name policy, event shape, byte limits and original
+product result. It adds no transport or storage behavior.
+
+Review also rejected a draft that retried escaped quotes as opening quotes.
+The fixed matcher excludes those openings. A local 64 KB malformed-string sample
+fell from about 1.5 seconds to below 2 milliseconds; retained manual samples are
+regression evidence, not a latency guarantee. No timing assertion was added to
+the behavior suite. Red/green logs and review evidence are retained under
+`ast-report/merge-stack/redaction-repair/` in the integration workspace.
+
 The [OTLP encoder](../../src/logs/audit/otlp-audit-encoding.ts) copies the new named
 input/result fields and Admin action event into its existing bounded request.
 This extends the declared event format; no customer completion dispatch caller

@@ -1,5 +1,5 @@
 import type { AdministrationChange, AuditContext, AuditEvent, DestinationChange, ToolCompletion, ToolInput } from './audit-log.ts';
-import { AUDIT_CAPTURE_LIMITS, captureAuditResult, redactAuditText } from './audit-content.ts';
+import { AUDIT_CAPTURE_LIMITS, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
 
 const toolStatuses = new Set(['success', 'access_denied', 'fetch_failed', 'processing_failed', 'cancelled', 'busy', 'search_failed', 'withheld']);
 const changeOutcomes = new Set(['applied', 'unchanged', 'denied', 'stale', 'not-pending', 'address-in-use', 'unsupported', 'failed', 'unknown']);
@@ -41,7 +41,7 @@ function inputOf(completion: ToolCompletion): ToolInput | undefined {
   const authority = /^https?:\/\/([^/?#]+)/i.exec(url)?.[1];
   if (authority === undefined || /[@\\]/.test(authority)) return undefined;
   try { if (new URL(url).hostname === '') return undefined; } catch { return undefined; }
-  return { tool: 'getURLAsMarkdown', input: { url: redactAuditText(url), reason: redactAuditText(reason) } };
+  return { tool: 'getURLAsMarkdown', input: { url: redactAuditUrl(url), reason: redactAuditText(reason) } };
 }
 
 export function projectToolCompletion(completion: ToolCompletion): AuditEvent | undefined {

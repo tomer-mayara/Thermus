@@ -4,9 +4,10 @@ Plan reviewed: 24 October 2026. Slice 1 implementation is merged; its release
 prerequisites remain. The combined Slice 2 candidate includes settings, Save/Test,
 capture, snapshots, delivery, visible help, and controlled integration proof.
 The [Slice 2 review and remaining work](#slice-2-review-and-remaining-work)
-records a required redaction correction, stack repair, and merge checks.
+records the redaction correction, the single stack integration path, and merge checks.
 The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
-owns the separate activation requirements. Slice 2 is not merged or released.
+owns the separate activation requirements. PR #245 records the code integration;
+Slice 2 release remains separate.
 Ticket records describe their historical increments; their earlier missing
 features are not the status of the combined candidate. Merged does not mean
 released, and passing controlled tests does not complete owner gates.
@@ -1546,23 +1547,22 @@ review conclusion within that scope, not proof that no other defect exists.
 
 | Finding | Required action | State |
 |---|---|---|
-| P2: URL credential redaction consumes adjacent public content. A JSON result with `?token=PRIVATE` followed by a public sibling field loses that field; a Markdown link can lose its closing text. The admitted result reports `truncated: false`. | Complete the [S2-03a correction](#s2-03a-correction--preserve-public-text-around-redacted-urls) before merging the capture change or its descendants. | Reproduced through `AuditLog` on Node 24; not fixed by this plan update. |
-| #237 conflicts with current main in `.pr-impact.json` and the base metrics record. | Update #237 from main, refresh its impact declaration, and keep main's immutable metrics record. Carry the parent correction through the stack and check each resulting diff. | Merge preparation remains. The combined top branch already contains current main; that does not make #237 mergeable. |
-| #238 conflicts with the newer #239, but #241 already includes its head `e64a49c6` through merge `d499eee8`. | Deliver S2-01b through #241. Its review must cover both inherited settings and Test. After that inclusion reaches main, verify #238 is merged or close it as included. Retain its evidence. | Do not separately repair and merge #238 merely to duplicate that inclusion. |
-| All nine PRs have no recorded review submissions or inline review threads. Required remote CI remains unverified after the connector access denial. | Verify required checks, refresh candidate-bound quality/architecture evidence after fixes or restacking, and obtain independent authorized human T2 approval of the resulting candidates. | Previous local passes and agent sign-off do not satisfy these merge requirements. |
+| P2: URL credential redaction consumes adjacent public content. A JSON result with `?token=PRIVATE` followed by a public sibling field loses that field; a Markdown link can lose its closing text. | Complete the [S2-03a correction](#s2-03a-correction--preserve-public-text-around-redacted-urls) in the final integration candidate. | Corrected in #245 after failing acceptance and unit cases. Complete quoted values, ordinary Markdown links and autolinks retain their boundaries; unsupported text keeps conservative redaction. The focused and affected audit groups pass; final gates are recorded with the PR. |
+| #237 conflicts with current main in `.pr-impact.json` and the base metrics record. | Use the complete #245 candidate as the merge target. PR240 already merged main and kept main's immutable metrics record. | The 24 October graph check confirms that main and all nine PR heads are ancestors of #245. Its merge is clean; no separate #237 repair is needed. |
+| #238 conflicts with the newer #239, but #241 includes its exact head `e64a49c6` through merge `c31f499f`. | Preserve that join in #245. After integration, verify #238 is marked merged through #245 and retain its evidence. | No separate repair, rebase, or duplicate settings implementation is needed. |
+| Required checks and review must cover the complete merge candidate. | Refresh local gates, quality and architecture evidence after the correction, and record independent authorized human T2 approval for the final head. | The owner reports architect approval of the reviewed stack. Main has no required GitHub status checks and the repository has no CI workflows; the denied status endpoint does not establish a missing required check. Local gates remain required. |
 | Some ticket prose still described Test/delivery as future work or checks as never run. | Use combined-candidate status here and preserve historical ticket records as history. | Corrected in this review update. |
 
-The planned delivery path is **#237 → #239 → #240 → #241 → #242 → #243 →
-#244 → #245**, with **#238 included by #241**. Preserve that existing join;
-there is no need to create a second settings implementation or a new PR solely
-to make the history linear. Check ancestry and current refs again when preparing
-the merges. Do not merge a child into its parent merely to close a PR; the
-delivery target is main after its dependencies are present. This review performs
-no rebase, merge, deployment, live setup, or source fix. PR #245 is Draft while
-the correction and final review remain open.
+The dependency history is **#237 → #239 → #240 → #241 → #242 → #243 →
+#244 → #245**, with **#238 included by #241**. Deliver the complete stack by
+merging #245 into main with a merge commit. Preserve the ancestor heads and the
+#238 side parent. Recheck ancestry and current refs, then reconcile the included
+PRs as indirectly merged. Do not squash away the reviewed history or merge a
+broken intermediate candidate merely to close a PR. PR #245 remains Draft until
+its correction and required local checks are complete.
 
-Fix the redaction defect, repair the affected stack, then refresh the applicable
-checks and obtain required review before merge. Complete the linked S2-04 ledger
+The redaction correction is part of #245. Refresh its complete-candidate checks
+and required review before the single stack merge. Complete the linked S2-04 ledger
 before activation. Its live setup and owner obligations do not add code-merge
 prerequisites while the feature stays inactive.
 Absent server settings leave storage/export unavailable. The new-settings form
@@ -2024,22 +2024,22 @@ below. Controlled-sink evidence alone does not establish snapshot loading or del
 ##### S2-03a correction — Preserve public text around redacted URLs
 
 This is a correction to S2-03a, not a new export feature or a separate slice.
-The URL-value expression in `src/logs/audit/audit-content.ts` consumes closing
+The earlier URL-value expression in `src/logs/audit/audit-content.ts` consumed closing
 JSON/Markdown syntax and unrelated public text after a recognized credential.
-The following case is missing from the current suite and must fail before the fix:
+The following missing case failed before the correction:
 
 ```gherkin
 Scenario: Redact a URL credential without deleting surrounding public output
   Given an enabled tenant and validated input and a result with token=PRIVATE in a URL
   And the URL is enclosed in JSON or Markdown followed by KEEP_PUBLIC
-  When the public MCP completion is captured and encoded for Audit delivery
+  When the public completion is captured for Audit delivery
   Then PRIVATE is absent from the exported input and result
   And KEEP_PUBLIC and the unambiguous enclosing syntax are preserved
   And the client receives its original complete result
   And the small exported result has correct byte counts and truncated=false
 ```
 
-Ordered TDD work:
+BDD/TDD record:
 
 1. Add the failing public-boundary acceptance case above. Use the existing
    MCP/audit driver; do not add a test framework or duplicate the full journey.
@@ -2053,7 +2053,23 @@ Ordered TDD work:
    credential text redacted. Add no general serializer or per-tenant setting.
 4. Refactor with the focused tests green, then rerun the acceptance and selected
    complete-candidate gates. Retain the new red/green evidence and refresh the
-   affected PR review. The current plan-only review does not close this correction.
+   affected PR review.
+
+The final #245 correction follows this sequence. Its acceptance case checks exact
+public JSON/Markdown output, credential removal, and byte counts through
+`AuditLog`. Focused unit cases cover query, reason, result, raw URL punctuation,
+escaped and incomplete values, URI keys, and top-level quoted strings. The final
+focused run passed 59 cases; the affected audit groups passed 282. The manager
+retains red/green logs with the current candidate's separate full-gate evidence.
+
+A validated fetch URL uses the full query-value rule directly. Text recognition
+uses complete quoted values, ordinary Markdown destinations with at most one
+inner parenthesis level, and autolinks. Unrecognized or incomplete syntax keeps
+the conservative full-value rule and can still lose adjacent public syntax.
+This is not a general document parser or a promise that arbitrary text is free
+of secrets. Escaped quotes cannot start repeated enclosure scans; manual malformed
+input checks confirm that the draft's slow scan was removed. Those timing samples
+are not a latency guarantee.
 
 #### S2-03b — Activity-driven settings snapshots
 

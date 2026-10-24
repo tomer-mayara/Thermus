@@ -902,7 +902,7 @@ not invent that infrastructure.
 
 ## Ownership
 
-The 19 IDs below are stable logical component names. Each root owns its source
+The 20 IDs below are stable logical component names. Each root owns its source
 files recursively. `app` also owns exactly `src/index.ts`. The directories
 `accounts`, `accounts/providers`, `interfaces`, `pipelines`,
 `pipelines/providers`, and `runtime` group components; they do not own code.

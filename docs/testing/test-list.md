@@ -948,6 +948,7 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Keeps caller location in system output; an audit event does not enter that stream
 [V] Preserves the completed action when a synchronous audit sink throws
 [V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
+[V] Redacts credential URLs while preserving adjacent public JSON fields and ordinary Markdown syntax, with exact exported byte counts
 
 **Customer capture and operator content isolation — S2-03a candidate**
 
@@ -956,7 +957,7 @@ trusted routing, and controlled-sink limits. These specifications capture produc
 content; they establish no client receipt, settings snapshot, or delivery.
 
 - `test/acceptance/mcp/customer-tool-capture.test.ts` specifies final fetch/search text, empty success, safe errors, cancellation, search withholding, tenant isolation against forged metadata, and sink throw/refusal through real MCP HTTP and pipeline collaboration.
-- `test/unit/logging/audit/audit-capture.test.ts` specifies named-field projection, recognized credential fields and URL parameters, unchanged valid input, JSON/UTF-8 budgets, Unicode truncation, metadata refusal, and non-throwing sink admission.
+- `test/unit/logging/audit/audit-capture.test.ts` specifies named-field projection, recognized credential fields and URL parameters, unchanged valid input, JSON/UTF-8 budgets, Unicode truncation, metadata refusal, and non-throwing sink admission. Redaction cases preserve complete quoted values, URI keys, ordinary Markdown links and autolinks; raw URL punctuation and incomplete values remain private. Malformed escaped-quote input has a behavior case and a separate manual performance check.
 - `test/acceptance/logging/audit/administration-capture.test.ts` specifies signed-in invitation and Audit logs Save/Test metadata, separation of synthetic Test records, and preservation of completed writes after sink throw/refusal or an internal recorder failure.
 - `test/integration/hosted-admin/account-routes-audit.test.ts` specifies invitation send/resend/revoke, stale A naming B routing, failed/unconfirmed phases, Audit logs Save/Test without settings-read capture, and isolation from a throwing capture API.
 - `test/unit/organizations/change-records.test.ts` specifies preservation of a completed provider write and original check/provider failure when post-write recording throws.

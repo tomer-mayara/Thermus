@@ -61,3 +61,20 @@ test('Given validated tool content with credential fields and a long Unicode res
   assert.ok(Buffer.byteLength(JSON.stringify(event)) <= 131_072);
   assert.equal(publicResult.includes('result-secret'), true);
 });
+
+test('Given credential URLs beside public JSON and Markdown text, when capture completes, then secrets are removed and adjacent public content stays complete', () => {
+  const events: AuditEvent[] = [];
+  const audit = new AuditLog({ writeAuditEvent: event => { events.push(event); } });
+  const result = '{"source":"https://example.com/?token=PRIVATE-json","title":"Public 🦎"}\n[Public link](https://example.com/?api_key=PRIVATE-markdown "Public title") [Next](https://example.com/?token=PRIVATE-next) public suffix';
+  audit.toolCompleted({ timestamp: '2026-10-23T12:00:00Z', organizationId: 'org-a', actor: { authority: 'workos', subject: 'user-a' }, operationId: 'operation-a', tool: 'getURLAsMarkdown', status: 'success', durationMs: 12,
+    input: { url: 'https://example.com/?token="PRIVATE-input"&public=visible', reason: 'Read the public page' }, result,
+  });
+  assert.equal(events.length, 1);
+  const event = events[0];
+  if (event.eventName !== 'mcp.tool.completed') return assert.fail('Expected tool event');
+  assert.doesNotMatch(JSON.stringify(event), /PRIVATE/);
+  assert.equal(event.result.text, '{"source":"https://example.com/?token=[REDACTED]","title":"Public 🦎"}\n[Public link](https://example.com/?api_key=[REDACTED] "Public title") [Next](https://example.com/?token=[REDACTED]) public suffix');
+  assert.equal(event.result.originalBytes, Buffer.byteLength(result));
+  assert.equal(event.result.capturedBytes, Buffer.byteLength(event.result.text));
+  assert.equal(event.result.truncated, false);
+});

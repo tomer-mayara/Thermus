@@ -66,8 +66,9 @@ synchronous system write failures, nonthrowing audit capture, and sender limits
 and lifetime. The same production sender still serves saved Test and export.
 The private attempt function and transport helpers remain. No attempt class,
 common transport wrapper, logging framework, or production OTel activation was
-added. The known redaction defect remains a separate source correction and block
-in [S2-04](admin-s2-04.md); this CR does not repair or waive it.
+added. This structural CR did not repair or waive the known redaction defect.
+The later #245 merge preparation includes its separate behavior correction,
+with failing specifications and the [S2-03a correction record](admin-s2-03a.md#redaction-correction).
 
 ## Imagined design discussion
 
@@ -359,6 +360,6 @@ with each PR; this CR grants no human approval, ADR, merge, or release decision.
 
 The inherited redaction defect recorded in
 [admin-s2-04](https://github.com/tomer-mayara/Thermus/blob/b5e8ec09ee6a4a357811dcf5b1726119609e9e03/docs/implementation/admin-s2-04.md#L8)
-remains a separate behavior fix. Give that correction its own failing behavior
-specification; do not conceal it inside this structural refactor. Stack merge,
-release, and rollout work are outside this CR.
+was handled as a separate behavior fix in #245, with its own failing acceptance
+and unit specifications. It is not part of this structural refactor. Stack merge,
+release, and rollout work remain outside this CR.
