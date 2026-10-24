@@ -1,10 +1,13 @@
 # System and audit log separation review
 
-Earlier review scope: the log-separation candidate against parent S2-01a commit
-`82f3d6049a23fe10fa9827379fd48863b584dbe3` (PR #237). The PR description and
-local review artifacts bind those earlier results to their recorded candidate.
+Review scope: the complete log-separation candidate, including the SystemLog
+Pick refactor, against parent S2-01a commit
+`82f3d6049a23fe10fa9827379fd48863b584dbe3` (PR #237).
+Source candidate: `5427e7f905a489104e8ec743531b7a1d645e600d`.
 The complete-candidate policy and metrics comparison uses main at
 `bb19a9887f3e58776278e516cce9e7aa18efee5c`, so it also includes parent S2-01a.
+The PR and final review artifacts identify the final candidate. Its input-match
+proof binds any final prose-only commit to this tested source, tests and build inputs.
 
 ## SystemLog type refactor scope
 
@@ -22,10 +25,8 @@ runtime, container, and deployment views remain accurate. The registry source
 link and contract prose change; its Mermaid diagrams do not change. No callable
 contract shape changes, so no L4 detail is needed for this refactor.
 
-The results below describe the earlier log-separation and test-layout candidates.
-They are historical evidence, not validation of the follow-up type refactor.
-The manager must record fresh complete-candidate checks and review eligibility
-for the current head before requesting review or merge.
+The current refactor has passing before/after characterization, emitted-code
+comparison and complete-candidate functional checks, as recorded below.
 
 ## Implemented scope and limits
 
@@ -124,8 +125,8 @@ Policy questions and guarantees:
 Test files now mirror these owners under `test/<type>/logging/system/` and
 `test/<type>/logging/audit/`. Destination settings and storage tests belong to
 audit. All 15 test moves preserve assertions, fixtures, behavior, and gate
-selection. Fresh verification on `b0b52fa4` passed as recorded below; the earlier
-source and class refactor history remains separate.
+selection. The current Pick refactor updates type imports in these paths.
+Earlier source and class refactor evidence remains separate below.
 
 ## Behavior and test evidence
 
@@ -151,59 +152,75 @@ The type assertions compare public members, so private state cannot by itself
 prove separation from system logging. No production caller uses the removed
 role interface or implementation module.
 
-Fresh test-layout verification on `b0b52fa4` passed 64 focused compiled ordinary
-logging tests, 11 PostgreSQL tests, and one live Axiom test with a fresh designated
-test export. The full ordinary suite passed 4,239 backend and 49 portal tests;
-typecheck and the portal build passed. The self-hosted image passed 11 tests,
-and the hosted image passed seven on its first attempt. Its nested
-`build:hosted` groups passed 2,645 backend units, 29 portal units, 20 portal
-acceptance, 1,047 integration, 119 acceptance, and 13 renderer checks. These groups had zero
-failures, cancellations, skips, or todo cases. See the
-[fresh layout verification logs](../../ast-report/logging-test-layout/).
+Current Pick characterization passed **42 tests before and 42 after** the
+refactor. All **eight changed work-slice entry tests** passed. The before/after
+build comparison found **151 retained production JavaScript files byte-identical**,
+no additions, and only the empty `src/logs/system/system-log.js` module removed.
+This identity comparison is against `c8266d69`, not against parent S2-01a.
+See the [current selection and evidence](../../ast-report/system-log-pick/).
 
-In the earlier source refactor, the first hosted-image build timed out during
-startup of the existing `/session` shutdown case, before its SIGTERM assertion.
-The full host suite and host build passed that case. The failed build log is
-retained. The complete image retry passed all seven checks,
-including all 119 build-time acceptance tests and the same startup case. The
-source, timeout, and assertions were unchanged. No other suite ran in this
-worktree during the retry; another workspace shared the local Docker builder.
-The cause of the first startup timeout is not proved.
+| Current complete-candidate gate | Current result |
+| --- | --- |
+| `npm test` | 4,239 backend and 49 portal tests passed |
+| `npm run typecheck` | Passed |
+| `npm run build:user-portal` | Passed |
+| `npm run test:logging:postgres` | 11 passed |
+| `npm run test:container` | 11 passed |
+| `npm run test:container:hosted`, including `build:hosted` and renderer checks | Seven image checks passed on the first attempt; nested groups passed 2,645 backend units, 29 portal units, 20 portal acceptance, 1,047 integration, 119 acceptance and 13 renderer checks |
+| Complete unit coverage for metrics | 2,645 backend and 29 portal unit tests passed |
 
-Hosted-live is not selected: identity, membership, invitation, and authentication
-behavior stay the same. This change replaces their diagnostic type/import only.
-The fresh live Axiom check passed with one designated test export after the test
-move. Local PostgreSQL results do not prove a deployed Supabase migration, grants,
-or backup/restore. Those remain the owner rollout gates in the plan. The local input-match record binds the
-final candidate to the tested source, tests, and build inputs. Later evidence
-updates change prose only.
+All current functional groups had zero failures, cancellations, skips or todo
+cases. Typecheck and the portal build exited zero.
+
+The dedicated Axiom live pass is retained from the `c8266d69` evidence set; it is
+not freshly run for the Pick refactor. That pass used one fresh designated test
+export after the test move. The exporter, live test and helpers are unchanged,
+and retained production JavaScript is byte-identical. Ordinary OTel acceptance
+and interface exports passed in the current ordinary suite.
+
+Earlier hosted-image evidence includes a first build that timed out while
+starting the existing `/session` shutdown case, before its SIGTERM assertion.
+An unchanged complete retry passed all seven image checks and all 119 build-time
+acceptance cases. The original failure and retry logs remain retained; the cause
+was not proved. These are earlier results, separate from the current gate above.
+
+Hosted-live is not selected: identity, membership, invitation and authentication
+behavior stay the same; its support changes only an erased diagnostic type import.
+Offline work-slice cases cover both changed entry modules. Manual live work-slice
+execution is not selected for those erased imports. Local PostgreSQL checks do
+not prove a deployed Supabase migration, grants, backup/restore or OTLP delivery.
+Those remain owner rollout gates in the plan.
 
 ## Quality review
 
-The consolidated AuditLog file has MI **89.56**, above the 85 goal. Fresh complete
-unit coverage passed 2,645 backend and 29 portal tests. The audit constructor and
-both event methods have 100% coverage.
-Contract-only files have no executable MI. Changed or moved files below 85 are:
+The complete metrics process and standalone CRAP command each exited 1 for
+retained goal misses. All four process sections completed, with no tool failure:
+Delta, Review and CRAP report goal misses; Architecture passed. Current unit
+coverage passed 2,645 backend and 29 portal tests. AuditLog has MI **89.56**,
+above its 85 goal, with 100% coverage for its constructor and both event methods.
+Contract-only files have no executable MI. Fifteen changed or moved production
+files remain below 85, with these retained reasons:
 
 | Files | Head MI | Retained reason |
 | --- | --- | --- |
 | app/application.ts; app/hosted-workos-application.ts; index.ts | 54.68; 60.28; 60.27 | Existing composition and resource lifetime; this slice changes logger names/types, not their control flow. |
 | app/fetch-tool.ts; interfaces/mcp/fetch-tool-server.ts | 67.90; 45.88 | Existing tool composition and request handling; type-only boundary replacement does not justify an unrelated split. |
 | interfaces/cli/local-auth-command.ts; runtime/http/fetch-exchange.ts; runtime/http/server.ts | 49.99; 59.47; 68.52 | Existing CLI/HTTP behavior; only the narrow logger type/import changes. |
-| logs/system/system-logger.ts; console-system-logger.ts; otel-system-logger.ts | 54.51; 79.56; 76.84 | Preserved parent formatter and adapters, moved and renamed. No new runtime paths. |
+| logs/system/system-logger.ts; console-system-logger.ts; otel-system-logger.ts | 54.48; 79.56; 76.84 | Preserved parent formatter and adapters, moved and renamed. No new runtime paths. |
 | app/logging-storage.ts | 79.03 | Parent S2-01a optional storage composition; this slice changes imports/types. |
 | logs/audit/bounded-sql-runtime.ts; pg-destination-settings-store.ts | 41.89; 54.21 | Parent SQL admission/deadline/lifetime and atomic revision rules stay with their cohesive owners. |
 | runtime/config/logging-storage-config.ts | 59.99 | Parent validation of URI, key, and CA remains at one configuration boundary. |
 
 These are reasons to retain reviewed code, not claims that the numeric goal
 passes. The parent MI exceptions move with their source paths and keep their
-bounds and expiry dates. All four metrics process sections completed against
-main base `bb19a988`.
-Delta and Review report goal misses, CRAP reports unchanged-function misses,
-and Architecture passed. These are completed assessments, not tool failures.
+bounds and expiry dates. Relative to `c8266d69`, the only file metric delta
+is SystemLogger MI, from 54.512807573 to 54.480817066. The Pick alias adds one
+source line; formatter bodies and emitted JavaScript stay unchanged. The manager
+retains the existing ownership reason. CRAP rows are identical after token-offset
+normalization, and regression findings are identical after line normalization.
 
-The five high MI findings are the two parent SQL classes and three moved system
-logger classes listed above. Retain them for those stated ownership reasons.
+The current review has five high MI findings: the two parent SQL classes and
+three moved system logger classes listed above. Retain them for those stated ownership reasons.
 The three medium aggregate complexity/length findings concern application
 composition and the bounded SQL runtime; those responsibilities and control flow
 are preserved from the parent. A low coupling finding in HTTP server rises to 11
@@ -224,10 +241,10 @@ Thirteen rows have unknown coverage. Three new callbacks have one path each,
 which proves a CRAP bound of 1 to 2; the other ten are unchanged, including the
 two-path `arm` callback with a bound of 2 to 6. No new CRAP exception is required.
 The report keeps these limits and the unchanged unresolved CSS import in its
-global dependency view. The exact owner/import checker reports no undeclared
-facts, forbidden edges, or new owner cycles.
+global dependency view. The current owner/import checker reports no undeclared
+facts, forbidden edges or new owner cycles.
 
-Habit-hooks reports are retained for review, with these scoped dispositions:
+Habit-hooks findings retain these scoped dispositions:
 
 - One oversized function: the existing MCP server factory retains its request
   lifecycle and outcome handling; this slice changes its logger contract.
@@ -244,44 +261,58 @@ Habit-hooks reports are retained for review, with these scoped dispositions:
   integration cases retain their existing responsibilities. The slice changes
   types/imports or one guard, without adding a new responsibility to these files.
 
-The fresh test-layout habit-hooks run exited 1 with the same findings after
-path normalization, including 148 comment findings; it found no new findings.
-The snooze file remains `[]`. Source is unchanged. The metrics and finding
-counts above describe the source review; the PR evidence binds the metrics
-reports to the final candidate.
-The manager reviewed and retained these scoped dispositions and the
-complete-candidate metrics evidence.
+The current habit-hooks run has the same findings after line normalization:
+one oversized function, one parameter finding, one unused-variable finding,
+148 comment findings and five oversized files. It adds no finding. The snooze
+file stays `[]`. The manager reviewed the complete candidate and signed off the
+retained metrics reasons and habit-hooks dispositions. The current metrics
+review has five high, three medium and one low finding, as described above.
 
 ## Review status and local evidence
 
-Independent code/docs review found no concrete blocker in the reviewed scope.
-This agent review is not the independent human approval required for T2.
-The complete-candidate local checker reports T2 Need architect, eligible with
-no evidence blockers or undeclared facts. T2 reasons include the component/event
-contract change, the retained parent datastore boundary, protected policy and
-public surfaces, candidate size, existing exceptions, and retained high findings.
-The full reasons are retained in the machine-readable report. All selected local
-functional, type, and build gates passed. Merge remains blocked pending independent
-authorized human architect approval of the current candidate and retained
-quality findings. An agent review or label does not supply that approval. This
-task does not request merge.
+Independent source review found no concrete blocker in the Pick refactor.
+The manager approved the pinned v9 architecture comparison for source candidate
+`5427e7f905a489104e8ec743531b7a1d645e600d`. All 13 candidate registry Mermaid
+blocks and four retained source/render pairs match v8 byte-for-byte, so its prior
+800px visual inspection applies. The current type refactor changes registry
+prose and its source link only. The full comparison remains cumulative against
+parent S2-01a. L3 and its four notes answer the strongest cumulative AuditLog
+contract question; no additional L4 view is needed.
+
+The source-candidate checker reports **T2 Need architect**, locally eligible,
+with no blockers or undeclared facts. Reasons include the cumulative
+component/event contract change, parent datastore boundary, protected policy and
+public surfaces, candidate size, existing exceptions and retained high findings.
+The machine-readable result retains every reason and policy question. The
+manager signed off code, retained quality reasons and the v9 architecture review.
+All selected current functional gates passed. Local eligibility remains preliminary:
+the PR and final artifacts bind these checks and the final prose-only candidate.
+
+Manager and agent review do not supply the independent authorized human
+architect approval required for T2. Merge needs that approval of the current
+candidate and retained quality findings, plus all applicable resolved checks.
+This task does not request merge.
 
 The following are **local workspace artifacts**, not GitHub download links:
 
 - [Base snapshot](../../ast-report/snapshot-base.json) and
   [head snapshot](../../ast-report/snapshot.json).
-- [Habit-hooks findings](../../ast-report/log-separation/habit-hooks-final.log).
-- [PostgreSQL gate log](../../ast-report/logging-test-layout/postgres.log).
-- [Review tier result](../../ast-report/log-separation/review-tier.json).
+- [Habit-hooks findings](../../ast-report/system-log-pick/habit-hooks.log).
+- [PostgreSQL gate log](../../ast-report/system-log-pick/postgres.log).
+- [Review tier result](../../ast-report/system-log-pick/review-tier-source.json).
 - [Complete metrics process](../../ast-report/process.md), [process outcomes](../../ast-report/process.json),
   [CRAP rows](../../ast-report/crap.json), and [review findings](../../ast-report/review.json).
 - [First hosted-image failure](../../ast-report/log-separation/hosted-container-first.log).
 - [Passing hosted-image retry](../../ast-report/log-separation/hosted-container.log).
-- [Complete check results](../../ast-report/log-separation/checks.json) and
-  [tested input match](../../ast-report/log-separation/input-match.json).
+- [Current functional check results](../../ast-report/system-log-pick/functional-checks.json).
+- [Current quality review](../../ast-report/system-log-pick/quality-review.json) and
+  [habit-hooks comparison](../../ast-report/system-log-pick/habit-comparison.json).
+- The final review artifacts retain the input-match proof for the prose-only final candidate.
 - [Class refactor checks](../../ast-report/audit-class-refactor/) and
   [preserved behavior review](../../ast-report/audit-class-refactor/refactor-review.json).
-- [Architecture review artifacts](../../ast-report/log-separation/architecture/).
+- [Current Pick characterization and emitted-code comparison](../../ast-report/system-log-pick/).
+- [Current v9 architecture comparison and manager review](../../ast-report/log-separation/architecture/v9/).
+- [Earlier architecture review artifacts](../../ast-report/log-separation/architecture/).
 
 The PR description gives the final candidate SHA and the pinned architecture
 comparison. The complete reports and first failed image run remain available
