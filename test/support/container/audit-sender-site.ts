@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { chmod, cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import type { IncomingHttpHeaders } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -79,9 +79,18 @@ async function prepareFiles(directory: string): Promise<void> {
   await mkdir(join(directory, 'app/src/logs/audit'), { recursive: true });
   await mkdir(join(directory, 'app/test/support/processes'), { recursive: true });
   await mkdir(join(directory, 'app/test/support/container'), { recursive: true });
-  for (const name of ['audit-send', 'audit-https-connection', 'public-audit-destination', 'otlp-audit-sender', 'otlp-audit-encoding', 'otlp-audit-request', 'otlp-audit-response', 'destination-credential-codec', 'destination-endpoint', 'destination-settings-service', 'destination-test']) {
+  for (const name of ['audit-send', 'audit-https-connection', 'public-audit-destination', 'otlp-audit-sender', 'otlp-audit-encoding', 'otlp-audit-request', 'otlp-audit-response', 'destination-credential-codec', 'destination-endpoint', 'destination-settings-service', 'destination-test', 'audit-log', 'audit-event-projection', 'audit-content', 'audit-snapshots', 'audit-snapshot-state']) {
     await cp(join(auditSenderRuntime.source, `logs/audit/${name}.${auditSenderRuntime.extension}`), join(directory, `app/src/logs/audit/${name}.${auditSenderRuntime.extension}`));
   }
+  const auditSources = join(auditSenderRuntime.source, 'logs/audit');
+  for (const name of (await readdir(auditSources)).filter(name => name.startsWith('audit-collector') && name.endsWith(`.${auditSenderRuntime.extension}`))) {
+    await cp(join(auditSources, name), join(directory, 'app/src/logs/audit', name));
+  }
+  await mkdir(join(directory, 'app/src/app'), { recursive: true });
+  await mkdir(join(directory, 'app/src/runtime/config'), { recursive: true });
+  await cp(join(auditSenderRuntime.source, `app/logging-storage.${auditSenderRuntime.extension}`), join(directory, `app/src/app/logging-storage.${auditSenderRuntime.extension}`));
+  await cp(join(auditSenderRuntime.source, `runtime/config/logging-storage-config.${auditSenderRuntime.extension}`), join(directory, `app/src/runtime/config/logging-storage-config.${auditSenderRuntime.extension}`));
+  await cp(join(auditSenderRuntime.support, `processes/audit-capture-export-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-capture-export-probe.${auditSenderRuntime.extension}`));
   await cp(join(auditSenderRuntime.support, `processes/audit-sender-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-sender-probe.${auditSenderRuntime.extension}`));
   await cp(join(auditSenderRuntime.support, `processes/audit-destination-test-probe.${auditSenderRuntime.extension}`), join(directory, `app/test/support/processes/audit-destination-test-probe.${auditSenderRuntime.extension}`));
   const web = join(directory, 'app/src/interfaces/web');
@@ -202,6 +211,19 @@ export async function openAuditSenderSite(t: TestContext, kind: 'receiver' | 'co
     address, token, collectorImage,
     endpoint: 'https://collector.audit.test:4318/v1/logs',
     bearerEndpoint: 'https://collector.audit.test:4319/v1/logs',
+    async exportCapturedTool(): Promise<{ exported: AuditSendOutcome; tested: { status: string; outcome?: AuditSendOutcome }; saves: number; dispatchReads: number; productResultBytes: number }> {
+      const client = `${network}-capture-client-${containers.length}`;
+      containers.push(client);
+      await writeFile(join(directory, 'captured-export.json'), JSON.stringify({ endpoint: 'https://collector.audit.test:4319/v1/logs', token }));
+      await command(['create', '--name', client, '--network', network,
+        '--add-host', `collector.audit.test:${address}`, '-e', 'NODE_EXTRA_CA_CERTS=/fixture/server.crt',
+        nodeImage, 'node', ...(auditSenderRuntime.extension === 'ts' ? ['--experimental-transform-types'] : []), `/fixture/app/test/support/processes/audit-capture-export-probe.${auditSenderRuntime.extension}`]);
+      await command(['cp', directory, `${client}:/fixture`]);
+      const result = await command(['start', '-a', client]);
+      const exitCode = await command(['inspect', client, '--format', '{{.State.ExitCode}}']);
+      if (exitCode !== '0') throw new Error(`The captured export probe exited with ${exitCode}.`);
+      return JSON.parse(result);
+    },
     async testSavedDestinations(submissions: readonly DestinationTestSubmission[]): Promise<DestinationTestResult[]> {
       const client = `${network}-test-client-${containers.length}`;
       containers.push(client);

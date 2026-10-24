@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The complete candidate adds S2-03b activity-driven audit settings snapshots to the inherited settings, sender, saved Test and capture stack. The audit-logs owner retains bounded enabled/revision metadata, schedules reads after trusted activity, drops current unknown/disabled/expired events, and binds only future events to a fresh saved revision. Hosted app composition shares one AuditLog and snapshot owner across MCP and web and closes snapshots before storage. Timed-out native reads retain physical admission until settlement; late loads cannot restore evicted or closed state. The default downstream still discards; current-store dispatch, queues and retries remain S2-03c. System diagnostics remain separate. No package, schema, paid resource, MFA, provider operation or deployment topology is added by this slice; inherited complete-main architecture and policy impacts remain. The logging object CR remains applied: concrete SystemLogger uses distinct console/OTel SystemLogSink roles, with unchanged preparation and output behavior. DestinationSettingsService requires its sender; app composition supplies the real sender and tests use explicit roles. This restack preserves the original snapshot behavior and all prior PR238 inclusion.",
+    "summary": "The complete candidate adds S2-03c bounded customer audit dispatch to the inherited settings, sender, saved Test, capture and snapshot stack. AuditCollector admits detached revision-bound events without I/O, keeps one item and serialized-byte account through authorization, send, retry and physical settlement, and uses one fresh full saved version before each attempt. Successful activity-driven snapshot observations cancel old revisions. Hosted storage composes one shared native sender for export and saved Test; shutdown closes snapshots, queue and SQL in that order without extending the application deadline. Native sender cancellation clears its prepared payload while physical admission lasts until cleanup. System diagnostics stay separate. No new package, schema, paid resource, MFA rule, provider operation or deployment topology is added by this slice; the inherited complete-main architecture and policy impacts remain. The logging object CR remains applied: concrete SystemLogger uses distinct console/OTel SystemLogSink roles, with unchanged preparation and output behavior. DestinationSettingsService requires its sender; shared application composition supplies the same real sender to saved Test and export, and tests use explicit roles. This restack preserves the original sender lifecycle/export behavior and all prior PR238 inclusion.",
     "views": [
       "context",
       "containers",
@@ -46,8 +46,8 @@
       "docs/implementation/test-gate-policy.md",
       "docker/verify-hosted-runtime.mjs",
       "src/logs/system/system-logger.ts",
-      "src/logs/system/console-system-log-sink.ts",
-      "src/logs/system/otel-system-log-sink.ts",
+      "src/logs/system/console-system-logger.ts",
+      "src/logs/system/otel-system-logger.ts",
       "src/logs/audit/audit-log.ts",
       "test/acceptance/logging/audit/audit-log.test.ts",
       "test/unit/logging/audit/audit-log.test.ts",
@@ -109,6 +109,19 @@
       "test/acceptance/logging/audit/hosted-snapshot-composition.test.ts",
       "docs/implementation/admin-s2-03b.md",
       "test/integration/auth/hosted-audit-snapshot-lifecycle.test.ts",
+      "src/logs/audit/audit-collector.ts",
+      "src/logs/audit/audit-collector-state.ts",
+      "test/unit/logging/audit/audit-collector.test.ts",
+      "test/unit/logging/audit/audit-collector-observation.test.ts",
+      "test/unit/logging/audit/export-authorization.test.ts",
+      "test/acceptance/logging/audit/collector-dispatch.test.ts",
+      "test/acceptance/logging/audit/export-destination.test.ts",
+      "test/acceptance/logging/audit/hosted-customer-export.test.ts",
+      "test/integration/logging/audit/logging-storage-export.test.ts",
+      "test/support/processes/audit-capture-export-probe.ts",
+      "docs/implementation/admin-s2-03c.md",
+      "src/logs/system/console-system-log-sink.ts",
+      "src/logs/system/otel-system-log-sink.ts",
       "docs/implementation/logs-object-refactor-change-request.md"
     ]
   }

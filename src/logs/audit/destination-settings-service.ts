@@ -1,7 +1,7 @@
 import { DestinationCredentialCodec } from './destination-credential-codec.ts';
 import { validDestinationEndpoint } from './destination-endpoint.ts';
 import type { DestinationSettingsStore, StoredDestinationSettings } from './destination-settings-store.ts';
-import type { AuditSendOutcome } from './audit-send.ts';
+import type { AuditDestination, AuditSendOutcome } from './audit-send.ts';
 import { DestinationTestLifetime } from './destination-test.ts';
 import type { DestinationTestResult, DestinationTestSender } from './destination-test.ts';
 
@@ -29,11 +29,30 @@ export type DestinationSettingsSaveResult =
   | { readonly status: 'invalid'; readonly reason: 'endpoint' | 'token' | 'settings' }
   | { readonly status: 'conflict' | 'unavailable' | 'unconfirmed' };
 
+export type ExportAuthorization =
+  | { readonly status: 'ready'; readonly destination: AuditDestination }
+  | { readonly status: 'changed' | 'unavailable' };
+
 export class DestinationSettingsService {
   private readonly codec: DestinationCredentialCodec;
   private readonly tests = new DestinationTestLifetime();
   constructor(private readonly store: DestinationSettingsStore, key: Uint8Array, private readonly sender: DestinationTestSender) {
     this.codec = new DestinationCredentialCodec(key);
+  }
+
+  /** One current saved version authorizes one export attempt. No cached version can authorize it. */
+  async authorizeExport(tenantId: string, expectedRevision: string, signal?: AbortSignal): Promise<ExportAuthorization> {
+    try {
+      if (signal?.aborted) return { status: 'unavailable' };
+      const current = await this.readStored(tenantId);
+      if (signal?.aborted || current.status === 'unavailable') return { status: 'unavailable' };
+      if (current.status !== 'found') return { status: 'changed' };
+      const settings = { ...current.settings };
+      if (settings.enabled !== true || settings.revision !== expectedRevision) return { status: 'changed' };
+      const token = this.token(tenantId, settings);
+      if (token === null) return { status: 'unavailable' };
+      return { status: 'ready', destination: { endpoint: settings.endpoint, auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } } };
+    } catch { return { status: 'unavailable' }; }
   }
 
   /** Tenant and actor come from the caller's current trusted Admin context. */

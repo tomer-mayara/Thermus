@@ -6,7 +6,10 @@ import type { AuditSnapshotBounds, SnapshotLoad, SnapshotResident } from './audi
 export type { AuditSnapshotBounds } from './audit-snapshot-state.ts';
 
 export interface RevisionBoundAuditEvent { readonly destinationRevision: string; readonly event: AuditEvent }
-export interface RevisionBoundAuditSink { admit(item: RevisionBoundAuditEvent): void | boolean }
+export interface RevisionBoundAuditSink {
+  admit(item: RevisionBoundAuditEvent): void | boolean;
+  settingsObserved?(tenantId: string, revision: string | null): void;
+}
 export interface AuditSnapshotsOptions { readonly now?: () => number; readonly bounds?: Partial<AuditSnapshotBounds> }
 
 /** Activity loads metadata for future capture. A snapshot never authorizes a network send. */
@@ -99,7 +102,11 @@ export class AuditSnapshots implements AuditEventSink {
       if (this.now() >= load.until) { this.expire(tenant, load); return; }
       const snapshot = snapshotFrom(result, this.now() + this.bounds.freshMs, this.bounds.revisionBytes);
       if (snapshot === undefined) this.expire(tenant, load);
-      else { load.resident.snapshot = snapshot; load.resident.retryAt = 0; }
+      else {
+        load.resident.snapshot = snapshot; load.resident.retryAt = 0;
+        try { this.downstream.settingsObserved?.(tenant, snapshot.enabled ? snapshot.revision : null); }
+        catch { /* A downstream observation failure cannot invalidate a successful metadata load. */ }
+      }
     } catch {
       this.expire(tenant, load);
     } finally {

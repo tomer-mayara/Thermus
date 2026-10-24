@@ -3,7 +3,7 @@ import test from 'node:test';
 import dns from 'node:dns/promises';
 import tls from 'node:tls';
 import https from 'node:https';
-import { EventEmitter } from 'node:events';
+import { EventEmitter, getEventListeners } from 'node:events';
 import { OtlpAuditSender } from '../../../../src/logs/audit/otlp-audit-sender.ts';
 import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 
@@ -124,3 +124,95 @@ for (const invalid of [
     assert.equal(request.mock.calls.length, 0);
   });
 }
+
+test('Given an already cancelled or refused tracked attempt, when observed, then both outcome and physical settlement finish without native work', async t => {
+  const lookup = t.mock.method(dns, 'lookup', async () => { throw new Error('must not resolve'); });
+  const controller = new AbortController(); controller.abort();
+  const attempt = new OtlpAuditSender().start(destination, event, controller.signal);
+  assert.deepEqual(await attempt.outcome, { kind: 'cancelled' });
+  assert.equal(await attempt.settled, undefined);
+  assert.equal(lookup.mock.calls.length, 0);
+  const invalid = new OtlpAuditSender().start(destination, { ...event, timestamp: 'invalid' });
+  assert.deepEqual(await invalid.outcome, { kind: 'permanent_failure', reason: 'invalid_event' });
+  assert.equal(await invalid.settled, undefined);
+  assert.equal(lookup.mock.calls.length, 0);
+});
+
+test('Given a tracked attempt with stalled DNS, when its deadline expires, then the public timeout precedes physical settlement and admission remains occupied', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const pending = Promise.withResolvers<{ address: string; family: number }[]>();
+  t.mock.method(dns, 'lookup', () => pending.promise);
+  const sender = new OtlpAuditSender();
+  const attempts = Array.from({ length: 4 }, () => sender.start(destination, event));
+  let settled = 0;
+  for (const attempt of attempts) void attempt.settled.then(() => { settled++; });
+  t.mock.timers.tick(5_000);
+  assert.deepEqual(await Promise.all(attempts.map(attempt => attempt.outcome)), Array.from({ length: 4 }, () => ({ kind: 'unconfirmed', reason: 'timeout' })));
+  assert.equal(settled, 0);
+  const busy = sender.start(destination, event);
+  assert.deepEqual(await busy.outcome, { kind: 'busy' });
+  assert.equal(await busy.settled, undefined);
+  pending.resolve([{ address: '8.8.8.8', family: 4 }]);
+  await Promise.all(attempts.map(attempt => attempt.settled));
+  assert.equal(settled, 4);
+});
+
+for (const phase of ['preparation', 'native', 'metadata'] as const) {
+  test(`Given an unexpected ${phase} error with an unsupported code, when a tracked attempt runs, then both promises fulfill with a safe failure`, async t => {
+    const failure = Object.assign(new Error('private unexpected failure'), { code: Symbol('private-code') });
+    if (phase === 'metadata') Object.defineProperty(failure, 'code', { get: () => { throw new Error('private metadata failure'); } });
+    t.mock.method(dns, 'lookup', async () => { throw failure; });
+    const target = phase === 'preparation' ? { get endpoint(): string { throw failure; }, auth: { type: 'none' as const } } : destination;
+    const attempt = new OtlpAuditSender().start(target, event);
+    const results = await Promise.allSettled([attempt.outcome, attempt.settled]);
+    assert.deepEqual(results, [{ status: 'fulfilled', value: { kind: 'transient_failure', reason: 'transport' } }, { status: 'fulfilled', value: undefined }]);
+  });
+}
+
+test('Given native work outlives its public timeout, when observed before disposal, then its external cancellation link remains owned until physical settlement', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const pending = Promise.withResolvers<{ address: string; family: number }[]>();
+  t.mock.method(dns, 'lookup', () => pending.promise);
+  const controller = new AbortController();
+  const attempt = new OtlpAuditSender().start(destination, event, controller.signal);
+  t.mock.timers.tick(5_000);
+  assert.deepEqual(await attempt.outcome, { kind: 'unconfirmed', reason: 'timeout' });
+  try { assert.equal(getEventListeners(controller.signal, 'abort').length, 1); }
+  finally {
+    pending.resolve([{ address: '8.8.8.8', family: 4 }]);
+    await attempt.settled;
+  }
+  assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+});
+
+test('Given a warning response and a socket whose close is pending, when the caller cancels, then the public result stays bounded and physical settlement still waits for close', async t => {
+  const socket = new HandshakeSocketStub(); socket.remoteAddress = '8.8.8.8'; socket.autoClose = false;
+  t.mock.method(dns, 'lookup', async () => [{ address: '8.8.8.8', family: 4 }]);
+  t.mock.method(tls, 'connect', () => { queueMicrotask(() => socket.emit('secureConnect')); return socket; });
+  t.mock.method(https, 'request', (...args: unknown[]) => {
+    const respond = args[1] as (response: unknown) => void;
+    const response = Object.assign(new EventEmitter(), { statusCode: 200, headers: { 'content-type': 'application/json' } });
+    const request = Object.assign(new EventEmitter(), { end() {
+      respond(response);
+      queueMicrotask(() => { response.emit('data', Buffer.from('{"partialSuccess":{"rejectedLogRecords":"0","errorMessage":"private warning"}}')); response.emit('end'); });
+    } });
+    return request;
+  });
+  const controller = new AbortController();
+  const attempt = new OtlpAuditSender().start(destination, event, controller.signal);
+  let outcomeDone = false;
+  let disposed = false;
+  void attempt.outcome.then(() => { outcomeDone = true; });
+  void attempt.settled.then(() => { disposed = true; });
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(socket.destroyed, true);
+  assert.equal(socket.closed, false);
+  assert.equal(outcomeDone, false);
+  assert.equal(disposed, false);
+  controller.abort();
+  assert.deepEqual(await attempt.outcome, { kind: 'cancelled' });
+  assert.equal(disposed, false);
+  socket.closed = true; socket.emit('close');
+  await attempt.settled;
+  assert.equal(disposed, true);
+});

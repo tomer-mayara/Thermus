@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import dns from 'node:dns/promises';
+import { OtlpAuditSender } from '../../../../src/logs/audit/otlp-audit-sender.ts';
 import { DestinationSettingsService } from '../../../../src/logs/audit/destination-settings-service.ts';
 import type { DestinationSettingsStore, ReadSettingsResult, StoredDestinationSettings } from '../../../../src/logs/audit/destination-settings-store.ts';
 import type { AuditDestination, AuditSendOutcome } from '../../../../src/logs/audit/audit-send.ts';
@@ -205,3 +207,26 @@ for (const changesRevision of [false, true]) {
     assert.deepEqual(f.reads, ['tenant-a', 'tenant-a']);
   });
 }
+
+test('Given Test and export share a sender, when four native attempts are pending, then aggregate admission refuses a fifth attempt even after cancellation', async t => {
+  const pending: Array<(value: { address: string; family: number }[]) => void> = [];
+  t.mock.method(dns, 'lookup', () => new Promise(resolve => { pending.push(resolve); }));
+  const sender = new OtlpAuditSender();
+  const controller = new AbortController();
+  const event: AuditEvent = { eventName: 'audit.destination.test', timestamp: '2026-10-24T12:00:00Z', organizationId: 'tenant-a', actor, destinationRevision: 'r1' };
+  const destination: AuditDestination = { endpoint: form.endpoint, auth: { type: 'none' } };
+  const exports = Array.from({ length: 3 }, () => sender.start(destination, event, controller.signal));
+  const f = fixture();
+  const service = new DestinationSettingsService(f.store, key, sender);
+  const tested = service.test('tenant-a', form, actor, controller.signal);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(pending.length, 4);
+  assert.deepEqual(await sender.send(destination, event), { kind: 'busy' });
+  controller.abort();
+  assert.deepEqual(await tested, { status: 'cancelled' });
+  assert.deepEqual(await sender.send(destination, event), { kind: 'busy' });
+  for (const finish of pending) finish([{ address: '8.8.8.8', family: 4 }]);
+  await Promise.all(exports.map(attempt => attempt.settled));
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.deepEqual(await sender.send({ ...destination, endpoint: 'https://127.0.0.1/' }, event), { kind: 'permanent_failure', reason: 'unsafe_destination' });
+});

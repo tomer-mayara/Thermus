@@ -41,7 +41,7 @@ export interface WorkOSApplicationParts {
   // Explicit audit and tool-server overrides take precedence in development compositions.
   readonly audit?: AuditLog;
   readonly toolOperations?: ToolOperations;
-  // Until S2-03c supplies dispatch, the default downstream refuses every admitted event.
+  // Explicit development composition can replace the customer dispatch sink.
   readonly auditSink?: RevisionBoundAuditSink;
   readonly snapshotOptions?: AuditSnapshotsOptions;
   readonly buildServer?: RequestServerBuilder;
@@ -97,7 +97,7 @@ export async function openWorkOSConnection(config: RouteConfig, logger: SystemLo
 export async function composeWorkOSApplication(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts): Promise<Application> {
   using owned = new DisposableStack();
   const snapshots = parts.audit === undefined && parts.loggingStorage !== undefined
-    ? owned.adopt(new AuditSnapshots(parts.loggingStorage.store, parts.auditSink ?? { admit: () => false }, parts.snapshotOptions), (capture) => capture.close())
+    ? owned.adopt(new AuditSnapshots(parts.loggingStorage.store, parts.auditSink ?? parts.loggingStorage.dispatch ?? { admit: () => false }, parts.snapshotOptions), (capture) => capture.close())
     : undefined;
   const audit = parts.audit ?? (snapshots === undefined ? discardAuditLog() : new AuditLog(snapshots));
   let buildServer = parts.buildServer;
