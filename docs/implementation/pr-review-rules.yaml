@@ -1,5 +1,6 @@
 # PR review rules for Thermus. The trusted merge-base policy governs each candidate.
-# Use T0 Auto merge, T1 Team review, and T2 Need architect everywhere.
+# T0 Auto merge, T1 Team review, and T2 Need architect are canonical for checker
+# output and GitHub labels. Use short T0/T1/T2 prose display per the playbook.
 # A blocked check does not change the review tier. The manager or Delamain
 # session verifies local checks, required independent approvals, and holds.
 version: 2

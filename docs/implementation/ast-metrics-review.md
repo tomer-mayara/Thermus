@@ -99,11 +99,20 @@ All tiers still record architecture impact. The trusted merge-base policy
 controls selection. Historical rules that require a process for every candidate
 remain in force for that candidate. Individual commands remain available for inspection and improvement passes.
 
-Retain complete process and machine-readable reports as accessible review
-artifacts. Summarize relevant changed file/function findings and link the full
-reports, including graphs, legends, import evidence, and limitations. Do not
-paste unchanged full reports into every pull request. This smaller summary does
-not narrow the global dependency graph or the context needed for correct
+Follow the report structure in [AGENTS.md](../../AGENTS.md) and the
+[review playbook](pr-review-playbook.md#report-layout). Retain
+complete process and machine-readable reports as accessible review artifacts.
+The maintained `Quality review` comment holds relevant changed file/function
+findings, retained findings, each required exception reason, and links to the
+full reports, including graphs, legends, import evidence, and limitations.
+The maintained `Validation` comment holds command results, test selection,
+run provenance, failures and retries, N/A and deferred runs, and evidence limits.
+Keep the decision-driving summary and any required focused L3 comparison in
+the main description. Pin the comments to the full candidate and applicable
+base SHAs, use accessible evidence links, and refresh the same comments after
+candidate changes. Mark stale results and preserve evidence and approval history.
+Do not paste unchanged full reports into the description. This report structure
+does not narrow the global dependency graph or the context needed for correct
 analysis. Required metric assessment or a permitted exception needs at least
 T1 Team review, unless architecture independently requires T2 Need architect.
 Tool failure or missing required evidence blocks merge; approval cannot waive it.
@@ -168,7 +177,7 @@ Reuse is the default; `--coverage FILE` selects another report. Missing or
 stale coverage never starts a suite. `--collect-coverage` explicitly builds
 and runs both complete unit parts once. Use it only when `src/` changed or
 both complete parts were independently selected, and record that selection
-in the pull request evidence. `--skip-coverage` ignores all reports and
+in `Validation`. `--skip-coverage` ignores all reports and
 uses architecture without coverage. Reuse, collection, and skip options
 conflict with one another. A missing band is no reason to expand the tests.
 
@@ -807,8 +816,8 @@ means the applicable assessments passed, including the empty default case.
 
 Improve required misses with selected unit tests or fewer paths and remeasure
 with compatible coverage and the same base for at most three cycles. Record
-score or bound, paths, coverage, classification, and reason for every
-unresolved required goal, including new functions above 15 but below 30 and
+score or bound, paths, coverage, classification, and reason in `Quality review`
+for every unresolved required goal, including new functions above 15 but below 30 and
 unknown data. An unchanged high function can retain `unchanged by this PR`.
 A permitted exception must also have the required unit, metric, bound,
 reason, and expiry in `.code-quality-exceptions.yaml`. It needs independent
@@ -944,9 +953,12 @@ pnpm exec node script/code-quality/ast-metrics-architecture.ts [--base REF] [--h
 
 The command prints the architecture delta of `src/`, the complexity table of
 the changed files, and the trend of `src/` on `main` as Markdown, and also
-writes it to `--out` (relative to the current folder). Step 6 of the process puts this output in the pull
-request description. By default it takes the snapshot of the merge base of
-`--base` (default `origin/main`) in a temporary worktree, as `--base` of the
+writes it to `--out` (relative to the current folder). Link the complete output
+from `Quality review`; keep the relevant architecture summary and any required
+focused L3 comparison in the main description. The generated metrics graph
+does not replace that manually reviewed comparison. By default it takes the
+snapshot of the merge base of `--base` (default `origin/main`) in a temporary
+worktree, as `--base` of the
 snapshot command does, and the snapshot of the working tree; this takes about
 two seconds. The changed files retain addition, modification, deletion, and
 rename status.
@@ -1025,8 +1037,9 @@ coverage, individual unknowns can still make an assessment incomplete; the
 band rules below explain that separate case.
 
 Retain both fenced `mermaid` blocks, their legends, and import evidence
-unchanged in the complete report. Link that report from the pull request and
-summarize relevant architecture changes and evidence limits. Ordinary prose-only
+unchanged in the complete report. Link that report from `Quality review` and
+record its architecture provenance and evidence limits there. Keep relevant
+architecture changes in the main description. Ordinary prose-only
 changes do not need a new irrelevant metrics report. This reporting rule does
 not expand test selection or permit coverage collection outside it.
 
@@ -1285,8 +1298,8 @@ zero or that a component did not exist. If no displayed record or head has
 components, the section says `No component history in these records.`
 Community labels are not joined across history. Retain these chart blocks,
 captions, and the component matrix with the numeric table in the complete
-report. Link the report from the pull request description and summarize the
-relevant changes.
+report. Link the report from `Quality review` and summarize the relevant
+findings there.
 
 The trend store of a repository is `docs/metrics/` of its root, and the pull
 requests commit its files (step 7 of the process). It holds one JSON file for
@@ -1449,13 +1462,14 @@ D6/D7 changes; the base before PR #188 had 175 entries.
 Final verification stayed at 169 entries and left the baseline byte-identical.
 The rule change of PR #188 permitted that refresh.
 PR #188's final review reports 10 high maintainability findings, two medium findings,
-no low findings, and six improvements. Each retained high finding still needs
-its own reason in the pull request description. This refresh adds no baseline exception.
+no low findings, and six improvements. That pull request required a reason for
+each retained high finding in its description. This refresh added no baseline
+exception.
 
 The baseline lists rule violations that existed when the rules were set or
 refreshed. Review and `ast-metrics lint` omit listed rule violations. The
 refresh does not silence high file-maintainability regressions; those still
-need individual reasons in the pull request description. A baseline entry
+need individual reasons in `Quality review`. A baseline entry
 carries the measured value in its message, so a file whose value moved can
 appear again. AGENTS.md permits a refresh for one reason only: the pull
 request changes the rules in `.ast-metrics.yaml` (step 4). Refresh and commit

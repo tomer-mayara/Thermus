@@ -15,7 +15,8 @@ must stay aligned with the code, using the current arc42 views and C4 convention
 Architecture review is required when system shape, boundaries, or important
 architecture guarantees change.
 
-Use these three tier names in rules, tools, labels, templates, and reports:
+Keep these full tier names canonical in policy, tools, checker output, and
+GitHub labels. The main pull request summary can use `T0`, `T1`, or `T2`:
 
 | Tier | Review and merge behavior |
 | --- | --- |
@@ -183,37 +184,28 @@ trusted merge-base rules retain broader historical requirements for their
 candidate. This implementation runs the historical full process and preserves
 its higher review requirement.
 
-## Short pull request template
+## Pull request report structure
 
-Use this content for all tiers. Keep the explanation proportional to the change.
+Use the live [pull request template](../../.github/pull_request_template.md)
+and [report guidance](../implementation/pr-review-playbook.md#report-layout)
+with [AGENTS.md](../../AGENTS.md). The copied template from this proposal was
+removed so it cannot become a second source of active instructions. The
+approved tier, check, threshold, exception, human approval, and merge rules
+above still apply.
 
-```markdown
-## Review tier
-Tier: <T0 Auto merge / T1 Team review / T2 Need architect>
-Reasons: <all matching reasons; identify any approved de-escalation>
+The current report has one short main description and exactly two maintained
+supporting comments, `Validation` and `Quality review`. The description includes
+the decision-driving tier summary, visible blockers or required human decisions,
+and any required focused L3 comparison. Validation holds check evidence; Quality
+review holds full quality and approval evidence, each required reason, and full
+report links. Follow the live guidance for the complete fields, candidate and
+base pins, accessible links, updates, history, and fallback when the description
+cannot be edited. Canonical checker and label names remain unchanged.
 
-## Architecture impact
-Model updated: <yes/no; changed or checked views and canonical names>
-Delta: <one to three bullets, or why the current views remain accurate>
-Evidence and validation: <source/test links; Mermaid result if changed>
-
-## Checks and metrics
-Applicable checks: <results for this candidate; explain any N/A>
-Relevant metric findings: <changed file/function findings or N/A>
-Reports and exceptions: <artifact links; approved exception evidence if any>
-
-## Additional evidence for T2 Need architect
-Container/external changes: <what changes, or none>
-Deployment, security, and data impact: <guarantees and recovery effects>
-Decision: <ADR link for an enduring decision, or why no new decision is needed>
-```
-
-Human approvals and merge eligibility must be recorded by the trusted process,
-not inferred from this template. Full reports remain accessible as artifacts or
-links. The implementation replaces the requirement to paste the complete metrics
-report unchanged into every pull request description. It retains accessible full
-reports and concise relevant findings. Before that implementation merges, the
-trusted historical policy still governs its candidate.
+The report format does not establish approval or eligibility. An actual-parent
+diagram comparison remains separate from complete-candidate classification
+under the trusted main base. Historical design decisions and completed evidence
+records remain unchanged; the trusted base still governs each candidate.
 
 ## Local execution
 
