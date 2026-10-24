@@ -17,7 +17,9 @@
         "script/code-quality/ast-metrics-baseline.ts",
         "script/code-quality/ast-metrics-backfill.ts",
         "script/code-quality/coverage/loader-observer.ts",
-        "script/pr-review/check.ts"
+        "script/pr-review/check.ts",
+        "script/pr-review/api-surface.ts",
+        "script/pr-review/replay.ts"
       ]
     },
     ".habit-hooks": {
@@ -31,6 +33,7 @@
     "ts-morph"
   ],
   "ignore": [
-    "tools/code-review-agents/**"
+    "tools/code-review-agents/**",
+    "docs/api-surface/**"
   ]
 }

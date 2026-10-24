@@ -316,10 +316,16 @@ imports, and run-time paths and record the scope you can establish. Do not
 resolve uncertainty by running all suites. Record any unresolved coverage
 limit and any required run that could not be completed.
 
-Record each command and its result in the commit message or pull request
-notes. Give the exit status and the counts that Node reports for tests,
-passes, failures, skipped tests, and todo tests. Record the reason for an
-omitted run and do not call it a pass. For a non-source pull request, list
+Record each command and its result in the maintained `Validation` comment,
+under the report guidance in [AGENTS.md](../../AGENTS.md) and the
+[review playbook](pr-review-playbook.md#report-layout). Give the
+full candidate and applicable base SHAs, test selection, and run provenance.
+Link accessible GitHub, repository, or artifact evidence. Give the exit status
+and the counts that Node reports for tests, passes, failures, skipped tests,
+and todo tests. Record the reason for an
+omitted or deferred run and do not call it a pass. Retain failures, retries, and
+evidence limits. Update the same comment after a candidate change, mark stale
+results, and preserve the evidence history. For a non-source pull request, list
 the selected groups and focused tests, and state why broader gates did not
 apply. An explicit release request uses the separate release rules below,
 regardless of this pull request selection. Editing or referring to release
@@ -766,9 +772,14 @@ payment collection, hosted features, or migration between editions.
    need process/review and relevant build, type, lint, or manual checks. Historical base rules retain their
    broader requirements for that candidate. Keep the existing test selection;
    a metric command cannot start an unselected suite.
-5. Compute and record the tier, all reasons, blockers, current candidate SHA,
-   selected checks, and linked retained reports as "Review tier and merge
-   eligibility" in AGENTS.md says. The local result is preliminary.
+5. Compute and record the tier, all reasons, blockers, and current candidate
+   SHA as "Review tier and merge eligibility" in [AGENTS.md](../../AGENTS.md)
+   says. Use the short main description and exactly two maintained supporting
+   comments, `Validation` and `Quality review`, under the
+   [review playbook](pr-review-playbook.md#report-layout).
+   Put selected checks and their results in `Validation`; put full tier reasons,
+   policy answers, habit-hooks, metric findings and exception reasons, and
+   approval evidence in `Quality review`. The local result is preliminary.
 6. When the requested scope permits Ready, mark the pull request Ready after
    the manager or Delamain session verifies the required local checks for the
    complete current candidate. An intentional N/A needs selection evidence.

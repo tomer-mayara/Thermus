@@ -90,6 +90,11 @@ type, lint, and manual checks for those changes.
   outside the selection, record that run as deferred. The test gate policy
   gives the commands.
 - Update the documents that the change affects in the same pull request.
+- When the exports of a module that `public_surface` lists change, or a module
+  joins or leaves that list, run `pnpm exec node script/pr-review/api-surface.ts`
+  and commit the declaration snapshots under `docs/api-surface/`. Add `--check`
+  to verify them without writing. A stale, missing, or orphan snapshot blocks
+  merge.
 - Follow the [component registry workflow](docs/implementation/component-registry-workflow.md)
   to check architecture impact and maintain the registry before Ready or
   requesting human review or merge under this policy.
@@ -110,10 +115,54 @@ type, lint, and manual checks for those changes.
   The owner merges a pull request that adds a decision record under
   `architecture/decisions/`. A request for a draft stops before Ready and merge.
 
-### Architecture diff comment
+### Pull request report
 
-For a T2 pull request, prepare one concise architecture comparison comment
-before requesting human review. Update it when the candidate changes.
+Use the [report layout](docs/implementation/pr-review-playbook.md#report-layout)
+and the pull request template. Keep one short main description and exactly two
+maintained supporting comments, titled **Validation** and **Quality review**.
+The main description gives the problem and result, a short T0/T1/T2 review
+decision, all unresolved blockers and required decisions or human approval,
+and a footer with the current linked short SHA and links to both comments.
+Its Review block starts with the tier and the reason line that the checker
+generates (the `Architecture:` line, `architecture.summary` in JSON); name a
+reason outside the facts too, such as a policy path. Then it gives the
+**Architecture facts** list of the checker report, one bullet for each fact
+with the declaration diffs folded, and then the summary of `.pr-impact.json`.
+Pending required human approval means the overall merge status is blocked.
+Aim for 200–300 words excluding Mermaid; keep every material fact even when
+more words are needed. Checker output and labels keep the full canonical names.
+
+Put selected checks, results, failure/retry history, coverage provenance,
+N/A or deferred reasons, and environment limits in Validation. Put all tier
+reasons and policy answers, impact evidence, metric findings and required
+retained-finding or exception reasons, each informational note of the checker
+with its reason, habit-hooks, and approval/de-escalation evidence in Quality
+review. Link full reports that reviewers can access; a local filesystem path is
+not a GitHub artifact link. Do not repeat inherited full-stack metric tables:
+give concise inherited dispositions and full report links while retaining each
+required reason.
+
+Update these same comments for each candidate. Pin full candidate and applicable
+base SHAs in the evidence, mark stale evidence, and preserve prior evidence and
+approval history in linked versions or an audit record. If the description
+cannot be edited, use one maintained summary comment as its replacement; its
+chronological position cannot be guaranteed. Keep one authoritative architecture
+comparison in that main summary, not a duplicate supporting comment.
+
+### Architecture comparison
+
+Prepare a concise Architecture comparison in the main description before
+requesting human review when the checker reports fact a, b, c, or e, or when an
+architect flag is true: a changed component set, an added dependency between
+components, a new public module, a changed registry view, or a declared
+boundary change. When fact d, a changed declaration snapshot, is the only
+fact, the folded declaration diff and three or four behavior notes are
+sufficient; no drawing is required. If production architecture is unchanged,
+state that once in the main summary and put the full assessment in Quality
+review; no diagram is required. Refresh the comparison when the candidate
+changes. In a stack, compare and classify against the actual parent: the tier
+comes from the increment, and the impact flags describe the increment.
+Validation keeps the complete candidate against main visible.
 
 - Pin the full PR head and actual merge-base SHAs; for a stack, find the merge
   base with its parent branch. Inventory every Mermaid block in
@@ -165,10 +214,11 @@ before requesting human review. Update it when the candidate changes.
   establish new runtime behavior. Name Level 2 container or deployment changes
   and flag any that the focused view does not explain. Maintain the registry
   as the current system map; keep comparison colors and historical annotations
-  in the PR comment.
-- Keep full pinned evidence and limits with the review artifacts. Link before
-  and after registry and code evidence; verify paths and line bounds. Save
-  versioned drafts, standalone Mermaid sources, renders, and review notes.
+  in the main Architecture comparison.
+- Keep full pinned provenance in a folded architecture section of Quality
+  review and linked review artifacts. Keep material behavior and delivery
+  limits near the drawing. Link before and after registry and code evidence;
+  verify paths and line bounds. Save versioned drafts, standalone Mermaid sources, renders, and review notes.
   Parse, render, and inspect at normal PR width, about 800 pixels, without
   zoom. If labels become too small, simplify the view and move stable context
   or composition to prose; retain relationships that explain the change.
@@ -179,9 +229,10 @@ before requesting human review. Update it when the candidate changes.
 - Obtain manager review, apply feedback in a new draft, rerender changed
   drawings, and record the fixes. Recheck PR revisions before publication;
   changed revisions require a refreshed comparison and manager review. Publish
-  or update the one comment, then read it back to verify its body.
+  or update the main summary and supporting comments, then read them back to
+  verify their bodies.
 
-This concise comment does not replace the wider architecture-impact check,
+This concise comparison does not replace the wider architecture-impact check,
 test evidence, required human approval, review tier, or merge policy.
 
 ## Review tier and merge eligibility
@@ -197,27 +248,51 @@ The [PR review playbook](docs/implementation/pr-review-playbook.md) and
 
 Use the highest matching tier and keep every reason. Tier selects review;
 merge eligibility is separately `eligible` or `blocked`. A failed check is
-a blocker, not a fourth tier. A policy or quality-tool change requires
-at least T1 Team review. Architecture changes require T2 Need architect as
-the playbook defines. Static protected-path or public-surface touches set a
-conservative T1 Team review floor; they do not prove an architecture change.
-Team review resolves possible contract or topology changes and escalates actual
-architecture changes to T2 Need architect. Uncertain impact blocks eligibility
-and cannot use T0 Auto merge.
+a blocker, not a fourth tier. Architecture facts select the tier; a file path
+alone does not call an architect. The checker establishes the facts from the
+code and the rules of the merge base and HEAD:
+
+- **T2 Need architect:** a. the component set changes; b. a dependency between
+  components is added, or a type edge becomes runtime; c. a module joins
+  `public_surface`; d. the declaration snapshot of a public module changes;
+  e. a Mermaid view of `architecture/components.md` is added, removed, or
+  edited; f. an architect flag of `.pr-impact.json` is true; g. a decision
+  record is added under `architecture/decisions/`.
+- **T1 Team review**, when no T2 fact applies: a policy or read path, new
+  third-party code, a deploy or data file, a security guarantee file, a client
+  contract file, a contract document, fewer test cases than the base, a metric
+  exception that the candidate uses, or a team flag.
+- **T0 Auto merge:** everything else, for example UI and CSS, tests,
+  documents, and internal edits of a public module whose declarations stay
+  identical.
+
+The [playbook](docs/implementation/pr-review-playbook.md) gives the complete
+lists. A flag can raise the tier, never lower it. Size, an MI drop on an
+existing file, and retained high findings are notes: they inform the author and
+call no human. A new skip or todo marker in a test blocks merge. A fact a to e
+or g with every architect flag false blocks merge until the declaration names
+the change. Uncertain impact blocks eligibility and cannot use T0 Auto merge.
 
 The checker uses the trusted merge-base policy and HEAD facts. A candidate
-cannot weaken its own requirements. The historical adapter preserves the
-higher review requirement of legacy base rules as T2 Need architect; this
-migration does not use the new HEAD policy to lower its own review. Legacy
-route names are input compatibility only, not active tiers.
+cannot weaken its own requirements. A merge base whose rules predate 2026-10-24
+keeps the earlier outcomes for its candidate; the playbook names them. The
+historical adapter preserves the higher review requirement of legacy base
+rules as T2 Need architect. Legacy route names are input compatibility only,
+not active tiers.
 
 1. **Classify the committed candidate.** Update the root `.pr-impact.json`
    declaration with `version`, `classification`, and `architecture`. It must
-   differ from the trusted base so stale declarations cannot be reused. Commit
-   it with the complete candidate so `git status --porcelain` is empty. For
-   local checks, stamp a copy with the actual base and head as the checker
-   guide says, then save it as `ast-report/impact.json`. Run
+   differ from the trusted base so stale declarations cannot be reused. Set
+   each flag that matches the change; in a stack, the flags describe the
+   increment. When the exports of a public module change, regenerate the
+   declaration snapshots with `pnpm exec node script/pr-review/api-surface.ts`.
+   Commit the declaration and the snapshots with the complete candidate so
+   `git status --porcelain` is empty. For local checks, stamp a copy with the
+   actual base and head as the checker guide says, then save it as
+   `ast-report/impact.json`. Run
    `pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --impact ast-report/impact.json`.
+   In a stack, give the parent branch instead of `origin/main` to the stamp,
+   the check, and the MI snapshot and CRAP commands of step 3.
    The [check guide](script/pr-review/README.md) defines the base/head-bound
    impact evidence, options, output, and labels. Supply every classification
    field, architecture summary, checked views, and evidence. The manager or Delamain
@@ -225,18 +300,20 @@ route names are input compatibility only, not active tiers.
    evidence blocks eligibility and requires at least T1 Team review. The
    local result is preliminary: it does not prove completed local checks or human approval.
 2. **Resolve facts.** Remove an undeclared fact or declare it in the rules
-   file under the reported key. Update applicable count and date comments.
-   Remove forbidden imports, new cycles, and growth of known cycles; a
-   declaration cannot authorize them. The checker lists affected public-surface
-   modules; it does not emit or compare declaration snapshots. For each listed
-   module, compare the relevant exported declarations and behavior before and
-   after the change, then record whether an observable contract changes. Record
-   the guarantee and answer each applicable policy question. Reclassify
-   after each change. A lasting architecture decision needs a decision
-   record when the authorized decision maker requires it; T2 Need architect
-   alone does not require a new record. Records use
-   `architecture/decisions/YYYY-MM-DD-<topic>.md` with Context, Decision,
-   and Consequences headings.
+   file under the reported key. A declared component, edge, or public module
+   is an architecture fact; a declared npm package or Node builtin is T1 Team
+   review. Update applicable count and date comments. Remove forbidden
+   imports, new cycles, and growth of known cycles; a declaration cannot
+   authorize them. The checker lists each fact under **Architecture facts**,
+   with the diff of each changed declaration snapshot. It compares the text;
+   you compare the meaning. Read each diff, check the behavior behind it, and
+   record whether an observable contract changes. When a fact a to e or g
+   applies, set the architect flag that names the change. Record the guarantee
+   and answer each applicable policy question. Reclassify after each change. A
+   lasting architecture decision needs a decision record when the authorized
+   decision maker requires it; T2 Need architect alone does not require a new
+   record. Records use `architecture/decisions/YYYY-MM-DD-<topic>.md` with
+   Context, Decision, and Consequences headings.
 3. **Add applicable metrics.** When production files change, take the base
    and head snapshots with
    `pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main`
@@ -250,17 +327,25 @@ route names are input compatibility only, not active tiers.
    For a source-free metric-tool or rule change, run the applicable process
    and review without irrelevant production snapshots or CRAP.
    A goal miss can still produce valid reports; tool failure or missing
-   required evidence blocks eligibility. Retained high findings and permitted
-   metric exceptions require at least T1 Team review. Findings unchanged by
-   this pull request do not escalate its tier. Mark irrelevant production
-   metrics N/A under the selection below; do not create empty evidence.
-4. **Record the result.** In the pull request's Review tier section, record
-   the tier, all reasons, blockers, and current candidate SHA. Apply the
-   canonical tier label printed by the checker. Summarize relevant changed
-   file/function findings, check results, and N/A reasons. Link retained full
-   reports and exceptions. Do not paste unchanged full reports. Check and
-   record architecture impact for every tier, using the component registry
-   workflow. Update the explanation, evidence, and labels after each change.
+   required evidence blocks eligibility. A new file below MI 85 and a CRAP goal
+   miss still block merge unless a permitted exception covers them; a
+   permitted exception that the candidate uses requires at least T1 Team
+   review. An MI drop of five or more on an existing file and a retained high
+   finding are notes; record their reasons in Quality review. Findings
+   unchanged by this pull request do not escalate its tier. Mark irrelevant
+   production metrics N/A under the selection below; do not create empty
+   evidence.
+4. **Record the result.** Use the report layout above. In the main summary,
+   put the tier with the generated reason line, the **Architecture facts**
+   list with the folded declaration diffs, the `.pr-impact.json` summary,
+   blockers, required decisions and human approval, and the linked short
+   candidate SHA. Record every tier reason, each note with its reason, each
+   relevant changed file/function finding, and each exception in Quality
+   review; record check results and N/A reasons in Validation. Apply the
+   canonical tier label printed by the checker. Link retained full reports; do
+   not paste unchanged full reports. Check and record architecture impact for
+   every tier with the component registry workflow. Refresh the summary,
+   evidence, and labels after each change.
 5. **Obtain review and eligibility.** T1 Team review needs an independent
    authorized human team member or owner. T2 Need architect needs an
    independent authorized human architect; one qualified reviewer can cover
@@ -319,12 +404,12 @@ commands, their reports, the configuration, and the limits of the tool.
    with `pnpm exec node script/code-quality/ast-metrics-mcp.ts file <path>`.
    Simplify the functions with a low score or many decision paths. Keep the
    selected tests green. Measure again with the delta command, at most three
-   times. Record each remaining low score and its reason in the pull request
-   description. For a new file below 85, also add an entry with its path,
+   times. Record each remaining low score and its reason in Quality review.
+   For a new file below 85, also add an entry with its path,
    `metric: mi`, a bound, the reason, and an expiry date to
    `.code-quality-exceptions.yaml`; the review tier check reads it.
 4. Review. Correct each finding of severity high, or record its reason in
-   the pull request description. Refresh `.ast-metrics-baseline.yaml` with
+   Quality review. Refresh `.ast-metrics-baseline.yaml` with
    `pnpm exec node script/code-quality/ast-metrics-baseline.ts` only when
    the pull request changes the rules in `.ast-metrics.yaml`. Commit the
    baseline in the same pull request. A violation that is already on `main`
@@ -334,8 +419,8 @@ commands, their reports, the configuration, and the limits of the tool.
    selected suites, or with fewer decision paths. If you add or change a
    test, select the tests again from the new candidate. After a code change,
    collect coverage again as in step 2. Measure again with the same base, at
-   most three cycles. Then record each unresolved goal in the pull request
-   description: score or bound, paths, coverage, classification, and reason.
+   most three cycles. Then record each unresolved goal in Quality review:
+   score or bound, paths, coverage, classification, and reason.
    This includes an added function between 15 and 30, and a function with
    unknown identity or unknown coverage. An unchanged function can keep the
    reason `unchanged by this PR`. For an added or changed function that
@@ -348,7 +433,8 @@ commands, their reports, the configuration, and the limits of the tool.
    is not an exception: correct it.
 6. Final report. After the last fix, run the applicable process again on the
    complete candidate. Summarize relevant changed files and functions, goals,
-   findings, exceptions, and evidence limits in the pull request. Retain and
+   findings, exceptions, and evidence limits in Quality review. Put check
+   results and coverage provenance in Validation. Retain and
    link the complete `ast-report/process.md` and machine-readable reports as
    review artifacts. Keep graphs, legends, import evidence, and notices in
    those reports; do not copy the whole report into the pull request body.

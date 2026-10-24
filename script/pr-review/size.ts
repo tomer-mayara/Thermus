@@ -1,5 +1,7 @@
 import type { NumstatRow } from './changes.ts';
 import { anyGlobMatches } from './globs.ts';
+import type { Rules } from './rules.ts';
+import { signalsOf, type SignalOutcomes } from './signals.ts';
 import { testCountsOf, testReasons } from './test-counts.ts';
 import type { Reason } from './types.ts';
 
@@ -19,7 +21,8 @@ interface SizeInput {
 
 interface SizeRules {
   readonly scopes: { readonly generated: readonly string[] };
-  readonly limits: LineCounts;
+  readonly limits: Rules['limits'];
+  readonly skippedOrTodo: Rules['skippedOrTodo'];
 }
 
 export function sizeOutcome(input: SizeInput, rules: SizeRules) {
@@ -28,19 +31,20 @@ export function sizeOutcome(input: SizeInput, rules: SizeRules) {
     total: linesOf(input.numstat.filter((row) => !row.paths.some((path) => anyGlobMatches(rules.scopes.generated, path)))),
   };
   const tests = testCountsOf(input.testDiff);
-  return { counts, tests, reasons: [...limitReasons(counts, rules.limits), ...testReasons(tests), ...snoozeReasons(input.snooze)] };
+  const limits = limitOutcome(counts, rules.limits);
+  return { counts, tests, reasons: [...limits.reasons, ...testReasons(tests, rules.skippedOrTodo), ...snoozeReasons(input.snooze)], notes: limits.notes };
 }
 
 function linesOf(rows: readonly NumstatRow[]): number {
   return rows.reduce((sum, row) => sum + row.added + row.deleted, 0);
 }
 
-function limitReasons(counts: LineCounts, limits: LineCounts): Reason[] {
-  const reasons: Reason[] = [];
-  const read = (key: string, fact: string) => reasons.push({ tier: 'T1', key: `size.${key}`, fact });
-  if (counts.production > limits.production) read('production_lines_read_above', `${counts.production} production lines, above the limit of ${limits.production}`);
-  if (counts.total > limits.total) read('total_lines_read_above', `${counts.total} lines without generated files, above the limit of ${limits.total}`);
-  return reasons;
+function limitOutcome(counts: LineCounts, limits: Rules['limits']): SignalOutcomes {
+  const production = signalsOf(limits.outcome, { T1: 'size.production_lines_read_above', note: 'size.production_lines_note_above' },
+    counts.production > limits.production ? [`${counts.production} production lines, above the limit of ${limits.production}`] : []);
+  const total = signalsOf(limits.outcome, { T1: 'size.total_lines_read_above', note: 'size.total_lines_note_above' },
+    counts.total > limits.total ? [`${counts.total} lines without generated files, above the limit of ${limits.total}`] : []);
+  return { reasons: [...production.reasons, ...total.reasons], notes: [...production.notes, ...total.notes] };
 }
 
 // No snooze file is the same as an empty list.

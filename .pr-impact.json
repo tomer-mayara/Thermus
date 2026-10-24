@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human review bind this final head against main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger.",
+    "summary": "The complete Slice 2 candidate adds an optional PostgreSQL settings datastore and a customer OTLP destination, with current-Admin Save/Test, tenant-bound encrypted credentials, named Audit capture, activity-driven snapshots and bounded revision-authorized dispatch. System diagnostics move to a separate owner with explicit console/OTel sinks; saved Test and export share one required sender and retain physical-settlement accounting. The final integration keeps all reviewed ancestor heads, including PR238, and already contains main. Its separate redaction correction preserves recognized quoted/Markdown/autolink boundaries without weakening full query-value redaction for validated URLs and ambiguous text; bounded syntax limits remain explicit. Complete-candidate tests, quality reports and human architect review must bind the final integration head against current main. The registry records the full architecture; its owner count is corrected to 20. Disposable PostgreSQL fixture cleanup removes only its anonymous volume. These changes do not deploy, configure live storage, enable export, or satisfy the separate owner activation/release ledger. The integration retains the current main architecture-facts policy and committed public declaration snapshot checks. Generated snapshots record the five added System/Audit public modules and four changed declaration snapshots; they do not add runtime behavior. The review must retain all detected architecture facts and informational notes, current-candidate checks, failure history and approval evidence in the required main summary, Validation and Quality review reports. No check, threshold or required approval is weakened.",
     "views": [
       "context",
       "containers",
@@ -127,7 +127,15 @@
       "test/support/processes/hosted-audit-journey-probe.ts",
       "docs/testing/test-list.md",
       "docs/implementation/logs-object-refactor-change-request.md",
-      "test/support/in-process/postgres-settings-site.ts"
+      "test/support/in-process/postgres-settings-site.ts",
+      "docs/implementation/pr-review-rules.yaml",
+      "script/pr-review/README.md",
+      "script/pr-review/api-surface.ts",
+      "script/pr-review/surface-snapshot.ts",
+      "docs/api-surface",
+      "docs/design/pr-review-architecture-facts.md",
+      "AGENTS.md",
+      "docs/implementation/pr-review-playbook.md"
     ]
   }
 }

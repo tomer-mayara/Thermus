@@ -7,8 +7,13 @@ not a change log or a plan. Keep planned work separate and label it as planned.
 
 The registry does not authorize architecture changes. The
 [review rules](pr-review-rules.yaml) remain the authority for declared import
-edges, public surfaces, and review tiers. This workflow has the same
-protected-path policy review as [AGENTS.md](../../AGENTS.md). Follow AGENTS.md
+edges, public surfaces, and review tiers. The checker compares the Mermaid
+blocks of the registry between the merge base and HEAD. An added, removed, or
+edited Mermaid block is architecture fact e,
+`architecture.registry_view_changed`, and selects T2 Need architect. A prose
+edit alone is not a fact, and views in another order alone are a note. This
+workflow has the same protected-path policy review as
+[AGENTS.md](../../AGENTS.md). Follow AGENTS.md
 for all test, metrics, review, approval, and merge requirements. This guide adds
 no automated gate or merge authorization. All tiers, including T0 Auto merge,
 need an architecture impact check. T1 Team review needs independent authorized
@@ -101,12 +106,27 @@ Before finishing, compare all affected views and their text once more:
 
 ## Finish the pull request
 
-After code and review fixes, add a concise **Architecture impact** section to
-the pull request description. Name the views changed or checked, the supporting
-evidence, and the validation results and limitations, including the Mermaid
-tool when diagrams changed. If no registry edit is needed, state why the final
-change leaves those views accurate. Do not edit the registry merely to show
-that you checked it. Do not copy the pull request history into it.
+After code and review fixes, use the
+[PR report layout](pr-review-playbook.md#report-layout). Put the concise
+**Architectural impact** statement and any required **Architecture comparison**
+in the main description. Put the full architecture assessment and comparison
+provenance in the folded architecture section of **Quality review**, with
+accessible evidence links. Name the views changed or checked, supporting
+evidence, validation results and limitations, and the Mermaid tool when diagrams
+changed. If no registry edit is needed, state why the final change leaves those
+views accurate. No diagram is required when production architecture is unchanged.
+Do not edit the registry merely to show that you checked it. A Mermaid edit is
+fact e and calls an architect, also for a correction. Do not copy the pull
+request history into it.
+
+Follow the comparison guide in [AGENTS.md](../../AGENTS.md#architecture-comparison).
+Keep the authoritative drawing and material before/after behavior notes together
+in the main summary. Put diagram inventory, pinned revisions and evidence,
+versioned sources and renders, render checks, L4 rationale, and manager review in
+Quality review or its linked artifacts. In a stack, compare and classify
+incrementally against the actual parent; the tier comes from the increment.
+Use the maintained summary-comment fallback only when the description cannot be
+edited; do not duplicate the authoritative comparison.
 
 After a later fix, check its architecture impact again and update the registry,
 diagrams, and pull request explanation when needed. Before Ready, requesting
