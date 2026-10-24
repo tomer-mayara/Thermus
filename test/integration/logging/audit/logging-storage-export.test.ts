@@ -20,18 +20,19 @@ test('Given production logging storage with one sender, when export and Test hol
   t.after(async () => { controllers.forEach(controller => controller.abort()); await storage.close(); pending.forEach(resolve => resolve([{ address: '127.0.0.1', family: 4 }])); });
   const revisions: string[] = [];
   for (const tenant of ['tenant-a', 'tenant-b']) {
-    const saved = await storage.service!.save(tenant, { expectedRevision: null, endpoint, auth: 'none', token: '', enabled: true });
+    const saved = await storage.service.save(tenant, { expectedRevision: null, endpoint, auth: 'none', token: '', enabled: true });
     assert.equal(saved.status, 'saved');
     if (saved.status !== 'saved') throw new Error('Expected saved settings');
-    revisions.push(saved.settings.revision!);
+    assert.ok(saved.settings.revision);
+    revisions.push(saved.settings.revision);
   }
-  assert.equal(storage.dispatch!.admit({ destinationRevision: revisions[0], event: eventFor('tenant-a') }), true);
-  assert.equal(storage.dispatch!.admit({ destinationRevision: revisions[1], event: eventFor('tenant-b') }), true);
+  assert.equal(storage.dispatch.admit({ destinationRevision: revisions[0], event: eventFor('tenant-a') }), true);
+  assert.equal(storage.dispatch.admit({ destinationRevision: revisions[1], event: eventFor('tenant-b') }), true);
   await turn();
-  const tests = ['tenant-a', 'tenant-b'].map((tenant, index) => storage.service!.test(tenant, { expectedRevision: revisions[index], endpoint, auth: 'none', token: '', enabled: true }, { authority: 'trusted', subject: 'admin' }, controllers[index].signal));
+  const tests = ['tenant-a', 'tenant-b'].map((tenant, index) => storage.service.test(tenant, { expectedRevision: revisions[index], endpoint, auth: 'none', token: '', enabled: true }, { authority: 'trusted', subject: 'admin' }, controllers[index].signal));
   await turn();
   assert.equal(pending.length, 4);
-  const busy = await storage.service!.test('tenant-a', { expectedRevision: revisions[0], endpoint, auth: 'none', token: '', enabled: true }, { authority: 'trusted', subject: 'admin' });
+  const busy = await storage.service.test('tenant-a', { expectedRevision: revisions[0], endpoint, auth: 'none', token: '', enabled: true }, { authority: 'trusted', subject: 'admin' });
   assert.equal(busy.status, 'tested');
   if (busy.status === 'tested') assert.equal(busy.outcome.kind, 'busy');
   controllers.forEach(controller => controller.abort());

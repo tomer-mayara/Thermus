@@ -91,7 +91,7 @@ test('Given enabled customer export and queue authorization blocked by PostgreSQ
   const sender = new OtlpAuditSender();
   const starts = t.mock.method(sender, 'start');
   const storage = composeLoggingStorage({ store, close: () => runtime.close() }, Buffer.alloc(32, 7), sender);
-  const saved = await storage.service!.save(tenant, { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true });
+  const saved = await storage.service.save(tenant, { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true });
   assert.equal(saved.status, 'saved');
   const lines: string[] = [];
   const logger = { info: (message: string) => { lines.push(message); }, error: (message: string) => { lines.push(message); } };

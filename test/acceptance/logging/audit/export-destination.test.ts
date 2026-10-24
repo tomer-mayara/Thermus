@@ -15,11 +15,15 @@ test('Given queued work for one saved revision, when another instance changes th
   const other = new DestinationSettingsService(store, Buffer.alloc(32, 6));
   const saved = await service.save('tenant-a', desired);
   assert.equal(saved.status, 'saved'); if (saved.status !== 'saved') return;
-  const changed = await other.save('tenant-a', { ...desired, expectedRevision: saved.settings.revision, endpoint: 'https://new-collector.example/v1/logs', token: 'replacement-token' });
+  const savedRevision = saved.settings.revision;
+  assert.ok(savedRevision);
+  const changed = await other.save('tenant-a', { ...desired, expectedRevision: savedRevision, endpoint: 'https://new-collector.example/v1/logs', token: 'replacement-token' });
   assert.equal(changed.status, 'saved'); if (changed.status !== 'saved') return;
-  assert.deepEqual(await service.authorizeExport('tenant-a', saved.settings.revision!), { status: 'changed' });
-  assert.deepEqual(await service.authorizeExport('tenant-a', changed.settings.revision!), { status: 'ready', destination: { endpoint: 'https://new-collector.example/v1/logs', auth: { type: 'bearer', token: 'replacement-token' } } });
-  assert.deepEqual(await service.authorizeExport('tenant-b', changed.settings.revision!), { status: 'changed' });
+  const changedRevision = changed.settings.revision;
+  assert.ok(changedRevision);
+  assert.deepEqual(await service.authorizeExport('tenant-a', savedRevision), { status: 'changed' });
+  assert.deepEqual(await service.authorizeExport('tenant-a', changedRevision), { status: 'ready', destination: { endpoint: 'https://new-collector.example/v1/logs', auth: { type: 'bearer', token: 'replacement-token' } } });
+  assert.deepEqual(await service.authorizeExport('tenant-b', changedRevision), { status: 'changed' });
 });
 
 test('Given uncancellable DNS and a cancelled export, when its public outcome settles, then content is erased while physical sender admission remains occupied until disposal', async t => {

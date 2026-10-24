@@ -962,15 +962,16 @@ content; they establish no client receipt, settings snapshot, or delivery.
 - `test/unit/organizations/change-records.test.ts` specifies preservation of a completed provider write and original check/provider failure when post-write recording throws.
 - `test/integration/mcp/tool-completion-record.test.ts` and `test/unit/mcp/tool-completion-record.test.ts` specify content-free operator records. The renderer setup, HTTP fetch, and renderer runtime specifications retain this privacy assertion.
 
-The S2-03b snapshot candidate is specified below.
-[] Bounded queue admission and Collector dispatch remain S2-03c under the [Slice 2 plan](../design/organization-admin-plan.md)
+The S2-03b snapshots and S2-03c bounded dispatch are specified below.
+[] Owner rollout and release proof remain S2-04 under the [Slice 2 plan](../design/organization-admin-plan.md)
 
 **Customer audit Collector sender — S2-02a candidate**
 
 The [sender record](../implementation/admin-s2-02a.md) gives the public contract,
 fixed bounds, and evidence limits. These specifications exercise the isolated
 sender. The saved-destination Test is specified below. Customer capture is
-specified above; queue dispatch and live endpoint release checks remain separate work.
+specified above; bounded dispatch is specified below. Live endpoint release
+checks remain separate work.
 
 - `test/acceptance/logging/audit/audit-sender.test.ts` specifies refusal of a private destination without disclosure of event or credentials.
 - `test/unit/logging/audit/public-audit-destination.test.ts` specifies HTTPS syntax, None/Bearer validation, public IPv4/IPv6 policy, mixed or changed DNS answers, answer limits, and exact peer address comparison.
@@ -1002,8 +1003,7 @@ complete candidate review records their local results.
 The PostgreSQL settings group remains `npm run test:logging:postgres`. Neither
 controlled Collector proof nor a successful Test proves continued delivery or
 durable storage. Tool/admin capture uses a controlled sink in S2-03a; activity-driven
-settings snapshots are specified in S2-03b below; aggregate queue bounds and
-dispatch remain S2-03c.
+settings snapshots and bounded dispatch are specified below.
 
 **Activity-driven audit settings snapshots — S2-03b candidate**
 
@@ -1017,7 +1017,31 @@ sink; execution evidence belongs to the complete-candidate review.
 - `test/integration/auth/hosted-audit-snapshot-lifecycle.test.ts` specifies snapshot closure before hosted storage closure and exclusion of late read results.
 
 These checks do not prove queue admission, fresh-store dispatch authorization,
-network delivery, or Collector storage. S2-03c supplies those dispatch rules.
+network delivery, or Collector storage. The S2-03c specifications below cover
+the dispatch rules.
+
+**Bounded customer audit dispatch — S2-03c candidate**
+
+The [dispatch record](../implementation/admin-s2-03c.md) describes fixed bounds,
+authorization, retry, content lifetime, and shared native/SQL admission. These
+are source specifications; final execution and review belong to the PR and local
+review index.
+
+- `test/acceptance/logging/audit/collector-dispatch.test.ts` specifies capture through snapshots and the collector, fresh saved-revision checks, tenant isolation, no event SQL writes, and close.
+- `test/acceptance/logging/audit/hosted-customer-export.test.ts` specifies real hosted MCP/Admin capture and storage composition, complete product responses during overload/read failure, stale authorization, successful activity observation of remote Disable, and closure before storage.
+- `test/acceptance/logging/audit/export-destination.test.ts` specifies same-version credential authority and sender-owned payload disposal during held native DNS, with native admission retained until physical settlement.
+- `test/unit/logging/audit/audit-collector.test.ts` specifies synchronous admission, detached input, global/tenant item and serialized-byte accounting across all states, FIFO, fresh authorization per retry, three-cycle bounds, Retry-After, absolute read/age deadlines, charged reservations, and close during read/send/backoff.
+- `test/unit/logging/audit/audit-collector-observation.test.ts` specifies cancellation on successful current snapshot observations, absence of fabricated observations after read failure, no retained state for unknown tenants, and isolation from a throwing optional observation hook.
+- `test/unit/logging/audit/export-authorization.test.ts` specifies exactly one full-version read, exact enabled/revision checks, owner-controlled credential recovery, safe failure, and suppression after abort.
+- `test/unit/logging/audit/otlp-audit-sender.test.ts` adds separate outcome/physical settlement, safe unexpected error metadata, payload cancellation, and external abort-listener lifetime. The saved Test unit specifications retain their one-shot outcome behavior.
+- `test/integration/logging/audit/logging-storage-export.test.ts` specifies one production sender shared by export and Test, including four held native DNS operations and refusal until physical settlement.
+- `test/integration/logging/audit/audit-sender.runtime.ts` adds production storage factory, AuditLog, snapshots, queue, fresh authorization, and real Collector collaboration. Run `npm run test:logging:collector` for the complete dedicated group.
+- `test/acceptance/logging/audit/hosted-storage-failure.runtime.ts` adds a warm enabled snapshot followed by a real PostgreSQL table lock during dispatch authorization; MCP, Admin, and portal health remain usable and closure stays within the existing deadline. Run `npm run test:logging:postgres` for the complete dedicated group.
+
+The controlled Collector is an isolated fixture, not public Internet egress or
+production deployment proof. Best-effort export can lose or duplicate events;
+these checks do not prove continued receipt or durable receiver storage. S2-04
+retains owner rollout and release prerequisites.
 
 **System sink contract** (`test/acceptance/logging/system/system-log-sink.test.ts`, `test/unit/logging/system/system-logger.test.ts`)
 

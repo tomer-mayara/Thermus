@@ -54,7 +54,8 @@ test('Given queued hosted content for a saved revision, when another instance re
   t.mock.method(site.store, 'read', async (tenant: string) => { started.resolve(); await release.promise; return read(tenant); });
   assert.deepEqual((await site.search('old revision payload')).content, [{ type: 'text', text: 'final old revision payload' }]);
   await started.promise;
-  const saved = site.store.settings.get(site.tenant())!;
+  const saved = site.store.settings.get(site.tenant());
+  assert.ok(saved);
   site.store.settings.set(site.tenant(), { ...saved, endpoint: 'https://new-collector.example/v1/logs', revision: 'remote-replacement' });
   release.resolve(); await site.drainLoads();
   assert.equal(site.sender.attempts.length, 0);
@@ -96,7 +97,8 @@ test('Given one held export and queued content for the old revision, when public
   site.sender.held = true;
   await site.search('old active content'); await site.sender.untilAttempts(1);
   await site.search('old queued content');
-  const saved = site.store.settings.get(site.tenant())!;
+  const saved = site.store.settings.get(site.tenant());
+  assert.ok(saved);
   site.store.settings.set(site.tenant(), { ...saved, enabled: false, revision: 'disabled-elsewhere' });
   site.advance(100);
   assert.deepEqual((await site.search('refresh trigger')).content, [{ type: 'text', text: 'final refresh trigger' }]);

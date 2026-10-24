@@ -36,14 +36,14 @@ flowchart TB
   context_thermus["Software system: Thermus<br/>Authorized web-to-Markdown tools and account UI"]
   context_workos["External system: WorkOS / AuthKit<br/>Hosted identity and organizations"]
   context_public["External systems: public websites<br/>Includes Brave HTML search"]
-  context_collector["External system: customer Collector<br/>Receives an explicit saved-destination Test"]
+  context_collector["External system: customer Collector<br/>Receives customer events and saved Test"]
   context_customer -->|uses tools through client| context_client
   context_customer -->|opens account and connection pages| context_thermus
   context_operator -->|configures installation / manages local accounts| context_thermus
   context_client -->|requests page fetch and search| context_thermus
   context_thermus -->|uses hosted identity and organizations| context_workos
   context_thermus -->|fetches public content| context_public
-  context_thermus -->|OTLP HTTP JSON / HTTPS Test| context_collector
+  context_thermus -->|OTLP HTTP JSON / HTTPS| context_collector
 ```
 
 ## arc42 building-block view
@@ -67,14 +67,14 @@ flowchart TB
   end
   hosted_workos["External system: WorkOS / AuthKit<br/>Identity and organization services"]
   hosted_public["External systems: public websites<br/>Includes Brave HTML search"]
-  hosted_collector["External system: customer Collector<br/>Receives one synthetic Test event"]
+  hosted_collector["External system: customer Collector<br/>Receives enabled audit export and Test"]
   hosted_user -->|uses in browser| hosted_portal
   hosted_client -->|MCP over HTTP / bearer token| hosted_server
   hosted_portal -->|HTTP account routes| hosted_server
   hosted_server -->|serves portal assets over HTTP| hosted_portal
   hosted_server -->|SDK HTTPS / JWT key set| hosted_workos
   hosted_server -->|plain pg / verified TLS when configured| hosted_settings
-  hosted_server -->|explicit Test / OTLP HTTP JSON over HTTPS| hosted_collector
+  hosted_server -->|audit export and Test / OTLP HTTP JSON over HTTPS| hosted_collector
   hosted_server -->|execFile / stdout JSON| hosted_renderer
   hosted_renderer -->|HTTP / HTTPS page requests| hosted_public
 ```
@@ -119,7 +119,7 @@ roots, responsibilities, and public contracts.
 | Container or artifact | Registry owners that contribute |
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
-| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (settings, saved-destination Test, and runtime) |
+| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, Test, and runtime) |
 | Local server addition | `better-auth` |
 | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
 | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
@@ -238,34 +238,36 @@ form destinations. The portal uses a supplied current active-organization name
 read for workspace display; an absent or blank name returns unavailable rather
 than a fallback identity. Profile data does not grant access.
 
-### Selected C4 components: hosted Audit logs settings and Test in the Node server
+### Selected C4 components: hosted Audit logs settings and delivery in the Node server
 
 Scope: one hosted Node server container. Current Admins read and save their
 organization's destination and test its saved revision through web routes.
+Captured events use the same service and sender for current-revision dispatch.
 PostgreSQL is a supporting Level 2 container; the customer Collector is an
 external system. WorkOS remains the identity and organization authority.
 
 ```mermaid
 flowchart TB
   subgraph storage_server["Container: Thermus Node server · hosted"]
-    storage_app["app · TypeScript<br/>Compose service<br/>Own SQL lifetime"]
+    storage_app["app · TypeScript<br/>Compose service and dispatch<br/>Own SQL and queue lifetime"]
     storage_web["web · TypeScript<br/>Audit logs read / Save / Test<br/>Trusted action capture"]
     storage_identity["identity · TypeScript<br/>Access contracts"]
-    storage_logging["audit-logs · TypeScript / pg<br/>Protect settings; activity snapshots<br/>Atomic Save; saved-revision Test"]
+    storage_logging["audit-logs · TypeScript / pg<br/>Protect settings; atomic Save<br/>Snapshots; bounded export / Test"]
   end
   storage_data[("L2: PostgreSQL<br/>Private tenant settings")]
-  storage_collector["External system: customer Collector<br/>One synthetic Test / OTLP HTTP JSON"]
+  storage_collector["External system: customer Collector<br/>Customer events and Test / OTLP HTTP JSON"]
   storage_app -.->|supplies| storage_web
-  storage_app -.->|service / lifetime| storage_logging
+  storage_app -.->|service / dispatch / lifetime| storage_logging
   storage_web -.->|source dependency| storage_identity
   storage_web -->|trusted settings / action capture| storage_logging
   storage_logging -->|SQL / verified TLS| storage_data
-  storage_logging -->|saved Test only / HTTPS POST| storage_collector
+  storage_logging -->|authorized export and saved Test / HTTPS POST| storage_collector
   style storage_server fill:#fafafa,stroke:#777777,color:#222
 ```
 
 [Audit settings composition](../src/app/logging-storage.ts) supplies the settings store
-and server key only when hosted storage configuration is available.
+and server key only when hosted storage configuration is available. It constructs
+one service, collector, and sender; saved Test and export use that same sender.
 [Config](../src/runtime/config/logging-storage-config.ts) validates the URI,
 independent 32-byte base64 key, and optional PEM CA bundle. URI query parameters
 cannot override TLS or connection options. Dotted arrows show labelled composition
@@ -301,24 +303,25 @@ retains a type-only ChangeOutcome dependency on organizations; that source edge
 is omitted here. The saved-destination Test uses the sender in production. MCP and protected web
 boundaries capture customer events through a supplied AuditLog. The composition
 uses activity-driven enabled/revision snapshots when hosted settings storage is
-available. Its downstream sink refuses events until bounded dispatch is supplied.
+available. Hosted storage supplies bounded dispatch with a fresh saved-version
+authorization read for each attempt.
 
 ```mermaid
 flowchart TB
   subgraph logs_server["Container: Thermus Node server"]
-    logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings lifetime"]
+    logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings and queue lifetime"]
     logs_mcp["mcp · TypeScript<br/>Final public capture<br/>Content-free diagnostics"]
     logs_web["web · TypeScript<br/>Trusted Admin capture<br/>Settings and invitation routes"]
-    logs_audit["audit-logs · TypeScript / pg<br/>Redact, bound, and gate capture<br/>Activity snapshots; settings / Test"]
+    logs_audit["audit-logs · TypeScript / pg<br/>Redact, bound, and gate capture<br/>Queue; authorize export; settings / Test"]
     logs_system["system-logs · TypeScript<br/>Internal diagnostics<br/>Caller location retained"]
   end
-  logs_collector["External: customer Collector<br/>Synthetic Test / OTLP HTTPS"]
+  logs_collector["External: customer Collector<br/>Customer events and Test / OTLP HTTPS"]
   logs_app ==>|supplies AuditLog| logs_mcp
   logs_app ==>|supplies settings and AuditLog| logs_web
   logs_mcp -->|validated final tool outcome| logs_audit
   logs_web -->|settings and action metadata| logs_audit
   logs_mcp -->|completion diagnostics| logs_system
-  logs_audit -->|saved Test only| logs_collector
+  logs_audit -->|authorized export and saved Test| logs_collector
 ```
 
 HTTP and CLI also use the narrow [SystemLog](../src/logs/system/system-logger.ts)
@@ -349,11 +352,13 @@ settings storage is available, app supplies one AuditLog backed by
 [AuditSnapshots](../src/logs/audit/audit-snapshots.ts) to MCP and web. The snapshot
 owner uses the existing settings store to load only enabled/revision metadata
 for future activity. Fresh enabled snapshots forward detached, frozen events
-with a saved revision to RevisionBoundAuditSink; its default refuses every event.
+with a saved revision to RevisionBoundAuditSink. Hosted storage supplies an
+[AuditCollector](../src/logs/audit/audit-collector.ts) through that contract.
 Unknown, disabled, and expired snapshots drop the current event. Loading never
 waits in a product response and never revives the triggering content. Without
 hosted storage, and in the local edition, app retains the discard AuditLog.
-There is no customer completion queue or dispatch in this candidate.
+The collector owns bounded memory admission and asynchronous dispatch. No event
+content is written to SQL.
 
 MCP captures validated fetch/search input and final public text after SDK
 projection and safe error/cancellation mapping. Invalid arguments, unknown tools,
@@ -385,8 +390,42 @@ late results after timeout, eviction, or close. Close cancels scheduled callback
 and deadlines, clears resident snapshots, and prevents new reads without waiting
 for an uncooperative store. At most two started unresolved read reservations can
 remain until settlement; the SQL owner bounds and closes its separate work.
-Snapshots are not authority for remote dispatch; S2-03c must freshly check saved
-settings before each attempt. See the [snapshot record](../docs/implementation/admin-s2-03b.md).
+Snapshots are not authority for remote dispatch; the destination service freshly
+checks saved settings before each attempt. See the [snapshot record](../docs/implementation/admin-s2-03b.md).
+
+The [collector](../src/logs/audit/audit-collector.ts) copies admitted content and
+charges one item and serialized-envelope byte account across queued, reading,
+sending, and backoff states. Defaults are 128 global/16 tenant items, 8 MiB/1 MiB
+serialized envelopes, 131,072 event bytes, 32 tenants, and two active exports with
+one per tenant. Tenant FIFO includes backoff. Each item has one 30-second age
+from admission; an authorization read has at most 2.5 seconds. These are content
+and record bounds, not measured JavaScript heap.
+
+The destination service reads one full current saved version before each attempt.
+It requires enabled state and the captured revision, then recovers that version's
+credential. Missing/disabled/changed settings discard matching old work without
+retargeting it. Read failure starts no send. Three authorization cycles include
+read failure and sender busy. Only temporary read failure, busy, or typed transient
+send failure permits retry. Exponential delay starts at 250 ms, caps its base at
+two seconds, and adds up to 25% jitter. Retry-After is a minimum; work drops if
+its delay cannot fit remaining age. No SQL transaction spans network work.
+
+Successful current, unexpired snapshot loads report an observed enabled revision,
+or no active revision for disabled/absent settings. The collector cancels existing
+mismatches, or all existing work on no active revision. Failed loads notify
+nothing; unknown tenants retain no state. This activity-scoped observation is no
+global revision order or Save/Test broadcast. A late observation can lose work
+conservatively; it cannot revive or retarget it. A later Save can race a send
+already authorized, and sent data cannot be recalled.
+
+A read deadline, age, observed change, or close clears the collector's event and
+aborts its attempt. Unsettled reads/native work retain charged metadata
+reservations until physical settlement, without retaining queue content or
+releasing admission early. The sender clears its owned request body and auth on
+abort, even during uncancellable DNS. `start` returns separate outcome and
+physical-settlement promises; the collector holds its slot through settlement.
+See the [dispatch record](../docs/implementation/admin-s2-03c.md) for retry,
+lifetime, shutdown, and evidence limits.
 
 The [projection owner](../src/logs/audit/audit-event-projection.ts) reserves
 serialized input/metadata space before assigning result space. Fixed limits are
@@ -421,11 +460,17 @@ Test slot until its callback, including late store reads, settles. Late reads
 cannot start a send. The sender can settle its caller before native DNS cleanup;
 its separate sender slot stays occupied until that work ends.
 The operation has no queue, retry loop, result history, or background polling.
-The later capture and dispatch work must supply shared aggregate delivery bounds.
+Hosted composition shares one sender between Test and export, with four native
+DNS/TLS/HTTP slots and the same request/security limits. They also share the SQL
+runtime (two active/four pending calls). Test retains its four-operation bound;
+the collector separately permits two active exports, one per tenant.
 
-The isolated [OtlpAuditSender](../src/logs/audit/otlp-audit-sender.ts) accepts a
+The one-shot [OtlpAuditSender](../src/logs/audit/otlp-audit-sender.ts) accepts a
 supplied destination/auth record, projected AuditEvent, and optional AbortSignal.
-It sends one OTLP/HTTP JSON request and returns a typed bounded outcome. Its
+It sends one OTLP/HTTP JSON request. `send` retains its typed outcome contract;
+`start` also exposes physical settlement. Preparation is synchronous; native work
+holds a clearable encoded body/auth holder, not the original event or destination.
+Abort zeroes and clears that body and auth reference. Its
 [destination policy](../src/logs/audit/public-audit-destination.ts) checks every
 DNS answer; its [TLS owner](../src/logs/audit/audit-https-connection.ts) pins the
 selected address and checks the actual peer and server certificate before HTTP
@@ -534,7 +579,8 @@ Audit-logs owns the optional hosted settings service, credential protection,
 store, bounded SQL runtime, and saved-destination Test. Web calls the service
 for the trusted current tenant and actor. Test sends one synthetic event; the
 separate tool and administration capture shares hosted activity-driven snapshots.
-The downstream sink refuses events; customer completion dispatch remains absent.
+The collector admits bounded memory and freshly authorizes each attempt before
+using the same sender as Test. Neither stream enters SystemLog.
 
 An **import dependency** points from an importer to the component whose module
 it imports. The rules count runtime and whole-statement type-only imports
@@ -828,8 +874,8 @@ flowchart TB
   end
   deploy_settings[("Optional managed PostgreSQL<br/>Private thermus_admin schema<br/>Selected Supabase target; rollout unverified")]
   deploy_hosted_node -->|pg / verified TLS when configured| deploy_settings
-  deploy_collector["External system: customer Collector<br/>Saved-destination Test / OTLP HTTP JSON"]
-  deploy_hosted_node -->|explicit Test / HTTPS| deploy_collector
+  deploy_collector["External system: customer Collector<br/>Customer events and saved Test / OTLP HTTP JSON"]
+  deploy_hosted_node -->|authorized export and Test / HTTPS| deploy_collector
   deploy_workos["External system: WorkOS / AuthKit<br/>HTTPS identity / organization services"]
   deploy_public["External systems: public websites<br/>HTTP / HTTPS pages and Brave HTML"]
   deploy_hosted_node -->|HTTPS SDK / key set| deploy_workos
@@ -888,7 +934,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection and activity-driven settings snapshots, tenant destination validation and credential protection, atomic settings revisions, bounded saved-destination Tests, and one-shot Collector requests. | AuditLog event methods and AuditEventSink; public destination-settings service and Test outcomes, neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender. MCP and web capture bounded customer events through shared hosted activity-driven snapshots. The downstream sink refuses them; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot Collector requests. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
@@ -957,11 +1003,13 @@ The pool is lazy: configuration does not establish a live SQL connection or prov
 TLS/grants. Missing or failed storage leaves MCP and admitted product access
 independent of SQL. The local edition does not open this pool.
 
-Hosted application close starts MCP cleanup and SQL cleanup together. The SQL
-runtime rejects new work, expires admitted calls and bounds pool closure within
-the existing process shutdown deadline. Hosted composition first closes its
-snapshot owner so no new settings load can start or late result restore capture. The settings datastore persists across
-runtime closure; tool content and export queues are not stored here.
+Hosted application close starts MCP cleanup and hosted storage cleanup together.
+Hosted composition first closes snapshots, then the collector stops admission,
+clears content and aborts attempts, then SQL closes. The SQL runtime rejects new
+work, expires admitted calls and bounds pool closure within the existing process
+shutdown deadline. Unsettled read/native work retains charged metadata
+reservations; late results cannot start dispatch or restore content. The settings
+datastore persists across runtime closure; export queues are memory-only.
 
 ## Design choices and current soft spots
 
@@ -988,9 +1036,10 @@ The following limits affect architectural decisions today:
   [accountChangeRecorder](../src/app/application.ts). Step records are explicitly
   [best effort](../src/pipelines/execution/step-record.ts). These streams provide
   no customer audit access. Separate customer capture is wired through a supplied
-  AuditLog. Hosted activity-driven snapshots gate future capture; a default
-  downstream refusal still prevents completion dispatch. Bounded dispatch remains
-  planned; Thermus does not store audit event history.
+  AuditLog. Hosted activity-driven snapshots gate future capture, and bounded
+  asynchronous dispatch freshly authorizes each attempt. Queue pressure, expiry,
+  failure, and restart can lose events; retries can duplicate receipt. Thermus
+  stores no audit history and promises no durable Collector storage.
 - [BillingFree](../src/accounts/billing/billing-free.ts) returns a free plan and
   zero billed seats, including after seat updates. The billing role is a seam,
   but there is no paid-plan implementation or durable seat billing here.

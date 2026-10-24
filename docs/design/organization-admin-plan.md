@@ -10,8 +10,9 @@ saved-destination Test. The S2-03a candidate adds bounded customer
 capture at MCP and protected Admin boundaries; see its
 [implementation record](../implementation/admin-s2-03a.md). The S2-03b candidate
 adds activity-driven settings snapshots; see its
-[implementation record](../implementation/admin-s2-03b.md). Its downstream sink
-refuses events. Bounded queued delivery remains S2-03c.
+[implementation record](../implementation/admin-s2-03b.md). S2-03c adds bounded
+queued delivery and fresh attempt authorization; see its
+[implementation record](../implementation/admin-s2-03c.md).
 This candidate is not release evidence.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
@@ -63,8 +64,8 @@ settings page and Save. S2-02a implements the isolated sender, and S2-02b adds
 the saved-destination Test. The S2-03a candidate captures customer tool/Admin
 events through a supplied sink. S2-03b adds fresh enabled/revision snapshots from
 activity-driven settings reads. Unknown, disabled, or expired snapshots drop the
-current event. The downstream sink still refuses events until S2-03c adds bounded
-admission and dispatch.
+current event. S2-03c connects the revision-bound handoff to bounded memory
+admission and current-version dispatch.
 [Tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 now omit tool URLs, queries, reasons, and results from operator output.
 
@@ -82,7 +83,7 @@ Keep permission checks, origin/CSRF protection, escaping, and non-cacheable resp
 | Web/account | Native forms, browser sessions, selected organization, safe responses, and Slice 3 browser MFA proof. |
 | Destination settings | Slice 2 tenant settings, revisions, and encrypted credential references. |
 | System logs | Internal engineering diagnostics in `src/logs/system/`; no customer access. |
-| Audit logs/app lifecycle | Customer audit events, destination settings in `src/logs/audit/`, and planned bounded OTLP delivery and shutdown. |
+| Audit logs/app lifecycle | Customer audit events, destination settings in `src/logs/audit/`, and bounded OTLP delivery and shutdown. |
 
 Reuse [identity/access](../../src/accounts/identity/access-context.ts),
 [BrowserSession](../../src/accounts/identity/browser-session.ts), and
@@ -577,7 +578,8 @@ extends `toolCompleted` with validated input and final public result copies. The
 event owner redacts recognized credentials and bounds serialized UTF-8 bytes.
 Invitation and Audit logs actions use event-specific metadata methods. Capture
 uses independently trusted boundary context. S2-03b gates hosted capture on
-fresh enabled/revision metadata, with a downstream sink that refuses each event.
+fresh enabled/revision metadata. S2-03c supplies bounded asynchronous dispatch
+with a fresh full-version authorization read before each attempt.
 Add administration event methods only as the actions ship. Audit events have no generic `info`/`error` API and no automatic source or stack metadata. Never
 repurpose a system logger or its OTel adapter, or share their output stream with
 audit delivery. Shared classes under `src/logs/` are appropriate only for real
@@ -598,7 +600,8 @@ Slice 2 promises no in-app log viewer. S2-01b implements the Audit logs settings
 UI and Save in PR #238. S2-02b adds the optional saved-destination Test
 with one synthetic event. S2-03a adds MCP/admin capture, redaction, and truncation
 through a supplied sink. S2-03b adds hosted activity-driven settings snapshots;
-S2-03c must still supply customer completion dispatch.
+S2-03c adds customer completion dispatch; its queue can drop work, and receipt
+or durable Collector storage is not guaranteed.
 The technical database, role, SQL table, and environment names remain compatible,
 including `DATABASE_URL` and `LOGGING_DESTINATION_ENCRYPTION_KEY`.
 
@@ -2015,7 +2018,7 @@ authority to dispatch; 03c owns current store checks.
 **Implementation candidate.** The [S2-03b record](../implementation/admin-s2-03b.md)
 describes the snapshot owner, fixed resource bounds, failure behavior, and shutdown.
 Cold/disabled/expired activity drops the current event; loads affect future capture
-only. The downstream sink refuses events, so no customer dispatch is established.
+only. That slice used a refusing downstream sink; S2-03c supplies dispatch.
 Acceptance and full-candidate execution evidence remain required before Ready.
 
 #### S2-03c — Bounded queue and current-revision dispatch
@@ -2041,7 +2044,8 @@ Scenario: Keep product and shutdown bounded during overload
   Then their outcomes remain usable and export stops within the app deadline
 ```
 
-**Gap / expected red.** There is no customer queue or revision-aware dispatcher. Overload
+**Gap / expected red at the S2-03b parent.** There is no customer queue or
+revision-aware dispatcher. Overload
 and cross-instance change cases should be red. Keep 02a one-shot protocol, 02b saved Test,
 and 03a/b capture/loading outcomes green.
 
@@ -2091,9 +2095,25 @@ Put queue units under `test/unit/logging/audit/`, real collaboration under
 under `test/acceptance/logging/audit/`. Reuse existing
 process/MCP drivers rather than create a parallel shutdown harness.
 
-**Done.** Bounded queue, current-revision sends/retries, outage, Test coexistence, and
-shutdown acceptance passes. Fixed item/byte/destination/concurrency/retry/time limits are
-recorded. Product results stay complete and independent of export.
+**Implementation candidate.** The [S2-03c record](../implementation/admin-s2-03c.md)
+describes the implemented bounds, authority, retry rules, observations, and cleanup.
+One account covers queued, reading, sending, and backoff content: 128/16 global/tenant
+items, 8 MiB/1 MiB serialized envelopes, 131,072-byte events, 32 tenants, and two
+active exports with one per tenant. Age is 30 seconds, reads have 2.5 seconds, and
+three authorization cycles include temporary read failures and busy outcomes.
+Backoff starts at 250 ms, doubles to a two-second base cap, and adds up to 25%
+jitter. Retry-After is honored or work is dropped when the remaining age cannot
+fit it. A read deadline drops work; an unresolved physical operation keeps its
+charged reservation after content is cleared.
+
+Successful current snapshot loads notify existing work of an observed revision;
+failed loads do not. Disabled/absent observations cancel all old work, and other
+revisions cancel mismatches. This is activity-scoped, with no Save/Test broadcast
+or global revision order. Native sender admission (four) and SQL admission (two
+active/four pending) are shared by Test and export; their operation limits remain
+separate. Product results stay independent of export. Complete-candidate results
+and review are recorded in the PR and local review index; source specifications
+do not establish a gate pass.
 
 #### S2-04 — Integrated proof, owner rollout, and release
 

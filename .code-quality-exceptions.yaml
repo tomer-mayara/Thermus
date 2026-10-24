@@ -56,8 +56,8 @@ exceptions:
     expires: 2026-12-23
   - path: src/logs/audit/otlp-audit-sender.ts
     metric: mi
-    bound: 65
-    reason: One sender owns attempt order, admission, caller deadline, and physical-work lifetime. Functions have at most four paths. Keeping these small operations together makes abandoned DNS and socket work visible until disposal.
+    bound: 64
+    reason: One sender owns synchronous payload preparation, safe failure mapping, caller outcome and physical cleanup. Functions have at most six paths. Clearable request state is needed while native DNS ignores cancellation; separating its admission and cleanup would hide that lifetime.
     expires: 2026-12-23
   - function: src/logs/audit/otlp-audit-encoding.ts#encodeAuditEvent
     metric: crap
@@ -91,8 +91,8 @@ exceptions:
     expires: 2026-12-22
   - path: src/logs/audit/destination-settings-service.ts
     metric: mi
-    bound: 42
-    reason: One owner keeps credential retention, validated reads, atomic revision Save and saved-version Test together. The named saved-form predicate separates one pure rule; Test orchestration has fourteen paths for distinct pre-read, send, post-read and cancellation outcomes. Keeping the operation visible preserves credential and revision order without another service.
+    bound: 41
+    reason: One owner keeps validated credential recovery, atomic Save, saved Test and fresh export authorization together. Test has fourteen paths; export authorization has ten for distinct unavailable, changed, aborted and credential outcomes. One fresh version supplies all dispatch fields. Splitting credentials or revision checks into another service would weaken visible ownership.
     expires: 2026-12-22
   - path: src/logs/audit/destination-test.ts
     metric: mi
@@ -116,11 +116,21 @@ exceptions:
     expires: 2026-12-24
   - path: src/logs/audit/audit-snapshots.ts
     metric: mi
-    bound: 52
-    reason: One owner keeps activity-only admission, metadata accounting, freshness, backoff, physical read reservations, absolute deadlines and shutdown consistent. Each function has at most eight paths; splitting these shared lifetime invariants across more owners would hide the resource rule. Focused cases cover cold loads, failures, late completion, eviction and close.
+    bound: 51
+    reason: One owner keeps activity admission, bounded metadata, freshness, backoff, physical reads, deadlines and shutdown consistent. The load function has ten paths after the optional successful-observation hook; failure isolation must not invalidate valid metadata. Splitting its shared reservations or observation checks would obscure lifetime and authority.
     expires: 2026-12-24
   - path: src/logs/audit/audit-snapshot-state.ts
     metric: mi
     bound: 67
     reason: Small state contracts and pure projections keep fixed limits, enabled/revision validation and detached bounded AuditEvent ownership explicit. Four functions have at most five paths. A cache framework or per-field modules would spread one metadata contract.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-collector.ts
+    metric: mi
+    bound: 40
+    reason: One queue owner keeps admission, tenant FIFO, one item and byte account, authorization, retry, fixed age and physical settlement consistent. Nineteen functions have at most eleven paths; the short authorization frame prevents a destination or event alias from surviving a send wait. Moving each state or counter into another owner would obscure release-once and cancellation rules. Focused tests cover overload, deadlines, revisions and each close phase.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-collector-state.ts
+    metric: mi
+    bound: 59
+    reason: Two small calculations own positive bound validation and typed retry eligibility, exponential delay, jitter and Retry-After precedence. They have four and eight paths. State records stay with these limits; a policy hierarchy or per-field modules would add structure without reducing the rules.
     expires: 2026-12-24

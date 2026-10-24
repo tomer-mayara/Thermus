@@ -33,7 +33,7 @@ export async function openLoggingStorage(environment: Readonly<Record<string, st
 }
 
 /** Test and customer export share the sender's native DNS, TLS, and HTTP admission. */
-export function composeLoggingStorage(runtime: Pick<HostedLoggingStorage, 'store' | 'close'>, key: Uint8Array, sender: DestinationTestSender & TrackedAuditSender = new OtlpAuditSender()): HostedLoggingStorage {
+export function composeLoggingStorage(runtime: Pick<HostedLoggingStorage, 'store' | 'close'>, key: Uint8Array, sender: DestinationTestSender & TrackedAuditSender = new OtlpAuditSender()): HostedLoggingStorage & { readonly service: DestinationSettingsService; readonly dispatch: RevisionBoundAuditSink } {
   const service = new DestinationSettingsService(runtime.store, key, sender);
   const dispatch = new AuditCollector(service, sender);
   return { store: runtime.store, service, dispatch, close: () => { dispatch.close(); return runtime.close(); } };

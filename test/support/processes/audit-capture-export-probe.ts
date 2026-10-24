@@ -31,14 +31,16 @@ const tracked = {
   },
 };
 const storage = composeLoggingStorage({ store, close: async () => {} }, new Uint8Array(32).fill(7), tracked);
-const snapshots = new AuditSnapshots(store, storage.dispatch!);
+const snapshots = new AuditSnapshots(store, storage.dispatch);
 const audit = new AuditLog(snapshots);
 const actor = { authority: 'runtime-capture-authority', subject: 'runtime-capture-admin' };
 const result = 'password=private-result-token\n' + '🦎'.repeat(20_000);
 const completion = { timestamp: '2026-10-24T12:00:00Z', organizationId: tenant, actor, operationId: 'runtime-captured-operation', tool: 'search' as const, status: 'success' as const, durationMs: 2, input: { query: 'runtime token=private-query-token', reason: 'api_key=private-reason-token' }, result };
 try {
-  const saved = await storage.service!.save(tenant, { expectedRevision: null, endpoint: destination.endpoint, auth: 'bearer', token: destination.token, enabled: true });
-  assert.equal(saved.status, 'saved');
+  const saved = await storage.service.save(tenant, { expectedRevision: null, endpoint: destination.endpoint, auth: 'bearer', token: destination.token, enabled: true });
+  assert.ok(saved.status === 'saved');
+  assert.ok(saved.settings.revision);
+  const revision = saved.settings.revision;
   audit.toolCompleted({ ...completion, operationId: 'cold-trigger-operation', result: 'cold-trigger-content' });
   await new Promise<void>(resolve => setImmediate(resolve));
   const beforeDispatchReads = reads;
@@ -47,7 +49,7 @@ try {
   try { audit.toolCompleted(completion); exported = await attempted.promise; }
   finally { clearTimeout(guard); }
   const dispatchReads = reads - beforeDispatchReads;
-  const tested = await storage.service!.test(tenant, { expectedRevision: settings!.revision, endpoint: destination.endpoint, auth: 'bearer', token: '', enabled: true }, actor);
+  const tested = await storage.service.test(tenant, { expectedRevision: revision, endpoint: destination.endpoint, auth: 'bearer', token: '', enabled: true }, actor);
   process.stdout.write(`${JSON.stringify({ exported, tested, saves, dispatchReads, productResultBytes: Buffer.byteLength(result) })}\n`);
 } finally {
   snapshots.close();

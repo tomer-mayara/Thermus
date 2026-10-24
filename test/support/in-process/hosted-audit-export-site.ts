@@ -15,7 +15,7 @@ export async function serveHostedAuditExportSite(t: TestContext) {
     enable: async (index = 0, endpoint = 'https://collector.example/v1/logs') => {
       const tenant = capture.tenant(snapshotOrganizations[index]);
       const current = store.settings.get(tenant);
-      return storage.service!.save(tenant, { expectedRevision: current?.revision ?? null, endpoint, auth: 'none', token: '', enabled: true });
+      return storage.service.save(tenant, { expectedRevision: current?.revision ?? null, endpoint, auth: 'none', token: '', enabled: true });
     },
   };
 }

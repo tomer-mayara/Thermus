@@ -431,8 +431,12 @@ stays complete; fetch withholding retains its existing empty-success projection.
 Hosted capture uses activity-driven enabled/revision snapshots when settings
 storage is available. Cold, disabled, or expired snapshots drop the current
 event; loads affect only future activity and never wait in the tool response.
-The downstream sink still refuses events. S2-03c must add bounded delivery;
-capture does not prove client receipt or Collector storage.
+Hosted storage supplies bounded asynchronous delivery. Each attempt reads one
+current saved version and requires its enabled state and exact captured revision;
+old work is dropped without retargeting. Queue pressure, expiry, and failures can
+lose events, and retries can duplicate them. Product responses do not wait for
+export. Capture does not prove client receipt or Collector storage. See the
+[dispatch record](../implementation/admin-s2-03c.md) for fixed bounds and lifetime.
 See the [capture record](../implementation/admin-s2-03a.md) for fixed bounds and
 [search records](mcp-search-tool.md#execution-and-logging) for the search contract.
 
