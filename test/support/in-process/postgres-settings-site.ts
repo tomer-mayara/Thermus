@@ -14,7 +14,7 @@ export async function postgresSettingsSite(t: TestContext, certificateNames = 'D
   const directory = await mkdtemp(join(tmpdir(), 'thermus-settings-'));
   const container = `thermus-settings-${randomUUID()}`;
   t.after(async () => {
-    await exec('docker', ['rm', '-f', container]).catch(() => {});
+    await exec('docker', ['rm', '-f', '--volumes', container]).catch(() => {});
     await rm(directory, { recursive: true, force: true });
   });
   await exec('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', join(directory, 'server.key'), '-out', join(directory, 'server.crt'), '-days', '1', '-subj', '/CN=localhost', '-addext', `subjectAltName=${certificateNames}`]);

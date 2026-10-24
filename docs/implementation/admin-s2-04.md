@@ -30,6 +30,19 @@ adds no runtime behavior. Current-candidate checks and reviews are recorded
 separately; CR implementation completion does not close the redaction block or
 any merge, activation, or release hold.
 
+## Verification fixture cleanup
+
+The PR245 container gate reported ENOSPC. A read-only inventory also found
+dangling anonymous PostgreSQL volumes with this fixture's TLS command in the
+current verification window. These observations do not prove that the volumes
+were the sole cause of the disk failure.
+
+The disposable PostgreSQL fixture now uses `docker rm -f --volumes` at cleanup
+to remove its anonymous data volume with its container. This repairs a test
+resource lifetime; production architecture and storage policy do not change.
+The manager reruns the complete selected checks after resource cleanup. The
+redaction correction and all merge, activation, and release holds remain open.
+
 ## Development proof
 
 - The dedicated Collector gate passes all nine cases, including the integrated
