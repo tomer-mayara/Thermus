@@ -5,6 +5,21 @@ Test action for a current Admin. It is stacked over PR #240 and includes the
 settings read/Save dependency from PR #238, merged into this branch. The
 comparison with #240 therefore includes both settings read/Save and Test.
 
+## Logging object CR follow-up
+
+The settings service now requires its DestinationTestSender argument. App
+composition and the real process probe select OtlpAuditSender explicitly. Tests
+that only read or save use a role double; Test-specific doubles remain explicit.
+The service no longer imports or constructs the concrete transport. This source
+API change keeps saved-version, credential, deadline, cancellation, and result
+rules unchanged. No missing-argument runtime guard or new factory is added.
+
+The branch preserves the exact PR #238 side-parent
+`e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81`. Earlier results in this record describe
+the original candidate. Fresh CR verification and current revision pins are
+recorded in `ast-report/logs-refactor-checks/pr241/` and the PR review evidence.
+No human approval or merge is recorded by this follow-up.
+
 ## Behavior and authority
 
 The hosted Audit logs page has a **Test saved destination** button. Its POST
@@ -98,8 +113,9 @@ PR remains separate. Existing member and MCP permissions are unchanged.
 Against main, the complete candidate retains the storage, System/Audit split,
 and isolated sender contract changes described in the linked earlier records.
 
-S2-02b adds `DestinationSettingsService.test`, an optional supplied sender with
-one default sender per service, and the typed result described above. Existing
+S2-02b adds `DestinationSettingsService.test` and the typed result described
+above. The logging object CR makes its supplied sender required; composition
+selects one real sender per service at this slice. Existing
 read and Save results stay unchanged. `AuditEvent` gains the synthetic variant;
 the encoder handles its named fields. Existing `AuditLog` methods and the
 synchronous `AuditEventSink` contract stay unchanged. Nothing connects tool or

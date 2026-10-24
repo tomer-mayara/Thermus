@@ -1,4 +1,5 @@
 import { DestinationSettingsService } from '../logs/audit/destination-settings-service.ts';
+import { OtlpAuditSender } from '../logs/audit/otlp-audit-sender.ts';
 import { loadLoggingStorageConfig } from '../runtime/config/logging-storage-config.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
@@ -19,7 +20,7 @@ export async function openLoggingStorage(environment: Readonly<Record<string, st
   try {
     const { openDestinationSettingsRuntime } = await import('../logs/audit/pg-destination-settings-store.ts');
     const runtime = await openDestinationSettingsRuntime(config);
-    return { store: runtime.store, service: new DestinationSettingsService(runtime.store, config.encryptionKey), close: () => runtime.close() };
+    return { store: runtime.store, service: new DestinationSettingsService(runtime.store, config.encryptionKey, new OtlpAuditSender()), close: () => runtime.close() };
   } catch {
     logger.error('Logging storage is unavailable: DATABASE_URL and DATABASE_CA_CERT_PATH must permit a verified TLS connection.');
     return undefined;

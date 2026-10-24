@@ -4,7 +4,6 @@ import type { DestinationSettingsStore, StoredDestinationSettings } from './dest
 import type { AuditSendOutcome } from './audit-send.ts';
 import { DestinationTestLifetime } from './destination-test.ts';
 import type { DestinationTestResult, DestinationTestSender } from './destination-test.ts';
-import { OtlpAuditSender } from './otlp-audit-sender.ts';
 
 export type { DestinationTestResult } from './destination-test.ts';
 
@@ -33,7 +32,7 @@ export type DestinationSettingsSaveResult =
 export class DestinationSettingsService {
   private readonly codec: DestinationCredentialCodec;
   private readonly tests = new DestinationTestLifetime();
-  constructor(private readonly store: DestinationSettingsStore, key: Uint8Array, private readonly sender: DestinationTestSender = new OtlpAuditSender()) {
+  constructor(private readonly store: DestinationSettingsStore, key: Uint8Array, private readonly sender: DestinationTestSender) {
     this.codec = new DestinationCredentialCodec(key);
   }
 

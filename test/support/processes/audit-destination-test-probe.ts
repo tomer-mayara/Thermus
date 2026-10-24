@@ -4,6 +4,7 @@ import type { RequestContext } from '../../../src/accounts/identity/access-conte
 import type { SignedInBrowserSession } from '../../../src/accounts/identity/browser-session.ts';
 import { LoggingRoutes } from '../../../src/interfaces/web/account/logging-routes.ts';
 import { DestinationSettingsService } from '../../../src/logs/audit/destination-settings-service.ts';
+import { OtlpAuditSender } from '../../../src/logs/audit/otlp-audit-sender.ts';
 import type { DestinationSettings, DestinationSettingsStore, StoredDestinationSettings } from '../../../src/logs/audit/destination-settings-store.ts';
 import { HostedBrowser, formLabelled, formsIn } from '../drivers/browser/hosted-browser.ts';
 
@@ -42,7 +43,7 @@ const submissions: DestinationTestSubmission[] = JSON.parse(await readFile('/fix
 const results = [];
 for (const submission of submissions) {
   const store = new DestinationStoreFake();
-  const service = new DestinationSettingsService(store, new Uint8Array(32).fill(7));
+  const service = new DestinationSettingsService(store, new Uint8Array(32).fill(7), new OtlpAuditSender());
   const saved = await service.save(tenantId, { expectedRevision: null, endpoint: submission.endpoint, auth: submission.auth, enabled: false, token: submission.token });
   assert.equal(saved.status, 'saved');
   const before = JSON.stringify(store.current);

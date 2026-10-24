@@ -294,7 +294,9 @@ actual-connection address and TLS checks. No provider SDK enters the
 
 Scope: one Thermus Node server container. Solid arrows show runtime calls;
 thick arrows show composition. Dashed arrows show type-only source dependencies.
-The saved-destination Test uses the sender in production. Tool and administration
+App composition supplies the concrete sender to the settings service's required
+DestinationTestSender role. The service does not select its own transport.
+The saved-destination Test uses that sender in production. Tool and administration
 event projection has no production capture or export dispatch caller.
 
 ```mermaid

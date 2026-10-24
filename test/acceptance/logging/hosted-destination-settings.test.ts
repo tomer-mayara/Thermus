@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { DestinationSettingsService } from '../../../src/logs/audit/destination-settings-service.ts';
+import type { DestinationTestSender } from '../../../src/logs/audit/destination-test.ts';
 import { DestinationSettingsFake } from '../../support/doubles/logging/destination-settings-fake.ts';
 import { formLabelled, formsIn, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
 import { hostedConfig, hostedRootConfig } from '../../support/fixtures/hosted-config.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
+
+const senderStub: DestinationTestSender = { send: async () => { throw new Error('Read and Save must not send.'); } };
 
 const organizationId = 'org_LOGGING_A';
 const admin = { id: 'user_LOGGING_ADMIN', email: 'admin@example.com', firstName: 'Admin' };
@@ -48,7 +51,7 @@ for (const role of ['user', 'revoked-admin'] as const) {
 
 async function loggingSite(t: TestContext, config = hostedConfig) {
   const store = new DestinationSettingsFake();
-  const service = new DestinationSettingsService(store, Buffer.alloc(32, 7));
+  const service = new DestinationSettingsService(store, Buffer.alloc(32, 7), senderStub);
   const otherOrganization = 'org_LOGGING_B';
   const site = await serveWorkOSSite(t, {
     config, organizations: [organizationId, otherOrganization],

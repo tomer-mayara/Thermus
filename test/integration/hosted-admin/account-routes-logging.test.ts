@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DestinationSettingsService } from '../../../src/logs/audit/destination-settings-service.ts';
+import type { DestinationTestSender } from '../../../src/logs/audit/destination-test.ts';
 import { DestinationSettingsFake } from '../../support/doubles/logging/destination-settings-fake.ts';
 import { serveAdministration } from './fixtures/administration-routes-fixtures.ts';
 import { accountRequest, serve } from './fixtures/account-routes-fixtures.ts';
 
+const senderStub: DestinationTestSender = { send: async () => { throw new Error('Read and Save must not send.'); } };
+
 for (const method of ['GET', 'HEAD']) {
   test(`Given a password Admin session, when ${method} reads Audit logs, then safe settings and refreshed cookies reach the browser`, async () => {
     const store = new DestinationSettingsFake();
-    const service = new DestinationSettingsService(store, Buffer.alloc(32, 8));
+    const service = new DestinationSettingsService(store, Buffer.alloc(32, 8), senderStub);
     const { routes, failures } = serveAdministration({}, { session: { mfaCompleted: false }, routes: { logging: service } });
     const response = await routes.handle(accountRequest('/logging', 'session=ann', { method }));
     assert.equal(response.status, 200); assert.match(response.headers.get('Set-Cookie')!, /session=refreshed/); assert.equal(response.headers.get('Cache-Control'), 'no-store');
