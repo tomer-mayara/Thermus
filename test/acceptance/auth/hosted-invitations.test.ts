@@ -8,6 +8,7 @@ import { adminGrant, userGrant } from '../../support/fixtures/hosted-roles.ts';
 
 const membersPage = 'https://thermus.example/team/members';
 const deniedChange = /Your account cannot make this change in the selected organization\./;
+const removalLabels = ['sam', 'otto', 'cy', 'fay', 'eve', 'una'].map(name => `Remove ${name}@example.com`);
 
 function invitationLines(body: string): readonly string[] {
   return [...body.matchAll(/<p>([^<]* invitation, (?:pending|accepted|revoked|expired)\.)<\/p>/g)].map(([, line = '']) => line);
@@ -34,7 +35,8 @@ describe('Hosted invitations through the public routes, with session and directo
     const nia = await statusesOf(site.browserOf(userOf('user-nia', 'org-a')), ['members', 'portal']);
     const shown = invitationLines((await eve.open('members')).body);
 
-    assert.deepEqual([labelsOf(evePage.forms), labelsOf(samPage.forms)], [['Invite'], ['Invite']]);
+    assert.deepEqual([labelsOf(evePage.forms), labelsOf(samPage.forms)], [['Invite', ...removalLabels], ['Invite', ...removalLabels]]);
+    for (const page of [evePage, samPage]) assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.deepEqual([userInvitation.status, userInvitation.location?.href], [303, membersPage]);
     assert.deepEqual([adminInvitation.status, adminInvitation.location?.href], [303, membersPage]);
     for (const answer of forged) {
@@ -82,7 +84,8 @@ describe('Hosted invitations through the public routes, with session and directo
       'pending.user@example.com: User invitation, pending.',
       'pending.admin@example.com: Admin invitation, pending.',
     ]);
-    assert.deepEqual(labelsOf(page.forms), ['Invite', 'Resend the invitation to pending.user@example.com', 'Revoke the invitation to pending.user@example.com', 'Resend the invitation to pending.admin@example.com', 'Revoke the invitation to pending.admin@example.com']);
+    assert.deepEqual(labelsOf(page.forms), ['Invite', ...removalLabels, 'Resend the invitation to pending.user@example.com', 'Revoke the invitation to pending.user@example.com', 'Resend the invitation to pending.admin@example.com', 'Revoke the invitation to pending.admin@example.com']);
+    assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.deepEqual([resent.status, revoked.status, resentAgain.status], [303, 303, 409]);
     assert.match(resentAgain.body, /The invitation is no longer pending/);
     assert.deepEqual(forged.map(({ status }) => status), [303, 403, 409]);

@@ -11,7 +11,9 @@ for (const outcome of ['applied', 'denied', 'stale', 'unsupported', 'last-admin'
     const audit = new AuditLog({ writeAuditEvent: event => { events.push(event); } });
     audit.administrationChanged({ ...context, action: 'remove-member', target: { membershipId: 'membership-1', token: 'secret' }, revision: 'private-revision', outcome } as unknown as AdministrationChange);
     assert.deepEqual(events, [{ ...context, eventName: 'organization.changed', action: 'remove-member', target: { membershipId: 'membership-1' }, outcome }]);
-    const encoded = JSON.parse(encodeAuditEvent(events[0]!).toString('utf8'));
+    const event = events[0];
+    assert.ok(event, 'Capture must produce a removal event.');
+    const encoded = JSON.parse(encodeAuditEvent(event).toString('utf8'));
     const attributes = encoded.resourceLogs[0].scopeLogs[0].logRecords[0].attributes;
     assert.ok(attributes.some((attribute: { key: string; value: { stringValue: string } }) => attribute.key === 'target.membership_id' && attribute.value.stringValue === 'membership-1'));
     assert.doesNotMatch(JSON.stringify(encoded), /secret|private-revision|target.email|target.invitation_id/);

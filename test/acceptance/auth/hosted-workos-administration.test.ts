@@ -29,6 +29,7 @@ const hal = person('hal');
 const eve = person('eve');
 const gus = person('gus');
 const pia = person('pia');
+const removalLabels = [sam, dan, cal, ada, bea, hal].map(person => `Remove ${person.email}`);
 
 // Acme: Sam, Dan, and Cal have Admin; Ada and Hal have User and Admin; Bea has User. Gus has only the default role,
 // and Eve is inactive. Globex: Bea and Pia have User. Acme has six active product members.
@@ -232,7 +233,8 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     assert.ok(invitation, 'WorkOS has no invitation for new@example.com.');
     const { token, acceptInvitationUrl } = await site.world.connection().workos.userManagement.getInvitation(invitation.id);
 
-    assert.deepEqual(labelsOf(first.forms), ['Invite']);
+    assert.deepEqual(labelsOf(first.forms), ['Invite', ...removalLabels]);
+    assert.deepEqual(first.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.match(first.body, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);
     assert.doesNotMatch(first.body, /Only a sign-in with the invited email address can accept the invitation\./);
     assertRedirectTo(sent, 'members');
@@ -301,7 +303,8 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const adminInvite = await browser.submit({ ...userForm, fields: { ...userForm.fields, role: 'admin', email: 'x@example.com' } });
     const resend = await browser.post('invitations/resend', { csrf_token: userForm.fields.csrf_token ?? '', organization_id: acme, invitation_id: 'invitation_01OLD' });
 
-    assert.deepEqual(labelsOf(page.forms), ['Invite', 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
+    assert.deepEqual(labelsOf(page.forms), ['Invite', ...removalLabels, 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
+    assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.doesNotMatch(page.body, /old@example\.com/);
     assert.match(page.body, /boss@example\.com: Admin invitation, pending\./);
     assertRedirectTo(adminInvite, 'members');

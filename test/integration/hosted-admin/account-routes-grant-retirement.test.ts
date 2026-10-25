@@ -23,5 +23,8 @@ test('Given current member data, when Members opens, then member details remain 
 
   assert.equal(response.status, 200);
   assert.match(body, /ann@example\.com: active\. Roles: User, Admin\./);
-  assert.ok(formsIn(body).every(({ action }) => action.startsWith('/invitations/')));
+  const forms = formsIn(body);
+  assert.ok(forms.every(({ action }) => action.startsWith('/invitations/') || action === '/members/remove'));
+  assert.equal(forms.filter(({ action }) => action === '/members/remove').length, 1);
+  assert.doesNotMatch(body, /\/members\/grants|Change role|Security/);
 });
