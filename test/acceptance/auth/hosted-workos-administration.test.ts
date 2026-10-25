@@ -199,10 +199,14 @@ describe('Hosted WorkOS edition: changes on stale, inactive, foreign, and forged
       await browser.open('invitations'),
       await browser.post('invitations/send', { organization_id: acme, email: 'new@example.com', role: 'user', csrf_token: csrfToken }),
     ];
-    const administrationRequests = site.world.fake.takeRequests()
+    const requests = site.world.fake.takeRequests();
+    const ownProfilePath = `/user_management/users/${dan.id}`;
+    const administrationRequests = requests
+      .filter(({ method, path }) => !(method === 'GET' && path === ownProfilePath))
       .filter(({ path }) => /role_assignments|\/invitations|\/users\/|organization_memberships\/om_/.test(path) || (path.includes('organization_id=') && !path.includes('user_id=')));
 
     for (const answer of answers) assert.equal(answer.status, 403, answer.body);
+    assert.equal(requests.filter(({ method, path }) => method === 'GET' && path === ownProfilePath).length, answers.length);
     assert.deepEqual(administrationRequests, []);
   });
 });
