@@ -55,6 +55,7 @@ test('S2-04 Given a current password-authenticated Admin and a reachable Collect
     const attributes = attributesOf(record);
     assert.equal(attributes['organization.id'].stringValue, journey.tenant);
     assert.equal(attributes['actor.subject'].stringValue, journey.actor);
+    assert.equal(attributes['actor.name'].stringValue, 'Admin Example');
     assert.equal(attributes['actor.authority'].stringValue, journey.authority);
   }
   const synthetic = records.filter(record => record.eventName === 'audit.destination.test');

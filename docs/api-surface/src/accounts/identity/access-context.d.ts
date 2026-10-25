@@ -1,6 +1,7 @@
 export interface AuthenticatedUser {
     readonly authority: string;
     readonly subject: string;
+    readonly name?: string;
     readonly selectedOrganizationId?: string;
 }
 export interface RoleGrant {

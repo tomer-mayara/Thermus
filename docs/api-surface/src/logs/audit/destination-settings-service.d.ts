@@ -1,3 +1,4 @@
+import type { AuditContext } from './audit-log.ts';
 import type { DestinationSettingsStore } from './destination-settings-store.ts';
 import type { AuditDestination } from './audit-send.ts';
 import type { DestinationTestResult, DestinationTestSender } from './destination-test.ts';
@@ -47,10 +48,7 @@ export declare class DestinationSettingsService {
     private readonly tests;
     constructor(store: DestinationSettingsStore, key: Uint8Array, sender: DestinationTestSender);
     authorizeExport(tenantId: string, expectedRevision: string, signal?: AbortSignal): Promise<ExportAuthorization>;
-    test(tenantId: string, input: DestinationSettingsSaveInput, actor: {
-        readonly authority: string;
-        readonly subject: string;
-    }, signal?: AbortSignal): Promise<DestinationTestResult>;
+    test(tenantId: string, input: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal?: AbortSignal): Promise<DestinationTestResult>;
     private testSaved;
     read(tenantId: string): Promise<DestinationSettingsReadResult>;
     save(tenantId: string, input: DestinationSettingsSaveInput): Promise<DestinationSettingsSaveResult>;

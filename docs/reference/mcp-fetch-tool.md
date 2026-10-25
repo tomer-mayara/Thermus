@@ -426,6 +426,16 @@ exceptions, and request metadata, including for invalid arguments.
 A separate customer `AuditLog` captures validated input and final public text
 after SDK projection and safe failure/cancellation mapping. It uses the trusted
 context, redacts recognized credentials, and bounds only the exported copy.
+Customer events retain `actor.authority` and `actor.subject` and can add optional
+`actor.name` from the resolved account profile. The name is an event-time snapshot
+for readability; it grants no access or routing authority. Blank, control,
+ill-formed, or over-1,024-UTF-8-byte names are omitted. Profile lookup failure
+keeps the ID-only event and the authorized tool outcome. WorkOS checks current
+access first, then attempts one profile read with no retries and a five-second
+request/body deadline, including when export is disabled. Denied resolutions
+make no profile read. The local provider uses its existing account read, and
+local export stays disabled. No email fallback is used. Internal System records
+keep their existing opaque identity fields.
 Invalid arguments and unknown tools have no customer event. The client result
 stays complete; fetch withholding retains its existing empty-success projection.
 Hosted capture uses activity-driven enabled/revision snapshots when settings

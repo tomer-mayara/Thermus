@@ -20,6 +20,13 @@ Capture admission is synchronous and does not wait for SQL, DNS, or export.
 Without hosted storage, and in the local edition, capture retains its discard
 sink. An explicitly supplied audit sink takes precedence.
 
+Customer events can include optional `actor.name` beside the authoritative
+`actor.authority` and `actor.subject`. The name is a bounded event-time profile
+snapshot, including in a synthetic Test event. Dispatch preserves this captured
+value; it does not refresh the profile, change tenant authority, or change
+retry, delivery, and disposal rules. Missing or invalid names retain ID-only
+events. System logs keep their existing opaque identity fields.
+
 Before each attempt, `DestinationSettingsService.authorizeExport` reads exactly
 one full current saved version. It checks enabled state and the exact captured
 revision, then recovers that version's credential through its existing owner.

@@ -950,6 +950,20 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
 [V] Redacts credential URLs while preserving adjacent public JSON fields and ordinary Markdown syntax, with exact exported byte counts
 
+**Customer audit actor names**
+
+- [Actor-name acceptance](../../test/acceptance/logging/audit/actor-name.test.ts) specifies trusted profile names beside original WorkOS IDs for fetch/search, refusal of forged names, and ID-only fallback without a change to product results or System logs.
+- [WorkOS integration](../../test/integration/auth/workos-actor-name.test.ts) specifies the post-grant matched profile read, native-name preference, split-name fallback only for missing/null/blank native names, invalid-name omission, and no profile read after denied access.
+- [WorkOS transport integration](../../test/integration/auth/workos-connection.test.ts) checks that the production SDK aborts a stalled profile response body after five seconds without a retry.
+- [Identity unit cases](../../test/unit/auth/access-context.test.ts), [audit projection cases](../../test/unit/logging/audit/audit-capture.test.ts), and [OTLP encoding cases](../../test/unit/logging/audit/otlp-audit-encoding.test.ts) specify detached frozen names, UTF-8 bounds, Unicode/control refusal, and preservation of actor IDs.
+- [Real Collector journey](../../test/acceptance/logging/audit/hosted-audit-journey.runtime.ts) checks the actor name and original authority/subject on all received tool, administration, destination, and synthetic Test events. Run `npm run test:logging:collector` for the complete dedicated group; this is controlled receipt proof, not deployment proof.
+
+Focused command after a clean build:
+
+```sh
+node --test dist/test/acceptance/logging/audit/actor-name.test.js dist/test/integration/auth/workos-actor-name.test.js dist/test/unit/auth/access-context.test.js dist/test/unit/logging/audit/audit-capture.test.js dist/test/unit/logging/audit/otlp-audit-encoding.test.js
+```
+
 **Customer capture and operator content isolation — S2-03a candidate**
 
 The [capture record](../implementation/admin-s2-03a.md) describes the fixed bounds,

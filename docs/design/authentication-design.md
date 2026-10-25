@@ -131,8 +131,12 @@ or tenant ID. Initially accept human user grants; reject M2M and other tokens.
 
 Put the shared access contracts in one file, `src/accounts/identity/access-context.ts`:
 
-- `AuthenticatedUser`: canonical provider authority, user subject, and optional
-  `selectedOrganizationId`. This identity is sufficient for onboarding.
+- `AuthenticatedUser`: canonical provider authority, user subject, optional
+  `selectedOrganizationId`, and optional resolved `name` for display. The name
+  grants no authority; authority and subject identify the user. WorkOS attempts
+  a matched profile read only after current grants allow access. A failed read
+  omits the name and preserves authorized access. The identity fields are
+  sufficient for onboarding.
 - `AccessResolver.resolve(user)`: establish active local user or hosted
   organization access with current role grants.
 - `AccessDecision`: allowed with `RequestContext`, or denied with a safe reason

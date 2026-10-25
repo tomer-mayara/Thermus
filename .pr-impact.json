@@ -6,7 +6,7 @@
     "contract": true,
     "deployment": false,
     "component": false,
-    "internalInterface": false,
+    "internalInterface": true,
     "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
@@ -15,11 +15,13 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "AuditSnapshots keeps a bounded detached event batch during its existing asynchronous settings read, so startup and expired snapshots no longer discard the triggering event when that read returns enabled settings. The read result makes the initial admission decision; pending events bind once to its revision, after the Collector observes that revision. Disabled, absent, invalid, failed, timed-out or closed loads discard pending payload permanently. Concurrent Enable before the read observes settings can authorize in-flight content; no event-time enabled guarantee or later revival of discarded content is claimed. Product responses remain synchronous and nonblocking. Metadata reservations still survive until physical store settlement. Collector admission limits and fresh exact-revision authorization remain. No new component, dependency, datastore, durable queue or deployment is added. The customer capture guarantee changes within the existing audit-logs owner; current plan, reference contract and registry prose are updated; registry Mermaid views remain unchanged.",
+    "summary": "Resolved identity and customer Audit contracts add optional display names while retaining authority and subject as the stable identity. After current grants allow access, WorkOS reads the matching profile once through the existing SDK with its five-second transport deadline and zero retries; missing, invalid, or unavailable names preserve ID-only access and events. Better Auth uses its existing account read. MCP completions, browser administration, destination actions, and synthetic Test records carry bounded actor.name to OTLP. Display data never grants access or routes tenants; System records stay ID-only. No component, cross-component dependency, datastore, cache, token configuration, or deployment is added. Registry prose is updated; all registry Mermaid views remain unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
       "C4 containers: local edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: local authentication in the Node server",
       "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
       "Selected C4 components: system and audit logs in the Node server",
       "Runtime view",
@@ -27,19 +29,21 @@
     ],
     "evidence": [
       "architecture/components.md",
+      "docs/design/authentication-design.md",
       "docs/design/organization-admin-plan.md",
       "docs/reference/mcp-fetch-tool.md",
-      "docs/implementation/admin-s2-03b.md",
-      "docs/implementation/admin-s2-03c.md",
-      "src/logs/audit/audit-snapshots.ts",
-      "src/logs/audit/audit-snapshot-state.ts",
-      "src/logs/audit/audit-collector.ts",
-      "test/acceptance/logging/audit/activity-snapshots.test.ts",
-      "test/acceptance/logging/audit/hosted-snapshot-composition.test.ts",
-      "test/unit/logging/audit/audit-snapshot-pending.test.ts",
-      "test/unit/logging/audit/audit-collector-observation.test.ts",
-      "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
-      "test/integration/logging/audit/audit-sender.runtime.ts"
+      "src/accounts/identity/access-context.ts",
+      "src/accounts/providers/workos/workos-auth-provider.ts",
+      "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "src/app/hosted-workos-application.ts",
+      "src/interfaces/mcp/fetch-tool-server.ts",
+      "src/logs/audit/audit-log.ts",
+      "src/logs/audit/audit-event-projection.ts",
+      "src/logs/audit/destination-settings-service.ts",
+      "src/logs/audit/otlp-audit-encoding.ts",
+      "test/acceptance/logging/audit/actor-name.test.ts",
+      "test/integration/auth/workos-actor-name.test.ts",
+      "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
     ]
   }
 }

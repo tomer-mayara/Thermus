@@ -6,6 +6,7 @@ export interface AuditContext {
     readonly actor: {
         readonly authority: string;
         readonly subject: string;
+        readonly name?: string;
     };
 }
 interface ToolOutcome extends AuditContext {

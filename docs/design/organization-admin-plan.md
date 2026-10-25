@@ -665,7 +665,30 @@ independently established B context. Unattributable attempts stay in sanitized
 operator diagnostics. Export no global personal-factor/support actions into
 tenants; support's scoped operator record stays separate. WorkOS authentication
 logs remain in WorkOS, without promised direct provider/IdP coverage. Proposed
-fields are timestamp, event name, opaque actor/org IDs, operation, status, duration.
+fields are timestamp, event name, opaque actor/org IDs, optional actor name,
+operation, status, duration.
+
+Customer events keep `actor.authority` and `actor.subject` as the authoritative
+identity. Optional `actor.name` is an event-time account-profile snapshot for
+readability, not authorization or routing. It applies to MCP completions, portal
+administration, destination action metadata, and the synthetic Test event. Use
+the provider-neutral resolved `user.name`; never use an email fallback or a name
+from tool arguments or form fields. Blank names, control characters, ill-formed
+Unicode, or names over 1,024 UTF-8 bytes omit the name and retain the ID-only
+event. System records keep their existing opaque identity fields.
+
+WorkOS resolves authority, organization, and current grants before it attempts
+one profile read for an allowed resolution. The profile ID must match the
+authenticated subject. Prefer a nonempty native profile name. A missing, null,
+or blank native name permits joined trimmed first and last names. An invalid
+nonempty native name is omitted, even if the split fields are valid. The read
+uses the existing SDK with no retries and a
+five-second deadline that aborts the request and response-body read. Failure or
+missing profile data omits the name without denying the authorized operation.
+This read also occurs when audit export is disabled; denied resolutions make no
+profile read. No token-template change, profile cache, or new datastore is added.
+Better Auth uses the name from its existing account read; local export stays
+disabled. These source changes do not establish deployment.
 
 **Capture bounds and result safety.** Measure event/queue budgets in serialized
 UTF-8 bytes and original/captured result sizes in UTF-8 bytes. Budget maximum valid
