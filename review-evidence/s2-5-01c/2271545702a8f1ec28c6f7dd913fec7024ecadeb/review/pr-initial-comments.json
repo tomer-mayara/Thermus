@@ -1,0 +1,61 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Action completed."
+    }
+  ],
+  "structuredContent": {
+    "comments": [
+      {
+        "url": "https://github.com/tomer-mayara/Thermus/pull/254#issuecomment-6396194465",
+        "body": "## Validation\n\nImplementation is in progress. The initial HTTP acceptance test fails because Members has no Remove form. A separate Chromium acceptance test at 390 × 844 also fails because the native confirmation is absent. Focused route and audit tests fail for the missing behavior; the retained current-access characterization passes.\n\nFinal candidate checks and accessible evidence will replace this status. Parent: `0ff3f6cdde5be4124df0ed2ab002844d5db1c502`; complete-candidate main base: `9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546`.",
+        "user": {
+          "login": "tomer-mayara",
+          "name": "tomer-mayara",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+          "id": 48661201
+        },
+        "id": 6396194465,
+        "pull_request_review_id": null,
+        "in_reply_to_id": null,
+        "created_at": null,
+        "updated_at": null,
+        "review": null,
+        "side": null,
+        "line": null,
+        "start_line": null,
+        "path": null,
+        "body_html": "<h2 dir=\"auto\">Validation</h2>\n<p dir=\"auto\">Implementation is in progress. The initial HTTP acceptance test fails because Members has no Remove form. A separate Chromium acceptance test at 390 × 844 also fails because the native confirmation is absent. Focused route and audit tests fail for the missing behavior; the retained current-access characterization passes.</p>\n<p dir=\"auto\">Final candidate checks and accessible evidence will replace this status. Parent: <code class=\"notranslate\">0ff3f6cdde5be4124df0ed2ab002844d5db1c502</code>; complete-candidate main base: <code class=\"notranslate\">9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546</code>.</p>"
+      },
+      {
+        "url": "https://github.com/tomer-mayara/Thermus/pull/254#issuecomment-6396194648",
+        "body": "## Quality review\n\nThe complete candidate is not yet classified. The review will compare this increment against PR #253, preserve inherited full-stack validation, and review the checked browser boundary, self-removal recovery, and trusted customer Audit capture. The coordinator remains the removal authority.\n\nMerge is blocked while implementation and checks remain incomplete. Required human approval will be recorded after classification; agent review is not human approval.",
+        "user": {
+          "login": "tomer-mayara",
+          "name": "tomer-mayara",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+          "id": 48661201
+        },
+        "id": 6396194648,
+        "pull_request_review_id": null,
+        "in_reply_to_id": null,
+        "created_at": null,
+        "updated_at": null,
+        "review": null,
+        "side": null,
+        "line": null,
+        "start_line": null,
+        "path": null,
+        "body_html": "<h2 dir=\"auto\">Quality review</h2>\n<p dir=\"auto\">The complete candidate is not yet classified. The review will compare this increment against PR <a class=\"issue-link js-issue-link\" data-error-text=\"Failed to load title\" data-id=\"6022360156\" data-permission-text=\"Title is private\" data-url=\"https://github.com/tomer-mayara/Thermus/issues/253\" data-hovercard-type=\"pull_request\" data-hovercard-url=\"/tomer-mayara/Thermus/pull/253/hovercard\" href=\"https://github.com/tomer-mayara/Thermus/pull/253\">#253</a>, preserve inherited full-stack validation, and review the checked browser boundary, self-removal recovery, and trusted customer Audit capture. The coordinator remains the removal authority.</p>\n<p dir=\"auto\">Merge is blocked while implementation and checks remain incomplete. Required human approval will be recorded after classification; agent review is not human approval.</p>"
+      }
+    ],
+    "url": "https://github.com/tomer-mayara/Thermus/issues/254",
+    "title": "tomer-mayara/Thermus Issue #254 comments",
+    "display_url": "https://github.com/tomer-mayara/Thermus/issues/254",
+    "display_title": "tomer-mayara/Thermus Issue #254 comments"
+  },
+  "isError": false
+}

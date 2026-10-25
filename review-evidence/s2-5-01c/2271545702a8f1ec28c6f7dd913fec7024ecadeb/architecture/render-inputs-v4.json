@@ -1,0 +1,17 @@
+[
+  {
+    "name": "registry-removal-v4",
+    "source": "registry-removal-v4.mmd",
+    "sha256": "3a5ed72f79d93b44a87cca2e2f77e9361c45e38b6dc69e7d25603c51d6355f57"
+  },
+  {
+    "name": "registry-audit-v4",
+    "source": "registry-audit-v4.mmd",
+    "sha256": "db73b0cc67c0f0ed0b018a025023b214856a4a695ce07244055bde3046065f5b"
+  },
+  {
+    "name": "comparison-v4",
+    "source": "comparison-v4.mmd",
+    "sha256": "3fea8a4e820086505ec65bedaa9509cff9e8595014696e0a7a8cefad884ff4a8"
+  }
+]

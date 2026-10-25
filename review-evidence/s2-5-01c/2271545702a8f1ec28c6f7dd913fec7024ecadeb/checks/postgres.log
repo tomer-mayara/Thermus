@@ -1,0 +1,30 @@
+✔ Given a removal process paused after-admission, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2248.635209ms)
+✔ Given a removal process paused during-provider, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (1934.513708ms)
+✔ Given a removal process paused before-completion, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (1693.388959ms)
+✔ Given two password-only Admins and separate SQL pools, when one removal is admitted, then another instance is busy, another organization proceeds, and the remaining Admin cannot remove itself (1704.779458ms)
+✔ Given a committed removal whose provider reply is lost and whose recorder fails, when SQL and the coordinator reopen, then the same organization stays busy without replaying deletion (1628.597625ms)
+✔ Given tenant settings, when the SQL runtime reopens, then committed settings persist and other tenants stay isolated (1724.649417ms)
+✔ Given competing first saves, when both expect absence, then one commits and the other conflicts (1695.726792ms)
+✔ Given a real SQL query that stalls, when a storage deadline passes, then callers return and late work stays bounded (1511.233834ms)
+✔ Given a table lock in real PostgreSQL, when public settings calls stall, then reads fail safely and writes remain unconfirmed (1625.004834ms)
+✔ Given a current WorkOS Admin and locked settings and removal tables, when removal and an admitted MCP request run, then unavailable admission and unknown writes send no deletion while product and health stay usable (3961.11575ms)
+✔ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (1920.75475ms)
+✔ Given persisted generic settings, when an Axiom dataset is added, repeated, changed, and cleared, then each real change advances its tenant revision (1966.56875ms)
+✔ Given real PostgreSQL, when saves compete or repeat, then only actual changes advance the scoped revision (1918.805958ms)
+✔ Given an untrusted certificate, when settings are read, then verified TLS rejects the connection safely (1827.088959ms)
+✔ Given conflicting ambient PostgreSQL variables, when an explicit runtime connects, then its scoped verified configuration wins (1692.0745ms)
+✔ Given a live PostgreSQL query, when local shutdown closes its socket, then the caller settles and late server work ends within its statement deadline (3718.015208ms)
+✔ Given a trusted certificate for a different hostname, when settings are read, then hostname verification rejects it (3225.067833ms)
+✔ Given an idle database disconnect, when PostgreSQL terminates the connection, then later explicit reads can recover (2149.634542ms)
+✔ Given independent SQL pools, when removals contend, then one pending intent wins and another organization proceeds (1794.036084ms)
+✔ Given persisted pending and terminal operations, when pools reopen and stale completions arrive, then only the same intent can settle (1896.962333ms)
+✔ Given committed writes whose replies are lost, when reread through a new pool, then the pending intent and same terminal receipt survive (2017.457125ms)
+✔ Given production logging storage configuration, when settings and removal intent are used and storage closes, then both public roles share the same concrete store and closure (1706.22ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46369.384041

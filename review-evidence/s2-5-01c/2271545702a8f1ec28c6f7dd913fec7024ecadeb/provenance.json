@@ -1,0 +1,13 @@
+{
+  "candidate": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "parentRef": "origin/codex/s2-5-01b-removal-coordinator",
+  "parentTip": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "parentMergeBase": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "mainTip": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "mainMergeBase": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "checkerEligibility": "eligible",
+  "checkerBlockers": [],
+  "humanApproval": "Not established by this helper",
+  "overallMerge": "Blocked pending manager review of parent status and independent authorized human approval",
+  "rawV8Included": false
+}

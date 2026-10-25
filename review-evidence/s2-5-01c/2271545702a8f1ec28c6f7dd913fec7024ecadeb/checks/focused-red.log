@@ -1,0 +1,479 @@
+✖ Given Members at a 390 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (861.19175ms)
+✖ Given an ordinary active member, when Members opens, then native confirmation carries only the selected membership and Cancel is a read (4.8455ms)
+✖ Given password-only Admin access, when a valid removal is confirmed, then only the coordinator runs and completion requires no Members read (1.73525ms)
+✖ Given a removal result of denied, when it is shown, then it remains distinct and provides read-only navigation (0.70625ms)
+✖ Given a removal result of stale, when it is shown, then it remains distinct and provides read-only navigation (0.478292ms)
+✖ Given a removal result of unsupported, when it is shown, then it remains distinct and provides read-only navigation (0.642833ms)
+✖ Given a removal result of last-admin, when it is shown, then it remains distinct and provides read-only navigation (0.48525ms)
+✖ Given a removal result of busy, when it is shown, then it remains distinct and provides read-only navigation (0.388625ms)
+✖ Given a removal result of unavailable, when it is shown, then it remains distinct and provides read-only navigation (0.861291ms)
+✖ Given a removal result of unknown, when it is shown, then it remains distinct and provides read-only navigation (0.471083ms)
+✖ Given GET at the removal endpoint, when it is handled, then no coordinator call runs (0.391709ms)
+✖ Given HEAD at the removal endpoint, when it is handled, then no coordinator call runs (0.272583ms)
+✖ Given PUT at the removal endpoint, when it is handled, then no coordinator call runs (0.2245ms)
+✖ Given DELETE at the removal endpoint, when it is handled, then no coordinator call runs (0.398625ms)
+✖ Given wrong origin, when a removal form is submitted, then it is refused before the coordinator (0.366167ms)
+✖ Given missing origin, when a removal form is submitted, then it is refused before the coordinator (0.423042ms)
+✖ Given wrong CSRF, when a removal form is submitted, then it is refused before the coordinator (0.307084ms)
+✖ Given changed organization, when a removal form is submitted, then it is refused before the coordinator (0.267375ms)
+✖ Given missing revision, when a removal form is submitted, then it is refused before the coordinator (0.252291ms)
+✖ Given extra field, when a removal form is submitted, then it is refused before the coordinator (0.176667ms)
+✖ Given duplicate target, when a removal form is submitted, then it is refused before the coordinator (0.268541ms)
+✖ Given empty target, when a removal form is submitted, then it is refused before the coordinator (0.197042ms)
+✖ Given invalid revision, when a removal form is submitted, then it is refused before the coordinator (0.167333ms)
+✖ Given unsupported content type, when a removal form is submitted, then it is refused before the coordinator (0.164ms)
+✖ Given a removal that throws without an outcome, when the route answers, then uncertainty has no replay form or provider details (0.249125ms)
+✔ Given no current access, when the old removal form is submitted, then only identity-level navigation remains (0.352083ms)
+✖ Given a public base path, when removal completes, then all navigation stays inside that base path (0.327292ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 1
+ℹ fail 26
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1184.15925
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:8:1
+✖ Given Members at a 390 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (861.19175ms)
+  AssertionError [ERR_ASSERTION]: Members must have a native removal confirmation for the chosen User
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:15:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:8:1
+✖ Given an ordinary active member, when Members opens, then native confirmation carries only the selected membership and Cancel is a read (4.8455ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:13:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:20:1
+✖ Given password-only Admin access, when a valid removal is confirmed, then only the coordinator runs and completion requires no Members read (1.73525ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Member removed/. Input:
+  
+  '{"path":"/members/remove","context":{"user":{"authority":"hosted-provider-double","subject":"user-ann","selectedOrganizationId":"org-a"},"tenantId":"tenant-org-a","organizationId":"org-a","grants":[{"role":"user","permissions":["product:access"]},{"role":"admin","permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}],"permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}}'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:26:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '{"path":"/members/remove","context":{"user":{"authority":"hosted-provider-double","subject":"user-ann","selectedOrganizationId":"org-a"},"tenantId":"tenant-org-a","organizationId":"org-a","grants":[{"role":"user","permissions":["product:access"]},{"role":"admin","permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}],"permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}}',
+    expected: /Member removed/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:44:5
+✖ Given a removal result of denied, when it is shown, then it remains distinct and provides read-only navigation (0.70625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 403
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:48:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:44:5
+✖ Given a removal result of stale, when it is shown, then it remains distinct and provides read-only navigation (0.478292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:48:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:44:5
+✖ Given a removal result of unsupported, when it is shown, then it remains distinct and provides read-only navigation (0.642833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 503
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:48:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:44:5
+✖ Given a removal result of last-admin, when it is shown, then it remains distinct and provides read-only navigation (0.48525ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:48:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:44:5
+✖ Given a removal result of busy, when it is shown, then it remains distinct and provides read-only navigation (0.388625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:48:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:44:5
+✖ Given a removal result of unavailable, when it is shown, then it remains distinct and provides read-only navigation (0.861291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 503
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:48:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:44:5
+✖ Given a removal result of unknown, when it is shown, then it remains distinct and provides read-only navigation (0.471083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 503
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:48:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:60:5
+✖ Given GET at the removal endpoint, when it is handled, then no coordinator call runs (0.391709ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 405
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:63:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 405,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:60:5
+✖ Given HEAD at the removal endpoint, when it is handled, then no coordinator call runs (0.272583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 405
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:63:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 405,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:60:5
+✖ Given PUT at the removal endpoint, when it is handled, then no coordinator call runs (0.2245ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 405
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:63:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 405,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:60:5
+✖ Given DELETE at the removal endpoint, when it is handled, then no coordinator call runs (0.398625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 405
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:63:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 405,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given wrong origin, when a removal form is submitted, then it is refused before the coordinator (0.366167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 403
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given missing origin, when a removal form is submitted, then it is refused before the coordinator (0.423042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 403
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given wrong CSRF, when a removal form is submitted, then it is refused before the coordinator (0.307084ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 403
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given changed organization, when a removal form is submitted, then it is refused before the coordinator (0.267375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given missing revision, when a removal form is submitted, then it is refused before the coordinator (0.252291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given extra field, when a removal form is submitted, then it is refused before the coordinator (0.176667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given duplicate target, when a removal form is submitted, then it is refused before the coordinator (0.268541ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given empty target, when a removal form is submitted, then it is refused before the coordinator (0.197042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given invalid revision, when a removal form is submitted, then it is refused before the coordinator (0.167333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:80:5
+✖ Given unsupported content type, when a removal form is submitted, then it is refused before the coordinator (0.164ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 415
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:83:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 415,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:87:1
+✖ Given a removal that throws without an outcome, when the route answers, then uncertainty has no replay form or provider details (0.249125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 503
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:91:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:106:1
+✖ Given a public base path, when removal completes, then all navigation stays inside that base path (0.327292ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /href="\/team\/members">/. Input:
+  
+  '{"path":"/team/members/remove","context":{"user":{"authority":"hosted-provider-double","subject":"user-ann","selectedOrganizationId":"org-a"},"tenantId":"tenant-org-a","organizationId":"org-a","grants":[{"role":"user","permissions":["product:access"]},{"role":"admin","permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}],"permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}}'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:109:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '{"path":"/team/members/remove","context":{"user":{"authority":"hosted-provider-double","subject":"user-ann","selectedOrganizationId":"org-a"},"tenantId":"tenant-org-a","organizationId":"org-a","grants":[{"role":"user","permissions":["product:access"]},{"role":"admin","permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}],"permissions":["product:access","user-grants:manage","admin-grants:manage","billing:manage"]}}',
+    expected: /href="\/team\/members">/,
+    operator: 'match',
+    diff: 'simple'
+  }

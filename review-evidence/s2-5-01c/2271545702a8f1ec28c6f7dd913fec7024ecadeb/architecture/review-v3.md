@@ -1,0 +1,36 @@
+# S2.5-01c architecture review draft v3
+
+Parent: `0ff3f6cdde5be4124df0ed2ab002844d5db1c502` (actual parent PR253).
+Candidate: working tree, source hashes pinned in `source-provenance-v3.json`.
+Manager must compare those hashes and pin full candidate SHA after final fixes.
+
+## Result and classification
+
+Two of the 15 existing registry Mermaid blocks changed: hosted membership removal and system/audit logging. The first adds web's new runtime caller of the existing coordinator and existing AuditLog. The second corrects web's invitation-only label to Admin changes. No component, owner edge, container, datastore, provider or deployment is added. Existing web→organizations and web→audit-logs edges gain removal use; that is not a new source dependency.
+
+The registry stays a neutral current-system map. Existing SQL admission, receipts, provider deletion, lifecycle, queue and export contracts are retained. Hosted authentication, audit settings/delivery, collaboration, hosted member-read scenario, ownership and resource ownership were read and checked. The hosted member-read text now names the checked caller. All other Mermaid blocks remain byte-identical to the parent. Context, tool processing, local authentication, fetch/cancellation, default sign-in landing, hosted/local container and deployment blocks retain their scope. No live rollout is claimed; recorded target remains unverified.
+
+Changed public overview and AuditLog contracts require declaration review. Registry view edits independently establish fact e and T2 Need architect. Independent authorized human architect approval of the complete current candidate remains required. This assessment does not supply approval or merge eligibility.
+
+## Main-summary comparison
+
+Use exact `comparison-v3.mmd` as the authoritative main-summary Mermaid. Its changed owners are amber; added runtime use is green and explicitly labelled. Unchanged directory/store/provider calls remain neutral. The view is supplementary, reconstructed from code and prose at the actual parent and candidate. All components belong to the hosted Thermus Node server; PostgreSQL and WorkOS are supporting L2/external peers. App composition, existing browser HTTP, current-revision export to the customer Collector, existing billing and MCP calls are omitted to focus on removal. They remain described in the registry. No relationship denotes an atomic provider transaction.
+
+Suggested adjacent notes:
+
+- Before, Members offered invitation writes; the existing checked coordinator had no browser caller. Now web requires current selected-organization access, trusted tenant, POST, configured Origin, CSRF and exact target/revision fields before calling `removeMember` once. The overview's new `removable` field is a display hint; organizations still owns current Admin, target, revision and last-Admin enforcement.
+- The existing per-organization durable hold, operation-bound receipt, 30-second server lifetime and one-shot exact provider delete are unchanged. Busy and unknown do not replay. Cancel only follows a GET; it starts no intent.
+- The POST returns its fixed result without a Members GET. A later read failure cannot replace a confirmed result. Self-removal uses existing identity-only selection, eligibility/saved-start and sign-in guidance; no session mutation or recovery store is added. Current portal/MCP access is resolved again. A read cannot prove uncertain settlement.
+- Customer `AdministrationChange` now accepts `remove-member`, membership ID and safe removal outcomes. Web uses the trusted tenant even for a forged organization form. Capture occurs after the route result and remains best effort; failure cannot alter the result, settle a hold or repeat deletion. Existing snapshots/export authorization still gate delivery.
+
+## L4 rationale
+
+Omit L4. The strongest changed production callable contract is AuditLog.administrationChanged accepting removal action/target/outcomes; the other material contract is memberOverview returning a read-time removable hint. The concrete review questions are who selects the capture tenant, whether capture controls durable completion/replay, and whether the display hint authorizes deletion. L3 plus the four notes answer these directly at web, audit-logs and organizations. L4 would restate payload fields without clarifying another authority or recovery boundary. The coordinator's callable removal contract and provider/store operation contracts are unchanged.
+
+## Render and source checks
+
+`inventory-parent.json` inventories all 15 parent blocks with exact hashes and line numbers; `registry-parent.md` retains the parent source. `inventory-working-v3.json` confirms only blocks 6 and 8 changed. The extraction script saves exact registry sources; input hashes are checked by the renderer. Renderer: cached Mermaid and Playwright; versions, Chromium executable/version, Mermaid asset hash, source/render hashes and geometry are in `renders-v3/render-report-v1.json`. No dependency was installed or changed. No network request was needed.
+
+All changed blocks and the comparison parse and render at 800px. Registry removal is 800×805 at about 13.9px scaled font, audit logging 800×910 at about 15.2px, comparison 800×946 at about 14.6px. Viewed at native size. Labels, boundaries, arrow targets and neutral label backgrounds are readable. v1/v2 comparison had title clearance/edge-label collisions; v3 omits stable browser context and gives the title its own space. Sources/renders of earlier drafts are retained. Registry link/prose checks and `git diff --check -- architecture/components.md` pass.
+
+Manager review pending. Cache paths are local review evidence, not GitHub artifact links; publish retained reports/renders or place equivalent accessible evidence before using them in PR comments. Recheck hashes after source fixes and final commit.

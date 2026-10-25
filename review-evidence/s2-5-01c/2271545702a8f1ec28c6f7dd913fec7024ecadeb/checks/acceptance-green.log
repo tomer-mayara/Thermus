@@ -1,0 +1,81 @@
+✖ Given Members at a 390 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (866.438084ms)
+✔ Given a target Admin with two memberships, a global account, and a personal factor, when Members removes one membership and a fresh User invitation is accepted, then only invited User access returns and the other account state stays intact (440.885958ms)
+✔ Given applied removal and a throwing customer Audit sink, when Members submits and reads again, then the outcome and receipt or hold stay unchanged with one deletion (126.711834ms)
+✔ Given unknown removal and a throwing customer Audit sink, when Members submits and reads again, then the outcome and receipt or hold stay unchanged with one deletion (158.440083ms)
+✔ Given a valid Admin form with a forged organization, when Members refuses it, then no customer event is captured for the forged tenant and no provider deletion is sent (170.978292ms)
+✔ Given a password-authenticated Admin, two active Admins, and an ordinary User, when the Admin confirms Remove through Members, then only that membership is removed and the current count is two (248.744416ms)
+✔ Given a valid removable target and only actor authority changed, when the removal form is submitted, then no provider deletion occurs (189.985792ms)
+✔ Given a valid removable target and only saved organization stale, when the removal form is submitted, then no provider deletion occurs (99.340541ms)
+✔ Given a valid removable target and only organization forged, when the removal form is submitted, then no provider deletion occurs (77.012ms)
+✔ Given a valid removable target and only saved target stale, when the removal form is submitted, then no provider deletion occurs (144.324917ms)
+✔ Given a valid removable target and only target forged, when the removal form is submitted, then no provider deletion occurs (80.663375ms)
+✔ Given a valid removable target and only revision stale, when the removal form is submitted, then no provider deletion occurs (151.658167ms)
+✔ Given a valid removable target and only revision forged, when the removal form is submitted, then no provider deletion occurs (89.603125ms)
+✔ Given a valid removable target and only method invalid, when the removal form is submitted, then no provider deletion occurs (102.688541ms)
+✔ Given a valid removable target and only origin invalid, when the removal form is submitted, then no provider deletion occurs (58.604167ms)
+✔ Given a valid removable target and only CSRF invalid, when the removal form is submitted, then no provider deletion occurs (103.665584ms)
+✔ Given a password-only last Admin and a valid self-removal form, when Remove is confirmed, then the page asks for another Admin and links to invitations without deleting the membership (125.580667ms)
+✔ Given an uncertain removal that deleted its target, when the Admin repeats the same POST and refreshes Members, then the POST is busy, current facts are shown, and no deletion is replayed (117.6355ms)
+✖ Given a confirmed removal followed by failed Members reads, when the Admin refreshes, then completion remains separate from the read failure and no deletion is replayed (98.354209ms)
+✔ Given an Admin with another eligible membership, when the Admin removes itself and follows workspace guidance, then old organization browser and MCP access are refused and the other workspace can be selected (283.123375ms)
+✔ Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation and eligible signup are usable without restoring access (144.062958ms)
+✔ Given a creator Admin with a retained start record and another Admin, when the creator removes itself, then signup offers saved-start support without making or restoring a membership (197.142042ms)
+✔ Given a provider that requires reauthentication after self-removal, when the Admin uses sign-in guidance, then the new identity-only selection offers current no-membership guidance without protected removal details (163.262125ms)
+✔ Given an unknown self-removal that took effect, when old POST and Members are refused, then identity-only guidance remains usable and the pending operation is not settled or replayed (175.318875ms)
+▶ Members through the hosted HTTP server
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (24.443334ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (13.983ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.61075ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (2.899792ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.130708ms)
+✔ Members through the hosted HTTP server (48.832459ms)
+ℹ tests 29
+ℹ suites 1
+ℹ pass 27
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5284.485708
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:8:1
+✖ Given Members at a 390 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (866.438084ms)
+  Error: The removal control was not reachable with Tab
+      at tabTo (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/drivers/browser/member-removal-browser.js:28:11)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:18:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at dist/test/acceptance/auth/hosted-member-removal.test.js:89:1
+✖ Given a confirmed removal followed by failed Members reads, when the Admin refreshes, then completion remains separate from the read failure and no deletion is replayed (98.354209ms)
+  AssertionError [ERR_ASSERTION]: <!doctype html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request failed</title>
+  </head>
+  <body>
+  <main>
+  <h1>Request failed</h1>
+  <p>The request failed. Try again later.</p>
+  </main>
+  </body>
+  </html>
+  
+  
+  500 !== 503
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/hosted-member-removal.test.js:100:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

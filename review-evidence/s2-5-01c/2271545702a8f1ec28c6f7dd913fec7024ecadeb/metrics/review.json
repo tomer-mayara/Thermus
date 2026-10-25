@@ -1,0 +1,240 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "headSha": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "summary": {
+    "filesChanged": 55,
+    "filesAdded": 47,
+    "filesDeleted": 0,
+    "high": 5,
+    "medium": 8,
+    "low": 6,
+    "improvements": 3
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "line": 6,
+      "message": "Maintainability too low: got 70 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "new-violation:maintainability",
+      "file": "src/accounts/organizations/membership-removal.ts",
+      "line": 7,
+      "message": "Maintainability too low: got 43 (min: 85)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "message": "Maintainability index: 53 -\u003e 47 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 53.483376839832225,
+      "after": 47.08422952684704
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "message": "Maintainability index: 54 -\u003e 46 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 53.641844103270124,
+      "after": 46.31569984025012
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/integration/auth/workos-connection.test.ts",
+      "message": "Maintainability index: 49 -\u003e 39 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 49.030188904827206,
+      "after": 39.14425971208052
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": ".cache/s25-01b/prepare-review-evidence.py",
+      "message": "Too many Lines of code (329 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:lloc_by_method",
+      "file": ".cache/s25-01c/architecture/pin-final.py",
+      "line": 41,
+      "message": "LLOC too high in method main(): got 47 (max: 20)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": ".cache/s25-01c/architecture/pin-final.py",
+      "line": 41,
+      "message": "LOC too high in method main(): got 73 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": ".cache/s25-01c/architecture/pin-final.py",
+      "line": 41,
+      "subject": "main",
+      "message": "New function with cyclomatic complexity 19 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 19
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "message": "Cyclomatic complexity too high: got 43 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc_by_method",
+      "file": "src/app/application.ts",
+      "line": 154,
+      "message": "LOC too high in method composeHostedApplication(): got 31 (max: 30)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "line": 73,
+      "subject": "administrationTarget",
+      "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/logs/audit/otlp-audit-encoding.ts",
+      "line": 22,
+      "subject": "eventAttributes",
+      "message": "Cyclomatic complexity: 15 -\u003e 16 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 15,
+      "after": 16
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": ".cache/s25-01b/publish/review-evidence/s2-5-01b/0ff3f6cdde5be4124df0ed2ab002844d5db1c502/candidate/api-surface/organization-administration.d.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "docs/api-surface/src/accounts/organizations/organization-administration.d.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+      "message": "Estimated bugs (Halstead): 1.17 -\u003e 1.47",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 1.170994674794939,
+      "after": 1.4746447829490361
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "message": "Estimated bugs (Halstead): 2.46 -\u003e 2.56",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 2.463619094218801,
+      "after": 2.5646113853164993
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/unit/organizations/organization-administration-members.test.ts",
+      "message": "Estimated bugs (Halstead): 0.98 -\u003e 1.16",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 0.9817696189628399,
+      "after": 1.1576578978917647
+    }
+  ],
+  "improvements": [
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "complexity-improvement",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "line": 62,
+      "subject": "projectAdministrationChange",
+      "message": "Cyclomatic complexity: 11 -\u003e 8",
+      "before": 11,
+      "after": 8
+    },
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "bugs-improvement",
+      "file": "test/acceptance/auth/hosted-invitations.test.ts",
+      "message": "Estimated bugs (Halstead): 1.12 -\u003e 0.80",
+      "before": 1.1192725809912374,
+      "after": 0.8014555823748702
+    },
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "maintainability-improvement",
+      "file": "test/integration/auth/hosted-storage-lifecycle.test.ts",
+      "message": "Maintainability index: 49 -\u003e 60",
+      "before": 48.84824910931851,
+      "after": 59.74769522144683
+    }
+  ],
+  "gate": "failed"
+}

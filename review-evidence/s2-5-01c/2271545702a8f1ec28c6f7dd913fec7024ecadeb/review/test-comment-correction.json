@@ -1,0 +1,9 @@
+{
+  "head_before_fix": "cd7ccf3a3b543ad94bf9fe9d88a205b93f84bcf4",
+  "path": "test/acceptance/auth/hosted-workos-administration.test.ts",
+  "before_sha256": "a63f923bc9f00f9cab4945f90f9c0ae432a06f129c680bd7d3b08cd59d6bf8d2",
+  "after_sha256": "5f92c5865517fc0199b182e862091f6aab0b6b7794077c3a5d0de2079bc8e5de",
+  "proof": "Exact bytes differ only by deletion of the two named comment lines. No source, assertion, import, fixture, or test selection changed.",
+  "focused_verification": "Passed in complete npm test: 4,997 backend and 49 portal tests. The changed hosted-workos-administration file ran from the build with the two stale comments removed.",
+  "verification_log": "../npm-test-final.log"
+}

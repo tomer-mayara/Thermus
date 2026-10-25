@@ -1,0 +1,29 @@
+▶ OrganizationAdministration members and the product member count
+  ✔ Given active ordinary and unsupported members, when the overview is read, then only ordinary active memberships with known grants offer removal (1.5465ms)
+  ✔ Given an Admin in two organizations, when the Admin reads members in one organization, then the name comes from the same current membership read that authorizes that organization (0.219ms)
+  ✔ Given a current authorized membership with the invalid name "", when members are read, then the read fails before any member page (0.328709ms)
+  ✔ Given a current authorized membership with the invalid name "   ", when members are read, then the read fails before any member page (0.113875ms)
+  ✔ Given a current authorized membership with the invalid name undefined, when members are read, then the read fails before any member page (0.102958ms)
+  ✔ Given two members with the same email, when an Admin reads the overview, then each member retains its trusted identity subject (0.177166ms)
+  ✔ Given an Admin actor with no MFA evidence, when the actor reads members and invites either role, then current permission reads authorize each operation (1.723042ms)
+  ✔ Given members on several pages, when an Admin asks for the overview, then it reads each page with explicit statuses, lists each member of the organization with its application roles, and counts each active product membership once (0.25375ms)
+  ✔ Given a member that is repeated on two pages, also with a changed status on the later page, when the overview is read, then each membership is listed and counted once, and its later record decides (0.206ms)
+  ✔ Given memberships with a synthetic user-manager grant, a retired role, or the default role, and inactive or pending product members, when the overview is read, then no product member is counted (0.154875ms)
+  ✔ Given a page that fails after earlier pages were read, when the overview is read, then the failure reaches the caller and no partial count is given (0.162041ms)
+  ✔ Given a directory that gives a cursor that the directory gave before, when the overview is read, then the read fails instead of reading pages without end (0.161041ms)
+  ✔ Given a directory that gives a page that names itself as the next page, when the overview is read, then the read fails instead of reading pages without end (0.068834ms)
+  ✔ Given a directory that gives a new cursor for each page without end, when the overview is read, then the read fails at the page limit (1.695084ms)
+  ✔ Given a page record of another organization, when the overview is read, then that record is neither listed nor counted (0.146666ms)
+  ✔ Given a User without Admin, when it asks for the overview, then it is refused as denied, and no member page is read (0.048334ms)
+  ✔ Given an Admin of another organization, when it asks for the overview, then it is refused as denied, and no member page is read (0.026541ms)
+  ✔ Given an Admin with an inactive membership, when it asks for the overview, then it is refused as denied, and no member page is read (0.024666ms)
+  ✔ Given an overview, when the directory changes later, then the overview stays as it was read: each part of it is frozen (0.072917ms)
+✔ OrganizationAdministration members and the product member count (8.661166ms)
+ℹ tests 19
+ℹ suites 1
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68.586875

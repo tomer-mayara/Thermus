@@ -1,0 +1,16 @@
+▶ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts
+  ✔ Given the unmodified image and placeholder runtime settings, when the real CLI starts, then portal, assets and health work, MCP remains protected, and foreign origins are refused (4470.392ms)
+  ✔ Given the organization Audit bundle in the prepared image, when signup is enabled, then startup succeeds and the exact notice is readable before sign-in (2941.084125ms)
+  ✔ Given a Connect User at the external-provider seam, when the image fetches public HTTPS and a controlled JavaScript page, then the real renderer verifies TLS and returns script output cleaned with the shipped native policy (3695.216375ms)
+  ✔ Given the final hosted runtime, when calls target private addresses, exceed capacity, disconnect or receive SIGTERM during rendering, then the guards refuse unsafe work, cancellation releases capacity after settlement, and the CLI exits within its shutdown bound (3749.538958ms)
+  ✔ Given invalid local startup inputs, when the image starts, then the real CLI fails before listening (8373.06275ms)
+  ✔ Given a final image with its portal hidden by an empty mount, when startup runs, then it fails before listening (2161.658584ms)
+✔ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts (543087.366959ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 543290.526833

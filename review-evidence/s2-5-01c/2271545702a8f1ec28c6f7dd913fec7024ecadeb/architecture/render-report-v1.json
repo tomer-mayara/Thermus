@@ -1,0 +1,94 @@
+{
+  "parent": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "9ca52cc08babfa2753aa247bd75fb6ebb58b840e2f5c8f41e37a9aa4c6b2a889",
+  "diagrams": [
+    {
+      "name": "registry-removal-v1",
+      "source": "registry-removal-v1.mmd",
+      "sha256": "d1367b89c76af7c33497e5b321eb0ba4902b42f20736efb493727a9a308a66b7",
+      "image": "registry-removal-v1-800.png",
+      "vector": "registry-removal-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 656.390625
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1041.61328125,
+        "height": 854.6507568359375
+      },
+      "scaledFontPx": 12.288629792276854,
+      "nodeCount": 7,
+      "pngSha256": "a8145172f739fc9ff49cd03727c4361fa9e5b1b9b055c2d436c6631fac504fbf",
+      "svgSha256": "12fcc03bfd15f04d3d49f72256022161ca0caa199c86965734b909a34dcdcadd",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-audit-v1",
+      "source": "registry-audit-v1.mmd",
+      "sha256": "20c29af6c1227efd85ce037714c066d39ff66122f24b4ba9bc112362a26b4399",
+      "image": "registry-audit-v1-800.png",
+      "vector": "registry-audit-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 909.703125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 844.21875,
+        "height": 960
+      },
+      "scaledFontPx": 15.161947066444569,
+      "nodeCount": 6,
+      "pngSha256": "1ef77edb4f34e47e992ee1e7863c8a31be1c0164bcd0c562bb0b2703efdc91fd",
+      "svgSha256": "e139acd5ea3fc18b5abd7e26d10fb535661ff2956b66a412c92b55e3da11846b",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "comparison-v1",
+      "source": "comparison-v1.mmd",
+      "sha256": "fdb0bb5d6043c0aac85f577fb52667a70fbf9580bcb7def2d756242066e506a6",
+      "image": "comparison-v1-800.png",
+      "vector": "comparison-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 994.46875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 878.21484375,
+        "height": 1091.703125
+      },
+      "scaledFontPx": 14.57502123893018,
+      "nodeCount": 7,
+      "pngSha256": "2b0a41ea72f24b32cbac73e75ca091f5c839c6be7265667a7d44832fb04540cd",
+      "svgSha256": "2c76f8b19bca6e97f3324b824da7c563f6807ed56b36a9f54a18335acb01a67b",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

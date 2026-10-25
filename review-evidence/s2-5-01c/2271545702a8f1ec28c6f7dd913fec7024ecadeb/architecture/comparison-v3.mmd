@@ -1,0 +1,21 @@
+%%{init: {"flowchart": {"wrappingWidth": 180, "nodeSpacing": 25, "rankSpacing": 35, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
+flowchart TB
+  subgraph server["C4 L3 · Thermus Node server · hosted"]
+    web["web · CHANGED<br/>Before: invitation writes<br/>After: checked removal POST<br/>Trusted tenant; browser gates"]
+    org["organizations · CHANGED overview<br/>Read-time removable hint<br/>Current Admin / target rules<br/>Durable removal and last Admin"]
+    audit["audit-logs · CHANGED contract<br/>Before: invitation metadata<br/>After: removal metadata too<br/>Existing capture and SQL adapter"]
+    workos["workos · unchanged<br/>Current access and directory<br/>One exact membership deletion"]
+    web -->|existing session / access reads| workos
+    web -->|ADDED runtime use: removeMember| org
+    web -->|ADDED: trusted-tenant removal capture| audit
+    org -->|existing removal-store calls| audit
+    org -->|existing directory calls| workos
+  end
+  db[("L2: PostgreSQL<br/>Existing removal intent / receipts")]
+  remote["External: WorkOS<br/>Membership authority"]
+  audit -->|existing SQL / TLS| db
+  workos -->|existing SDK / HTTPS| remote
+  classDef changed fill:#fff1ce,stroke:#a56b00,color:#222
+  class web,org,audit changed
+  linkStyle 1,2 stroke:#16803b,stroke-width:3px,color:#11652f
+  style server fill:#fafafa,stroke:#777,color:#222

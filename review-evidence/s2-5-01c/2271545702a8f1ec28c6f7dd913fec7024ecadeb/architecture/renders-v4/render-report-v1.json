@@ -1,0 +1,94 @@
+{
+  "parent": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "96dbba18fd213026ec9a8d14a049cb369703f55a5c808daeb37e09c14d3c5ec5",
+  "diagrams": [
+    {
+      "name": "registry-removal-v4",
+      "source": "registry-removal-v4.mmd",
+      "sha256": "3a5ed72f79d93b44a87cca2e2f77e9361c45e38b6dc69e7d25603c51d6355f57",
+      "image": "registry-removal-v4-800.png",
+      "vector": "registry-removal-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 804.40625
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 921.61328125,
+        "height": 926.703125
+      },
+      "scaledFontPx": 13.888688737904404,
+      "nodeCount": 7,
+      "pngSha256": "cd7650e392dee14e486460528857592a1dcb59fc86a39849bc5fe3c1f12c40cd",
+      "svgSha256": "f542a1e7153e50c49160d4a0c52b4399dc64ac560dd0419bbfb4e698ab31b39d",
+      "parse": "passed",
+      "visualReview": "passed at 800px; v4 comparison removes green capture arrow crossing through store label; title clear; registry labels unchanged from inspected v3"
+    },
+    {
+      "name": "registry-audit-v4",
+      "source": "registry-audit-v4.mmd",
+      "sha256": "db73b0cc67c0f0ed0b018a025023b214856a4a695ce07244055bde3046065f5b",
+      "image": "registry-audit-v4-800.png",
+      "vector": "registry-audit-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 909.703125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 844.21875,
+        "height": 960
+      },
+      "scaledFontPx": 15.161947066444569,
+      "nodeCount": 6,
+      "pngSha256": "4ee2db04c431b8de821c2ecac8baee331ec5a8f727dc74762b07684185543455",
+      "svgSha256": "57018a4b84c81c4e45ec63dd0fc5e92c5fd7183f048db5c38e0210d9c0a01163",
+      "parse": "passed",
+      "visualReview": "passed at 800px; v4 comparison removes green capture arrow crossing through store label; title clear; registry labels unchanged from inspected v3"
+    },
+    {
+      "name": "comparison-v4",
+      "source": "comparison-v4.mmd",
+      "sha256": "3fea8a4e820086505ec65bedaa9509cff9e8595014696e0a7a8cefad884ff4a8",
+      "image": "comparison-v4-800.png",
+      "vector": "comparison-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 1044.09375
+      },
+      "viewBox": {
+        "x": 0,
+        "y": -17.5,
+        "width": 795.09375,
+        "height": 1037.703125
+      },
+      "scaledFontPx": 16.098730495617655,
+      "nodeCount": 6,
+      "pngSha256": "7296c70ba210cb1d72267839b69fce680a481d85aae19e260826e724100457c4",
+      "svgSha256": "41f787e680265aeabb2fecf3b3d4d5408a029b1f7212ee663caca6e9f77ffbb9",
+      "parse": "passed",
+      "visualReview": "passed at 800px; v4 comparison removes green capture arrow crossing through store label; title clear; registry labels unchanged from inspected v3"
+    }
+  ],
+  "blockedRequests": []
+}

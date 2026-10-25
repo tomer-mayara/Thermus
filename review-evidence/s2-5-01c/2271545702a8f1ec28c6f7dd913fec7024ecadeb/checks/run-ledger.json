@@ -1,0 +1,118 @@
+{
+  "parent": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "main": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "sourceCommit": "69d0c9b0dcaa98722ef4faa350e2545a13c8acbd",
+  "results": {
+    "ordinary": {
+      "log": "npm-test-final.log",
+      "backend": 4997,
+      "portal": 49,
+      "result": "pass",
+      "limit": "Completed Node summaries and no running command; original tool session result was not retained after compaction.",
+      "logSha256": "48c54490ac284d250cbf832fe7daf67ad476fdf8f98e37f600ee84f38d162da3"
+    },
+    "postgres": {
+      "log": "postgres.log",
+      "tests": 22,
+      "result": "pass",
+      "logSha256": "f8405b14b93721c0878b93cfed61a673dce116ffbc084c77035e5f3ad035285c"
+    },
+    "collector": {
+      "log": "collector.log",
+      "tests": 10,
+      "result": "pass",
+      "logSha256": "c271f59381c485740aab9d14d300e23dbb80911c97e467528668b519141d3c77"
+    },
+    "selfHostedContainer": {
+      "log": "self-hosted-container.log",
+      "tests": 11,
+      "result": "pass",
+      "logSha256": "b3844920d8be27de2614eecc8a5921572e9f7e35bbf18f1069d3c5592bdbda36"
+    },
+    "hostedImage": {
+      "log": "hosted-image.log",
+      "tests": 7,
+      "result": "pass",
+      "buildLog": "hosted-image-build.log",
+      "logSha256": "fdfd58cc20e8c5acc30e51cc660ba4dc3d0bd9715f45ff78d342a46f645935ea"
+    },
+    "focused": {
+      "log": "final-focused.log",
+      "tests": 168,
+      "result": "pass",
+      "logSha256": "55fa941da0991fcae39ff919f3045e88f7b52672c0c75e594ad3f9b3ce5c6a85"
+    },
+    "compatibility": {
+      "log": "compatibility-focused.log",
+      "tests": 29,
+      "result": "pass",
+      "logSha256": "7272647c1866dabe9f4cf27a0ef2648ac45e968916efc3ed6aa3e064d023a2b2"
+    },
+    "typecheck": {
+      "log": "typecheck-complete.log",
+      "result": "pass",
+      "logSha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62"
+    },
+    "portalBuild": {
+      "log": "portal-build.log",
+      "result": "pass",
+      "logSha256": "55bc188281bd106332f8f6b2f421f31ae1262e13df59dac6b2a1966dbe3036aa"
+    },
+    "publicSnapshots": {
+      "log": "api-check.log",
+      "snapshots": 49,
+      "result": "pass",
+      "logSha256": "200f9cc6ec11155d6b135f8f2b03843af4bb1d4d739db86235689978505e35f3"
+    },
+    "hostedLive": {
+      "log": "hosted-live-final.log",
+      "tests": 28,
+      "result": "pass",
+      "exitStatus": 0,
+      "logSha256": "e613ccb56f0a2bf829fd93363258537d2dcbf302ac98f605ff112d7da79d9179"
+    },
+    "coverage": {
+      "log": "coverage-combined.log",
+      "result": "pass",
+      "files": 172,
+      "processes": 1321,
+      "capturedCommit": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+      "suites": [
+        "unit",
+        "integration",
+        "acceptance"
+      ],
+      "logSha256": "32caa81309a213fd9dbcc1f44e06d649ecc38abcfa6658ed05887314496ce568"
+    },
+    "metrics": {
+      "log": "metrics-process.log",
+      "exitStatus": 1,
+      "completedSections": 4,
+      "statuses": [
+        "goal miss",
+        "goal miss",
+        "goal miss",
+        "passed"
+      ],
+      "meaning": "Valid metric reports with retained goal findings, not tool failure. Parent checker applies applicable incremental rules.",
+      "logSha256": "37b40b166f3e38184fccb0de2470c6fcf660734ad3529bf57d8c6e95e234e244"
+    },
+    "checker": {
+      "file": "metrics/pr-review.json",
+      "result": "eligible",
+      "tier": "T2 Need architect",
+      "blockers": [],
+      "humanApproval": "pending"
+    },
+    "habit": {
+      "log": "habit-hooks-final.log",
+      "exitStatus": 1,
+      "findings": 437,
+      "allDisposed": true,
+      "snooze": [],
+      "logSha256": "75bcdb1854173687c169bc719f94bd62708769eea5d0cd7fa0ffdd83bdb57930"
+    }
+  },
+  "pending": [],
+  "candidate": "2271545702a8f1ec28c6f7dd913fec7024ecadeb"
+}

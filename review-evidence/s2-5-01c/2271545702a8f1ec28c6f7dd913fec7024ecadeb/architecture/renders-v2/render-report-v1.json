@@ -1,0 +1,94 @@
+{
+  "parent": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "554e9c64239f99c89c9d54f4241d55d094b3c3ce319e20ade1a23251023829c3",
+  "diagrams": [
+    {
+      "name": "registry-removal-v2",
+      "source": "registry-removal-v2.mmd",
+      "sha256": "3a5ed72f79d93b44a87cca2e2f77e9361c45e38b6dc69e7d25603c51d6355f57",
+      "image": "registry-removal-v2-800.png",
+      "vector": "registry-removal-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 804.40625
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 921.61328125,
+        "height": 926.703125
+      },
+      "scaledFontPx": 13.888688737904404,
+      "nodeCount": 7,
+      "pngSha256": "cd7650e392dee14e486460528857592a1dcb59fc86a39849bc5fe3c1f12c40cd",
+      "svgSha256": "4cc3be547b9770b6b0460655d9bdd99d7232f55110c72db53fb5e330ea09a5ef",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-audit-v2",
+      "source": "registry-audit-v2.mmd",
+      "sha256": "20c29af6c1227efd85ce037714c066d39ff66122f24b4ba9bc112362a26b4399",
+      "image": "registry-audit-v2-800.png",
+      "vector": "registry-audit-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 909.703125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 844.21875,
+        "height": 960
+      },
+      "scaledFontPx": 15.161947066444569,
+      "nodeCount": 6,
+      "pngSha256": "1ef77edb4f34e47e992ee1e7863c8a31be1c0164bcd0c562bb0b2703efdc91fd",
+      "svgSha256": "29151ad5b73055ca05f3aec16a5bc250e5194c686cbc2c87d845012233df4f48",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "comparison-v2",
+      "source": "comparison-v2.mmd",
+      "sha256": "395cb93e4431962fe3e0e47b75186b3785ae07facc6860a22cc9e5c3670c24b7",
+      "image": "comparison-v2-800.png",
+      "vector": "comparison-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 1038.1875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 17.5,
+        "width": 878.21484375,
+        "height": 1139.703125
+      },
+      "scaledFontPx": 14.57502123893018,
+      "nodeCount": 7,
+      "pngSha256": "36667f48f24ec43e0fdddf107c16dc4c1fc9c826211463b5cfb154d19c61bf86",
+      "svgSha256": "c4d458808616e5cae2b2130a557075f56080e0c130ecee6dce8a897eb1f00009",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

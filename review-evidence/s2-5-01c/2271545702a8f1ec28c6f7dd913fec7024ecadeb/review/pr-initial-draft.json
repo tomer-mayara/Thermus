@@ -1,0 +1,50 @@
+{
+  "status": "fulfilled",
+  "value": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "url": "https://github.com/tomer-mayara/Thermus/pull/254",
+      "number": 254,
+      "state": "open",
+      "merged": false,
+      "mergeable": true,
+      "draft": true,
+      "body": "## Description\n\nImplement S2.5-01c: add Members removal through the existing coordinator, checked browser forms, safe self-removal navigation, and trusted customer Audit metadata. Stacked on [#253](https://github.com/tomer-mayara/Thermus/pull/253).\n\nImplementation and verification are in progress. This draft does not authorize a production rollout.\n\n## Review\n\nTier and architecture comparison will be computed from the complete candidate against #253. Merge is blocked by incomplete implementation and checks, the parent PR, and any review required by repository policy.",
+      "title": "Add checked Members removal and safe self-removal navigation",
+      "base": "codex/s2-5-01b-removal-coordinator",
+      "base_sha": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+      "head": "codex/s2-5-01c-members-removal",
+      "head_sha": "69d0c9b0dcaa98722ef4faa350e2545a13c8acbd",
+      "head_repo_id": 1410584924,
+      "head_repo_full_name": "tomer-mayara/Thermus",
+      "merge_commit_sha": "f365fb353c03fbb2d29fba5814fcfcf78a468470",
+      "user": {
+        "login": "tomer-mayara",
+        "name": "tomer-mayara",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+        "id": 48661201
+      },
+      "requested_reviewers": null,
+      "requested_team_reviewers": null,
+      "diff": null,
+      "comments": null,
+      "created_at": "2026-10-25T09:50:20Z",
+      "updated_at": "2026-10-25T10:14:10Z",
+      "closed_at": null,
+      "merged_at": null,
+      "commits": 2,
+      "changed_files": 39,
+      "additions": 1076,
+      "deletions": 77,
+      "display_url": "https://github.com/tomer-mayara/Thermus/pull/254",
+      "display_title": "Add checked Members removal and safe self-removal navigation"
+    },
+    "isError": false
+  }
+}

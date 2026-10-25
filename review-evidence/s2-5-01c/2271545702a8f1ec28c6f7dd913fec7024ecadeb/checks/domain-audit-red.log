@@ -1,0 +1,392 @@
+✖ Given a checked removal with applied, when it is captured and encoded, then only its safe membership metadata is exported (2.62425ms)
+✖ Given a checked removal with denied, when it is captured and encoded, then only its safe membership metadata is exported (0.230583ms)
+✖ Given a checked removal with stale, when it is captured and encoded, then only its safe membership metadata is exported (0.156417ms)
+✖ Given a checked removal with unsupported, when it is captured and encoded, then only its safe membership metadata is exported (0.144291ms)
+✖ Given a checked removal with last-admin, when it is captured and encoded, then only its safe membership metadata is exported (0.127833ms)
+✖ Given a checked removal with busy, when it is captured and encoded, then only its safe membership metadata is exported (0.107583ms)
+✖ Given a checked removal with unavailable, when it is captured and encoded, then only its safe membership metadata is exported (0.10025ms)
+✖ Given a checked removal with unknown, when it is captured and encoded, then only its safe membership metadata is exported (0.117792ms)
+✔ Given an invalid removal target {"membershipId":""}, when capture runs, then no customer event is written (0.173416ms)
+✔ Given an invalid removal target {"membershipId":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx, when capture runs, then no customer event is written (0.114708ms)
+✔ Given an invalid removal target {"email":"wrong@example.com"}, when capture runs, then no customer event is written (0.585083ms)
+✔ Given an invalid removal target {"invitationId":"wrong-kind"}, when capture runs, then no customer event is written (0.073958ms)
+✔ Given a removal export sink that throws, when a completed outcome is captured, then the caller receives no failure (0.134375ms)
+▶ OrganizationAdministration members and the product member count
+  ✖ Given active ordinary and unsupported members, when the overview is read, then only ordinary active memberships with known grants offer removal (2.651ms)
+  ✔ Given an Admin in two organizations, when the Admin reads members in one organization, then the name comes from the same current membership read that authorizes that organization (0.199167ms)
+  ✔ Given a current authorized membership with the invalid name "", when members are read, then the read fails before any member page (0.29375ms)
+  ✔ Given a current authorized membership with the invalid name "   ", when members are read, then the read fails before any member page (0.103042ms)
+  ✔ Given a current authorized membership with the invalid name undefined, when members are read, then the read fails before any member page (0.103375ms)
+  ✔ Given two members with the same email, when an Admin reads the overview, then each member retains its trusted identity subject (0.160167ms)
+  ✔ Given an Admin actor with no MFA evidence, when the actor reads members and invites either role, then current permission reads authorize each operation (1.843042ms)
+  ✔ Given members on several pages, when an Admin asks for the overview, then it reads each page with explicit statuses, lists each member of the organization with its application roles, and counts each active product membership once (0.253083ms)
+  ✔ Given a member that is repeated on two pages, also with a changed status on the later page, when the overview is read, then each membership is listed and counted once, and its later record decides (0.200042ms)
+  ✔ Given memberships with a synthetic user-manager grant, a retired role, or the default role, and inactive or pending product members, when the overview is read, then no product member is counted (0.163583ms)
+  ✔ Given a page that fails after earlier pages were read, when the overview is read, then the failure reaches the caller and no partial count is given (0.174ms)
+  ✔ Given a directory that gives a cursor that the directory gave before, when the overview is read, then the read fails instead of reading pages without end (0.134292ms)
+  ✔ Given a directory that gives a page that names itself as the next page, when the overview is read, then the read fails instead of reading pages without end (0.0525ms)
+  ✔ Given a directory that gives a new cursor for each page without end, when the overview is read, then the read fails at the page limit (1.716083ms)
+  ✔ Given a page record of another organization, when the overview is read, then that record is neither listed nor counted (0.147209ms)
+  ✔ Given a User without Admin, when it asks for the overview, then it is refused as denied, and no member page is read (0.055292ms)
+  ✔ Given an Admin of another organization, when it asks for the overview, then it is refused as denied, and no member page is read (0.027959ms)
+  ✔ Given an Admin with an inactive membership, when it asks for the overview, then it is refused as denied, and no member page is read (0.0245ms)
+  ✔ Given an overview, when the directory changes later, then the overview stays as it was read: each part of it is frozen (0.076792ms)
+✖ OrganizationAdministration members and the product member count (9.241833ms)
+ℹ tests 32
+ℹ suites 1
+ℹ pass 23
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.344667
+
+✖ failing tests:
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with applied, when it is captured and encoded, then only its safe membership metadata is exported (2.62425ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'applied',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'applied' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with denied, when it is captured and encoded, then only its safe membership metadata is exported (0.230583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'denied',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'denied' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with stale, when it is captured and encoded, then only its safe membership metadata is exported (0.156417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'stale',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'stale' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with unsupported, when it is captured and encoded, then only its safe membership metadata is exported (0.144291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'unsupported',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'unsupported' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with last-admin, when it is captured and encoded, then only its safe membership metadata is exported (0.127833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'last-admin',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'last-admin' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with busy, when it is captured and encoded, then only its safe membership metadata is exported (0.107583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'busy',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'busy' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with unavailable, when it is captured and encoded, then only its safe membership metadata is exported (0.10025ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'unavailable',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'unavailable' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:7:5
+✖ Given a checked removal with unknown, when it is captured and encoded, then only its safe membership metadata is exported (0.117792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   {
+  -     action: 'remove-member',
+  -     actor: {
+  -       authority: 'workos',
+  -       subject: 'admin'
+  -     },
+  -     eventName: 'organization.changed',
+  -     organizationId: 'trusted-tenant',
+  -     outcome: 'unknown',
+  -     target: {
+  -       membershipId: 'membership-1'
+  -     },
+  -     timestamp: '2026-10-25T12:00:00Z'
+  -   }
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/logging/audit/audit-removal.test.js:11:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ { timestamp: '2026-10-25T12:00:00Z', organizationId: 'trusted-tenant', actor: [Object], eventName: 'organization.changed', action: 'remove-member', target: [Object], outcome: 'unknown' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/organizations/organization-administration-members.test.js:9:5
+✖ Given active ordinary and unsupported members, when the overview is read, then only ordinary active memberships with known grants offer removal (2.651ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      [
+        'user-eve',
+  +     undefined
+  -     true
+      ],
+      [
+        'user-ordinary',
+  +     undefined
+  -     false
+      ],
+      [
+        'user-unknown',
+  +     undefined
+  -     false
+      ],
+      [
+        'user-empty',
+  +     undefined
+  -     false
+      ],
+      [
+        'user-inactive',
+  +     undefined
+  -     false
+      ]
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/unit/organizations/organization-administration-members.test.js:23:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ 'user-eve', undefined ], [ 'user-ordinary', undefined ], [ 'user-unknown', undefined ], [ 'user-empty', undefined ], [ 'user-inactive', undefined ] ],
+    expected: [ [ 'user-eve', true ], [ 'user-ordinary', false ], [ 'user-unknown', false ], [ 'user-empty', false ], [ 'user-inactive', false ] ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

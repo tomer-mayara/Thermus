@@ -1,0 +1,94 @@
+{
+  "parent": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "e9c46a639da01243352e62cd4f13c947233f333fef78eae7321d4b3e8a95c465",
+  "diagrams": [
+    {
+      "name": "registry-removal-v5",
+      "source": "registry-removal-v5.mmd",
+      "sha256": "805e9719a2928a9ca9bae9985d36da9ff6cf2fb671f82a7d79e35f91b0d11d66",
+      "image": "registry-removal-v5-800.png",
+      "vector": "registry-removal-v5-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 1119.734375
+      },
+      "viewBox": {
+        "x": 0,
+        "y": -17.5,
+        "width": 839.98046875,
+        "height": 1175.703125
+      },
+      "scaledFontPx": 15.23844955472365,
+      "nodeCount": 7,
+      "pngSha256": "d23509b8b7345458f5a8fa5f71dab3325a07a21a8cf3dabe1cdd8472a8be4ad6",
+      "svgSha256": "093ba229f9992de924bda7830a3e186eb6e7ab781ad0852b2393f4bed5946221",
+      "parse": "passed",
+      "visualReview": "passed at 800px; final removal layout clears web box and title; audit unchanged from manager-approved v3, comparison unchanged from v4"
+    },
+    {
+      "name": "registry-audit-v5",
+      "source": "registry-audit-v5.mmd",
+      "sha256": "db73b0cc67c0f0ed0b018a025023b214856a4a695ce07244055bde3046065f5b",
+      "image": "registry-audit-v5-800.png",
+      "vector": "registry-audit-v5-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 909.703125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 844.21875,
+        "height": 960
+      },
+      "scaledFontPx": 15.161947066444569,
+      "nodeCount": 6,
+      "pngSha256": "4ee2db04c431b8de821c2ecac8baee331ec5a8f727dc74762b07684185543455",
+      "svgSha256": "e301a2d00c49ddd6af5ddd947c734941c584c0af3fa21045ed5ffd78fb61f19c",
+      "parse": "passed",
+      "visualReview": "passed at 800px; final removal layout clears web box and title; audit unchanged from manager-approved v3, comparison unchanged from v4"
+    },
+    {
+      "name": "comparison-v5",
+      "source": "comparison-v5.mmd",
+      "sha256": "3fea8a4e820086505ec65bedaa9509cff9e8595014696e0a7a8cefad884ff4a8",
+      "image": "comparison-v5-800.png",
+      "vector": "comparison-v5-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 1044.09375
+      },
+      "viewBox": {
+        "x": 0,
+        "y": -17.5,
+        "width": 795.09375,
+        "height": 1037.703125
+      },
+      "scaledFontPx": 16.098730495617655,
+      "nodeCount": 6,
+      "pngSha256": "7296c70ba210cb1d72267839b69fce680a481d85aae19e260826e724100457c4",
+      "svgSha256": "5b5dd85c8b61034687f2adaca5ee0044f5b678cd44b7937f9a877bb28ade89a4",
+      "parse": "passed",
+      "visualReview": "passed at 800px; final removal layout clears web box and title; audit unchanged from manager-approved v3, comparison unchanged from v4"
+    }
+  ],
+  "blockedRequests": []
+}

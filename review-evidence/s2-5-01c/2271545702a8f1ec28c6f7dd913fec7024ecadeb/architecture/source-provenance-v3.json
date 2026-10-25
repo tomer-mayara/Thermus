@@ -1,0 +1,78 @@
+{
+  "parent": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "candidate": "working tree; manager must pin final SHA",
+  "sources": [
+    {
+      "path": "architecture/components.md",
+      "parentSha256": "98ce7196e4413616270d8536d240f372518084341b989ba983616efe3adb1e32",
+      "candidateSha256": "96dbba18fd213026ec9a8d14a049cb369703f55a5c808daeb37e09c14d3c5ec5",
+      "lines": 1269
+    },
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "parentSha256": "ceda4f76c950d809a20170b86b394c39d2b30b844f48421c46515d57aff2c6a8",
+      "candidateSha256": "ceda4f76c950d809a20170b86b394c39d2b30b844f48421c46515d57aff2c6a8",
+      "lines": 177
+    },
+    {
+      "path": "src/interfaces/web/account/administration-routes.ts",
+      "parentSha256": "80b3202ed7f6e4872ae750b7596a9e077e8f44713f7976f9a1d2017e52352ba2",
+      "candidateSha256": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+      "lines": 215
+    },
+    {
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "parentSha256": "7ab451559857472a86106a29d5de1b751fb70ace3dcd45ef22b91864dc9bf41e",
+      "candidateSha256": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+      "lines": 85
+    },
+    {
+      "path": "src/interfaces/web/account/account-form.ts",
+      "parentSha256": "a9d8fad6937a7f9370b8ee3c5746c404dabd1ae7e563a7f109705144c1ebd4c1",
+      "candidateSha256": "be834f69551f637515ed7ee39e384cf1de464de92a9dae9d834254ee6c14e6cf",
+      "lines": 141
+    },
+    {
+      "path": "src/interfaces/web/account/account-pages.ts",
+      "parentSha256": "c64f22b926fc88b0c31d23f5d8c798ccd83846134a9922eafbacd01e59640e20",
+      "candidateSha256": "909cde13ceccd4d91f393ccd17e331f8dc59fc1b3c4675bc65a4f602b752d87c",
+      "lines": 131
+    },
+    {
+      "path": "src/accounts/organizations/administration-overviews.ts",
+      "parentSha256": "8e4546a592920c51fa11203dedb7fc05ccdf05090f2e8ebe2210ed6068e24b64",
+      "candidateSha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+      "lines": 96
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-checks.ts",
+      "parentSha256": "fcfda7a175d95af3d945f218b3cbfb487814d99cf04525112f8d29aec24768a5",
+      "candidateSha256": "fe53ae18b41d57ba44dea2fc1a7f6fd6622b09ecc607cd677b761c4b6e79cb7c",
+      "lines": 55
+    },
+    {
+      "path": "src/accounts/organizations/organization-administration.ts",
+      "parentSha256": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+      "candidateSha256": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+      "lines": 184
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal.ts",
+      "parentSha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+      "candidateSha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+      "lines": 79
+    },
+    {
+      "path": "src/logs/audit/audit-log.ts",
+      "parentSha256": "c6eec7e4521d9bb8c763cc092322ef5dafd82988c43941b3f6dfcc0e57c30a5a",
+      "candidateSha256": "548df0db89be254e422d9d26d417cc8dcfebec48933b42299215c6dc46facf2c",
+      "lines": 94
+    },
+    {
+      "path": "src/logs/audit/audit-event-projection.ts",
+      "parentSha256": "1edbab47645dfba3db635f2f46f4e8a44f5b894899d0f94e7d81787bd7446cae",
+      "candidateSha256": "3a22c00fc8bd085f1a1ead79eb061623616c6e6655fa0b16c578c3d4b5d61879",
+      "lines": 92
+    }
+  ]
+}

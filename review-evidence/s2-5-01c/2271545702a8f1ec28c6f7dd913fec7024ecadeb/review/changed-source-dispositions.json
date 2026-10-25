@@ -1,0 +1,210 @@
+{
+  "base_commit": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "snapshot_head_commit": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "working_head_at_review": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "dirty_at_review": [],
+  "reviewed_at": "2026-10-25T10:47:09.263210+00:00",
+  "source_matches_snapshot_head": true,
+  "snapshot_base_sha256": "2014cc6c86e83a90070f92774eb1776cab206041192bfbbf2cf3172af57f0081",
+  "snapshot_head_sha256": "d0628cdb94cd48053159d26978c82cd7ee0b6f02479e821dae710968934cf4b5",
+  "base_provenance": {
+    "sourceFingerprint": "48dd8d406782e01214f7d6359a8664bc213444a845632cbdd2d346d2a7fc3daa",
+    "inputsFingerprint": "349d3fa5a2f6a54f791807763cba9da5493d19ae10335c8a034eb0e027e0dd55",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "head_provenance": {
+    "sourceFingerprint": "ec5c11e7f669d456b58896fd2e293eb49d0ab3daf0085bfb695126823a004091",
+    "inputsFingerprint": "cbe31a520ece0bc1659fd8918f95295360f6e52602ad6012f66daf95070d2133",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "tool": "0.43.1-thermus.1",
+  "crap_status": "Pending final compatible coverage collection and parent-bound CRAP report. No CRAP score or pass is inferred from these static snapshots.",
+  "files": [
+    {
+      "path": "src/accounts/organizations/administration-overviews.ts",
+      "base_mi_raw": 75.7988076418376,
+      "head_mi_raw": 76.8504719500318,
+      "base_max_function_paths": 3,
+      "head_max_function_paths": 3,
+      "base_file_paths": 15,
+      "head_file_paths": 15,
+      "head_max_functions": [
+        "invitationEntry"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+      "responsibility": "Member overview projection",
+      "disposition": "The added removable field is a frozen display hint based on the same target-support predicate that removal rechecks. memberEntry remains one path. Existing role filtering, complete pages, and once-per-membership seat counts stay together because they describe the same current overview. Retain the file below 85: splitting these related projections would separate the displayed roles and eligibility from their shared member facts without reducing decisions."
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-checks.ts",
+      "base_mi_raw": 56.89018621554175,
+      "head_mi_raw": 61.01765055781432,
+      "base_max_function_paths": 9,
+      "head_max_function_paths": 9,
+      "base_file_paths": 42,
+      "head_file_paths": 43,
+      "head_max_functions": [
+        "checkRemoval"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "fe53ae18b41d57ba44dea2fc1a7f6fd6622b09ecc607cd677b761c4b6e79cb7c",
+      "responsibility": "Current membership safety rules",
+      "disposition": "The shared removalSupported predicate has four paths and preserves ordinary/active/all-known-grants semantics. targetRefusal falls from eight to five paths; checkRemoval stays at nine. It still owns actor/target rechecks, complete bounded member pages, and the last-Admin rule in their required order. Retain the file below 85 because per-guard modules would hide the safety sequence and direct-versus-paged target comparison. This file exists in the actual parent. Its unchanged inherited MI exception has bound 56.89 and expires 2026-12-24; the head score improves above that bound. No new-file exception is added for this increment."
+    },
+    {
+      "path": "src/interfaces/web/account/account-form.ts",
+      "base_mi_raw": 61.60432516158119,
+      "head_mi_raw": 59.83653028823848,
+      "base_max_function_paths": 6,
+      "head_max_function_paths": 6,
+      "base_file_paths": 45,
+      "head_file_paths": 49,
+      "head_max_functions": [
+        "account-form\\ReturnDestinations.check",
+        "invitationIn"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "be834f69551f637515ed7ee39e384cf1de464de92a9dae9d834254ee6c14e6cf",
+      "responsibility": "Bounded native-form parsing",
+      "disposition": "memberRemovalIn has three paths and reuses the existing exact-once fields, CSRF-first check, ASCII field bounds, and bounded body reader. It returns only organization ID, membership ID, and revision. The existing return-path and invitation validators remain the maximum at six paths. Retain the file below 85: these parsers share one untrusted-form boundary, and a second removal parser layer would duplicate its accepted-input rules."
+    },
+    {
+      "path": "src/interfaces/web/account/account-pages.ts",
+      "base_mi_raw": 73.88014231968071,
+      "head_mi_raw": 72.76076629466495,
+      "base_max_function_paths": 2,
+      "head_max_function_paths": 2,
+      "base_file_paths": 8,
+      "head_file_paths": 10,
+      "head_max_functions": [
+        "removalResultPage",
+        "noOrganizationPage"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "909cde13ceccd4d91f393ccd17e331f8dc59fc1b3c4675bc65a4f602b752d87c",
+      "responsibility": "Fixed account notices and read-only recovery",
+      "disposition": "removalResultPage has two paths; the result vocabulary is fixed data. Applied, refused, busy, and unknown remain separate and each uses read-only links. It performs no Members read, session mutation, or replay. Retain the file below 85 because a table of distinct required outcomes is clearer than a dynamic notice builder or flash/status storage. The strings affect file volume while executable branches remain small."
+    },
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "base_mi_raw": 60.07546058335585,
+      "head_mi_raw": 59.440789019914476,
+      "base_max_function_paths": 6,
+      "head_max_function_paths": 6,
+      "base_file_paths": 47,
+      "head_file_paths": 47,
+      "head_max_functions": [
+        "account-routes\\HostedAccountRoutes.organizationPage",
+        "account-routes\\HostedAccountRoutes.selectOrganization"
+      ],
+      "function_token_bodies_and_signatures_unchanged": true,
+      "source_sha256": "34b35964982b22f6be0e1c3147fbdf4ba0b568ced466440b9ac986b6a443f463",
+      "responsibility": "Existing session and current-access routing",
+      "disposition": "Only the two-line invitation-only comment becomes one current administration comment. Function token bodies/signatures and path counts are identical in both snapshots. The raw MI changes with the comment/line contribution, not a behavior change. No new maintainability defect or runtime path is introduced here. The existing owner keeps cookie effects, checked tenant dispatch, and identity-only selection together; do not split runtime code for this prose correction."
+    },
+    {
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "base_mi_raw": 64.89901264910168,
+      "head_mi_raw": 61.87704640311736,
+      "base_max_function_paths": 3,
+      "head_max_function_paths": 3,
+      "base_file_paths": 21,
+      "head_file_paths": 23,
+      "head_max_functions": [
+        "membersPage",
+        "(anonymous)"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+      "responsibility": "One native Members page",
+      "disposition": "The page adds an escaped details/summary confirmation and a one-path removalForm. Cancel is a GET link. The member-row callback gains the removable display condition; the file maximum remains three paths. Retain the file below 85: the longer HTML is explicit, uses existing form/escape helpers, and needs no script, modal framework, or duplicated page state. Form rendering remains separate from write authority."
+    },
+    {
+      "path": "src/interfaces/web/account/administration-routes.ts",
+      "base_mi_raw": 56.14187606413681,
+      "head_mi_raw": 51.26721230018643,
+      "base_max_function_paths": 11,
+      "head_max_function_paths": 11,
+      "base_file_paths": 51,
+      "head_file_paths": 60,
+      "head_max_functions": [
+        "administration-routes\\AdministrationRoutes.changeOnPost"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+      "responsibility": "Checked browser administration and trusted Audit capture",
+      "disposition": "The new removeMember route has seven paths: method, origin, bounded form, checked organization, one coordinator call, and explicit unknown recovery. It never reads Members after the write. keep rises from six to seven paths for the membership target; the unchanged invitation changeOnPost remains the file maximum at eleven. Retain the file below 85: this owner already holds trusted actor/tenant scope and capture isolation. A new removal router would duplicate or expose that boundary. Keeping removal separate from the existing invitation result state machine preserves its durable uncertainty semantics. The raw MI decrease is 4.87466376395038, below the five-point informational threshold; the decrease is still recorded here."
+    },
+    {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "base_mi_raw": null,
+      "head_mi_raw": null,
+      "base_max_function_paths": null,
+      "head_max_function_paths": null,
+      "base_file_paths": 0,
+      "head_file_paths": 0,
+      "head_max_functions": [],
+      "function_token_bodies_and_signatures_unchanged": true,
+      "source_sha256": "962f5d34f6b6f5c99e32ee450b374b3f6abb8c7378a4cd33666634e807154da2",
+      "responsibility": "Members page layout data",
+      "disposition": "This module exports CSS text only. Both snapshots have zero functions and zero paths and omit executable MI. MI is N/A, not zero. The edit adds confirmation styling and a member-identity layout using the existing stylesheet/CSP owner. Browser geometry and keyboard verification are separate evidence; static executable metrics cannot establish them."
+    },
+    {
+      "path": "src/logs/audit/audit-event-projection.ts",
+      "base_mi_raw": 36.99712939607105,
+      "head_mi_raw": 35.19477522487573,
+      "base_max_function_paths": 13,
+      "head_max_function_paths": 13,
+      "base_file_paths": 54,
+      "head_file_paths": 62,
+      "head_max_functions": [
+        "inputOf"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "3a22c00fc8bd085f1a1ead79eb061623616c6e6655fa0b16c578c3d4b5d61879",
+      "responsibility": "Customer event allowlist and projection",
+      "disposition": "projectAdministrationChange falls from eleven to eight paths. The new eleven-path administrationTarget has three flat cases: email for invite, invitation ID for invitation updates, and membership ID for removal, each with bounded metadata validation. The existing tool inputOf remains the maximum at thirteen. Retain the low file score because explicit accepted shapes and credential-safe named-field projection are the contract; a generic object serializer or broad mapping would weaken it. The helper isolates target-kind selection without scattering shared timestamp/identity validation. New busy, last-admin, and unavailable outcomes are accepted only as fixed vocabulary."
+    },
+    {
+      "path": "src/logs/audit/audit-log.ts",
+      "base_mi_raw": 88.05501787852491,
+      "head_mi_raw": 88.05501787852491,
+      "base_max_function_paths": 3,
+      "head_max_function_paths": 3,
+      "base_file_paths": 10,
+      "head_file_paths": 10,
+      "head_max_functions": [
+        "audit-log\\AuditLog.toolCompleted",
+        "audit-log\\AuditLog.administrationChanged",
+        "audit-log\\AuditLog.destinationChanged"
+      ],
+      "function_token_bodies_and_signatures_unchanged": true,
+      "source_sha256": "548df0db89be254e422d9d26d417cc8dcfebec48933b42299215c6dc46facf2c",
+      "responsibility": "Stable best-effort capture facade and event contract",
+      "disposition": "Only the AdministrationChange action/target type vocabulary expands. The constructor and all three capture methods keep identical token bodies/signatures and path counts. The raw file MI stays above 85. Existing synchronous capture and failure isolation continue to prevent export failure from changing or replaying administration."
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-encoding.ts",
+      "base_mi_raw": 54.626113259105146,
+      "head_mi_raw": 54.323868501496115,
+      "base_max_function_paths": 15,
+      "head_max_function_paths": 16,
+      "base_file_paths": 27,
+      "head_file_paths": 28,
+      "head_max_functions": [
+        "eventAttributes"
+      ],
+      "function_token_bodies_and_signatures_unchanged": false,
+      "source_sha256": "67dacb9eba1fa4074fe79d0a64da04df8ed228d8a2a3387f8c32721420ab3d03",
+      "responsibility": "Explicit OTLP event translation",
+      "disposition": "eventAttributes rises from fifteen to sixteen paths for target.membership_id; other functions and payload/number/byte checks are unchanged. Retain the file below 85 because it translates one finite Audit event union into named OTLP attributes and preserves per-event validation. Moving the third target choice to a separate helper solely to lower this function count would not reduce the required decisions. It must not serialize arbitrary caller fields."
+    }
+  ]
+}
