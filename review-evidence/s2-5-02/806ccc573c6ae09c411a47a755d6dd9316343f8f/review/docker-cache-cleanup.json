@@ -1,0 +1,346 @@
+{
+  "at": "2026-10-25T11:34:28.472170+00:00",
+  "scope": "exact unused private cache records of earlier Thermus checked-build/production-dependencies and runtime stages on this task date; no volume, image, container or unrelated cache prune",
+  "records": [
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:36:00.644049186 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c install -d -m 0700 -o node -g node /var/lib/thermus  && install -d -m 0755 /etc/thermus",
+        "ID": "tdoam1tilgntk14ui4ycuglml",
+        "LastUsedAt": "57 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "rrvbd6o3tjg1f3fgs260qz2bz"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "28.84kB",
+        "Type": "regular",
+        "UsageCount": 2
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:35:59.945904524 +0000 UTC",
+        "Description": "[stage-8 6/9] COPY migrations migrations",
+        "ID": "qk3abimyu5rqx1dwjrugqefy3",
+        "LastUsedAt": "57 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "8v21st3nvfcbvf41h69see3s7"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "30.05kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:36:00.507252025 +0000 UTC",
+        "Description": "[stage-8 8/9] COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt",
+        "ID": "rrvbd6o3tjg1f3fgs260qz2bz",
+        "LastUsedAt": "57 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "p44usla8hzjctcabcush9uuy0"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "371.2kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:35:59.929124643 +0000 UTC",
+        "Description": "[stage-8 5/9] COPY --from=build /app/dist/src dist/src",
+        "ID": "8v21st3nvfcbvf41h69see3s7",
+        "LastUsedAt": "57 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "hb89tio6ah2oim2nmt4yuic4m"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "2.656MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:36:00.486076716 +0000 UTC",
+        "Description": "[stage-8 7/9] COPY --from=lightpanda /opt/lightpanda /opt/lightpanda",
+        "ID": "p44usla8hzjctcabcush9uuy0",
+        "LastUsedAt": "57 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "qk3abimyu5rqx1dwjrugqefy3"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "246.2MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:26:59.791978528 +0000 UTC",
+        "Description": "[runtime  9/12] COPY docker/hosted-ad-rules.SOURCE.md docker/hosted-ad-rules.LICENSE.txt /etc/thermus/",
+        "ID": "lyw43o80ws8xdlz8qx3jyeglf",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "r7njyg81lwcwdjb06werxwsdi"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "53.75kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:26:59.772790693 +0000 UTC",
+        "Description": "[runtime  8/12] COPY docker/hosted-ad-rules.txt /etc/thermus/ad-rules.txt",
+        "ID": "r7njyg81lwcwdjb06werxwsdi",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "wx85js7ytf7hrw1jhyzl18rxp"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "2.934MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:26:59.725427534 +0000 UTC",
+        "Description": "[runtime  6/12] COPY --from=checked-build /app/src/interfaces/user-portal/dist src/interfaces/user-portal/dist",
+        "ID": "nftaqw9o1l75f4mpp3ow6v8eb",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "y1sda3nbjwr4ivh34qbzn6ytr"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "242kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:26:59.749740375 +0000 UTC",
+        "Description": "[runtime  7/12] COPY migrations migrations",
+        "ID": "wx85js7ytf7hrw1jhyzl18rxp",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "nftaqw9o1l75f4mpp3ow6v8eb"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "30.05kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:26:59.706482071 +0000 UTC",
+        "Description": "[runtime  5/12] COPY --from=checked-build /app/dist/src dist/src",
+        "ID": "y1sda3nbjwr4ivh34qbzn6ytr",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "vl47e7rmq9xcas8eu0sclv5qc"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "2.656MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:19.0161051 +0000 UTC",
+        "Description": "[runtime  3/12] COPY --from=production-dependencies /app/package.json ./",
+        "ID": "nxm6qkvz0wwtcf1iuqxwjnoiy",
+        "LastUsedAt": "2 hours ago",
+        "Mutable": false,
+        "Parents": [
+          "x0ceevnkszx3jv5goghu55xjs"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "18.07kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:20.050888494 +0000 UTC",
+        "Description": "[runtime  4/12] COPY --from=production-dependencies /app/node_modules node_modules",
+        "ID": "vl47e7rmq9xcas8eu0sclv5qc",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "nxm6qkvz0wwtcf1iuqxwjnoiy"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "105.1MB",
+        "Type": "regular",
+        "UsageCount": 2
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:18:32.258233434 +0000 UTC",
+        "Description": "[checked-build 4/5] COPY . .",
+        "ID": "hktxiv9ponfrsw546f4jp2dfo",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "7dkefcfvbjc5zg1d02018znqh"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "12.37MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:58.105768784 +0000 UTC",
+        "Description": "[checked-build 3/5] COPY --from=lightpanda /opt/lightpanda /opt/lightpanda",
+        "ID": "7dkefcfvbjc5zg1d02018znqh",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "ff2cpm87xdtq0uigznsuiphkl"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "188.3MB",
+        "Type": "regular",
+        "UsageCount": 2
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:56.785032841 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c test -n \"$RUSTUP_TOOLCHAIN\" && pnpm install --frozen-lockfile",
+        "ID": "ff2cpm87xdtq0uigznsuiphkl",
+        "LastUsedAt": "2 hours ago",
+        "Mutable": false,
+        "Parents": [
+          "w1dkl5zut4uji7ym4ohxq1enc"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "548.9MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:39.827498413 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*",
+        "ID": "w1dkl5zut4uji7ym4ohxq1enc",
+        "LastUsedAt": "2 hours ago",
+        "Mutable": false,
+        "Parents": [
+          "mz8ji92f50s6jf5twocb5nbcl"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "114.4MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:16.482492149 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c test -n \"$RUSTUP_TOOLCHAIN\"  && pnpm install --frozen-lockfile --prod  && rm -rf node_modules/.pnpm/adblock-rs@*/node_modules/adblock-rs/target",
+        "ID": "mz8ji92f50s6jf5twocb5nbcl",
+        "LastUsedAt": "2 hours ago",
+        "Mutable": false,
+        "Parents": [
+          "3x885iuxvey9w0bk6zzfjhwvn"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "518.2MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    }
+  ]
+}

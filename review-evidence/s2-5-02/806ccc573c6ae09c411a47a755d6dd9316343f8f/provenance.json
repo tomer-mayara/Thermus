@@ -1,0 +1,14 @@
+{
+  "candidate": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "parentRef": "origin/codex/s2-5-01c-members-removal",
+  "parentTip": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "parentMergeBase": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "mainTip": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "mainMergeBase": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "checkerEligibility": "eligible",
+  "checkerBlockers": [],
+  "humanApproval": "Not established by this helper",
+  "overallMerge": "Blocked: parent PR254 is unmerged and independent authorized human team/owner approval of this head is pending.",
+  "rawV8Included": false,
+  "managerSignoff": "review/manager-signoff.md"
+}

@@ -1,0 +1,85 @@
+✖ Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with two Admins and a User, when Members refuses unsafe requests, removes the User and the acting Admin, then exact memberships disappear, portal and MCP access stop, other access and both accounts remain, selection works, the last Admin is protected, and a fresh invitation restores only its new role (98141.461375ms)
+ℹ Scoped WorkOS removal proof s25-02-mvnqj1d5-ea80f3; candidate 2d196cc4047ee8798de402ca708c45eb0cca91b5; evidence .cache/s25-02/live/s25-02-mvnqj1d5-ea80f3.jsonl. No live factor observation or MFA API dependency.
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 98488.409958
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-removal.live.js:63:1
+✖ Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with two Admins and a User, when Members refuses unsafe requests, removes the User and the acting Admin, then exact memberships disappear, portal and MCP access stop, other access and both accounts remain, selection works, the last Admin is protected, and a fresh invitation restores only its new role (98141.461375ms)
+  Error [AggregateError]: The scoped WorkOS proof had cleanup or journal failures.
+      at RemovalFixtures.end (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:95:19)
+      at async TestHook.run (node:internal/test_runner/test:1404:7)
+      at async Test.runHook (node:internal/test_runner/test:1284:9)
+      at async after (node:internal/test_runner/test:1337:9)
+      at async Test.run (node:internal/test_runner/test:1423:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    [errors]: [
+      Error: Cleanup verification failed for organization org_01M5SCJ56WXHJ3JGHECEC3Y2ZT.
+          at attempt (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:67:31)
+          at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+          at async RemovalFixtures.end (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:75:13)
+          ... 4 lines matching cause stack trace ...
+          at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+        [cause]: AssertionError [ERR_ASSERTION]: Cleanup did not remove the exact test-owned organization org_01M5SCJ56WXHJ3JGHECEC3Y2ZT.
+        
+        200 !== 404
+        
+            at file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:82:24
+            at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+            at async attempt (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:64:17)
+            at async RemovalFixtures.end (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:75:13)
+            at async TestHook.run (node:internal/test_runner/test:1404:7)
+            at async Test.runHook (node:internal/test_runner/test:1284:9)
+            at async after (node:internal/test_runner/test:1337:9)
+            at async Test.run (node:internal/test_runner/test:1423:7)
+            at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+      },
+      Error: Cleanup verification failed for organization org_01M5SCJ5BGC1EP6DNRRRX3GA5P.
+          at attempt (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:67:31)
+          at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+          at async RemovalFixtures.end (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:75:13)
+          ... 4 lines matching cause stack trace ...
+          at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+        [cause]: AssertionError [ERR_ASSERTION]: Cleanup did not remove the exact test-owned organization org_01M5SCJ5BGC1EP6DNRRRX3GA5P.
+        
+        200 !== 404
+        
+            at file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:82:24
+            at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+            at async attempt (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:64:17)
+            at async RemovalFixtures.end (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:75:13)
+            at async TestHook.run (node:internal/test_runner/test:1404:7)
+            at async Test.runHook (node:internal/test_runner/test:1284:9)
+            at async after (node:internal/test_runner/test:1337:9)
+            at async Test.run (node:internal/test_runner/test:1423:7)
+            at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+      },
+      Error: Cleanup verification failed for organization org_01M5SCJ5GKN3RXHQ9JQC89KGFM.
+          at attempt (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:67:31)
+          at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+          at async RemovalFixtures.end (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:75:13)
+          ... 4 lines matching cause stack trace ...
+          at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+        [cause]: AssertionError [ERR_ASSERTION]: Cleanup did not remove the exact test-owned organization org_01M5SCJ5GKN3RXHQ9JQC89KGFM.
+        
+        200 !== 404
+        
+            at file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:82:24
+            at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+            at async attempt (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:64:17)
+            at async RemovalFixtures.end (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/hosted-live/removal-fixtures.js:75:13)
+            at async TestHook.run (node:internal/test_runner/test:1404:7)
+            at async Test.runHook (node:internal/test_runner/test:1284:9)
+            at async after (node:internal/test_runner/test:1337:9)
+            at async Test.run (node:internal/test_runner/test:1423:7)
+            at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+      }
+    ]
+  }

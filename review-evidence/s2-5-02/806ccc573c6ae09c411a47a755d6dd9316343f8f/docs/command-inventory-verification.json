@@ -1,0 +1,1365 @@
+{
+  "kind": "manual documentation/command inventory review; no prose tests",
+  "checked_at_utc": "2026-10-25T12:00:30.734222+00:00",
+  "committed_candidate": "b429c308f013478cd99ee69f22a9f53d5e3687d4",
+  "files": [
+    "README.md",
+    "docs/testing/test-list.md",
+    "docs/implementation/admin-s2-5-02.md",
+    "docs/implementation/test-gate-policy.md"
+  ],
+  "file_sha256": {
+    "README.md": "4e1edcddea0e9b421617af872ce7c02e09448650377c73fde88268ecbc25fcfd",
+    "docs/testing/test-list.md": "05672ad8f37a3efb77dccf1f70673a7d5dd41972225dba33e92e1ef490701b0a",
+    "docs/implementation/admin-s2-5-02.md": "73398525b0fad125c6c1f1580953c418f1053dfc11e6bb84b1e39790830de2c2",
+    "docs/implementation/test-gate-policy.md": "79703d5db5c8988093c0e130338fca1ddf85aecc83e959074bf837cb17f06c41"
+  },
+  "checks": [
+    {
+      "check": "hosted live script selects both files in sequence",
+      "passed": true
+    },
+    {
+      "check": "PostgreSQL script selects integrated runtime case",
+      "passed": true
+    },
+    {
+      "check": "live removal uses disposable PostgreSQL",
+      "passed": true
+    },
+    {
+      "check": "source inventory exists",
+      "passed": true
+    },
+    {
+      "check": "relative file links resolve",
+      "passed": true,
+      "detail": "262 links resolve"
+    },
+    {
+      "check": "four-doc whitespace",
+      "passed": true
+    },
+    {
+      "check": "proposal complete bytes unchanged from committed candidate",
+      "passed": true
+    },
+    {
+      "check": "image pass not claimed",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "links": [
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/website-fetcher.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/pipeline-metrics.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/cache-design.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/test-list.md#planned-cache-key-tests",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/components.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/component-registry-workflow.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/component-structure-proposal.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/hidden-text-sanitizer.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "patches/agent-input-sanitizer@1.47.14.patch",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/hidden-text-sanitizer.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/hidden-text-sanitizer.md#local-opacity-animations",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/fetch-tool.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/html-processing-limits.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/mcp/mcp-server.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/identity-verifier.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/access-context.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/mcp-search-tool.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/mcp-fetch-tool.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/fetch-tool.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#server-rules-file",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-05.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-09.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-06.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-mcp-cancellation.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-01.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-02.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-03.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-04.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/mcp/mcp-server.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/mcp/discovery.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/support/doubles/auth/identity-verifier-spy.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/support/doubles/auth/access-resolver-spy.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/support/doubles/mcp/failure-reporter-spy.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/mcp/auth.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/mcp-context.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/mcp-access.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/mcp-failure-reports.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/test-list.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#pinned-workos-sdk-proof",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/interface/auth/better-auth.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#pinned-provider-proof",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/runtime/config/deployment-config.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": ".env.example",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/runtime/config/deployment-config.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/index.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/runtime/http/server.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/fetch-tool.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#server-rules-file",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#renderer-setup-report",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/mcp-fetch-tool.md#fetch-failure-diagnostics",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/data-directory-lock.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/local-installation.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#pinned-provider-proof",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#provider-environment-variables",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "migrations/auth-local/",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#container-image",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#container-image",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#server-rules-file",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "compose.yaml",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "Dockerfile",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#telemetry",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/render-hosted-docker-plan.md#rhd-03--build-and-prove-the-hosted-image",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#container-gate",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-user-administration.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/cli/local-auth-command.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/cli/local-auth-command-line.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/local-user-administration.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-user-onboarding.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-account-deletion.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": ".env.example",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-organization-setup.md#s1-05-cutover-checklist-prepared-not-executed",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#select-the-executable",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/rhd-01.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/hosted-workos-application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/rhd-02.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/user-portal.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/user-portal.md#mcp-setup-guides",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-composition-with-workos",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-access-of-auth-06",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#browser-session-of-auth-06",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/hosted-workos-application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/browser-session.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/access-context.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/organizations/organization-directory.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing-free.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/web/account/account-routes.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/organizations/organization-administration.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-organization-setup.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/web/account/administration-routes.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/workos/workos-organizations.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/hosted-workos-application.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-role-mapping",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#workos-organization-administration-of-auth-08w",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-provider-findings",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-organization-setup.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-startup.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-workos.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-workos-organizations.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-organizations.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-organization-requests.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-grant-retirement.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-membership-access.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-invitations.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-seats.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/hosted-account.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/hosted-organizations.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/hosted-administration.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-effects.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-organization-page.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-selection-input.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-selection.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-administration-changes.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-administration-input.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-changes.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-members.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-invitations.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-invitation-overview.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/application-operator-log.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos/workos-organizations-members.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos/workos-organizations-invitations.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/workos-provider-organizations.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/workos-provider-administration.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing-free.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/billing-design.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/billing/billing-free.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/billing/free-billing.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/billing/hosted-billing.test.ts",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/coding-principles.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "AGENTS.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/archive/oo-refactoring-plan.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/user-portal.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#verify-rendering",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/otel-logger.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#container-gate",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-offline-build-checks",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-image-gate",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/rhd-03.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#hosted-image-policy",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#verify-rendering",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#renderer-gate-mcp-p03",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-pipeline-plan.md#search-06-prove-the-pinned-runtime-and-select-the-delivery-gates",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/otel-logger.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/work-slice/basic-mcp-url-fetch/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/work-slice/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/basic-mcp-url-fetch-plan.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/auth-workos-mcp-url-fetch-validation.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-offline-checks",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#self-hosted-release",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-02.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-01c.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-01b.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-01a.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-05.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-04b.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "workos-invitation-proof-matrix.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-04a.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-03b.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-03a.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-02.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "test-code-layout.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-05.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-09.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-mcp-cancellation.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-04.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../script/README.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/mcp-fetch-debug-oauth-plan.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-01.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-04.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-02.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/portal-design.md#ai-agent-quick-guide",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-05.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/billing-design.md#auth-11-implementation-specification",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-03a.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/organization-admin-plan.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-02a.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-02b.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-03b.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-03c.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-04.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "otel-logger.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/authentication-design.md#live-provider-proofs",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/authentication-design.md#pinned-provider-proof",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../lightpanda-runtime.md#verify-rendering",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-01.md#verification",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-02.md#verification",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#live-brave-search-proof-search-06",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-09.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-06.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-mcp-cancellation.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/auth-workos-mcp-url-fetch-plan.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#hosted-image-gate",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-03.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-03.md",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../reference/ad-rules.md#hosted-image-policy",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "exists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/auth-workos-mcp-url-fetch-validation.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "../design/organization-admin-plan.md#s25-02--integrated-verification-runbooks-and-release",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s2-5-02-removal-runbook.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s4-recovery.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s2-04.md#evidence-and-release-holds",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "../legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s2-5-02-removal-runbook.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md#verify-rendering",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../testing/otel-logger.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../architecture/components.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../testing/test-code-layout.md#dependency-rules",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "pr-review-playbook.md#report-layout",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "rhd-03.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "search-09.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "component-registry-workflow.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "pr-review-playbook.md#report-layout",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "hosted-organization-setup.md#s1-05-cutover-checklist-prepared-not-executed",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/authentication-design.md#hosted-role-mapping",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md#select-the-executable",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "hosted-organization-setup.md#before-you-start",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/billing-design.md#auth-11-implementation-specification",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../CLAUDE.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../package.json",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../README.md#build-and-test-commands",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../testing/test-list.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/authentication-design.md#verification-and-release-gates",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/billing-design.md#auth-11-implementation-specification",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md#verify-rendering",
+      "exists": true
+    }
+  ]
+}

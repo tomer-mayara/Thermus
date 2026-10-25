@@ -1,0 +1,35 @@
+{
+  "checkedOn": "2026-10-25",
+  "actions": "read-only; no migration, credentials, deployment or settings changes",
+  "supabase": {
+    "project": "rnqktgtgrvvqptbaosth",
+    "organization": "jcizlbmzvltfcwponins",
+    "plan": "free",
+    "status": "ACTIVE_HEALTHY",
+    "region": "us-west-2",
+    "version": "17.11.0.003",
+    "databaseBytes": 10991283,
+    "observedSessions": 13,
+    "maxConnections": 60,
+    "loggingTableExists": true,
+    "removalTableExists": false,
+    "egress": "not supplied by current inventory"
+  },
+  "workos": {
+    "environment": "environment_01M4VDKATD5PXZT4H01EHCMR2A",
+    "sandbox": true,
+    "clientId": "client_01M4VDKB7C7T2GV2NWPS84HADP",
+    "passwordEnabled": true,
+    "mfa": "Off",
+    "sso": false,
+    "socialMethods": false,
+    "noMfaEnrollmentOrFactorApi": true
+  },
+  "render": "Connector has no selected workspace; no fresh deployment observation. No selection or mutation made.",
+  "sources": [
+    "https://supabase.com/pricing",
+    "https://supabase.com/docs/guides/platform/billing-on-supabase",
+    "https://workos.com/pricing",
+    "https://workos.com/docs/reference/authkit/organization-membership/delete"
+  ]
+}

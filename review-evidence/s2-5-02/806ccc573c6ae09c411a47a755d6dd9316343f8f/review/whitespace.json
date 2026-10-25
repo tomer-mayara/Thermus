@@ -1,0 +1,285 @@
+{
+  "firstCheck": "git diff --cached --check reports expected hard breaks and patch context. Those bytes are intentionally retained.",
+  "dispositions": [
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "line": 107,
+      "reason": "Intentional preserved Markdown hard break in existing company address"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "line": 108,
+      "reason": "Intentional preserved Markdown hard break in existing company address"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "line": 210,
+      "reason": "Intentional preserved Markdown hard break in existing company address"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "line": 211,
+      "reason": "Intentional preserved Markdown hard break in existing company address"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 5,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 8,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 10,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 12,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 14,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 17,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 19,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 21,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 23,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 26,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 28,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 30,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 32,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 35,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 37,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 39,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 41,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 44,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 46,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 51,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 54,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 56,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 59,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 61,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 63,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 65,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 68,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 70,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 72,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 74,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 80,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 83,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 85,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 92,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 94,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 96,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 99,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 101,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 109,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 112,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 119,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 131,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 133,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 136,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 138,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 140,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 142,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 145,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 148,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 151,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 154,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    },
+    {
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "line": 157,
+      "reason": "Required unified-diff context prefix on a blank source line; patch reproduction verified"
+    }
+  ]
+}

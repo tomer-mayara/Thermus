@@ -1,0 +1,14 @@
+time="2026-10-25T06:04:37-06:00" level=info msg="deleting colima [profile=thermus-s25-02]"
+time="2026-10-25T06:04:37-06:00" level=info msg="deleting ..." context=docker
+colima-thermus-s25-02
+time="2026-10-25T06:04:37-06:00" level=info msg="Sending SIGKILL to the vz driver process 45483"
+time="2026-10-25T06:04:37-06:00" level=info msg="Sending SIGKILL to the host agent process 45483"
+time="2026-10-25T06:04:37-06:00" level=info msg="Removing *.pid *.sock *.tmp under `/Users/tomermayara/.colima/_lima/colima-thermus-s25-02`"
+time="2026-10-25T06:04:37-06:00" level=info msg="Removing `/Users/tomermayara/.colima/_lima/colima-thermus-s25-02/boot-session.tmp`"
+time="2026-10-25T06:04:37-06:00" level=info msg="Removing `/Users/tomermayara/.colima/_lima/colima-thermus-s25-02/ha.pid`"
+time="2026-10-25T06:04:37-06:00" level=info msg="Removing `/Users/tomermayara/.colima/_lima/colima-thermus-s25-02/ha.sock`"
+time="2026-10-25T06:04:37-06:00" level=info msg="Removing `/Users/tomermayara/.colima/_lima/colima-thermus-s25-02/ssh.sock`"
+time="2026-10-25T06:04:37-06:00" level=info msg="Removing `/Users/tomermayara/.colima/_lima/colima-thermus-s25-02/vz.pid`"
+time="2026-10-25T06:04:38-06:00" level=info msg="Deleted `colima-thermus-s25-02` (`/Users/tomermayara/.colima/_lima/colima-thermus-s25-02`)"
+time="2026-10-25T06:04:38-06:00" level=info msg="deleting container data"
+time="2026-10-25T06:04:41-06:00" level=info msg=done

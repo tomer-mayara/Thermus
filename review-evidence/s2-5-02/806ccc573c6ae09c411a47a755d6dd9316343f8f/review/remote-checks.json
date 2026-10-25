@@ -1,0 +1,10 @@
+{
+  "candidate": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "pullRequest": 255,
+  "actualParent": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "state": "open draft at readback",
+  "mergeable": true,
+  "providerCheckRuns": [],
+  "providerStatuses": [],
+  "meaning": "No remote check result exists; local evidence remains the validation basis. Parent254 unmerged and human approval pending."
+}

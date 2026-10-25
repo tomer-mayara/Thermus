@@ -1,0 +1,24 @@
+{
+  "paused": {
+    "kind": "paused",
+    "stage": "before-completion",
+    "deleteCalls": 1,
+    "operationId": "3c9fbf8f-a552-42e8-841b-85dc33f3c03c",
+    "completionOutcome": "applied"
+  },
+  "pending": {
+    "status": "found",
+    "operation": {
+      "organizationId": "org-a",
+      "operationId": "3c9fbf8f-a552-42e8-841b-85dc33f3c03c",
+      "membershipId": "admin-b-in-a",
+      "revision": "r1",
+      "actor": {
+        "authority": "removal-restart-provider",
+        "subject": "admin-a"
+      },
+      "startedAt": "2026-10-25T11:18:50.865Z",
+      "outcome": null
+    }
+  }
+}

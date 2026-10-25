@@ -1,0 +1,25 @@
+▶ Hosted live proofs (AUTH-07W): external operator setup and recovery with the pinned SDK
+  ✔ Given a verified identity without a membership, when the operator grants Admin, then WorkOS has exactly the role admin with product and administration permissions, and a second grant changes nothing (1956.798291ms)
+  ℹ record: grant-admin applied; roles [] > ["admin"]
+  ℹ record: grant-admin unchanged; roles ["admin"] > ["admin"]
+  ✔ Given an identity with User in two organizations, when the operator grants and then revokes Admin in one organization, then User stays at each step, and the identity and the other membership do not change (2295.777375ms)
+  ℹ record: grant-admin applied; roles ["user"] > ["admin","user"]
+  ℹ record: revoke-admin applied; roles ["admin","user"] > ["user"]
+  ✔ Given a membership whose only grant is Admin, when the operator revokes it, then the membership stays active with only the default role, which gives no application permission: the organization service lists no organization for the identity, and the identity stays (1764.306042ms)
+  ℹ record: revoke-admin applied; roles ["admin"] > ["member"]
+  ✔ Given an Admin that also has User, when the operator replaces it with another verified identity, then the new identity gets Admin first, so that the organization keeps an Admin at each step, and the old identity loses only Admin and keeps User (1863.509375ms)
+  ℹ record: grant-admin applied; roles [] > ["admin"]
+  ℹ record: revoke-admin applied; roles ["admin","user"] > ["user"]
+  ✔ Given an Admin whose membership is inactive, when the operator recovers access, then the grant for the inactive membership stops without a create or a reactivation, and another verified identity gets Admin (1177.031667ms)
+  ℹ record: grant-admin stopped; roles ["admin"] > null; the membership is inactive: no create and no reactivation without a decision
+  ℹ record: grant-admin applied; roles [] > ["admin"]
+✔ Hosted live proofs (AUTH-07W): external operator setup and recovery with the pinned SDK (11474.660875ms)
+ℹ Hosted live password profile: provider MFA must be disabled.
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18177.9275

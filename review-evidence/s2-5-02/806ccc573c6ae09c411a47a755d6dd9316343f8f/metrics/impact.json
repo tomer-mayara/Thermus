@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": true,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted member read",
+      "Deployment view",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+      "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+      "test/acceptance/auth/hosted-removal.live.ts",
+      "test/support/hosted-live/removal-fixtures.ts",
+      "test/support/hosted-live/live-run.ts",
+      "test/support/hosted-live/local-https-site.ts",
+      "package.json",
+      "docs/implementation/test-gate-policy.md",
+      "docs/implementation/admin-s2-5-02.md",
+      "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "docs/implementation/admin-s4-recovery.md",
+      "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json"
+    ]
+  },
+  "head": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "base": "2271545702a8f1ec28c6f7dd913fec7024ecadeb"
+}

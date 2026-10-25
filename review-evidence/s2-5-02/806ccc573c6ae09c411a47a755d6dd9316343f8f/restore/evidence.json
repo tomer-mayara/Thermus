@@ -1,0 +1,80 @@
+[
+  {
+    "at": "2026-10-25T11:18:50.769Z",
+    "stage": "snapshot-before-intent",
+    "rowCount": 0,
+    "scope": "one disposable removal table; data only; no ACL or role replay"
+  },
+  {
+    "at": "2026-10-25T11:18:50.894Z",
+    "stage": "before-completion",
+    "kind": "paused",
+    "deleteCalls": 1,
+    "operationId": "3c9fbf8f-a552-42e8-841b-85dc33f3c03c",
+    "completionOutcome": "applied",
+    "receipt": {
+      "organizationId": "org-a",
+      "operationId": "3c9fbf8f-a552-42e8-841b-85dc33f3c03c",
+      "membershipId": "admin-b-in-a",
+      "revision": "r1",
+      "actor": {
+        "authority": "removal-restart-provider",
+        "subject": "admin-a"
+      },
+      "startedAt": "2026-10-25T11:18:50.865Z",
+      "outcome": null
+    },
+    "provider": "controlled directory; independent child IPC before durable completion; no WorkOS claim"
+  },
+  {
+    "at": "2026-10-25T11:18:50.898Z",
+    "stage": "old-sender-contained",
+    "signal": "SIGKILL",
+    "exited": true,
+    "laterRemoteEffect": "not inferred from exit; controlled independent applied receipt is retained"
+  },
+  {
+    "at": "2026-10-25T11:18:51.084Z",
+    "stage": "external-hold-established",
+    "effectivePrivileges": {
+      "select": true,
+      "insert": false,
+      "update": false,
+      "delete": false
+    },
+    "oldRuntimeSessions": 0
+  },
+  {
+    "at": "2026-10-25T11:18:51.356Z",
+    "stage": "restored-runtime-held",
+    "login": true,
+    "sqlSelectWorks": true,
+    "restoredOperationAbsent": true,
+    "result": "unknown",
+    "deleteCalls": 0,
+    "effectivePrivileges": {
+      "select": true,
+      "insert": false,
+      "update": false,
+      "delete": false
+    },
+    "replacementMembershipAndLaterAdminUnchanged": true
+  },
+  {
+    "at": "2026-10-25T11:18:51.459Z",
+    "stage": "independent-reconciliation",
+    "operationId": "3c9fbf8f-a552-42e8-841b-85dc33f3c03c",
+    "reconstructedExactPendingRow": true,
+    "exactPendingCompareAndSet": "UPDATE 1",
+    "outcome": "applied",
+    "unchangedProviderInventory": true,
+    "evidence": "independent-operation.json; known controlled applied result before child exit"
+  },
+  {
+    "at": "2026-10-25T11:18:51.550Z",
+    "stage": "reviewed-disposable-hold-released",
+    "noFurtherDelete": true,
+    "productionChanges": false,
+    "scope": "only this disposable database; full data-loss/distributed-provider recovery remains an operator decision"
+  }
+]

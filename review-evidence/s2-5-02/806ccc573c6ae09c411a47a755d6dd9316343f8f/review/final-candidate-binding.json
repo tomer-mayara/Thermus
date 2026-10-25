@@ -1,0 +1,39 @@
+{
+  "candidate": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "parent": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "main": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "checked_at": "2026-10-25T12:13:16.294387+00:00",
+  "reviewed_test_bytes_match_passing_runs": [
+    {
+      "path": "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+      "sha256": "7c1f1916e1e439a454c5e4283e7e54f63e4ef4e9dddd8629c80112a369065deb"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+      "sha256": "247230d9050329167a6919d2a60f83c957fb4522ae94bf84eba2d50bea88ffd8"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-removal.live.ts",
+      "sha256": "def3ae265f649ca923be7ce6919342d2a46bc524afb58edc9484fd32e67c8271"
+    },
+    {
+      "path": "test/support/hosted-live/live-run.ts",
+      "sha256": "6c195779bca41b4371cea429a85a81107f43a6ad46b6299249715151d4be476a"
+    },
+    {
+      "path": "test/support/hosted-live/local-https-site.ts",
+      "sha256": "04eae54352fe935ea8b4af6d65cc1b7637a1a17fde8a20a4fda42bd85eee1d5a"
+    },
+    {
+      "path": "test/support/hosted-live/removal-fixtures.ts",
+      "sha256": "21b8ce76094007a1a7778153316853700ee52d1ff765430d3b0872d9a1552570"
+    }
+  ],
+  "production_registry_declarations_identical_to_parent": true,
+  "coverage_captured_commit": "1a6abbb2acfd9030e28ae7dc8d9e4b56583f2584",
+  "coverage_status": "verified",
+  "coverage_files": 172,
+  "coverage_processes": 1321,
+  "coverage_report_sha256": "5b114d35abf357090b7e60ae99f8246a4c1ff6186967fa6450f508bd9c7434a9",
+  "provenance_note": "Original precommit logs/journals remain unchanged. Later commits alter documents and impact metadata; final executable hashes match tests. Fresh coverage follows finalized fingerprinted inputs; only the status document changed afterward."
+}

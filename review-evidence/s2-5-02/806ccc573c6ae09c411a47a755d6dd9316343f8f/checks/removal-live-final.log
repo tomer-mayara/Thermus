@@ -1,0 +1,30 @@
+✖ Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with two Admins and a User, when Members refuses unsafe requests, removes the User and the acting Admin, then exact memberships disappear, portal and MCP access stop, other access and both accounts remain, selection works, the last Admin is protected, and a fresh invitation restores only its new role (14522.980333ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14892.166042
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-removal.live.js:63:1
+✖ Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with two Admins and a User, when Members refuses unsafe requests, removes the User and the acting Admin, then exact memberships disappear, portal and MCP access stop, other access and both accounts remain, selection works, the last Admin is protected, and a fresh invitation restores only its new role (14522.980333ms)
+  Error: Command failed: docker exec thermus-settings-0465d79d-c029-47d5-b42f-b061d5bc0791 psql -U postgres -v ON_ERROR_STOP=1 -f /tmp/settings.sql
+  Error response from daemon: container cd6eb4402069676edd0f7d4d215d70f135f42eaf32426190fa86a0eced24fa6c is not running
+  
+      at genericNodeError (node:internal/errors:986:15)
+      at wrappedFn (node:internal/errors:540:14)
+      at ChildProcess.exithandler (node:child_process:417:12)
+      at ChildProcess.emit (node:events:514:28)
+      at maybeClose (node:internal/child_process:1141:16)
+      at ChildProcess._handle.onexit (node:internal/child_process:306:5) {
+    code: 1,
+    killed: false,
+    signal: null,
+    cmd: 'docker exec thermus-settings-0465d79d-c029-47d5-b42f-b061d5bc0791 psql -U postgres -v ON_ERROR_STOP=1 -f /tmp/settings.sql',
+    stdout: '',
+    stderr: 'Error response from daemon: container cd6eb4402069676edd0f7d4d215d70f135f42eaf32426190fa86a0eced24fa6c is not running\n'
+  }

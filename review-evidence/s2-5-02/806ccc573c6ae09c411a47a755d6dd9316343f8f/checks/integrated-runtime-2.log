@@ -1,0 +1,35 @@
+✔ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin with its session retained, then current SQL receipts, counts, access denial, scope and usable selection agree (2425.269084ms)
+ℹ Real hosted HTTP composition and disposable verified-TLS PostgreSQL; WorkOS Password sessions and personal-factor sentinels are controlled. Factor preservation proves adapter scope only, not live provider semantics or MFA feasibility.
+✖ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin and the provider requires reauthentication, then current SQL receipts, counts, access denial, scope and usable selection agree (2074.021666ms)
+✔ Given password-only access and enabled SQL-backed customer export, when Members confirms removal while the export sender fails, then the durable deletion stays confirmed without replay or an MFA or paid-feature requirement (1983.843417ms)
+ℹ Enabled snapshots, Collector authorization and removal use real PostgreSQL. The external export sender returns a controlled permanent transport failure. No live Collector or provider claim.
+✔ Given an authorized password-only Admin and unavailable Slice 2 PostgreSQL, when Members submits removal and ordinary product and MCP requests run, then removal is refused without deletion and product access still works (1774.249125ms)
+ℹ The disposable PostgreSQL container is stopped before the HTTP removal POST. WorkOS and the renderer are controlled; the hosted HTTP/MCP composition, removal refusal and product pipeline are real.
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8766.925667
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js:16:5
+✖ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin and the provider requires reauthentication, then current SQL receipts, counts, access denial, scope and usable selection agree (2074.021666ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  401 !== 200
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js:44:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 401,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,382 @@
+{
+  "at": "2026-10-25T11:44:29.719789+00:00",
+  "scope": "exact private unused records from this task failed Thermus image builds; runtime images, containers and all volumes retained",
+  "records": [
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:39:32.434263223 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c install -d -m 0700 -o node -g node /var/lib/thermus  && install -d -m 0755 /etc/thermus",
+        "ID": "ko1swaoqprqqjjg8gt0nuwo2e",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "cr40qzu2rwuhpzizjbjvv6bb7"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "28.85kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nko1swaoqprqqjjg8gt0nuwo2e               \ttrue \t\t28.85kB   \t4 minutes ago\nTotal:\t28.85kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:39:32.27517946 +0000 UTC",
+        "Description": "[stage-8 8/9] COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt",
+        "ID": "cr40qzu2rwuhpzizjbjvv6bb7",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "yd8et78hs4i3hosoc98rrl5nu"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "371.2kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\ncr40qzu2rwuhpzizjbjvv6bb7               \ttrue \t\t371.2kB   \t4 minutes ago\nTotal:\t371.2kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:39:32.253212806 +0000 UTC",
+        "Description": "[stage-8 7/9] COPY --from=lightpanda /opt/lightpanda /opt/lightpanda",
+        "ID": "yd8et78hs4i3hosoc98rrl5nu",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "l9ozrpjxj7l7mf0fi0ag2gr88"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "246.2MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nyd8et78hs4i3hosoc98rrl5nu               \ttrue \t\t246.2MB   \t4 minutes ago\nTotal:\t246.2MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:39:28.974130377 +0000 UTC",
+        "Description": "[lightpanda-asset-arm64 1/1] ADD --checksum=sha256:69791924bcee43b13b224af4c845622c5fe66fdbc1b8143bfaa39ca8f85244f5     https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-aarch64-linux /lightpanda",
+        "ID": "vke3vo14bnhh50be61fpaz5hy",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": true,
+        "Parents": null,
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "192.8MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nvke3vo14bnhh50be61fpaz5hy*              \ttrue \t\t192.8MB   \t4 minutes ago\nTotal:\t192.8MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:38:25.485469997 +0000 UTC",
+        "Description": "[stage-8 6/9] COPY migrations migrations",
+        "ID": "l9ozrpjxj7l7mf0fi0ag2gr88",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "l9k9d29v6vs0dpd0jgtjm5vrx"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "30.05kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nl9ozrpjxj7l7mf0fi0ag2gr88               \ttrue \t\t30.05kB   \t4 minutes ago\nTotal:\t30.05kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:38:25.468606613 +0000 UTC",
+        "Description": "[stage-8 5/9] COPY --from=build /app/dist/src dist/src",
+        "ID": "l9k9d29v6vs0dpd0jgtjm5vrx",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "07bczofi0y0d94fg0em4g93ca"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "2.656MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nl9k9d29v6vs0dpd0jgtjm5vrx               \ttrue \t\t2.656MB   \t4 minutes ago\nTotal:\t2.656MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:38:12.8673217 +0000 UTC",
+        "Description": "[stage-8 4/9] COPY --from=dependencies /app/node_modules node_modules",
+        "ID": "07bczofi0y0d94fg0em4g93ca",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "hca0hx0gosa2625kb4ltaa98v"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "103.4MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\n07bczofi0y0d94fg0em4g93ca               \ttrue \t\t103.4MB   \t4 minutes ago\nTotal:\t103.4MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:38:10.158833599 +0000 UTC",
+        "Description": "[stage-8 3/9] COPY --from=dependencies /app/package.json ./",
+        "ID": "hca0hx0gosa2625kb4ltaa98v",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "xszsi9zyn9ee4y6wukbiod5yl"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "18.09kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nhca0hx0gosa2625kb4ltaa98v               \ttrue \t\t18.09kB   \t4 minutes ago\nTotal:\t18.09kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:37:11.182922632 +0000 UTC",
+        "Description": "http url https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-aarch64-linux",
+        "ID": "pytqsqky0lvhlyzt6qeki3mmr",
+        "LastUsedAt": "4 minutes ago",
+        "Mutable": true,
+        "Parents": null,
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "192.8MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\npytqsqky0lvhlyzt6qeki3mmr*              \ttrue \t\t192.8MB   \t4 minutes ago\nTotal:\t192.8MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:34:22.251234963 +0000 UTC",
+        "Description": "[runtime  4/12] COPY --from=production-dependencies /app/node_modules node_modules",
+        "ID": "uax5qg2etqy7z13fko833up4q",
+        "LastUsedAt": "9 minutes ago",
+        "Mutable": true,
+        "Parents": [
+          "z54817n4a2z3rqkgjehg9z7r5"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "91.68MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nuax5qg2etqy7z13fko833up4q*              \ttrue \t\t91.68MB   \t10 minutes ago\nTotal:\t91.68MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:34:20.884479727 +0000 UTC",
+        "Description": "[runtime  3/12] COPY --from=production-dependencies /app/package.json ./",
+        "ID": "z54817n4a2z3rqkgjehg9z7r5",
+        "LastUsedAt": "9 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "x0ceevnkszx3jv5goghu55xjs"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "16.38kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nz54817n4a2z3rqkgjehg9z7r5               \ttrue \t\t16.38kB   \t10 minutes ago\nTotal:\t16.38kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:24.585632441 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c install -d -m 0700 -o node -g node /var/lib/thermus  && install -d -m 0755 /etc/thermus",
+        "ID": "rjvdctkqjuov3btkbrilofsi7",
+        "LastUsedAt": "12 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "p63mjjapno46v6l4vl8g3xsc6"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "28.85kB",
+        "Type": "regular",
+        "UsageCount": 2
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nrjvdctkqjuov3btkbrilofsi7               \ttrue \t\t28.85kB   \t12 minutes ago\nTotal:\t28.85kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:24.43408622 +0000 UTC",
+        "Description": "[stage-8 8/9] COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt",
+        "ID": "p63mjjapno46v6l4vl8g3xsc6",
+        "LastUsedAt": "12 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "tr0i3pcv22r92tv2gtlaxz813"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "371.2kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\np63mjjapno46v6l4vl8g3xsc6               \ttrue \t\t371.2kB   \t12 minutes ago\nTotal:\t371.2kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:24.402014671 +0000 UTC",
+        "Description": "[stage-8 7/9] COPY --from=lightpanda /opt/lightpanda /opt/lightpanda",
+        "ID": "tr0i3pcv22r92tv2gtlaxz813",
+        "LastUsedAt": "12 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "o7k1nilst63u38mwo2sj3jd39"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "246.2MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\ntr0i3pcv22r92tv2gtlaxz813               \ttrue \t\t246.2MB   \t12 minutes ago\nTotal:\t246.2MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:23.684750799 +0000 UTC",
+        "Description": "[stage-8 6/9] COPY migrations migrations",
+        "ID": "o7k1nilst63u38mwo2sj3jd39",
+        "LastUsedAt": "12 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "rh7carc94sg6nijsm6nw9gyv2"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "30.05kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\no7k1nilst63u38mwo2sj3jd39               \ttrue \t\t30.05kB   \t12 minutes ago\nTotal:\t30.05kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:23.659088473 +0000 UTC",
+        "Description": "[stage-8 5/9] COPY --from=build /app/dist/src dist/src",
+        "ID": "rh7carc94sg6nijsm6nw9gyv2",
+        "LastUsedAt": "12 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "zm7rvnck12u7hnba2qxoeue8f"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "2.656MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nrh7carc94sg6nijsm6nw9gyv2               \ttrue \t\t2.656MB   \t12 minutes ago\nTotal:\t2.656MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:00.274382214 +0000 UTC",
+        "Description": "[toolchain 8/8] COPY patches patches",
+        "ID": "xu2z0og0v77ambxnfjk2rbyt5",
+        "LastUsedAt": "9 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "xlhh2qos1kgfkb4ydvg6kmbw5"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "122.9kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nxu2z0og0v77ambxnfjk2rbyt5               \ttrue \t\t122.9kB   \t10 minutes ago\nTotal:\t122.9kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:00.246470542 +0000 UTC",
+        "Description": "[toolchain 7/8] COPY .habit-hooks/package.json .habit-hooks/",
+        "ID": "xlhh2qos1kgfkb4ydvg6kmbw5",
+        "LastUsedAt": "9 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "ckzh1uymbk0qufun137kyw2rg"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "16.38kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nxlhh2qos1kgfkb4ydvg6kmbw5               \ttrue \t\t16.38kB   \t10 minutes ago\nTotal:\t16.38kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 11:31:00.213155897 +0000 UTC",
+        "Description": "[toolchain 6/8] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./",
+        "ID": "ckzh1uymbk0qufun137kyw2rg",
+        "LastUsedAt": "9 minutes ago",
+        "Mutable": false,
+        "Parents": [
+          "1ditx4g2jof9drgtw0cjqlytb"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "184.3kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nckzh1uymbk0qufun137kyw2rg               \ttrue \t\t184.3kB   \t10 minutes ago\nTotal:\t184.3kB\n",
+      "stderr": ""
+    }
+  ]
+}

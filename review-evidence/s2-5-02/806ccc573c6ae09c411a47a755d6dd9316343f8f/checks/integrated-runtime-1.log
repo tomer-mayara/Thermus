@@ -1,0 +1,178 @@
+✔ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin with its session retained, then current SQL receipts, counts, access denial, scope and usable selection agree (2726.862583ms)
+ℹ Real hosted HTTP composition and disposable verified-TLS PostgreSQL; WorkOS Password sessions and personal-factor sentinels are controlled. Factor preservation proves adapter scope only, not live provider semantics or MFA feasibility.
+✖ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin and the provider requires reauthentication, then current SQL receipts, counts, access denial, scope and usable selection agree (2020.168917ms)
+✖ Given password-only access and enabled SQL-backed customer export, when Members confirms removal while the export sender fails, then the durable deletion stays confirmed without replay or an MFA or paid-feature requirement (1600.363ms)
+✔ Given an authorized password-only Admin and unavailable Slice 2 PostgreSQL, when Members submits removal and ordinary product and MCP requests run, then removal is refused without deletion and product access still works (1698.043042ms)
+ℹ The disposable PostgreSQL container is stopped before the HTTP removal POST. WorkOS and the renderer are controlled; the hosted HTTP/MCP composition, removal refusal and product pipeline are real.
+ℹ tests 4
+ℹ suites 0
+ℹ pass 2
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8597.243625
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js:16:5
+✖ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin and the provider requires reauthentication, then current SQL receipts, counts, access denial, scope and usable selection agree (2020.168917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 401
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js:40:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 401,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js:95:1
+✖ Given password-only access and enabled SQL-backed customer export, when Members confirms removal while the export sender fails, then the durable deletion stays confirmed without replay or an MFA or paid-feature requirement (1600.363ms)
+  AssertionError [ERR_ASSERTION]: <!doctype html>
+  <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audit logs · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>
+  @font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}
+  @font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  body{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+  a{color:inherit;text-underline-offset:.2em}
+  :focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}
+  .skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}
+  .skip-link:focus{transform:none}
+  .site-header{border-bottom:1px solid #2C2D34}
+  .header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}
+  .header-content{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-block:12px}
+  .brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}
+  .brand img{display:block;width:166px;height:auto}
+  nav{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  nav a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}
+  nav a:hover,nav [aria-current]{color:#F3F2EE;text-decoration:underline}
+  .members-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:"intro intro" "lists invite";gap:32px;align-content:start;align-items:start;padding-block:48px 72px}
+  .members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}
+  .introduction{grid-area:intro}
+  .eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}
+  h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}
+  h1{font-size:44px}h2{font-size:26px}
+  .introduction>p:last-child{color:#B4BAC0;margin-bottom:0}
+  .invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}
+  .invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}
+  p,li,form{overflow-wrap:anywhere;min-width:0}
+  .invite-card>p,.list-note{font-size:15px;color:#B4BAC0}
+  .invite-card form{display:grid;gap:12px}
+  label,legend{font-size:15px}
+  input[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}
+  .logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}
+  fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}
+  legend{padding:0;margin-bottom:6px}
+  .role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}
+  input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}
+  button{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+  button:hover{border-color:#F3F2EE;background:#2C2D34}
+  .invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}
+  .invite-card button:hover{background:#F06B45;border-color:#F06B45}
+  .logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}
+  .logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}
+  .logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}
+  .logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}
+  .logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}
+  .logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}
+  .logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}
+  .logging-switch-on{display:none}
+  .logging-switch input:checked~.logging-switch-off{display:none}
+  .logging-switch input:checked~.logging-switch-on{display:inline}
+  .logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}
+  .logging-actions{display:flex;flex-wrap:wrap;gap:12px}
+  .logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}
+  .logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}
+  .logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}
+  .destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}
+  .policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}
+  .member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}
+  .member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}
+  .member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}
+  .member-row{display:grid;gap:12px}
+  .member-identity{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+  .member-row p,.invitation-list p{margin:0}
+  .member-removal summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 16px;border:1px solid #C66E76;border-radius:6px;color:#FFCDD2;background:#40282C;font-size:15px;cursor:pointer}
+  .member-removal summary:hover{background:#533038;border-color:#E58F98}
+  .removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}
+  .removal-confirmation form{display:grid;gap:16px}
+  .removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
+  .removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}
+  .you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}
+  .expiry{font-size:13px;color:#B4BAC0;padding-top:8px}
+  .invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+  .invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}
+  .invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
+  .invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}
+  .site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}
+  @media(max-width:860px){.members-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";max-width:650px;padding-top:32px}.header-content{gap:12px}nav{gap:20px}h1{font-size:40px}}
+  @media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}nav{gap:12px}nav a{font-size:13px}.invite-card,.members-card{padding:20px}h1{font-size:36px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
+  </style></head>
+  <body><a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header"><div class="header-content"><a class="brand" href="/team/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>
+  <nav aria-label="Workspace"><a href="/team/">Product / Connect</a><a href="/team/members" >Members</a><a href="/team/logging" aria-current="page">Audit logs</a><a href="/team/organizations">Switch workspace</a></nav></div></header>
+  <main id="main-content" class="members-layout logging-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Audit logs</h1></div>
+  <section class="invite-card" aria-labelledby="destination-heading"><h2 id="destination-heading">Audit log destination</h2>
+  <section class="logging-result" role="alert" aria-labelledby="logging-result-title"><h3 id="logging-result-title">Check settings</h3><p>The form is not valid. Read saved settings and check the destination, dataset, and Bearer token.</p></section>
+  <p>Save one destination for your organization's audit logs. Thermus system logs are internal.</p>
+  <aside class="destination-notice" role="note" aria-label="Organization data"><p>Send organization data only if you have authority to do so. Check destination access and retention. Read our <a href="https://thermus.ai/privacy/">Privacy Policy</a>.</p></aside>
+  <p><a href="/team/logging">Read saved settings</a></p></section></main><footer class="site-footer">Thermus AI Inc.</footer><script>
+  const destinationChoices = document.querySelector('#logging-destination');
+  const form = destinationChoices?.closest('form');
+  const saved = document.querySelector('#logging-saved');
+  function clearSaved() {
+    if (saved) saved.textContent = '';
+  }
+  function updateDestination() {
+    const datasetFields = document.querySelector('#logging-axiom-fields');
+    const dataset = document.querySelector('#logging-dataset');
+    const selected = destinationChoices?.querySelector('input[name="destination"]:checked');
+    if (!selected || !datasetFields || !dataset) return;
+    const axiom = selected.value === 'axiom';
+    datasetFields.hidden = !axiom;
+    dataset.toggleAttribute('disabled', !axiom);
+    dataset.toggleAttribute('required', axiom);
+  }
+  destinationChoices?.addEventListener('change', updateDestination);
+  updateDestination();
+  if (saved?.textContent === 'saved') setTimeout(clearSaved, 30000);
+  form?.addEventListener('input', clearSaved);
+  form?.addEventListener('change', clearSaved);
+  const loggingLink = document.querySelector('nav a[aria-current="page"]');
+  const scrollKey = loggingLink ? 'thermus:audit-scroll:' + loggingLink.href : '';
+  try {
+    const stored = window.sessionStorage.getItem(scrollKey);
+    window.sessionStorage.removeItem(scrollKey);
+    const position = JSON.parse(stored ?? 'null');
+    const age = position ? Date.now() - position.at : -1;
+    if (position && Number.isFinite(position.at) && Number.isFinite(position.y) && position.y >= 0 && age >= 0 && age <= 120000) {
+      window.requestAnimationFrame(() => window.scrollTo(0, Math.min(position.y, Math.max(0, document.documentElement.scrollHeight - window.innerHeight))));
+    }
+  } catch {}
+  form?.addEventListener('submit', () => {
+    try { window.sessionStorage.setItem(scrollKey, JSON.stringify({ y: window.scrollY, at: Date.now() })); } catch {}
+  });
+  </script></body></html>
+  
+  400 !== 200
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js:109:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 400,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

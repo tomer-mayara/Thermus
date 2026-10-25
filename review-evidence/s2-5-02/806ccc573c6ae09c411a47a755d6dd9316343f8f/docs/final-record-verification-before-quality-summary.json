@@ -1,0 +1,14 @@
+{
+  "kind": "manual final status and image evidence documentation check; no prose tests",
+  "time_utc": "2026-10-25T12:04:42.925087+00:00",
+  "file": "docs/implementation/admin-s2-5-02.md",
+  "sha256": "618c13f3291800ead2b0ffc09ae5f1d6f3a5e606c2fc8cda452a6243171e37ad",
+  "image_result": "7/7 six subcases plus parent, reported by manager",
+  "image_evidence": ".cache/s25-02/hosted-image-isolated-retry.log",
+  "image_evidence_exists": true,
+  "source_provenance": "Implementation/test bytes of b429c308f013478cd99ee69f22a9f53d5e3687d4, with later document-only changes; no claim all runs occurred at that SHA.",
+  "relative_links": 6,
+  "relative_links_resolve": true,
+  "whitespace": "pass",
+  "release_status": "Final quality review and actual release pending; not Done."
+}

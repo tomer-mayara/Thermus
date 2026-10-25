@@ -1,0 +1,288 @@
+▶ Self-hosted evaluation container without outbound access
+  ✖ Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address reports a renderer connection failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection (7266.629666ms)
+  ✖ Given two users with tokens and consents, when the server container restarts, is replaced by a new container, and is replaced by a container of a rebuilt image on the same volume, then after each change the tenant, the user IDs, the native clients, the signing keys, the browser sessions, the consents, and the tokens of both users stay usable (4785.082291ms)
+  ✖ Given two users with tokens and a stopped server, when the operator backs up the complete data volume and restores it into a new volume for a new server container, then both users keep their IDs, the tenant, their tokens, browser sessions, and consents; a fresh volume starts a new tenant, and a restored volume without its installation identity or without auth.secret stops the server before it listens, asks for a restore, and gets no new identity (4092.92325ms)
+  ✖ Given a server container of the image with trusted rules, outbound access denied, and a test-only JavaScript page on 127.0.0.1 that only the renderer of this container can reach, when an authorized MCP client calls getURLAsMarkdown for the page, then LIGHTPANDA_BIN names the pinned executable, which reports 1.0.0, the client gets the exact cleaned Markdown, the server writes one safe completion record, and no container tries an outbound connection (2826.289208ms)
+  ✖ Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, the address-policy refusals keep the generic fetch error, the renderer refusal reports a connection failure, each call gets one fetch_failed record, the page gets no connection, and no container tries an outbound connection (2950.496041ms)
+  ✖ Given a fresh volume and a self-hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account (3088.258875ms)
+  ✖ Given a fresh volume and a hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account (3131.167167ms)
+  ✖ Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working (4323.597ms)
+  ✖ Given a live server container, when one-off command containers mount the same data volume or a command runs inside the server container, then each command fails with the lock error, asks for no password, and changes no account (2924.380625ms)
+  ✖ Given an installation that starts with zero accounts and later has only a disabled account, when the server is stopped and a command container adds an account, then the new account signs in, consents, and uses MCP through the installation client, and the tenant stays the same (2431.870583ms)
+  ✖ Given the self-hosted image and a signed-in local user, when the user calls hosted, paid, and private provider paths, then each gives 404 without adding an account and MCP lists only the fetch tool; when the image starts with DEPLOYMENT=hosted and valid WorkOS settings, then the missing hosted portal stops startup before listening with a safe FATAL line, no local data, and no outbound calls (2725.614542ms)
+✖ Self-hosted evaluation container without outbound access (120270.798292ms)
+ℹ tests 11
+ℹ suites 1
+ℹ pass 0
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120707.642834
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:119:5
+✖ Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address reports a renderer connection failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection (7266.629666ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:31:34] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:120:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:162:5
+✖ Given two users with tokens and consents, when the server container restarts, is replaced by a new container, and is replaced by a container of a rebuilt image on the same volume, then after each change the tenant, the user IDs, the native clients, the signing keys, the browser sessions, the consents, and the tokens of both users stay usable (4785.082291ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:31:41] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:163:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:207:5
+✖ Given two users with tokens and a stopped server, when the operator backs up the complete data volume and restores it into a new volume for a new server container, then both users keep their IDs, the tenant, their tokens, browser sessions, and consents; a fresh volume starts a new tenant, and a restored volume without its installation identity or without auth.secret stops the server before it listens, asks for a restore, and gets no new identity (4092.92325ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:31:46] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:208:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:251:5
+✖ Given a server container of the image with trusted rules, outbound access denied, and a test-only JavaScript page on 127.0.0.1 that only the renderer of this container can reach, when an authorized MCP client calls getURLAsMarkdown for the page, then LIGHTPANDA_BIN names the pinned executable, which reports 1.0.0, the client gets the exact cleaned Markdown, the server writes one safe completion record, and no container tries an outbound connection (2826.289208ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:31:50] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:252:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:280:5
+✖ Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, the address-policy refusals keep the generic fetch error, the renderer refusal reports a connection failure, each call gets one fetch_failed record, the page gets no connection, and no container tries an outbound connection (2950.496041ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:31:53] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:281:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:300:9
+✖ Given a fresh volume and a self-hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account (3088.258875ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:31:56] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:314:13)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:300:9
+✖ Given a fresh volume and a hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account (3131.167167ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:32:00] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:314:13)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:318:5
+✖ Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working (4323.597ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:32:02] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:319:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:359:5
+✖ Given a live server container, when one-off command containers mount the same data volume or a command runs inside the server container, then each command fails with the lock error, asks for no password, and changes no account (2924.380625ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:32:06] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:360:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:386:5
+✖ Given an installation that starts with zero accounts and later has only a disabled account, when the server is stopped and a command container adds an account, then the new account signs in, consents, and uses MCP through the installation client, and the tenant stays the same (2431.870583ms)
+  AssertionError [ERR_ASSERTION]: The server container stopped before it listened:
+  [2026-10-25 11:32:09] [35mFATAL[0m [index.js:75]: ENOSPC: no space left on device, write
+  
+  
+  false !== true
+  
+      at ServerContainer.start (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/container/server-container.js:17:16)
+      at async ContainerSite.startServer (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/container/container-site.js:77:9)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:392:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:432:5
+✖ Given the self-hosted image and a signed-in local user, when the user calls hosted, paid, and private provider paths, then each gives 404 without adding an account and MCP lists only the fetch tool; when the image starts with DEPLOYMENT=hosted and valid WorkOS settings, then the missing hosted portal stops startup before listening with a safe FATAL line, no local data, and no outbound calls (2725.614542ms)
+  AssertionError [ERR_ASSERTION]: exit 1
+  stdout:
+  
+  stderr:
+  [2026-10-25 11:32:11] [31mERROR[0m [local-auth-command.js:82]: ENOSPC: no space left on device, write
+  
+  
+  1 !== 0
+  
+      at assertExit (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/processes/command-process.js:69:12)
+      at installation (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:60:9)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:433:23)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

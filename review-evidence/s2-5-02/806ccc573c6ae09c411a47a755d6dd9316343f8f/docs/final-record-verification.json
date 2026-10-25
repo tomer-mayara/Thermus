@@ -1,0 +1,14 @@
+{
+  "kind": "manual final record review; no prose test",
+  "checked_at": "2026-10-25T12:12:54.120604+00:00",
+  "file": "docs/implementation/admin-s2-5-02.md",
+  "sha256": "2860f172c5156f013d43da5356e4d46510a9b09faeb3f006e3aaf0c4624c6ffe",
+  "relative_links": 6,
+  "passed": true,
+  "prior_versions": [
+    "final-record-verification-before-quality-summary.json",
+    "command-inventory-verification.json"
+  ],
+  "coverage": "coverage-combined.log exit0; captured at1a6abbb2; only this document changed afterward",
+  "status": "Behavioral proof passes; PR carries quality evidence; human review and actual release remain pending"
+}

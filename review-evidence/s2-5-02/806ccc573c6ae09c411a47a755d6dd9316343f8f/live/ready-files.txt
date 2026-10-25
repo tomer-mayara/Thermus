@@ -1,0 +1,4 @@
+test/acceptance/auth/hosted-removal.live.ts
+test/support/hosted-live/removal-fixtures.ts
+test/support/hosted-live/live-run.ts
+test/support/hosted-live/local-https-site.ts

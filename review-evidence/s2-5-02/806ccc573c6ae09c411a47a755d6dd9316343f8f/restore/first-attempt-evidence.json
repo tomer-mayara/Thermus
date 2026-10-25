@@ -1,0 +1,47 @@
+[
+  {
+    "at": "2026-10-25T11:18:09.766Z",
+    "stage": "snapshot-before-intent",
+    "rowCount": 0,
+    "scope": "one disposable removal table; data only; no ACL or role replay"
+  },
+  {
+    "at": "2026-10-25T11:18:09.882Z",
+    "stage": "before-completion",
+    "kind": "paused",
+    "deleteCalls": 1,
+    "operationId": "64f1ea26-c3be-4e21-92fb-64f6bae4a62a",
+    "completionOutcome": "applied",
+    "receipt": {
+      "organizationId": "org-a",
+      "operationId": "64f1ea26-c3be-4e21-92fb-64f6bae4a62a",
+      "membershipId": "admin-b-in-a",
+      "revision": "r1",
+      "actor": {
+        "authority": "removal-restart-provider",
+        "subject": "admin-a"
+      },
+      "startedAt": "2026-10-25T11:18:09.855Z",
+      "outcome": null
+    },
+    "provider": "controlled directory; independent child IPC before durable completion; no WorkOS claim"
+  },
+  {
+    "at": "2026-10-25T11:18:09.885Z",
+    "stage": "old-sender-contained",
+    "signal": "SIGKILL",
+    "exited": true,
+    "laterRemoteEffect": "not inferred from exit; controlled independent applied receipt is retained"
+  },
+  {
+    "at": "2026-10-25T11:18:10.080Z",
+    "stage": "external-hold-established",
+    "effectivePrivileges": {
+      "select": true,
+      "insert": false,
+      "update": false,
+      "delete": false
+    },
+    "oldRuntimeSessions": 0
+  }
+]

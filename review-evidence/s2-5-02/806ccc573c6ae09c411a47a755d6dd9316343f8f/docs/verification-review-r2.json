@@ -1,0 +1,402 @@
+{
+  "kind": "manual artifact verification; no prose tests or live actions",
+  "time_utc": "2026-10-25T11:16:02.276491+00:00",
+  "parent_sha": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "proposal_manifest_sha256": "3ce491e23df377a89a0008c8d7d2920d5270112c13fad89e905f09de93cdc9bb",
+  "checks": [
+    {
+      "check": "manifest terms.md",
+      "passed": true
+    },
+    {
+      "check": "format terms.md",
+      "passed": true
+    },
+    {
+      "check": "manifest privacy.md",
+      "passed": true
+    },
+    {
+      "check": "format privacy.md",
+      "passed": true
+    },
+    {
+      "check": "manifest agreement.txt",
+      "passed": true
+    },
+    {
+      "check": "format agreement.txt",
+      "passed": true
+    },
+    {
+      "check": "manifest audit-help.md",
+      "passed": true
+    },
+    {
+      "check": "format audit-help.md",
+      "passed": true
+    },
+    {
+      "check": "manifest members-help.md",
+      "passed": true
+    },
+    {
+      "check": "format members-help.md",
+      "passed": true
+    },
+    {
+      "check": "source manifest hash",
+      "passed": true
+    },
+    {
+      "check": "source hash terms.md",
+      "passed": true
+    },
+    {
+      "check": "source hash privacy.md",
+      "passed": true
+    },
+    {
+      "check": "source hash agreement.txt",
+      "passed": true
+    },
+    {
+      "check": "source hash audit-help.md",
+      "passed": true
+    },
+    {
+      "check": "agreement preserved",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged data-flow-review.md",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged changes.patch",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged privacy.md",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged audit-help.md",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged README.md",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged agreement.txt",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged terms.md",
+      "passed": true
+    },
+    {
+      "check": "prior bundle unchanged manifest.json",
+      "passed": true
+    },
+    {
+      "check": "frozen/selection unchanged src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "passed": true
+    },
+    {
+      "check": "frozen/selection unchanged src/accounts/providers/workos/workos-approved-organization-documents.ts",
+      "passed": true
+    },
+    {
+      "check": "frozen/selection unchanged src/app/hosted-workos-application.ts",
+      "passed": true
+    },
+    {
+      "check": "patch apply",
+      "passed": true,
+      "detail": "patching file terms.md\npatching file privacy.md\npatching file audit-help.md\npatching file members-help.md\n"
+    },
+    {
+      "check": "patch reproduces terms.md",
+      "passed": true
+    },
+    {
+      "check": "patch reproduces privacy.md",
+      "passed": true
+    },
+    {
+      "check": "patch reproduces agreement.txt",
+      "passed": true
+    },
+    {
+      "check": "patch reproduces audit-help.md",
+      "passed": true
+    },
+    {
+      "check": "patch reproduces members-help.md",
+      "passed": true
+    },
+    {
+      "check": "relative file links",
+      "passed": true,
+      "detail": "49 relative file links resolve"
+    },
+    {
+      "check": "tracked document whitespace",
+      "passed": true
+    },
+    {
+      "check": "proposal status",
+      "passed": true
+    }
+  ],
+  "links": [
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "admin-s2-5-02.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "admin-s2-04.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "../legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "hosted-organization-setup.md#historical-super-admin-procedure",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "admin-s4-recovery.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s4-recovery.md",
+      "target": "admin-s2-04.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/admin-s4-recovery.md",
+      "target": "admin-s2-5-02-removal-runbook.md#hold-reductions-outside-restored-rows",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "hosted-user-onboarding.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "admin-s2-5-02-removal-runbook.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "../design/authentication-design.md#organization-administration",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "test-gate-policy.md#hosted-live-gate-auth-06",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "hosted-user-onboarding.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "hosted-user-onboarding.md",
+      "exists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "../testing/test-list.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "manifest.json",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "changes.patch",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-organizations.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/organization-directory.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-organizations.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-auth-provider.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/administration-routes.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/account-pages.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/removal-operation-store.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/pg-destination-settings-store.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../sql/migrations/20261025082850_membership_removal_operations.sql",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-lifetime.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../implementation/admin-s2-5-02-removal-runbook.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/administration-routes.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/audit-event-projection.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/change-records.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/pg-destination-settings-store.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "terms.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "privacy.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "agreement.txt",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "audit-help.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "members-help.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "manifest.json",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "changes.patch",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../organization-audit-2026-10-24-proposal-v3/README.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "data-flow-review.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../../src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../implementation/admin-s2-5-02-removal-runbook.md",
+      "exists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../implementation/admin-s2-5-02.md",
+      "exists": true
+    }
+  ],
+  "passed": true
+}

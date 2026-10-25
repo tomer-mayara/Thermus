@@ -1,0 +1,405 @@
+✖ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts (208169.941292ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 208468.264584
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-image.test.js:19:1
+✖ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts (208169.941292ms)
+  AssertionError [ERR_ASSERTION]: Hosted AMD64 image build failed:
+  #0 building with "colima" instance using docker driver
+  
+  #1 [internal] load build definition from Dockerfile.hosted
+  #1 transferring dockerfile: 5.05kB done
+  #1 DONE 0.0s
+  
+  #2 [internal] load metadata for docker.io/library/rust:1.97-slim-trixie@sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c
+  #2 DONE 0.1s
+  
+  #3 [internal] load metadata for docker.io/library/node:24.20.0-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0
+  #3 DONE 0.1s
+  
+  #4 [lightpanda-asset-amd64 1/1] ADD --checksum=sha256:aa5a4b8ed53d1e38b3c73f5b2647d0a84a82e6744557f45f9a9c85858aa031c3     https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-x86_64-linux /lightpanda
+  #4 DONE 0.0s
+  
+  #5 [lightpanda 1/4] FROM docker.io/library/node:24.20.0-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0
+  #5 resolve docker.io/library/node:24.20.0-trixie-slim@sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0 0.0s done
+  #5 DONE 0.0s
+  
+  #6 [ca-certificates 1/1] FROM docker.io/library/rust:1.97-slim-trixie@sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c
+  #6 resolve docker.io/library/rust:1.97-slim-trixie@sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c 0.0s done
+  #6 DONE 0.0s
+  
+  #7 [internal] load build context
+  #7 transferring context: 2.90MB 0.1s
+  #7 transferring context: 8.31MB 0.3s done
+  #7 DONE 0.4s
+  
+  #8 [lightpanda 2/4] COPY docker/check-lightpanda-digest.sh /tmp/
+  #8 CACHED
+  
+  #9 [lightpanda-asset-amd64 1/1] ADD --checksum=sha256:aa5a4b8ed53d1e38b3c73f5b2647d0a84a82e6744557f45f9a9c85858aa031c3     https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-x86_64-linux /lightpanda
+  #9 CACHED
+  
+  #10 [lightpanda 3/4] COPY --from=lightpanda-asset /lightpanda /tmp/lightpanda
+  #10 CACHED
+  
+  #11 [lightpanda 4/4] RUN sh /tmp/check-lightpanda-digest.sh "amd64" /tmp/lightpanda  && install -D -m 0755 /tmp/lightpanda /opt/lightpanda/1.0.0/lightpanda
+  #11 CACHED
+  
+  #12 [toolchain 2/8] COPY --from=node /usr/local/bin/node /usr/local/bin/node
+  #12 CACHED
+  
+  #13 [toolchain 3/8] COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
+  #13 CACHED
+  
+  #14 [toolchain 4/8] RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm  && npm install --global pnpm@12.10.1
+  #14 CACHED
+  
+  #15 [toolchain 5/8] WORKDIR /app
+  #15 CACHED
+  
+  #16 [toolchain 6/8] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+  #16 DONE 0.1s
+  
+  #17 [toolchain 7/8] COPY .habit-hooks/package.json .habit-hooks/
+  #17 DONE 0.0s
+  
+  #18 [toolchain 8/8] COPY patches patches
+  #18 DONE 0.0s
+  
+  #19 [production-dependencies 1/1] RUN test -n "1.97.1"  && pnpm install --frozen-lockfile --prod  && rm -rf node_modules/.pnpm/adblock-rs@*/node_modules/adblock-rs/target
+  #19 0.736 Scope: all 2 workspace projects
+  #19 0.877 ? Verifying lockfile against supply-chain policies (446 entries)...
+  #19 1.295 Update available! 12.10.1 → 12.15.0.
+  #19 1.295 Changelog: https://pnpm.io/v/12.15.0
+  #19 1.295 To update, run: curl -fsSL https://get.pnpm.io/install.sh | sh -
+  #19 1.530 Packages are hard linked from the content-addressable store to the virtual store.
+  #19 1.530   Content-addressable store is at: /root/.local/share/pnpm/store/v11
+  #19 1.530   Virtual store is at:             node_modules/.pnpm
+  #19 2.533 Progress: resolved 164, reused 0, downloaded 125, added 96
+  #19 3.549 Progress: resolved 164, reused 0, downloaded 153, added 128
+  #19 4.657 Progress: resolved 164, reused 0, downloaded 162, added 160
+  #19 12.64 ✓ Lockfile passes supply-chain policies (446 entries in 11.8s)
+  #19 12.64 Lockfile is up to date, resolution step is skipped
+  #19 12.69 Packages: +164
+  #19 12.69 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  #19 12.74 Progress: resolved 164, reused 0, downloaded 164, added 164, done
+  #19 12.77 .../node_modules/adblock-rs postinstall$ npm run build-release
+  #19 14.76 .../node_modules/adblock-rs postinstall: 
+  #19 14.76 .../node_modules/adblock-rs postinstall: > adblock-rs@0.13.3 build-release
+  #19 14.76 .../node_modules/adblock-rs postinstall: > npm run build -- --release
+  #19 14.76 .../node_modules/adblock-rs postinstall: 
+  #19 15.88 .../node_modules/adblock-rs postinstall: 
+  #19 15.88 .../node_modules/adblock-rs postinstall: > adblock-rs@0.13.3 build
+  #19 15.88 .../node_modules/adblock-rs postinstall: > cd js && cargo-cp-artifact -nc index.node -- cargo build --message-format=json-render-diagnostics --release
+  #19 15.88 .../node_modules/adblock-rs postinstall: 
+  #19 17.33 .../node_modules/adblock-rs postinstall:     Updating crates.io index
+  #19 22.24 .../node_modules/adblock-rs postinstall:  Downloading crates ...
+  #19 22.37 .../node_modules/adblock-rs postinstall:   Downloaded arrayvec v0.7.6
+  #19 22.41 .../node_modules/adblock-rs postinstall:   Downloaded bitflags v2.11.1
+  #19 22.43 .../node_modules/adblock-rs postinstall:   Downloaded psl-types v2.0.11
+  #19 22.43 .../node_modules/adblock-rs postinstall:   Downloaded phf_shared v0.11.3
+  #19 22.44 .../node_modules/adblock-rs postinstall:   Downloaded neon-macros v0.10.1
+  #19 22.44 .../node_modules/adblock-rs postinstall:   Downloaded stable_deref_trait v1.2.1
+  #19 22.44 .../node_modules/adblock-rs postinstall:   Downloaded new_debug_unreachable v1.0.6
+  #19 22.48 .../node_modules/adblock-rs postinstall:   Downloaded precomputed-hash v0.1.1
+  #19 22.48 .../node_modules/adblock-rs postinstall:   Downloaded phf_codegen v0.11.3
+  #19 22.50 .../node_modules/adblock-rs postinstall:   Downloaded percent-encoding v2.3.2
+  #19 22.50 .../node_modules/adblock-rs postinstall:   Downloaded neon-build v0.10.1
+  #19 22.50 .../node_modules/adblock-rs postinstall:   Downloaded cssparser-macros v0.6.1
+  #19 22.51 .../node_modules/adblock-rs postinstall:   Downloaded idna_adapter v1.2.2
+  #19 22.52 .../node_modules/adblock-rs postinstall:   Downloaded potential_utf v0.1.5
+  #19 22.53 .../node_modules/adblock-rs postinstall:   Downloaded siphasher v1.0.2
+  #19 22.53 .../node_modules/adblock-rs postinstall:   Downloaded syn-mid v0.5.4
+  #19 22.53 .../node_modules/adblock-rs postinstall:   Downloaded yoke-derive v0.8.2
+  #19 22.54 .../node_modules/adblock-rs postinstall:   Downloaded rustc_version v0.4.1
+  #19 22.55 .../node_modules/adblock-rs postinstall:   Downloaded zerofrom-derive v0.1.7
+  #19 22.56 .../node_modules/adblock-rs postinstall:   Downloaded rustc-hash v2.1.2
+  #19 22.57 .../node_modules/adblock-rs postinstall:   Downloaded semver-parser v0.7.0
+  #19 22.59 .../node_modules/adblock-rs postinstall:   Downloaded utf8_iter v1.0.4
+  #19 22.59 .../node_modules/adblock-rs postinstall:   Downloaded form_urlencoded v1.2.2
+  #19 22.62 .../node_modules/adblock-rs postinstall:   Downloaded dtoa-short v0.3.5
+  #19 22.67 .../node_modules/adblock-rs postinstall:   Downloaded phf_generator v0.11.3
+  #19 22.67 .../node_modules/adblock-rs postinstall:   Downloaded thiserror-impl v1.0.69
+  #19 22.68 .../node_modules/adblock-rs postinstall:   Downloaded cfg-if v1.0.4
+  #19 22.69 .../node_modules/adblock-rs postinstall:   Downloaded synstructure v0.13.2
+  #19 22.69 .../node_modules/adblock-rs postinstall:   Downloaded either v1.15.0
+  #19 22.69 .../node_modules/adblock-rs postinstall:   Downloaded phf v0.11.3
+  #19 22.69 .../node_modules/adblock-rs postinstall:   Downloaded semver v0.9.0
+  #19 22.71 .../node_modules/adblock-rs postinstall:   Downloaded zerofrom v0.1.7
+  #19 22.71 .../node_modules/adblock-rs postinstall:   Downloaded phf_macros v0.11.3
+  #19 22.72 .../node_modules/adblock-rs postinstall:   Downloaded neon-runtime v0.10.1
+  #19 22.72 .../node_modules/adblock-rs postinstall:   Downloaded libloading v0.6.7
+  #19 22.73 .../node_modules/adblock-rs postinstall:   Downloaded displaydoc v0.2.5
+  #19 22.74 .../node_modules/adblock-rs postinstall:   Downloaded thiserror v1.0.69
+  #19 22.75 .../node_modules/adblock-rs postinstall:   Downloaded itoa v1.0.18
+  #19 22.75 .../node_modules/adblock-rs postinstall:   Downloaded tinystr v0.8.3
+  #19 22.75 .../node_modules/adblock-rs postinstall:   Downloaded rand_core v0.6.4
+  #19 22.77 .../node_modules/adblock-rs postinstall:   Downloaded quote v1.0.45
+  #19 22.77 .../node_modules/adblock-rs postinstall:   Downloaded zmij v1.0.21
+  #19 22.78 .../node_modules/adblock-rs postinstall:   Downloaded seahash v4.1.0
+  #19 22.80 .../node_modules/adblock-rs postinstall:   Downloaded writeable v0.6.3
+  #19 22.80 .../node_modules/adblock-rs postinstall:   Downloaded zerovec-derive v0.11.3
+  #19 22.81 .../node_modules/adblock-rs postinstall:   Downloaded litemap v0.8.2
+  #19 22.82 .../node_modules/adblock-rs postinstall:   Downloaded semver v1.0.28
+  #19 22.83 .../node_modules/adblock-rs postinstall:   Downloaded servo_arc v0.4.3
+  #19 22.83 .../node_modules/adblock-rs postinstall:   Downloaded smallvec v1.15.1
+  #19 22.83 .../node_modules/adblock-rs postinstall:   Downloaded dtoa v1.0.11
+  #19 22.83 .../node_modules/adblock-rs postinstall:   Downloaded yoke v0.8.2
+  #19 22.85 .../node_modules/adblock-rs postinstall:   Downloaded flatbuffers v25.12.19
+  #19 22.89 .../node_modules/adblock-rs postinstall:   Downloaded addr v0.15.6
+  #19 22.90 .../node_modules/adblock-rs postinstall:   Downloaded base64 v0.22.1
+  #19 22.90 .../node_modules/adblock-rs postinstall:   Downloaded icu_properties v2.2.0
+  #19 22.90 .../node_modules/adblock-rs postinstall:   Downloaded serde_core v1.0.228
+  #19 22.91 .../node_modules/adblock-rs postinstall:   Downloaded serde_derive v1.0.228
+  #19 22.91 .../node_modules/adblock-rs postinstall:   Downloaded unicode-ident v1.0.24
+  #19 22.94 .../node_modules/adblock-rs postinstall:   Downloaded proc-macro2 v1.0.106
+  #19 22.94 .../node_modules/adblock-rs postinstall:   Downloaded log v0.4.29
+  #19 22.95 .../node_modules/adblock-rs postinstall:   Downloaded icu_provider v2.2.0
+  #19 22.95 .../node_modules/adblock-rs postinstall:   Downloaded cssparser v0.35.0
+  #19 23.02 .../node_modules/adblock-rs postinstall:   Downloaded icu_normalizer v2.2.0
+  #19 23.02 .../node_modules/adblock-rs postinstall:   Downloaded icu_normalizer_data v2.2.0
+  #19 23.03 .../node_modules/adblock-rs postinstall:   Downloaded selectors v0.32.0
+  #19 23.05 .../node_modules/adblock-rs postinstall:   Downloaded derive_more v2.1.1
+  #19 23.06 .../node_modules/adblock-rs postinstall:   Downloaded serde v1.0.228
+  #19 23.07 .../node_modules/adblock-rs postinstall:   Downloaded memchr v2.8.0
+  #19 23.08 .../node_modules/adblock-rs postinstall:   Downloaded icu_locale_core v2.2.0
+  #19 23.09 .../node_modules/adblock-rs postinstall:   Downloaded url v2.5.8
+  #19 23.09 .../node_modules/adblock-rs postinstall:   Downloaded zerotrie v0.2.4
+  #19 23.10 .../node_modules/adblock-rs postinstall:   Downloaded icu_collections v2.2.0
+  #19 23.11 .../node_modules/adblock-rs postinstall:   Downloaded derive_more-impl v2.1.1
+  #19 23.12 .../node_modules/adblock-rs postinstall:   Downloaded rand v0.8.6
+  #19 23.18 .../node_modules/adblock-rs postinstall:   Downloaded zerovec v0.11.6
+  #19 23.21 .../node_modules/adblock-rs postinstall:   Downloaded aho-corasick v1.1.4
+  #19 23.22 .../node_modules/adblock-rs postinstall:   Downloaded idna v1.1.0
+  #19 23.23 .../node_modules/adblock-rs postinstall:   Downloaded regex v1.12.3
+  #19 23.24 .../node_modules/adblock-rs postinstall:   Downloaded itertools v0.14.0
+  #19 23.25 .../node_modules/adblock-rs postinstall:   Downloaded serde_json v1.0.149
+  #19 23.26 .../node_modules/adblock-rs postinstall:   Downloaded icu_properties_data v2.2.0
+  #19 23.28 .../node_modules/adblock-rs postinstall:   Downloaded psl v2.1.205
+  #19 23.30 .../node_modules/adblock-rs postinstall:   Downloaded syn v1.0.109
+  #19 23.32 .../node_modules/adblock-rs postinstall:   Downloaded neon v0.10.1
+  #19 23.33 .../node_modules/adblock-rs postinstall:   Downloaded syn v2.0.117
+  #19 23.34 .../node_modules/adblock-rs postinstall:   Downloaded regex-syntax v0.8.10
+  #19 23.38 .../node_modules/adblock-rs postinstall:   Downloaded regex-automata v0.4.14
+  #19 23.60 .../node_modules/adblock-rs postinstall:    Compiling proc-macro2 v1.0.106
+  #19 23.60 .../node_modules/adblock-rs postinstall:    Compiling quote v1.0.45
+  #19 25.68 .../node_modules/adblock-rs postinstall:    Compiling unicode-ident v1.0.24
+  #19 26.69 .../node_modules/adblock-rs postinstall:    Compiling stable_deref_trait v1.2.1
+  #19 27.18 .../node_modules/adblock-rs postinstall:    Compiling rand_core v0.6.4
+  #19 28.54 .../node_modules/adblock-rs postinstall:    Compiling siphasher v1.0.2
+  #19 29.79 .../node_modules/adblock-rs postinstall:    Compiling phf_shared v0.11.3
+  #19 30.98 .../node_modules/adblock-rs postinstall:    Compiling syn v2.0.117
+  #19 31.04 .../node_modules/adblock-rs postinstall:    Compiling rand v0.8.6
+  #19 33.10 .../node_modules/adblock-rs postinstall:    Compiling smallvec v1.15.1
+  #19 35.39 .../node_modules/adblock-rs postinstall:    Compiling phf_generator v0.11.3
+  #19 36.88 .../node_modules/adblock-rs postinstall:    Compiling synstructure v0.13.2
+  #19 38.97 .../node_modules/adblock-rs postinstall:    Compiling zerovec-derive v0.11.3
+  #19 39.49 .../node_modules/adblock-rs postinstall:    Compiling zerofrom-derive v0.1.7
+  #19 42.12 .../node_modules/adblock-rs postinstall:    Compiling yoke-derive v0.8.2
+  #19 42.36 .../node_modules/adblock-rs postinstall:    Compiling zerofrom v0.1.7
+  #19 43.42 .../node_modules/adblock-rs postinstall:    Compiling displaydoc v0.2.5
+  #19 44.95 .../node_modules/adblock-rs postinstall:    Compiling yoke v0.8.2
+  #19 45.85 .../node_modules/adblock-rs postinstall:    Compiling writeable v0.6.3
+  #19 46.53 .../node_modules/adblock-rs postinstall:    Compiling zerovec v0.11.6
+  #19 47.91 .../node_modules/adblock-rs postinstall:    Compiling litemap v0.8.2
+  #19 49.39 .../node_modules/adblock-rs postinstall:    Compiling tinystr v0.8.3
+  #19 49.52 .../node_modules/adblock-rs postinstall:    Compiling serde_core v1.0.228
+  #19 51.16 .../node_modules/adblock-rs postinstall:    Compiling icu_locale_core v2.2.0
+  #19 51.24 .../node_modules/adblock-rs postinstall:    Compiling potential_utf v0.1.5
+  #19 53.30 .../node_modules/adblock-rs postinstall:    Compiling zerotrie v0.2.4
+  #19 56.26 .../node_modules/adblock-rs postinstall:    Compiling icu_properties_data v2.2.0
+  #19 57.39 .../node_modules/adblock-rs postinstall:    Compiling icu_normalizer_data v2.2.0
+  #19 57.90 .../node_modules/adblock-rs postinstall:    Compiling utf8_iter v1.0.4
+  #19 58.65 .../node_modules/adblock-rs postinstall:    Compiling icu_provider v2.2.0
+  #19 59.72 .../node_modules/adblock-rs postinstall:    Compiling icu_collections v2.2.0
+  #19 64.45 .../node_modules/adblock-rs postinstall:    Compiling neon-build v0.10.1
+  #19 65.41 .../node_modules/adblock-rs postinstall:    Compiling memchr v2.8.0
+  #19 67.57 .../node_modules/adblock-rs postinstall:    Compiling semver v1.0.28
+  #19 69.75 .../node_modules/adblock-rs postinstall:    Compiling syn v1.0.109
+  #19 71.52 .../node_modules/adblock-rs postinstall:    Compiling rustc_version v0.4.1
+  #19 72.77 .../node_modules/adblock-rs postinstall:    Compiling icu_normalizer v2.2.0
+  #19 73.31 .../node_modules/adblock-rs postinstall:    Compiling icu_properties v2.2.0
+  #19 77.41 .../node_modules/adblock-rs postinstall:    Compiling phf_macros v0.11.3
+  #19 78.14 .../node_modules/adblock-rs postinstall:    Compiling phf_codegen v0.11.3
+  #19 79.08 .../node_modules/adblock-rs postinstall:    Compiling dtoa v1.0.11
+  #19 79.57 .../node_modules/adblock-rs postinstall:    Compiling itoa v1.0.18
+  #19 80.31 .../node_modules/adblock-rs postinstall:    Compiling zmij v1.0.21
+  #19 81.71 .../node_modules/adblock-rs postinstall:    Compiling dtoa-short v0.3.5
+  #19 81.81 .../node_modules/adblock-rs postinstall:    Compiling phf v0.11.3
+  #19 82.81 .../node_modules/adblock-rs postinstall:    Compiling selectors v0.32.0
+  #19 83.36 .../node_modules/adblock-rs postinstall:    Compiling idna_adapter v1.2.2
+  #19 84.18 .../node_modules/adblock-rs postinstall:    Compiling flatbuffers v25.12.19
+  #19 85.30 .../node_modules/adblock-rs postinstall:    Compiling aho-corasick v1.1.4
+  #19 89.05 .../node_modules/adblock-rs postinstall:    Compiling bitflags v2.11.1
+  #19 91.26 .../node_modules/adblock-rs postinstall:    Compiling derive_more-impl v2.1.1
+  #19 93.69 .../node_modules/adblock-rs postinstall:    Compiling cssparser-macros v0.6.1
+  #19 94.53 .../node_modules/adblock-rs postinstall:    Compiling thiserror v1.0.69
+  #19 95.39 .../node_modules/adblock-rs postinstall:    Compiling serde v1.0.228
+  #19 95.93 .../node_modules/adblock-rs postinstall:    Compiling regex-syntax v0.8.10
+  #19 96.81 .../node_modules/adblock-rs postinstall:    Compiling percent-encoding v2.3.2
+  #19 98.99 .../node_modules/adblock-rs postinstall:    Compiling serde_json v1.0.149
+  #19 100.0 .../node_modules/adblock-rs postinstall:    Compiling cfg-if v1.0.4
+  #19 100.4 .../node_modules/adblock-rs postinstall:    Compiling psl-types v2.0.11
+  #19 101.5 .../node_modules/adblock-rs postinstall:    Compiling psl v2.1.205
+  #19 106.6 .../node_modules/adblock-rs postinstall:    Compiling libloading v0.6.7
+  #19 108.2 .../node_modules/adblock-rs postinstall:    Compiling regex-automata v0.4.14
+  #19 108.7 .../node_modules/adblock-rs postinstall:    Compiling form_urlencoded v1.2.2
+  #19 111.7 .../node_modules/adblock-rs postinstall:    Compiling cssparser v0.35.0
+  #19 116.4 .../node_modules/adblock-rs postinstall:    Compiling derive_more v2.1.1
+  #19 117.9 .../node_modules/adblock-rs postinstall:    Compiling syn-mid v0.5.4
+  #19 119.6 .../node_modules/adblock-rs postinstall:    Compiling neon v0.10.1
+  #19 120.8 .../node_modules/adblock-rs postinstall:    Compiling idna v1.1.0
+  #19 126.2 .../node_modules/adblock-rs postinstall:    Compiling serde_derive v1.0.228
+  #19 128.5 .../node_modules/adblock-rs postinstall:    Compiling thiserror-impl v1.0.69
+  #19 131.2 .../node_modules/adblock-rs postinstall:    Compiling servo_arc v0.4.3
+  #19 131.6 .../node_modules/adblock-rs postinstall:    Compiling new_debug_unreachable v1.0.6
+  #19 132.0 .../node_modules/adblock-rs postinstall:    Compiling log v0.4.29
+  #19 132.7 .../node_modules/adblock-rs postinstall:    Compiling either v1.15.0
+  #19 134.0 .../node_modules/adblock-rs postinstall:    Compiling semver-parser v0.7.0
+  #19 134.2 .../node_modules/adblock-rs postinstall:    Compiling rustc-hash v2.1.2
+  #19 135.2 .../node_modules/adblock-rs postinstall:    Compiling precomputed-hash v0.1.1
+  #19 137.7 .../node_modules/adblock-rs postinstall:    Compiling semver v0.9.0
+  #19 140.9 .../node_modules/adblock-rs postinstall:    Compiling itertools v0.14.0
+  #19 145.2 .../node_modules/adblock-rs postinstall:    Compiling url v2.5.8
+  #19 150.7 .../node_modules/adblock-rs postinstall:    Compiling neon-macros v0.10.1
+  #19 152.1 .../node_modules/adblock-rs postinstall:    Compiling regex v1.12.3
+  #19 153.3 .../node_modules/adblock-rs postinstall:    Compiling neon-runtime v0.10.1
+  #19 155.9 .../node_modules/adblock-rs postinstall:    Compiling addr v0.15.6
+  #19 156.4 .../node_modules/adblock-rs postinstall:    Compiling seahash v4.1.0
+  #19 158.2 .../node_modules/adblock-rs postinstall:    Compiling base64 v0.22.1
+  #19 161.1 .../node_modules/adblock-rs postinstall:    Compiling arrayvec v0.7.6
+  #19 162.7 .../node_modules/adblock-rs postinstall:    Compiling adblock v0.13.3 (/app/node_modules/.pnpm/adblock-rs@0.13.3/node_modules/adblock-rs)
+  #19 193.0 .../node_modules/adblock-rs postinstall:    Compiling adblock-rs v0.13.3 (/app/node_modules/.pnpm/adblock-rs@0.13.3/node_modules/adblock-rs/js)
+  #19 197.7 .../node_modules/adblock-rs postinstall:     Finished `release` profile [optimized] target(s) in 3m 01s
+  #19 198.0 .../node_modules/adblock-rs postinstall: npm notice
+  #19 198.0 .../node_modules/adblock-rs postinstall: npm notice New major version of npm available! 11.19.0 -> 12.2.1
+  #19 198.0 .../node_modules/adblock-rs postinstall: npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+  #19 198.0 .../node_modules/adblock-rs postinstall: npm notice To update run: npm install -g npm@12.2.1
+  #19 198.0 .../node_modules/adblock-rs postinstall: npm notice
+  #19 198.0 .../node_modules/adblock-rs postinstall: Done
+  #19 199.4 
+  #19 199.4 dependencies:
+  #19 199.4 + @better-auth/mcp 1.7.7
+  #19 199.4 + @modelcontextprotocol/server 2.3.1
+  #19 199.4 + @opentelemetry/api-logs 0.223.0
+  #19 199.4 + @workos-inc/node 11.0.0
+  #19 199.4 + adblock-rs 0.13.3
+  #19 199.4 + agent-input-sanitizer 1.47.14
+  #19 199.4 + better-auth 1.7.7
+  #19 199.4 + css-select 7.0.0
+  #19 199.4 + css-tree 3.2.1
+  #19 199.4 + defuddle 0.19.4
+  #19 199.4 + htmlparser2 12.0.0
+  #19 199.4 + jose 6.2.12
+  #19 199.4 + linkedom 0.18.13
+  #19 199.4 + micromark 4.0.3
+  #19 199.4 + micromark-extension-gfm 3.0.0
+  #19 199.4 + parse5 8.0.1
+  #19 199.4 + parse5-htmlparser2-tree-adapter 8.0.1
+  #19 199.4 + pg 8.23.1
+  #19 199.4 
+  #19 199.4 Done in 3m 18.8s using pnpm v12.10.1
+  #19 DONE 199.8s
+  
+  #20 [checked-build 1/5] RUN apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*
+  #20 ...
+  
+  #21 [runtime  2/12] WORKDIR /app
+  #21 CACHED
+  
+  #22 [runtime  3/12] COPY --from=production-dependencies /app/package.json ./
+  #22 DONE 0.0s
+  
+  #20 [checked-build 1/5] RUN apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*
+  #20 1.047 Get:1 http://deb.debian.org/debian trixie InRelease [140 kB]
+  #20 1.102 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+  #20 1.102 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+  #20 1.239 Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9678 kB]
+  #20 ...
+  
+  #23 [runtime  4/12] COPY --from=production-dependencies /app/node_modules node_modules
+  #23 DONE 1.0s
+  
+  #20 [checked-build 1/5] RUN apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*
+  #20 3.162 Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [720 B]
+  #20 3.162 Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [270 kB]
+  #20 4.072 Fetched 10.2 MB in 3s (3222 kB/s)
+  #20 4.072 Reading package lists...
+  #20 4.775 Reading package lists...
+  #20 5.427 Building dependency tree...
+  #20 5.607 Reading state information...
+  #20 5.850 The following additional packages will be installed:
+  #20 5.850   git-man libbrotli1 libcom-err2 libcurl3t64-gnutls liberror-perl libexpat1
+  #20 5.850   libffi8 libgdbm-compat4t64 libgdbm6t64 libgnutls30t64 libgssapi-krb5-2
+  #20 5.850   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2 libnghttp2-14
+  #20 5.850   libnghttp3-9 libngtcp2-16 libngtcp2-crypto-gnutls8 libp11-kit0 libperl5.40
+  #20 5.851   libpsl5t64 librtmp1 libsasl2-2 libsasl2-modules-db libssh2-1t64 libtasn1-6
+  #20 5.851   perl perl-base perl-modules-5.40
+  #20 5.853 Suggested packages:
+  #20 5.853   gettext-base git-doc git-email git-gui gitk gitweb git-cvs git-mediawiki
+  #20 5.853   git-svn gdbm-l10n gnutls-bin krb5-doc krb5-user sensible-utils perl-doc
+  #20 5.853   libterm-readline-gnu-perl | libterm-readline-perl-perl make
+  #20 5.853   libtap-harness-archive-perl
+  #20 5.853 Recommended packages:
+  #20 5.853   patch less ssh-client krb5-locales libldap-common publicsuffix
+  #20 5.853   libsasl2-modules netbase
+  #20 6.051 The following NEW packages will be installed:
+  #20 6.051   git git-man libbrotli1 libcom-err2 libcurl3t64-gnutls liberror-perl
+  #20 6.051   libexpat1 libffi8 libgdbm-compat4t64 libgdbm6t64 libgnutls30t64
+  #20 6.051   libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0
+  #20 6.051   libldap2 libnghttp2-14 libnghttp3-9 libngtcp2-16 libngtcp2-crypto-gnutls8
+  #20 6.052   libp11-kit0 libperl5.40 libpsl5t64 librtmp1 libsasl2-2 libsasl2-modules-db
+  #20 6.052   libssh2-1t64 libtasn1-6 perl perl-modules-5.40
+  #20 6.054 The following packages will be upgraded:
+  #20 6.054   perl-base
+  #20 6.089 E: You don't have enough free space in /var/cache/apt/archives/.1 upgraded, 31 newly installed, 0 to remove and 28 not upgraded.
+  #20 6.089 Need to get 24.8 MB of archives.
+  #20 6.089 After this operation, 117 MB of additional disk space will be used.
+  #20 6.090 
+  #20 ERROR: process "/bin/sh -c apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*" did not complete successfully: exit code: 100
+  ------
+   > [checked-build 1/5] RUN apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*:
+  6.051   libgssapi-krb5-2 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0
+  6.051   libldap2 libnghttp2-14 libnghttp3-9 libngtcp2-16 libngtcp2-crypto-gnutls8
+  6.052   libp11-kit0 libperl5.40 libpsl5t64 librtmp1 libsasl2-2 libsasl2-modules-db
+  6.052   libssh2-1t64 libtasn1-6 perl perl-modules-5.40
+  6.054 The following packages will be upgraded:
+  6.054   perl-base
+  6.089 E: You don't have enough free space in /var/cache/apt/archives/.1 upgraded, 31 newly installed, 0 to remove and 28 not upgraded.
+  6.089 Need to get 24.8 MB of archives.
+  6.089 After this operation, 117 MB of additional disk space will be used.
+  6.090 
+  ------
+  Dockerfile.hosted:43
+  --------------------
+    42 |     FROM production-dependencies AS checked-build
+    43 | >>> RUN apt-get update \
+    44 | >>>  && apt-get install -y --no-install-recommends git \
+    45 | >>>  && rm -rf /var/lib/apt/lists/*
+    46 |     RUN test -n "$RUSTUP_TOOLCHAIN" && pnpm install --frozen-lockfile
+  --------------------
+  ERROR: failed to build: failed to solve: process "/bin/sh -c apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*" did not complete successfully: exit code: 100
+  
+  
+  1 !== 0
+  
+      at HostedImageGate.build (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/support/container/hosted-image-gate.js:32:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/hosted-image.test.js:21:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,81 @@
+{
+  "status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+  "prepared_on": "2026-10-25",
+  "bundle_version": "s2502-organization-removal-proposal-2026-10-25-v1",
+  "purpose": "organization-creation",
+  "proposed_effective_date": "2026-10-25",
+  "publication_date": null,
+  "approval": null,
+  "date_condition": "Requires exact-byte owner approval and publication/opening on 25 October 2026. If later, revise dates, changed versions and hashes, and obtain new approval.",
+  "hash_status": "Review hashes only; no approval, publication, deployment, or presentation proof.",
+  "provenance": {
+    "source_bundle": "docs/legal/organization-audit-2026-10-24-proposal-v3",
+    "source_manifest_sha256": "9ff7e5f5fa48bad17dcf5cde7248aa226700e2b10f3eb9da26a1de42c6f90075",
+    "source_candidate_parent": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+    "source_bundle_status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+    "source_document_hashes": {
+      "terms.md": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+      "privacy.md": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "agreement.txt": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "audit-help.md": "1f4ad87cb93356115e2626f493d2f28040ab80ed94bd8353a3870efe4a27de4d"
+    },
+    "encoding": "UTF-8",
+    "line_endings": "LF",
+    "final_newline": true,
+    "runtime_selected_bundle": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+    "runtime_switch": "Not included in this proposal. Earlier frozen bytes remain selected until a separately reviewed source change.",
+    "help_scope": "Audit help is a complete proposed replacement of prior static-help review text. Members help is new complete proposed help; its final placement and source integration remain release work. No claim that current UI loads either Markdown file."
+  },
+  "documents": [
+    {
+      "file": "terms.md",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-25-v1",
+      "utf8_bytes": 20795,
+      "sha256": "2335b1fb8182dca12ba7f1730f0f8fc142d2cfaff7a5c798b74f614dd92e2f90",
+      "changed_from_source": true
+    },
+    {
+      "file": "privacy.md",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-25-v1",
+      "utf8_bytes": 37593,
+      "sha256": "e4b0905c4bf239e720774ca65a35fb7ada996eb68a01202a52b8c7520257fdfd",
+      "changed_from_source": true
+    },
+    {
+      "file": "agreement.txt",
+      "version": "hosted-agreement-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 378,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "changed_from_source": false
+    },
+    {
+      "file": "audit-help.md",
+      "version": "hosted-audit-help-organization-removal-proposal-2026-10-25-v1",
+      "utf8_bytes": 1992,
+      "sha256": "a418d110555b2b0a5ea9d8e1e5cfc6785f8a3c81b7e6314112803eb9415a75fe",
+      "changed_from_source": true
+    },
+    {
+      "file": "members-help.md",
+      "version": "hosted-members-help-organization-removal-proposal-2026-10-25-v1",
+      "utf8_bytes": 2200,
+      "sha256": "96826a14dd150495d784a446bd52bd4b9ea4b5dc467ff0593faff57e09621fb3",
+      "changed_from_source": true
+    }
+  ],
+  "publication_scope": {
+    "terms": "Complete terms at thermus.ai/terms/ and hosted signup presentation.",
+    "privacy": "Complete privacy notice at thermus.ai/privacy/ and hosted signup presentation.",
+    "agreement": "Preserve exact existing checkbox and version; bind changed Terms/Privacy identifiers only after approval and reviewed source integration.",
+    "audit_help": "Complete static Audit logs help; no change to controls, dynamic token prefix, or transport behavior is claimed.",
+    "members_help": "Complete proposed removal help; owner selects public/in-app placement and verifies actual text.",
+    "existing_agreements": "Owner must select any required notice or renewed agreement process; posting, sign-in, or invitation acceptance does not automatically replace an existing agreement."
+  },
+  "owner_decisions_required": [
+    "Approve exact complete bytes, versions, hashes, effective date, runtime/publication/help presentation scope, and any existing-organization process.",
+    "Confirm current provider facts, selected destination handling, privacy/retention review for removal records, and no-backup scope.",
+    "Approve release only after actual S2-04 release, complete applicable gates and independent required review; keep unresolved holds in the release ledger."
+  ],
+  "release_condition": "Proposal only. Earlier S2-04 release, required review, scoped live and controlled proof, free capacity, exact-byte owner approval, publication and deployed presentation are separate unresolved gates.",
+  "scope": "Ordinary active User/Admin membership deletion only; no global-user deletion, role editor, factor enrollment, SSO, Directory Sync, WorkOS Audit Logs, new service, or paid dependency."
+}

@@ -1,0 +1,8 @@
+{
+  "test/acceptance/auth/fixtures/member-removal-integrated-site.ts": "7c1f1916e1e439a454c5e4283e7e54f63e4ef4e9dddd8629c80112a369065deb",
+  "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts": "247230d9050329167a6919d2a60f83c957fb4522ae94bf84eba2d50bea88ffd8",
+  "test/acceptance/auth/hosted-removal.live.ts": "fa731bd4fc188f1ffb2b3bf97d5ff9e5f2a11c91cb77e3190ba96510273459c2",
+  "test/support/hosted-live/live-run.ts": "6c195779bca41b4371cea429a85a81107f43a6ad46b6299249715151d4be476a",
+  "test/support/hosted-live/local-https-site.ts": "04eae54352fe935ea8b4af6d65cc1b7637a1a17fde8a20a4fda42bd85eee1d5a",
+  "test/support/hosted-live/removal-fixtures.ts": "21b8ce76094007a1a7778153316853700ee52d1ff765430d3b0872d9a1552570"
+}

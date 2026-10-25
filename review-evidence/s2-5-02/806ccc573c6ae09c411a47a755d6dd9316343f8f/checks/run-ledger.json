@@ -1,0 +1,1039 @@
+{
+  "recordedAt": "2026-10-25T12:14:36.986483+00:00",
+  "scope": "Complete candidate against main; no new src change against actual parent; final image still running at this record",
+  "results": [
+    {
+      "log": "api-surface-final.log",
+      "bytes": 132,
+      "sha256": "200f9cc6ec11155d6b135f8f2b03843af4bb1d4d739db86235689978505e35f3",
+      "totals": []
+    },
+    {
+      "log": "browser-final.log",
+      "bytes": 355,
+      "sha256": "93d08894a4d97a4dcb75b6cb8a351527f382755b9b87363cae2ec5e60cd108b7",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 1
+        },
+        {
+          "field": "pass",
+          "value": 1
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "build-final.log",
+      "bytes": 146,
+      "sha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+      "totals": []
+    },
+    {
+      "log": "build-initial.log",
+      "bytes": 431,
+      "sha256": "5e9a587c72c0d8697a3939d8c250fadd05bbdf65134fd510d0b7c8f2d6b11e8e",
+      "totals": []
+    },
+    {
+      "log": "build-retry-1.log",
+      "bytes": 146,
+      "sha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+      "totals": []
+    },
+    {
+      "log": "build-retry-2.log",
+      "bytes": 146,
+      "sha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+      "totals": []
+    },
+    {
+      "log": "build-retry-3.log",
+      "bytes": 146,
+      "sha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+      "totals": []
+    },
+    {
+      "log": "collector-final.log",
+      "bytes": 3133,
+      "sha256": "01b2f6b7948310cc39777b9f1688261458f3aea44e92ed00f0bfe58c5453a6ab",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 10
+        },
+        {
+          "field": "pass",
+          "value": 10
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "coverage-combined.log",
+      "bytes": 731937,
+      "sha256": "ffd486bf85aaf72586fca66f25e941d69beaf7a5174e0c655fca8cdfb9d89388",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 3219
+        },
+        {
+          "field": "pass",
+          "value": 3219
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        },
+        {
+          "field": "tests",
+          "value": 29
+        },
+        {
+          "field": "pass",
+          "value": 29
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        },
+        {
+          "field": "tests",
+          "value": 1120
+        },
+        {
+          "field": "pass",
+          "value": 1120
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        },
+        {
+          "field": "tests",
+          "value": 594
+        },
+        {
+          "field": "pass",
+          "value": 594
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        },
+        {
+          "field": "tests",
+          "value": 20
+        },
+        {
+          "field": "pass",
+          "value": 20
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "disposable-docker-cleanup.log",
+      "bytes": 1423,
+      "sha256": "0cc823269c5ba9e88fc2f0fb5aab9efb6499beaaefa26c3fc93672edf65c6e61",
+      "totals": []
+    },
+    {
+      "log": "disposable-docker-start.log",
+      "bytes": 5161,
+      "sha256": "d33ad0a774532582a3a3ead68518ad1c3933dbf9963ac88e75b4aa4e102ad9ef",
+      "totals": []
+    },
+    {
+      "log": "docker-abandoned-amd64-cache.log",
+      "bytes": 128,
+      "sha256": "05538f3fe62f8272bdab6524d912904ec85e3633b2c5c608eddcdb62c182be7d",
+      "totals": []
+    },
+    {
+      "log": "docker-exact-cache-prune.log",
+      "bytes": 129,
+      "sha256": "7b03c8a52f9084dc0b2d961444c11f622a93bac042a835f6012a373e45666333",
+      "totals": []
+    },
+    {
+      "log": "habit-hooks-final.log",
+      "bytes": 28899,
+      "sha256": "63cb19eaf66454596afa7c41cbc0c0626fc4bd4b37841327fa4c1713ac7e20be",
+      "totals": []
+    },
+    {
+      "log": "habit-hooks-initial.log",
+      "bytes": 30890,
+      "sha256": "b66ffc01fd11224bf68e741840c0297202c8fde1305d62b4a6815b100ef78f8c",
+      "totals": []
+    },
+    {
+      "log": "habit-hooks-precommit.log",
+      "bytes": 28899,
+      "sha256": "41d8d949e9413636813301125d32daf1df3953d4a3ed56f6819e02e2ba087952",
+      "totals": []
+    },
+    {
+      "log": "hosted-image-build-progress-2.log",
+      "bytes": 734561,
+      "sha256": "cc624287cee34eeaa0f5c9d7e2a89d93553c02987ae812d102d3e18082c145c7",
+      "totals": []
+    },
+    {
+      "log": "hosted-image-build-progress.log",
+      "bytes": 75,
+      "sha256": "a040177c077a81104f70e8fec3deddc92ee715180f487b404f9486d60fd16ae4",
+      "totals": []
+    },
+    {
+      "log": "hosted-image-isolated-retry.log",
+      "bytes": 1623,
+      "sha256": "af90e65382a1584b02fb391c5ae08ac7fe4462f32ce416f941e57d684f62344e",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 7
+        },
+        {
+          "field": "pass",
+          "value": 7
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "hosted-image.log",
+      "bytes": 27391,
+      "sha256": "daa9449e6aa93b9db8033480b6697e581dfa432abb4022deb5aa7bbed7e58840",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 1
+        },
+        {
+          "field": "pass",
+          "value": 0
+        },
+        {
+          "field": "fail",
+          "value": 1
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "hosted-live-final.log",
+      "bytes": 17075,
+      "sha256": "af3ff4ef3697e3478691cb1e6b6880a6fccee4724328c3c525292fb50151d49f",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 29
+        },
+        {
+          "field": "pass",
+          "value": 28
+        },
+        {
+          "field": "fail",
+          "value": 1
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "hosted-operator-retry.log",
+      "bytes": 2252,
+      "sha256": "2d82bb314a10cb76e07e6aac0ff4f01542cc82705633e6abd89b4ac4eeddcdc4",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 5
+        },
+        {
+          "field": "pass",
+          "value": 5
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "integrated-runtime-1.log",
+      "bytes": 14856,
+      "sha256": "c47773c5ecf6f139101eab2e923a6b8b6e002d17e21d7b4d1f3fe0adb2e91f8a",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 4
+        },
+        {
+          "field": "pass",
+          "value": 2
+        },
+        {
+          "field": "fail",
+          "value": 2
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "integrated-runtime-2.log",
+      "bytes": 2861,
+      "sha256": "8e3c0e45f639e863ed5071550587f319ffade4ea9969841f0e4983e72cb28d38",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 4
+        },
+        {
+          "field": "pass",
+          "value": 3
+        },
+        {
+          "field": "fail",
+          "value": 1
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "integrated-runtime-3.log",
+      "bytes": 2058,
+      "sha256": "ae930aadf55012ad7546fdcbe6cfbb6808625f297f7abef127957ee5ed02579d",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 4
+        },
+        {
+          "field": "pass",
+          "value": 4
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "metrics-base-snapshot.log",
+      "bytes": 79,
+      "sha256": "63e01458c5ef557236241d9cb7f9a323b586b77b9450eb24c7ecd609ddc10b1a",
+      "totals": []
+    },
+    {
+      "log": "metrics-head-snapshot.log",
+      "bytes": 74,
+      "sha256": "dbcde3f2dcb5c28b1a3bd8b923b7c08b288cb0183975b753d3b526c01a98a1db",
+      "totals": []
+    },
+    {
+      "log": "metrics-parent-crap.log",
+      "bytes": 31,
+      "sha256": "a8ec84df5b76fa1dda340a53bcf34fba4e91d78a6a9977507acb24c9e20c9290",
+      "totals": []
+    },
+    {
+      "log": "metrics-process.log",
+      "bytes": 80897,
+      "sha256": "6b03b1e04023dfcd3a4538b2d4e3172628fee7108f1c4a0d6609ab5c88c80469",
+      "totals": []
+    },
+    {
+      "log": "npm-test.log",
+      "bytes": 742832,
+      "sha256": "b6a3c3eb38c181fdbcaec8cdcecd0e685e8578da4c3344ba5b064370c1fbbc6d",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 4997
+        },
+        {
+          "field": "pass",
+          "value": 4997
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        },
+        {
+          "field": "tests",
+          "value": 49
+        },
+        {
+          "field": "pass",
+          "value": 49
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "portal-build.log",
+      "bytes": 536,
+      "sha256": "f402ef9d31a12138d0a8ea4f89b6e7a79ea464827ff4fd6242b08246b79f1a8c",
+      "totals": []
+    },
+    {
+      "log": "postgres-final.log",
+      "bytes": 5713,
+      "sha256": "587470896bf9984ba9eb62b80ceecd128f5b2a1c95b3e3fd63314f6061ecb8f5",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 26
+        },
+        {
+          "field": "pass",
+          "value": 26
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "pr-review-stderr.log",
+      "bytes": 89,
+      "sha256": "c44e39aa090816ab05975c9905c56e196cb961bbe2ca70ab012bfc16896bba1b",
+      "totals": []
+    },
+    {
+      "log": "removal-live-1.log",
+      "bytes": 6856,
+      "sha256": "ee01fcf2ceb0f74bab9687f47fed02874ec7d6f09d8b04169ac01e7ff57d235b",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 1
+        },
+        {
+          "field": "pass",
+          "value": 0
+        },
+        {
+          "field": "fail",
+          "value": 1
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "removal-live-final.log",
+      "bytes": 1942,
+      "sha256": "8ae7263c637ca79fe8a535b96781aeb41fb72953c45765ee372ca55a1845b1b4",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 1
+        },
+        {
+          "field": "pass",
+          "value": 0
+        },
+        {
+          "field": "fail",
+          "value": 1
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "removal-live-isolated.log",
+      "bytes": 727,
+      "sha256": "d6bc3f4e54283729cea47c73f3313d74b21b7cbd8fb9fbf437b712d5f91e56f1",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 1
+        },
+        {
+          "field": "pass",
+          "value": 1
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "restore-drill-2.log",
+      "bytes": 67,
+      "sha256": "0906179fd1aa204b1d65c3db4cc79bb8a7e5ba32dffc5082bc143d89f908f32f",
+      "totals": []
+    },
+    {
+      "log": "restore-drill.log",
+      "bytes": 548,
+      "sha256": "0b452b9ba3cb1d6dfc113225f28e5136af06a9da2fa79a3d6e2e265d1a065f8c",
+      "totals": []
+    },
+    {
+      "log": "self-hosted-container-isolated-retry.log",
+      "bytes": 4987,
+      "sha256": "3046080a38301cb919925ae83fb64f68bc0a6ce788a079d778ed9aaaf74f5fc4",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 11
+        },
+        {
+          "field": "pass",
+          "value": 11
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "self-hosted-container-isolated.log",
+      "bytes": 12118,
+      "sha256": "2a34825390e3c2bd111c747d7ec1dc7130158041893c44b4907c05c7c3bd7c8d",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 11
+        },
+        {
+          "field": "pass",
+          "value": 0
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 11
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "self-hosted-container-retry.log",
+      "bytes": 12158,
+      "sha256": "172ca70cdd55de77e6238b2f6d339bab496bbf70726545ae38a1b230f32d3c09",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 11
+        },
+        {
+          "field": "pass",
+          "value": 0
+        },
+        {
+          "field": "fail",
+          "value": 0
+        },
+        {
+          "field": "cancelled",
+          "value": 11
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "self-hosted-container.log",
+      "bytes": 20685,
+      "sha256": "aa5f72186472f107d681c23cd8fc0885155b0e331b69568509e51e62a176b95a",
+      "totals": [
+        {
+          "field": "tests",
+          "value": 11
+        },
+        {
+          "field": "pass",
+          "value": 0
+        },
+        {
+          "field": "fail",
+          "value": 11
+        },
+        {
+          "field": "cancelled",
+          "value": 0
+        },
+        {
+          "field": "skipped",
+          "value": 0
+        },
+        {
+          "field": "todo",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "log": "typecheck-2.log",
+      "bytes": 158,
+      "sha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+      "totals": []
+    },
+    {
+      "log": "typecheck-final.log",
+      "bytes": 158,
+      "sha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+      "totals": []
+    },
+    {
+      "log": "typecheck-initial.log",
+      "bytes": 158,
+      "sha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+      "totals": []
+    }
+  ],
+  "retryHistory": [
+    {
+      "logs": [
+        "build-initial.log",
+        "build-retry-1.log"
+      ],
+      "reason": "TypeScript optional mock seam fixed in acceptance fixture; no src behavior gap"
+    },
+    {
+      "logs": [
+        "integrated-runtime-1.log",
+        "integrated-runtime-2.log",
+        "integrated-runtime-3.log"
+      ],
+      "reason": "Corrected controlled expired-session and current logging-form fixture expectations; final four cases pass, then full PostgreSQL26pass"
+    },
+    {
+      "logs": [
+        "removal-live-1.log",
+        "hosted-live-final.log",
+        "removal-live-isolated.log"
+      ],
+      "reason": "First journey passed but exact organization cleanup read was eventually visible. Bounded read-only exact-ID polling now verifies cleanup; no repeated DELETE. Final isolated case passes reviewed test bytes"
+    },
+    {
+      "logs": [
+        "hosted-live-final.log",
+        "hosted-operator-retry.log"
+      ],
+      "reason": "Full gate selected29 cases; one existing operator case encountered WorkOS HTTP408 Request timeout. Entire affected five-case operator group passed unchanged on retry. Original full-run exit1 retained"
+    },
+    {
+      "logs": [
+        "self-hosted-container.log",
+        "self-hosted-container-retry.log",
+        "hosted-image.log",
+        "removal-live-final.log"
+      ],
+      "reason": "Existing default Docker VM exhausted disk. No product assertion weakening; original unrelated services/images/volumes preserved. Exact owned rebuildable caches reclaimed, then owned temporary isolated local profile used"
+    },
+    {
+      "logs": [
+        "self-hosted-container-isolated.log",
+        "self-hosted-container-isolated-retry.log"
+      ],
+      "reason": "First isolated build hit transient GitHub DNS timeout. Subsequent DNS resolves; unchanged retry passes11cases"
+    },
+    {
+      "logs": [
+        "restore-drill.log",
+        "restore-drill-2.log"
+      ],
+      "reason": "Manual first drill expected unavailable; actual adapter conservatively reports unknown after rejected SQL admission. Corrected manual expectation and retained independent zero-DELETE/ACL proof. Seven stages pass, no source change"
+    }
+  ],
+  "skips": "No new skip/todo in changed tests; no source behavior is claimed from fixture red steps",
+  "pending": [
+    "Final independent/manager review and evidence publication; human approval and actual release remain separate holds"
+  ],
+  "behavioralGateStatus": "All selected behavioral cases pass across documented run/retry; no release claim",
+  "currentHead": "1a6abbb2acfd9030e28ae7dc8d9e4b56583f2584",
+  "ownedDockerProfile": "Deleted with runtime data; global context colima and six existing running services preserved",
+  "finalBehaviorEvidence": {
+    "hosted-image-isolated-retry.log": {
+      "sha256": "af90e65382a1584b02fb391c5ae08ac7fe4462f32ce416f941e57d684f62344e",
+      "bytes": 1623
+    },
+    "hosted-image-build-progress-2.log": {
+      "sha256": "cc624287cee34eeaa0f5c9d7e2a89d93553c02987ae812d102d3e18082c145c7",
+      "bytes": 734561
+    },
+    "self-hosted-container-isolated-retry.log": {
+      "sha256": "3046080a38301cb919925ae83fb64f68bc0a6ce788a079d778ed9aaaf74f5fc4",
+      "bytes": 4987
+    },
+    "removal-live-isolated.log": {
+      "sha256": "d6bc3f4e54283729cea47c73f3313d74b21b7cbd8fb9fbf437b712d5f91e56f1",
+      "bytes": 727
+    }
+  },
+  "candidate": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "metricsCommands": [
+    {
+      "name": "metrics-process",
+      "args": [
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "origin/main",
+        "--coverage",
+        "ast-report/coverage.json",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-25T12:12:54.471319+00:00",
+      "ended": "2026-10-25T12:13:11.131122+00:00",
+      "exit": 1,
+      "log": "metrics-process.log"
+    },
+    {
+      "name": "metrics-base-snapshot",
+      "args": [
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "origin/codex/s2-5-01c-members-removal"
+      ],
+      "started": "2026-10-25T12:13:11.131974+00:00",
+      "ended": "2026-10-25T12:13:13.677183+00:00",
+      "exit": 0,
+      "log": "metrics-base-snapshot.log"
+    },
+    {
+      "name": "metrics-head-snapshot",
+      "args": [
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-25T12:13:13.677580+00:00",
+      "ended": "2026-10-25T12:13:15.815542+00:00",
+      "exit": 0,
+      "log": "metrics-head-snapshot.log"
+    },
+    {
+      "name": "metrics-parent-crap",
+      "args": [
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "origin/codex/s2-5-01c-members-removal",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-25T12:13:15.816025+00:00",
+      "ended": "2026-10-25T12:13:16.281275+00:00",
+      "exit": 0,
+      "log": "metrics-parent-crap.log"
+    }
+  ],
+  "freshCoverage": {
+    "capturedCommit": "1a6abbb2acfd9030e28ae7dc8d9e4b56583f2584",
+    "result": "pass",
+    "exit": 0,
+    "unitBackend": 3219,
+    "unitPortal": 29,
+    "integration": 1120,
+    "acceptanceBackend": 594,
+    "acceptancePortal": 20,
+    "files": 172,
+    "processes": 1321,
+    "log": "coverage-combined.log"
+  },
+  "checker": {
+    "candidate": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+    "mergeBase": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+    "tierName": "T1 Team review",
+    "eligibility": "eligible",
+    "blockers": [],
+    "overallMerge": "blocked: parent unmerged and independent human approval pending"
+  }
+}

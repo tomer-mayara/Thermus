@@ -1,0 +1,62 @@
+time="2026-10-25T05:42:24-06:00" level=info msg="starting colima [profile=thermus-s25-02]"
+time="2026-10-25T05:42:24-06:00" level=info msg="runtime: docker"
+time="2026-10-25T05:42:24-06:00" level=info msg="creating and starting ..." context=vm
+time="2026-10-25T05:42:24-06:00" level=info msg="Terminal is not available, proceeding without opening an editor"
+time="2026-10-25T05:42:24-06:00" level=info msg="Starting the instance `colima-thermus-s25-02` with internal VM driver `vz`"
+time="2026-10-25T05:42:24-06:00" level=info msg="Attempting to download the image" arch=aarch64 digest= location=/Users/tomermayara/Library/Caches/colima/caches/b0992ab88f5a3c0c436bbb3065c01466f20dc1dd0eb0a60299d410176f21a1c3
+time="2026-10-25T05:42:24-06:00" level=info msg="Decompressing the image (b0992ab88f5a3c0c436bbb3065c01466f20dc1dd0eb0a60299d410176f21a1c3)"
+time="2026-10-25T05:42:24-06:00" level=info msg="decompressing  with external \"gzip\""
+time="2026-10-25T05:42:29-06:00" level=info msg="Downloaded the image from `/Users/tomermayara/Library/Caches/colima/caches/b0992ab88f5a3c0c436bbb3065c01466f20dc1dd0eb0a60299d410176f21a1c3`"
+time="2026-10-25T05:42:29-06:00" level=info msg="Resize instance colima-thermus-s25-02's disk from 3.5GiB to 10GiB"
+time="2026-10-25T05:42:30-06:00" level=info msg="[hostagent] hostagent socket created at /Users/tomermayara/.colima/_lima/colima-thermus-s25-02/ha.sock"
+time="2026-10-25T05:42:30-06:00" level=info msg="[hostagent] Starting VZ (hint: to watch the boot progress, see `/Users/tomermayara/.colima/_lima/colima-thermus-s25-02/serial*.log`)"
+time="2026-10-25T05:42:30-06:00" level=info msg="[hostagent] Mounting disk `colima-thermus-s25-02` on `/mnt/lima-colima-thermus-s25-02`"
+time="2026-10-25T05:42:30-06:00" level=info msg="[hostagent] Converting `/Users/tomermayara/.colima/_lima/_disks/colima-thermus-s25-02/datadisk` (raw) to a raw disk `/Users/tomermayara/.colima/_lima/_disks/colima-thermus-s25-02/datadisk`"
+time="2026-10-25T05:42:30-06:00" level=info msg="[hostagent] Setting up Rosetta share"
+time="2026-10-25T05:42:30-06:00" level=info msg="[hostagent] [VZ] - vm state change: running"
+time="2026-10-25T05:42:37-06:00" level=info msg="[hostagent] SSH server does not seem to be running on vsock port, using usernet forwarder"
+time="2026-10-25T05:42:37-06:00" level=info msg="SSH Local Port: 55805"
+time="2026-10-25T05:42:37-06:00" level=info msg="[hostagent] Waiting for the essential requirement 1 of 3: `ssh`"
+time="2026-10-25T05:42:37-06:00" level=info msg="[hostagent] The essential requirement 1 of 3 is satisfied"
+time="2026-10-25T05:42:37-06:00" level=info msg="[hostagent] Waiting for the essential requirement 2 of 3: `user session is ready for ssh`"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] The essential requirement 2 of 3 is satisfied"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Waiting for the essential requirement 3 of 3: `Explicitly start ssh ControlMaster`"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] The essential requirement 3 of 3 is satisfied"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Waiting for the guest agent to be running"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Forwarding `/var/run/docker.sock` (guest) to `/Users/tomermayara/.colima/thermus-s25-02/docker.sock` (host)"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Forwarding `/var/run/containerd/containerd.sock` (guest) to `/Users/tomermayara/.colima/thermus-s25-02/containerd.sock` (host)"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Guest agent is running"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Time sync: guest agent is alive, starting time synchronization"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Waiting for the final requirement 1 of 1: `boot scripts must have finished`"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Not forwarding TCP 0.0.0.0:22"
+time="2026-10-25T05:42:41-06:00" level=info msg="[hostagent] Not forwarding TCP [::]:22"
+time="2026-10-25T05:42:46-06:00" level=info msg="[hostagent] Time sync: guest clock adjusted (was 391ms off)"
+time="2026-10-25T05:42:50-06:00" level=info msg="READY. Run `limactl shell colima-thermus-s25-02` to open the shell."
+installing: 386 OK
+installing: amd64 OK
+{
+  "supported": [
+    "linux/arm64",
+    "linux/amd64",
+    "linux/386"
+  ],
+  "emulators": [
+    "python3.12",
+    "qemu-i386",
+    "qemu-x86_64",
+    "rosetta"
+  ]
+}
+  File: /proc/sys/fs/binfmt_misc/rosetta
+  Size: 0         	Blocks: 0          IO Block: 4096   regular empty file
+Device: 0,37	Inode: 6940        Links: 1
+Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2026-10-25 05:42:38.580000002 -0600
+Modify: 2026-10-25 05:42:38.580000002 -0600
+Change: 2026-10-25 05:42:38.580000002 -0600
+ Birth: -
+time="2026-10-25T05:42:51-06:00" level=info msg="provisioning ..." context=docker
+colima-thermus-s25-02
+Successfully created context "colima-thermus-s25-02"
+time="2026-10-25T05:42:52-06:00" level=info msg="starting ..." context=docker
+time="2026-10-25T05:42:53-06:00" level=info msg=done

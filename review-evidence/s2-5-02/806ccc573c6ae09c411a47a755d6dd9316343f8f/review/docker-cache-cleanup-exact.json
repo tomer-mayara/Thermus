@@ -1,0 +1,126 @@
+{
+  "at": "2026-10-25T11:36:17.539125+00:00",
+  "scope": "same exact reviewed Thermus IDs, rechecked unused/private before each call; extra boolean filters from first pass matched no records, so exact-id filter alone is used",
+  "records": [
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:35:59.945904524 +0000 UTC",
+        "Description": "[stage-8 6/9] COPY migrations migrations",
+        "ID": "qk3abimyu5rqx1dwjrugqefy3",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "8v21st3nvfcbvf41h69see3s7"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "30.05kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:36:00.507252025 +0000 UTC",
+        "Description": "[stage-8 8/9] COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt",
+        "ID": "rrvbd6o3tjg1f3fgs260qz2bz",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "p44usla8hzjctcabcush9uuy0"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "371.2kB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nrrvbd6o3tjg1f3fgs260qz2bz               \ttrue \t\t371.2kB   \tAbout an hour ago\nTotal:\t371.2kB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:35:59.929124643 +0000 UTC",
+        "Description": "[stage-8 5/9] COPY --from=build /app/dist/src dist/src",
+        "ID": "8v21st3nvfcbvf41h69see3s7",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "hb89tio6ah2oim2nmt4yuic4m"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "2.656MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "Total:\t0B\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 10:36:00.486076716 +0000 UTC",
+        "Description": "[stage-8 7/9] COPY --from=lightpanda /opt/lightpanda /opt/lightpanda",
+        "ID": "p44usla8hzjctcabcush9uuy0",
+        "LastUsedAt": "About an hour ago",
+        "Mutable": false,
+        "Parents": [
+          "qk3abimyu5rqx1dwjrugqefy3"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "246.2MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\np44usla8hzjctcabcush9uuy0               \ttrue \t\t246.2MB   \tAbout an hour ago\nTotal:\t246.2MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:39.827498413 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c apt-get update  && apt-get install -y --no-install-recommends git  && rm -rf /var/lib/apt/lists/*",
+        "ID": "w1dkl5zut4uji7ym4ohxq1enc",
+        "LastUsedAt": "2 hours ago",
+        "Mutable": false,
+        "Parents": [
+          "mz8ji92f50s6jf5twocb5nbcl"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "114.4MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nw1dkl5zut4uji7ym4ohxq1enc               \ttrue \t\t114.4MB   \t2 hours ago\nTotal:\t114.4MB\n",
+      "stderr": ""
+    },
+    {
+      "record": {
+        "CreatedAt": "2026-10-25 09:21:16.482492149 +0000 UTC",
+        "Description": "mount / from exec /bin/sh -c test -n \"$RUSTUP_TOOLCHAIN\"  && pnpm install --frozen-lockfile --prod  && rm -rf node_modules/.pnpm/adblock-rs@*/node_modules/adblock-rs/target",
+        "ID": "mz8ji92f50s6jf5twocb5nbcl",
+        "LastUsedAt": "2 hours ago",
+        "Mutable": false,
+        "Parents": [
+          "3x885iuxvey9w0bk6zzfjhwvn"
+        ],
+        "Reclaimable": true,
+        "Shared": false,
+        "Size": "518.2MB",
+        "Type": "regular",
+        "UsageCount": 1
+      },
+      "exit": 0,
+      "stdout": "ID\t\t\t\t\t\tRECLAIMABLE\tSIZE\t\tLAST ACCESSED\nmz8ji92f50s6jf5twocb5nbcl               \ttrue \t\t518.2MB   \t2 hours ago\nTotal:\t518.2MB\n",
+      "stderr": ""
+    }
+  ]
+}

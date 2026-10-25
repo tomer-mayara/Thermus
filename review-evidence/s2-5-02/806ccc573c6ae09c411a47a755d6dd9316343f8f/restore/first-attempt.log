@@ -1,0 +1,22 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'unknown'
+- 'unavailable'
+     ^
+
+    at file:///Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-02/restore-drill.mts:82:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'unknown',
+  expected: 'unavailable',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.20.0

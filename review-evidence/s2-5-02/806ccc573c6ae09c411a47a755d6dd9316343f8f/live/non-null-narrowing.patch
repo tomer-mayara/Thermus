@@ -1,0 +1,61 @@
+--- test/acceptance/auth/hosted-removal.live.ts
++++ test/acceptance/auth/hosted-removal.live.ts
+@@ -118,6 +118,9 @@
+     assert.equal(grant.visit.pages.some(path => path.startsWith('/mfa/')), false);
+     grants.push(grant);
+   }
++  const [adminGrant, userGrant] = grants;
++  assert.ok(adminGrant, 'The removing Admin must have a Connect grant.');
++  assert.ok(userGrant, 'The removable User must have a Connect grant.');
+   const mcpStatus = async (accessToken: string): Promise<number> => {
+     const site = await run.site();
+     const response = await fetch(mcpRequest({ url: new URL('mcp', site.thermusUrl).href, method: 'server/discover', token: accessToken }));
+@@ -151,7 +154,7 @@
+   assert.equal(await run.workos.userManagement.getOrganizationMembership(userMembership).then(() => 200, statusOf), 404);
+   const userPortal = await serverGet(userVisit.page, 'portal/access');
+   assertRemovedAccess(userPortal);
+-  assert.equal(await mcpStatus(grants[1]!.tokens.accessToken), 403);
++  assert.equal(await mcpStatus(userGrant.tokens.accessToken), 403);
+   await seatsOn(adminVisit.page, 2);
+   await fixtures.note('user-removal-confirmed', { membershipId: userMembership, providerRead: 404, portalStatus: userPortal.status, mcpStatus: 403, seats: 2 });
+ 
+@@ -159,7 +162,7 @@
+   assert.equal(await run.workos.userManagement.getOrganizationMembership(adminMembership).then(() => 200, statusOf), 404);
+   const adminPortal = await serverGet(adminVisit.page, 'portal/access');
+   assertRemovedAccess(adminPortal);
+-  assert.equal(await mcpStatus(grants[0]!.tokens.accessToken), 403);
++  assert.equal(await mcpStatus(adminGrant.tokens.accessToken), 403);
+   await seatsOn(remainingVisit.page, 1);
+   const last = await memberForm(remainingVisit.page, remainingMembership);
+   const lastRefusal = await serverPost(remainingVisit.page, 'members/remove', { fields: last.fields });
+@@ -185,7 +188,9 @@
+   await adminVisit.page.getByRole('heading', { name: 'Select an organization', exact: true }).waitFor();
+   const afterGuidance = formsIn(await adminVisit.page.content());
+   assert.deepEqual(afterGuidance.map(choice => choice.fields.organization_id), [other.id]);
+-  const selectedOther = await serverPost(adminVisit.page, 'organizations/select', { fields: afterGuidance[0]!.fields });
++  const [otherSelection] = afterGuidance;
++  assert.ok(otherSelection, 'The emitted guidance must offer the retained workspace.');
++  const selectedOther = await serverPost(adminVisit.page, 'organizations/select', { fields: otherSelection.fields });
+   assert.equal(selectedOther.status, 303);
+   const usableOther = await serverGet(adminVisit.page, 'portal/access');
+   assert.equal(usableOther.status, 200);
+@@ -218,7 +223,8 @@
+   assert.equal(invited.status, 303);
+   const invitations = await run.workos.userManagement.listInvitations({ organizationId: organization.id, email: user.email });
+   assert.equal(invitations.data.length, 1);
+-  const invitation = invitations.data[0]!;
++  const [invitation] = invitations.data;
++  assert.ok(invitation, 'The fresh invitation must be present in WorkOS.');
+   assert.equal(invitation.state, 'pending');
+   assert.equal(invitation.roleSlug, 'admin');
+   // This privileged API acceptance proves the new provider membership and roles. It does not prove recipient/link rules.
+@@ -226,7 +232,8 @@
+   assert.equal(accepted.state, 'accepted');
+   const rejoined = await run.workos.userManagement.listOrganizationMemberships({ userId: user.id, organizationId: organization.id, statuses: ['active', 'inactive', 'pending'] });
+   assert.equal(rejoined.data.length, 1);
+-  const replacement = rejoined.data[0]!;
++  const [replacement] = rejoined.data;
++  assert.ok(replacement, 'The new membership must be present after invitation acceptance.');
+   await fixtures.recordReplacementMembership(replacement.id);
+   assert.notEqual(replacement.id, userMembership);
+   assert.deepEqual([replacement.status, rolesOf(replacement)], ['active', ['admin']]);

@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-25T12:05:23.764489+00:00",
+  "ownedProfile": "thermus-s25-02",
+  "cleanupCommand": "colima delete thermus-s25-02 --force --data",
+  "cleanupExit": 0,
+  "profileAndContextAbsent": true,
+  "originalActiveContext": "colima",
+  "existingVolumesNotPruned": true,
+  "originalResources": "No existing shared service, image, or volume removed. Only exact recorded owned rebuildable caches were reclaimed before the isolated-profile run.",
+  "originalRunningServiceCount": 6,
+  "observedServiceInventorySha256": "e5e1c720908f848f4d417e6aa3c3b47f5e04498b5833b9a396e44d144f57fca1",
+  "inventoryPrivacy": "Unrelated shared service names/IDs omitted from published evidence."
+}
