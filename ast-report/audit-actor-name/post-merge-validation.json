@@ -1,0 +1,52 @@
+{
+  "candidate": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+  "mergedCommit": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "candidateTreeMatchesMergedCommit": true,
+  "removedAnonymousVolumes": 219,
+  "protectedVolumesPreserved": 5,
+  "existingContainerStatesPreserved": 10,
+  "runningContainersPreserved": 6,
+  "diskImmediatelyAfterCleanup": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/vdb1        25G   17G  6.9G  71% /var/lib/docker\n",
+  "diskAfterValidation": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/vdb1        25G   20G  3.5G  85% /var/lib/docker\n",
+  "checks": {
+    "self-hosted": {
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+      "exitCode": 0,
+      "seconds": 182.624,
+      "log": "self-hosted.log",
+      "testCounters": {
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    "hosted-image": {
+      "command": [
+        "npm",
+        "run",
+        "test:container:hosted"
+      ],
+      "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+      "exitCode": 0,
+      "seconds": 939.136,
+      "log": "hosted-image.log",
+      "testCounters": {
+        "tests": 7,
+        "pass": 7,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    }
+  },
+  "completedAt": "2026-10-25T22:06:45Z"
+}

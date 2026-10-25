@@ -1,0 +1,11 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "test:container"
+  ],
+  "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+  "exitCode": 0,
+  "seconds": 182.624,
+  "log": "self-hosted.log"
+}
