@@ -1,5 +1,17 @@
 # S2-02b saved Audit destination Test
 
+## Planned follow-up: Save and Test
+
+The Admin action will be named **Test**. It will save the current form first,
+then test that confirmed saved revision. A failed or uncertain Save must stop
+the Test. The Audit settings page will show the result in its normal layout,
+without a separate plain notice page. The export switch will be saved as shown.
+Test will remain optional and will send one synthetic event even when export
+is off. Admin, tenant, Origin, CSRF, revision, and credential checks still apply.
+
+The implementation starts with a failing acceptance case, then focused tests
+for save-before-test ordering, failure handling, and safe result display.
+
 [Draft PR #241](https://github.com/tomer-mayara/Thermus/pull/241) adds an optional
 Test action for a current Admin. It is stacked over PR #240 and includes the
 settings read/Save dependency from PR #238, merged into this branch. The
