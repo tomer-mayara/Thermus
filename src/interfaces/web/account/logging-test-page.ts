@@ -5,13 +5,13 @@ import { loggingNotice } from './logging-page.ts';
 interface TestNotice { readonly title: string; readonly message: string; readonly status: number }
 
 const sendNotices: Readonly<Record<AuditSendOutcome['kind'], TestNotice>> = {
-  accepted: { title: 'Test accepted', message: 'Collector accepted the Test event.', status: 200 },
-  warning: { title: 'Test warning', message: 'Collector accepted the Test event with a warning.', status: 200 },
-  partial_rejection: { title: 'Test rejected', message: 'Collector rejected the Test event.', status: 502 },
+  accepted: { title: 'Test accepted', message: 'Destination accepted the Test event.', status: 200 },
+  warning: { title: 'Test warning', message: 'Destination accepted the Test event with a warning.', status: 200 },
+  partial_rejection: { title: 'Test rejected', message: 'Destination rejected the Test event.', status: 502 },
   permanent_failure: { title: 'Test failed', message: 'The Test attempt failed. Check the saved destination.', status: 502 },
   transient_failure: { title: 'Test unavailable', message: 'The Test attempt could not complete. Try again later.', status: 503 },
-  unconfirmed: { title: 'Test unconfirmed', message: 'The Test result is unconfirmed. The event may have reached the Collector.', status: 503 },
-  cancelled: { title: 'Test cancelled', message: 'The Test was cancelled. The event may have reached the Collector.', status: 409 },
+  unconfirmed: { title: 'Test unconfirmed', message: 'The Test result is unconfirmed. The event may have reached the destination.', status: 503 },
+  cancelled: { title: 'Test cancelled', message: 'The Test was cancelled. The event may have reached the destination.', status: 409 },
   busy: { title: 'Test busy', message: 'Test is busy. Try again later.', status: 429 },
 };
 

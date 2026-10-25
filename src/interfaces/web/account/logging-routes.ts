@@ -115,7 +115,7 @@ export class LoggingRoutes {
     if (result.status === 'saved' || result.status === 'unchanged') return seeOther(new URL(this.paths.logging, this.origin).href);
     if (result.status === 'conflict') return noticePage('changeStale');
     if (result.status === 'unconfirmed') return loggingNotice({ title: 'Save unconfirmed', message: 'The Save result is unconfirmed. Read saved settings before making another change. A pending Save can finish after that read.', status: 503 }, this.paths.logging);
-    if (result.status === 'invalid') return loggingNotice({ title: 'Invalid settings', message: 'Check the public HTTPS endpoint, authentication, and token. No settings were saved.', status: 400 }, this.paths.logging);
+    if (result.status === 'invalid') return loggingNotice({ title: 'Invalid settings', message: 'Check the public HTTPS endpoint, Axiom dataset, authentication, and token. No settings were saved.', status: 400 }, this.paths.logging);
     return this.unavailable();
   }
 

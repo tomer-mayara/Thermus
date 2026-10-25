@@ -435,7 +435,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
 });
 
 
-describe('FS-04 production signup documents', () => {
+describe('S2-04 production signup documents', () => {
   test('Given production signup is off by default, when GET, HEAD, or an old form arrives, then it stays closed without policy bytes or provider reads', async (t) => {
     const site = await openProductionSignupSite(t);
     const browser = new HostedBrowser(site.transport, site.publicBaseUrl);
@@ -454,15 +454,24 @@ describe('FS-04 production signup documents', () => {
     assert.deepEqual(site.world.fake.takeRequests(), []);
   });
 
-  test('Given the approved organization bundle in production and an eligible creator, when signup opens and its one agreement is accepted, then exact approved documents are shown and the first Admin retains their legal versions and hashes', async (t) => {
+  test('S2-04 Given the organization Audit bundle in the prepared hosted candidate and an eligible creator, when signup opens and its one agreement is accepted, then exact Terms and Privacy are served and the first Admin retains their legal versions and hashes', async (t) => {
     const site = await openProductionSignupSite(t, true);
     const expected = {
-      version: 's105-organization-proposal-2026-10-23-v2',
-      terms: { version: 'hosted-terms-organization-proposal-2026-10-23-v2', sha256: '625010f6b3fd118c13a29cca29cfb066d5511d7d91d0c29e0e430ac0bdc14d0e' },
-      notice: { version: 'hosted-privacy-organization-proposal-2026-10-23-v2', sha256: 'd44db6099b758534e8d17f34bcda7096e02775ffccb40972ea1429093c1396ac' },
+      version: 's204-organization-audit-proposal-2026-10-24-v3',
+      terms: { version: 'hosted-terms-organization-audit-proposal-2026-10-24-v3', sha256: 'ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3' },
+      notice: { version: 'hosted-privacy-organization-audit-proposal-2026-10-24-v3', sha256: '692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6' },
       agreement: { version: 'hosted-agreement-organization-proposal-2026-10-23-v2', sha256: '279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a' },
     };
-    const user = { id: 'user_APPROVED_CREATOR', email: 'creator@example.com', firstName: 'Creator', emailVerified: true };
+    const visitor = new HostedBrowser(site.transport, site.publicBaseUrl);
+    const publicPage = await visitor.open('signup');
+    const publicDocument = parseHTML(publicPage.body).document;
+    const privacy = await readFile('docs/legal/organization-audit-2026-10-24-proposal-v3/privacy.md', 'utf8');
+    const expectedNotice = parseHTML(`<div id=expected>${micromark(privacy, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
+    assert.equal(publicDocument.querySelector('#privacy-notice .document-reader')?.textContent, expectedNotice);
+    assert.equal(publicDocument.querySelector('#privacy-notice')?.getAttribute('data-document-version'), expected.notice.version);
+    assert.deepEqual(formsIn(publicPage.body), []);
+    assert.deepEqual(site.world.fake.takeRequests(), []);
+    const user = { id: 'user_AUDIT_CREATOR', email: 'creator@example.com', firstName: 'Creator', emailVerified: true };
     site.world.users = [user];
     const { browser } = await signInThroughServer(site, user);
     const answer = await browser.open('signup');
@@ -472,7 +481,7 @@ describe('FS-04 production signup documents', () => {
       ['terms', 'terms.md', expected.terms.sha256],
       ['privacy-notice', 'privacy.md', expected.notice.sha256],
     ]) {
-      const source = await readFile(`docs/legal/organization-signup-2026-10-23/${file}`, 'utf8');
+      const source = await readFile(`docs/legal/organization-audit-2026-10-24-proposal-v3/${file}`, 'utf8');
       assert.equal(createHash('sha256').update(source).digest('hex'), hash);
       const expectedText = parseHTML(`<div id=expected>${micromark(source, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
       assert.equal(document.querySelector(`#${id} .document-reader`)?.textContent, expectedText);
@@ -483,12 +492,16 @@ describe('FS-04 production signup documents', () => {
     assert.ok(checkbox);
     assert.equal(checkbox.hasAttribute('checked'), false);
     const agreement = document.querySelector('.agreement-text')?.textContent;
-    assert.equal(agreement, await readFile('docs/legal/organization-signup-2026-10-23/agreement.txt', 'utf8'));
+    assert.equal(agreement, await readFile('docs/legal/organization-audit-2026-10-24-proposal-v3/agreement.txt', 'utf8'));
     assert.equal(createHash('sha256').update(agreement ?? '').digest('hex'), expected.agreement.sha256);
     const form = formsIn(answer.body).find(({ action }) => action === '/signup');
     assert.ok(form);
     assert.equal(form.fields.document_version, expected.version);
-    const created = await browser.post('signup', { ...form.fields, organization_name: 'Approved Organization', agreement: 'accepted' });
+    const stale = await browser.post('signup', { ...form.fields, document_version: approvedOrganizationDocuments.version, organization_name: 'Audit Organization', agreement: 'accepted' });
+    assert.equal(stale.status, 400, stale.body);
+    assert.equal(site.signupFake.organizations.length, 0);
+    assert.equal(site.world.memberships.length, 0);
+    const created = await browser.post('signup', { ...form.fields, organization_name: 'Audit Organization', agreement: 'accepted' });
     assert.equal(created.status, 303, created.body);
     assert.equal(site.signupFake.organizations.length, 1);
     const organization = site.signupFake.organizations[0];

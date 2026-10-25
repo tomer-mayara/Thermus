@@ -6,6 +6,28 @@ import { postgresSettingsSite } from '../../../support/in-process/postgres-setti
 
 const desired = { endpoint: 'https://collector.example/v1/logs', auth: 'none' as const, enabled: false, encryptedCredential: null };
 
+test('Given persisted generic settings, when an Axiom dataset is added, repeated, changed, and cleared, then each real change advances its tenant revision', async t => {
+  const site = await postgresSettingsSite(t);
+  const runtime = createPgSettingsRuntime(site.connection);
+  t.after(() => runtime.close());
+  const store = new PgDestinationSettingsStore(runtime);
+  const initial = await store.save('a', null, desired);
+  assert.ok(initial.status === 'saved');
+  let previous = initial.settings;
+  for (const axiomDataset of ['audit-log-test', 'audit-next', undefined]) {
+    const next = { ...desired, ...(axiomDataset === undefined ? {} : { axiomDataset }) };
+    const saved = await store.save('a', previous.revision, next);
+    assert.ok(saved.status === 'saved');
+    assert.notEqual(saved.settings.revision, previous.revision);
+    assert.deepEqual(saved.settings, { ...next, revision: saved.settings.revision });
+    assert.deepEqual(await store.read('a'), { status: 'found', settings: saved.settings });
+    assert.deepEqual(await store.save('a', saved.settings.revision, next), { status: 'unchanged', settings: saved.settings });
+    assert.deepEqual(await store.save('a', previous.revision, desired), { status: 'conflict' });
+    assert.deepEqual(await store.save('b', saved.settings.revision, next), { status: 'conflict' });
+    previous = saved.settings;
+  }
+});
+
 test('Given real PostgreSQL, when saves compete or repeat, then only actual changes advance the scoped revision', async (t) => {
   const site = await postgresSettingsSite(t);
   const runtime = createPgSettingsRuntime(site.connection);

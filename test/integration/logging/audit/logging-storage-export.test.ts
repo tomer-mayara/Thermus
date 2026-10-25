@@ -5,10 +5,33 @@ import { composeLoggingStorage } from '../../../../src/app/logging-storage.ts';
 import { OtlpAuditSender } from '../../../../src/logs/audit/otlp-audit-sender.ts';
 import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 import { DestinationSettingsFake } from '../../../support/doubles/logging/destination-settings-fake.ts';
+import { AuditExportSenderSpy } from '../../../support/doubles/logging/audit-export-sender-spy.ts';
 
-const eventFor = (tenant: string): AuditEvent => ({ eventName: 'mcp.tool.completed', timestamp: '2026-10-24T12:00:00Z', organizationId: tenant, actor: { authority: 'trusted', subject: 'admin' }, operationId: `operation-${tenant}`, tool: 'search', status: 'success', durationMs: 1, input: { query: 'public query', reason: 'Find source' }, result: { text: 'public result', originalBytes: 13, capturedBytes: 13, truncated: false } });
+const eventFor = (tenant: string): Extract<AuditEvent, { eventName: 'mcp.tool.completed' }> => ({ eventName: 'mcp.tool.completed', timestamp: '2026-10-24T12:00:00Z', organizationId: tenant, actor: { authority: 'trusted', subject: 'admin' }, operationId: `operation-${tenant}`, tool: 'search', status: 'success', durationMs: 1, input: { query: 'public query', reason: 'Find source' }, result: { text: 'public result', originalBytes: 13, capturedBytes: 13, truncated: false } });
 const endpoint = 'https://collector.example/v1/logs';
 const turn = () => new Promise<void>(resolve => setImmediate(resolve));
+
+test('Given queued export for an Axiom dataset, when its dataset changes before dispatch, then old queued work is dropped and new work reaches the sender with the current dataset', { timeout: 10_000 }, async t => {
+  const store = new DestinationSettingsFake();
+  const sender = new AuditExportSenderSpy();
+  sender.held = true;
+  const storage = composeLoggingStorage({ store, close: async () => {} }, Buffer.alloc(32, 7), sender);
+  t.after(async () => { for (const attempt of sender.attempts) attempt.complete(); await storage.close(); });
+  const desired = { expectedRevision: null, endpoint, axiomDataset: 'audit-log-test', auth: 'bearer' as const, token: 'audit-token', enabled: true };
+  const saved = await storage.service.save('tenant-a', desired);
+  assert.ok(saved.status === 'saved' && saved.settings.revision);
+  assert.equal(storage.dispatch.admit({ destinationRevision: saved.settings.revision, event: { ...eventFor('tenant-a'), operationId: 'in-flight' } }), true);
+  await sender.untilAttempts(1);
+  assert.deepEqual(sender.attempts[0].destination, { endpoint, axiomDataset: 'audit-log-test', auth: { type: 'bearer', token: 'audit-token' } });
+  assert.equal(storage.dispatch.admit({ destinationRevision: saved.settings.revision, event: { ...eventFor('tenant-a'), operationId: 'stale-queued' } }), true);
+  const changed = await storage.service.save('tenant-a', { ...desired, expectedRevision: saved.settings.revision, axiomDataset: 'audit-next', token: '' });
+  assert.ok(changed.status === 'saved' && changed.settings.revision);
+  assert.equal(storage.dispatch.admit({ destinationRevision: changed.settings.revision, event: { ...eventFor('tenant-a'), operationId: 'current-queued' } }), true);
+  sender.attempts[0].complete();
+  await sender.untilAttempts(2);
+  assert.deepEqual(sender.attempts.map(attempt => attempt.event.eventName === 'mcp.tool.completed' && attempt.event.operationId), ['in-flight', 'current-queued']);
+  assert.deepEqual(sender.attempts[1].destination, { endpoint, axiomDataset: 'audit-next', auth: { type: 'bearer', token: 'audit-token' } });
+});
 
 test('Given production logging storage with one sender, when export and Test hold four native DNS lookups and then cancel, then both paths retain the shared sender cap until native work settles', { timeout: 10_000 }, async t => {
   const pending: ((addresses: { address: string; family: number }[]) => void)[] = [];

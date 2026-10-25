@@ -37,6 +37,7 @@ interface ExportedRecord { readonly timeUnixNano: string }
 
 interface DestinationTestSubmission {
   readonly endpoint: string;
+  readonly axiomDataset?: string;
   readonly auth: 'none' | 'bearer';
   readonly token: string;
 }

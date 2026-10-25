@@ -1,6 +1,7 @@
 import type { AuditEvent } from './audit-log.ts';
 export interface AuditDestination {
     readonly endpoint: string;
+    readonly axiomDataset?: string;
     readonly auth: {
         readonly type: 'none';
     } | {

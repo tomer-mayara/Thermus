@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { promisify } from 'node:util';
-import { loggingSettingsMigration } from '../processes/module-paths.ts';
+import { loggingSettingsMigrations } from '../processes/module-paths.ts';
 
 const exec = promisify(execFile);
 
@@ -27,8 +27,10 @@ export async function postgresSettingsSite(t: TestContext, certificateNames = 'D
     if (ready) break;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  await exec('docker', ['cp', loggingSettingsMigration, `${container}:/tmp/settings.sql`]);
-  await exec('docker', ['exec', container, 'psql', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1', '-f', '/tmp/settings.sql']);
+  for (const migration of loggingSettingsMigrations) {
+    await exec('docker', ['cp', migration, `${container}:/tmp/settings.sql`]);
+    await exec('docker', ['exec', container, 'psql', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1', '-f', '/tmp/settings.sql']);
+  }
   await exec('docker', ['exec', container, 'psql', '-U', 'postgres', '-v', 'ON_ERROR_STOP=1', '-c', "ALTER ROLE thermus_logging LOGIN PASSWORD 'local-runtime-fixture'"]);
   const port = (await exec('docker', ['port', container, '5432/tcp'])).stdout.trim().split(':').at(-1);
   return { container, disconnectIdleSettingsConnections: async () => {

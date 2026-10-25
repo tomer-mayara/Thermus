@@ -13,6 +13,23 @@ function fixture() {
   const request = (fields: Record<string, string> = {}, origin = 'https://example.test') => new Request('https://example.test/nested/logging/save', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ csrf_token: 'csrf', organization_id: 'trusted:a', expected_revision: '', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', ...fields }) });
   return { routes, writes, request };
 }
+
+test('Given an Axiom dataset field, when Save runs, then it reaches the service with the protected settings', async () => {
+  const { routes, writes, request } = fixture();
+  assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ axiom_dataset: 'audit-log-test' }), session, context)).status, 303);
+  assert.deepEqual(writes, [['trusted:a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: false, axiomDataset: 'audit-log-test' }]]);
+});
+
+test('Given the Axiom dataset form, when a browser applies its input pattern, then valid dataset names pass and invalid names fail', async () => {
+  const { routes } = fixture();
+  const response = await routes.handlerFor('/nested/logging')!(new Request('https://example.test/nested/logging'), session, context);
+  const html = await response.text();
+  const pattern = /name="axiom_dataset"[^>]*pattern="([^"]+)"/.exec(html)?.[1];
+  assert.ok(pattern);
+  const browserPattern = new RegExp(`^(?:${pattern})$`, 'v');
+  assert.equal(browserPattern.test('audit-log-test'), true);
+  assert.equal(browserPattern.test('invalid_dataset'), false);
+});
 test('Given a password Admin, when Audit logs is read, then the disabled native form has no stored token', async () => {
   const { routes } = fixture();
   const response = await routes.handlerFor('/nested/logging')!(new Request('https://example.test/nested/logging'), session, context);
@@ -33,6 +50,14 @@ test('Given an Admin reading Audit logs, when the page renders, then named expor
   assert.match(html, /Input and result exports have size limits/);
   assert.match(html, /free text can still contain secrets/);
   assert.match(html, /retries can create duplicates/);
+  assert.match(html, /Event fields exclude sign-in forms/);
+  assert.match(html, /no audit history or replay/);
+  assert.match(html, /Disabling export cannot recall/);
+  assert.match(html, /authority to do so/);
+  assert.match(html, /href="https:\/\/thermus.ai\/privacy\/"/);
+  assert.match(html, /Settings have no backup/);
+  assert.match(html, /Bearer token scoped to this dataset/);
+  assert.match(html, /Check your destination for receipt/);
 });
 test('Given a valid form, when Save runs, then only the trusted tenant and settings reach the service', async () => {
   const { routes, writes, request } = fixture();
@@ -78,9 +103,11 @@ test('Given an invalid origin, oversized body or duplicate field, when Save arri
   const { routes, request, writes } = fixture();
   const handler = routes.handlerFor('/nested/logging/save')!;
   assert.equal((await handler(request({}, 'https://other.test'), session, context)).status, 403);
-  const duplicate = request();
-  const body = new URLSearchParams(await duplicate.text()); body.append('auth', 'none');
-  assert.ok((await handler(new Request(duplicate.url, { method: 'POST', headers: { Origin: 'https://example.test' }, body }), session, context)).status >= 400);
+  for (const [name, value] of [['auth', 'none'], ['axiom_dataset', 'audit-log-test']]) {
+    const duplicate = request();
+    const body = new URLSearchParams(await duplicate.text()); body.set(name, value); body.append(name, value);
+    assert.ok((await handler(new Request(duplicate.url, { method: 'POST', headers: { Origin: 'https://example.test' }, body }), session, context)).status >= 400);
+  }
   assert.equal((await handler(request({ token: 'x'.repeat(17000) }), session, context)).status, 413);
   assert.deepEqual(writes, []);
 });

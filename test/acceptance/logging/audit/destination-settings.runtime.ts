@@ -4,7 +4,7 @@ import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destin
 import { createPgSettingsRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
 import { postgresSettingsSite } from '../../../support/in-process/postgres-settings-site.ts';
 
-const desired = { endpoint: 'https://collector.example/v1/logs', auth: 'bearer' as const, enabled: true, encryptedCredential: 'opaque-ciphertext' };
+const desired = { endpoint: 'https://us-east-1.aws.edge.axiom.co/v1/logs', axiomDataset: 'audit-log-test', auth: 'bearer' as const, enabled: true, encryptedCredential: 'opaque-ciphertext' };
 
 test('Given tenant settings, when the SQL runtime reopens, then committed settings persist and other tenants stay isolated', async (t) => {
   const site = await postgresSettingsSite(t);
@@ -12,6 +12,8 @@ test('Given tenant settings, when the SQL runtime reopens, then committed settin
   const store = new PgDestinationSettingsStore(first);
   const saved = await store.save('tenant-a', null, desired);
   assert.equal(saved.status, 'saved');
+  assert.ok(saved.status === 'saved');
+  assert.deepEqual(saved.settings, { ...desired, revision: saved.settings.revision });
   await first.close();
   const reopened = createPgSettingsRuntime(site.connection);
   t.after(() => reopened.close());

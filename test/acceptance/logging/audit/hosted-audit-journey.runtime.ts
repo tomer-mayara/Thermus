@@ -37,7 +37,7 @@ test('S2-04 Given a current password-authenticated Admin and a reachable Collect
   assert.equal(journey.disabled.settings.enabled, false);
   assert.deepEqual(journey.afterTest, journey.disabled);
   assert.equal(journey.tested.status, 200);
-  assert.match(journey.tested.body, /Collector accepted the Test event/);
+  assert.match(journey.tested.body, /Destination accepted the Test event/);
   assert.equal(journey.enabledSettings.settings.enabled, true);
   assert.notEqual(journey.enabledSettings.settings.revision, journey.disabled.settings.revision);
   assert.equal(journey.settingsWrites, 3);

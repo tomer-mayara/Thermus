@@ -10,6 +10,7 @@ import { HostedBrowser, formLabelled, formsIn } from '../drivers/browser/hosted-
 
 interface DestinationTestSubmission {
   readonly endpoint: string;
+  readonly axiomDataset?: string;
   readonly auth: 'none' | 'bearer';
   readonly token: string;
 }
@@ -44,7 +45,7 @@ const results = [];
 for (const submission of submissions) {
   const store = new DestinationStoreFake();
   const service = new DestinationSettingsService(store, new Uint8Array(32).fill(7), new OtlpAuditSender());
-  const saved = await service.save(tenantId, { expectedRevision: null, endpoint: submission.endpoint, auth: submission.auth, enabled: false, token: submission.token });
+  const saved = await service.save(tenantId, { expectedRevision: null, ...submission, enabled: false });
   assert.equal(saved.status, 'saved');
   const before = JSON.stringify(store.current);
   const routes = new LoggingRoutes({ publicBaseUrl: 'https://runtime.thermus.test/', organizationsPage: '/organizations', service });
@@ -62,7 +63,7 @@ for (const submission of submissions) {
   const endpoint = /name="endpoint"[^>]*value="([^"]*)"/.exec(page.body)?.[1];
   assert.ok(endpoint);
   assert.equal(endpoint, submission.endpoint);
-  const fields = { ...form.fields, endpoint, token: '' };
+  const fields = { ...form.fields, endpoint, axiom_dataset: submission.axiomDataset ?? '', token: '' };
   const unsaved = await browser.submit({ ...form, fields: { ...fields, token: 'unsaved-runtime-token' } });
   const tested = await browser.submit({ ...form, fields });
   const after = await service.read(tenantId);

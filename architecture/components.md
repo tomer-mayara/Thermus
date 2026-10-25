@@ -36,7 +36,7 @@ flowchart TB
   context_thermus["Software system: Thermus<br/>Authorized web-to-Markdown tools and account UI"]
   context_workos["External system: WorkOS / AuthKit<br/>Hosted identity and organizations"]
   context_public["External systems: public websites<br/>Includes Brave HTML search"]
-  context_collector["External system: customer Collector<br/>Receives customer events and saved Test"]
+  context_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Includes direct Axiom"]
   context_customer -->|uses tools through client| context_client
   context_customer -->|opens account and connection pages| context_thermus
   context_operator -->|configures installation / manages local accounts| context_thermus
@@ -63,11 +63,11 @@ flowchart TB
     hosted_portal["Container: user portal<br/>Browser JavaScript / HTML / CSS<br/>Connection instructions and account UI"]
     hosted_server["Container: Thermus server<br/>Node.js / TypeScript<br/>MCP tools, account routes, authentication"]
     hosted_renderer["Container: renderer child<br/>Lightpanda<br/>Renders one public page per fetch"]
-    hosted_settings[("Container: optional settings datastore<br/>PostgreSQL / private schema<br/>Tenant destination settings and revision")]
+    hosted_settings[("Container: optional settings datastore<br/>PostgreSQL / private schema<br/>Tenant destination, optional dataset, revision")]
   end
   hosted_workos["External system: WorkOS / AuthKit<br/>Identity and organization services"]
   hosted_public["External systems: public websites<br/>Includes Brave HTML search"]
-  hosted_collector["External system: customer Collector<br/>Receives enabled audit export and Test"]
+  hosted_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Enabled export and Test / includes Axiom"]
   hosted_user -->|uses in browser| hosted_portal
   hosted_client -->|MCP over HTTP / bearer token| hosted_server
   hosted_portal -->|HTTP account routes| hosted_server
@@ -243,8 +243,9 @@ than a fallback identity. Profile data does not grant access.
 Scope: one hosted Node server container. Current Admins read and save their
 organization's destination and test its saved revision through web routes.
 Captured events use the same service and sender for current-revision dispatch.
-PostgreSQL is a supporting Level 2 container; the customer Collector is an
-external system. WorkOS remains the identity and organization authority.
+PostgreSQL is a supporting Level 2 container; the configured customer Audit
+destination is an external Collector or compatible OTLP service, including Axiom.
+WorkOS remains the identity and organization authority.
 
 ```mermaid
 flowchart TB
@@ -255,7 +256,7 @@ flowchart TB
     storage_logging["audit-logs · TypeScript / pg<br/>Protect settings; atomic Save<br/>Snapshots; bounded export / Test"]
   end
   storage_data[("L2: PostgreSQL<br/>Private tenant settings")]
-  storage_collector["External system: customer Collector<br/>Customer events and Test / OTLP HTTP JSON"]
+  storage_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
   storage_app -.->|supplies| storage_web
   storage_app -.->|service / dispatch / lifetime| storage_logging
   storage_web -.->|source dependency| storage_identity
@@ -274,16 +275,24 @@ cannot override TLS or connection options. Dotted arrows show labelled compositi
 or source dependencies; solid arrows show runtime collaboration through supplied roles.
 
 The [settings service](../src/logs/audit/destination-settings-service.ts) validates
-settings and exposes token presence, never the token. The
+settings, including an optional Axiom dataset, and exposes token presence, never
+the token. A nonblank dataset contains at most 128 ASCII letters, digits, or
+hyphens. The web form rejects duplicate dataset fields. Test compares the dataset
+with the saved version; unsaved edits send nothing. The
 [credential codec](../src/logs/audit/destination-credential-codec.ts) uses AES-256-GCM
 with tenant ID as authenticated data. Wrong keys, changed ciphertext, and tenant
 mismatch fail closed. Blank Bearer input retains the saved token only when
 endpoint and auth are unchanged. None clears it. A semantic no-op preserves
-ciphertext and revision, including when the same token is entered again.
+ciphertext and revision, including when the same token is entered again. A
+dataset-only change retains an otherwise unchanged Bearer token and advances
+the revision. Clearing the dataset returns to generic OTLP headers.
 
-The [SQL adapter](../src/logs/audit/pg-destination-settings-store.ts) enforces tenant
-selection and expected revision in one SQL statement. Stale writes and first-save
-races return conflict. A write with an unknown commit result returns unconfirmed.
+The [SQL adapter](../src/logs/audit/pg-destination-settings-store.ts) stores the
+optional dataset with the destination and enforces tenant selection and expected
+revision in one SQL statement. The additive dataset migration uses NULL for
+existing generic destinations; it must precede activation of the new adapter.
+The earlier adapter can still read its original columns after this migration.
+Stale writes and first-save races return conflict. A write with an unknown commit result returns unconfirmed.
 The native browser response offers only a GET saved-state link, with no Save
 form or automatic retry. It adds no server-wide or session write hold. Every
 later Save, including a manual old-form submission and a late commit, remains
@@ -315,7 +324,7 @@ flowchart TB
     logs_audit["audit-logs · TypeScript / pg<br/>Redact, bound, and gate capture<br/>Queue; authorize export; settings / Test"]
     logs_system["system-logs · TypeScript<br/>Internal diagnostics<br/>Caller location retained"]
   end
-  logs_collector["External: customer Collector<br/>Customer events and Test / OTLP HTTPS"]
+  logs_collector["External: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
   logs_app ==>|supplies AuditLog| logs_mcp
   logs_app ==>|supplies settings and AuditLog| logs_web
   logs_mcp -->|validated final tool outcome| logs_audit
@@ -334,7 +343,11 @@ location before it calls the synchronous `SystemLogSink.writeSystemLog` role.
 [OtelSystemLogSink](../src/logs/system/otel-system-log-sink.ts) maps that record
 to the SDK; composition owns SDK export, flush, and shutdown. It ignores the
 formatted local time because the SDK assigns its event timestamp. No production
-exporter is configured here. A synchronous sink failure still reaches its
+exporter is configured here. The separate
+[System Axiom test composition](../test/support/in-process/axiom-test-export.ts)
+owns its SDK exporter, endpoint, and credentials; customer destination settings do
+not configure it. Direct Audit delivery to Axiom uses the audit-owned sender and
+adds no SystemLog forwarding path. A synchronous sink failure still reaches its
 caller. Existing account and tool completion diagnostics remain internal. Tool records contain operation, tool,
 status, duration, and opaque identities; they omit URL, query, reason, and result.
 
@@ -403,7 +416,9 @@ and record bounds, not measured JavaScript heap.
 
 The destination service reads one full current saved version before each attempt.
 It requires enabled state and the captured revision, then recovers that version's
-credential. Missing/disabled/changed settings discard matching old work without
+credential and optional dataset. The collector forwards that authorized
+destination to the sender without selecting a provider or copying System
+settings. Missing/disabled/changed settings discard matching old work without
 retargeting it. Read failure starts no send. Three authorization cycles include
 read failure and sender busy. Only temporary read failure, busy, or typed transient
 send failure permits retry. Exponential delay starts at 250 ms, caps its base at
@@ -440,9 +455,9 @@ and evidence limits. The feature has no in-app event viewer.
 Web reads, saves, and tests through the destination service. Storage, credential
 protection, event projection, and the sender share the audit owner. The Test
 operation connects saved settings to the sender.
-`DestinationSettingsStore` stores endpoint, auth, enabled state, encrypted
-credential, and revision. It is a settings port, separate from AuditEventSink;
-the Slice 2 PostgreSQL settings store holds no audit history or event buffer.
+`DestinationSettingsStore` stores endpoint, optional dataset, auth, enabled state,
+encrypted credential, and revision. It is a settings port, separate from
+AuditEventSink; the Slice 2 PostgreSQL settings store holds no audit history or event buffer.
 
 The [Test operation](../src/logs/audit/destination-settings-service.ts) takes the
 trusted tenant and actor from the protected web route. It compares submitted
@@ -467,10 +482,14 @@ the collector separately permits two active exports, one per tenant.
 
 The one-shot [OtlpAuditSender](../src/logs/audit/otlp-audit-sender.ts) accepts a
 supplied destination/auth record, projected AuditEvent, and optional AbortSignal.
-It sends one OTLP/HTTP JSON request. `send` retains its typed outcome contract;
+It sends one OTLP/HTTP JSON request to the configured Collector or compatible
+OTLP service. Direct Axiom adds only the validated saved `x-axiom-dataset` header
+to that same request; a blank dataset adds no such header. The endpoint remains
+the Admin-supplied full logs URL, with the same public-address and TLS rules.
+`send` retains its typed outcome contract;
 `start` also exposes physical settlement. Preparation is synchronous; native work
-holds a clearable encoded body/auth holder, not the original event or destination.
-Abort zeroes and clears that body and auth reference. Its
+holds a clearable encoded body/auth/dataset holder, not the original event or
+destination. Abort zeroes the body and clears its auth and dataset references. Its
 [destination policy](../src/logs/audit/public-audit-destination.ts) checks every
 DNS answer; its [TLS owner](../src/logs/audit/audit-https-connection.ts) pins the
 selected address and checks the actual peer and server certificate before HTTP
@@ -874,7 +893,7 @@ flowchart TB
   end
   deploy_settings[("Optional managed PostgreSQL<br/>Private thermus_admin schema<br/>Selected Supabase target; rollout unverified")]
   deploy_hosted_node -->|pg / verified TLS when configured| deploy_settings
-  deploy_collector["External system: customer Collector<br/>Customer events and saved Test / OTLP HTTP JSON"]
+  deploy_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
   deploy_hosted_node -->|authorized export and Test / HTTPS| deploy_collector
   deploy_workos["External system: WorkOS / AuthKit<br/>HTTPS identity / organization services"]
   deploy_public["External systems: public websites<br/>HTTP / HTTPS pages and Brave HTML"]
@@ -893,8 +912,11 @@ describes the earlier single-service target without a separate frontend, databas
 Redis, disk, or worker. Source now supports an optional external PostgreSQL
 settings datastore. The selected Supabase target and ordered setup are recorded in
 the [organization-admin plan](../docs/design/organization-admin-plan.md#owner-setup-for-supabase--slice-2);
-actual TLS, grants, backup/restore and cost proof remain rollout holds. Neither
-this source map nor that dated record verifies current cloud configuration.
+the [rollout ledger](../docs/implementation/admin-s2-04.md#evidence-and-release-holds)
+records applied SQL and the remaining live connection, configuration, destination,
+and capacity proof. Backup and recovery are future Slice 4 work under the owner
+decision. Neither this source map nor that dated record verifies current cloud
+configuration or claims a deployed Axiom destination.
 Current replica count and activated database settings are unknown here.
 Compose publishes only loopback HTTP. A different public address requires the
 HTTPS reverse proxy described by the installation contract; this diagram does
@@ -934,7 +956,7 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot Collector requests. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
 | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
 
@@ -986,11 +1008,14 @@ Hosted [composition](../src/app/hosted-workos-application.ts) shares a WorkOS SD
 client, remote key-set resolver, and organization directory. WorkOS owns remote
 identity/organization data. Provider calls run during requests with a short
 timeout and no SDK retry. Self-serve signup follows configured enablement and
-approved organization/authority documents. Production supplies the approved
-[purpose-marked organization bundle](../src/accounts/providers/workos/workos-approved-organization-documents.ts).
+selected organization/authority documents. Production composition supplies the
+[purpose-marked organization Audit bundle](../src/accounts/providers/workos/workos-organization-audit-documents.ts).
+The bundle holds exact versioned bytes; the separate approval and rollout record
+decides publication and deployment. Existing approved and historical bundles stay
+unchanged.
 Signup remains false by default. The unchanged historical personal-User bundle
 does not authorize new named creation; marked test documents prove behavior only.
-The approved document versions and hashes use the existing WorkOS creator-record
+The selected document versions and hashes use the existing WorkOS creator-record
 fields. WorkOS organization metadata and the deterministic external ID retain
 creation/legal facts independently of the optional logging-settings datastore. Google enrollment is an optional explicit composition;
 production does not supply its onboarding settings.
@@ -1039,7 +1064,7 @@ The following limits affect architectural decisions today:
   AuditLog. Hosted activity-driven snapshots gate future capture, and bounded
   asynchronous dispatch freshly authorizes each attempt. Queue pressure, expiry,
   failure, and restart can lose events; retries can duplicate receipt. Thermus
-  stores no audit history and promises no durable Collector storage.
+  stores no audit history and promises no durable destination storage.
 - [BillingFree](../src/accounts/billing/billing-free.ts) returns a free plan and
   zero billed seats, including after seat updates. The billing role is a seam,
   but there is no paid-plan implementation or durable seat billing here.

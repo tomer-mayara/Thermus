@@ -188,9 +188,11 @@ test('Given native work outlives its public timeout, when observed before dispos
 function holdWarningSocketClose(t: import('node:test').TestContext) {
   const socket = new HandshakeSocketStub(); socket.remoteAddress = '8.8.8.8'; socket.autoClose = false;
   const requestBodies: Buffer[] = [];
+  const requestOptions: https.RequestOptions[] = [];
   t.mock.method(dns, 'lookup', async () => [{ address: '8.8.8.8', family: 4 }]);
   t.mock.method(tls, 'connect', () => { queueMicrotask(() => socket.emit('secureConnect')); return socket; });
   t.mock.method(https, 'request', (...args: unknown[]) => {
+    requestOptions.push(args[0] as https.RequestOptions);
     const respond = args[1] as (response: unknown) => void;
     const response = Object.assign(new EventEmitter(), { statusCode: 200, headers: { 'content-type': 'application/json' } });
     const request = Object.assign(new EventEmitter(), { end(body: Buffer) {
@@ -201,10 +203,21 @@ function holdWarningSocketClose(t: import('node:test').TestContext) {
     return request;
   });
   return {
-    socket, requestBodies,
+    socket, requestBodies, requestOptions,
     releaseClose() { if (!socket.closed) { socket.closed = true; socket.emit('close'); } },
   };
 }
+
+test('Given an Axiom dataset, when the Audit sender exports, then its explicit dataset header accompanies the Bearer credential', async t => {
+  const { socket, requestOptions } = holdWarningSocketClose(t);
+  socket.autoClose = true;
+  const axiom = { ...destination, auth: { type: 'bearer' as const, token: 'audit-token' }, axiomDataset: 'audit-log-test' };
+  assert.deepEqual(await new OtlpAuditSender().send(axiom, event), { kind: 'warning' });
+  assert.equal(requestOptions.length, 1);
+  const headers = requestOptions[0].headers as Record<string, unknown>;
+  assert.equal(headers.authorization, 'Bearer audit-token');
+  assert.equal(headers['x-axiom-dataset'], 'audit-log-test');
+});
 
 test('Given a warning response and a socket whose close is pending, when the caller cancels, then the sent payload is cleared before physical settlement', async t => {
   const { socket, requestBodies, releaseClose } = holdWarningSocketClose(t);

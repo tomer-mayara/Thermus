@@ -3,13 +3,13 @@ import { createPgSettingsRuntime } from './bounded-sql-runtime.ts';
 import type { BoundedSqlRuntime, SettingsSqlOptions } from './bounded-sql-runtime.ts';
 import type { DestinationSettings, DestinationSettingsStore, ReadSettingsResult, SaveSettingsResult, StoredDestinationSettings } from './destination-settings-store.ts';
 
-const columns = 'revision, endpoint, auth, enabled, encrypted_credential';
-const unchanged = '(endpoint, auth, enabled, encrypted_credential) IS NOT DISTINCT FROM ($3::text, $4::text, $5::boolean, $6::text)';
-const insert = `INSERT INTO thermus_admin.logging_destination_settings (tenant_id, revision, endpoint, auth, enabled, encrypted_credential)
-  VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (tenant_id) DO NOTHING RETURNING ${columns}`;
+const columns = 'revision, endpoint, auth, enabled, encrypted_credential, axiom_dataset';
+const unchanged = '(endpoint, auth, enabled, encrypted_credential, axiom_dataset) IS NOT DISTINCT FROM ($3::text, $4::text, $5::boolean, $6::text, $7::text)';
+const insert = `INSERT INTO thermus_admin.logging_destination_settings (tenant_id, revision, endpoint, auth, enabled, encrypted_credential, axiom_dataset)
+  VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (tenant_id) DO NOTHING RETURNING ${columns}`;
 const update = `UPDATE thermus_admin.logging_destination_settings SET
-  revision = CASE WHEN ${unchanged} THEN revision ELSE $7::uuid END,
-  endpoint = $3, auth = $4, enabled = $5, encrypted_credential = $6
+  revision = CASE WHEN ${unchanged} THEN revision ELSE $8::uuid END,
+  endpoint = $3, auth = $4, enabled = $5, encrypted_credential = $6, axiom_dataset = $7
   WHERE tenant_id = $1 AND revision::text = $2 RETURNING ${columns}`;
 
 export class PgDestinationSettingsStore implements DestinationSettingsStore {
@@ -28,7 +28,7 @@ export class PgDestinationSettingsStore implements DestinationSettingsStore {
   async save(tenantId: string, expectedRevision: string | null, desired: DestinationSettings): Promise<SaveSettingsResult> {
     const revision = randomUUID();
     const result = await this.runtime.run(async (session): Promise<SaveSettingsResult> => {
-      const values = [tenantId, expectedRevision ?? revision, desired.endpoint, desired.auth, desired.enabled, desired.encryptedCredential];
+      const values = [tenantId, expectedRevision ?? revision, desired.endpoint, desired.auth, desired.enabled, desired.encryptedCredential, desired.axiomDataset ?? null];
       if (expectedRevision !== null) values.push(revision);
       const rows = await session.query(expectedRevision === null ? insert : update, values, true);
       if (!rows[0]) return { status: 'conflict' };
@@ -40,7 +40,7 @@ export class PgDestinationSettingsStore implements DestinationSettingsStore {
 }
 
 function settings(row: Record<string, unknown>): StoredDestinationSettings {
-  return { revision: row.revision as string, endpoint: row.endpoint as string, auth: row.auth as DestinationSettings['auth'], enabled: row.enabled as boolean, encryptedCredential: row.encrypted_credential as string | null };
+  return { revision: row.revision as string, endpoint: row.endpoint as string, ...(row.axiom_dataset == null ? {} : { axiomDataset: row.axiom_dataset as string }), auth: row.auth as DestinationSettings['auth'], enabled: row.enabled as boolean, encryptedCredential: row.encrypted_credential as string | null };
 }
 
 export function openDestinationSettingsRuntime(options: SettingsSqlOptions): { store: DestinationSettingsStore; close(): Promise<void> } {

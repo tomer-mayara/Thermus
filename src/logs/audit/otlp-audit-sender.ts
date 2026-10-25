@@ -21,7 +21,7 @@ function failureOutcome(error: unknown): AuditSendOutcome {
   return { kind: 'transient_failure', reason: 'transport' };
 }
 
-interface PreparedAuditRequest { readonly url: URL; body?: Buffer; authorization?: string }
+interface PreparedAuditRequest { readonly url: URL; body?: Buffer; authorization?: string; axiomDataset?: string }
 
 function prepare(destination: AuditDestination, event: AuditEvent): PreparedAuditRequest {
   return { ...parseAuditDestination(destination), body: encodeAuditEvent(event) };
@@ -32,6 +32,7 @@ function clearPayload(request: PreparedAuditRequest): void {
   request.body?.fill(0);
   request.body = undefined;
   request.authorization = undefined;
+  request.axiomDataset = undefined;
 }
 
 async function attempt(request: PreparedAuditRequest, signal: AbortSignal): Promise<AuditSendOutcome> {
@@ -44,7 +45,7 @@ async function attempt(request: PreparedAuditRequest, signal: AbortSignal): Prom
     try {
       signal.throwIfAborted();
       if (request.body === undefined) throw new AuditSendFailure({ kind: 'cancelled' });
-      return await requestAuditExport(socket, request.url, request.body, request.authorization, signal);
+      return await requestAuditExport(socket, request.url, request.body, request, signal);
     } finally { await closeAuditSocket(socket); }
   } catch (error) { return failureOutcome(error); }
   finally { clear(); signal.removeEventListener('abort', clear); }

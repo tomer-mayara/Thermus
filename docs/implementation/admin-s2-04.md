@@ -1,10 +1,23 @@
 # S2-04 integrated audit verification and rollout
 
 This work follows S2-03c in [PR #244](https://github.com/tomer-mayara/Thermus/pull/244).
-PR #245 is the complete Slice 2 integration candidate against main. It prepares the
+PRs #237–#245 were merged once as
+`845cec3060b0880cd27c36047f1da57a1c3772ba`. The merged source and approved final
+head `a3aef3f2` have the same complete tree. This record tracks the
 [integrated verification and owner release work](../design/organization-admin-plan.md#s2-04--integrated-proof-owner-rollout-and-release).
 Source implementation, controlled proof, owner setup, and release are separate
-claims. This record does not mark S2-04 done or authorize deployment.
+claims. The owner authorized setup and rollout. Actual SQL and local Axiom proofs have
+now run, but final approvals and the deployed journey remain pending; this
+record does not mark S2-04 done.
+
+This is the dated preparation record for
+[PR #248](https://github.com/tomer-mayara/Thermus/pull/248). Its maintained
+[Validation comment](https://github.com/tomer-mayara/Thermus/pull/248#issuecomment-6390817756)
+records later checks, publication and deployment results. Its
+[Quality review comment](https://github.com/tomer-mayara/Thermus/pull/248#issuecomment-6390817906)
+records the final candidate, review and approval evidence. These later records
+must identify their actual revisions; this preparation record is not a pass or
+approval for a later candidate.
 
 The [24 October stack review](../design/organization-admin-plan.md#slice-2-review-and-remaining-work)
 found a redaction defect in inherited S2-03a: a URL credential could remove
@@ -12,20 +25,21 @@ adjacent public JSON fields or Markdown syntax. The #245 correction adds failing
 acceptance and unit cases, then preserves recognized enclosing boundaries while
 keeping complete query-value redaction for validated URLs and ambiguous text.
 The [correction record](admin-s2-03a.md#redaction-correction) states its syntax and
-performance limits. Current required checks and final-head human review remain
-separate from the activation ledger below.
+performance limits. The merged candidate passed its required gates and final-head
+human review. The Axiom destination change now in progress needs checks and
+review for its own complete candidate; earlier passes do not cover new bytes.
 
-The graph check confirms that #245 contains current main and all nine stack
-heads, including #238 through #241. PR240 already resolved the old #237/main
-conflicts. Merge the full candidate once with a merge commit and verify that the
-included PRs are marked merged; no separate upstream repair or rebase is needed.
-Main's branch configuration has no required GitHub status checks, and the
-repository has no CI workflows. The required local gates remain in force.
+The merge contains all nine stack heads, including #238 through #241. PR240
+resolved the old #237/main conflicts. No separate upstream repair or rebase is
+needed. Main's branch configuration has no required GitHub status checks, and
+the repository has no CI workflows. The required local gates remain in force.
 
 The public browser, MCP, and Collector journey characterizes existing behavior.
 The missing export help was specified by failing acceptance and focused unit
 tests before its implementation. The procedures below add no runtime behavior
-or backup framework.
+or backup framework. The owner chose to run Slice 2 without backup. Proposed
+backup, key-recovery, restore, and cadence work is retained as
+[future Slice 4 work](admin-s4-recovery.md), not a Slice 2 release blocker.
 
 ## Logging object CR restack
 
@@ -34,9 +48,9 @@ in PRs #240, #241, and #244 and restacked through this candidate. System output
 uses explicit sinks, settings require a sender, and held-close sender cases
 characterize payload clearing and settlement. The original help, integrated
 journey and owner ledger are retained. The structural CR did not change redaction;
-the separate correction belongs to merge preparation. Current-candidate
-checks and reviews are recorded separately. Neither CR completion nor the
-redaction fix supplies activation or release approval.
+the separate correction belongs to merge preparation. Checks and reviews for the
+merged candidate are recorded separately. Neither CR completion nor the redaction
+fix supplies activation or release approval.
 
 ## Verification fixture cleanup
 
@@ -48,9 +62,9 @@ were the sole cause of the disk failure.
 The disposable PostgreSQL fixture now uses `docker rm -f --volumes` at cleanup
 to remove its anonymous data volume with its container. This repairs a test
 resource lifetime; production architecture and storage policy do not change.
-The manager reruns the complete selected checks after the final source correction.
-The PR records their results and the current head. Activation and release holds
-remain in the ledger.
+The manager reran the selected checks after the final source correction. The PR
+records the results and approved head. Actual activation and release evidence
+remain separate in the ledger.
 
 ## Historical development proof before the redaction repair
 
@@ -81,30 +95,96 @@ Done or supply owner, legal, human-review, or rollout approval.
 
 ## Evidence and release holds
 
-| Obligation | Development evidence | Actual owner or release evidence still needed |
+| Obligation | Established evidence | Actual owner or release evidence still needed |
 | --- | --- | --- |
-| Settings, capture, Test, and delivery | S2-01a/b, S2-02a/b, and S2-03a/b/c have linked implementation records in the plan. Integrated controlled proof is recorded by the candidate review. | Deployed current-Admin browser/MCP journey and receipt at the intended actual Collector. A controlled receiver does not prove that destination. |
-| SQL setup and verified TLS | Reviewed scoped migration and local PostgreSQL fixtures. Official-CA pooler TLS and hostname verification passed without SQL authentication. | Selected project's actual restricted-role login and grants, inherited/PUBLIC access, deployed CA path, persistence across restart, and isolation from unrelated application data. |
-| Recovery | Disposable local procedure drill described below. | Named backup owner, selected existing outside-project storage, separate key recovery location, confirmed access, cadence/retention, and actual scoped backup/restore proof. |
-| $0 capacity | Read-only inventory confirms the Free organization, current dashboard usage, and a point-in-time database/session sample. | Realistic load headroom for database size, connections, egress, Render network use, and existing backup storage capacity. No new cost is approved. |
+| Settings, capture, Test, and delivery | Integrated controlled proof and merged-candidate gates passed. A local production sender sent a synthetic event to Axiom `audit-log-test`; Axiom UI receipt was verified. Actual restricted-role settings persistence, isolation and revision-conflict proof passed locally against Supabase. | Complete checks and approval for the direct-Axiom candidate, then verify the deployed current-Admin Save/Test/Enable and MCP/Admin export journey. The local sender canary is not a deployed Admin journey. No saved destination or audit export is enabled. |
+| SQL setup and verified TLS | Original settings and additive `axiom_dataset` migrations are applied. Restricted LOGIN and real local-store proof passed through the actual pooler. Exact canaries were removed; settings rows are zero. Render now has the official CA secret file; deployment `dep-dbek395g1s2s73frt4i0` is live, startup no longer reports storage unavailable, and health is 200/ok. The signed-in current Admin read the empty saved-settings form successfully. | Prove deployed writes and the full application journey. Local reconnect persistence is not deployed restart proof. The managed pooler-to-database connection reported SSL false, so the verified TLS claim covers client to pooler. |
+| Recovery | The owner explicitly chose to run Slice 2 without backup. Historical local drill evidence is retained in [future Slice 4 recovery work](admin-s4-recovery.md#historical-local-procedure-validation). | No backup, cadence, retention, key-recovery, or restore proof is required for this Slice 2 release. Future recovery work remains unconfigured and unproved. |
+| $0 capacity | Existing resources meet the $0 new-infrastructure constraint for the scoped rollout. Supabase/Render inventory and the dated Axiom Personal Free readback support the small controlled canary. Axiom uses the existing `audit-log-test` dataset, with low observed load/storage and no query compute. | Keep the final deployed canary small and record its outcome. Broad production-load capacity remains unmeasured; this evidence limit creates no new paid-tier prerequisite. No upgrade, new resource, retention change, or sharing change was made. |
 | Notice and help | [Slice 2 notice review](admin-s2-04-notice-review.md) identifies current data flows and disclosure differences. | Owner approval of complete changed notice/help bytes, versions and hashes, publication scope, and actual presentation verification. Historical Slice 1 approval does not cover these differences. |
-| Slice 1 release | Approved organization legal package and published public policies are recorded in [Staging release verification](admin-s1-staging-release-verification.md). A fresh Render readback identifies the deployed S1 candidate below. | Actual runtime release/cutover and disposition of native invitation limitations and deferred mailbox checks. Public policy publication is not runtime release. |
-| Complete-candidate review | Manager owns final gates, architecture impact, metrics, tier, and candidate SHA. | All applicable checks and independent authorized human approval when the tier requires it; release decision. |
+| Slice 1 release | Approved organization policies and historical provider/invitation proof remain in [Staging release verification](admin-s1-staging-release-verification.md). Current Production WorkOS inventory has two active verified password accounts, one Admin and one User, with an accepted invitation. Render signup is enabled. | Verify current deployed presentation and the complete release journey; record disposition of alternate-address joining, native revoke-race error and deferred mailbox/reset/consumer checks. Enabled signup and inventory alone do not establish release approval. |
+| Complete-candidate review | The merged Slice 2 candidate passed its required gates and received final-head approval. | Complete checks, architecture/registry and quality review, classification, and any required human approval for the Axiom change and remaining rollout candidate; record actual deployment and release results. |
 
-The manager's read-only inventory on 24 October 2026 records project
-`rnqktgtgrvvqptbaosth` as `ACTIVE_HEALTHY`, `us-west-2`, PostgreSQL
-`17.11.0.003`, in the Free organization. The database sample is 10,852,019 bytes
-and seven sessions with `max_connections=60`. The private schema, dedicated
-runtime role, and settings table are absent. Local runtime database/key/CA
-variables are absent. These observations prove identity and current setup gaps;
-they do not establish workload headroom. Retained evidence is
-`ast-report/s2-04-development/owner-readback.json`. The authenticated Free
-organization dashboard also showed egress `0.00 / 5 GB`, cached egress
-`0.00 / 5 GB`, and project size `26 / 500 MB`. Dashboard usage can lag by one
-hour; its project size has a different scope from the SQL database sample.
-Free-plan overages cause restrictions rather than billed overages. These readings
-are retained in `ast-report/s2-04-development/dashboard-usage.json`; they do not
-forecast this workload or establish backup capacity.
+### Actual SQL setup and local application proof — 24 October 2026
+
+The original migration
+`sql/migrations/20261023211956_logging_destination_settings.sql` and additive
+`sql/migrations/20261024231921_add_logging_axiom_dataset.sql` are applied to
+project `rnqktgtgrvvqptbaosth`. Runtime role `thermus_logging` now has LOGIN and
+retains its restricted private-schema/table scope. It has no runtime DELETE or
+DDL capability. The initial migration created this role as NOLOGIN; that earlier
+state and the TLS-only preflight below are historical, not current setup limits.
+The trusted role is not a tenant identity: application predicates and expected
+revisions enforce tenant isolation.
+
+At `2026-10-24T23:20:17.173Z`, the actual restricted role connected to the selected
+pooler using the official Supabase Root 2021 CA, verified TLS 1.3 and the normal
+Node hostname check. The client-to-pooler connection was encrypted and
+authorized. The observed pooler-to-database SSL flag was false; this record does
+not claim end-to-end database TLS. Evidence:
+`ast-report/s2-04-rollout/runtime-login.json`.
+
+At `2026-10-24T23:30:39.526Z`, the local production store used that real pooler
+and proved persistence after reconnect, tenant-predicate isolation, tenant-bound
+credential encryption/decryption, concurrent expected-revision conflict, and an
+unchanged other tenant. A bounded query failure returned `unavailable` in
+2,009 ms. The administrative connection removed only the two exact owned
+fixture IDs; the table was verified empty afterward. Runtime DELETE and DDL
+remain false. This is real SQL/application-store proof, not Render restart or
+deployed Admin/browser proof. Evidence:
+`ast-report/s2-04-rollout/live-store-proof.json`.
+
+The official local CA is `ast-report/s2-04-rollout/supabase-ca.crt`, SHA-256
+`700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7`.
+It is a public trust certificate, not a credential. The matching Render secret
+file was added in the later deployment recorded below; local and runtime file
+presence remain separate observations.
+
+### Local production sender to the selected Axiom destination
+
+At `2026-10-24T23:26:33.348Z`, the local production audit sender submitted a
+synthetic event to `https://us-east-1.aws.edge.axiom.co/v1/logs` with dataset
+`audit-log-test`. The sender returned `accepted`. The manager verified marker
+`46468255-b32a-4b31-9abd-a1e296837a9e` in the Axiom UI. Evidence:
+`ast-report/s2-04-rollout/axiom-transport-canary.json` and the observed receipt
+`ast-report/s2-04-rollout/axiom-canary-receipt.png`.
+
+This proves the selected direct-Axiom transport and one observed receipt. It
+provides no deployed Admin Save/Test/Enable, MCP/Admin capture, future delivery,
+or durable-storage guarantee. No customer Collector exists. No destination is
+saved and no audit export is enabled after exact fixture cleanup.
+
+### Axiom plan, usage and retention — dated readback
+
+At `2026-10-24T23:45:06.075831+00:00`, the authenticated Axiom UI for Thermus AI
+showed the Personal plan with a Free platform fee. Included capacity was
+500 GB/month loading, 10 GB-hr/month query compute and 25 GB storage. For the
+13 October–13 November usage period, observed loading and average storage were
+each below 0.01 GB, with 0 GB-hr query compute. The account used all three of its
+three allowed datasets; this rollout uses the existing `audit-log-test` dataset.
+That dataset had 30-day retention and less than 1 MB total storage. Evidence:
+`ast-report/s2-04-rollout/axiom-account-readback.json`.
+
+No plan, resource, dataset, retention or sharing setting was changed. Together
+with the existing Supabase and Render resources, this meets the owner’s $0
+new-infrastructure constraint for the small controlled rollout canary. These
+are dated observations, not a future workload forecast or a promise of broad
+production-load capacity. Keep the final canary bounded and record its outcome;
+the unmeasured broader workload creates no new requirement to buy a paid tier.
+
+The earlier read-only inventory recorded this project as `ACTIVE_HEALTHY`,
+`us-west-2`, PostgreSQL `17.11.0.003`, in the Free organization. Its database
+sample was 10,852,019 bytes and seven sessions with `max_connections=60`. At that
+time, the private objects and local runtime database/key/CA variables were
+absent. The applied migration supersedes that object-absence observation; the
+sample does not establish current workload headroom. Historical evidence is
+`ast-report/s2-04-development/owner-readback.json`. The dashboard also showed
+egress `0.00 / 5 GB`, cached egress `0.00 / 5 GB`, and project size
+`26 / 500 MB`. Dashboard usage can lag by one hour; project size has a different
+scope from the SQL database sample. Free-plan overages cause restrictions rather
+than billed overages. These historical readings remain in
+`ast-report/s2-04-development/dashboard-usage.json`; recheck actual headroom
+before rollout.
 
 The pooler TLS-only preflight at 10:06:13 UTC failed default trust with
 `Supabase Root 2021 CA` in a self-signed certificate chain; see
@@ -112,14 +192,98 @@ The pooler TLS-only preflight at 10:06:13 UTC failed default trust with
 At 10:11:36 UTC, Node 24.20.0 verified TLS 1.3 and the exact hostname with the
 official CA obtained from the project's Download certificate link. Default Node
 trust refused the chain, and the same CA with a wrong hostname was refused.
-See `ast-report/s2-04-development/supabase-node-tls.json`. This proves TLS to
-the pooler only, not project association, SQL login, permissions, persistence,
-or the deployed CA path. Use the official CA for this observed endpoint; never
-disable verification. The manager's Render readback identifies deployed source
+See `ast-report/s2-04-development/supabase-node-tls.json`. This was a TLS-only
+observation with no SQL login. The later restricted-role
+proof above supersedes its unauthenticated status. Use the official CA for this
+observed endpoint; never disable verification.
+
+### Render deployment and current Production identity facts
+
+The earlier Render readback identified source
 `bb19a9887f3e58776278e516cce9e7aa18efee5c`, deployment
-`dep-dbdsf18ae00c73arqlog`, completed 23 October at 20:46:27 UTC. This supersedes
-the older Staging record's point-in-time undeployed status. Deployment alone does
-not close Slice 1 cutover, native-flow, or mailbox holds.
+`dep-dbdsf18ae00c73arqlog`, completed 23 October at 20:46:27 UTC. It superseded
+the older Staging record at that observation time. It is no longer the current
+deployment.
+
+On 24 October, saving the service-scoped `DATABASE_URL`,
+`LOGGING_DESTINATION_ENCRYPTION_KEY`, and `DATABASE_CA_CERT_PATH` unexpectedly
+triggered deployment `dep-dbejvhnb9u1s739vrqjg`, created about 23:31 UTC and live
+about 23:36 UTC. The manager attempted cancellation, but the deployment finished
+first. It deployed the already approved main source
+`845cec3060b0880cd27c36047f1da57a1c3772ba`; it did not deploy the new direct-Axiom
+candidate or the proposed notice. Auto-deploy remains off.
+
+At about 23:37 UTC, health returned HTTP 200 and the server was listening.
+Application logs identified storage as unavailable because
+`/etc/secrets/supabase-ca.crt` was not readable. This is a repaired earlier
+configuration failure, not an open missing-file hold.
+
+The manager then saved the matching official CA as that Render secret file and
+used Save and deploy. Deployment `dep-dbek395g1s2s73frt4i0` became live at
+23:39:48 UTC, still on approved main
+`845cec3060b0880cd27c36047f1da57a1c3772ba`. New startup logs no longer report
+storage unavailable. At `2026-10-24T23:40:10.482326+00:00`, health was HTTP 200
+with body `ok`; auto-deploy was off and enabled audit destinations were zero.
+The new direct-Axiom code and proposed notice were not deployed. Evidence:
+`ast-report/s2-04-rollout/render-storage-setup.json` and
+`ast-report/s2-04-rollout/render-certificate.png`.
+
+The CA setup failure is resolved. After the owner signed in as the current
+Thermus AI Admin, the deployed `/logging` page returned its empty settings form,
+not the storage-unavailable response. This proves one authorized deployed SQL
+read. A fresh SQL count also confirmed zero saved and enabled destinations.
+No Save, Test, or Enable action was taken. Deployed writes, restart persistence,
+the full Admin/browser/MCP journey, and final code/notice approvals remain pending.
+
+At the next verification, the existing Thermus MCP Debug CLI's saved refresh
+could not finish safely. The CLI required login and did not replay that refresh.
+Reauthentication through its existing public WorkOS application then succeeded.
+Selected non-secret claims identified the current Thermus AI organization and
+its existing Admin. The unchanged production MCP endpoint accepted the refreshed
+login and returned the fetched `https://example.com/` content. This is a baseline
+with Audit export off, not proof of exported tool content. The production web
+client below and the separate public Debug CLI client have different client IDs.
+Evidence: `ast-report/s2-04-rollout/mcp-login-facts.json` and
+`ast-report/s2-04-rollout/mcp-baseline-after-login.txt`. No credential value is
+part of these records.
+
+Current WorkOS Production client is `client_01M4VDKC291XX3CDEFP5ZKY5KP` in
+environment `environment_01M4VDKBVH3BKNY1F64VSWJ9ZD`. Thermus AI organization
+`org_01M5N95EJA1AKHHERCD7971AJ7` has two active verified password accounts: one
+Admin and one User. Its invitation is accepted. Current settings are signup
+true, password true, email verification true, MFA off and SSO false. These
+observations replace earlier empty-organization or other-client assumptions;
+they do not rewrite the historical Staging evidence. Current source/code and
+notice approvals and the full deployed release journey remain pending.
+
+### Specific Slice 1 release limitations
+
+The native proof already passed ordinary exact-address User/Admin invitations,
+both active-role preservation directions, both outstanding-invitation orders,
+sequential resend/revoke cases, and one measured concurrent resend case. Do not
+replace those results with a broad unproved-invitation hold.
+
+The remaining limitations are:
+
+- Alternate corporate-address acceptance did not create target membership in the
+  tested configuration, including after actual email verification. A fresh
+  exact-address reinvitation restored the intended User access in the tested
+  recovery. This does not repair alternate-address joining.
+- One concurrent acceptance/revoke attempt produced the native generic error.
+  Fresh state denied target access. Ordinary `/login` in a new browser context
+  restored only unrelated authorized access. This does not repair the native
+  error or prove every concurrent ordering.
+- Mail delivery, password reset, and controlled consumer exact-address
+  acceptance/refusal remain deferred by owner choice. API-assisted completion of
+  an owned verification challenge did not prove mailbox delivery.
+
+The owner must record whether these specific limitations and tested recovery are
+acceptable for release, or require repair or further proof. Earlier deferral of
+mailbox checks is not a pass. Refresh the production inventory and saved provider
+settings, perform only required scoped cutover actions, and verify fresh access
+before declaring release complete. The [S1 record](admin-s1-staging-release-verification.md) and
+[native proof matrix](../testing/workos-invitation-proof-matrix.md) retain the
+observations and cleanup evidence.
 
 This ledger keeps unknown facts pending. Do not turn an absent secret, a read-only
 provider inventory, a local drill, or a merged parent into evidence of rollout.
@@ -134,11 +298,12 @@ before activation. Stage secrets without recording their values. Review any
 secret-file action that also triggers deployment.
 
 Before deployment, record the source and image, prior working image, service
-identity, selected project, and nonsecret configuration presence. Keep signup
-and Slice 2 rollout closed until their release holds clear. After an authorized
-activation, verify health, MCP product access, Admin-only settings, disabled
-Save, optional Test, Enable, eligible activity and Collector receipt. Verify
-restart persistence and tenant isolation with owned fixtures. Record cleanup.
+identity, selected project, and nonsecret configuration presence. Signup is
+currently enabled; that setting does not clear release holds. Keep audit export
+disabled until its holds clear. After the authorized candidate and setup are
+ready, verify health, MCP product access, Admin-only settings, disabled Save,
+optional Test, Enable, eligible activity and the selected destination’s receipt.
+Verify restart persistence and tenant isolation with owned fixtures. Record cleanup.
 A rollback to a compatible prior image does not require a database rollback;
 keep the private schema and key. Review compatibility before any rollback.
 
@@ -151,288 +316,9 @@ cause within the existing $0 service, and verifies TLS plus scoped reads/writes
 before dependent features resume. Activity refreshes settings; there is no idle
 poller. Events dropped during outage or shutdown cannot be recovered from SQL.
 
-For a planned restore or suspected key compromise, use the separate maintenance
-steps below. These deliberately stop all old dispatch owners; ordinary outage
-handling alone does not establish that a queue is empty.
-
-## Choose the backup owner and storage
-
-The following are proposed defaults, **pending owner selection**:
-
-- Owner: the Thermus deployment operator, with one named recovery delegate.
-- Cadence: one encrypted scoped logical backup each day while Slice 2 is active,
-  and before a migration, restore, or key operation. A manual calendar task is
-  sufficient; no scheduler or backup service is added here.
-- Retention: seven daily copies and four weekly copies, with weekly copies
-  removed after 28 days. The owner must approve this period with the notice and
-  confirm that existing storage and bandwidth remain at $0 added cost.
-- Destination: an existing operator-owned persistent folder outside Supabase and
-  Render. Its exact location, access controls, free capacity, and recovery access
-  remain unselected. A temporary folder on this development computer is not that
-  destination.
-- Key custody: retain the application key and its version in the existing
-  password manager/recovery process, separate from the database archive. Keep
-  the backup encryption passphrase or recipient recovery key separately too.
-  Confirm the delegate can recover both without the failed service.
-
-Record the selected people, locations, cadence, retention, capacity, and access
-check in restricted owner evidence. Keep only nonsecret references in the PR.
-Do not create a new account, storage service, plan, or paid dependency to fill
-these fields. Until they are selected and proved, recovery remains a release
-hold.
-
-## Make an encrypted scoped logical backup
-
-Use a trusted owner workstation and a PostgreSQL client compatible with the
-server major version. The owner connects through a protected libpq service file
-and password prompt or password-manager integration. In the examples,
-`service=thermus-owner` is that local connection alias with `sslmode=verify-full`
-and the correct official CA when needed. It is not the application's
-`DATABASE_URL`, which rejects query options. Do not put passwords, tokens, the
-application key, or passphrases in command arguments, shell history, Git, or
-logs.
-
-1. Reconfirm the project, database, exact private objects, and current migration
-   revision. Stop on a name collision or unexplained schema change. Create a
-   private working folder with `umask 077` on the owner's protected disk. Use a
-   fresh empty folder for each backup. Ensure shell tracing is off.
-2. Make one consistent archive of only `thermus_admin`. Review warnings and
-   stop on failure. Do not use `pg_dumpall`, a whole-database dump, large-object
-   inclusion, or an export of other schemas.
-
-   ```sh
-   pg_dump 'service=thermus-owner' --format=custom --schema=thermus_admin \
-     --no-owner --file=settings.dump
-   pg_restore --list settings.dump > archive-list.txt
-   ```
-
-3. Inspect the archive list against the reviewed migration. It must contain only
-   the private schema, settings table and its data, primary key, checks, RLS
-   policies, and scoped grants. Retain the applied migration and source SHA,
-   server/client versions, UTC backup time, row count, archive SHA-256, and the
-   role's nonsecret attributes and memberships. Do not export role password
-   hashes or all global roles. `pg_dump` does not back up global roles: the
-   reviewed migration recreates the dedicated role with `NOLOGIN` if it is
-   absent. Reconcile current scoped grants against that migration; stop if they
-   differ unexpectedly. Record the application-key version, never its value.
-4. Put those files in `settings-backup.tar` using explicit filenames. Encrypt it
-   with the owner's existing encryption tool. For example, GnuPG with its
-   protected pinentry prompt can create an integrity-protected AES-256 file:
-
-   ```sh
-   gpg --symmetric --cipher-algo AES256 --output settings-backup.tar.gpg settings-backup.tar
-   ```
-
-   Keep the passphrase out of the archive and commands. Use the existing
-   password manager/recovery process. If this tool is unavailable, the owner
-   must select and validate an existing equivalent before rollout.
-5. Decrypt to a second private folder, verify archive hash and list, and confirm
-   the separate application-key recovery reference is accessible. Copy only the
-   encrypted bundle to the selected persistent destination. Verify the copied
-   ciphertext hash and read access. Record time, size, hash, destination
-   reference, and result without endpoint, tenant, credential, or key contents.
-6. Remove local plaintext and temporary recovery material. Removal is not a
-   guarantee of secure erasure on snapshots or SSDs; use protected storage and
-   avoid extra copies. Apply the selected retention process to old encrypted
-   bundles. Record exceptions with a reason and review date.
-
-The scoped archive carries tenant identifiers, Collector addresses, revisions,
-enabled state, and encrypted optional credentials. It holds no event history,
-WorkOS records, or fetched content. A database archive without its matching
-application key cannot recover saved Bearer credentials.
-
-## Restore only the private settings store
-
-The operator first names the incident, backup time, affected rows, and permitted
-replacement scope. Compare current and backed-up facts so newer settings are
-not silently lost. A full private-table replacement is permitted only when the
-owner chooses that exact scope; a single-organization recovery needs an explicit
-tenant-filtered import and review. Never restore the project or drop a shared
-schema/database to recover this table.
-
-1. Stop export dispatch and all settings writers on every instance. One concrete
-   option is an authorized maintenance deployment with the storage configuration
-   absent, which uses the discard audit path and unavailable settings while MCP
-   remains available. Confirm every prior instance exited; normal replacement
-   overlap is insufficient. Close drains/cancels the collector and clears its
-   memory queue, retry timers, and snapshot state. There is no durable replay.
-   Do not restart storage-enabled instances yet.
-2. In the owner session, set the dedicated `thermus_logging` role to `NOLOGIN`.
-   Verify no sessions for that role remain in the selected database, including
-   pooler sessions. If needed, terminate only sessions of that dedicated role in
-   that database after checking their identity. Do not terminate unrelated
-   sessions or change shared roles. This step does not itself close existing
-   sessions. Keep the application unable to write during recovery.
-3. Recover the encrypted bundle in a private local folder. Verify its copied hash,
-   decrypt with the separate recovery secret, and verify the plaintext manifest
-   and archive hash. Inspect dump SQL with `pg_restore --file` before execution.
-   Restore first into a disposable isolated local database whose dedicated role
-   already exists as `NOLOGIN`:
-
-   ```sh
-   pg_restore --dbname='service=thermus-local-recovery' --single-transaction \
-     --exit-on-error --no-owner settings.dump
-   ```
-
-   Never aim this command at the live shared database. Require the reviewed
-   schema, constraints, grants, and forced RLS to match. If live private objects
-   are missing, apply only the reviewed migration with collision checks; if a
-   role survives, do not replay its `CREATE ROLE` blindly. Do not change
-   unrelated ownership, default privileges, or PUBLIC/database-wide grants.
-4. In the isolated recovery database, disable every recovered row and assign a
-   fresh UUID revision before generating the import. This invalidates old forms
-   and revision-bound work. Run as the administrative owner, not the runtime role:
-
-   ```sql
-   BEGIN;
-   UPDATE thermus_admin.logging_destination_settings
-     SET enabled = false, revision = gen_random_uuid();
-   COMMIT;
-   ```
-
-   Select the deployment key before import. One key serves every organization;
-   rows do not store a key version. For a tenant-scoped restore, retain the current
-   deployment key. Never replace it to match a partial backup: that can make
-   other organizations' credentials unreadable. A full-table replacement may use
-   the separately recovered backup key only after review confirms that every
-   remaining Bearer row is compatible with it.
-
-   Check each restored credential with the selected key and original tenant in a
-   protected process using the application codec; do not print tokens. A wrong
-   key or tenant must fail closed. If restored ciphertext cannot use the selected
-   key, obtain approval to reset only those restored rows to disabled
-   `auth = 'none', encrypted_credential = NULL` with fresh revisions. The Admin
-   must re-enter those credentials after recovery. Keep maintenance active if
-   key compatibility or reset scope is unresolved. This procedure adds no bulk
-   re-encryption. If the current key is lost, use the key-loss procedure below.
-5. Export only the reviewed disabled rows from the isolated table to a private
-   CSV with an explicit column list. For a full private-table replacement, run
-   the following in one owner `psql -X -v ON_ERROR_STOP=1` session on the selected
-   live database. Replace only the protected local CSV path. The temporary table
-   must have exactly the live table's reviewed shape; validate column order before
-   import. This example matches the migration's order. Review the staged tenant
-   set and counts before approving the replacement transaction.
-
-   ```sql
-   BEGIN;
-   SET LOCAL lock_timeout = '5s';
-   SET LOCAL statement_timeout = '30s';
-   CREATE TEMP TABLE recovered_settings
-     (LIKE thermus_admin.logging_destination_settings INCLUDING ALL);
-   \copy recovered_settings (tenant_id, revision, endpoint, auth, enabled, encrypted_credential) FROM '/private/owner/recovered-settings.csv' WITH (FORMAT csv)
-   UPDATE recovered_settings SET enabled = false, revision = gen_random_uuid();
-   TRUNCATE ONLY thermus_admin.logging_destination_settings;
-   INSERT INTO thermus_admin.logging_destination_settings
-     (tenant_id, revision, endpoint, auth, enabled, encrypted_credential)
-     SELECT tenant_id, revision, endpoint, auth, enabled, encrypted_credential
-       FROM recovered_settings;
-   COMMIT;
-   ```
-
-   A failure must stop the session and roll back. Never use `CASCADE`,
-   `pg_restore --clean`, a full-project restore, or a schema drop here. For
-   tenant-scoped replacement, replace only that reviewed tenant set in a scoped
-   transaction; do not apply this full-table example.
-6. Before any storage-enabled restart, verify all restored rows are disabled,
-   all restored revisions differ from the backup and pre-restore rows, ciphertext
-   is unchanged for compatible credentials, approved incompatible credentials
-   are cleared, and row counts and intended tenant set match. Recheck that every
-   remaining Bearer row can use the selected deployment key, including rows
-   outside a scoped restore. Verify private schema grants, no unexpected runtime memberships or
-   elevated attributes, forced RLS and policies, and unchanged unrelated object
-   inventory. Confirm runtime SELECT/INSERT/UPDATE but no DELETE, ownership, or
-   DDL. Keep safe evidence; do not log row contents.
-7. Reprovision or recover only the dedicated runtime password through the secure
-   owner process. Enable LOGIN only after the checks pass. Restore the verified
-   server variables and the selected key, retaining the current deployment key
-   for a scoped restore. Then start a fresh storage-enabled process.
-   Confirm fresh settings reads show disabled rows and no automatic export.
-   Each current Admin must review their destination and credential, may Test it,
-   and must explicitly Enable it with the fresh revision. Activity then refreshes
-   the enabled snapshot. A successful Test is not Enable or proof of storage at
-   the Collector.
-8. Verify MCP, current access controls, restart persistence, a reviewed owned
-   Collector canary, and no unrelated data change. Remove temporary plaintext
-   and the isolated recovery database. Record backup time, scope, row counts,
-   revision checks, key version, process shutdown, outcome, and recovery limits.
-   Audit events lost before or during recovery are not reconstructed.
-
-## Lost or compromised application key
-
-For lost deployment configuration, recover the exact 32-byte application key
-from its separate protected copy and verify canonical base64 and key version.
-Do not replace it with a new random key and call the old credentials recovered.
-A matching recovered key must decrypt only its original tenant's ciphertext.
-Keep export disabled until recovery and Admin review complete.
-
-If the key cannot be recovered, encrypted Bearer credentials are lost. Keep the
-old encrypted backup under its retention rule and mark its key unavailable.
-The owner and affected Admins select replacement credentials. Use the stopped
-writer/dispatch maintenance process above. Before replacing the global key,
-inventory **all** current Bearer rows. The approved tenant set and count must
-cover every row whose ciphertext will become unusable. If approval covers only
-a subset, or any mixed-key state is unresolved, keep maintenance active and do
-not replace the key. There is no per-row key version or alternate-key fallback.
-The service refuses both reads and
-Saves of a row whose Bearer ciphertext cannot decrypt, so a replacement token
-submitted directly in the UI cannot repair that row. After preserving the
-scoped encrypted evidence, the owner resets only the reviewed affected rows to
-`auth = 'none', encrypted_credential = NULL, enabled = false` with a fresh
-`revision = gen_random_uuid()` in one bounded transaction. Use an explicit
-approved tenant set and verify the affected row count; do not run an unscoped
-reset on the shared project. This discards unusable credentials and leaves a
-disabled destination that the existing service can read. Install the new
-independent key only after all affected rows are reconciled and every remaining
-Bearer row can use it. Start fresh with the reset rows disabled, then require each current
-Admin to choose Bearer again, supply its replacement token, Test if desired, and
-explicitly Enable through the existing settings flow.
-Do not claim automatic key rotation, bulk re-encryption, or recovery of old
-credentials. Where no saved Bearer credential remains usable, the Admin must
-provide one before enabling that destination.
-
-For suspected compromise, revoke/rotate affected Collector credentials at their
-owners and replace the application key through the same maintenance process.
-Changing only the database password or wrapping backup passphrase does not
-revoke an exposed Collector token. Record which archive needs which key and its
-retention disposition; never store either key beside its ciphertext backup.
-
-## Local procedure validation
-
-A disposable PostgreSQL 17 drill uses synthetic tenants, endpoints, tokens, and
-an unrelated sentinel table. It applies the existing reviewed migration, exports
-only the private schema, encrypts and decrypts it, recovers the separately wrapped
-application key, and restores in a second local database. It then replaces only
-the private table in a transaction after disabling rows and changing revisions.
-It verifies an injected import failure rolls back, recovered credentials remain
-tenant-bound, wrong-key decryption fails, grants/RLS survive, and the unrelated
-sentinel remains unchanged. It also checks that the scoped key-loss reset
-keeps the row disabled, removes unusable ciphertext, changes revision, and
-preserves the unrelated sentinel. No live service or production secret is used.
-
-The corrected first drill passed 13 checks on 24 October 2026 with PostgreSQL
-17.10 (Homebrew). A second version passed all 20 checks, including seven checks
-for global-key compatibility. It proves that an old-key partial restore cannot
-replace the current deployment key without breaking other rows. Clearing only
-the incompatible restored credential leaves the current-key rows unchanged and
-decryptable. Replacing the global key before reconciling those remaining rows
-makes them unreadable, which confirms the maintenance hold. Its JSON pins the
-source SHA, timestamps and outcomes. This local server version is distinct from
-the live project.
-
-Safe local evidence is retained under
-`ast-report/s2-04-development/operations/`: the replay recipe, archive object
-list, versioned drill results with source SHA and cleanup, and the global-key
-review. Both the original 13-check record and the 20-check record are retained. Temporary databases,
-keys, archives, and ciphertext are removed. The first attempt stopped before
-encryption because the local GnuPG agent could not use its long temporary path;
-the retained failure is followed by the corrected short-path attempt. This is a
-manual procedure drill, not a test of document text. It proves neither actual
-Supabase TLS/access nor owner storage, live process shutdown, $0 headroom,
-production key recovery, or the release gates in the ledger.
-
-PostgreSQL documents the archive, selection, global-role, inspection, and restore
-behavior in [pg_dump](https://www.postgresql.org/docs/17/app-pgdump.html) and
-[pg_restore](https://www.postgresql.org/docs/17/app-pgrestore.html). The scoped
-transfer uses [COPY](https://www.postgresql.org/docs/17/sql-copy.html) through the
-client connection. These commands were reviewed with the Supabase PostgreSQL
-best-practices skill; no Supabase SDK, new index, or pooling service is added.
+Future backup, restore, and key-recovery procedures are in
+[Slice 4 recovery work](admin-s4-recovery.md). They retain the historical local
+drill and its limits. The owner chose to run Slice 2 without backup; those
+procedures, storage selection, and cadence are not activation or release blockers.
+Keep the deployed application key stable across deployments. If it or saved
+settings are lost, do not claim recovery that has not been established.

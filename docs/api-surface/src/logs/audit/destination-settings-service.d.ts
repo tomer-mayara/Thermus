@@ -5,6 +5,7 @@ export type { DestinationTestResult } from './destination-test.ts';
 export interface PublicDestinationSettings {
     readonly revision: string | null;
     readonly endpoint: string;
+    readonly axiomDataset?: string;
     readonly auth: 'none' | 'bearer';
     readonly enabled: boolean;
     readonly tokenPresent: boolean;
@@ -12,6 +13,7 @@ export interface PublicDestinationSettings {
 export interface DestinationSettingsSaveInput {
     readonly expectedRevision: string | null;
     readonly endpoint: string;
+    readonly axiomDataset?: string;
     readonly auth: 'none' | 'bearer';
     readonly enabled: boolean;
     readonly token: string;
@@ -27,7 +29,7 @@ export type DestinationSettingsSaveResult = {
     readonly settings: PublicDestinationSettings;
 } | {
     readonly status: 'invalid';
-    readonly reason: 'endpoint' | 'token' | 'settings';
+    readonly reason: 'endpoint' | 'dataset' | 'token' | 'settings';
 } | {
     readonly status: 'conflict' | 'unavailable' | 'unconfirmed';
 };
