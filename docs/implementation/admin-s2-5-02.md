@@ -1,6 +1,7 @@
 # S2.5-02 integrated verification and release controls
 
-Status: implementation and verification in progress, 25 October 2026. This is
+Status: implementation and behavioral gates pass, 25 October 2026. Final
+quality review and actual release remain pending. This is
 [PR #255](https://github.com/tomer-mayara/Thermus/pull/255), stacked on
 [S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254) at
 `2271545702a8f1ec28c6f7dd913fec7024ecadeb`. The ticket is not released or Done.
@@ -48,6 +49,33 @@ found a TypeScript mock seam and fixture expectations to correct; those failures
 are not claims of new source behavior or manufactured TDD red steps. Production
 source, public declarations, dependencies, deployment and registry views remain
 unchanged from the actual parent.
+
+## Latest complete-candidate gate results
+
+These results cover the implementation and test bytes of
+`b429c308f013478cd99ee69f22a9f53d5e3687d4`, with later document-only changes.
+They do not claim that every earlier run used that committed SHA. The PR
+Validation record retains full commands, timestamps, failure/retry history, and
+evidence. Behavioral gates pass; final quality review, actual release and owner
+decisions remain open.
+
+| Selected check | Latest result |
+| --- | --- |
+| `npm test` | Passed: 4,997 backend and 49 portal tests. |
+| Private PostgreSQL gate | Passed: 26 cases, including the four integrated removal cases. |
+| Audit Collector gate | Passed: 10 cases. |
+| Members Chromium gate | Passed: one case. |
+| Scoped WorkOS removal proof | Passed: one case and exact-fixture cleanup. |
+| Full WorkOS live selection | 29 selected; 28 passed and one failed with HTTP 408. The affected five-case group then passed 5/5. Preserve the first failure; it was not an initial full-command pass. |
+| Native self-hosted container gate | Passed: 11 cases. |
+| Final Linux AMD64 hosted image gate | Passed: 7/7, six subcases and their parent. The isolated retry log is retained in the PR validation evidence. |
+| Typecheck and portal build | Passed. |
+| Public API snapshot check | Passed: 49 snapshots. |
+
+Final quality review remains pending. The earlier actual S2-04 release,
+independent required review, exact notice approval/integration/publication/
+presentation, production storage/capacity, and deployed removal journey remain
+separate gates below. The ticket is not Done.
 
 ## Restore control drill
 
