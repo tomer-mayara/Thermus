@@ -1,0 +1,12 @@
+(node:71444) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Given two password-only Admins and separate SQL pools, when one removal is admitted, then another instance is busy, another organization proceeds, and the remaining Admin cannot remove itself (2023.961667ms)
+✔ Given a committed removal whose provider reply is lost and whose recorder fails, when SQL and the coordinator reopen, then the same organization stays busy without replaying deletion (1682.956833ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3881.853042

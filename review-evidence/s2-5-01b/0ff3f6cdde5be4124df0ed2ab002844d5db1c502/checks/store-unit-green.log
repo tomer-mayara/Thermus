@@ -1,0 +1,22 @@
+✔ Given a stored Axiom dataset, when settings are read, then its dataset accompanies the saved revision (1.677083ms)
+✔ Given a stored SQL row, when settings are read, then the public result preserves the opaque settings and revision (0.281542ms)
+✔ Given no SQL row, when settings are read, then the public result reports absence (0.228958ms)
+✔ Given a committed SQL row, when first or changed settings are saved, then the public result reports the saved revision (0.518208ms)
+✔ Given SQL preserves the expected revision, when settings are saved, then the public result reports an unchanged destination (0.261125ms)
+✔ Given SQL returns no saved row, when settings are saved, then the public result reports a conflict (0.294875ms)
+✔ Given a query error with private details, when settings are read or saved, then only safe failure outcomes leave the store (0.702375ms)
+✔ Given a durable removal row, when read, then the original intent and terminal receipt are returned (2.7475ms)
+✔ Given no removal row, when read, then absence is explicit (0.246708ms)
+✔ Given an admission statement result, when admitted or blocked, then only its durable outcome is reported (0.468958ms)
+✔ Given a conditional completion result, when completed or mismatched, then it reports that outcome (0.440666ms)
+✔ Given a query failure, when removal storage reads or writes, then it reports safe unavailable or unconfirmed results (0.406542ms)
+✔ Given failed acquisition, when admission or completion is requested, then no write is claimed (0.250958ms)
+✔ Given a finished removal statement, when its promise resolves, then the SQL client is already released (0.21725ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.730959

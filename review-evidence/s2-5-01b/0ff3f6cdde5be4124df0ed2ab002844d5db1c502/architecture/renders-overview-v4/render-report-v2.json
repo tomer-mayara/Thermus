@@ -1,0 +1,46 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "71e7eedf353f45bd40373a6e939ddb5877638ce00735e7df9707a20270abf405",
+  "diagrams": [
+    {
+      "name": "trial-overview-tb-v4",
+      "source": "trial-overview-tb-v4.mmd",
+      "heading": "trial-overview-tb-v4",
+      "sha256": "5cfd938fbfd94b2900fd0499c2c76edf0cae14faf20804dfce468ef7f71274f0",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-overview-tb-v4-800.png",
+      "vector": "trial-overview-tb-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 664
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1060.8359375,
+        "height": 880.5
+      },
+      "scaledFontPx": 12.065956240288099,
+      "nodeCount": 13,
+      "pngSha256": "af75b8edefac6cac3fbfc2ab1e8e74e4d4a362e3fda14ff3adbcec7f4f0941ee",
+      "svgSha256": "81fed9bd2ab707acfee00ef60a015452c53215e1d9ce4f9a8c42551e608278c1",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

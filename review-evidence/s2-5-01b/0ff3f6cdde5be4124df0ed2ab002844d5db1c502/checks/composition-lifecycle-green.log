@@ -1,0 +1,10 @@
+✔ Given held hosted MCP cleanup and a listener drain, when shutdown starts twice, then storage cleanup starts without waiting for either and runs once (14.930875ms)
+✔ Given hosted MCP cleanup that throws before returning, when shutdown starts, then storage still closes and the failure is reported (0.4875ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 511.051209

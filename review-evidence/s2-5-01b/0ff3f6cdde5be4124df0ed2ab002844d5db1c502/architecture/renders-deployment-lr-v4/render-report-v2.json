@@ -1,0 +1,73 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "71e7eedf353f45bd40373a6e939ddb5877638ce00735e7df9707a20270abf405",
+  "diagrams": [
+    {
+      "name": "trial-deployment-local-lr-v4",
+      "source": "trial-deployment-local-lr-v4.mmd",
+      "heading": "trial-deployment-local-lr-v4",
+      "sha256": "5eed9df27bd8dc28dc65849b2a80c8d5c6be125a287e8aad686123159fcb7ecb",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-deployment-local-lr-v4-800.png",
+      "vector": "trial-deployment-local-lr-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 275.71875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1306.421875,
+        "height": 450.27777099609375
+      },
+      "scaledFontPx": 9.797753884058318,
+      "nodeCount": 6,
+      "pngSha256": "0de776ac68b42b273a54c0ebe37d25cd04cb1f2927c9a178b95120f3010b2a17",
+      "svgSha256": "3dc25951ac31a564be359a11b2a0360b490fb933725aa1684a951234e68641f2",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-deployment-hosted-lr-v4",
+      "source": "trial-deployment-hosted-lr-v4.mmd",
+      "heading": "trial-deployment-hosted-lr-v4",
+      "sha256": "70fcc553899ae83f45f352a5ce31fb7213fa634a3acb267b7ac47b3aabe73109",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-deployment-hosted-lr-v4-800.png",
+      "vector": "trial-deployment-hosted-lr-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 450.6875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1291.8125,
+        "height": 727.7777709960938
+      },
+      "scaledFontPx": 9.908558711113262,
+      "nodeCount": 7,
+      "pngSha256": "a6ab22df6af1701eb0abd264bd3fa77ec2436a6e7ce2735d39235c8091b34e43",
+      "svgSha256": "e3bd22cc0e379d6d6ba6fe4894b4f14ca95f96f35d6ac5fa71b3080b7449db16",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

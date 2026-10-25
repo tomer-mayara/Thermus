@@ -1,0 +1,28 @@
+✔ Given a current Admin without MFA proof, when an ordinary membership is removed, then only its exact ID is deleted after durable admission and completion is recorded (6.03175ms)
+✔ Given a User or foreign authority, when removal is requested, then it is denied before admission (0.18425ms)
+✔ Given unavailable removal storage, when removal is requested, then it is unavailable while organization access still works (0.221083ms)
+✔ Given authority that changes during durable admission, when current reads resume, then removal is denied and its own no-send intent is completed (0.178458ms)
+✔ Given an otherwise valid removal with only another organization, when current target facts are checked, then no provider delete runs (0.222ms)
+✔ Given an otherwise valid removal with only another membership ID, when current target facts are checked, then no provider delete runs (0.123875ms)
+✔ Given an otherwise valid removal with only stale revision, when current target facts are checked, then no provider delete runs (0.146459ms)
+✔ Given an otherwise valid removal with only inactive status, when current target facts are checked, then no provider delete runs (0.141417ms)
+✔ Given an otherwise valid removal with only pending status, when current target facts are checked, then no provider delete runs (0.146625ms)
+✔ Given an otherwise valid removal with only unknown role, when current target facts are checked, then no provider delete runs (0.205458ms)
+✔ Given an otherwise valid removal with only permissionless extra role, when current target facts are checked, then no provider delete runs (0.121666ms)
+✔ Given an otherwise valid removal with only no roles, when current target facts are checked, then no provider delete runs (0.148625ms)
+✔ Given an otherwise valid removal with only external management, when current target facts are checked, then no provider delete runs (0.079209ms)
+✔ Given an otherwise valid removal with only unknown management, when current target facts are checked, then no provider delete runs (0.228125ms)
+✔ Given a target that disappeared, when removal is requested, then its stale form cannot delete another membership (0.294042ms)
+✔ Given one active Admin plus inactive and pending Admins and an invitation, when self-removal is requested, then the last Admin is retained (0.306666ms)
+✔ Given a second active Admin on a later page, when self-removal is requested, then all pages are read and removal is allowed (0.325625ms)
+✔ Given a later page failure or a repeating cursor, when the full Admin count cannot be established, then removal refuses without a partial count (0.256125ms)
+✔ Given the last Admin duplicated across pages, when a newer record makes the other Admin inactive, then duplicates and stale active state do not permit self-removal (0.142667ms)
+✔ Given a target that changes from User to Admin between its direct read and the member pages, when removal finishes its checks, then the changed target is refused (0.135917ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.128334

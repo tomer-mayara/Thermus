@@ -1,0 +1,2542 @@
+{
+  "base": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "d75b8676cbbc37be2f69356d577ade1ffb87b783",
+  "counts": {
+    "high-complexity": 1,
+    "too-many-parameters": 4,
+    "non-essential-comment": 302,
+    "oversized-file": 13
+  },
+  "files": {
+    "src/accounts/organizations/change-records.ts": {
+      "changed": true,
+      "head_lines": 96,
+      "base_lines": 96,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 3,
+          "text": "// 'unchanged': the same invitation is already pending, so no change was necessary. 'address-in-use': the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 4,
+          "text": "// directory sent no invitation, because the address belongs to a member or has a pending invitation.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 7,
+          "text": "// A record also keeps the outcome of a change that failed: 'failed' before the directory change started, so that",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 8,
+          "text": "// nothing changed, and 'unknown' during the directory change, so that its effect is not known.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 11,
+          "text": "// The provider write started, but its result is not confirmed. A caller can offer a current read, not a blind retry.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 21,
+          "text": "// A basic record of a privileged change. It holds no credential.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 23,
+          "text": "  // The time of the outcome, in ISO 8601 UTC.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 28,
+          "text": "  // 'invite', 'resend-invitation', 'revoke-invitation', or the action of a grant change as requested: 'grant',",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 29,
+          "text": "  // 'revoke'. Removal uses 'remove-member'. The opt-in sign-in policy uses 'automatic-enrollment' for a new User membership.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 39,
+          "text": "// The rest of a change after its checks: its one directory change, which gives the result.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 42,
+          "text": "// The record of a change in progress. The role of an invitation change is known after the invitation is read.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 51,
+          "text": "// Runs each privileged change in two steps, its checks with current reads and then its one directory change, and",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 52,
+          "text": "// keeps one record of the outcome. A failure in the checks changed nothing ('failed'); a failure in the directory",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 53,
+          "text": "// change leaves its effect unknown ('unknown'). It never repeats a directory change.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 79,
+          "text": "  // The record holds only these fields, so that no credential of the session or of an invitation reaches it.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/change-records.ts",
+          "line": 93,
+          "text": "      // Recording cannot change the outcome or cause a completed directory write to be repeated.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "src/accounts/organizations/directory-reads.ts": {
+      "changed": true,
+      "head_lines": 39,
+      "base_lines": 39,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/directory-reads.ts",
+          "line": 6,
+          "text": "// Each membership of the organization in each status, read from every page. A failed page fails the read, so that no",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/directory-reads.ts",
+          "line": 7,
+          "text": "// partial result looks complete.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/directory-reads.ts",
+          "line": 18,
+          "text": "// Reads each page in order. A read that does not end fails, with a repeated cursor or after the page limit.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/directory-reads.ts",
+          "line": 34,
+          "text": "// Each record once, by its ID. When pages repeat a record, the later page decides, because its read is more recent.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "src/accounts/organizations/membership-removal-checks.ts": {
+      "changed": true,
+      "head_lines": 50,
+      "base_lines": 0,
+      "findings": [
+        {
+          "category": "too-many-parameters",
+          "path": "src/accounts/organizations/membership-removal-checks.ts",
+          "line": 17,
+          "text": "export async function checkRemoval(directory: OrganizationDirectory, user: AuthenticatedUser, request: MemberRemovalRequest, read: CurrentRead): Promise<RemovalRefusal | undefined> {",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/membership-removal-checks.ts",
+          "line": 46,
+          "text": "// Preserve the direct read before later awaits can expose another mutable provider record.",
+          "inherited_line": false
+        }
+      ]
+    },
+    "src/accounts/organizations/membership-removal-lifetime.ts": {
+      "changed": true,
+      "head_lines": 51,
+      "base_lines": 0,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/membership-removal-lifetime.ts",
+          "line": 5,
+          "text": "// The server owns this lifetime. The signal stops later read steps; it does not cancel an HTTP request already sent.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/membership-removal-lifetime.ts",
+          "line": 19,
+          "text": "  // Admission can commit without an answer. From this point, only a confirmed terminal receipt releases its hold.",
+          "inherited_line": false
+        }
+      ]
+    },
+    "src/accounts/organizations/membership-removal.ts": {
+      "changed": true,
+      "head_lines": 79,
+      "base_lines": 0,
+      "findings": [
+        {
+          "category": "too-many-parameters",
+          "path": "src/accounts/organizations/membership-removal.ts",
+          "line": 49,
+          "text": "  private async admitted(user: AuthenticatedUser, request: MemberRemovalRequest, intent: RemovalIntent, store: RemovalOperationStore, lifetime: RemovalLifetime): Promise<RemovalResult> {",
+          "inherited_line": false
+        },
+        {
+          "category": "too-many-parameters",
+          "path": "src/accounts/organizations/membership-removal.ts",
+          "line": 66,
+          "text": "  private async complete(store: RemovalOperationStore, intent: RemovalIntent, terminal: RemovalTerminal, result: RemovalResult, lifetime: RemovalLifetime): Promise<RemovalResult> {",
+          "inherited_line": false
+        }
+      ]
+    },
+    "src/accounts/organizations/organization-administration.ts": {
+      "changed": true,
+      "head_lines": 184,
+      "base_lines": 164,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 13,
+          "text": "// The person who asks for an administration operation.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 34,
+          "text": "  // The browser session of the user selected this organization.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 54,
+          "text": "// Customer organization work: the onboarding, listing, and selection of the organizations of the signed-in user, and",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 55,
+          "text": "// invitations, removal, and product member counts. Each operation checks current actor and target state for its organization.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 56,
+          "text": "// Each invitation change and removal keeps a record. Billing reads require the current billing permission. The external operator",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 57,
+          "text": "// sets up organizations and their Admins outside this service.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 84,
+          "text": "  // Only active memberships whose grants give at least one application permission, because a default role gives none.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 85,
+          "text": "  // An empty list means that the user must accept an invitation or ask the operator: no default organization exists.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 95,
+          "text": "  // The organization ID comes from the request, so only the current memberships of the user can authorize it.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 116,
+          "text": "  // An invitation gives the role that it names. Admin includes product access. The directory owns the acceptance.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 138,
+          "text": "  // A resend or a revoke of a pending invitation of the organization, for a role that the actor manages.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 154,
+          "text": "  // A pending invitation to the same address for the same role makes another send unnecessary, also as a retry after",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 155,
+          "text": "  // an unknown outcome. Providers compare addresses without letter case.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 162,
+          "text": "  // The current organization name and roles that the actor manages, from one read of its own memberships.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 163,
+          "text": "  // The organization comes from the request; a selected organization of a session authorizes nothing.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-administration.ts",
+          "line": 178,
+          "text": "// Only an explicit result of the directory counts. Another answer leaves the effect unknown, so the change fails.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "src/accounts/organizations/organization-directory.ts": {
+      "changed": true,
+      "head_lines": 118,
+      "base_lines": 116,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 12,
+          "text": "// Unknown evidence never establishes an ordinary membership.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 15,
+          "text": "// A membership of an organization for administration work. The revision changes with each change of the membership, so",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 16,
+          "text": "// that a change can require the state that the actor saw.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 19,
+          "text": "  // The member's identity subject in this directory's authority. Do not infer it from an email.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 31,
+          "text": "// An invitation holds no token or link, because they are credentials of the invited person.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 36,
+          "text": "  // The one role that the acceptance grants.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 39,
+          "text": "  // The provider expiry time in ISO 8601 format.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 43,
+          "text": "// Who can accept an invitation, as the directory enforces it. 'invited-address': only a sign-in with the invited",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 44,
+          "text": "// address. 'provider-rules': the provider can also accept another identity under its own rules, for example another",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 45,
+          "text": "// address of the same domain.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 50,
+          "text": "  // The cursor of the next page. The last page has none.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 54,
+          "text": "// Each read names the statuses or states that it wants, so that no default filter of the provider decides.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 68,
+          "text": "// The customer roles that an invitation can give. Admin includes product access.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 74,
+          "text": "  // The invitation assigns this role. Admin includes product access.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 78,
+          "text": "// 'address-in-use': the address already belongs to a member of the organization or has a pending invitation there, so",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 79,
+          "text": "// the directory sent none. 'unsupported': the directory cannot send the invitation safely, so it sent none.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 84,
+          "text": "// 'not-pending': the invitation is accepted, revoked, or expired, so nothing changed.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 89,
+          "text": "// Unsupported means the provider proved that the deletion had no effect. A thrown error leaves its effect unknown.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 94,
+          "text": "// The organization reads and changes of customer organization work. An implementation reads the current provider",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 95,
+          "text": "// state for each call. A membership comes with every current grant, and a grant holds only application permissions,",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 96,
+          "text": "// so that a default role, which gives none, authorizes nothing. A failed read or change throws, so that a failure never",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 97,
+          "text": "// looks like a missing record or a result. After such a failure, the effect of a change is not known.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 99,
+          "text": "  // Only the memberships of the user that it gets.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 100,
+          "text": "  // An optional signal stops later provider reads. A read already sent keeps its existing timeout.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 103,
+          "text": "  // The membership with this ID in any organization, or undefined.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 105,
+          "text": "  // Deletes only this membership. Admission and safety checks belong to its caller.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 108,
+          "text": "  // The invitation with this ID in any organization, or undefined.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 110,
+          "text": "  // The directory sends the invitation and owns its acceptance and the activation of the membership. An acceptance",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 111,
+          "text": "  // activates only the role of the invitation: a membership that it makes active again keeps no other grant, so that an",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 112,
+          "text": "  // invitation cannot restore a grant outside the authority of its sender.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/organizations/organization-directory.ts",
+          "line": 114,
+          "text": "  // Each changes only a pending invitation.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "src/accounts/organizations/removal-operation-store.ts": {
+      "changed": true,
+      "head_lines": 25,
+      "base_lines": 0,
+      "findings": []
+    },
+    "src/accounts/providers/workos/workos-organizations.ts": {
+      "changed": true,
+      "head_lines": 440,
+      "base_lines": 430,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 33,
+          "text": "  // WorkOS changes it with each change of the roles or the status.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 35,
+          "text": "  // True when a directory connection manages the membership.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 40,
+          "text": "// WorkOS also gives the token and the link of an invitation. They are credentials of the invited person, so the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 41,
+          "text": "// directory never copies them.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 47,
+          "text": "  // Null for an invitation to the application, not to an organization.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 57,
+          "text": "// The calls of the pinned SDK client that access resolution and organization administration need. The client fits this",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 58,
+          "text": "// shape. Membership deletion names one exact ID. There is no user, factor, role, creation, or status writer.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 60,
+          "text": "  // The one authority of the WorkOS environment, from workosAuthority(). Only its users have WorkOS memberships.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 78,
+          "text": "  // The time that decides the expiry of an invitation. The default is the system clock.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 82,
+          "text": "// A user has at most one membership in an organization. The limit only bounds the read.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 84,
+          "text": "// The largest page that WorkOS gives.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 86,
+          "text": "// The page limit bounds the read of the memberships of one user.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 91,
+          "text": "// Only this documented 422 proves that the provider refused deletion without an effect.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 95,
+          "text": "// WorkOS refuses a send to an address that has a pending invitation of the organization, for any role and in any",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 96,
+          "text": "// letter case, and a send to the address of an active member, each with 400 and one of these codes.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 99,
+          "text": "// The organization directory of the hosted edition. Each call reads or changes WorkOS again and keeps nothing, so that",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 100,
+          "text": "// a revoked membership or role stops access at the next request. A failed or unexpected answer throws, so that access",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 101,
+          "text": "// fails closed and a failure never looks like a missing record or a result. A change makes at most one WorkOS write,",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 102,
+          "text": "// and nothing repeats it.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 104,
+          "text": "  // WorkOS can accept an invitation for another address of the same domain, so the directory claims no strict match.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 120,
+          "text": "  // The current grants of one user in one organization, for access resolution. No active membership gives undefined.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 126,
+          "text": "  // The current name of one active membership. The display read does not need any organization's role catalog.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 132,
+          "text": "  // Each active membership of the user, from every page, with every current grant. The read names the status active,",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 133,
+          "text": "  // so that no default filter of WorkOS decides. A user of another authority has no WorkOS membership, so its subject",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 134,
+          "text": "  // is never sent to WorkOS.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 145,
+          "text": "  // The member and invitation work of customer administration. A page is one WorkOS list read of at most 100 records.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 146,
+          "text": "  // The user reads of a member page run one after the other, so that the WorkOS calls of a page are bounded and come in",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 147,
+          "text": "  // page order.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 150,
+          "text": "    // Without a status, WorkOS gives only active memberships.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 175,
+          "text": "  // WorkOS has no state filter for invitations, so the read keeps only the states that it names.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 190,
+          "text": "  // An invitation without an organization is not an organization invitation, so it gives undefined.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 197,
+          "text": "  // When WorkOS answers, the send happened. Thus an answer that is not the invitation of the request throws, because the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 198,
+          "text": "  // effect of the send is not known.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 233,
+          "text": "  // Reads each page in order. A read that does not end fails, with a repeated cursor or after the page limit, so that",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 234,
+          "text": "  // no partial list looks complete.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 260,
+          "text": "  // A WorkOS membership has no email, and the user list of an organization gives only the users with an active",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 261,
+          "text": "  // membership. Thus each member read also reads its user.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 269,
+          "text": "  // The membership with this ID in any organization. A WorkOS 404 gives undefined.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 276,
+          "text": "  // WorkOS refuses a change of an invitation that is not pending with 400, but 400 can have other causes. Thus a read of",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 277,
+          "text": "  // the invitation decides: only an invitation that exists and is no longer pending gives not-pending. The answer of a",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 278,
+          "text": "  // change must be the invitation in the state after the change, else the effect of the change is not known.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 296,
+          "text": "  // The invitation with this ID. A WorkOS 404 gives undefined.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 304,
+          "text": "// Stop later reads without claiming that the provider cancelled a request already sent.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 335,
+          "text": "// WorkOS gives the role list only when the environment allows multiple roles for each membership.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 350,
+          "text": "// The facts distinguish a changed membership even when WorkOS gives the same update time.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 356,
+          "text": "// WorkOS can still give the state pending after the expiry time, so the clock decides.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 364,
+          "text": "// WorkOS gives the current role of the membership of an invitation. Thus only the role of a pending invitation is the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 365,
+          "text": "// role that its acceptance gives.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 372,
+          "text": "// WorkOS compares addresses without letter case.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 382,
+          "text": "// WorkOS gives the cursor of the next page in its list metadata. The last page has none, or an empty one.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 388,
+          "text": "// A WorkOS 404 means that the record does not exist. Each other failure reaches the caller.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 398,
+          "text": "// The SDK gives the status and the code of a WorkOS answer on its errors, for example on NotFoundException,",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 399,
+          "text": "// BadRequestException, and GenericServerException. Thus the directory reads them by shape, not by class.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 420,
+          "text": "// SDK 11 defaults missing or null management evidence to false. Read it through the same client's transport before",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": 421,
+          "text": "// that default can make unknown evidence look ordinary. Each read still sends only one GET.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "src/accounts/providers/workos/workos-organizations.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "src/app/application.ts": {
+      "changed": true,
+      "head_lines": 229,
+      "base_lines": 224,
+      "findings": [
+        {
+          "category": "too-many-parameters",
+          "path": "src/app/application.ts",
+          "line": 154,
+          "text": "export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging']; readonly removalStore?: RemovalOperationStore }): Application {",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 16,
+          "text": "// The settings that only the server reads, such as AD_RULES_FILE and the WorkOS settings. The local commands share",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 17,
+          "text": "// DeploymentConfig.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 30,
+          "text": "// The browser routes of the provider that need no signed-in session: the sign-in, its callback, the sign-out, and the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 31,
+          "text": "// session of the portal. They come before the account routes, which need a signed-in session.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 43,
+          "text": "// The parts that change with the hosted provider. The MCP endpoint answers the MCP resource and its",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 44,
+          "text": "// protected-resource metadata, and the application closes it.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 55,
+          "text": "  // Keeps the basic records of the privileged account changes.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 58,
+          "text": "  // The one billing of the hosted organizations: BillingFree until a payment provider implementation replaces it.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 69,
+          "text": "// The hosted provider reads its own settings from the environment, so no common setting turns it on.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 80,
+          "text": "  // The rules load before the data directory opens, so a rules failure holds no resource and changes no data.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 113,
+          "text": "// Only these public paths reach the provider. Its browser and administration APIs stay private.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 134,
+          "text": "// The hosted edition loads its provider only here, as the self-hosted edition does.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 144,
+          "text": "// These privileged changes are internal system diagnostics only. JSON keeps each record on one line.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 149,
+          "text": "// Local operation and hosted operation without storage discard customer audit events.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 176,
+          "text": "      // Stop new removal work before the shared SQL runtime closes.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/application.ts",
+          "line": 220,
+          "text": "      // Observe drain failures now, even when MCP cleanup takes longer than listener cleanup.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "src/app/application.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "src/app/hosted-workos-application.ts": {
+      "changed": false,
+      "head_lines": 176,
+      "base_lines": 176,
+      "findings": [
+        {
+          "category": "high-complexity",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 97,
+          "text": "export async function composeWorkOSApplication(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts): Promise<Application> {",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 28,
+          "text": "// The connection to one WorkOS environment: its settings, an SDK client, and the AuthKit key set of the Connect",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 29,
+          "text": "// tokens. The production connection reaches WorkOS; a test can point the client and the key set at a local fake.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 36,
+          "text": "// The parts of the hosted application that a composition root chooses. Production supplies the shared fetch",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 37,
+          "text": "// operation; a development composition can supply another request-scoped tool server.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 41,
+          "text": "  // Explicit audit and tool-server overrides take precedence in development compositions.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 44,
+          "text": "  // Explicit development composition can replace the customer dispatch sink.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 48,
+          "text": "  // Omitted by production. A slice must select its enrollment organization explicitly.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 50,
+          "text": "  // Explicit composition supplies its own documents. Production selects the organization Audit bundle at startup.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 54,
+          "text": "// No retry and a short timeout: each WorkOS call runs during a browser or MCP request.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 78,
+          "text": "// Invalid or missing WorkOS settings stop the start before the server listens. There is no fallback to local or",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 79,
+          "text": "// anonymous access. The connection makes no WorkOS call: the key set loads at the first check of a Connect token.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 140,
+          "text": "  // One directory gives the current grants to access resolution, and the organizations, members, and invitations and",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/hosted-workos-application.ts",
+          "line": 141,
+          "text": "  // their changes to the account routes.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "src/app/logging-storage.ts": {
+      "changed": true,
+      "head_lines": 42,
+      "base_lines": 40,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/logging-storage.ts",
+          "line": 12,
+          "text": "// One private SQL runtime owns destination settings and membership-removal intent.",
+          "inherited_line": false
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "src/app/logging-storage.ts",
+          "line": 37,
+          "text": "/** Test and customer export share the sender's native DNS, TLS, and HTTP admission. */",
+          "inherited_line": true
+        }
+      ]
+    },
+    "src/logs/audit/pg-destination-settings-store.ts": {
+      "changed": true,
+      "head_lines": 93,
+      "base_lines": 49,
+      "findings": []
+    },
+    "test/acceptance/auth/hosted-live/administration-proofs.ts": {
+      "changed": false,
+      "head_lines": 206,
+      "base_lines": 206,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 27,
+          "text": "// One membership list read of WorkOS: the statuses that it named and the number of memberships on its page.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 44,
+          "text": "// The memberships of the seat proof, with the status and the roles that the fixtures gave them.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 67,
+          "text": "// The SDK client of the run, but each membership list asks WorkOS for pages of two, so that a member read gets several",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 68,
+          "text": "// pages. Each other call goes to the SDK client unchanged.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 79,
+          "text": "// Every page of one member read of the directory, in order.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 95,
+          "text": "  // The directory of the hosted edition, as the composition makes it, against the staging environment.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 117,
+          "text": "  // A member read in pages of two, which must give exactly the memberships of a direct WorkOS read with the same statuses.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": 137,
+          "text": "  // The states under which a directory read of one state lists the invitation.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/acceptance/auth/hosted-live/administration-server.ts": {
+      "changed": false,
+      "head_lines": 288,
+      "base_lines": 288,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "line": 43,
+          "text": "// A page that fails names the last operator reports of the server. A report names the path and the failure, never a",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "line": 44,
+          "text": "// credential.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "line": 79,
+          "text": "// True when a text holds one of the secrets. The result gives no secret.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "line": 101,
+          "text": "  // The administrator keeps its session from one case to the next.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "line": 104,
+          "text": "  // A person opens the page and submits the form with this button.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "line": 129,
+          "text": "  // The token and the link of each invitation: the credentials of the invited persons. Only the test reads them.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/acceptance/auth/hosted-live/operator-setup.ts": {
+      "changed": false,
+      "head_lines": 141,
+      "base_lines": 141,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-live/operator-setup.ts",
+          "line": 27,
+          "text": "  // The application reads of the hosted edition, against the staging environment.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "test/acceptance/auth/hosted-membership-deletion.test.ts": {
+      "changed": false,
+      "head_lines": 130,
+      "base_lines": 130,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+          "line": 13,
+          "text": "// This slice exposes a directory collaborator. A browser removal route belongs to the next slice.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "test/acceptance/auth/membership-removal-restart.runtime.ts": {
+      "changed": true,
+      "head_lines": 38,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/acceptance/auth/membership-removal.runtime.ts": {
+      "changed": true,
+      "head_lines": 102,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts": {
+      "changed": true,
+      "head_lines": 180,
+      "base_lines": 152,
+      "findings": []
+    },
+    "test/integration/auth/hosted-storage-lifecycle.test.ts": {
+      "changed": true,
+      "head_lines": 44,
+      "base_lines": 42,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/hosted-storage-lifecycle.test.ts",
+          "line": 23,
+          "text": "  // The removal owner closes before SQL; held MCP and listener work must not delay either.",
+          "inherited_line": false
+        }
+      ]
+    },
+    "test/integration/auth/workos-provider-administration.test.ts": {
+      "changed": false,
+      "head_lines": 406,
+      "base_lines": 406,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 19,
+          "text": "// The real WorkOSOrganizations and WorkOSAuthProvider with the pinned SDK against a local fake of the WorkOS API,",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 20,
+          "text": "// together with the real OrganizationAdministration, called directly as a service, and the real access resolution of",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 21,
+          "text": "// Connect tokens. The fake keeps the roles of each membership as single-role assignments, the invitations, and the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 22,
+          "text": "// users, as the probes of WorkOS staging showed. Each test checks the result, the change records, and the WorkOS",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 23,
+          "text": "// requests that change something. These tests do not show what the WorkOS service sends; the hosted live gate does.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 29,
+          "text": "// Acme has an external ID, as each customer organization of the operator runbook has one. Globex has none.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 48,
+          "text": "// Acme has six active product members: Sam, Dan, Cal, Ada, Bea, and Hal.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 49,
+          "text": "// Eve is inactive; Gus has the default role. Globex has Bea and Pia as Users.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 97,
+          "text": "// The access that a Connect token gives now: the provider verifies the token and resolves the current WorkOS grants.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 120,
+          "text": "// The WorkOS requests since the last call, without the reads: only the requests that change something.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 125,
+          "text": "// The member page reads since the last call. A read of the memberships of one user names that user, so it is not a",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 126,
+          "text": "// member page read.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 146,
+          "text": "// A resend or revoke record has the role of the invitation only when the invitation belongs to the organization of the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": 147,
+          "text": "// request.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/integration/auth/workos-provider-administration.test.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/integration/auth/workos-provider-directory.test.ts": {
+      "changed": false,
+      "head_lines": 173,
+      "base_lines": 173,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-directory.test.ts",
+          "line": 14,
+          "text": "// The real provider and organization reads with the pinned SDK client. The answers come from a local fake in the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-directory.test.ts",
+          "line": 15,
+          "text": "// WorkOS wire format, so these tests do not show what the WorkOS service sends.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-directory.test.ts",
+          "line": 64,
+          "text": "// The expected hosted catalog, with the changes of a test. No retired role is required.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "test/integration/auth/workos-provider-organizations.test.ts": {
+      "changed": false,
+      "head_lines": 234,
+      "base_lines": 234,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 25,
+          "text": "// The real WorkOS session, organization directory, and access resolver with the pinned SDK and a local fake of the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 26,
+          "text": "// WorkOS API, together with the real OrganizationAdministration, account routes, and MCP server. A probe stands in for",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 27,
+          "text": "// the destinations of the account pages, each with its permission, so that the administration access of each role",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 28,
+          "text": "// shows. These tests do not show what the WorkOS service sends; the hosted live gate does.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 37,
+          "text": "// The billing page is a real administration page of the routes, so the probe has no billing destination.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 49,
+          "text": "// Mia: User in Acme, Admin in Globex, inactive in Initech, and only the default role in Umbrella. Otto: every role in",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 50,
+          "text": "// Hooli. Sam: only Admin in Acme.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": 107,
+          "text": "// The WorkOS requests of the site, without the reads of the browser key set.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/integration/auth/workos-provider-organizations.test.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/integration/auth/workos-removal-lifetime.test.ts": {
+      "changed": true,
+      "head_lines": 81,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/integration/logging/audit/removal-operations.runtime.ts": {
+      "changed": true,
+      "head_lines": 112,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/support/doubles/organizations/directory-double-records.ts": {
+      "changed": false,
+      "head_lines": 110,
+      "base_lines": 110,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/directory-double-records.ts",
+          "line": 42,
+          "text": "  // A credential of the invited person. The double gives it with each invitation, as a provider record has it, so that",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/directory-double-records.ts",
+          "line": 43,
+          "text": "  // a test can show that it reaches no page or record.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/directory-double-records.ts",
+          "line": 47,
+          "text": "// Lays out the records that match a page request on pages; an Error is a page that fails.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/directory-double-records.ts",
+          "line": 92,
+          "text": "// Without another role, the membership keeps the default role, which gives no application permission.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "test/support/doubles/organizations/organization-directory-double.ts": {
+      "changed": false,
+      "head_lines": 183,
+      "base_lines": 183,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/organization-directory-double.ts",
+          "line": 21,
+          "text": "// A stateful provider directory: invitation changes take effect in later reads. Acceptance activates the invited",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/organization-directory-double.ts",
+          "line": 22,
+          "text": "// role. A test can lay",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/organization-directory-double.ts",
+          "line": 23,
+          "text": "// out the pages of each read, make a read or a change fail, give a change another result, or hold the changes.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/organization-directory-double.ts",
+          "line": 35,
+          "text": "  // A directory of another authority knows no user of this one.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/organization-directory-double.ts",
+          "line": 47,
+          "text": "  // Replaces the memberships of one user, or makes the reads of its memberships fail.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/organizations/organization-directory-double.ts",
+          "line": 81,
+          "text": "  // The provider owns the acceptance. A membership that it makes active again gets only the role of the invitation.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "test/support/doubles/workos/workos-fake-directory.ts": {
+      "changed": false,
+      "head_lines": 205,
+      "base_lines": 205,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 6,
+          "text": "// What the directory routes read and change in the fake.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 27,
+          "text": "// WorkOS gives the default role to a membership that has no other role.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 46,
+          "text": "// The status and the roles of a membership as one value, so that a change of either shows.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 75,
+          "text": "// The position of the first record after the record of the cursor. It stays a position when that record no longer",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 76,
+          "text": "// fits the read.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 82,
+          "text": "// The routes of the membership reads and creates, the user and organization reads, the role assignments, and the role",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 83,
+          "text": "// lists of the organizations of start().",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 99,
+          "text": "// A read names a user, an organization, or both. Without statuses, WorkOS gives only active memberships. The after",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 100,
+          "text": "// cursor is the ID of the last membership of the page before; the next page starts after it, less the overlap.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 118,
+          "text": "// WorkOS create reactivates an inactive record. Thus callers cannot use a retry as an absence check.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 157,
+          "text": "// A role assignment names one role and the authorization resource of the organization of the membership. A POST",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 158,
+          "text": "// adds that role and a DELETE removes it. Each other role and the status stay, also on a membership that is not",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 159,
+          "text": "// active. The resource of an organization with an external ID has only that external ID: WorkOS refuses the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 160,
+          "text": "// organization ID of such an organization.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 173,
+          "text": "// The external ID of the authorization resource of an organization: the external ID of the organization, or its",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 174,
+          "text": "// organization ID when it has none.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 179,
+          "text": "// A second assignment of a role changes nothing and gives the same assignment.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": 187,
+          "text": "// When the last role goes, WorkOS gives the default role. A role that the membership does not have changes nothing.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/support/doubles/workos/workos-fake-directory.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/support/doubles/workos/workos-fake.ts": {
+      "changed": false,
+      "head_lines": 199,
+      "base_lines": 199,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 16,
+          "text": "  // False for a user that an invitation made. Without a value, the address is verified.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 23,
+          "text": "  // WorkOS shows a membership without a role with the default role member.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 35,
+          "text": "  // An ISO 8601 time. WorkOS can keep the state pending after this time.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 41,
+          "text": "// A local WorkOS environment for the offline tests of the hosted WorkOS composition: a fake WorkOS API with",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 42,
+          "text": "// organizations, users, memberships, the hosted roles, role assignments, invitations, browser sign-ins and refreshes,",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 43,
+          "text": "// and AuthKit-signed Connect tokens. The membership at index i of memberships has the ID om_i. The fake knows the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 44,
+          "text": "// organizations of start() and of organizationNames. The answers follow what WorkOS staging showed; the design document",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 45,
+          "text": "// gives these findings.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 52,
+          "text": "  // The users that the user reads give. A send to an unknown address adds an unverified user.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 54,
+          "text": "  // The invitations of all organizations, in the order of the invitation pages. The JSON of each has a fake token",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 55,
+          "text": "  // \"invitation-token-<ID>\" and a link on authkit.fake.example, so that a test can check that they never show.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 57,
+          "text": "  // The name of each organization in the membership answers. An organization without a name here has its ID as name.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 59,
+          "text": "  // The external ID of each organization. An organization without an entry here has none. WorkOS names the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 60,
+          "text": "  // authorization resource of an organization by its external ID, and by its organization ID only when it has none.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 62,
+          "text": "  // The most records on one page. WorkOS gives at most the limit of the read, and it can give fewer.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 65,
+          "text": "  // Each next membership page starts with this many records from the end of the page before, as WorkOS can give",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 66,
+          "text": "  // during concurrent changes.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 68,
+          "text": "  // The authentication method of each new sign-in.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 70,
+          "text": "  // Set to an answer, such as a 500, to make reads fail: each membership read, only the membership pages after the",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 71,
+          "text": "  // first, each invitation read, or the refreshes.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 78,
+          "text": "  // The number of changes of the roles or the status of each membership, by index. The update times come from them.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 110,
+          "text": "  // A replacement keeps the ID of each index. A membership whose roles or status change gets a later update time, as",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 111,
+          "text": "  // after a change in WorkOS.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 124,
+          "text": "  // Makes an authorization code as AuthKit gives it after sign-in and the organization choice.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 129,
+          "text": "  // Lets each next access token expire at once, so the next request needs a refresh.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 146,
+          "text": "  // The ID, the roles, and the status of the membership of the user in the organization. Each fails without it.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 159,
+          "text": "  // Changes a membership as someone else does in WorkOS. A change gives a later update time.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 168,
+          "text": "  // Accepts an invitation as AuthKit does: the membership of its address in its organization becomes active with only",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 169,
+          "text": "  // the role of the invitation, and the invitation becomes accepted.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 174,
+          "text": "  // Moves the expiry time of an invitation into the past and keeps the state pending, so that a reader must compare",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 175,
+          "text": "  // the expiry time.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 180,
+          "text": "  // The JSON of an organization, as the pinned SDK reads it.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/doubles/workos/workos-fake.ts",
+          "line": 185,
+          "text": "  // One counter gives the numbers of the codes, refresh tokens, invitations, invited users, and Connect tokens.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "test/support/processes/membership-removal-child.ts": {
+      "changed": true,
+      "head_lines": 71,
+      "base_lines": 0,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/membership-removal-child.ts",
+          "line": 67,
+          "text": "    // Keep connection details and provider data out of child failure output.",
+          "inherited_line": false
+        }
+      ]
+    },
+    "test/support/processes/membership-removal-process.ts": {
+      "changed": true,
+      "head_lines": 84,
+      "base_lines": 0,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/membership-removal-process.ts",
+          "line": 20,
+          "text": "/** Runs one coordinator in its own process. Only this child can be terminated. */",
+          "inherited_line": false
+        }
+      ]
+    },
+    "test/support/processes/module-paths.ts": {
+      "changed": true,
+      "head_lines": 70,
+      "base_lines": 68,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 3,
+          "text": "// The one module that computes run-time paths from the support code to other folders and to the repository root",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 4,
+          "text": "// (rule D8 of docs/testing/test-code-layout.md). Its consumers use these paths to start child processes and load",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 5,
+          "text": "// fixtures. The module runs from the source",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 6,
+          "text": "// tree (.ts) and from dist/ (.js), where it sits one folder deeper.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 18,
+          "text": "// The folder of package.json.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 21,
+          "text": "// The portal build that the local HTTPS site serves. It exists only after npm run build:user-portal.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 24,
+          "text": "// Offline hosted tests select these local inputs without changing the real portal build. The stub of the Lightpanda",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 25,
+          "text": "// executable answers only the pinned version.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 30,
+          "text": "// The program that the child-process sites and the command tests run: dist/src/index.js after a build.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 33,
+          "text": "// The preloads load by URL through --import. The probe runs as the main module of a new Node process.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 44,
+          "text": "// The container sites send these scripts into containers. container-site.ts copies the edge and the page seam, and",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 45,
+          "text": "// hosted-image-gate.ts mounts the page seam. container-gate.ts and hosted-image-gate.ts send the probe on standard",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 51,
+          "text": "// The identity preload that the hosted-image gate mounts. It is not copied into the final image.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 54,
+          "text": "// The debug command runs directly from source; no build copies the script.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 58,
+          "text": "// The scoped owner setup used by the disposable PostgreSQL settings site.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/support/processes/module-paths.ts",
+          "line": 65,
+          "text": "// The audit sender gate copies only source modules and test support into an isolated Docker network.",
+          "inherited_line": true
+        }
+      ]
+    },
+    "test/unit/auth-workos/fixtures/workos-organizations-double.ts": {
+      "changed": false,
+      "head_lines": 234,
+      "base_lines": 234,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 26,
+          "text": "// A WorkOS invitation with its token and its link, which are credentials of the invited person.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 43,
+          "text": "// The fields of a WorkOS organization that the directory reads. The external ID is null for an organization without one.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 64,
+          "text": "// The external ID of Acme, as each customer organization of the operator runbook has one. Globex has none.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 66,
+          "text": "// The time of the clock that the directory gets from the double.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 69,
+          "text": "// The roles of the WorkOS staging environment, which follow the hosted role mapping.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 83,
+          "text": "// An active membership of Alice in Acme with only User, which no directory connection manages.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 98,
+          "text": "// A pending invitation of Bob to Acme as User, which expires a week after the clock time.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 113,
+          "text": "// The error of the SDK for a WorkOS 404.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 118,
+          "text": "// The error of the SDK for a WorkOS refusal with this status and code, such as 400.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 123,
+          "text": "// A double of the WorkOS SDK client of the organization directory. It answers from the records that a test sets, and",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 124,
+          "text": "// records each call in order. A role write changes the roles and the update time of the membership, as WorkOS does.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 133,
+          "text": "  // The organizations that the organization reads give, by ID.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 138,
+          "text": "  // An answer of an invitation change in place of the default answer.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 140,
+          "text": "  // A failure for each method name. The double records the call before it fails.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 165,
+          "text": "  // The directory under test. The default clock gives the fixed time.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 192,
+          "text": "  // WorkOS keeps each other role. A write that adds a role that the membership has, or removes one that it does not",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 193,
+          "text": "  // have, changes nothing, also not the update time.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 205,
+          "text": "// A failed directory call that is not a configuration error names no user ID, no email address, and no invitation",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": 206,
+          "text": "// credential, so that a report of the failure holds none.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/unit/auth-workos/workos-organizations-members.test.ts": {
+      "changed": false,
+      "head_lines": 291,
+      "base_lines": 291,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/workos-organizations-members.test.ts",
+          "line": 22,
+          "text": "// WorkOS with these memberships on one page, each also readable by its ID, and the users of Alice, Bob, and Carol.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/unit/auth-workos/workos-organizations-members.test.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/unit/auth-workos/workos-organizations-memberships.test.ts": {
+      "changed": false,
+      "head_lines": 227,
+      "base_lines": 227,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+          "line": 19,
+          "text": "// Access resolution never reads a member, an invitation, or an organization, and never writes a role.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+          "line": 40,
+          "text": "// The memberships reads of the pinned SDK client. Each read gets the page of its after cursor: page 0 without a",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+          "line": 41,
+          "text": "// cursor, and page n with the cursor \"cursor-n\". Each read is kept, so that a test can check the exact query.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts": {
+      "changed": true,
+      "head_lines": 91,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/unit/auth-workos/workos-organizations.test.ts": {
+      "changed": false,
+      "head_lines": 285,
+      "base_lines": 285,
+      "findings": [
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/workos-organizations.test.ts",
+          "line": 20,
+          "text": "// Access resolution never reads a member, an invitation, or an organization, and never writes a role.",
+          "inherited_line": true
+        },
+        {
+          "category": "non-essential-comment",
+          "path": "test/unit/auth-workos/workos-organizations.test.ts",
+          "line": 41,
+          "text": "// Records each SDK read, so that a test can check the exact query.",
+          "inherited_line": true
+        },
+        {
+          "category": "oversized-file",
+          "path": "test/unit/auth-workos/workos-organizations.test.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/unit/logging/audit/pg-removal-operation-store.test.ts": {
+      "changed": true,
+      "head_lines": 67,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/unit/organizations/fixtures/membership-removal-fixtures.ts": {
+      "changed": true,
+      "head_lines": 65,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/unit/organizations/membership-removal-lifetime.test.ts": {
+      "changed": true,
+      "head_lines": 230,
+      "base_lines": 0,
+      "findings": [
+        {
+          "category": "oversized-file",
+          "path": "test/unit/organizations/membership-removal-lifetime.test.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    },
+    "test/unit/organizations/membership-removal-outcomes.test.ts": {
+      "changed": true,
+      "head_lines": 167,
+      "base_lines": 0,
+      "findings": []
+    },
+    "test/unit/organizations/membership-removal-rules.test.ts": {
+      "changed": true,
+      "head_lines": 213,
+      "base_lines": 0,
+      "findings": [
+        {
+          "category": "oversized-file",
+          "path": "test/unit/organizations/membership-removal-rules.test.ts",
+          "line": null,
+          "text": null,
+          "inherited_line": null
+        }
+      ]
+    }
+  }
+}

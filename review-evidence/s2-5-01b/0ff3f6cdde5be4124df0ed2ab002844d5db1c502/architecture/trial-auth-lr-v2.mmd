@@ -1,0 +1,23 @@
+%%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+flowchart LR
+  hosted_portal["L2: user portal<br/>Browser account and connection UI"]
+  subgraph account_server["Container: Thermus Node server · hosted"]
+    account_root["app · TypeScript<br/>Select edition; supply roles"]
+    account_web["web · TypeScript<br/>Accounts and sign-in"]
+    account_mcp["mcp · TypeScript<br/>Verify request access"]
+    account_identity["identity · TypeScript<br/>Trusted access contracts"]
+    account_org["organizations · TypeScript<br/>Roles, invites and checked removal"]
+    account_billing["billing · TypeScript<br/>Free plan and seats"]
+    account_workos["workos · TypeScript / SDK<br/>Access, sessions and directory"]
+  end
+  hosted_workos["External: WorkOS<br/>Identity and organizations"]
+  hosted_portal -->|account HTTP| account_web
+  account_root ==>|supplies account roles| account_web
+  account_root ==>|supplies verification| account_mcp
+  account_web -->|session / access| account_workos
+  account_mcp -->|verification / access| account_workos
+  account_web -->|administration| account_org
+  account_org -->|directory calls| account_workos
+  account_org -->|billing calls| account_billing
+  account_workos -->|trusted access records| account_identity
+  account_workos -->|HTTPS / SDK + JWKS| hosted_workos

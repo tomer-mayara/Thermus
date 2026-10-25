@@ -1,0 +1,85 @@
+[
+  {
+    "name": "comparison-v2",
+    "source": "comparison-v2.mmd",
+    "heading": "C4 L3 comparison: hosted membership removal",
+    "sha256": "3660d10cbad98f631fc92832da7fe19e50e6bc374166c0a312dfaa9b320bcd2e"
+  },
+  {
+    "name": "registry-hosted-containers-v2",
+    "source": "embedded-registry-hosted-containers-v2.mmd",
+    "proposal": "registry-hosted-containers-v2.mmd",
+    "index": 2,
+    "heading": "C4 containers: hosted edition",
+    "start_line": 61,
+    "end_line": 86,
+    "sha256": "6efd91bd512f70bc71446bc7beafa8c60d12e7be40fe97b8e9ee2caab6d32035",
+    "byte_match": true
+  },
+  {
+    "name": "registry-hosted-auth-v2",
+    "source": "embedded-registry-hosted-auth-v2.mmd",
+    "proposal": "registry-hosted-auth-v2.mmd",
+    "index": 5,
+    "heading": "Selected C4 components: hosted authentication in the Node server",
+    "start_line": 198,
+    "end_line": 222,
+    "sha256": "0eb999ee23b54a61a8e3703c4e63f833856af3727e972e511bed703e7c5eccf3",
+    "byte_match": true
+  },
+  {
+    "name": "registry-membership-removal-v2",
+    "source": "embedded-registry-membership-removal-v2.mmd",
+    "proposal": "registry-membership-removal-v2.mmd",
+    "index": 6,
+    "heading": "Selected C4 components: hosted membership removal in the Node server",
+    "start_line": 263,
+    "end_line": 281,
+    "sha256": "c3a194b087c659c47f878a0d8a38daa685f2508190a4d4e5954e172247f50e63",
+    "byte_match": true
+  },
+  {
+    "name": "registry-audit-storage-v1",
+    "source": "embedded-registry-audit-storage-v1.mmd",
+    "proposal": "registry-audit-storage-v1.mmd",
+    "index": 7,
+    "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "start_line": 329,
+    "end_line": 346,
+    "sha256": "81bf68dcbc6500daa05fdcaff1294b1160325c9094ad6960f38d70532e03b260",
+    "byte_match": true
+  },
+  {
+    "name": "registry-collaboration-v3",
+    "source": "embedded-registry-collaboration-v3.mmd",
+    "proposal": "registry-collaboration-v3.mmd",
+    "index": 10,
+    "heading": "Collaboration overview",
+    "start_line": 663,
+    "end_line": 693,
+    "sha256": "5cfd938fbfd94b2900fd0499c2c76edf0cae14faf20804dfce468ef7f71274f0",
+    "byte_match": true
+  },
+  {
+    "name": "registry-deployment-local-v4",
+    "source": "embedded-registry-deployment-local-v4.mmd",
+    "proposal": "registry-deployment-local-v4.mmd",
+    "index": 14,
+    "heading": "Self-hosted Compose",
+    "start_line": 1004,
+    "end_line": 1018,
+    "sha256": "4b03d531fb5b0495291131a2baf0bc65b44e8f925886dfd1961c1ed53a86331b",
+    "byte_match": true
+  },
+  {
+    "name": "registry-deployment-hosted-v4",
+    "source": "embedded-registry-deployment-hosted-v4.mmd",
+    "proposal": "registry-deployment-hosted-v4.mmd",
+    "index": 15,
+    "heading": "Recorded hosted Render target",
+    "start_line": 1029,
+    "end_line": 1050,
+    "sha256": "d31dc72684e9e9a494f7ad2d780ea0678ebc82fab1899309efc182634ea62ec0",
+    "byte_match": true
+  }
+]

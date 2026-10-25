@@ -1,0 +1,72 @@
+✔ Given an authorization read failure, when removal is requested, then it is unavailable without admission or provider deletion (3.734917ms)
+✔ Given an admission that commits but gives unconfirmed, when its own intent is visible, then it still sends nothing and makes no recovery read (2.898167ms)
+✔ Given an admission that commits but gives throw, when its own intent is visible, then it still sends nothing and makes no recovery read (0.182667ms)
+✔ Given another unresolved operation, when a valid conflicting removal arrives, then it returns busy without target reads, deletion, or completion (0.176209ms)
+✔ Given removal storage that explicitly refuses availability, when removal is requested, then it sends nothing and leaves ordinary reads usable (0.219791ms)
+✔ Given a thrown provider error with an absent effect, when removal was sent once, then uncertainty holds the organization and prevents a second delete (0.804584ms)
+✔ Given a thrown provider error with an applied effect, when removal was sent once, then uncertainty holds the organization and prevents a second delete (0.41875ms)
+✔ Given an explicit provider no-effect refusal, when deletion is unsupported, then the same operation is durably completed without an effect (0.310917ms)
+✔ Given a provider answer of undefined, when no terminal result is proved, then removal stays unknown (0.233334ms)
+✔ Given a provider answer of {"outcome":"not-found"}, when no terminal result is proved, then removal stays unknown (0.21775ms)
+✔ Given finalization that commits but gives unconfirmed, when the exact terminal receipt is read, then the confirmed result can be returned (0.211458ms)
+✔ Given finalization that commits but gives unavailable, when the exact terminal receipt is read, then the confirmed result can be returned (0.1645ms)
+✔ Given finalization that commits but gives throw, when the exact terminal receipt is read, then the confirmed result can be returned (0.124583ms)
+✔ Given an uncertain final commit with a pending receipt, when provider deletion succeeded, then no durable success is claimed (0.286166ms)
+✔ Given an uncertain final commit with a absent receipt, when provider deletion succeeded, then no durable success is claimed (0.130875ms)
+✔ Given an uncertain final commit with a other-operation receipt, when provider deletion succeeded, then no durable success is claimed (0.120875ms)
+✖ Given an uncertain final commit with a other-organization receipt, when provider deletion succeeded, then no durable success is claimed (1.487291ms)
+✔ Given an uncertain final commit with a other-outcome receipt, when provider deletion succeeded, then no durable success is claimed (0.123042ms)
+✔ Given an uncertain final commit with a unavailable receipt, when provider deletion succeeded, then no durable success is claimed (0.090209ms)
+✔ Given an uncertain final commit with a throw receipt, when provider deletion succeeded, then no durable success is claimed (0.115ms)
+✖ Given an explicit completion mismatch, when a later read could show matching fields, then the rejected completion still returns unknown (0.17675ms)
+✔ Given another operation admitted before an old completion, when the stale completion runs, then it cannot clear the new hold (0.122292ms)
+✔ Given a recorder that throws, when removal returns applied, then recording cannot change the result or repeat deletion (0.13425ms)
+✔ Given a recorder that throws, when removal returns unknown, then recording cannot change the result or repeat deletion (0.097958ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 22
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.625042
+
+✖ failing tests:
+
+test at test/unit/organizations/membership-removal-outcomes.test.ts:105:3
+✖ Given an uncertain final commit with a other-organization receipt, when provider deletion succeeded, then no durable success is claimed (1.487291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'applied'
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-outcomes.test.ts:120:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-outcomes.test.ts:125:1
+✖ Given an explicit completion mismatch, when a later read could show matching fields, then the rejected completion still returns unknown (0.17675ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'applied'
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-outcomes.test.ts:135:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

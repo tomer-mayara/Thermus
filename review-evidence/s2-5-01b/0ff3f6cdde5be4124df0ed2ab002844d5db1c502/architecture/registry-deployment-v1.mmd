@@ -1,0 +1,33 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  subgraph deploy_local["Deployment alternative: self-hosted Compose"]
+    deploy_loopback["Host endpoint<br/>127.0.0.1:8080"]
+    subgraph deploy_local_docker["Docker container · Thermus image"]
+      deploy_local_node["Node server process<br/>HTTP :8080 / local edition"]
+      deploy_local_child["Lightpanda child process<br/>Per fetch / same image"]
+    end
+    deploy_volume["Named volume: thermus-data<br/>/var/lib/thermus · SQLite and secrets"]
+    deploy_rules["Read-only bind mount<br/>/etc/thermus/ad-rules.txt"]
+    deploy_loopback -->|published port| deploy_local_node
+    deploy_local_node -->|execFile / stdout JSON| deploy_local_child
+    deploy_local_node -->|SQLite / filesystem, locked directory| deploy_volume
+    deploy_rules -->|startup rules read| deploy_local_node
+  end
+  subgraph deploy_hosted["Recorded target: hosted Render web service"]
+    deploy_edge["Render HTTPS edge<br/>Recorded ingress target"]
+    subgraph deploy_hosted_docker["Docker container · hosted image"]
+      deploy_hosted_node["Node server process<br/>HTTP :8080 / portal + account + MCP"]
+      deploy_hosted_child["Lightpanda child process<br/>Per fetch / same image"]
+    end
+    deploy_edge -->|HTTP forwarding to :8080| deploy_hosted_node
+    deploy_hosted_node -->|execFile / stdout JSON| deploy_hosted_child
+  end
+  deploy_settings[("Optional managed PostgreSQL<br/>Private settings and removal intent<br/>Selected Supabase target; rollout unverified")]
+  deploy_hosted_node -->|pg / verified TLS when configured| deploy_settings
+  deploy_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
+  deploy_hosted_node -->|authorized export and Test / HTTPS| deploy_collector
+  deploy_workos["External system: WorkOS / AuthKit<br/>HTTPS identity / organization services"]
+  deploy_public["External systems: public websites<br/>HTTP / HTTPS pages and Brave HTML"]
+  deploy_hosted_node -->|HTTPS SDK / key set| deploy_workos
+  deploy_hosted_child --> deploy_public
+  deploy_local_child --> deploy_public

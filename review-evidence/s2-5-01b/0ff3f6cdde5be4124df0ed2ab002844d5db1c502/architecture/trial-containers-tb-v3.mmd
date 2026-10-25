@@ -1,0 +1,21 @@
+%%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+flowchart TB
+  hosted_user["Person: customer<br/>Tools and access"]
+  hosted_client["External: MCP client<br/>Tool calls"]
+  subgraph hosted_system["Software system: Thermus · hosted"]
+    hosted_portal["Browser app: portal<br/>JavaScript / HTML / CSS<br/>Accounts and setup"]
+    hosted_server["Server container<br/>Node.js / TypeScript<br/>Tools and accounts"]
+    hosted_renderer["Renderer process<br/>Lightpanda<br/>One page per fetch"]
+    hosted_settings[("PostgreSQL datastore<br/>Private settings and<br/>removal intent")]
+  end
+  hosted_workos["External: WorkOS<br/>Identity and orgs"]
+  hosted_public["External: public web<br/>Pages and Brave HTML"]
+  hosted_collector["External: Collector<br/>Events and Test"]
+  hosted_user -->|browser| hosted_portal
+  hosted_client -->|MCP / HTTP bearer| hosted_server
+  hosted_portal -->|account HTTP| hosted_server
+  hosted_server -->|HTTPS / SDK + JWKS| hosted_workos
+  hosted_server -->|pg / verified TLS| hosted_settings
+  hosted_server -->|OTLP JSON / HTTPS| hosted_collector
+  hosted_server -->|execFile / JSON| hosted_renderer
+  hosted_renderer -->|HTTP / HTTPS| hosted_public

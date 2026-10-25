@@ -1,0 +1,22 @@
+%%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+flowchart TB
+  subgraph deploy_hosted["Recorded target: hosted Render service"]
+    deploy_edge["Render HTTPS edge<br/>Ingress target"]
+    subgraph deploy_hosted_docker["Docker container · hosted image"]
+      deploy_hosted_node["Node server process<br/>HTTP :8080<br/>Portal / account / MCP"]
+      deploy_hosted_child["Lightpanda process<br/>Per fetch / same image"]
+    end
+    deploy_edge -->|HTTP :8080| deploy_hosted_node
+    deploy_hosted_node -->|execFile / JSON| deploy_hosted_child
+  end
+  deploy_settings[("Managed PostgreSQL<br/>Settings and removal intent<br/>Rollout unverified")]
+  deploy_collector["External: Collector<br/>Events and Test"]
+  deploy_workos["External: WorkOS<br/>Identity and orgs"]
+  deploy_public["External: public web<br/>Pages and Brave HTML"]
+  deploy_hosted_node -->|pg / verified TLS| deploy_settings
+  deploy_hosted_node -->|OTLP / HTTPS| deploy_collector
+  deploy_hosted_node -->|HTTPS SDK / JWKS| deploy_workos
+  deploy_hosted_child -->|HTTP / HTTPS| deploy_public
+  %% Invisible links keep external services in one column.
+  deploy_settings ~~~ deploy_collector
+  deploy_collector ~~~ deploy_workos

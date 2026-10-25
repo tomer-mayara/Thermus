@@ -1,0 +1,11 @@
+✔ Given a removal process paused after-admission, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2452.726958ms)
+✔ Given a removal process paused during-provider, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (1988.704583ms)
+✔ Given a removal process paused before-completion, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (1736.01925ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6287.232416

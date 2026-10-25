@@ -1,0 +1,29 @@
+%%{init: {"flowchart": {"wrappingWidth": 110, "nodeSpacing": 12, "rankSpacing": 35}}}%%
+flowchart TB
+  clients["Clients / operator<br/>user-portal"]
+  interfaces["Request adapters<br/>mcp / web / cli"]
+  accounts["Account rules<br/>identity / organizations / billing"]
+  hosted["Hosted provider<br/>workos"]
+  local["Local provider<br/>better-auth"]
+  workos_service(["WorkOS / AuthKit"])
+  local_data[("Local auth data directory")]
+  tools["Tool operations<br/>page-fetch / search"]
+  processing["Content processing<br/>execution / html-processing"]
+  fetching["Page providers<br/>search-engine / website-fetcher"]
+  external_web(["Lightpanda → public web"])
+  runtime["Runtime owners<br/>app / config / http / system-logs / audit-logs"]
+  settings_data[("Hosted PostgreSQL<br/>Settings and removal intent")]
+  clients --> interfaces
+  interfaces -->|MCP tools| tools
+  interfaces -->|account calls| accounts
+  accounts -->|hosted| hosted
+  accounts -->|local| local
+  hosted --> workos_service
+  local --> local_data
+  tools --> processing
+  tools --> fetching
+  fetching --> external_web
+  runtime -.->|compose / serve / close| interfaces
+  interfaces -->|settings / capture| runtime
+  accounts -->|removal store| runtime
+  runtime -->|settings + intent / SQL| settings_data

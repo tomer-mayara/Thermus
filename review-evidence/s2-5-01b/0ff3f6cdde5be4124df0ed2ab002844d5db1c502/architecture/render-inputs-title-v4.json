@@ -1,0 +1,16 @@
+[
+  {
+    "name": "trial-deployment-local-title-v4",
+    "source": "trial-deployment-local-title-v4.mmd",
+    "heading": "trial-deployment-local-title-v4",
+    "sha256": "4b03d531fb5b0495291131a2baf0bc65b44e8f925886dfd1961c1ed53a86331b",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-deployment-hosted-title-v4",
+    "source": "trial-deployment-hosted-title-v4.mmd",
+    "heading": "trial-deployment-hosted-title-v4",
+    "sha256": "d31dc72684e9e9a494f7ad2d780ea0678ebc82fab1899309efc182634ea62ec0",
+    "byte_match": "proposal trial, not embedded"
+  }
+]

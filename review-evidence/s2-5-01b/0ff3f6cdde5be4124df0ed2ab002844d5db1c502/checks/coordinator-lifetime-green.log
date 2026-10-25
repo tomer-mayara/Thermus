@@ -1,0 +1,35 @@
+✔ Given an unresolved initial authorization read, when the fixed 30-second total budget ends, then the caller returns unavailable and a late read cannot admit or delete (4.861833ms)
+✔ Given an admission whose commit is unresolved, when the total deadline passes, then a late admitted answer never dispatches and the hold remains (2.848833ms)
+✔ Given an admitted removal paused in current member reads, when deadline stops its lifetime, then a late continuation cannot send or clear the hold (1.07325ms)
+✔ Given an admitted removal paused in current member reads, when close stops its lifetime, then a late continuation cannot send or clear the hold (0.752291ms)
+✔ Given a final member page that consumes the deadline, when its answer is returned, then the synchronous pre-send guard prevents deletion (0.610833ms)
+✔ Given a possibly live provider deletion, when shutdown stops the coordinator and a positive reply arrives later, then it stays unknown and held with no retry or late completion (1.370375ms)
+✔ Given provider success and a stalled final commit, when the total deadline ends, then no success is returned and no further read or write starts (1.561125ms)
+✔ Given a current Admin without MFA proof, when an ordinary membership is removed, then only its exact ID is deleted after durable admission and completion is recorded (5.628833ms)
+✔ Given a User or foreign authority, when removal is requested, then it is denied before admission (0.264334ms)
+✔ Given unavailable removal storage, when removal is requested, then it is unavailable while organization access still works (0.227125ms)
+✔ Given authority that changes during durable admission, when current reads resume, then removal is denied and its own no-send intent is completed (0.20825ms)
+✔ Given an otherwise valid removal with only another organization, when current target facts are checked, then no provider delete runs (0.478584ms)
+✔ Given an otherwise valid removal with only another membership ID, when current target facts are checked, then no provider delete runs (0.229ms)
+✔ Given an otherwise valid removal with only stale revision, when current target facts are checked, then no provider delete runs (0.17075ms)
+✔ Given an otherwise valid removal with only inactive status, when current target facts are checked, then no provider delete runs (0.148125ms)
+✔ Given an otherwise valid removal with only pending status, when current target facts are checked, then no provider delete runs (0.179209ms)
+✔ Given an otherwise valid removal with only unknown role, when current target facts are checked, then no provider delete runs (0.167125ms)
+✔ Given an otherwise valid removal with only permissionless extra role, when current target facts are checked, then no provider delete runs (0.122458ms)
+✔ Given an otherwise valid removal with only no roles, when current target facts are checked, then no provider delete runs (0.131292ms)
+✔ Given an otherwise valid removal with only external management, when current target facts are checked, then no provider delete runs (0.122333ms)
+✔ Given an otherwise valid removal with only unknown management, when current target facts are checked, then no provider delete runs (0.096958ms)
+✔ Given a target that disappeared, when removal is requested, then its stale form cannot delete another membership (0.149333ms)
+✔ Given one active Admin plus inactive and pending Admins and an invitation, when self-removal is requested, then the last Admin is retained (0.203541ms)
+✔ Given a second active Admin on a later page, when self-removal is requested, then all pages are read and removal is allowed (0.178416ms)
+✔ Given a later page failure or a repeating cursor, when the full Admin count cannot be established, then removal refuses without a partial count (0.339375ms)
+✔ Given the last Admin duplicated across pages, when a newer record makes the other Admin inactive, then duplicates and stale active state do not permit self-removal (0.598083ms)
+✔ Given a target that changes from User to Admin between its direct read and the member pages, when removal finishes its checks, then the changed target is refused (0.13075ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.724667

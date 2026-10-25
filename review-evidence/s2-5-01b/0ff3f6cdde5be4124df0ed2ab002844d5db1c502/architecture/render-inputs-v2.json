@@ -1,0 +1,68 @@
+[
+  {
+    "name": "comparison-v2",
+    "source": "comparison-v2.mmd",
+    "heading": "C4 L3 comparison: hosted membership removal",
+    "sha256": "3660d10cbad98f631fc92832da7fe19e50e6bc374166c0a312dfaa9b320bcd2e"
+  },
+  {
+    "name": "registry-hosted-containers-v1",
+    "source": "embedded-registry-hosted-containers-v1.mmd",
+    "proposal": "registry-hosted-containers-v1.mmd",
+    "heading": "C4 containers: hosted edition",
+    "start_line": 57,
+    "end_line": 80,
+    "sha256": "3a8370d45077e4a28a88cc4a7310f7bb8d0f72317e0c82626b6057e756ad4971",
+    "byte_match": true
+  },
+  {
+    "name": "registry-hosted-auth-v1",
+    "source": "embedded-registry-hosted-auth-v1.mmd",
+    "proposal": "registry-hosted-auth-v1.mmd",
+    "heading": "Selected C4 components: hosted authentication in the Node server",
+    "start_line": 189,
+    "end_line": 213,
+    "sha256": "3869e967426e85b73dda13511de458150e589dd86ab41ea7bb6f9526544d5544",
+    "byte_match": true
+  },
+  {
+    "name": "registry-membership-removal-v2",
+    "source": "embedded-registry-membership-removal-v2.mmd",
+    "proposal": "registry-membership-removal-v2.mmd",
+    "heading": "Selected C4 components: hosted membership removal in the Node server",
+    "start_line": 254,
+    "end_line": 272,
+    "sha256": "c3a194b087c659c47f878a0d8a38daa685f2508190a4d4e5954e172247f50e63",
+    "byte_match": true
+  },
+  {
+    "name": "registry-audit-storage-v1",
+    "source": "embedded-registry-audit-storage-v1.mmd",
+    "proposal": "registry-audit-storage-v1.mmd",
+    "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "start_line": 320,
+    "end_line": 337,
+    "sha256": "81bf68dcbc6500daa05fdcaff1294b1160325c9094ad6960f38d70532e03b260",
+    "byte_match": true
+  },
+  {
+    "name": "registry-collaboration-v1",
+    "source": "embedded-registry-collaboration-v1.mmd",
+    "proposal": "registry-collaboration-v1.mmd",
+    "heading": "Collaboration overview",
+    "start_line": 654,
+    "end_line": 683,
+    "sha256": "4a789a98b91a0c0d80035bfa33604c012f629616dcd795d6348683c395fee181",
+    "byte_match": true
+  },
+  {
+    "name": "registry-deployment-v1",
+    "source": "embedded-registry-deployment-v1.mmd",
+    "proposal": "registry-deployment-v1.mmd",
+    "heading": "Deployment view",
+    "start_line": 986,
+    "end_line": 1020,
+    "sha256": "ce9bed40c5f6fd6e23396255d880292461b5152fa3f7fb6679d622cdada5acfb",
+    "byte_match": true
+  }
+]

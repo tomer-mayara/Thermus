@@ -1,0 +1,9 @@
+
+> thermus@0.0.0 test
+> npm run build && node --test --test-concurrency=1 "dist/test/**/!(hosted-image).test.js" && npm run test:user-portal
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+test/integration/logging/audit/removal-operations.runtime.ts(97,258): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.

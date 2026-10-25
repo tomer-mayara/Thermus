@@ -1,0 +1,136 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "source_sha256": {
+    "architecture/components.md": "a1dcca93efbc0393fc42a78cd853fabb7ae1f5e9e516fb7fdb09cc341b4f3cef",
+    "src/app/application.ts": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+    "src/app/logging-storage.ts": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+    "src/accounts/organizations/organization-administration.ts": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+    "src/accounts/organizations/membership-removal.ts": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+    "src/accounts/organizations/membership-removal-checks.ts": "fcfda7a175d95af3d945f218b3cbfb487814d99cf04525112f8d29aec24768a5",
+    "src/accounts/organizations/membership-removal-lifetime.ts": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+    "src/accounts/organizations/removal-operation-store.ts": "e86c5e5f0b921ca99eb77862dca6aea4c23f6cf826d6f463f497c2987b8f78c4",
+    "src/accounts/organizations/change-records.ts": "4c2fa7393fe5ca23919e7f254869e97b5116cdd28426e1b9dd9d259a730a3a85",
+    "src/accounts/organizations/organization-directory.ts": "e816b32b8915560eb51e4731ac8da7f744f98e3fdf9f64756492d444ba47eea0",
+    "src/accounts/providers/workos/workos-organizations.ts": "71aca4b60b4492eab3be02de8755ce777b7ad7a338181971b9e08f328a6e08f0",
+    "src/logs/audit/pg-destination-settings-store.ts": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+    "sql/migrations/20261025082850_membership_removal_operations.sql": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55"
+  },
+  "registry_views": [
+    {
+      "index": 1,
+      "heading": "Context",
+      "start_line": 30,
+      "end_line": 47,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "index": 2,
+      "heading": "C4 containers: hosted edition",
+      "start_line": 61,
+      "end_line": 86,
+      "sha256": "6efd91bd512f70bc71446bc7beafa8c60d12e7be40fe97b8e9ee2caab6d32035"
+    },
+    {
+      "index": 3,
+      "heading": "C4 containers: local edition",
+      "start_line": 95,
+      "end_line": 116,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "index": 4,
+      "heading": "Selected C4 components: tool processing in the Node server",
+      "start_line": 146,
+      "end_line": 175,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "index": 5,
+      "heading": "Selected C4 components: hosted authentication in the Node server",
+      "start_line": 198,
+      "end_line": 222,
+      "sha256": "0eb999ee23b54a61a8e3703c4e63f833856af3727e972e511bed703e7c5eccf3"
+    },
+    {
+      "index": 6,
+      "heading": "Selected C4 components: hosted membership removal in the Node server",
+      "start_line": 263,
+      "end_line": 281,
+      "sha256": "c3a194b087c659c47f878a0d8a38daa685f2508190a4d4e5954e172247f50e63"
+    },
+    {
+      "index": 7,
+      "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "start_line": 329,
+      "end_line": 346,
+      "sha256": "81bf68dcbc6500daa05fdcaff1294b1160325c9094ad6960f38d70532e03b260"
+    },
+    {
+      "index": 8,
+      "heading": "Selected C4 components: system and audit logs in the Node server",
+      "start_line": 414,
+      "end_line": 430,
+      "sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa"
+    },
+    {
+      "index": 9,
+      "heading": "Selected C4 components: local authentication in the Node server",
+      "start_line": 616,
+      "end_line": 635,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "index": 10,
+      "heading": "Collaboration overview",
+      "start_line": 663,
+      "end_line": 693,
+      "sha256": "5cfd938fbfd94b2900fd0499c2c76edf0cae14faf20804dfce468ef7f71274f0"
+    },
+    {
+      "index": 11,
+      "heading": "Scenario: MCP page fetch and renderer cancellation",
+      "start_line": 735,
+      "end_line": 787,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "index": 12,
+      "heading": "Scenario: hosted default sign-in landing",
+      "start_line": 806,
+      "end_line": 852,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "index": 13,
+      "heading": "Scenario: hosted member read",
+      "start_line": 873,
+      "end_line": 933,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "index": 14,
+      "heading": "Self-hosted Compose",
+      "start_line": 1004,
+      "end_line": 1018,
+      "sha256": "e7a208ef4d10911b94acd217c974e1460a20fdbf32a434a141706fa2ee8e7b5a"
+    },
+    {
+      "index": 15,
+      "heading": "Recorded hosted Render target",
+      "start_line": 1029,
+      "end_line": 1050,
+      "sha256": "6b2d008638c586eedca01b5d99e0b95bd6d777c46115c69f70a9f6de915f4265"
+    }
+  ],
+  "changed_registry_views": [
+    "C4 containers: hosted edition",
+    "Selected C4 components: hosted authentication in the Node server",
+    "Selected C4 components: hosted membership removal in the Node server",
+    "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "Collaboration overview",
+    "Self-hosted Compose",
+    "Recorded hosted Render target"
+  ],
+  "manager_review": "pending"
+}

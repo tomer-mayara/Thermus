@@ -1,0 +1,13 @@
+%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+flowchart TB
+  subgraph deploy_local["Deployment alternative: self-hosted Compose"]
+    subgraph deploy_local_docker["Docker container · Thermus image"]
+      deploy_local_node["Node server process<br/>HTTP :8080 / local"]
+      deploy_local_child["Lightpanda process<br/>Per fetch / same image"]
+    end
+    deploy_volume[("Named volume: thermus-data<br/>SQLite and secrets")]
+    deploy_local_node -->|execFile / JSON| deploy_local_child
+    deploy_local_node -->|locked data directory| deploy_volume
+  end
+  deploy_public["External: public web<br/>Pages and Brave HTML"]
+  deploy_local_child -->|HTTP / HTTPS| deploy_public

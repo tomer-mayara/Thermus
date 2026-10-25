@@ -1,0 +1,12 @@
+[
+  {
+    "name": "registry-collaboration-v2",
+    "source": "embedded-registry-collaboration-v2.mmd",
+    "proposal": "registry-collaboration-v2.mmd",
+    "heading": "Collaboration overview",
+    "start_line": 654,
+    "end_line": 683,
+    "sha256": "713d893655da523967368b6b71af8a16b75f76d8f5cc37169635354ef4614dc8",
+    "byte_match": true
+  }
+]

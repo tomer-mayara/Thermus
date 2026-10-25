@@ -1,0 +1,50 @@
+✖ Given two password-only Admins and separate SQL pools, when one removal is admitted, then another instance is busy, another organization proceeds, and the remaining Admin cannot remove itself (2203.534334ms)
+✖ Given a committed removal whose provider reply is lost and whose recorder fails, when SQL and the coordinator reopen, then the same organization stays busy without replaying deletion (1437.189542ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3723.618834
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/membership-removal.runtime.js:10:1
+✖ Given two password-only Admins and separate SQL pools, when one removal is admitted, then another instance is busy, another organization proceeds, and the remaining Admin cannot remove itself (2203.534334ms)
+  AssertionError [ERR_ASSERTION]: The administration service must own membership removal
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/membership-removal.runtime.js:25:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/membership-removal.runtime.js:56:1
+✖ Given a committed removal whose provider reply is lost and whose recorder fails, when SQL and the coordinator reopen, then the same organization stays busy without replaying deletion (1437.189542ms)
+  AssertionError [ERR_ASSERTION]: The administration service must own membership removal
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/auth/membership-removal.runtime.js:66:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

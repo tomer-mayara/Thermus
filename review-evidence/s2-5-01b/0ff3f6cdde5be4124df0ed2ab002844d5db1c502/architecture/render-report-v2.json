@@ -1,0 +1,225 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "b0dd730a2a3b3ffa9b977cdc36fb57dc212ae2cebf2c24fda1ccb8179e86d528",
+  "diagrams": [
+    {
+      "name": "comparison-v2",
+      "source": "comparison-v2.mmd",
+      "heading": "C4 L3 comparison: hosted membership removal",
+      "sha256": "3660d10cbad98f631fc92832da7fe19e50e6bc374166c0a312dfaa9b320bcd2e",
+      "image": "comparison-v2-800.png",
+      "vector": "comparison-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 818.828125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 787.375,
+        "height": 805.9210205078125
+      },
+      "scaledFontPx": 16.256548658517225,
+      "nodeCount": 6,
+      "pngSha256": "eb32e2e755259d9d6e1e25ac3d2360bb0ae105bf94a51cba2fcc6667c867dd0f",
+      "svgSha256": "91f0d7eb7eb2a266c112b7d6209b31e9eb044768a1921915180442c63d1a57bf",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-hosted-containers-v1",
+      "source": "embedded-registry-hosted-containers-v1.mmd",
+      "proposal": "registry-hosted-containers-v1.mmd",
+      "heading": "C4 containers: hosted edition",
+      "start_line": 57,
+      "end_line": 80,
+      "sha256": "3a8370d45077e4a28a88cc4a7310f7bb8d0f72317e0c82626b6057e756ad4971",
+      "byte_match": true,
+      "image": "registry-hosted-containers-v1-800.png",
+      "vector": "registry-hosted-containers-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 394.21875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 2110.421875,
+        "height": 1040
+      },
+      "scaledFontPx": 6.065138042601079,
+      "nodeCount": 9,
+      "pngSha256": "7fd6fa88dc9dff7e778e13002287ff45e02e86727af325bbf82672822b040f2d",
+      "svgSha256": "2d76717b902b4ec230b311ba06f5c3cfbbf33eac6bc98f48b4a27c51db9789c2",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-hosted-auth-v1",
+      "source": "embedded-registry-hosted-auth-v1.mmd",
+      "proposal": "registry-hosted-auth-v1.mmd",
+      "heading": "Selected C4 components: hosted authentication in the Node server",
+      "start_line": 189,
+      "end_line": 213,
+      "sha256": "3869e967426e85b73dda13511de458150e589dd86ab41ea7bb6f9526544d5544",
+      "byte_match": true,
+      "image": "registry-hosted-auth-v1-800.png",
+      "vector": "registry-hosted-auth-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 555.828125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1600.46875,
+        "height": 1112
+      },
+      "scaledFontPx": 7.997656936444401,
+      "nodeCount": 9,
+      "pngSha256": "a1beda820f3a0d54764240d0b25e584bcbfb8b3e3548e8b4aed5a58de10e0f9c",
+      "svgSha256": "7e6a3bee59d31ae8ba2d1e23b17c944ead7cd9147346f54f986ace4618592af7",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-membership-removal-v2",
+      "source": "embedded-registry-membership-removal-v2.mmd",
+      "proposal": "registry-membership-removal-v2.mmd",
+      "heading": "Selected C4 components: hosted membership removal in the Node server",
+      "start_line": 254,
+      "end_line": 272,
+      "sha256": "c3a194b087c659c47f878a0d8a38daa685f2508190a4d4e5954e172247f50e63",
+      "byte_match": true,
+      "image": "registry-membership-removal-v2-800.png",
+      "vector": "registry-membership-removal-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 850.015625
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 781.765625,
+        "height": 830.6507568359375
+      },
+      "scaledFontPx": 16.373193692163174,
+      "nodeCount": 6,
+      "pngSha256": "92d7e2f6aca4707f6befcf05deb93fef55ff29052c3d70038d4b9149ad7b4f8a",
+      "svgSha256": "6e1fe634311cc732bb3fe525c9f4e1ecd1dd7e9ab7a5855a4e9354c7db647788",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-audit-storage-v1",
+      "source": "embedded-registry-audit-storage-v1.mmd",
+      "proposal": "registry-audit-storage-v1.mmd",
+      "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "start_line": 320,
+      "end_line": 337,
+      "sha256": "81bf68dcbc6500daa05fdcaff1294b1160325c9094ad6960f38d70532e03b260",
+      "byte_match": true,
+      "image": "registry-audit-storage-v1-800.png",
+      "vector": "registry-audit-storage-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 907.546875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 803.9140625,
+        "height": 912
+      },
+      "scaledFontPx": 15.92209988241125,
+      "nodeCount": 6,
+      "pngSha256": "c7dc25fc6d581950b4bc004411341d2d774aec3ce8be4ece541120331cc1ae93",
+      "svgSha256": "cb4c5e37f5fa873b15ab8a2f204c7b3ae9d22a7a9328c653de18d28200e9df47",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-collaboration-v1",
+      "source": "embedded-registry-collaboration-v1.mmd",
+      "proposal": "registry-collaboration-v1.mmd",
+      "heading": "Collaboration overview",
+      "start_line": 654,
+      "end_line": 683,
+      "sha256": "4a789a98b91a0c0d80035bfa33604c012f629616dcd795d6348683c395fee181",
+      "byte_match": true,
+      "image": "registry-collaboration-v1-800.png",
+      "vector": "registry-collaboration-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 438.71875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1514.267333984375,
+        "height": 830.4264526367188
+      },
+      "scaledFontPx": 8.452932789826711,
+      "nodeCount": 13,
+      "pngSha256": "fb295a3581ca2222a715c3ff69bb3812653483c2eddfb9e39807ef115c4a6c95",
+      "svgSha256": "f8a7e72a6ab5e98e039f9b6e617f9971685760526ac5b85f59491eb22a0e56ec",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "registry-deployment-v1",
+      "source": "embedded-registry-deployment-v1.mmd",
+      "proposal": "registry-deployment-v1.mmd",
+      "heading": "Deployment view",
+      "start_line": 986,
+      "end_line": 1020,
+      "sha256": "ce9bed40c5f6fd6e23396255d880292461b5152fa3f7fb6679d622cdada5acfb",
+      "byte_match": true,
+      "image": "registry-deployment-v1-800.png",
+      "vector": "registry-deployment-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 217.875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 2915.26171875,
+        "height": 794
+      },
+      "scaledFontPx": 4.390686406532432,
+      "nodeCount": 12,
+      "pngSha256": "65f6b0b7ab285c628bb8c3540a37bfb33a0070321c64a544188a7d40cd938b02",
+      "svgSha256": "25f7dc660b69207e9f745dd993223d11c91ec7001155da3504a351cb4103fe7d",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

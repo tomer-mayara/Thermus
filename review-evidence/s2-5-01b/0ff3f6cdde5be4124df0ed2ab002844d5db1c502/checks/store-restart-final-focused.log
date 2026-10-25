@@ -1,0 +1,31 @@
+✔ Given a removal process paused after-admission, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2958.572ms)
+✔ Given a removal process paused during-provider, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2061.838125ms)
+✔ Given a removal process paused before-completion, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (1940.2095ms)
+✔ Given a current WorkOS Admin and locked settings and removal tables, when removal and an admitted MCP request run, then unavailable admission and unknown writes send no deletion while product and health stay usable (3820.627208ms)
+✔ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (2017.269333ms)
+✔ Given independent SQL pools, when removals contend, then one pending intent wins and another organization proceeds (1507.7035ms)
+✔ Given persisted pending and terminal operations, when pools reopen and stale completions arrive, then only the same intent can settle (1625.491708ms)
+✔ Given committed writes whose replies are lost, when reread through a new pool, then the pending intent and same terminal receipt survive (1510.095916ms)
+✔ Given production logging storage configuration, when settings and removal intent are used and storage closes, then both public roles share the same concrete store and closure (1733.061666ms)
+✔ Given a stored Axiom dataset, when settings are read, then its dataset accompanies the saved revision (2.198792ms)
+✔ Given a stored SQL row, when settings are read, then the public result preserves the opaque settings and revision (0.290583ms)
+✔ Given no SQL row, when settings are read, then the public result reports absence (0.225042ms)
+✔ Given a committed SQL row, when first or changed settings are saved, then the public result reports the saved revision (0.51125ms)
+✔ Given SQL preserves the expected revision, when settings are saved, then the public result reports an unchanged destination (0.2255ms)
+✔ Given SQL returns no saved row, when settings are saved, then the public result reports a conflict (0.242333ms)
+✔ Given a query error with private details, when settings are read or saved, then only safe failure outcomes leave the store (0.247333ms)
+✔ Given a durable removal row, when read, then the original intent and terminal receipt are returned (3.524334ms)
+✔ Given no removal row, when read, then absence is explicit (0.214458ms)
+✔ Given an admission statement result, when admitted or blocked, then only its durable outcome is reported (0.355916ms)
+✔ Given a conditional completion result, when completed or mismatched, then it reports that outcome (0.363083ms)
+✔ Given a query failure, when removal storage reads or writes, then it reports safe unavailable or unconfirmed results (0.335042ms)
+✔ Given failed acquisition, when admission or completion is requested, then no write is claimed (0.3855ms)
+✔ Given a finished removal statement, when its promise resolves, then the SQL client is already released (0.297917ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20928.333792

@@ -1,0 +1,204 @@
+✖ Given a current Admin without MFA proof, when an ordinary membership is removed, then only its exact ID is deleted after durable admission and completion is recorded (0.810959ms)
+✖ Given a User or foreign authority, when removal is requested, then it is denied before admission (0.118959ms)
+✖ Given unavailable removal storage, when removal is requested, then it is unavailable while organization access still works (0.103ms)
+✖ Given authority that changes during durable admission, when current reads resume, then removal is denied and its own no-send intent is completed (0.107958ms)
+✖ Given an otherwise valid removal with only another organization, when current target facts are checked, then no provider delete runs (0.151333ms)
+✖ Given an otherwise valid removal with only another membership ID, when current target facts are checked, then no provider delete runs (0.0935ms)
+✖ Given an otherwise valid removal with only stale revision, when current target facts are checked, then no provider delete runs (0.078208ms)
+✖ Given an otherwise valid removal with only inactive status, when current target facts are checked, then no provider delete runs (0.070209ms)
+✖ Given an otherwise valid removal with only pending status, when current target facts are checked, then no provider delete runs (0.093ms)
+✖ Given an otherwise valid removal with only unknown role, when current target facts are checked, then no provider delete runs (0.125834ms)
+✖ Given an otherwise valid removal with only permissionless extra role, when current target facts are checked, then no provider delete runs (0.085084ms)
+✖ Given an otherwise valid removal with only no roles, when current target facts are checked, then no provider delete runs (0.377208ms)
+✖ Given an otherwise valid removal with only external management, when current target facts are checked, then no provider delete runs (0.148542ms)
+✖ Given an otherwise valid removal with only unknown management, when current target facts are checked, then no provider delete runs (0.11675ms)
+✖ Given a target that disappeared, when removal is requested, then its stale form cannot delete another membership (0.104625ms)
+✖ Given one active Admin plus inactive and pending Admins and an invitation, when self-removal is requested, then the last Admin is retained (0.168541ms)
+✖ Given a second active Admin on a later page, when self-removal is requested, then all pages are read and removal is allowed (0.081917ms)
+✖ Given a later page failure or a repeating cursor, when the full Admin count cannot be established, then removal refuses without a partial count (0.097542ms)
+✖ Given the last Admin duplicated across pages, when a newer record makes the other Admin inactive, then duplicates and stale active state do not permit self-removal (0.072375ms)
+✖ Given a target that changes from User to Admin between its direct read and the member pages, when removal finishes its checks, then the changed target is refused (0.069042ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 0
+ℹ fail 20
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.153334
+
+✖ failing tests:
+
+test at test/unit/organizations/membership-removal-rules.test.ts:8:1
+✖ Given a current Admin without MFA proof, when an ordinary membership is removed, then only its exact ID is deleted after durable admission and completion is recorded (0.810959ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:17:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:26:1
+✖ Given a User or foreign authority, when removal is requested, then it is denied before admission (0.118959ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:29:39)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:35:1
+✖ Given unavailable removal storage, when removal is requested, then it is unavailable while organization access still works (0.103ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:38:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:43:1
+✖ Given authority that changes during durable admission, when current reads resume, then removal is denied and its own no-send intent is completed (0.107958ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:51:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only another organization, when current target facts are checked, then no provider delete runs (0.151333ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only another membership ID, when current target facts are checked, then no provider delete runs (0.0935ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only stale revision, when current target facts are checked, then no provider delete runs (0.078208ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only inactive status, when current target facts are checked, then no provider delete runs (0.070209ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only pending status, when current target facts are checked, then no provider delete runs (0.093ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only unknown role, when current target facts are checked, then no provider delete runs (0.125834ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only permissionless extra role, when current target facts are checked, then no provider delete runs (0.085084ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only no roles, when current target facts are checked, then no provider delete runs (0.377208ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only external management, when current target facts are checked, then no provider delete runs (0.148542ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:70:3
+✖ Given an otherwise valid removal with only unknown management, when current target facts are checked, then no provider delete runs (0.11675ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:75:39)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:81:1
+✖ Given a target that disappeared, when removal is requested, then its stale form cannot delete another membership (0.104625ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:84:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:88:1
+✖ Given one active Admin plus inactive and pending Admins and an invitation, when self-removal is requested, then the last Admin is retained (0.168541ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:96:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:100:1
+✖ Given a second active Admin on a later page, when self-removal is requested, then all pages are read and removal is allowed (0.081917ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:103:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:108:1
+✖ Given a later page failure or a repeating cursor, when the full Admin count cannot be established, then removal refuses without a partial count (0.097542ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:116:39)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:121:1
+✖ Given the last Admin duplicated across pages, when a newer record makes the other Admin inactive, then duplicates and stale active state do not permit self-removal (0.072375ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:124:37)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/organizations/membership-removal-rules.test.ts:128:1
+✖ Given a target that changes from User to Admin between its direct read and the member pages, when removal finishes its checks, then the changed target is refused (0.069042ms)
+  TypeError: administration.removeMember is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:133:37)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)

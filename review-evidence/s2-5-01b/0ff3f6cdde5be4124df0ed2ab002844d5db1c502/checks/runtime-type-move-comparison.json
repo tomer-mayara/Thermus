@@ -1,0 +1,6 @@
+{
+  "beforeCount": 177,
+  "afterCount": 177,
+  "changed": [],
+  "reason": "Public request/result definitions moved to snapshot-visible module; no runtime behavior changed."
+}

@@ -1,0 +1,111 @@
+{
+  "base_commit": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; uncommitted implementation",
+  "registry_views": [
+    {
+      "index": 1,
+      "heading": "Context",
+      "start": 30,
+      "end": 47,
+      "sha256": "660c611b413aa7f2040003a0ce7956677c3365c20ba6f3a53367d33b9563bc7e"
+    },
+    {
+      "index": 2,
+      "heading": "C4 containers: hosted edition",
+      "start": 57,
+      "end": 80,
+      "sha256": "2259545aa8a128f19bb2230565c213727d3284484a88a4393202e35797c5d002"
+    },
+    {
+      "index": 3,
+      "heading": "C4 containers: local edition",
+      "start": 89,
+      "end": 110,
+      "sha256": "e9054b461af3c53fe29bdcc1c641b7a9816f84055248db5eddaec9d70737d22a"
+    },
+    {
+      "index": 4,
+      "heading": "Selected C4 components: tool processing in the Node server",
+      "start": 140,
+      "end": 169,
+      "sha256": "42a606591482f4b07d598ef9987fdbc4b99e00c3afaca773cb092b676eaf1516"
+    },
+    {
+      "index": 5,
+      "heading": "Selected C4 components: hosted authentication in the Node server",
+      "start": 189,
+      "end": 213,
+      "sha256": "3988ce4eedfc8ccf676d6b11a94afd419013d5f3f95a00a64a3c3f21e9db6e1d"
+    },
+    {
+      "index": 6,
+      "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "start": 250,
+      "end": 267,
+      "sha256": "a74714034673691eb96ab2dd92e4756b03932b4a8e0f4ec5878c91c687c68018"
+    },
+    {
+      "index": 7,
+      "heading": "Selected C4 components: system and audit logs in the Node server",
+      "start": 333,
+      "end": 349,
+      "sha256": "1f4bb7f0ef9a54e56555320b8c930c90474ed45ad3d0a61b888bf1a35a8ca0fc"
+    },
+    {
+      "index": 8,
+      "heading": "Selected C4 components: local authentication in the Node server",
+      "start": 535,
+      "end": 554,
+      "sha256": "0f3ba98f59b937d737484dd8f64b797e9cbda364753370b2f99c132ce3cf601c"
+    },
+    {
+      "index": 9,
+      "heading": "Collaboration overview",
+      "start": 582,
+      "end": 610,
+      "sha256": "a67e5026ab22869d549736d4fae3dad2a55554b1d5bf70d1012320ec8c5dce7f"
+    },
+    {
+      "index": 10,
+      "heading": "Scenario: MCP page fetch and renderer cancellation",
+      "start": 649,
+      "end": 701,
+      "sha256": "ba8ad12f845dd5929c7a2d4cb5bffee2f8d6e99ec7bb709c27e8dd52e3a65f14"
+    },
+    {
+      "index": 11,
+      "heading": "Scenario: hosted default sign-in landing",
+      "start": 720,
+      "end": 766,
+      "sha256": "d8e5fb6c51a47eb0d6f322f2e7000a778ae4799720b0cbd49ea5ded2e2008656"
+    },
+    {
+      "index": 12,
+      "heading": "Scenario: hosted member read",
+      "start": 787,
+      "end": 847,
+      "sha256": "5354f9e963f41cbe36432a2437484c302da02707d3ba3c5a3fe4837d2cd40f49"
+    },
+    {
+      "index": 13,
+      "heading": "Deployment view",
+      "start": 908,
+      "end": 942,
+      "sha256": "e4c8ca0758e2aae367cd855c594cbb458fe012180c725b85366d5d751fa4c793"
+    }
+  ],
+  "source_sha256": {
+    "architecture/components.md": "a043ab7147414ff9389291508bfc6941297907f3a8971b52d76eb27f55e9a725",
+    "src/app/application.ts": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+    "src/app/logging-storage.ts": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+    "src/accounts/organizations/organization-administration.ts": "64b307c61c6ea04fa39666a04ebe029a0efecbaac9867a566979360250d77c50",
+    "src/accounts/organizations/membership-removal.ts": "69db403f9d7ea222a475270725314f36e53165e5d59aae465eb50ec89d300ae3",
+    "src/accounts/organizations/membership-removal-checks.ts": "f8530a5b147a22a6b2b2255771ac7f6632a9801477dab54f22ae4a12ced71f8a",
+    "src/accounts/organizations/membership-removal-lifetime.ts": "64343df1c4ce5682c969d4850ecb8864e3836feb4d17e43c3797ca8e7e18a8e1",
+    "src/accounts/organizations/removal-operation-store.ts": "83950d954b8e5e055ded54e67529ee7b42625436866c3a248ea205b8e8c1c874",
+    "src/accounts/organizations/change-records.ts": "4c2fa7393fe5ca23919e7f254869e97b5116cdd28426e1b9dd9d259a730a3a85",
+    "src/logs/audit/pg-destination-settings-store.ts": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+    "sql/migrations/20261025082850_membership_removal_operations.sql": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55"
+  },
+  "render_status": "not rendered; manager review pending"
+}

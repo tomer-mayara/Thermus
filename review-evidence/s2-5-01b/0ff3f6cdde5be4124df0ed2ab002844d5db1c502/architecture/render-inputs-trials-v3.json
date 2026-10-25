@@ -1,0 +1,23 @@
+[
+  {
+    "name": "trial-containers-tb-v3",
+    "source": "trial-containers-tb-v3.mmd",
+    "heading": "trial-containers-tb-v3",
+    "sha256": "3b9f0a40e99aab2f7e5adc68bf791f72d4081f4c80509c6ee4515ca8f5e26d6b",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-deployment-local-v2",
+    "source": "trial-deployment-local-v2.mmd",
+    "heading": "trial-deployment-local-v2",
+    "sha256": "3e6895f1d46759c1bd8cf1a07326e1c3798af26623ef1492f11471bd0c97dbf1",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-deployment-hosted-v2",
+    "source": "trial-deployment-hosted-v2.mmd",
+    "heading": "trial-deployment-hosted-v2",
+    "sha256": "8c2b16a688449e74b5b8b51b55b922d12bb52a38527ae0df25da2cdd029f7a6d",
+    "byte_match": "proposal trial, not embedded"
+  }
+]

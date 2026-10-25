@@ -1,0 +1,73 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "71e7eedf353f45bd40373a6e939ddb5877638ce00735e7df9707a20270abf405",
+  "diagrams": [
+    {
+      "name": "trial-containers-tb-v4",
+      "source": "trial-containers-tb-v4.mmd",
+      "heading": "trial-containers-tb-v4",
+      "sha256": "6efd91bd512f70bc71446bc7beafa8c60d12e7be40fe97b8e9ee2caab6d32035",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-containers-tb-v4-800.png",
+      "vector": "trial-containers-tb-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 1019.234375
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 884.79296875,
+        "height": 1127.2777099609375
+      },
+      "scaledFontPx": 14.46666107449218,
+      "nodeCount": 9,
+      "pngSha256": "14b1a08ac8490533ac1940b4f902389816b8ced0acd2fbc0ae29267995f08f0d",
+      "svgSha256": "bd187c11bfd30aef3021bbbce3fc578480f81602588812a58250cb0937d6d6e0",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-deployment-hosted-v3",
+      "source": "trial-deployment-hosted-v3.mmd",
+      "heading": "trial-deployment-hosted-v3",
+      "sha256": "fa517e573e079b12753be49284eee56d33658f168ba783f3dcce8619f4a6f433",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-deployment-hosted-v3-800.png",
+      "vector": "trial-deployment-hosted-v3-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 968.3125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 767.75,
+        "height": 929.2777709960938
+      },
+      "scaledFontPx": 16.672093780527515,
+      "nodeCount": 7,
+      "pngSha256": "5da67a553acd133abd472a6ba01482be2daf6c1b519561cf81d0b6c07892f2c5",
+      "svgSha256": "345d675c23a742e49c47086539488e9d3f092821ea8cceb02d2d0a236700fa37",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

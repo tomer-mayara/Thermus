@@ -1,0 +1,181 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "71e7eedf353f45bd40373a6e939ddb5877638ce00735e7df9707a20270abf405",
+  "diagrams": [
+    {
+      "name": "trial-auth-lr-v2",
+      "source": "trial-auth-lr-v2.mmd",
+      "heading": "trial-auth-lr-v2",
+      "sha256": "1e64e53b71d457bb1aebf38e4dc5df9ad723ca53a16e9cb6f966dd6f5a4cc3de",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-auth-lr-v2-800.png",
+      "vector": "trial-auth-lr-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 259.53125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1699.890625,
+        "height": 551.5
+      },
+      "scaledFontPx": 7.529896224940943,
+      "nodeCount": 9,
+      "pngSha256": "069616eb47eb164c59a9c39cca1aab7c95f697260249dcb3a715b87cbf908eba",
+      "svgSha256": "f7f1cf364221c3bc22bed33f483f5de28447786f8649b961ec5b73a696bcfc5c",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-auth-tb-v2",
+      "source": "trial-auth-tb-v2.mmd",
+      "heading": "trial-auth-tb-v2",
+      "sha256": "0eb999ee23b54a61a8e3703c4e63f833856af3727e972e511bed703e7c5eccf3",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-auth-tb-v2-800.png",
+      "vector": "trial-auth-tb-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 708.515625
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1008.2890625,
+        "height": 893
+      },
+      "scaledFontPx": 12.694772239483655,
+      "nodeCount": 9,
+      "pngSha256": "2a772a95bd76f63812ff5a71fb0adc1a8b889d2ee488aa5f417e431553aca7d4",
+      "svgSha256": "9160cdc0bc310d44d7f0d9ceebb5564f366eb736e398bb71c0345a832c77fdd9",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-containers-lr-v2",
+      "source": "trial-containers-lr-v2.mmd",
+      "heading": "trial-containers-lr-v2",
+      "sha256": "df5a80fa936e9b23b611232052d86307e567785a774fa1ba050e6c3db5fde363",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-containers-lr-v2-800.png",
+      "vector": "trial-containers-lr-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 411.859375
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1602.703125,
+        "height": 825.1388549804688
+      },
+      "scaledFontPx": 7.986507170502959,
+      "nodeCount": 9,
+      "pngSha256": "8249e6c1f08352ce36f43212d05a7e5d1551390c707b19c66ac900fa4f6bba6e",
+      "svgSha256": "5e221eef773b3d6bb12eaa71600cf193d2067b140df210522f9190cd83347454",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-containers-tb-v2",
+      "source": "trial-containers-tb-v2.mmd",
+      "heading": "trial-containers-tb-v2",
+      "sha256": "63792035b36d0f0352b44df0db6dd0ee26f2f4a0decd886dd1d0b7c3c95f2acc",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-containers-tb-v2-800.png",
+      "vector": "trial-containers-tb-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 573.078125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1382.375,
+        "height": 990.2777709960938
+      },
+      "scaledFontPx": 9.259426711275884,
+      "nodeCount": 9,
+      "pngSha256": "a7ced474fd074903973918c4eac7ee78c098dfbf0ae6f459c3caca5b73c2a4b3",
+      "svgSha256": "a4e356b33e290e290e38ab49863aec226506b87cf42bd4024057c1deac85a9f1",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-overview-lr-v3",
+      "source": "trial-overview-lr-v3.mmd",
+      "heading": "trial-overview-lr-v3",
+      "sha256": "00cc308c4456ee60bb0d3632dfac4a36f7ff51ed39116a0f6db25f98c2f8b644",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-overview-lr-v3-800.png",
+      "vector": "trial-overview-lr-v3-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 364.78125
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1412.1707763671875,
+        "height": 643.9166259765625
+      },
+      "scaledFontPx": 9.064059541671035,
+      "nodeCount": 13,
+      "pngSha256": "52f3c97b75324b831368bd233011635e7f894ae5cd3c23735d72924b2f681e32",
+      "svgSha256": "7acd29836a50cf7703e91cafff4fc161725d5d56022c58022e7a4e5991ed627c",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-overview-tb-v3",
+      "source": "trial-overview-tb-v3.mmd",
+      "heading": "trial-overview-tb-v3",
+      "sha256": "ff4aa7f5177e6686e526270c0fa1a6bbe91df6708108cd727709dc815eaec599",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-overview-tb-v3-800.png",
+      "vector": "trial-overview-tb-v3-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 550.640625
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1143.7890625,
+        "height": 787.2777709960938
+      },
+      "scaledFontPx": 11.19087462859875,
+      "nodeCount": 13,
+      "pngSha256": "bdc61ba6c2a543bc34b9437058299d62e009aaa0df1caf8c2bcb0be49e546ec7",
+      "svgSha256": "53b14fdc2249114d89bec8c5012ea77993e62a971f0c630a969c58fc9d1ac74a",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

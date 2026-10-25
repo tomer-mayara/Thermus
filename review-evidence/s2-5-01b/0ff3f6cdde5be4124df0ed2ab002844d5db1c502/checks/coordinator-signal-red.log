@@ -1,0 +1,78 @@
+✔ Given an unresolved initial authorization read, when the fixed 30-second total budget ends, then the caller returns unavailable and a late read cannot admit or delete (6.378917ms)
+✔ Given an admission whose commit is unresolved, when the total deadline passes, then a late admitted answer never dispatches and the hold remains (2.491959ms)
+✔ Given an admitted removal paused in current member reads, when deadline stops its lifetime, then a late continuation cannot send or clear the hold (0.821125ms)
+✔ Given an admitted removal paused in current member reads, when close stops its lifetime, then a late continuation cannot send or clear the hold (0.658875ms)
+✔ Given a final member page that consumes the deadline, when its answer is returned, then the synchronous pre-send guard prevents deletion (0.546333ms)
+✔ Given a possibly live provider deletion, when shutdown stops the coordinator and a positive reply arrives later, then it stays unknown and held with no retry or late completion (1.580541ms)
+✔ Given provider success and a stalled final commit, when the total deadline ends, then no success is returned and no further read or write starts (1.132666ms)
+✔ Given slow authorization, admission, and current reads, when their combined time consumes the budget, then a new phase does not reset the deadline (0.860625ms)
+✔ Given shutdown before an initial authorization read completes, when it later resolves, then no admission occurs and repeated close remains safe (1.15475ms)
+✔ Given a finalization that committed before a delayed answer, when the deadline is consumed by that answer, then the caller gets unknown without late receipt work (0.507417ms)
+✖ Given all current removal reads, when the operation completes, then they share one server lifetime signal that is aborted after completion (4.310875ms)
+✖ Given a provider read still in flight, when deadline ends the removal lifetime, then its signal stops further provider read steps (0.630292ms)
+✖ Given a provider read still in flight, when close ends the removal lifetime, then its signal stops further provider read steps (0.300541ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 10
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.184542
+
+✖ failing tests:
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:183:1
+✖ Given all current removal reads, when the operation completes, then they share one server lifetime signal that is aborted after completion (4.310875ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(signal instanceof AbortSignal)
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:198:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:204:3
+✖ Given a provider read still in flight, when deadline ends the removal lifetime, then its signal stops further provider read steps (0.630292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:221:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:204:3
+✖ Given a provider read still in flight, when close ends the removal lifetime, then its signal stops further provider read steps (0.300541ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:221:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

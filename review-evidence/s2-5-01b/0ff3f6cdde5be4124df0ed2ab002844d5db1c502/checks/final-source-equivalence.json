@@ -1,0 +1,11 @@
+{
+  "before": "d75b8676cbbc37be2f69356d577ade1ffb87b783",
+  "after": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "method": "Exact Git source comparison: only two plain explanatory comment lines differ. All other src bytes are identical. No test or metric report is changed.",
+  "changedSourceFiles": [
+    "src/accounts/organizations/change-records.ts"
+  ],
+  "unchangedOutsideExactComments": true,
+  "commonTextSha256": "3a9620f26419aa57f3237cc007225481889a9e31806cc9abd9bdbb8664183916",
+  "toolNote": "A preliminary attempt used the TypeScript compiler API; TypeScript 7.0.2 exposes no transpileModule API here. The exact text comparison above replaced that approach."
+}

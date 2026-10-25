@@ -1,0 +1,190 @@
+✖ Given removal paused during WorkOS actor-pages, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (6.981083ms)
+✖ Given removal paused during WorkOS actor-pages, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (1.152959ms)
+✖ Given removal paused during WorkOS target-roles, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (8.24475ms)
+✖ Given removal paused during WorkOS target-roles, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (2.281875ms)
+✖ Given removal paused during WorkOS member-users, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (4.187291ms)
+✖ Given removal paused during WorkOS member-users, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (2.089417ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 187.814916
+
+✖ failing tests:
+
+test at test/integration/auth/workos-removal-lifetime.test.ts:12:5
+✖ Given removal paused during WorkOS actor-pages, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (6.981083ms)
+  AssertionError [ERR_ASSERTION]: Only the already-started provider read may finish after stop
+  + actual - expected
+  
+    [
+      'actor-list',
+  +   'actor-list'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/integration/auth/workos-removal-lifetime.test.ts:71:14)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'actor-list', 'actor-list' ],
+    expected: [ 'actor-list' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/integration/auth/workos-removal-lifetime.test.ts:12:5
+✖ Given removal paused during WorkOS actor-pages, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (1.152959ms)
+  AssertionError [ERR_ASSERTION]: Only the already-started provider read may finish after stop
+  + actual - expected
+  
+    [
+      'actor-list',
+  +   'actor-list'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/integration/auth/workos-removal-lifetime.test.ts:71:14)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'actor-list', 'actor-list' ],
+    expected: [ 'actor-list' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/integration/auth/workos-removal-lifetime.test.ts:12:5
+✖ Given removal paused during WorkOS target-roles, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (8.24475ms)
+  AssertionError [ERR_ASSERTION]: Only the already-started provider read may finish after stop
+  + actual - expected
+  
+    [
+      'actor-list',
+      'roles',
+      'actor-list',
+      'roles',
+      'target-read',
+      'roles',
+  +   'user'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/integration/auth/workos-removal-lifetime.test.ts:71:14)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'actor-list', 'roles', 'actor-list', 'roles', 'target-read', 'roles', 'user' ],
+    expected: [ 'actor-list', 'roles', 'actor-list', 'roles', 'target-read', 'roles' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/integration/auth/workos-removal-lifetime.test.ts:12:5
+✖ Given removal paused during WorkOS target-roles, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (2.281875ms)
+  AssertionError [ERR_ASSERTION]: Only the already-started provider read may finish after stop
+  + actual - expected
+  
+    [
+      'actor-list',
+      'roles',
+      'actor-list',
+      'roles',
+      'target-read',
+      'roles',
+  +   'user'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/integration/auth/workos-removal-lifetime.test.ts:71:14)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'actor-list', 'roles', 'actor-list', 'roles', 'target-read', 'roles', 'user' ],
+    expected: [ 'actor-list', 'roles', 'actor-list', 'roles', 'target-read', 'roles' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/integration/auth/workos-removal-lifetime.test.ts:12:5
+✖ Given removal paused during WorkOS member-users, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (4.187291ms)
+  AssertionError [ERR_ASSERTION]: Only the already-started provider read may finish after stop
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      'actor-list',
+      'roles',
+      'actor-list',
+      'roles',
+  ...
+      'user',
+  +   'user'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/integration/auth/workos-removal-lifetime.test.ts:71:14)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [
+      'actor-list',  'roles',
+      'actor-list',  'roles',
+      'target-read', 'roles',
+      'user',        'member-list',
+      'roles',       'user',
+      'user'
+    ],
+    expected: [
+      'actor-list',  'roles',
+      'actor-list',  'roles',
+      'target-read', 'roles',
+      'user',        'member-list',
+      'roles',       'user'
+    ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/integration/auth/workos-removal-lifetime.test.ts:12:5
+✖ Given removal paused during WorkOS member-users, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (2.089417ms)
+  AssertionError [ERR_ASSERTION]: Only the already-started provider read may finish after stop
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      'actor-list',
+      'roles',
+      'actor-list',
+      'roles',
+  ...
+      'user',
+  +   'user'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/integration/auth/workos-removal-lifetime.test.ts:71:14)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [
+      'actor-list',  'roles',
+      'actor-list',  'roles',
+      'target-read', 'roles',
+      'user',        'member-list',
+      'roles',       'user',
+      'user'
+    ],
+    expected: [
+      'actor-list',  'roles',
+      'actor-list',  'roles',
+      'target-read', 'roles',
+      'user',        'member-list',
+      'roles',       'user'
+    ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

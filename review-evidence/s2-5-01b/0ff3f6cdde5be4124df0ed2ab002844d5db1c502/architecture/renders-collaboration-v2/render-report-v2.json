@@ -1,0 +1,49 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "71e7eedf353f45bd40373a6e939ddb5877638ce00735e7df9707a20270abf405",
+  "diagrams": [
+    {
+      "name": "registry-collaboration-v2",
+      "source": "embedded-registry-collaboration-v2.mmd",
+      "proposal": "registry-collaboration-v2.mmd",
+      "heading": "Collaboration overview",
+      "start_line": 654,
+      "end_line": 683,
+      "sha256": "713d893655da523967368b6b71af8a16b75f76d8f5cc37169635354ef4614dc8",
+      "byte_match": true,
+      "image": "registry-collaboration-v2-800.png",
+      "vector": "registry-collaboration-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 427.96875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1552.302490234375,
+        "height": 830.4264526367188
+      },
+      "scaledFontPx": 8.245815542090245,
+      "nodeCount": 13,
+      "pngSha256": "0a3f5086f6e7a5f947780a293e1e0edf8bb3e479e03a874240e41e7aa78ac42b",
+      "svgSha256": "5a4130752e184b3d9c332919e226068730188aa1c725ca3796de305b56e492ef",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

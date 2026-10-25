@@ -1,0 +1,10 @@
+{"role":"anon","schema_usage":false,"schema_create":false,"select":false,"insert":false,"update":false,"delete":false}
+{"role":"authenticated","schema_usage":false,"schema_create":false,"select":false,"insert":false,"update":false,"delete":false}
+{"role":"service_role","schema_usage":false,"schema_create":false,"select":false,"insert":false,"update":false,"delete":false}
+{"role":"thermus_logging","schema_usage":true,"schema_create":false,"select":true,"insert":true,"update":true,"delete":false}
+{"rls":{"enabled":true,"forced":true}}
+anon: direct read denied by schema privileges
+authenticated: direct read denied by schema privileges
+service_role: direct read denied by schema privileges
+thermus_logging: direct DELETE denied by table privileges
+PASS: local privilege proof with pre-existing API roles and broad owner defaults

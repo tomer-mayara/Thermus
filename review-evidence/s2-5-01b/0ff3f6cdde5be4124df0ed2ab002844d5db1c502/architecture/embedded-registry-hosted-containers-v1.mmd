@@ -1,0 +1,22 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  hosted_user["Person: customer<br/>Uses tools and manages access"]
+  hosted_client["External software: MCP client<br/>Calls Thermus tools"]
+  subgraph hosted_system["Software system: Thermus · hosted"]
+    hosted_portal["Container: user portal<br/>Browser JavaScript / HTML / CSS<br/>Connection instructions and account UI"]
+    hosted_server["Container: Thermus server<br/>Node.js / TypeScript<br/>MCP tools, account routes, authentication"]
+    hosted_renderer["Container: renderer child<br/>Lightpanda<br/>Renders one public page per fetch"]
+    hosted_settings[("Container: optional admin datastore<br/>PostgreSQL / private schema<br/>Destination settings and removal intent")]
+  end
+  hosted_workos["External system: WorkOS / AuthKit<br/>Identity and organization services"]
+  hosted_public["External systems: public websites<br/>Includes Brave HTML search"]
+  hosted_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Enabled export and Test / includes Axiom"]
+  hosted_user -->|uses in browser| hosted_portal
+  hosted_client -->|MCP over HTTP / bearer token| hosted_server
+  hosted_portal -->|HTTP account routes| hosted_server
+  hosted_server -->|serves portal assets over HTTP| hosted_portal
+  hosted_server -->|SDK HTTPS / JWT key set| hosted_workos
+  hosted_server -->|plain pg / verified TLS when configured| hosted_settings
+  hosted_server -->|audit export and Test / OTLP HTTP JSON over HTTPS| hosted_collector
+  hosted_server -->|execFile / stdout JSON| hosted_renderer
+  hosted_renderer -->|HTTP / HTTPS page requests| hosted_public

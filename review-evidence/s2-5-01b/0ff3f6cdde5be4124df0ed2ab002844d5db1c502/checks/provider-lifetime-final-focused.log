@@ -1,0 +1,24 @@
+✔ Given removal paused during WorkOS actor-pages, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (9.436042ms)
+✔ Given removal paused during WorkOS actor-pages, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (1.766542ms)
+✔ Given removal paused during WorkOS target-roles, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (6.594458ms)
+✔ Given removal paused during WorkOS target-roles, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (8.090167ms)
+✔ Given removal paused during WorkOS member-users, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (3.951084ms)
+✔ Given removal paused during WorkOS member-users, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (1.571875ms)
+✔ Given an aborted memberships read, when the directory is called, then it sends no provider request (2.645833ms)
+✔ Given an aborted member read, when the directory is called, then it sends no provider request (0.250584ms)
+✔ Given an aborted page read, when the directory is called, then it sends no provider request (2.306416ms)
+✔ Given actor memberships in two organizations, when the signal aborts after first-page, then no next page or role read starts (0.797833ms)
+✔ Given actor memberships in two organizations, when the signal aborts after last-page, then no next page or role read starts (0.171458ms)
+✔ Given actor memberships in two organizations, when the signal aborts after first-roles, then no next page or role read starts (0.233208ms)
+✔ Given a direct target read, when the signal aborts during membership, then its response is rejected and no further enrichment starts (0.2615ms)
+✔ Given a direct target read, when the signal aborts during roles, then its response is rejected and no further enrichment starts (0.145542ms)
+✔ Given a direct target read, when the signal aborts during user, then its response is rejected and no further enrichment starts (0.297375ms)
+✔ Given two members on one page, when the first user read aborts the signal, then the second user read never starts (0.3165ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 283.841542

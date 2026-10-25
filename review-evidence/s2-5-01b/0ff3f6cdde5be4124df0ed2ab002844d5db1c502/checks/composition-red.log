@@ -1,0 +1,40 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+file:///Users/tomermayara/.codex/worktrees/c617/Thermus/src/logs/audit/audit-collector.ts:23
+
+  constructor(private readonly authorizer: Pick<DestinationSettingsService, 'authorizeExport'>, private readonly sender: TrackedAuditSender, options: AuditCollectorOptions = {}) {
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    this.bounds = collectorBounds(options.bounds ?? {});
+
+SyntaxError [ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX]: TypeScript parameter property is not supported in strip-only mode
+    at parseTypeScript (node:internal/modules/typescript:68:40)
+    at processTypeScriptCode (node:internal/modules/typescript:146:42)
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:215:22)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:680:29)
+    at #translate (node:internal/modules/esm/loader:438:20)
+    at afterLoad (node:internal/modules/esm/loader:506:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:511:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:564:36)
+    at afterResolve (node:internal/modules/esm/loader:611:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:617:12) {
+  code: 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX'
+}
+
+Node.js v24.20.0
+✖ test/acceptance/auth/membership-removal.runtime.ts (105.871292ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 110.488125
+
+✖ failing tests:
+
+test at test/acceptance/auth/membership-removal.runtime.ts:1:1
+✖ test/acceptance/auth/membership-removal.runtime.ts (105.871292ms)
+  'test failed'

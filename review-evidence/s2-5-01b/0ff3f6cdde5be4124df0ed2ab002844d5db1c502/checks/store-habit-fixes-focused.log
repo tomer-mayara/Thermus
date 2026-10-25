@@ -1,0 +1,14 @@
+✔ Given a current WorkOS Admin and locked settings and removal tables, when removal and an admitted MCP request run, then unavailable admission and unknown writes send no deletion while product and health stay usable (7403.631166ms)
+✔ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (4176.28575ms)
+✔ Given independent SQL pools, when removals contend, then one pending intent wins and another organization proceeds (3750.092333ms)
+✔ Given persisted pending and terminal operations, when pools reopen and stale completions arrive, then only the same intent can settle (4013.758792ms)
+✔ Given committed writes whose replies are lost, when reread through a new pool, then the pending intent and same terminal receipt survive (4100.890167ms)
+✔ Given production logging storage configuration, when settings and removal intent are used and storage closes, then both public roles share the same concrete store and closure (3911.920791ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 29576.124625

@@ -1,0 +1,836 @@
+{
+  "version": 4,
+  "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+  "captureId": "25a5f15e4d6aa1a473a3e3f4d6e1ed70b2f1da87a382bb4091b3ca12a15b6789",
+  "identity": {
+    "sourceFingerprint": "48dd8d406782e01214f7d6359a8664bc213444a845632cbdd2d346d2a7fc3daa",
+    "inputsFingerprint": "a54d844e66e432a350a08b945e4ccdbe51ef774275ee65110dbaabf79c7b9502",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "integration"
+  },
+  "comparisonIdentity": {
+    "sourceFingerprint": "48dd8d406782e01214f7d6359a8664bc213444a845632cbdd2d346d2a7fc3daa",
+    "inputsFingerprint": "349d3fa5a2f6a54f791807763cba9da5493d19ae10335c8a034eb0e027e0dd55",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "capturedCommit": "fb9b0fd09991747a38ca8b06f63e30e55ef0853e",
+  "buildFingerprint": "323961085fe2940c97a2da333ddf6bee6d1b3d231d5684e12089e575510a6c72",
+  "rawFingerprint": "da8c3a8e53c250bda46e63bc810b28704ab31d79086814b95997e4564f7e1a3a",
+  "scripts": [
+    {
+      "path": "src/accounts/billing/billing-free.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "252bf684a9188e82daea3948f617aa98df337179e13d191883bb26650b1f38f9"
+    },
+    {
+      "path": "src/accounts/identity/access-context.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d0f0d64a18d0a2e2e6e2604ddbd4bd6d1b6056a1382f5cd8c0b7455278178059"
+    },
+    {
+      "path": "src/accounts/identity/identity-verifier.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "5065f4bec256e7d7166aa372bd84244cb276f7f0a392c2e3ae413ea498aa73ae"
+    },
+    {
+      "path": "src/accounts/organizations/administration-overviews.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7955f655d78436a9371a35638ec90f7645a93f14f818eb5f41c1c4fdd7021bbb"
+    },
+    {
+      "path": "src/accounts/organizations/change-records.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "260b8a7864d44aed6c7f0ea064cadd47d211d4ecdcb09d1874b028d37dceddb3"
+    },
+    {
+      "path": "src/accounts/organizations/customer-roles.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7e4654dbeb1c6678383e7a48d3b89040064234d1818209918a891953993b5a43"
+    },
+    {
+      "path": "src/accounts/organizations/directory-reads.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f51be75f4222ca1b642678a46114d7321ae2501baac3f1c3baf8904fc06a44a0"
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-checks.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "fa044e75d70a6f52f47b4f3ff012419cba36a377dd8b20010b67ea60eb6dcabf"
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "580b8e7a9ed46d2def0fd02c0d42695e48168f38a108af3103e2ccbf49e86023"
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "58484936157aa6eb732ef035f5ae542e6dedaeb39de77d50e5136fa2c9338d9a"
+    },
+    {
+      "path": "src/accounts/organizations/organization-administration.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "5324d6427e3e48e54f23f5b29efe0a2f4627130e3de28f85ae9607e3dcc77d67"
+    },
+    {
+      "path": "src/accounts/organizations/signup-activation.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "ad7e01d1fc83ec325663eb8b32fb2fd6c22a3ed17b5f5f50fb9f78029a18bc24"
+    },
+    {
+      "path": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "6dcb54e7090a709350c0d3670b34f44be849c1e35d30884ee1d23a7617788ddf"
+    },
+    {
+      "path": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "42d415e157e17938e1408242198f7e9be261191fa36f42b5408211ae8797c31f"
+    },
+    {
+      "path": "src/accounts/providers/better-auth/better-auth-user-administration.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "3ae33897ce61708fa42dc482d96dee5560462383ba1e05cfb25d165b36c477da"
+    },
+    {
+      "path": "src/accounts/providers/better-auth/data-directory-lock.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "4be5376b8dfadfa0ea85d05c2e1778bb05ceb18ece25c0620c884da1be1410a2"
+    },
+    {
+      "path": "src/accounts/providers/better-auth/local-installation.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "0a090755f04cd94e898736fb99ad46683d41404e886a59038d2bb289993424af"
+    },
+    {
+      "path": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "b6d9e4a0415de5dc5fdbb59b9642cda123a126ea431653b01f259ddc69ed169e"
+    },
+    {
+      "path": "src/accounts/providers/workos/session-cookies.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "757f895746c1c7e1881378f748914849a083201e233538bbb635005cfc527b27"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "fa27c799e3829d675cb0c84a639bbcb38cf286ddc7d5382a09a1dbae623834e6"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d06df6140b512c5968a31313e2a5f614ba0698a831cb4c5ed59159aedba19883"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "817419315d957c1a9d86299892a7cc771c887f109013155d153d2495f0ba0eb3"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "b53e45a3765fc53dab3869ab23ee96e868b629e6b25264f56c1a38aea497968e"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "266ee552df7cfcd37208158407d0ce4412714b345ec40a7c465716d88c9294e5"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "49a98a2f2b9c5f10e9c3298863d8e56132a5cb30be1de3d2df36e8f5e7301624"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-settings.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "dfb7fad025ebc7837e094a4adf0be61456de0b2553b3c13449a3f14f43ba2fd6"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-sign-in.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "4660b2cc3952da8934509409e0bed010f52b12b078ad7527effa8efc0b0cf335"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-signup-documents.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "6182427e1c444646fde5f3d67bc9fb8c36c50f1111d12e7b5a9a50b750d5250a"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-signup-settings.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "a0ccd2a48237f72f4b6b9b3a267ca58e4cfe59b0641b75fb06ee0cbf7148b6af"
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-signup.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "16811f359a4b47ed1ce0be05c07e71e1c33a8a6ef37fb4d54e07247257e08e68"
+    },
+    {
+      "path": "src/app/application.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f2708ca503f3c36fe2907cc677e19705b0b9f45714859b42c559111689cfde7b"
+    },
+    {
+      "path": "src/app/fetch-tool.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "681c987185001dc8716611d5192adac44313df4867c634ee32a155976c26e8fd"
+    },
+    {
+      "path": "src/app/hidden-line-input.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "58a7dfe787e232924718b05596916a5f8406d7cd1f2d76dd0bafd51238415577"
+    },
+    {
+      "path": "src/app/hosted-portal.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "ec91fbe920b3afcceb68a6386a176fd1b7d0938a37e1b04d4e78bb0bd7ec06a5"
+    },
+    {
+      "path": "src/app/hosted-renderer-startup.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "704e9ddf5771b58e16c2ace2dbabbdbb5c4a7723d945ec31028f2030dd1c666b"
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c645343937067399047735672b6ef91baa72d96ad3f90007afa8a5aeecd0c671"
+    },
+    {
+      "path": "src/app/logging-storage.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "aa033cb5d09ff22b1d0ead381af7d8e6e2490f11ad61755e965d78d9a2901689"
+    },
+    {
+      "path": "src/app/operation-capacity.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d41e2639a9bc692b832d02d808d25ee5f2796c47c1f75251031531d39024653a"
+    },
+    {
+      "path": "src/index.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "34a55f472311476af90ea0fbd4b67b42e125b3c7ac788a4317f6f0bc8d144d20"
+    },
+    {
+      "path": "src/interfaces/cli/local-auth-command-line.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f96d5a73318763abee936829694521892e675dbadcce30652fe6edf355cf8b76"
+    },
+    {
+      "path": "src/interfaces/cli/local-auth-command.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "9ecd587491f72aecc8cdd501fae0d41b1e548e0df6f7baca1399ea302a4d0133"
+    },
+    {
+      "path": "src/interfaces/mcp/fetch-tool-schema.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "ae742e63b8b7afaf040387a83af58077666eae88272afb611effee72bbe7d06c"
+    },
+    {
+      "path": "src/interfaces/mcp/fetch-tool-server.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "9ed252476cf12ccd195470cd6499d7ef811c16ff81c1b5db0ba804d936d13cc6"
+    },
+    {
+      "path": "src/interfaces/mcp/get-url-as-markdown.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d8384161bfb56c4f9924e4c0efb3e538c8794e5f0b489a803726a54762010bac"
+    },
+    {
+      "path": "src/interfaces/mcp/identity-verifier-sdk-adapter.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "77fdbcdba3832a4410d2b31bf52874bc7b3efc3f1c1d9af8860eebe0cdc4f2d8"
+    },
+    {
+      "path": "src/interfaces/mcp/mcp-server.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "db7a01d353aab6af1cfacfecc77b6c5528c7027f057c1a17961a3f45b764e3c9"
+    },
+    {
+      "path": "src/interfaces/mcp/protected-resource-endpoint.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "16784d4249f2f047da9f36494001fba80ab769ce9ff5966f5ea5344dc90d93fd"
+    },
+    {
+      "path": "src/interfaces/mcp/search-tool-schema.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f43c65875a748c075c9bed851eb93bc59937105642c0900272a53b1e73b9babc"
+    },
+    {
+      "path": "src/interfaces/mcp/search.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "0d6790fd4d35d85399d5c47df3ca2605e2a1948a32f039f270b429c88c3bc991"
+    },
+    {
+      "path": "src/interfaces/mcp/tool-completion-record.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7e3e3f5d22659f8c64ab60145b05693faa3a41e0f11afd96e6e6d9311c9c5a9a"
+    },
+    {
+      "path": "src/interfaces/web/account/account-form.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7442d167ceae579ab632555e46cf4b2da8993f4d364cb758185795b30275b267"
+    },
+    {
+      "path": "src/interfaces/web/account/account-pages.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "4ffa5b20e11799b5548f207d3ff580422b3651f14fe9039b464fb13732f1e78a"
+    },
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "63c83af5738105afa225118872e7f0c6f31df13fe1716c29a012983cf2f26001"
+    },
+    {
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "e9169b70c78fe9a9b9933552cc9f5afab816e0b1b352a858e81cdffcaf42196f"
+    },
+    {
+      "path": "src/interfaces/web/account/administration-routes.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "2df9decd843d7c53a3765135ca84a8e0e4c4c28de26912f70142174de0cdd2f3"
+    },
+    {
+      "path": "src/interfaces/web/account/billing-page.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "916f142e60c4a5cc8099e89f9a3c9a3ccbc6580a1e745daa87b501b6f04d1b58"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-form.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "19fb84a797c4f438347497f34d9ec16042f6acffd65a32feac774d1e273ddb1f"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7b5df9ae0dd592db0751031224e19c6d37237ab6d64c4b3200afb1c146b19d45"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-routes.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "07b2a9954d37254a7a3e928441a5de5f6d85e0b52c6999decc64ebb7c46adcb3"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-test-page.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "9c7eff14ae8731a4804f6bf03622b5d257ca3bc58cfb2e245fa6c5063b7ee88b"
+    },
+    {
+      "path": "src/interfaces/web/account/members-page-layout.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "6526e451aec86559303f0959608d6aede7d5adc45eee9483e6c2fadd93cf1631"
+    },
+    {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "5057b012c0a07334c450b83128d796687b3172e5eaa21a0592da523e67a6e849"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-page.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "8e47e398ff504d4f57e070ed9b66b12cc86d2e89b87685d8a2eb2ffc0fd81025"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-style.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "2e375c41f3079a07be42740c40ebdc697180bf581f56d3a374a1543eb22efd4f"
+    },
+    {
+      "path": "src/interfaces/web/account/portal-access.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c60e1d78cc7ebc74a5eca481a3b25420f4845f24e5e68a91793597aaabcafd95"
+    },
+    {
+      "path": "src/interfaces/web/auth/better-auth/local-auth-page-form.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c86253170602c3480e9351fb34858e7b3ddf5da04e57324320e39dfd067334ba"
+    },
+    {
+      "path": "src/interfaces/web/auth/better-auth/local-auth-page-html.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "96a42b5c484b77aee0152a5cc1411cb900eca8de90ed6de4b580ae7d060aa6f9"
+    },
+    {
+      "path": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "8cb4d36224513858f83cfab869362ff1125e11a3bd252ec021ec5d0a15e15c11"
+    },
+    {
+      "path": "src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "9fdb62fc416bf6c839d3072d332e4ab9ed897ee7ab478d65eaf65d4b42839946"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/sign-out-form.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "dda35cf4defbf85233019fd07729be241f01566b07145b9186024d9dcc0b91f2"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/workos-session-pages.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "3a134cc37240171d3581ebf875bcc8b35b23730726313d1802ce6551767de947"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "bf025914308ed57dba4b0b6e568706d0376a184054f4d0b09bcc5ba94bdffb81"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/workos-signup-document-reader.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "34666625b8b0f3c8116dc37e0c95aa89c78db77ad5fc9df3c243eacffd545bb0"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/workos-signup-form.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "333ff74f07ea5161f095098759804694d052380da192b74b2a5378ba79b8ff63"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "85db39a258488eef59383f017caea376cdbc6a7023aa12c7631ab39a104b69fc"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "690ab18812e5f6ee218c606607bddb1c6f90adbc0d0aec1459eead1c71e142b3"
+    },
+    {
+      "path": "src/interfaces/web/auth/workos/workos-signup-style.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "598ae477af4cc8ab4a10dead1898dd942849f4b3fb5e14841f377be1edebb2c6"
+    },
+    {
+      "path": "src/interfaces/web/html-escape.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "ba58fa42701f7de4cf5845e236c0c9785a9f0d87a0cf60c2eef6483014348723"
+    },
+    {
+      "path": "src/interfaces/web/page-html.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "aeeaddbd2fd2a3f3677089b5c8aeaaba275ef471a0dad8e6306e560292dac378"
+    },
+    {
+      "path": "src/logs/audit/audit-collector-state.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "47a5a89190e4a316af05d59aa9a7b896512e1027bc8753078f9388e3b3aeacd5"
+    },
+    {
+      "path": "src/logs/audit/audit-collector.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "a8106515e61be7d4cf6e96e100190a455bb1e0822b50992f14233795bcca9ef6"
+    },
+    {
+      "path": "src/logs/audit/audit-content.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "965ce7340174bc20c35c9516e740b6cc401b3363c92fe1bc9b9c53f731f54174"
+    },
+    {
+      "path": "src/logs/audit/audit-event-projection.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "528b02380fc28766e98e39ae2ce341b369a871c40d045b41a73dfc86020f7f99"
+    },
+    {
+      "path": "src/logs/audit/audit-https-connection.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "820857f877b13b5597ed4723494aaa83082438b5b59560b17ae08fd05d3709b0"
+    },
+    {
+      "path": "src/logs/audit/audit-log.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f33dd31faad511efca49390c1ac9a0bffbf7b66183f1dc9de1764c463d551a79"
+    },
+    {
+      "path": "src/logs/audit/audit-send.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c2c8a63e11fdb7900aba4f488bcd4f45fc7e42ab6875c9c907eb915bbf91bf10"
+    },
+    {
+      "path": "src/logs/audit/audit-snapshot-state.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "2008aeb127aec311e00d01588554f1f7c690132d944d5fa6299831267237c7ce"
+    },
+    {
+      "path": "src/logs/audit/audit-snapshots.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d5adc376332f350d197b2a63c6f372bc65573fc773e453f96e00c9a90db9b690"
+    },
+    {
+      "path": "src/logs/audit/destination-credential-codec.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f5225c53e8cabbaaef802949aaa80c5119c8808d92befa58c19fecc94b7a4a32"
+    },
+    {
+      "path": "src/logs/audit/destination-endpoint.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "cc919d839df6bdccbe9cfd3cb7f02d63ecc80386ea5b3addc2992b1a326f1197"
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "9293235cd4f5826d382375c49a65c4428486587260b19ed7b97b40d7e4fcf854"
+    },
+    {
+      "path": "src/logs/audit/destination-test.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "cb4cd8074772df7f50a968ee9dcb00e38cc36e2593e8b4de42fe3bf5e0c259a0"
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-encoding.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7f956816a0df8a30756b8b299c062f0aa1b145a692df62385b958d5b4614203b"
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-request.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "e702f6df2a285e37d276197de5d88dd90ab8f6b53831e74b87c6975141767fc4"
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-response.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "8d0c39cb6188bf5fa22964009dd69fb76f75b2a3e81918b03609afbcb31139e7"
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-sender.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "10ca190c1df3629a6d56733be5280c771f084bcea04fb6fc26a9b33a1f9364af"
+    },
+    {
+      "path": "src/logs/audit/public-audit-destination.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "70f62a03313e7bd5216ce20dad415fc1303befb29165b3011ac9b68e4d997a72"
+    },
+    {
+      "path": "src/logs/system/console-system-log-sink.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "74c8f8c0d7a266f184bf1871d0d05343e7cf61eb1c5d69dc223b587fcf217cd7"
+    },
+    {
+      "path": "src/logs/system/system-logger.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c5d243ae8bda028e9f338fc807d70e03581780bba593dc35bc2d4161ca8ed54f"
+    },
+    {
+      "path": "src/pipelines/execution/execution-context.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "20ce2fcbe9791263e7e83582e16f39ec9a048920333ec9f4945711c6cc029d06"
+    },
+    {
+      "path": "src/pipelines/execution/observe-request-step.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d532b39a8632acc263b0c7f7fb871aa697fb27d1ec4136d77a232069e92d3a95"
+    },
+    {
+      "path": "src/pipelines/execution/step-record.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "a19849d78ef794b7fd7ce73d3a855455ec6e811b398b63ae76e366230e94829b"
+    },
+    {
+      "path": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "429754f5aa06f5d7fa5d23a834e10753c3e7be04575c9db037ff948eb443a579"
+    },
+    {
+      "path": "src/pipelines/html-processing/ad-cleaner/adb/source-line-index.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "fbd7288b58a773b02cc714653628d656a72eb61778b30b1a07249f0c5422feee"
+    },
+    {
+      "path": "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "3b93459df6f6108c10ea7b7f590974bcaa9f683f62721e12017bbf1ddebf8c21"
+    },
+    {
+      "path": "src/pipelines/html-processing/ad-cleaner/clean-html-ads.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "192e83313160689fc6f6581951983735e7ee9edf3a7920e7d1f5075811106f93"
+    },
+    {
+      "path": "src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "6a2e8171b2817b5dbac859f2a1d02f8081931d1106733d64897d7c3b28de9161"
+    },
+    {
+      "path": "src/pipelines/html-processing/html-input-limit.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "caf97199775480bc8cfec97f16a77eb2506e98093e2c5cf6b19e8b3b21815621"
+    },
+    {
+      "path": "src/pipelines/html-processing/html-to-markdown-pipeline.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "044e6b69ff8d1b04c6942a64ea3afbc8755010f3676b92872a765077f05ce21f"
+    },
+    {
+      "path": "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7cb6574a50df6306c0d08c13c6c3fc4cd227925b128160d68e3e6b0df82fb7eb"
+    },
+    {
+      "path": "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "bab226cd6584aadd784bcb4c5375569373852d9e244a5647e29019b90e4007bd"
+    },
+    {
+      "path": "src/pipelines/html-processing/html-to-markdown/plain-text-input.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "b6c8df766f3d3b78b7f20155d67ba3571181bb433f95f913e45a9afe89ac5a06"
+    },
+    {
+      "path": "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "83c83ba3fea468f4277fdc7b737c35fb6bbb6ccdd6f563fda0f7e4d0d09e6e02"
+    },
+    {
+      "path": "src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "3afee24dad1351ad35e048eb35ccd659e94df180404ee05dec4546437ae84463"
+    },
+    {
+      "path": "src/pipelines/html-processing/process-html-step.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c93c09055b604d93614201cb82cff9d2f797ec061231a3f85caf82a62d22c4ed"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-animation-declarations.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "04670dbad7b70c3dc0b3b1afe7316f156fd3d0d1e32e5ec487364f206fdc4db6"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "4e752bab03d62ddea8e94008960c6efae3316fd2e502fa2852dd732f2564c982"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-keyframes.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "2a534348fc015c09a54fd91937fcb4bff507e4fd31e1e729a31ced6965e1299d"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7175e1acdb89b8fc538d33d1f3abb41a27c3e3427e5a827300458a40280c32df"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-selector-predicates.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "7b6ed8e570b64e016c85a40403a79bbc2d0c710e0013dcb63bae256b8c3bbeb2"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "6f898e1d866e32ca7eafc7c5b2ef4c657511fdff165a167473e4dfd8f5b75d56"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-ranges.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "9649de254d8d2512e20fcb00764243e4dac4b9c70fcd9a17216b6c85eeb1aa5e"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "1cff688f89b545cb5c4572188bb5ceba58f13121f55249dbc673d5d7d9524655"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "2916cabd3998a558ca0ada885873376d492bd4d6cd8052e1292323774a17f221"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d6b7dba1f70ab19a0e2a002e23d26bc33c0816e2457f4b45b839d8777a1138b4"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "d6a32ea9783b2b0cfd8f4063338d41f36e7f4343d94cd5c0ebd369f5840d3b23"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-counts.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "e5f76c8ff4a2a948fa6e6dcb93ccdd56d0aaa2cffb21ac33e9b59aafb2db063c"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "386535f728829474b65b8c8724810e1adbb2ee45691d6ccf183bcdab72f05d0d"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "182a17fd54803c61acb35d7ff1570ff0a6a4b0292436519d6d1b54a05f7f9a92"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "dbb1565a9c182142d59b306931ada2f1bed2a97d62c02da074bae6dca2188493"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/html-text-source-ranges.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "afd82a8f344aafaedc6b1156a6add8c3fc1f79d65f0b5bd24f14c5cc20d61d2c"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c6f2d5e58c72dd51c335134793782fecc86f1226b4998c3abe1b6103f3f8a86a"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "df3046e6be809b677650edee490fb4513be28788e87ba251a130a24b8ba53e47"
+    },
+    {
+      "path": "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "8d5226c3359a36274b0d6eb64060eb89bdf03f9a79d8edca585e07350f7b6361"
+    },
+    {
+      "path": "src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "4f613dcbda14b50ed6ab16ba2cfd2caa9609977fe512d3805ce9fd0338c569ca"
+    },
+    {
+      "path": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "9ddf3a56df4d67f27019b5646c38095c3f9427e99097ccbc37dcc3a608180fa1"
+    },
+    {
+      "path": "src/pipelines/html-processing/search-results/brave-result-fields.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "41ccb66ef5b8be0545874c6b02d016904ddb9705d61431d5d29204ea563083d5"
+    },
+    {
+      "path": "src/pipelines/page-fetch/execute-incoming-step.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "90add4750838006c58966df817e671f8d9b8ee94fd861a706da1a20238b654da"
+    },
+    {
+      "path": "src/pipelines/page-fetch/execute-outgoing-step.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "cf08f9c5b109d4cfe4e4764ff13dfa3e18cc790d3e2e791029ee470b6e031461"
+    },
+    {
+      "path": "src/pipelines/page-fetch/fetch-failure.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "23f52cbc9f2c547c932a5cf3e97c8479bc3f609a755463df13adace83ac6b0fd"
+    },
+    {
+      "path": "src/pipelines/page-fetch/fetch-page.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "81d87e91f243c7f7ca8bde50f583bd1717ccc14e343fc4e4c00dcb7d4373443c"
+    },
+    {
+      "path": "src/pipelines/page-fetch/fetch-url.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "a0337a95d4f94aee12a4a2d54ba2ccbdfef139c0091d9193a2c9136a499bf28c"
+    },
+    {
+      "path": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "25be901b2469bd848715d75f58ed0e944cf34b1a0cf851b32c71b4aeab794a83"
+    },
+    {
+      "path": "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "ca0a8a1631c30f41b429168233ceb5169396a17a12334f1dc50611f4b9361e7b"
+    },
+    {
+      "path": "src/pipelines/providers/website-fetcher/network-policy.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f7a197521a4cbbac1833e61199ebfc34cdf31b782feb1d60d28ec195eaa53855"
+    },
+    {
+      "path": "src/pipelines/providers/website-fetcher/renderer-failure-reports.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "fa087d87ff0204d054f2b026f565215817f0ca94075383431e99208482d7580b"
+    },
+    {
+      "path": "src/pipelines/providers/website-fetcher/renderer-result.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f8379a4978c4d57c36820eded86dd8dde1bd692529145ef0fcfd46bbf3ed7996"
+    },
+    {
+      "path": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "3e6547ac91f427a61728b9f90a41c003221cdfb278c3bc5a5789f348dde19b92"
+    },
+    {
+      "path": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "a0852bccf185f6b0336515ed2fd28b94a051b6b86cb5e154fe886d4bb2cc2fb9"
+    },
+    {
+      "path": "src/pipelines/search/execute-incoming-step.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "2e3932139307453a1724893159ced6124d62a90025cdb55ac22e96fb8938bfc0"
+    },
+    {
+      "path": "src/pipelines/search/execute-outgoing-step.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "1eb914ecad15a509c0d99cb37662c4f57a8dc76c9a0cc00b0d4d509cc8247b80"
+    },
+    {
+      "path": "src/pipelines/search/search-cancellation.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "30728419674d07b52edc92c03d2bde8fbdc6c6a06bb7127c524346fa822d190a"
+    },
+    {
+      "path": "src/pipelines/search/search-failure.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "4d593597617835116a7e7e57e2739cb86bededb0094c13aafc57df145d80a8c1"
+    },
+    {
+      "path": "src/pipelines/search/search-pipeline.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "f15bef35f51e0021d5a6aed250a08b2382c48a7449abbc4598f2073e126a5640"
+    },
+    {
+      "path": "src/pipelines/search/search-query.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "df448a74fc7e50a40705303541b3737b9076f3ce3308302bf017dfae1cda12fe"
+    },
+    {
+      "path": "src/runtime/config/ad-rules-file.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "26adf12a9355b23c47a9d2ef6267c053a5a15c6fba0ddf15fa128c62110793bd"
+    },
+    {
+      "path": "src/runtime/config/deployment-config.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "0e4921a7d984db9ae8ae1baafaa360d7a466740becdd00d3eec37d5a6171ce6f"
+    },
+    {
+      "path": "src/runtime/config/logging-storage-config.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "5a96456b1d2b43634e4da53a19bd7302c04238fc1ef6f0bfe814219ed5b7d50b"
+    },
+    {
+      "path": "src/runtime/http/client-address.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "3d0c8c060c9aca9a31b5fea66a8d2d5099fad1c606355aedbc9f1a16b69583ab"
+    },
+    {
+      "path": "src/runtime/http/fetch-exchange.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "146b4de6a8a43df605729f744dd689e7c4f6b582c6ba5c80525528123a55c4c3"
+    },
+    {
+      "path": "src/runtime/http/request-cancellation.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "c9bfc2348519c01bd55c4c1dc7791a67c23c43e0d067b2ad3ed2b009dc9f20c5"
+    },
+    {
+      "path": "src/runtime/http/server.ts",
+      "representation": "emitted-javascript",
+      "contentIdentity": "210c96bc704690244c085fe12d0e59e8f18a2b27ed5ed5b6c8d84b10f0804520"
+    }
+  ]
+}

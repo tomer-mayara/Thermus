@@ -1,0 +1,40 @@
+✖ Given a removal process paused after-admission, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2020.55125ms)
+✖ Given a removal process paused during-provider, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2010.19575ms)
+✖ Given a removal process paused before-completion, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (1595.21125ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5732.903625
+
+✖ failing tests:
+
+test at test/acceptance/auth/membership-removal-restart.runtime.ts:9:3
+✖ Given a removal process paused after-admission, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2020.55125ms)
+  Error: Removal child did not send paused; events=[{"kind":"failed"}], exit=null, signal=null, output=
+      at MembershipRemovalProcess.message (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/support/processes/membership-removal-process.ts:44:91)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/acceptance/auth/membership-removal-restart.runtime.ts:15:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at test/acceptance/auth/membership-removal-restart.runtime.ts:9:3
+✖ Given a removal process paused during-provider, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2010.19575ms)
+  Error: Removal child did not send paused; events=[{"kind":"failed"}], exit=null, signal=null, output=
+      at MembershipRemovalProcess.message (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/support/processes/membership-removal-process.ts:44:91)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/acceptance/auth/membership-removal-restart.runtime.ts:15:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/acceptance/auth/membership-removal-restart.runtime.ts:9:3
+✖ Given a removal process paused before-completion, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (1595.21125ms)
+  Error: Removal child did not send paused; events=[{"kind":"failed"}], exit=null, signal=null, output=
+      at MembershipRemovalProcess.message (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/support/processes/membership-removal-process.ts:44:91)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/acceptance/auth/membership-removal-restart.runtime.ts:15:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)

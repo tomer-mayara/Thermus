@@ -1,0 +1,100 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "71e7eedf353f45bd40373a6e939ddb5877638ce00735e7df9707a20270abf405",
+  "diagrams": [
+    {
+      "name": "trial-containers-tb-v3",
+      "source": "trial-containers-tb-v3.mmd",
+      "heading": "trial-containers-tb-v3",
+      "sha256": "3b9f0a40e99aab2f7e5adc68bf791f72d4081f4c80509c6ee4515ca8f5e26d6b",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-containers-tb-v3-800.png",
+      "vector": "trial-containers-tb-v3-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 574.015625
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1380.125,
+        "height": 990.2777709960938
+      },
+      "scaledFontPx": 9.274522235304772,
+      "nodeCount": 9,
+      "pngSha256": "b5713c6f1bf73078d15c0fcc8196ae25411c4ba61e6fdd27b4fa09467a45d28b",
+      "svgSha256": "cc81d6bc3c60ec750bd1aed68d4e08920ecac88dd7972162759249e8ef4aaff8",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-deployment-local-v2",
+      "source": "trial-deployment-local-v2.mmd",
+      "heading": "trial-deployment-local-v2",
+      "sha256": "3e6895f1d46759c1bd8cf1a07326e1c3798af26623ef1492f11471bd0c97dbf1",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-deployment-local-v2-800.png",
+      "vector": "trial-deployment-local-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 851.296875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 634.0078125,
+        "height": 674.66259765625
+      },
+      "scaledFontPx": 20.189025667566202,
+      "nodeCount": 6,
+      "pngSha256": "ab6a31d00d6cfd9e9e79ed81a1f9f99f02bb03bccf0b0f8c8014ad4605bcc0ee",
+      "svgSha256": "90ebceb1d63b3b8f04690b8754403a4a099ee8b674c36ad771427d1c2195dd84",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-deployment-hosted-v2",
+      "source": "trial-deployment-hosted-v2.mmd",
+      "heading": "trial-deployment-hosted-v2",
+      "sha256": "8c2b16a688449e74b5b8b51b55b922d12bb52a38527ae0df25da2cdd029f7a6d",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-deployment-hosted-v2-800.png",
+      "vector": "trial-deployment-hosted-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 517.1875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1262.625,
+        "height": 816.2777709960938
+      },
+      "scaledFontPx": 10.137610137610137,
+      "nodeCount": 7,
+      "pngSha256": "873a2b21cc6b03d1e05e1e2c9cfd9a5319a4eed867925e2f9b2c345a9fa5660f",
+      "svgSha256": "ac3b106cf1ed2085934980ec11fd1bf4e9c377b09bc2724571bb37536681f23a",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

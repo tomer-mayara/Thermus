@@ -1,0 +1,73 @@
+{
+  "parent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "1961a06ad46a20249a212c0fe111ad443656214d56ec4301bfca4cc5267a9411",
+  "diagrams": [
+    {
+      "name": "trial-deployment-local-title-v4",
+      "source": "trial-deployment-local-title-v4.mmd",
+      "heading": "trial-deployment-local-title-v4",
+      "sha256": "4b03d531fb5b0495291131a2baf0bc65b44e8f925886dfd1961c1ed53a86331b",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-deployment-local-title-v4-800.png",
+      "vector": "trial-deployment-local-title-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 671.296875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": -6,
+        "width": 626.43359375,
+        "height": 525.66259765625
+      },
+      "scaledFontPx": 20.433131504611296,
+      "nodeCount": 4,
+      "pngSha256": "538776ab316d05fedfb1b4170aa10f521f0e79750a46808569c2e84f9ae997c4",
+      "svgSha256": "959a5dd720823f65f6813afa781a7ae8a790a3879eafd7888f73e2d0dac28fa7",
+      "parse": "passed",
+      "visualReview": "pending"
+    },
+    {
+      "name": "trial-deployment-hosted-title-v4",
+      "source": "trial-deployment-hosted-title-v4.mmd",
+      "heading": "trial-deployment-hosted-title-v4",
+      "sha256": "d31dc72684e9e9a494f7ad2d780ea0678ebc82fab1899309efc182634ea62ec0",
+      "byte_match": "proposal trial, not embedded",
+      "image": "trial-deployment-hosted-title-v4-800.png",
+      "vector": "trial-deployment-hosted-title-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 813.046875
+      },
+      "viewBox": {
+        "x": 0,
+        "y": -6,
+        "width": 767.75,
+        "height": 780.2777709960938
+      },
+      "scaledFontPx": 16.672093780527515,
+      "nodeCount": 6,
+      "pngSha256": "b04370ea96a65035a136f1ee4a4beab79a760b5d22395729143665ff9947af19",
+      "svgSha256": "54e95ed4b803d1a963fefa976f5c6ab4f76afb1bb270ddd234259d5fec94438d",
+      "parse": "passed",
+      "visualReview": "pending"
+    }
+  ],
+  "blockedRequests": []
+}

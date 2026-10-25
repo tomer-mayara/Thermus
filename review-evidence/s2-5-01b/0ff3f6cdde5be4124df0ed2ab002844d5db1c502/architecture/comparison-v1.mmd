@@ -1,0 +1,22 @@
+%%{init: {"theme": "base", "themeVariables": {"fontSize": "16px", "edgeLabelBackground": "#ffffff"}, "flowchart": {"wrappingWidth": 230, "nodeSpacing": 35, "rankSpacing": 45}}}%%
+flowchart TB
+  subgraph removal_server["L2: Thermus Node server · hosted"]
+    removal_app["app · TypeScript<br/>CHANGED: supply removal store<br/>Stop removal before SQL close"]
+    removal_org["organizations · TypeScript<br/>Before: invitations and reads<br/>After: also checked removal<br/>and durable completion rules"]
+    removal_audit["audit-logs · TypeScript / pg<br/>Before: settings store<br/>After: also removal intent<br/>and terminal receipts"]
+    removal_workos["workos · TypeScript / SDK<br/>Current directory reads<br/>Existing exact-ID deletion"]
+    removal_app ==>|composition / lifetime| removal_org
+    removal_app ==>|existing store / pool ownership| removal_audit
+    removal_org -->|NEW: admit / complete / read receipt| removal_audit
+    removal_org -->|directory calls; new removal caller| removal_workos
+  end
+  removal_db[("L2: PostgreSQL<br/>Before: destination settings<br/>After: also per-org removal row")]
+  removal_provider["External system: WorkOS<br/>Identity and memberships"]
+  removal_audit -->|same pool / verified TLS| removal_db
+  removal_workos -->|existing HTTPS API| removal_provider
+  classDef changed fill:#fff2cc,stroke:#a56a00,color:#222222
+  classDef stable fill:#ffffff,stroke:#777777,color:#222222
+  class removal_app,removal_org,removal_audit,removal_db changed
+  class removal_workos,removal_provider stable
+  style removal_server fill:#fafafa,stroke:#777777,color:#222222
+  linkStyle 2 stroke:#198754,stroke-width:3px

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "trial-auth-lr-v2",
+    "source": "trial-auth-lr-v2.mmd",
+    "heading": "trial-auth-lr-v2",
+    "sha256": "1e64e53b71d457bb1aebf38e4dc5df9ad723ca53a16e9cb6f966dd6f5a4cc3de",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-auth-tb-v2",
+    "source": "trial-auth-tb-v2.mmd",
+    "heading": "trial-auth-tb-v2",
+    "sha256": "0eb999ee23b54a61a8e3703c4e63f833856af3727e972e511bed703e7c5eccf3",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-containers-lr-v2",
+    "source": "trial-containers-lr-v2.mmd",
+    "heading": "trial-containers-lr-v2",
+    "sha256": "df5a80fa936e9b23b611232052d86307e567785a774fa1ba050e6c3db5fde363",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-containers-tb-v2",
+    "source": "trial-containers-tb-v2.mmd",
+    "heading": "trial-containers-tb-v2",
+    "sha256": "63792035b36d0f0352b44df0db6dd0ee26f2f4a0decd886dd1d0b7c3c95f2acc",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-overview-lr-v3",
+    "source": "trial-overview-lr-v3.mmd",
+    "heading": "trial-overview-lr-v3",
+    "sha256": "00cc308c4456ee60bb0d3632dfac4a36f7ff51ed39116a0f6db25f98c2f8b644",
+    "byte_match": "proposal trial, not embedded"
+  },
+  {
+    "name": "trial-overview-tb-v3",
+    "source": "trial-overview-tb-v3.mmd",
+    "heading": "trial-overview-tb-v3",
+    "sha256": "ff4aa7f5177e6686e526270c0fa1a6bbe91df6708108cd727709dc815eaec599",
+    "byte_match": "proposal trial, not embedded"
+  }
+]

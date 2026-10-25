@@ -1,0 +1,11 @@
+✔ Given independent SQL pools, when removals contend, then one pending intent wins and another organization proceeds (1964.670458ms)
+✔ Given persisted pending and terminal operations, when pools reopen and stale completions arrive, then only the same intent can settle (1772.099458ms)
+✔ Given committed writes whose replies are lost, when reread through a new pool, then the pending intent and same terminal receipt survive (1708.395333ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5563.327875

@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": true,
+    "crossCutting": false,
+    "component": true,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
+    "dependencyRisk": false,
+    "policy": true,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted member read",
+      "Deployment view",
+      "Self-hosted Compose",
+      "Recorded hosted Render target",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "src/accounts/organizations/organization-administration.ts",
+      "src/accounts/organizations/removal-operation-store.ts",
+      "src/accounts/organizations/membership-removal.ts",
+      "src/accounts/organizations/membership-removal-checks.ts",
+      "src/accounts/organizations/membership-removal-lifetime.ts",
+      "src/accounts/organizations/organization-directory.ts",
+      "src/accounts/providers/workos/workos-organizations.ts",
+      "src/logs/audit/pg-destination-settings-store.ts",
+      "src/app/application.ts",
+      "src/app/logging-storage.ts",
+      "sql/migrations/20261025082850_membership_removal_operations.sql",
+      "architecture/components.md",
+      "docs/design/organization-admin-plan.md",
+      "docs/implementation/admin-s2-5-01b.md",
+      "test/acceptance/auth/membership-removal.runtime.ts",
+      "test/acceptance/auth/membership-removal-restart.runtime.ts",
+      "test/integration/auth/workos-removal-lifetime.test.ts",
+      "test/integration/logging/audit/removal-operations.runtime.ts",
+      "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts"
+    ]
+  },
+  "base": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "head": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502"
+}

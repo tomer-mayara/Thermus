@@ -1,0 +1,14 @@
+✔ Given removal paused during WorkOS actor-pages, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (11.670917ms)
+✔ Given removal paused during WorkOS actor-pages, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (0.926917ms)
+✔ Given removal paused during WorkOS target-roles, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (1.671083ms)
+✔ Given removal paused during WorkOS target-roles, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (0.761542ms)
+✔ Given removal paused during WorkOS member-users, when deadline stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (1.570667ms)
+✔ Given removal paused during WorkOS member-users, when close stops its owner, then an in-flight read can finish but no next provider read or DELETE starts (0.634791ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.006666

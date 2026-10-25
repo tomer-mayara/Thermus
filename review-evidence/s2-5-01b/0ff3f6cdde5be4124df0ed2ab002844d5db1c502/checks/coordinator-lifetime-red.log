@@ -1,0 +1,150 @@
+✖ Given an unresolved initial authorization read, when the fixed 30-second total budget ends, then the caller returns unavailable and a late read cannot admit or delete (8.032083ms)
+✖ Given an admission whose commit is unresolved, when the total deadline passes, then a late admitted answer never dispatches and the hold remains (1.419375ms)
+✖ Given an admitted removal paused in current member reads, when deadline stops its lifetime, then a late continuation cannot send or clear the hold (0.851084ms)
+✖ Given an admitted removal paused in current member reads, when close stops its lifetime, then a late continuation cannot send or clear the hold (0.640125ms)
+✖ Given a final member page that consumes the deadline, when its answer is returned, then the synchronous pre-send guard prevents deletion (0.39775ms)
+✖ Given a possibly live provider deletion, when shutdown stops the coordinator and a positive reply arrives later, then it stays unknown and held with no retry or late completion (1.216042ms)
+✖ Given provider success and a stalled final commit, when the total deadline ends, then no success is returned and no further read or write starts (0.537583ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.0625
+
+✖ failing tests:
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:5:1
+✖ Given an unresolved initial authorization read, when the fixed 30-second total budget ends, then the caller returns unavailable and a late read cannot admit or delete (8.032083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'unavailable'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:21:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:29:1
+✖ Given an admission whose commit is unresolved, when the total deadline passes, then a late admitted answer never dispatches and the hold remains (1.419375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:42:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:51:3
+✖ Given an admitted removal paused in current member reads, when deadline stops its lifetime, then a late continuation cannot send or clear the hold (0.851084ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:65:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:51:3
+✖ Given an admitted removal paused in current member reads, when close stops its lifetime, then a late continuation cannot send or clear the hold (0.640125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:65:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:75:1
+✖ Given a final member page that consumes the deadline, when its answer is returned, then the synchronous pre-send guard prevents deletion (0.39775ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'applied'
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:84:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:89:1
+✖ Given a possibly live provider deletion, when shutdown stops the coordinator and a positive reply arrives later, then it stays unknown and held with no retry or late completion (1.216042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:102:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-lifetime.test.ts:112:1
+✖ Given provider success and a stalled final commit, when the total deadline ends, then no success is returned and no further read or write starts (0.537583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'unknown'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-lifetime.test.ts:126:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

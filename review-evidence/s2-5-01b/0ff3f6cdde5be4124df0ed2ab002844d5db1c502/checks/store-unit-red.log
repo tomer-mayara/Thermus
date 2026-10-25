@@ -1,0 +1,92 @@
+✖ Given a durable removal row, when read, then the original intent and terminal receipt are returned (0.883041ms)
+✖ Given no removal row, when read, then absence is explicit (0.225667ms)
+✖ Given an admission statement result, when admitted or blocked, then only its durable outcome is reported (0.165166ms)
+✖ Given a conditional completion result, when completed or mismatched, then it reports that outcome (0.176084ms)
+✖ Given a query failure, when removal storage reads or writes, then it reports safe unavailable or unconfirmed results (0.194542ms)
+✖ Given failed acquisition, when admission or completion is requested, then no write is claimed (0.192292ms)
+✖ Given a finished removal statement, when its promise resolves, then the SQL client is already released (0.162167ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 0
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 119.36375
+
+✖ failing tests:
+
+test at test/unit/logging/audit/pg-removal-operation-store.test.ts:17:1
+✖ Given a durable removal row, when read, then the original intent and terminal receipt are returned (0.883041ms)
+  TypeError: store.readRemoval is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/logging/audit/pg-removal-operation-store.test.ts:19:32)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at test/unit/logging/audit/pg-removal-operation-store.test.ts:24:1
+✖ Given no removal row, when read, then absence is explicit (0.225667ms)
+  TypeError: store.readRemoval is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/logging/audit/pg-removal-operation-store.test.ts:26:32)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at test/unit/logging/audit/pg-removal-operation-store.test.ts:29:1
+✖ Given an admission statement result, when admitted or blocked, then only its durable outcome is reported (0.165166ms)
+  TypeError: admitted.admitRemoval is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/logging/audit/pg-removal-operation-store.test.ts:31:35)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/logging/audit/pg-removal-operation-store.test.ts:36:1
+✖ Given a conditional completion result, when completed or mismatched, then it reports that outcome (0.176084ms)
+  TypeError: completed.completeRemoval is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/logging/audit/pg-removal-operation-store.test.ts:38:36)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/logging/audit/pg-removal-operation-store.test.ts:43:1
+✖ Given a query failure, when removal storage reads or writes, then it reports safe unavailable or unconfirmed results (0.194542ms)
+  TypeError: store.readRemoval is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/logging/audit/pg-removal-operation-store.test.ts:45:32)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/logging/audit/pg-removal-operation-store.test.ts:50:1
+✖ Given failed acquisition, when admission or completion is requested, then no write is claimed (0.192292ms)
+  TypeError: store.admitRemoval is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/logging/audit/pg-removal-operation-store.test.ts:54:32)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/logging/audit/pg-removal-operation-store.test.ts:58:1
+✖ Given a finished removal statement, when its promise resolves, then the SQL client is already released (0.162167ms)
+  TypeError: store.admitRemoval is not a function
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/logging/audit/pg-removal-operation-store.test.ts:61:15)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)

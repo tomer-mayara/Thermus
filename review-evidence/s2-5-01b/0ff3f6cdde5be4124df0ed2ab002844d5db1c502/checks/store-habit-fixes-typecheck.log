@@ -1,0 +1,1 @@
+test/integration/auth/workos-removal-lifetime.test.ts(61,126): error TS2741: Property 'updateSeats' is missing in type '{ stateOf: () => Promise<never>; }' but required in type 'Billing'.
