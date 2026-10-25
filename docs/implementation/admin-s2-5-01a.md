@@ -70,6 +70,8 @@ test proving the requested behavior was missing.
 
 ## Review and validation
 
+The results in this section describe original head `122d65bf1f035fc195792cc083732aa05c423c58`. They are historical evidence after the rebase below. The maintained PR comments record fresh checks for the rebased candidate.
+
 The source change requires the full ordinary suite, type checking, portal build,
 applicable container and hosted gates, habit-hooks, current declaration snapshots,
 and the source metrics process. The PR's maintained Validation and Quality review
@@ -109,3 +111,23 @@ The acceptance and wire cases use the real source adapter and pinned SDK with a
 controlled HTTP service. They do not prove live WorkOS deletion behavior. S2.5-02
 retains the scoped live provider proof and release checks. This ticket exposes
 no customer removal action and makes no globally exactly-once claim.
+
+## Rebase on 25 October 2026
+
+PR #251 was rebased onto main `581f30cfaa32b01399422b087b0f0bdc3b800f70`.
+The hosted composition keeps both the raw membership reader and the upstream
+profile lookup used for Audit actor names. The connection tests keep both the
+profile response-body timeout case and the membership deletion cases. The plan
+keeps the current internal rollout status and all expanded Slice 2.5 tickets.
+
+The impact declaration describes this PR only. All 13 registry diagrams remain
+unchanged from the new base. The metric record for `9d0546b9` is the exact file
+from main; its duplicate candidate commit was dropped. No new product behavior
+was added during conflict resolution. The later stacked branches were not rewritten.
+
+The combined conflict checks pass 41 cases, and the changed-test selection passes
+181 cases. The fresh ordinary suite passes 4906 backend and 49 portal cases; type
+checking and the portal build also pass. The maintained Validation comment records
+the live and container gates, coverage, failures and retries for the final candidate.
+Quality review records current metrics, the architecture comparison and remaining
+human approval. These checks do not release removal or supply architect approval.
