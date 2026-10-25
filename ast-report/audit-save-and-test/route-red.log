@@ -1,0 +1,389 @@
+✖ Given edited protected settings, when Test is submitted, then Save runs first and only its returned version reaches Test (27.250292ms)
+✔ Given foreign origin, when Test is submitted, then the service receives no operation (0.767458ms)
+✔ Given missing origin, when Test is submitted, then the service receives no operation (0.289708ms)
+✔ Given forged CSRF, when Test is submitted, then the service receives no operation (0.491ms)
+✔ Given another tenant, when Test is submitted, then the service receives no operation (0.381833ms)
+✔ Given unknown field, when Test is submitted, then the service receives no operation (0.30425ms)
+✔ Given invalid auth, when Test is submitted, then the service receives no operation (0.219708ms)
+✔ Given large body, when Test is submitted, then the service receives no operation (0.729ms)
+✔ Given unsupported media, when Test is submitted, then the service receives no operation (0.197625ms)
+✔ Given duplicate fields or a missing required field, when Test is submitted, then exact form checks refuse it (0.524208ms)
+✔ Given removed Admin permission or a non-POST method, when Test is requested, then Test does not start (0.34075ms)
+✔ Given an aborted valid Test request, when form reading ends, then Test does not start (1.808375ms)
+✖ Given the typed accepted sender result, when Test returns, then fixed safe text reaches the browser (0.391125ms)
+✖ Given the typed warning sender result, when Test returns, then fixed safe text reaches the browser (0.300042ms)
+✖ Given the typed partial_rejection sender result, when Test returns, then fixed safe text reaches the browser (0.261041ms)
+✖ Given the typed permanent_failure sender result, when Test returns, then fixed safe text reaches the browser (0.255167ms)
+✖ Given the typed transient_failure sender result, when Test returns, then fixed safe text reaches the browser (0.216958ms)
+✖ Given the typed unconfirmed sender result, when Test returns, then fixed safe text reaches the browser (0.19625ms)
+✖ Given the typed cancelled sender result, when Test returns, then fixed safe text reaches the browser (0.221084ms)
+✖ Given the typed busy sender result, when Test returns, then fixed safe text reaches the browser (0.238084ms)
+✔ Given the conflict operation result, when Test returns, then no stale sender result is shown (0.197375ms)
+✔ Given the unavailable operation result, when Test returns, then no stale sender result is shown (0.128167ms)
+✔ Given the unsaved operation result, when Test returns, then no stale sender result is shown (0.114459ms)
+✔ Given the busy operation result, when Test returns, then no stale sender result is shown (0.129667ms)
+✔ Given the cancelled operation result, when Test returns, then no stale sender result is shown (0.81175ms)
+✔ Given the unconfirmed operation result, when Test returns, then no stale sender result is shown (0.229917ms)
+✔ Given a secret-bearing Test exception, when the operation fails, then the cause stays out of its safe answer (0.307167ms)
+✔ Given a Save-only service, when Test is submitted, then it fails closed with no Save or settings read (0.16475ms)
+✖ Given a invalid Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.395834ms)
+✖ Given a conflict Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.198667ms)
+✖ Given a unconfirmed Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.159333ms)
+✖ Given a unavailable Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.15175ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 19
+ℹ fail 13
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 361.516041
+
+✖ failing tests:
+
+test at test/unit/html/logging-test-routes.test.ts:1:770
+✖ Given edited protected settings, when Test is submitted, then Save runs first and only its returned version reaches Test (27.250292ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Settings saved/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test accepted</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test accepted</h1>\n' +
+    '<p>Destination accepted the Test event. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:25:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test accepted</title>\n</head>\n<body>\n<main>\n<h1>Test accepted</h1>\n<p>Destination accepted the Test event. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /Settings saved/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed accepted sender result, when Test returns, then fixed safe text reaches the browser (0.391125ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test accepted</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test accepted</h1>\n' +
+    '<p>Destination accepted the Test event. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test accepted</title>\n</head>\n<body>\n<main>\n<h1>Test accepted</h1>\n<p>Destination accepted the Test event. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed warning sender result, when Test returns, then fixed safe text reaches the browser (0.300042ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test warning</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test warning</h1>\n' +
+    '<p>Destination accepted the Test event with a warning. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test warning</title>\n</head>\n<body>\n<main>\n<h1>Test warning</h1>\n<p>Destination accepted the Test event with a warning. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed partial_rejection sender result, when Test returns, then fixed safe text reaches the browser (0.261041ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test rejected</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test rejected</h1>\n' +
+    '<p>Destination rejected the Test event. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test rejected</title>\n</head>\n<body>\n<main>\n<h1>Test rejected</h1>\n<p>Destination rejected the Test event. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed permanent_failure sender result, when Test returns, then fixed safe text reaches the browser (0.255167ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test failed</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test failed</h1>\n' +
+    '<p>The Test attempt failed. Check the saved destination. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test failed</title>\n</head>\n<body>\n<main>\n<h1>Test failed</h1>\n<p>The Test attempt failed. Check the saved destination. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed transient_failure sender result, when Test returns, then fixed safe text reaches the browser (0.216958ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test unavailable</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test unavailable</h1>\n' +
+    '<p>The Test attempt could not complete. Try again later. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test unavailable</title>\n</head>\n<body>\n<main>\n<h1>Test unavailable</h1>\n<p>The Test attempt could not complete. Try again later. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed unconfirmed sender result, when Test returns, then fixed safe text reaches the browser (0.19625ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test unconfirmed</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test unconfirmed</h1>\n' +
+    '<p>The Test result is unconfirmed. The event may have reached the destination. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test unconfirmed</title>\n</head>\n<body>\n<main>\n<h1>Test unconfirmed</h1>\n<p>The Test result is unconfirmed. The event may have reached the destination. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed cancelled sender result, when Test returns, then fixed safe text reaches the browser (0.221084ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test cancelled</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test cancelled</h1>\n' +
+    '<p>The Test was cancelled. The event may have reached the destination. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test cancelled</title>\n</head>\n<body>\n<main>\n<h1>Test cancelled</h1>\n<p>The Test was cancelled. The event may have reached the destination. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:6208
+✖ Given the typed busy sender result, when Test returns, then fixed safe text reaches the browser (0.238084ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /class="site-header"/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Test busy</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Test busy</h1>\n' +
+    '<p>Test is busy. Try again later. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n' +
+    '<p><a href="/nested/logging">Read saved settings</a></p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:118:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Test busy</title>\n</head>\n<body>\n<main>\n<h1>Test busy</h1>\n<p>Test is busy. Try again later. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p>\n<p><a href="/nested/logging">Read saved settings</a></p>\n</main>\n</body>\n</html>\n',
+    expected: /class="site-header"/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:9031
+✖ Given a invalid Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.395834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:177:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:9031
+✖ Given a conflict Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.198667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 409
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:177:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 409,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:9031
+✖ Given a unconfirmed Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.159333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 503
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:177:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-test-routes.test.ts:1:9031
+✖ Given a unavailable Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.15175ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 503
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:177:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 503,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

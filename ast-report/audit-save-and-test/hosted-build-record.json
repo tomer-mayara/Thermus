@@ -1,0 +1,62 @@
+{
+  "Name": "Thermus/Dockerfile.hosted",
+  "Ref": "q9nbhc3yd3pd5mtwahpyb1r7i",
+  "Context": ".",
+  "Dockerfile": "Dockerfile.hosted",
+  "VCSRepository": "https://github.com/3-headed-monkey/Thermus.git",
+  "VCSRevision": "ed529f8f225dd3d91311e669417347e07236582b",
+  "Platform": [
+    "linux/amd64"
+  ],
+  "StartedAt": "2026-10-25T00:03:49.145064225-06:00",
+  "CompletedAt": "2026-10-25T00:13:00.487073958-06:00",
+  "Duration": 551342009733,
+  "Status": "completed",
+  "NumCompletedSteps": 36,
+  "NumTotalSteps": 36,
+  "NumCachedSteps": 19,
+  "Labels": [
+    {
+      "Name": "thermus.hosted-image-gate",
+      "Value": "a308ecf4fa7c"
+    }
+  ],
+  "Config": {
+    "ImageResolveMode": "local"
+  },
+  "Materials": [
+    {
+      "URI": "pkg:docker/node@24.20.0-trixie-slim?digest=sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0\u0026platform=linux%2Famd64",
+      "Digests": [
+        "sha256:50c3b2f6988dfc307b86e5301d69611af31f4789bdf232863b07d3b02fe55ae0"
+      ]
+    },
+    {
+      "URI": "pkg:docker/rust@1.97-slim-trixie?digest=sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c\u0026platform=linux%2Famd64",
+      "Digests": [
+        "sha256:8e8cf8f7fd54a2d23d5a743b3a03f56e26b6c774276c33fa0595111704ebb15c"
+      ]
+    },
+    {
+      "URI": "https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-x86_64-linux",
+      "Digests": [
+        "sha256:aa5a4b8ed53d1e38b3c73f5b2647d0a84a82e6744557f45f9a9c85858aa031c3"
+      ]
+    }
+  ],
+  "Attachments": [
+    {
+      "Digest": "sha256:1ba7b9ab61f6d19b505deb334929f28d9e5a26eba1b903b3ea0c9eedc4f953c9",
+      "Type": "application/vnd.oci.image.index.v1+json"
+    },
+    {
+      "Digest": "sha256:01a16b283c375d63e9e5fb048aafab27fe2f32d461ef90eea6cfab27e1d69c23",
+      "Type": "https://slsa.dev/provenance/v1"
+    },
+    {
+      "Digest": "sha256:956ec4e4ee85d6238772edf9d748bc2a2e2971c003667f5ea768465703aa5d11",
+      "Platform": "linux/amd64",
+      "Type": "application/vnd.oci.image.manifest.v1+json"
+    }
+  ]
+}

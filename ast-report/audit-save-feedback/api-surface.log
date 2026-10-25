@@ -1,0 +1,3 @@
+api-surface: ignored 33 compiler errors in 2 files that public_surface does not list
+stale   docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+docs/api-surface: 1 stale, 0 missing, 0 orphan; run node script/pr-review/api-surface.ts and commit

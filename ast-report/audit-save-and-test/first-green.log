@@ -1,0 +1,153 @@
+✔ Given edited Axiom settings with export Off, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (261.773333ms)
+✔ Given edited Axiom settings with export On, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (99.586625ms)
+✔ Given edited protected settings, when Test is submitted, then Save runs first and only its returned version reaches Test (19.678708ms)
+✔ Given foreign origin, when Test is submitted, then the service receives no operation (0.463833ms)
+✔ Given missing origin, when Test is submitted, then the service receives no operation (0.340584ms)
+✔ Given forged CSRF, when Test is submitted, then the service receives no operation (0.344791ms)
+✔ Given another tenant, when Test is submitted, then the service receives no operation (0.40025ms)
+✔ Given unknown field, when Test is submitted, then the service receives no operation (0.314125ms)
+✔ Given invalid auth, when Test is submitted, then the service receives no operation (0.239167ms)
+✔ Given large body, when Test is submitted, then the service receives no operation (0.77725ms)
+✔ Given unsupported media, when Test is submitted, then the service receives no operation (0.405542ms)
+✔ Given duplicate fields or a missing required field, when Test is submitted, then exact form checks refuse it (0.653375ms)
+✔ Given removed Admin permission or a non-POST method, when Test is requested, then Test does not start (0.514875ms)
+✔ Given an aborted valid Test request, when form reading ends, then Test does not start (2.539292ms)
+✔ Given the typed accepted sender result, when Test returns, then fixed safe text reaches the browser (0.605125ms)
+✔ Given the typed warning sender result, when Test returns, then fixed safe text reaches the browser (0.352416ms)
+✔ Given the typed partial_rejection sender result, when Test returns, then fixed safe text reaches the browser (0.367667ms)
+✔ Given the typed permanent_failure sender result, when Test returns, then fixed safe text reaches the browser (0.3255ms)
+✔ Given the typed transient_failure sender result, when Test returns, then fixed safe text reaches the browser (0.310458ms)
+✔ Given the typed unconfirmed sender result, when Test returns, then fixed safe text reaches the browser (0.334083ms)
+✔ Given the typed cancelled sender result, when Test returns, then fixed safe text reaches the browser (1.697958ms)
+✔ Given the typed busy sender result, when Test returns, then fixed safe text reaches the browser (0.368208ms)
+✔ Given the conflict operation result, when Test returns, then no stale sender result is shown (0.369ms)
+✔ Given the unavailable operation result, when Test returns, then no stale sender result is shown (0.251458ms)
+✖ Given the unsaved operation result, when Test returns, then no stale sender result is shown (1.023084ms)
+✔ Given the busy operation result, when Test returns, then no stale sender result is shown (0.239042ms)
+✔ Given the cancelled operation result, when Test returns, then no stale sender result is shown (0.628083ms)
+✔ Given the unconfirmed operation result, when Test returns, then no stale sender result is shown (0.258375ms)
+✔ Given a secret-bearing Test exception, when the operation fails, then the cause stays out of its safe answer (0.339333ms)
+✔ Given a Save-only service, when Test is submitted, then it fails closed with no Save or settings read (0.294583ms)
+✔ Given a invalid Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.347583ms)
+✔ Given a conflict Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.240167ms)
+✔ Given a unconfirmed Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.190584ms)
+✔ Given a unavailable Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.158917ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 33
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 770.802291
+
+✖ failing tests:
+
+test at test/unit/html/logging-test-routes.test.ts:1:7225
+✖ Given the unsaved operation result, when Test returns, then no stale sender result is shown (1.023084ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Save your edits before Test/. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Audit logs · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n' +
+    '@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n' +
+    '@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n' +
+    '*{box-sizing:border-box}\n' +
+    'html{color-scheme:dark}\n' +
+    'body{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\n' +
+    'a{color:inherit;text-underline-offset:.2em}\n' +
+    ':focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n' +
+    '.skip-link:focus{transform:none}\n' +
+    '.site-header{border-bottom:1px solid #2C2D34}\n' +
+    '.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n' +
+    '.header-content{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-block:12px}\n' +
+    '.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n' +
+    '.brand img{display:block;width:166px;height:auto}\n' +
+    'nav{display:flex;align-items:center;gap:24px;flex-wrap:wrap}\n' +
+    'nav a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\n' +
+    'nav a:hover,nav [aria-current]{color:#F3F2EE;text-decoration:underline}\n' +
+    '.members-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:"intro intro" "lists invite";gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n' +
+    '.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n' +
+    '.introduction{grid-area:intro}\n' +
+    '.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\n' +
+    'h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\n' +
+    'h1{font-size:44px}h2{font-size:26px}\n' +
+    '.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n' +
+    '.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n' +
+    '.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\n' +
+    'p,li,form{overflow-wrap:anywhere;min-width:0}\n' +
+    '.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n' +
+    '.invite-card form{display:grid;gap:12px}\n' +
+    'label,legend{font-size:15px}\n' +
+    'input[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\n' +
+    'fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\n' +
+    'legend{padding:0;margin-bottom:6px}\n' +
+    '.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\n' +
+    'input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\n' +
+    'button{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\n' +
+    'button:hover{border-color:#F3F2EE;background:#2C2D34}\n' +
+    '.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n' +
+    '.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n' +
+    '.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n' +
+    '.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n' +
+    '.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n' +
+    '.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n' +
+    '.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n' +
+    '.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n' +
+    '.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.logging-switch-on{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-off{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-on{display:inline}\n' +
+    '.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n' +
+    '.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n' +
+    '.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n' +
+    '.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n' +
+    '.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n' +
+    '.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n' +
+    '.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n' +
+    '.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n' +
+    '.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n' +
+    '.member-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px}\n' +
+    '.member-row p,.invitation-list p{margin:0}\n' +
+    '.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n' +
+    '.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n' +
+    '.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n' +
+    '.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n' +
+    '.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n' +
+    '@media(max-width:860px){.members-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";max-width:650px;padding-top:32px}.header-content{gap:12px}nav{gap:20px}h1{font-size:40px}}\n' +
+    '@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}nav{gap:12px}nav a{font-size:13px}.invite-card,.members-card{padding:20px}h1{font-size:36px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n' +
+    '</style></head>\n' +
+    '<body><a class="skip-link" href="#main-content">Skip to content</a>\n' +
+    '<header class="site-header"><div class="header-content"><a class="brand" href="/nested/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n' +
+    '<nav aria-label="Workspace"><a href="/nested/">Product / Connect</a><a href="/nested/members" >Members</a><a href="/nested/logging" aria-current="page">Audit logs</a><a href="/nested/organizations">Switch workspace</a></nav></div></header>\n' +
+    '<main id="main-content" class="members-layout logging-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Audit logs</h1></div>\n' +
+    '<section class="invite-card" aria-labelledby="destination-heading"><h2 id="destination-heading">Audit log destination</h2>\n' +
+    '<section class="logging-result" role="alert" aria-labelledby="logging-result-title"><h3 id="logging-result-title">Test result suppressed</h3><p>Settings saved. The saved settings could not be matched. Read saved settings before another Test. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p></section>\n' +
+    "<p>Save one destination for your organization's audit logs. Thermus system logs are internal.</p>\n" +
+    '<aside class="destination-notice" role="note" aria-label="Organization data"><p>Send organization data only if you have authority to do so. Check destination access and retention. Read our <a href="https://thermus.ai/privacy/">Privacy Policy</a>.</p></aside>\n' +
+    '<form method="post" action="/nested/logging/save">\n' +
+    '<input type="hidden" name="csrf_token" value="csrf"><input type="hidden" name="organization_id" value="trusted:a"><input type="hidden" name="expected_revision" value="r1">\n' +
+    '<fieldset id="logging-destination"><legend>Destination</legend><label class="role-option"><input type="radio" name="destination" value="axiom" required> Axiom</label>\n' +
+    '<label class="role-option"><input type="radio" name="destination" value="custom" required checked> Custom</label></fieldset>\n' +
+    '<label for="logging-endpoint">OTLP logs endpoint</label><input id="logging-endpoint" name="endpoint" type="url" maxlength="2048" required pattern="https://.*" aria-describedby="logging-endpoint-help" value="https://collector.example/v1/logs">\n' +
+    '<p id="logging-endpoint-help">Use an HTTPS OTLP/HTTP JSON logs endpoint.</p>\n' +
+    '<div id="logging-axiom-fields"><label for="logging-dataset">Axiom dataset</label><input id="logging-dataset" name="axiom_dataset" type="text" maxlength="128" pattern="[A-Za-z0-9\\-]{1,128}" aria-describedby="logging-dataset-help" value="">\n' +
+    '<p id="logging-dataset-help">Required for Axiom: 1–128 letters, digits, or hyphens.</p></div>\n' +
+    '<noscript><p>For Axiom, enter a dataset. For Custom, clear the Axiom dataset.</p></noscript>\n' +
+    '<input type="hidden" name="auth" value="bearer">\n' +
+    '<label for="logging-token">Bearer token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192" aria-describedby="logging-token-help" value="">\n' +
+    '<p id="logging-token-help">A token is saved. Leave Token blank to keep it for the same endpoint. A changed endpoint needs '... 1278 more characters
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-test-routes.test.ts:137:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: `<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Audit logs · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n*{box-sizing:border-box}\nhtml{color-scheme:dark}\nbody{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\na{color:inherit;text-underline-offset:.2em}\n:focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n.skip-link:focus{transform:none}\n.site-header{border-bottom:1px solid #2C2D34}\n.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n.header-content{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-block:12px}\n.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n.brand img{display:block;width:166px;height:auto}\nnav{display:flex;align-items:center;gap:24px;flex-wrap:wrap}\nnav a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\nnav a:hover,nav [aria-current]{color:#F3F2EE;text-decoration:underline}\n.members-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);grid-template-areas:"intro intro" "lists invite";gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n.introduction{grid-area:intro}\n.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\nh1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\nh1{font-size:44px}h2{font-size:26px}\n.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\np,li,form{overflow-wrap:anywhere;min-width:0}\n.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n.invite-card form{display:grid;gap:12px}\nlabel,legend{font-size:15px}\ninput[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\nfieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\nlegend{padding:0;margin-bottom:6px}\n.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\ninput[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\nbutton{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\nbutton:hover{border-color:#F3F2EE;background:#2C2D34}\n.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n.logging-switch-on{display:none}\n.logging-switch input:checked~.logging-switch-off{display:none}\n.logging-switch input:checked~.logging-switch-on{display:inline}\n.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n.member-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px}\n.member-row p,.invitation-list p{margin:0}\n.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n@media(max-width:860px){.members-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";max-width:650px;padding-top:32px}.header-content{gap:12px}nav{gap:20px}h1{font-size:40px}}\n@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}nav{gap:12px}nav a{font-size:13px}.invite-card,.members-card{padding:20px}h1{font-size:36px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n</style></head>\n<body><a class="skip-link" href="#main-content">Skip to content</a>\n<header class="site-header"><div class="header-content"><a class="brand" href="/nested/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n<nav aria-label="Workspace"><a href="/nested/">Product / Connect</a><a href="/nested/members" >Members</a><a href="/nested/logging" aria-current="page">Audit logs</a><a href="/nested/organizations">Switch workspace</a></nav></div></header>\n<main id="main-content" class="members-layout logging-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Audit logs</h1></div>\n<section class="invite-card" aria-labelledby="destination-heading"><h2 id="destination-heading">Audit log destination</h2>\n<section class="logging-result" role="alert" aria-labelledby="logging-result-title"><h3 id="logging-result-title">Test result suppressed</h3><p>Settings saved. The saved settings could not be matched. Read saved settings before another Test. Test proves neither continued delivery nor durable storage. Test is not required to enable export.</p></section>\n<p>Save one destination for your organization's audit logs. Thermus system logs are internal.</p>\n<aside class="destination-notice" role="note" aria-label="Organization data"><p>Send organization data only if you have authority to do so. Check destination access and retention. Read our <a href="https://thermus.ai/privacy/">Privacy Policy</a>.</p></aside>\n<form method="post" action="/nested/logging/save">\n<input type="hidden" name="csrf_token" value="csrf"><input type="hidden" name="organization_id" value="trusted:a"><input type="hidden" name="expected_revision" value="r1">\n<fieldset id="logging-destination"><legend>Destination</legend><label class="role-option"><input type="radio" name="destination" value="axiom" required> Axiom</label>\n<label class="role-option"><input type="radio" name="destination" value="custom" required checked> Custom</label></fieldset>\n<label for="logging-endpoint">OTLP logs endpoint</label><input id="logging-endpoint" name="endpoint" type="url" maxlength="2048" required pattern="https://.*" aria-describedby="logging-endpoint-help" value="https://collector.example/v1/logs">\n<p id="logging-endpoint-help">Use an HTTPS OTLP/HTTP JSON logs endpoint.</p>\n<div id="logging-axiom-fields"><label for="logging-dataset">Axiom dataset</label><input id="logging-dataset" name="axiom_dataset" type="text" maxlength="128" pattern="[A-Za-z0-9\\-]{1,128}" aria-describedby="logging-dataset-help" value="">\n<p id="logging-dataset-help">Required for Axiom: 1–128 letters, digits, or hyphens.</p></div>\n<noscript><p>For Axiom, enter a dataset. For Custom, clear the Axiom dataset.</p></noscript>\n<input type="hidden" name="auth" value="bearer">\n<label for="logging-token">Bearer token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192" aria-describedby="logging-token-help" value="">\n<p id="logging-token-help">A token is saved. Leave Token blank to keep it for the same endpoint. A changed endpoint needs `... 1278 more characters,
+    expected: /Save your edits before Test/,
+    operator: 'match',
+    diff: 'simple'
+  }

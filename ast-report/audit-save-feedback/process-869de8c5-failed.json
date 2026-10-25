@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "base": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "head": "869de8c5a3e70cea19aea3a4807633fb8d369cea",
+  "outcomes": [
+    {
+      "name": "Delta",
+      "status": "goal miss",
+      "text": "  39.0  src/logs/audit/destination-settings-service.ts  below 85\n  47.9  src/interfaces/web/account/logging-routes.ts  below 85\n  65.0  src/interfaces/web/account/logging-page.ts  below 85\n  70.4  src/interfaces/web/account/logging-test-page.ts  below 85\n  25.4  test/unit/logging/destination-settings-service.test.ts  no goal\n  28.3  test/acceptance/logging/hosted-destination-settings.test.ts  no goal\n  28.4  test/unit/html/logging-test-routes.test.ts  no goal\n  28.6  test/acceptance/logging/hosted-destination-test.test.ts  no goal\n  30.3  test/integration/logging/audit/audit-sender.runtime.ts  no goal\n  32.7  test/acceptance/logging/hosted-save-and-test.test.ts  no goal\n  34.8  test/integration/hosted-admin/account-routes-audit.test.ts  no goal\n  36.1  test/unit/html/logging-routes.test.ts  no goal\n  38.2  test/acceptance/logging/audit/hosted-audit-journey.runtime.ts  no goal\n  38.7  test/acceptance/logging/audit/administration-capture.test.ts  no goal\n  40.4  test/integration/hosted-admin/account-routes-logging.test.ts  no goal\n  41.0  test/acceptance/logging/hosted-save-feedback.test.ts  no goal\n  41.5  test/unit/html/logging-feedback-script.test.ts  no goal\n  42.0  test/support/in-process/hosted-audit-journey-site.ts  no goal\n  56.3  test/support/processes/audit-destination-test-probe.ts  no goal\n  not measured  docs/api-surface/src/logs/audit/destination-settings-service.d.ts\n  not measured  src/interfaces/web/account/members-style.ts\nResult: 4 of 4 production files below 85. Goal: 85 or more for each production file. 15 other files without a goal. 2 files not measured.\nComparison with origin/main: ast-report/compare.html\n"
+    },
+    {
+      "name": "Review",
+      "status": "goal miss",
+      "text": "## AST Metrics found blocking regressions\n\n1 new critical issue(s), 1 other regression(s), 2 improvement(s)\n\n### Summary\n\n- ✅ **Complexity: -3**\n- ⚠️  **Ease of maintenance: -8**\n- ➖ **Outgoing dependencies: -**\n- ➖ **Probability of bugs: -**\n\n### Regressions\n\n- **test/unit/html/logging-test-routes.test.ts** (`test/unit/html/logging-test-routes.test.ts`, high)\n  Maintainability index: 36 -> 28 (below 85 is hard to maintain)\n  Suggested action: Refactor long or deeply nested functions and reduce responsibilities in this file\n- **LoggingRoutes::change** (`src/interfaces/web/account/logging-routes.ts:51`, medium)\n  New function with cyclomatic complexity 12 (threshold: 10)\n  Suggested action: Extract smaller, well-named functions to reduce decision points\n\n### Improvements\n\n- **loggingPage** (`src/interfaces/web/account/logging-page.ts:57`): Cyclomatic complexity: 8 -> 5\n- **logging-routes\\LoggingRoutes.** (`src/interfaces/web/account/logging-routes.ts:108`): Cyclomatic complexity: 13 -> 1\n"
+    },
+    {
+      "name": "CRAP",
+      "status": "failed",
+      "text": "The build failed. No coverage is written."
+    },
+    {
+      "name": "Architecture",
+      "status": "unavailable",
+      "text": "A prerequisite failed. This stage did not run."
+    }
+  ]
+}

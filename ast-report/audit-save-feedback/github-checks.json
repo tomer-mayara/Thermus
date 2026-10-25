@@ -1,0 +1,12 @@
+{
+  "headRevision": "e9e2185663f62690809640c5434ad24582843835",
+  "checks": [],
+  "statuses": [],
+  "annotations": [],
+  "hasMore": false,
+  "job": null,
+  "jobs": [],
+  "log": null,
+  "logTruncated": false,
+  "interpretation": "GitHub reported no checks or commit statuses. This is not a remote CI pass; the selected local gates supply validation."
+}

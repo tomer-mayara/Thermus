@@ -1,0 +1,24 @@
+{
+  "scope": "Real Chromium with production routes, form, layout, settings service and credential codec; trusted local Admin, in-memory store and controlled Test sender. No live customer writes.",
+  "checks": [
+    "JS export Off: first Test saves current Axiom form once, sends once, returns styled result/fresh revision/blank token; second unchanged Test retains revision.",
+    "JS export On: first Test saves current Axiom form once, sends once, returns styled result/fresh revision/blank token; second unchanged Test retains revision.",
+    "JS: failed Test confirms saved settings and keeps form; invalid Save reflects no credential; uncertain Save never Tests and has styled read-only recovery; read failure stays in Audit chrome with no empty revision form.",
+    "no-JS export Off: first Test saves current Axiom form once, sends once, returns styled result/fresh revision/blank token; second unchanged Test retains revision.",
+    "no-JS export On: first Test saves current Axiom form once, sends once, returns styled result/fresh revision/blank token; second unchanged Test retains revision.",
+    "no-JS: failed Test confirms saved settings and keeps form; invalid Save reflects no credential; uncertain Save never Tests and has styled read-only recovery; read failure stays in Audit chrome with no empty revision form."
+  ],
+  "screenshots": [
+    "accepted-off-1440.png",
+    "accepted-off-390.png",
+    "accepted-off-320.png",
+    "accepted-on-1440.png",
+    "accepted-on-390.png",
+    "accepted-on-320.png",
+    "test-failed-1440.png",
+    "invalid-save-1440.png",
+    "save-unconfirmed-1440.png",
+    "read-unavailable-1440.png"
+  ],
+  "passed": true
+}

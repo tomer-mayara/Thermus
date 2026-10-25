@@ -1,0 +1,167 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "4ae3cc7f950c53cc619c307159643b6771caff5a",
+  "mergeBase": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "The protected web Test action now saves the submitted Audit settings, including the export switch, before it calls the existing saved-destination Test operation. Only a confirmed saved or unchanged result permits that Test, using the returned public settings and revision with a blank token input. Failed, stale or uncertain Saves send no Test event; a failed Test does not undo the saved settings. Cancellation after Save stops the send. The web owner shows fixed safe outcomes in the existing Audit layout and keeps uncertain-Save recovery limited to a GET link without a write form or automatic retry. This changes web-to-audit runtime collaboration and partial-success behavior, so internalInterface and sensitiveBehavior are true. Service declarations, source dependency edges, storage, sender security, actor/tenant authority, components, registry diagrams, containers and deployment stay unchanged. No new framework, dependency, session flash state or result history is added. Registry prose and active plan describe the new order; historical evidence and approved legal files remain unchanged."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "The protected web Test action now saves the submitted Audit settings, including the export switch, before it calls the existing saved-destination Test operation. Only a confirmed saved or unchanged result permits that Test, using the returned public settings and revision with a blank token input. Failed, stale or uncertain Saves send no Test event; a failed Test does not undo the saved settings. Cancellation after Save stops the send. The web owner shows fixed safe outcomes in the existing Audit layout and keeps uncertain-Save recovery limited to a GET link without a write form or automatic retry. This changes web-to-audit runtime collaboration and partial-success behavior, so internalInterface and sensitiveBehavior are true. Service declarations, source dependency edges, storage, sender security, actor/tenant authority, components, registry diagrams, containers and deployment stay unchanged. No new framework, dependency, session flash state or result history is added. Registry prose and active plan describe the new order; historical evidence and approved legal files remain unchanged."
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-02b.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-04-direct-axiom.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-24-74f75656.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-test-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/administration-capture.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/hosted-save-and-test.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-audit.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-logging.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/hosted-audit-journey-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/processes/audit-destination-test-probe.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-test-routes.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 175,
+    "productionLimit": 400,
+    "total": 633,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 10,
+    "removed": 4,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/web/account/logging-page.ts: 68.98139985980818 to 65.40992464588827",
+    "changed: src/interfaces/web/account/logging-routes.ts: 47.791505447861134 to 48.3661087220833",
+    "changed: src/interfaces/web/account/logging-test-page.ts: 71.8038342317498 to 70.38025948747948",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+  ],
+  "crap": [
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.: 12.1",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.change: 12.0",
+    "src/interfaces/web/account/logging-page.ts: destinationForm: 8.0",
+    "src/interfaces/web/account/logging-page.ts: loggingPage: 5.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.readPage: 4.4",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.handlerFor: 4.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.saveFailure: 4.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.page: 3.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.saveSettings: 2.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.testSaved: 2.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.refuse: 2.0",
+    "src/interfaces/web/account/logging-test-page.ts: loggingTestNotice: 2.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.: 1.0",
+    "src/interfaces/web/account/logging-test-page.ts: loggingRequestNotice: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "outside scopes.production: test/unit/html/logging-test-routes.test.ts: Maintainability index: 36 -> 28 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "48 public modules, 0 snapshots changed"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

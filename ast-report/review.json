@@ -1,0 +1,64 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "headSha": "e9e2185663f62690809640c5434ad24582843835",
+  "summary": {
+    "filesChanged": 18,
+    "filesAdded": 3,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 0,
+    "improvements": 2
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/unit/html/logging-test-routes.test.ts",
+      "message": "Maintainability index: 36 -\u003e 28 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 36.11081798449145,
+      "after": 28.43726920312194
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "line": 51,
+      "subject": "LoggingRoutes::change",
+      "message": "New function with cyclomatic complexity 12 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 12
+    }
+  ],
+  "improvements": [
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "complexity-improvement",
+      "file": "src/interfaces/web/account/logging-page.ts",
+      "line": 57,
+      "subject": "loggingPage",
+      "message": "Cyclomatic complexity: 8 -\u003e 5",
+      "before": 8,
+      "after": 5
+    },
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "complexity-improvement",
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "line": 108,
+      "subject": "logging-routes\\LoggingRoutes.",
+      "message": "Cyclomatic complexity: 13 -\u003e 1",
+      "before": 13,
+      "after": 1
+    }
+  ],
+  "gate": "failed"
+}

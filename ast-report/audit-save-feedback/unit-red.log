@@ -1,0 +1,260 @@
+✖ Given server-confirmed saved feedback, when 30 seconds pass or the Admin edits a field, then the saved text disappears (34.677541ms)
+✖ Given a valid native submit, when scroll state is recorded, then only position and time are stored for this Audit URL and native submission continues (2.564667ms)
+✖ Given a recent scroll position on a recovery page, when the page opens, then it is consumed once and clamped to the current page height (0.780875ms)
+✖ Given expired, future, malformed, or invalid scroll state, when Audit opens, then the page does not restore it (1.599667ms)
+✖ Given blocked session storage, when Audit opens or submits, then native Save remains usable and no saved feedback is invented (1.326ms)
+✔ Given an Axiom dataset, when saved and read, then the dataset is public and its credential remains private (6.178625ms)
+✔ Given an invalid Axiom dataset, when saved, then no settings are written (0.335458ms)
+✔ Given a blank or omitted Axiom dataset, when saved, then a generic Collector has no dataset header (0.581834ms)
+✔ Given a saved Axiom dataset, when it is repeated or cleared, then only clearing advances the revision and the saved token is retained (0.329ms)
+✔ Given absent settings, when read, then the destination starts disabled without a credential (0.102709ms)
+✔ Given a bearer destination, when saved and reread, then only token presence is public and the ciphertext is tenant bound (0.221375ms)
+✔ Given unsafe endpoint http://collector.example, when saved, then all settings are refused (0.070833ms)
+✔ Given unsafe endpoint https://user:secret@collector.example, when saved, then all settings are refused (0.045875ms)
+✔ Given unsafe endpoint https://collector.example/?secret, when saved, then all settings are refused (0.051208ms)
+✔ Given unsafe endpoint https://collector.example/#secret, when saved, then all settings are refused (0.082042ms)
+✔ Given unsafe endpoint https://127.1, when saved, then all settings are refused (0.50825ms)
+✔ Given unsafe endpoint https://10.1.1.1, when saved, then all settings are refused (0.063709ms)
+✔ Given unsafe endpoint https://172.16.0.1, when saved, then all settings are refused (0.054375ms)
+✔ Given unsafe endpoint https://192.168.0.1, when saved, then all settings are refused (0.0385ms)
+✔ Given unsafe endpoint https://169.254.169.254, when saved, then all settings are refused (0.035125ms)
+✔ Given unsafe endpoint https://[::1], when saved, then all settings are refused (0.071208ms)
+✔ Given unsafe endpoint https://[::ffff:127.0.0.1], when saved, then all settings are refused (0.051875ms)
+✔ Given unsafe endpoint https://localhost, when saved, then all settings are refused (0.032834ms)
+✔ Given unsafe endpoint https://a.localhost, when saved, then all settings are refused (0.039792ms)
+✔ Given unsafe endpoint https://192.0.0.1, when saved, then all settings are refused (0.029708ms)
+✔ Given unsafe endpoint https://192.0.2.1, when saved, then all settings are refused (0.034125ms)
+✔ Given unsafe endpoint https://198.51.100.1, when saved, then all settings are refused (0.033792ms)
+✔ Given unsafe endpoint https://203.0.113.1, when saved, then all settings are refused (0.03275ms)
+✔ Given saved Bearer, when the same token or a blank token is saved, then its ciphertext and revision are preserved (0.279ms)
+✔ Given saved Bearer, when endpoint changes without a token, then Save refuses; None clears the credential (0.776042ms)
+✔ Given invalid token or missing Bearer, when saved, then no write occurs (0.115708ms)
+✔ Given corrupt or wrong-key credentials, when read or saved, then only a safe unavailable outcome escapes (0.197417ms)
+✔ Given two forms with one revision, when saved concurrently, then one wins and the stale form cannot replace it (0.173208ms)
+✔ Given input changes while storage is pending, when Save completes, then it uses the submitted snapshot (0.253167ms)
+✔ Given an unconfirmed Save with a late commit, when a reloaded form competes, then the expected revision prevents replacement (0.214125ms)
+✔ Given a competing commit before the late Save, when that late Save resumes, then it loses its stale revision (0.147709ms)
+✔ Given invalid public HTTPS syntax https://[2::1], when saved, then no settings change (0.048917ms)
+✔ Given invalid public HTTPS syntax https:collector.example, when saved, then no settings change (0.023625ms)
+✔ Given a token that cannot form one Bearer header value, when saved, then no settings change (0.0375ms)
+✔ Given a token that cannot form one Bearer header value, when saved, then no settings change (0.061584ms)
+✔ Given a token that cannot form one Bearer header value, when saved, then no settings change (0.027875ms)
+✔ Given storage throws private diagnostics, when read or saved, then safe failure outcomes leave the owner (0.1605ms)
+✔ Given malformed stored settings, when read or saved, then no configured values escape and no update occurs (0.197625ms)
+✔ Given an empty userinfo marker in an endpoint, when saved, then the endpoint is refused (0.035833ms)
+✖ Given a saved Bearer token of 1 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (2.056042ms)
+✖ Given a saved Bearer token of 2 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.234834ms)
+✖ Given a saved Bearer token of 3 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.115958ms)
+✖ Given a saved Bearer token of 4 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.095375ms)
+✖ Given a saved Bearer token of 5 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.096292ms)
+✖ Given a saved Bearer token of 18 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.09325ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 39
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 490.3635
+
+✖ failing tests:
+
+test at test/unit/html/logging-feedback-script.test.ts:1:1824
+✖ Given server-confirmed saved feedback, when 30 seconds pass or the Admin edits a field, then the saved text disappears (34.677541ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(marker)
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-feedback-script.test.ts:37:74)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-feedback-script.test.ts:1:2435
+✖ Given a valid native submit, when scroll state is recorded, then only position and time are stored for this Audit URL and native submission continues (2.564667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-feedback-script.test.ts:52:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-feedback-script.test.ts:1:2990
+✖ Given a recent scroll position on a recovery page, when the page opens, then it is consumed once and clamped to the current page height (0.780875ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(script)
+  
+      at scriptSite (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-feedback-script.test.ts:20:10)
+      at async TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-feedback-script.test.ts:58:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-feedback-script.test.ts:1:3365
+✖ Given expired, future, malformed, or invalid scroll state, when Audit opens, then the page does not restore it (1.599667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-feedback-script.test.ts:68:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/html/logging-feedback-script.test.ts:1:3765
+✖ Given blocked session storage, when Audit opens or submits, then native Save remains usable and no saved feedback is invented (1.326ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== ''
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/html/logging-feedback-script.test.ts:78:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/destination-settings-service.test.ts:1:13433
+✖ Given a saved Bearer token of 1 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (2.056042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '****'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/destination-settings-service.test.ts:240:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '****',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/destination-settings-service.test.ts:1:13433
+✖ Given a saved Bearer token of 2 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.234834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '****'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/destination-settings-service.test.ts:240:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '****',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/destination-settings-service.test.ts:1:13433
+✖ Given a saved Bearer token of 3 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.115958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '****'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/destination-settings-service.test.ts:240:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '****',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/destination-settings-service.test.ts:1:13433
+✖ Given a saved Bearer token of 4 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.095375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '****'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/destination-settings-service.test.ts:240:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '****',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/destination-settings-service.test.ts:1:13433
+✖ Given a saved Bearer token of 5 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.096292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'abcd****'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/destination-settings-service.test.ts:240:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'abcd****',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/destination-settings-service.test.ts:1:13433
+✖ Given a saved Bearer token of 18 characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview (0.09325ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'long****'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/destination-settings-service.test.ts:240:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'long****',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

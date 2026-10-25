@@ -1,0 +1,42 @@
+✔ Given edited Axiom settings with export Off, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (343.9185ms)
+✔ Given edited Axiom settings with export On, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (76.782875ms)
+✔ Given edited protected settings, when Test is submitted, then Save runs first and only its returned version reaches Test (19.102708ms)
+✔ Given foreign origin, when Test is submitted, then the service receives no operation (0.430416ms)
+✔ Given missing origin, when Test is submitted, then the service receives no operation (0.313791ms)
+✔ Given forged CSRF, when Test is submitted, then the service receives no operation (0.333458ms)
+✔ Given another tenant, when Test is submitted, then the service receives no operation (0.378083ms)
+✔ Given unknown field, when Test is submitted, then the service receives no operation (0.295458ms)
+✔ Given invalid auth, when Test is submitted, then the service receives no operation (0.233375ms)
+✔ Given large body, when Test is submitted, then the service receives no operation (0.718958ms)
+✔ Given unsupported media, when Test is submitted, then the service receives no operation (0.201875ms)
+✔ Given duplicate fields or a missing required field, when Test is submitted, then exact form checks refuse it (0.527166ms)
+✔ Given removed Admin permission or a non-POST method, when Test is requested, then Test does not start (0.612958ms)
+✔ Given an aborted valid Test request, when form reading ends, then Test does not start (2.157459ms)
+✔ Given the typed accepted sender result, when Test returns, then fixed safe text reaches the browser (0.499125ms)
+✔ Given the typed warning sender result, when Test returns, then fixed safe text reaches the browser (0.313833ms)
+✔ Given the typed partial_rejection sender result, when Test returns, then fixed safe text reaches the browser (0.310541ms)
+✔ Given the typed permanent_failure sender result, when Test returns, then fixed safe text reaches the browser (0.289709ms)
+✔ Given the typed transient_failure sender result, when Test returns, then fixed safe text reaches the browser (0.715333ms)
+✔ Given the typed unconfirmed sender result, when Test returns, then fixed safe text reaches the browser (0.261625ms)
+✔ Given the typed cancelled sender result, when Test returns, then fixed safe text reaches the browser (0.261709ms)
+✔ Given the typed busy sender result, when Test returns, then fixed safe text reaches the browser (0.225375ms)
+✔ Given the conflict operation result, when Test returns, then no stale sender result is shown (0.299125ms)
+✔ Given the unavailable operation result, when Test returns, then no stale sender result is shown (0.209375ms)
+✔ Given the unsaved operation result, when Test returns, then no stale sender result is shown (0.210375ms)
+✔ Given the busy operation result, when Test returns, then no stale sender result is shown (0.266334ms)
+✔ Given the cancelled operation result, when Test returns, then no stale sender result is shown (0.277083ms)
+✔ Given the unconfirmed operation result, when Test returns, then no stale sender result is shown (0.397958ms)
+✔ Given a secret-bearing Test exception, when the operation fails, then the cause stays out of its safe answer (0.453958ms)
+✔ Given a Save-only service, when Test is submitted, then it fails closed with no Save or settings read (0.257125ms)
+✔ Given a invalid Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.36625ms)
+✔ Given a conflict Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.235041ms)
+✔ Given a unconfirmed Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.187833ms)
+✔ Given a unavailable Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.19575ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 810.56375

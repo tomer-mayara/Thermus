@@ -1,0 +1,27 @@
+{
+  "base": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "head": "e9e2185663f62690809640c5434ad24582843835",
+  "method": "Serial after metrics. Complete candidate existing supported paths; unchanged repository sensors/config. Earlier concurrent branch run failed on a temporarily absent path.",
+  "paths": [
+    "src/interfaces/web/account/logging-page.ts",
+    "src/interfaces/web/account/logging-routes.ts",
+    "src/interfaces/web/account/logging-test-page.ts",
+    "src/interfaces/web/account/members-style.ts",
+    "src/logs/audit/destination-settings-service.ts",
+    "test/acceptance/logging/audit/administration-capture.test.ts",
+    "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+    "test/acceptance/logging/hosted-destination-settings.test.ts",
+    "test/acceptance/logging/hosted-destination-test.test.ts",
+    "test/acceptance/logging/hosted-save-and-test.test.ts",
+    "test/acceptance/logging/hosted-save-feedback.test.ts",
+    "test/integration/hosted-admin/account-routes-audit.test.ts",
+    "test/integration/hosted-admin/account-routes-logging.test.ts",
+    "test/integration/logging/audit/audit-sender.runtime.ts",
+    "test/support/in-process/hosted-audit-journey-site.ts",
+    "test/support/processes/audit-destination-test-probe.ts",
+    "test/unit/html/logging-feedback-script.test.ts",
+    "test/unit/html/logging-routes.test.ts",
+    "test/unit/html/logging-test-routes.test.ts",
+    "test/unit/logging/destination-settings-service.test.ts"
+  ]
+}

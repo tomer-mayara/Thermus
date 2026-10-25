@@ -1,0 +1,6 @@
+src/interfaces/web/account/logging-routes.ts(68,91): error TS2345: Argument of type 'DestinationSettingsSaveResult' is not assignable to parameter of type '{ readonly status: "invalid"; readonly reason: "dataset" | "endpoint" | "settings" | "token"; } | { readonly status: "conflict" | "unavailable" | "unconfirmed"; }'.
+  Type '{ readonly status: "saved" | "unchanged"; readonly settings: PublicDestinationSettings; }' is not assignable to type '{ readonly status: "invalid"; readonly reason: "dataset" | "endpoint" | "settings" | "token"; } | { readonly status: "conflict" | "unavailable" | "unconfirmed"; }'.
+    Type '{ readonly status: "saved" | "unchanged"; readonly settings: PublicDestinationSettings; }' is not assignable to type '{ readonly status: "conflict" | "unavailable" | "unconfirmed"; }'.
+      Types of property 'status' are incompatible.
+        Type '"saved" | "unchanged"' is not assignable to type '"conflict" | "unavailable" | "unconfirmed"'.
+          Type '"saved"' is not assignable to type '"conflict" | "unavailable" | "unconfirmed"'.

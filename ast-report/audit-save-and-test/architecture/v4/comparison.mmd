@@ -1,0 +1,15 @@
+flowchart TB
+  subgraph hosted["Thermus hosted Node server (L2)"]
+    web["web · TypeScript<br/>CHANGED Test action<br/>Saved-only → Save then Test<br/>Styled result / recovery"]
+    audit["audit-logs · TypeScript<br/>Atomic Save / saved Test<br/>Encrypted token and sender"]
+    web -->|"Same Save/Test calls<br/>Test now saves first"| audit
+  end
+  sql[("L2: PostgreSQL<br/>Private tenant settings")]
+  destination["External L2: destination<br/>Collector / compatible OTLP<br/>Synthetic Test and export"]
+  audit -->|"Retained SQL read / write"| sql
+  audit -->|"Retained HTTPS / OTLP JSON"| destination
+  classDef changed fill:#fff4d6,stroke:#946200,color:#332400,stroke-width:2px
+  classDef stable fill:#f5f5f5,stroke:#666666,color:#222222
+  class web changed
+  class audit,sql,destination stable
+  style hosted fill:#ffffff,stroke:#777777,color:#222222

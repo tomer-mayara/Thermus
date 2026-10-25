@@ -1,0 +1,25 @@
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes. | new | 12 | 92.8% | 12.1 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.change | new | 12 | 100% | 12.0 | ok |
+| src/interfaces/web/account/logging-page.ts | destinationForm | new | 8 | 98.4% | 8.0 | ok |
+| src/interfaces/web/account/logging-page.ts | loggingPage | changed | 5 | 100% | 5.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.readPage | new | 4 | 71.2% | 4.4 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.handlerFor | changed | 4 | 89.9% | 4.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.saveFailure | new | 4 | 100% | 4.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.page | new | 3 | 100% | 3.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.keep | unchanged | 2 | 61.9% | 2.2 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.saveSettings | new | 2 | 93.1% | 2.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.testSaved | new | 2 | 95.3% | 2.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.refuse | new | 2 | 100% | 2.0 | ok |
+| src/interfaces/web/account/logging-test-page.ts | loggingTestNotice | new | 2 | 100% | 2.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes. | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.path | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-test-page.ts | loggingRequestNotice | new | 1 | 100% | 1.0 | ok |
+
+Known limit violations: 0. Measured target misses: 0. Unmeasured functions: 0. Required functions with unknown assessment or identity: 0.

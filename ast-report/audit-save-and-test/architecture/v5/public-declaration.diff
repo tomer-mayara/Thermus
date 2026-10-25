@@ -1,0 +1,12 @@
+diff --git a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+index e97ec242..1c0e69b6 100644
+--- a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts
++++ b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+@@ -9,6 +9,7 @@ export interface PublicDestinationSettings {
+     readonly auth: 'none' | 'bearer';
+     readonly enabled: boolean;
+     readonly tokenPresent: boolean;
++    readonly tokenPreview?: string;
+ }
+ export interface DestinationSettingsSaveInput {
+     readonly expectedRevision: string | null;

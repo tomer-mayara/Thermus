@@ -1,0 +1,48 @@
+✔ Given edited Axiom settings with export Off, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (337.366083ms)
+✔ Given edited Axiom settings with export On, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (128.873167ms)
+✔ Given invalid during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (62.564458ms)
+✔ Given endpoint-token during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (40.065208ms)
+✔ Given unconfirmed during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (77.245292ms)
+✔ Given test-failed during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (68.382292ms)
+✔ Given read-failed during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (58.555541ms)
+✔ Given no destination, when Test receives the first valid form, then it saves one disabled destination and tests its new version (103.371417ms)
+✔ Given edited protected settings, when Test is submitted, then Save runs first and only its returned version reaches Test (19.592334ms)
+✔ Given foreign origin, when Test is submitted, then the service receives no operation (0.484333ms)
+✔ Given missing origin, when Test is submitted, then the service receives no operation (1.136291ms)
+✔ Given forged CSRF, when Test is submitted, then the service receives no operation (0.451125ms)
+✔ Given another tenant, when Test is submitted, then the service receives no operation (0.488958ms)
+✔ Given unknown field, when Test is submitted, then the service receives no operation (0.340167ms)
+✔ Given invalid auth, when Test is submitted, then the service receives no operation (0.250167ms)
+✔ Given large body, when Test is submitted, then the service receives no operation (0.814083ms)
+✔ Given unsupported media, when Test is submitted, then the service receives no operation (0.195083ms)
+✔ Given duplicate fields or a missing required field, when Test is submitted, then exact form checks refuse it (1.00725ms)
+✔ Given removed Admin permission or a non-POST method, when Test is requested, then Test does not start (0.699417ms)
+✔ Given an aborted valid Test request, when form reading ends, then Test does not start (2.429625ms)
+✔ Given the typed accepted sender result, when Test returns, then fixed safe text reaches the browser (0.639792ms)
+✔ Given the typed warning sender result, when Test returns, then fixed safe text reaches the browser (0.410833ms)
+✔ Given the typed partial_rejection sender result, when Test returns, then fixed safe text reaches the browser (0.336125ms)
+✔ Given the typed permanent_failure sender result, when Test returns, then fixed safe text reaches the browser (0.337209ms)
+✔ Given the typed transient_failure sender result, when Test returns, then fixed safe text reaches the browser (0.310208ms)
+✔ Given the typed unconfirmed sender result, when Test returns, then fixed safe text reaches the browser (0.265583ms)
+✔ Given the typed cancelled sender result, when Test returns, then fixed safe text reaches the browser (0.287917ms)
+✔ Given the typed busy sender result, when Test returns, then fixed safe text reaches the browser (1.189375ms)
+✔ Given the conflict operation result, when Test returns, then no stale sender result is shown (0.512875ms)
+✔ Given the unavailable operation result, when Test returns, then no stale sender result is shown (0.247917ms)
+✔ Given the unsaved operation result, when Test returns, then no stale sender result is shown (0.227ms)
+✔ Given the busy operation result, when Test returns, then no stale sender result is shown (0.1985ms)
+✔ Given the cancelled operation result, when Test returns, then no stale sender result is shown (0.200083ms)
+✔ Given the unconfirmed operation result, when Test returns, then no stale sender result is shown (0.227208ms)
+✔ Given a secret-bearing Test exception, when the operation fails, then the cause stays out of its safe answer (0.324583ms)
+✔ Given a Save-only service, when Test is submitted, then it fails closed with no Save or settings read (0.201166ms)
+✔ Given a invalid Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.352ms)
+✔ Given a conflict Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.224083ms)
+✔ Given a unconfirmed Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.174917ms)
+✔ Given a unavailable Save, when Test is selected, then no Test starts and a styled recovery answer prevents an uncertain retry (0.160666ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1355.475917

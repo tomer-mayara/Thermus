@@ -1,0 +1,135 @@
+{
+  "files": 20,
+  "counts": {
+    "high-complexity": 7,
+    "non-essential-comment": 7,
+    "too-many-parameters": 2,
+    "oversized-file": 3,
+    "non-null-assertion": 19
+  },
+  "total": 38,
+  "incomplete": false,
+  "snooze": [],
+  "execution": [
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "exitCode": 1,
+      "signal": null,
+      "log": "habit-01.log"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-routes.ts",
+      "exitCode": 1,
+      "signal": null,
+      "log": "habit-02.log"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-test-page.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-03.log"
+    },
+    {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-04.log"
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "exitCode": 1,
+      "signal": null,
+      "log": "habit-05.log"
+    },
+    {
+      "path": "test/acceptance/logging/audit/administration-capture.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-06.log"
+    },
+    {
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-07.log"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts",
+      "exitCode": 1,
+      "signal": null,
+      "log": "habit-08.log"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-09.log"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-save-and-test.test.ts",
+      "exitCode": 1,
+      "signal": null,
+      "log": "habit-10.log"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-save-feedback.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-11.log"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-audit.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-12.log"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-logging.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-13.log"
+    },
+    {
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-14.log"
+    },
+    {
+      "path": "test/support/in-process/hosted-audit-journey-site.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-15.log"
+    },
+    {
+      "path": "test/support/processes/audit-destination-test-probe.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-16.log"
+    },
+    {
+      "path": "test/unit/html/logging-feedback-script.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-17.log"
+    },
+    {
+      "path": "test/unit/html/logging-routes.test.ts",
+      "exitCode": 0,
+      "signal": null,
+      "log": "habit-18.log"
+    },
+    {
+      "path": "test/unit/html/logging-test-routes.test.ts",
+      "exitCode": 1,
+      "signal": null,
+      "log": "habit-19.log"
+    },
+    {
+      "path": "test/unit/logging/destination-settings-service.test.ts",
+      "exitCode": 1,
+      "signal": null,
+      "log": "habit-20.log"
+    }
+  ]
+}

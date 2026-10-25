@@ -1,0 +1,122 @@
+[
+  {
+    "path": "src/interfaces/web/account/logging-page.ts",
+    "exitCode": 1,
+    "signal": null,
+    "log": "habit-final-01.log"
+  },
+  {
+    "path": "src/interfaces/web/account/logging-routes.ts",
+    "exitCode": 1,
+    "signal": null,
+    "log": "habit-final-02.log"
+  },
+  {
+    "path": "src/interfaces/web/account/logging-test-page.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-03.log"
+  },
+  {
+    "path": "src/interfaces/web/account/members-style.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-04.log"
+  },
+  {
+    "path": "src/logs/audit/destination-settings-service.ts",
+    "exitCode": 1,
+    "signal": null,
+    "log": "habit-final-05.log"
+  },
+  {
+    "path": "test/acceptance/logging/audit/administration-capture.test.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-06.log"
+  },
+  {
+    "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-07.log"
+  },
+  {
+    "path": "test/acceptance/logging/hosted-destination-settings.test.ts",
+    "exitCode": 1,
+    "signal": null,
+    "log": "habit-final-08.log"
+  },
+  {
+    "path": "test/acceptance/logging/hosted-destination-test.test.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-09.log"
+  },
+  {
+    "path": "test/acceptance/logging/hosted-save-and-test.test.ts",
+    "exitCode": 1,
+    "signal": null,
+    "log": "habit-final-10.log"
+  },
+  {
+    "path": "test/acceptance/logging/hosted-save-feedback.test.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-11.log"
+  },
+  {
+    "path": "test/integration/hosted-admin/account-routes-audit.test.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-12.log"
+  },
+  {
+    "path": "test/integration/hosted-admin/account-routes-logging.test.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-13.log"
+  },
+  {
+    "path": "test/integration/logging/audit/audit-sender.runtime.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-14.log"
+  },
+  {
+    "path": "test/support/in-process/hosted-audit-journey-site.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-15.log"
+  },
+  {
+    "path": "test/support/processes/audit-destination-test-probe.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-16.log"
+  },
+  {
+    "path": "test/unit/html/logging-feedback-script.test.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-17.log"
+  },
+  {
+    "path": "test/unit/html/logging-routes.test.ts",
+    "exitCode": 0,
+    "signal": null,
+    "log": "habit-final-18.log"
+  },
+  {
+    "path": "test/unit/html/logging-test-routes.test.ts",
+    "exitCode": 1,
+    "signal": null,
+    "log": "habit-final-19.log"
+  },
+  {
+    "path": "test/unit/logging/destination-settings-service.test.ts",
+    "exitCode": 1,
+    "signal": null,
+    "log": "habit-final-20.log"
+  }
+]

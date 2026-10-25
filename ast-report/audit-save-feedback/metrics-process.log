@@ -1,0 +1,78 @@
+time="2026-10-25T00:32:42-06:00" level=error msg="quality gate failed: 1 high, 1 medium, 0 low regression(s)"
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+test/acceptance/logging/hosted-save-feedback.test.ts(49,40): error TS7006: Parameter 'tenant' implicitly has an 'any' type.
+# Code quality process
+
+## Delta
+
+Status: goal miss.
+
+```text
+  39.0  src/logs/audit/destination-settings-service.ts  below 85
+  47.9  src/interfaces/web/account/logging-routes.ts  below 85
+  65.0  src/interfaces/web/account/logging-page.ts  below 85
+  70.4  src/interfaces/web/account/logging-test-page.ts  below 85
+  25.4  test/unit/logging/destination-settings-service.test.ts  no goal
+  28.3  test/acceptance/logging/hosted-destination-settings.test.ts  no goal
+  28.4  test/unit/html/logging-test-routes.test.ts  no goal
+  28.6  test/acceptance/logging/hosted-destination-test.test.ts  no goal
+  30.3  test/integration/logging/audit/audit-sender.runtime.ts  no goal
+  32.7  test/acceptance/logging/hosted-save-and-test.test.ts  no goal
+  34.8  test/integration/hosted-admin/account-routes-audit.test.ts  no goal
+  36.1  test/unit/html/logging-routes.test.ts  no goal
+  38.2  test/acceptance/logging/audit/hosted-audit-journey.runtime.ts  no goal
+  38.7  test/acceptance/logging/audit/administration-capture.test.ts  no goal
+  40.4  test/integration/hosted-admin/account-routes-logging.test.ts  no goal
+  41.0  test/acceptance/logging/hosted-save-feedback.test.ts  no goal
+  41.5  test/unit/html/logging-feedback-script.test.ts  no goal
+  42.0  test/support/in-process/hosted-audit-journey-site.ts  no goal
+  56.3  test/support/processes/audit-destination-test-probe.ts  no goal
+  not measured  docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+  not measured  src/interfaces/web/account/members-style.ts
+Result: 4 of 4 production files below 85. Goal: 85 or more for each production file. 15 other files without a goal. 2 files not measured.
+Comparison with origin/main: ast-report/compare.html
+```
+
+## Review
+
+Status: goal miss.
+
+## AST Metrics found blocking regressions
+
+1 new critical issue(s), 1 other regression(s), 2 improvement(s)
+
+### Summary
+
+- ✅ **Complexity: -3**
+- ⚠️  **Ease of maintenance: -8**
+- ➖ **Outgoing dependencies: -**
+- ➖ **Probability of bugs: -**
+
+### Regressions
+
+- **test/unit/html/logging-test-routes.test.ts** (`test/unit/html/logging-test-routes.test.ts`, high)
+  Maintainability index: 36 -> 28 (below 85 is hard to maintain)
+  Suggested action: Refactor long or deeply nested functions and reduce responsibilities in this file
+- **LoggingRoutes::change** (`src/interfaces/web/account/logging-routes.ts:51`, medium)
+  New function with cyclomatic complexity 12 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+
+### Improvements
+
+- **loggingPage** (`src/interfaces/web/account/logging-page.ts:57`): Cyclomatic complexity: 8 -> 5
+- **logging-routes\LoggingRoutes.** (`src/interfaces/web/account/logging-routes.ts:108`): Cyclomatic complexity: 13 -> 1
+
+## CRAP
+
+Status: failed.
+
+The build failed. No coverage is written.
+
+## Architecture
+
+Status: unavailable.
+
+A prerequisite failed. This stage did not run.

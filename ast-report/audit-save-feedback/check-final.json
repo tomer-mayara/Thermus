@@ -1,0 +1,213 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "e9e2185663f62690809640c5434ad24582843835",
+  "mergeBase": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/logs/audit/destination-settings-service.ts (+1 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\nindex e97ec242..1c0e69b6 100644\n--- a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\n+++ b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\n@@ -9,6 +9,7 @@ export interface PublicDestinationSettings {\n     readonly auth: 'none' | 'bearer';\n     readonly enabled: boolean;\n     readonly tokenPresent: boolean;\n+    readonly tokenPreview?: string;\n }\n export interface DestinationSettingsSaveInput {\n     readonly expectedRevision: string | null;\n"
+      }
+    ],
+    "summary": "T2: declarations changed in 1 public module"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/destination-settings-service.ts (+1 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "The protected web Test action saves the submitted Audit settings, including the export switch, before the existing saved-destination Test. Only a confirmed saved or unchanged result permits the Test, using returned settings and revision with a blank token and no preview. Failed, stale or uncertain Saves send nothing; failed Test cannot roll back Save. Save and Test return the styled form directly. A server-confirmed saved message appears above the buttons for 30 seconds or until editing; a small hash-pinned script preserves scroll through a consumed, expiring position/time record with no form content. Uncertain Save keeps GET-only recovery with no immediate write form or automatic retry. The public saved projection adds optional tokenPreview, derived from a valid saved Bearer credential: first four characters plus ****, or only **** for short tokens. It appears only as an escaped empty-input placeholder and is excluded from Test inputs, storage, sender destinations and Audit events. This public declaration and web-to-audit runtime collaboration require T2 internalInterface review; sensitiveBehavior covers mutation, recovery and limited credential display. No new source owner, dependency, datastore, runtime framework, backend flash state or deployment is added. Registry prose and active plan describe the new behavior; the approved legal package and historical evidence stay unchanged."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "The protected web Test action saves the submitted Audit settings, including the export switch, before the existing saved-destination Test. Only a confirmed saved or unchanged result permits the Test, using returned settings and revision with a blank token and no preview. Failed, stale or uncertain Saves send nothing; failed Test cannot roll back Save. Save and Test return the styled form directly. A server-confirmed saved message appears above the buttons for 30 seconds or until editing; a small hash-pinned script preserves scroll through a consumed, expiring position/time record with no form content. Uncertain Save keeps GET-only recovery with no immediate write form or automatic retry. The public saved projection adds optional tokenPreview, derived from a valid saved Bearer credential: first four characters plus ****, or only **** for short tokens. It appears only as an escaped empty-input placeholder and is excluded from Test inputs, storage, sender destinations and Audit events. This public declaration and web-to-audit runtime collaboration require T2 internalInterface review; sensitiveBehavior covers mutation, recovery and limited credential display. No new source owner, dependency, datastore, runtime framework, backend flash state or deployment is added. Registry prose and active plan describe the new behavior; the approved legal package and historical evidence stay unchanged."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/logs/audit/destination-settings-service.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-02b.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-04-direct-axiom.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-24-74f75656.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-test-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/destination-settings-service.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/administration-capture.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/hosted-save-and-test.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/hosted-save-feedback.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-audit.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-logging.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/hosted-audit-journey-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/processes/audit-destination-test-probe.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/logging-feedback-script.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-test-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/destination-settings-service.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 228,
+    "productionLimit": 400,
+    "total": 967,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 19,
+    "removed": 5,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/web/account/logging-page.ts: 68.98139985980818 to 64.98701865414792",
+    "changed: src/interfaces/web/account/logging-routes.ts: 47.791505447861134 to 47.90845482720732",
+    "changed: src/interfaces/web/account/logging-test-page.ts: 71.8038342317498 to 70.38025948747948",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot",
+    "changed: src/logs/audit/destination-settings-service.ts: 39.67749824225246 to 38.98567950220733"
+  ],
+  "crap": [
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.save: 14.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.: 12.1",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.change: 12.0",
+    "src/interfaces/web/account/logging-page.ts: destinationForm: 9.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.readPage: 5.4",
+    "src/interfaces/web/account/logging-page.ts: loggingPage: 5.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.handlerFor: 4.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.saveFailure: 4.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.read: 4.0",
+    "src/logs/audit/destination-settings-service.ts: project: 4.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.testSaved: 3.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.page: 3.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.saveSettings: 2.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.refuse: 2.0",
+    "src/interfaces/web/account/logging-test-page.ts: loggingTestNotice: 2.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.: 1.0",
+    "src/interfaces/web/account/logging-test-page.ts: loggingRequestNotice: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "outside scopes.production: test/unit/html/logging-test-routes.test.ts: Maintainability index: 36 -> 28 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/logs/audit/destination-settings-service.ts"
+  ],
+  "informational": [
+    "48 public modules, 1 snapshot changed"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

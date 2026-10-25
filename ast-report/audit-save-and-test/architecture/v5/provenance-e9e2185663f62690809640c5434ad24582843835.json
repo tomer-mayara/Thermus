@@ -1,0 +1,396 @@
+{
+  "capturedAtUtc": "2026-10-25T06:41:53.864123+00:00",
+  "base": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "mergeBase": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "head": "e9e2185663f62690809640c5434ad24582843835",
+  "candidateState": "committed final candidate pinned via git show; mutable metric worktree not used",
+  "files": [
+    {
+      "path": "architecture/components.md",
+      "baseSha256": "ead4296afb4ce9727fe6a201540a8ba271a2b55b169148994619743339a9bcc3",
+      "candidateSha256": "4999994927428a37a18db135f9ab1cc9617b4be7650e11486a1bd18e430be384",
+      "changed": true
+    },
+    {
+      "path": "src/interfaces/web/account/logging-routes.ts",
+      "baseSha256": "4229cfdc71e53b6a924ab1d7926d65ea06dfabe87d13e2e60fee10e4ebdb04e8",
+      "candidateSha256": "b7751ea7964e6cd217c1bbf7821fd423e222eff878dc2664ed9220d27a0aae88",
+      "changed": true
+    },
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "baseSha256": "499b11bfffa19e38e8280feae5237abf8a00a8dcf8057510672f6a21dea80df8",
+      "candidateSha256": "89c14d74147178f8448d38cf0ffa708c313e7f54fb198b766174b1334b1ffc00",
+      "changed": true
+    },
+    {
+      "path": "src/interfaces/web/account/logging-test-page.ts",
+      "baseSha256": "03f114ae37ad3eefd42050f77339d23518b56b2021f426ca4001fcaab1572925",
+      "candidateSha256": "5a57a20dde037d0bc956cc825c9a661ac8bd12dadeb3222e13a842c0ebd53e83",
+      "changed": true
+    },
+    {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "baseSha256": "ae0a659adfac0d70803ec0cc1fe512f039d17e189f23583674fb90e8293a7a7b",
+      "candidateSha256": "f3d570f5ea27973d5dbcb58e2bc3d93152b6cbc6e23828bfb9da065f493eb94b",
+      "changed": true
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "baseSha256": "799fc560e474796eab8a170367c36a2c7f7ced28e1f87f61739ae6034450b40f",
+      "candidateSha256": "a09eafd9dbbb3850262132c3f74b8cf158b86a42a05db2c5817f23b1856bbc1a",
+      "changed": true
+    },
+    {
+      "path": "src/logs/audit/destination-test.ts",
+      "baseSha256": "732fa05669e257e3d4f71980f8835e243ea65b67d148b5fdcd1205dfbd374389",
+      "candidateSha256": "732fa05669e257e3d4f71980f8835e243ea65b67d148b5fdcd1205dfbd374389",
+      "changed": false
+    },
+    {
+      "path": "docs/api-surface/src/logs/audit/destination-settings-service.d.ts",
+      "baseSha256": "0ca28096fcfae8b32011e42331eb260cdee18f7f32643d9a2ba4647c70a7ebcb",
+      "candidateSha256": "b30c95b67cf18eeb7b10cb766d69db799e0dcf12ec027ed702a2f75c55124a1d",
+      "changed": true
+    }
+  ],
+  "reviewedCandidateChangedSourceRegistryTests": [
+    {
+      "path": "architecture/components.md",
+      "sha256": "4999994927428a37a18db135f9ab1cc9617b4be7650e11486a1bd18e430be384"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "sha256": "89c14d74147178f8448d38cf0ffa708c313e7f54fb198b766174b1334b1ffc00"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-routes.ts",
+      "sha256": "b7751ea7964e6cd217c1bbf7821fd423e222eff878dc2664ed9220d27a0aae88"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-test-page.ts",
+      "sha256": "5a57a20dde037d0bc956cc825c9a661ac8bd12dadeb3222e13a842c0ebd53e83"
+    },
+    {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "sha256": "f3d570f5ea27973d5dbcb58e2bc3d93152b6cbc6e23828bfb9da065f493eb94b"
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "sha256": "a09eafd9dbbb3850262132c3f74b8cf158b86a42a05db2c5817f23b1856bbc1a"
+    },
+    {
+      "path": "test/acceptance/logging/audit/administration-capture.test.ts",
+      "sha256": "5ac12c1c04ff3c0189e4e477d4dc9b2e3b65f3cc303a27e48154ad2a3a66bcdf"
+    },
+    {
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+      "sha256": "d1593bf9fdca286275724ef5be3f3794087da140e47209a68af153cb65f6b850"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts",
+      "sha256": "783689fcc8d41ac174e7545c621619565d13a7a5b76eecd93946bf5ab07efa23"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts",
+      "sha256": "7c1b3e22b2fc347d89829f182a49f3fa8839ace6da5c043e92705610a46c8ee1"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-save-and-test.test.ts",
+      "sha256": "8da2103cc33920b7fd930da39ef867e57af7c161b5ecedf74e266cd51ff1dd18"
+    },
+    {
+      "path": "test/acceptance/logging/hosted-save-feedback.test.ts",
+      "sha256": "988626a635e7230bbfee5d319fb0f68e031dd512158baf3750764910d00d8246"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-audit.test.ts",
+      "sha256": "fa7583962a65240568195ae3ade98e9abaa3eb633fbe2f004158bdb373f1df75"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-logging.test.ts",
+      "sha256": "6612f533a9850de5cbc83503bbc05b340c011a278e6079e89463b191cd83f504"
+    },
+    {
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts",
+      "sha256": "c14b006307fa369631920a65c391dcfca11fa5b7d70d7f43c6867b9ba7898ced"
+    },
+    {
+      "path": "test/support/in-process/hosted-audit-journey-site.ts",
+      "sha256": "f57ac5c84fd9d3eebcd143538db0f6ca3bb6bd2797017117f53b1b26112c1e2b"
+    },
+    {
+      "path": "test/support/processes/audit-destination-test-probe.ts",
+      "sha256": "8cadd06b84842981396b3379e4c891792d4fffd4a4ebb580722b62afbcb0d6e7"
+    },
+    {
+      "path": "test/unit/html/logging-feedback-script.test.ts",
+      "sha256": "c8c3f2cef58679cd88a3299e3321ecf95c807515e53b3715b78dfd7ca2aef066"
+    },
+    {
+      "path": "test/unit/html/logging-routes.test.ts",
+      "sha256": "5c6f5b78f295363a4108caf52c36cdf5c8760a7317c205777b1c5c4aa5cf7e32"
+    },
+    {
+      "path": "test/unit/html/logging-test-routes.test.ts",
+      "sha256": "d60a0468fcd4802300ade703441352dd67ac32fd96708da23cd4d5dd00a81cf3"
+    },
+    {
+      "path": "test/unit/logging/destination-settings-service.test.ts",
+      "sha256": "b618ca90083df53c7506f6dcc7083a41cc6c644c1b11bf14bf440edd2273d708"
+    }
+  ],
+  "registryMermaidBase": [
+    {
+      "heading": "Context",
+      "startLine": 30,
+      "endLine": 47,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "heading": "C4 containers: hosted edition",
+      "startLine": 57,
+      "endLine": 80,
+      "sha256": "3eb90a094cf9b44d2232c3639fa35ebaca66fcef9f939b85e63d25c1c8362a51"
+    },
+    {
+      "heading": "C4 containers: local edition",
+      "startLine": 89,
+      "endLine": 110,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "heading": "Selected C4 components: tool processing in the Node server",
+      "startLine": 140,
+      "endLine": 169,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "heading": "Selected C4 components: hosted authentication in the Node server",
+      "startLine": 189,
+      "endLine": 213,
+      "sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191"
+    },
+    {
+      "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "startLine": 250,
+      "endLine": 267,
+      "sha256": "7a7ef444a6897ab5c59fbba1095146ca8e0bea1449a6af9da65d0dab4ee53dcc"
+    },
+    {
+      "heading": "Selected C4 components: system and audit logs in the Node server",
+      "startLine": 324,
+      "endLine": 340,
+      "sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa"
+    },
+    {
+      "heading": "Selected C4 components: local authentication in the Node server",
+      "startLine": 514,
+      "endLine": 533,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "heading": "Collaboration overview",
+      "startLine": 561,
+      "endLine": 589,
+      "sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9"
+    },
+    {
+      "heading": "Scenario: MCP page fetch and renderer cancellation",
+      "startLine": 628,
+      "endLine": 680,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "heading": "Scenario: hosted default sign-in landing",
+      "startLine": 699,
+      "endLine": 745,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "heading": "Scenario: hosted member read",
+      "startLine": 766,
+      "endLine": 826,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "heading": "Deployment view",
+      "startLine": 875,
+      "endLine": 909,
+      "sha256": "7585ee2a08ce28bf32504d62fb6c5fd20b6056f6b5634194f694569ea5456a14"
+    }
+  ],
+  "registryMermaidCandidate": [
+    {
+      "heading": "Context",
+      "startLine": 30,
+      "endLine": 47,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "heading": "C4 containers: hosted edition",
+      "startLine": 57,
+      "endLine": 80,
+      "sha256": "3eb90a094cf9b44d2232c3639fa35ebaca66fcef9f939b85e63d25c1c8362a51"
+    },
+    {
+      "heading": "C4 containers: local edition",
+      "startLine": 89,
+      "endLine": 110,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "heading": "Selected C4 components: tool processing in the Node server",
+      "startLine": 140,
+      "endLine": 169,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "heading": "Selected C4 components: hosted authentication in the Node server",
+      "startLine": 189,
+      "endLine": 213,
+      "sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191"
+    },
+    {
+      "heading": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "startLine": 250,
+      "endLine": 267,
+      "sha256": "7a7ef444a6897ab5c59fbba1095146ca8e0bea1449a6af9da65d0dab4ee53dcc"
+    },
+    {
+      "heading": "Selected C4 components: system and audit logs in the Node server",
+      "startLine": 333,
+      "endLine": 349,
+      "sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa"
+    },
+    {
+      "heading": "Selected C4 components: local authentication in the Node server",
+      "startLine": 535,
+      "endLine": 554,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "heading": "Collaboration overview",
+      "startLine": 582,
+      "endLine": 610,
+      "sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9"
+    },
+    {
+      "heading": "Scenario: MCP page fetch and renderer cancellation",
+      "startLine": 649,
+      "endLine": 701,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "heading": "Scenario: hosted default sign-in landing",
+      "startLine": 720,
+      "endLine": 766,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "heading": "Scenario: hosted member read",
+      "startLine": 787,
+      "endLine": 847,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "heading": "Deployment view",
+      "startLine": 896,
+      "endLine": 930,
+      "sha256": "7585ee2a08ce28bf32504d62fb6c5fd20b6056f6b5634194f694569ea5456a14"
+    }
+  ],
+  "registryMermaidChanged": false,
+  "diagramSourceSha256": "502da44b074c191ae46bf202e3dab12f808b75422268aeddb747721eb600173e",
+  "renderer": "Mermaid 12.2.0 cached bundle + repository Playwright Chromium",
+  "renderWidth": 800,
+  "fontPixels": 18,
+  "renderInspected": true,
+  "candidateLinks": [
+    {
+      "path": "src/interfaces/web/account/logging-routes.ts",
+      "startLine": 51,
+      "endLine": 114,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/src/interfaces/web/account/logging-routes.ts#L51-L114"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "startLine": 19,
+      "endLine": 65,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/src/interfaces/web/account/logging-page.ts#L19-L65"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "startLine": 76,
+      "endLine": 85,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/src/interfaces/web/account/logging-page.ts#L76-L85"
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "startLine": 10,
+      "endLine": 18,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/src/logs/audit/destination-settings-service.ts#L10-L18"
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "startLine": 92,
+      "endLine": 118,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/src/logs/audit/destination-settings-service.ts#L92-L118"
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "startLine": 150,
+      "endLine": 158,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/src/logs/audit/destination-settings-service.ts#L150-L158"
+    },
+    {
+      "path": "architecture/components.md",
+      "startLine": 277,
+      "endLine": 316,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/architecture/components.md#L277-L316"
+    },
+    {
+      "path": "architecture/components.md",
+      "startLine": 477,
+      "endLine": 502,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/e9e2185663f62690809640c5434ad24582843835/architecture/components.md#L477-L502"
+    }
+  ],
+  "managerReview": {
+    "version": "v5",
+    "approved": true,
+    "managerFeedback": "Manager visually approved v5 at 800px: legible labels, proper L2 boundaries/owner responsibilities, amber public projection owner correct; no crossings/overlap.",
+    "scope": "Architecture rendering; final candidate pin pending test/snapshot repair commit.",
+    "historicalReviewedSource": "869de8c5a3e70cea19aea3a4807633fb8d369cea",
+    "supersedesDiagram": "v4",
+    "finalSourceCommit": "e9e2185663f62690809640c5434ad24582843835",
+    "carryForwardReason": "The single Audit token hint color/opacity fix does not change the approved v5 diagram, ownership, relationships or payload semantics.",
+    "contrastFixApproval": "Manager inspected placeholder-after-1440.png and exact CSS diff: prefix legible, input blank, controls unchanged; approved."
+  },
+  "repairFrom": "869de8c5a3e70cea19aea3a4807633fb8d369cea",
+  "repair": "test callback parameter tenant:string only; source/registry/public snapshot byte-identical",
+  "supersededEvidence": "../v4/; prior candidate gates/pins historical",
+  "previousCommittedEvidence": "provenance-d167fff53aeece23e02b6811ec772f796f9712c2.json",
+  "onlyChangeSincePriorPin": [
+    "src/interfaces/web/account/members-style.ts"
+  ],
+  "contrastFindingDisposition": {
+    "status": "fixed",
+    "selector": ".logging-layout #logging-token::placeholder",
+    "color": "#B4BAC0",
+    "opacity": 1,
+    "background": "#17181D",
+    "oldContrast": 3.8468,
+    "newContrast": 9.0523,
+    "scope": "Audit token hint only; no behavior or layout change",
+    "verification": "Exact pinned one-line diff independently reviewed; implementation browser color/contrast report and manager screenshot approval retained"
+  },
+  "finalCopiedSourceDirectory": "pinned-source-final/",
+  "browserEvidence": {
+    "behavior": "ast-report/audit-save-feedback/browser-check.json",
+    "behaviorSourceCommit": "869de8c5a3e70cea19aea3a4807633fb8d369cea",
+    "cssVisual": "ast-report/audit-save-feedback/placeholder-after.json",
+    "cssScreenshot": "ast-report/audit-save-feedback/placeholder-after-1440.png",
+    "bridge": "Only a type-only test parameter annotation and the one-line hint color rule differ from the behavior proof source."
+  }
+}

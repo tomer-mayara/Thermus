@@ -1,0 +1,565 @@
+{
+  "base": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "candidate": "e9e2185663f62690809640c5434ad24582843835",
+  "evidenceStatus": "All selected final test/static/build gates completed at e9e21856; quality process retains documented Delta/Review goal misses and habit findings. Independent architect approval remains required before merge.",
+  "coverage": {
+    "backendTests": 3088,
+    "portalTests": 29,
+    "failures": 0,
+    "skips": 0,
+    "sourceFingerprint": "bce3b183b9f99665cce937d9615f4b7e9e5ef9f52821333813a9c9d329b2eceb",
+    "inputsFingerprint": "f6d05024ec7743625a3f50fd3279a103182481a1617a904b9800ea5897f5d0ab",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit",
+    "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+    "captureId": "1f199bc8d4a25d43a489da29cbd6c47c3d39e4c0ad5af7d50b4ce35993b135c4",
+    "comparisonIdentity": {
+      "sourceFingerprint": "bce3b183b9f99665cce937d9615f4b7e9e5ef9f52821333813a9c9d329b2eceb",
+      "inputsFingerprint": "f6d05024ec7743625a3f50fd3279a103182481a1617a904b9800ea5897f5d0ab",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit"
+    },
+    "status": "verified",
+    "capturedCommit": "e9e2185663f62690809640c5434ad24582843835",
+    "buildFingerprint": "cffdabb0ec7fe47827c7c924cfbc34a44d1c74656782f1115abb58c6cc20f5d6",
+    "captureManifestFingerprint": "318c4c934391de843c52123f52fe5121bbb2a86a5652eae1da9a9957381b4cbb"
+  },
+  "quality": {
+    "processExitCode": 1,
+    "outcomes": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "snapshotExitCode": 0,
+    "crapExitCode": 0,
+    "crapRows": 31,
+    "limitViolations": 0,
+    "measuredTargetMisses": 1,
+    "requiredTargetMisses": 0,
+    "unmeasured": 0,
+    "unknownRequired": 0,
+    "retainedTargetMiss": "Unchanged DestinationSettingsService.testSaved 15.002737575 at97.7%; reason unchanged by this PR.",
+    "productionMI": [
+      {
+        "file": "src/interfaces/web/account/logging-page.ts",
+        "base": 68.98139985980818,
+        "head": 64.98701865414792
+      },
+      {
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "base": 47.791505447861134,
+        "head": 47.90845482720732
+      },
+      {
+        "file": "src/interfaces/web/account/logging-test-page.ts",
+        "base": 71.8038342317498,
+        "head": 70.38025948747948
+      },
+      {
+        "file": "src/logs/audit/destination-settings-service.ts",
+        "base": 39.67749824225246,
+        "head": 38.98567950220733
+      }
+    ],
+    "css": "members-style.ts has no raw MI; not measured.",
+    "review": "Retained high test MI36→28 and medium LoggingRoutes.change complexity12. No failed/unavailable process stage."
+  },
+  "habitHooks": {
+    "files": 20,
+    "counts": {
+      "high-complexity": 8,
+      "too-many-parameters": 5,
+      "non-essential-comment": 7,
+      "oversized-file": 3,
+      "non-null-assertion": 19
+    },
+    "total": 42,
+    "incomplete": false,
+    "snooze": [],
+    "findings": [
+      {
+        "type": "high-complexity",
+        "location": "src/interfaces/web/account/logging-page.ts:68"
+      },
+      {
+        "type": "high-complexity",
+        "location": "src/interfaces/web/account/logging-routes.ts:34"
+      },
+      {
+        "type": "high-complexity",
+        "location": "src/interfaces/web/account/logging-routes.ts:51"
+      },
+      {
+        "type": "too-many-parameters",
+        "location": "src/interfaces/web/account/logging-routes.ts:51"
+      },
+      {
+        "type": "too-many-parameters",
+        "location": "src/interfaces/web/account/logging-routes.ts:107"
+      },
+      {
+        "type": "too-many-parameters",
+        "location": "src/interfaces/web/account/logging-routes.ts:113"
+      },
+      {
+        "type": "non-essential-comment",
+        "location": "src/interfaces/web/account/logging-routes.ts:22"
+      },
+      {
+        "type": "non-essential-comment",
+        "location": "src/interfaces/web/account/logging-routes.ts:45"
+      },
+      {
+        "type": "non-essential-comment",
+        "location": "src/interfaces/web/account/logging-routes.ts:127"
+      },
+      {
+        "type": "high-complexity",
+        "location": "src/logs/audit/destination-settings-service.ts:47"
+      },
+      {
+        "type": "high-complexity",
+        "location": "src/logs/audit/destination-settings-service.ts:68"
+      },
+      {
+        "type": "high-complexity",
+        "location": "src/logs/audit/destination-settings-service.ts:103"
+      },
+      {
+        "type": "high-complexity",
+        "location": "src/logs/audit/destination-settings-service.ts:141"
+      },
+      {
+        "type": "too-many-parameters",
+        "location": "src/logs/audit/destination-settings-service.ts:62"
+      },
+      {
+        "type": "too-many-parameters",
+        "location": "src/logs/audit/destination-settings-service.ts:68"
+      },
+      {
+        "type": "non-essential-comment",
+        "location": "src/logs/audit/destination-settings-service.ts:46"
+      },
+      {
+        "type": "non-essential-comment",
+        "location": "src/logs/audit/destination-settings-service.ts:61"
+      },
+      {
+        "type": "oversized-file",
+        "location": "test/acceptance/logging/hosted-destination-settings.test.ts"
+      },
+      {
+        "type": "high-complexity",
+        "location": "test/acceptance/logging/hosted-save-and-test.test.ts:48"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/integration/hosted-admin/account-routes-logging.test.ts:17"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/integration/hosted-admin/account-routes-logging.test.ts:25"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/integration/hosted-admin/account-routes-logging.test.ts:30"
+      },
+      {
+        "type": "non-essential-comment",
+        "location": "test/support/in-process/hosted-audit-journey-site.ts:40"
+      },
+      {
+        "type": "non-essential-comment",
+        "location": "test/support/processes/audit-destination-test-probe.ts:26"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:19"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:25"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:35"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:44"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:56"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:62"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:67"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:73"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:81"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:90"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:92"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:96"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/html/logging-routes.test.ts:112"
+      },
+      {
+        "type": "oversized-file",
+        "location": "test/unit/html/logging-test-routes.test.ts"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/logging/destination-settings-service.test.ts:81"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/logging/destination-settings-service.test.ts:128"
+      },
+      {
+        "type": "non-null-assertion",
+        "location": "test/unit/logging/destination-settings-service.test.ts:129"
+      },
+      {
+        "type": "oversized-file",
+        "location": "test/unit/logging/destination-settings-service.test.ts"
+      }
+    ],
+    "execution": [
+      {
+        "path": "src/interfaces/web/account/logging-page.ts",
+        "exitCode": 1,
+        "signal": null,
+        "log": "habit-final-01.log"
+      },
+      {
+        "path": "src/interfaces/web/account/logging-routes.ts",
+        "exitCode": 1,
+        "signal": null,
+        "log": "habit-final-02.log"
+      },
+      {
+        "path": "src/interfaces/web/account/logging-test-page.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-03.log"
+      },
+      {
+        "path": "src/interfaces/web/account/members-style.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-04.log"
+      },
+      {
+        "path": "src/logs/audit/destination-settings-service.ts",
+        "exitCode": 1,
+        "signal": null,
+        "log": "habit-final-05.log"
+      },
+      {
+        "path": "test/acceptance/logging/audit/administration-capture.test.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-06.log"
+      },
+      {
+        "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-07.log"
+      },
+      {
+        "path": "test/acceptance/logging/hosted-destination-settings.test.ts",
+        "exitCode": 1,
+        "signal": null,
+        "log": "habit-final-08.log"
+      },
+      {
+        "path": "test/acceptance/logging/hosted-destination-test.test.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-09.log"
+      },
+      {
+        "path": "test/acceptance/logging/hosted-save-and-test.test.ts",
+        "exitCode": 1,
+        "signal": null,
+        "log": "habit-final-10.log"
+      },
+      {
+        "path": "test/acceptance/logging/hosted-save-feedback.test.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-11.log"
+      },
+      {
+        "path": "test/integration/hosted-admin/account-routes-audit.test.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-12.log"
+      },
+      {
+        "path": "test/integration/hosted-admin/account-routes-logging.test.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-13.log"
+      },
+      {
+        "path": "test/integration/logging/audit/audit-sender.runtime.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-14.log"
+      },
+      {
+        "path": "test/support/in-process/hosted-audit-journey-site.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-15.log"
+      },
+      {
+        "path": "test/support/processes/audit-destination-test-probe.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-16.log"
+      },
+      {
+        "path": "test/unit/html/logging-feedback-script.test.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-17.log"
+      },
+      {
+        "path": "test/unit/html/logging-routes.test.ts",
+        "exitCode": 0,
+        "signal": null,
+        "log": "habit-final-18.log"
+      },
+      {
+        "path": "test/unit/html/logging-test-routes.test.ts",
+        "exitCode": 1,
+        "signal": null,
+        "log": "habit-final-19.log"
+      },
+      {
+        "path": "test/unit/logging/destination-settings-service.test.ts",
+        "exitCode": 1,
+        "signal": null,
+        "log": "habit-final-20.log"
+      }
+    ],
+    "rawFindingExitCodes": "Per-file 0 or1; aggregate findings are retained with manager reasons; no incomplete tool run",
+    "scope": "All20existing supported completecandidate paths, serially aftermetrics. Same repository configuration/sensors; no snoozes."
+  },
+  "apiSurface": {
+    "exitCode": 0,
+    "currentSnapshots": 48,
+    "changedSnapshots": 1,
+    "diagnosticLimit": "33diagnostics in2outside-public files ignored by narrow emitter; fulltypecheck passed."
+  },
+  "typecheck": {
+    "exitCode": 0
+  },
+  "portalBuild": {
+    "exitCode": 0
+  },
+  "collector": {
+    "exitCode": 0,
+    "tests": 10,
+    "failures": 0,
+    "skips": 0,
+    "durationMs": 24221.646208
+  },
+  "selfHostedContainer": {
+    "exitCode": 0,
+    "tests": 11,
+    "failures": 0,
+    "skips": 0,
+    "durationMs": 108250.886333
+  },
+  "ordinary": {
+    "exitCode": 0,
+    "backendTests": 4787,
+    "portalTests": 49,
+    "failures": 0,
+    "skips": 0
+  },
+  "hostedImage": {
+    "exitCode": 0,
+    "tests": 7,
+    "failures": 0,
+    "skips": 0,
+    "platform": "linux/amd64",
+    "buildId": "ns0rwlyuwdyrxkmpr8ijdrxud",
+    "manifest": "sha256:a24d97d4c6d35e014cc9650ce4146497f04384b168f735ee2d9476ea9716a50e",
+    "durationMs": 573754.059958
+  },
+  "failureHistory": [
+    {
+      "candidate": "869de8c5a3e70cea19aea3a4807633fb8d369cea",
+      "failure": "Typecheck TS7006 tenant implicitany; processCRAP buildfailed/no coveragewritten; Architectureunavailable. Fixed tenant:string and focusedacceptance3/3passed before repaircommit."
+    },
+    {
+      "candidate": "869de8c5a3e70cea19aea3a4807633fb8d369cea",
+      "failure": "Concurrent APIcheck stale1snapshot and branchhabit sensor missingpath. No manualsnapshotedit; canonicalgenerator0written/48unchanged and repeatedserialchecks pass; final isolatedmetrics then serialAPI/habit pass. Cause unproven."
+    },
+    {
+      "candidate": "d167fff53aeece23e02b6811ec772f796f9712c2",
+      "failure": "Processcompleted; candidate superseded by scoped placeholdercontrastfix. Historical reportscopied."
+    }
+  ],
+  "notSelected": {
+    "postgres": "Store/SQL/runtime/configuration/lifetime and dedicated PG tests unchanged.",
+    "workosLive": "No authentication or WorkOS organization operation change.",
+    "separateRendererSearchLive": "Pipeline unchanged; offline renderergate selected inside hostedbuild."
+  },
+  "runtime": {
+    "node": "24.20.0",
+    "pnpm": "12.10.1",
+    "cwd": "/Users/tomermayara/.codex/worktrees/5c73/Thermus"
+  },
+  "commands": {
+    "metrics": {
+      "command": "pnpm exec node script/code-quality/ast-metrics-process.ts --base origin/main --collect-coverage --json ast-report/process.json",
+      "status": "completed with retained Delta/Review goal misses; CRAP and Architecture passed",
+      "exitCode": 1,
+      "log": "metrics-process-final.log"
+    },
+    "headSnapshot": {
+      "command": "pnpm exec node script/code-quality/ast-metrics-snapshot.ts",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "head-snapshot-final.log"
+    },
+    "baseSnapshot": {
+      "command": "pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main",
+      "status": "passed; reused same pinned main base74f75656 snapshot",
+      "exitCode": 0
+    },
+    "crap": {
+      "command": "pnpm exec node script/code-quality/ast-metrics-crap.ts --base origin/main --json ast-report/crap.json",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "crap-final.log"
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "typecheck-final.log"
+    },
+    "apiSurface": {
+      "command": "pnpm exec node script/pr-review/api-surface.ts --check",
+      "status": "passed serially after metrics",
+      "exitCode": 0,
+      "log": "api-surface-final.log"
+    },
+    "habitHooks": {
+      "command": "habit-hooks --file <each existing supported changed candidate path> --no-snooze",
+      "strategy": "20 explicit single-file invocations with unchanged repository configuration and sensors; complete base-to-HEAD candidate paths selected with git diff --no-renames --name-only origin/main...HEAD, then existence/extension filter and generated declarations excluded by repository scope. Final run serial after metrics; all outcomes0or1, no tool error/incomplete result,42 retained findings, snooze[]. Scope and per-file commands/results in habit-scope-final.json and habit-execution-final.json.",
+      "status": "completed; manager dispositions required for retained findings",
+      "log": "habit-hooks-final.log"
+    },
+    "ordinary": {
+      "command": "npm test",
+      "environment": {
+        "LIGHTPANDA_BIN": "/Users/tomermayara/.codex/worktrees/logs-restack/Thermus/.cache/lightpanda/1.0.0/lightpanda"
+      },
+      "status": "passed",
+      "exitCode": 0,
+      "log": "npm-test-final.log"
+    },
+    "portalBuild": {
+      "command": "npm run build:user-portal",
+      "status": "passed",
+      "exitCode": 0,
+      "log": "build-user-portal-final.log"
+    },
+    "collector": {
+      "command": "pnpm exec node --test --test-concurrency=1 dist/test/integration/logging/audit/audit-sender.runtime.js dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js",
+      "environment": {},
+      "status": "passed",
+      "exitCode": 0,
+      "log": "collector-final.log",
+      "buildPreparation": "npm test completed its clean backend build before this direct group started. No later command changed dist. This runs exactly the test selection of npm run test:logging:collector without a duplicate clean build."
+    },
+    "selfHostedContainer": {
+      "command": "THERMUS_CONTAINER_GATE=1 pnpm exec node --test dist/test/acceptance/auth/self-hosted-container.test.js",
+      "environment": {
+        "THERMUS_CONTAINER_GATE": "1"
+      },
+      "status": "passed",
+      "exitCode": 0,
+      "log": "self-hosted-container-final.log",
+      "buildPreparation": "Used stable emitted outputs from npm test clean build; same dedicated selection as npm run test:container, with its required environment flag. Its real Docker gate uses denied outbound runtime network."
+    },
+    "hostedImage": {
+      "command": "pnpm exec node --test dist/test/acceptance/auth/hosted-image.test.js",
+      "environment": {},
+      "status": "passed",
+      "log": "hosted-image-final.log",
+      "platform": "linux/amd64",
+      "buildPreparation": "Used stable emitted outputs from npm test clean build; same dedicated selection as npm run test:container:hosted. The unchanged gate builds and runs Dockerfile.hosted with --platform linux/amd64. Its complete inner npm run build:hosted supplies hosted offline build and renderer validation; no duplicate standalone check or build:hosted.",
+      "exitCode": 0
+    },
+    "checker": {
+      "command": "pnpm exec node script/pr-review/check.ts --base origin/main --repo tomer-mayara/Thermus --impact ast-report/impact.json --base-snapshot ast-report/snapshot-base.json --head-snapshot ast-report/snapshot.json --crap ast-report/crap.json --process ast-report/process.json --review ast-report/review.json --json",
+      "status": "completed; T2 Need architect,0technicalblockers, local eligibility preliminary and independent authorized architect approval remains required",
+      "exitCode": 0,
+      "log": "check-final.json"
+    }
+  },
+  "hostedBuild": {
+    "exitCode": 0,
+    "testsByStage": [
+      3088,
+      29,
+      20,
+      1070,
+      119,
+      13
+    ],
+    "failures": 0,
+    "skips": 0,
+    "status": "passed inside final LinuxAMD64 image gate; no duplicate standalone check/build:hosted"
+  },
+  "allSelectedTestStaticBuildGates": "passed"
+}

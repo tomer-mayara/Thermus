@@ -1,0 +1,11 @@
+✔ Given edited Audit settings, when an Admin selects Save, then confirmed saved text sits above the buttons and the empty token field shows only its masked stored prefix (209.729125ms)
+✔ Given edited Audit settings, when an Admin selects Test, then confirmed saved text sits above the buttons and the empty token field shows only its masked stored prefix (82.390792ms)
+✔ Given saved token feedback and removed Admin access, when the page or Test is requested, then no token preview, read, write, or send is permitted (55.845041ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 883.376375

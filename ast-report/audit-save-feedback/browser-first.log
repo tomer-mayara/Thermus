@@ -1,0 +1,58 @@
+{
+  "scope": "Real Chromium with production Audit routes/page/service/codec and native POST; trusted local Admin, in-memory store, controlled sender. No live writes.",
+  "checks": [
+    "Save and Test preserve native POST scroll at1440/390/320; saved and Test outcome are visible near actions; confirmed text expires after30seconds without changing action position; placeholder remains prefix-only and value/FormData stay blank.",
+    "Typing replacement text clears saved feedback and replaces the stored token; next response shows its new prefix. Changing Enable export also clears the old feedback.",
+    "Test failure still confirms its preceding Save without scrolling up. Unconfirmed Save never invents saved feedback or a retryable form; explicit GET recovery does not repeat saved feedback.",
+    "Tokens up to4characters show only****; longer token shows onlyfirst4+****; no preview field is persisted. Native Save with scripts disabled and with blocked storage remains usable."
+  ],
+  "positions": [
+    {
+      "width": 1440,
+      "button": "Save",
+      "before": 511,
+      "after": 511
+    },
+    {
+      "width": 1440,
+      "button": "Test",
+      "before": 511,
+      "after": 511
+    },
+    {
+      "width": 390,
+      "button": "Save",
+      "before": 816,
+      "after": 816
+    },
+    {
+      "width": 390,
+      "button": "Test",
+      "before": 816,
+      "after": 816
+    },
+    {
+      "width": 320,
+      "button": "Save",
+      "before": 912,
+      "after": 912
+    },
+    {
+      "width": 320,
+      "button": "Test",
+      "before": 912,
+      "after": 912
+    }
+  ],
+  "screenshots": [
+    "save-1440-viewport.png",
+    "test-1440-viewport.png",
+    "save-390-viewport.png",
+    "test-390-viewport.png",
+    "save-320-viewport.png",
+    "test-320-viewport.png",
+    "test-failed-viewport.png",
+    "save-unconfirmed-viewport.png"
+  ],
+  "passed": true
+}

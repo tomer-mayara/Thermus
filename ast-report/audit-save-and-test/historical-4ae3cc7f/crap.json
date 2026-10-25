@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "base": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "head": "4ae3cc7f950c53cc619c307159643b6771caff5a",
+  "rows": [
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.",
+      "change": "new",
+      "paths": 12,
+      "share": 0.928,
+      "crap": 12.053747712,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:LoggingRoutes/MethodDeclaration:handlerFor\",\"name\":\"(anonymous)\",\"start\":2295,\"end\":3230,\"body\":\"0be3db7ebae0032775002de7cba2d387c9f6d997d5d17a4d7a93e773c73bb810\",\"signature\":\"a6d6e642995224c83fbcb57626d244625fdecb005e9a5e045ed19c06206c2740\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.change",
+      "change": "new",
+      "paths": 12,
+      "share": 1,
+      "crap": 12,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"change\",\"start\":3239,\"end\":4681,\"body\":\"16ad5df4dff306d5372eb0184d99e2e93b8c95e9f7330226e019e05bb3394f86\",\"signature\":\"3956beb39c7f489261c4d478638e3ef35d634b35fa6cd75c8116c0ef37aac559\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-page.ts",
+      "function": "destinationForm",
+      "change": "new",
+      "paths": 8,
+      "share": 0.984,
+      "crap": 8.000262144,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"destinationForm\",\"start\":2718,\"end\":5419,\"body\":\"d574559d39202f3747301c2c6dad7ed853ff9cb186ff6d388334c92fe25c0464\",\"signature\":\"c994ff8bde835da20457945064c4e0f288d8aabe199306257fd0ce27cc0133e5\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-page.ts",
+      "function": "loggingPage",
+      "change": "changed",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingPage\",\"start\":1324,\"end\":2716,\"body\":\"86592a010561d81ea11739cf6214de5461e408440824ceb3e6adb84bc125ffe2\",\"signature\":\"356a0b3b05eeb7273af34a44eaec3a4e0384d27570a7003832c7785b1924599d\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.readPage",
+      "change": "new",
+      "paths": 4,
+      "share": 0.712,
+      "crap": 4.382205952,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"readPage\",\"start\":6673,\"end\":7246,\"body\":\"401adb37d2643739c354b59305af8de554624e43b97d5c0e834f7039eed118fb\",\"signature\":\"d58de5856e45b71de6b6baabaf5c8e04c0b0aafdb4e636a27dc1bd826d968ca7\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.handlerFor",
+      "change": "changed",
+      "paths": 4,
+      "share": 0.899,
+      "crap": 4.016484816,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"handlerFor\",\"start\":2111,\"end\":3235,\"body\":\"e8b78c47b495d5c3a8039873b9909904d293392bbf1c62d9c890bd74ce4bd9c8\",\"signature\":\"b55a31736fcf2ac8f09dc0ef52f80e224f9b10c43a61d6d664d98043d5a2843c\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.saveFailure",
+      "change": "new",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"saveFailure\",\"start\":5815,\"end\":6669,\"body\":\"20a1fe7d8e18dc62212708af73de55d78ca49accb077154768819f439e1e76e5\",\"signature\":\"8ad48b508019d5cad6890ddb57a5a175f4a376aa28d8d8c142a4084c45ee0434\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.page",
+      "change": "new",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"page\",\"start\":7250,\"end\":7592,\"body\":\"54d5d290d6b6dc2e77a68c7fe8757ca5479395749d8305582e84711a2769fc58\",\"signature\":\"ae244f104da589745841cb2a8c06972bc37ede90e1652a176555c13805aa80bd\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.keep",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 0.619,
+      "crap": 2.221225364,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"keep\",\"start\":7850,\"end\":8254,\"body\":\"b39702145f227272f7fe5de5ce60d52237ef2d6315f96a053a75edf690b9c6e6\",\"signature\":\"5b6203cbb47bc3bc3c77b06e5a4337b1fcca9399ce4af64727aed1e8b472170a\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.saveSettings",
+      "change": "new",
+      "paths": 2,
+      "share": 0.931,
+      "crap": 2.001314036,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"saveSettings\",\"start\":4685,\"end\":5164,\"body\":\"7d5473ac744c091c67e2da178d6f75ddb1502654d62d60d30cdfbab662a35ac4\",\"signature\":\"1902320d3962e9ffa9b8ac7af4bbb06927814c3530eab9322bbd5eb33b2fa389\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.testSaved",
+      "change": "new",
+      "paths": 2,
+      "share": 0.953,
+      "crap": 2.000415292,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"testSaved\",\"start\":5168,\"end\":5811,\"body\":\"daaa686a54b2b300b3f06d248d6e79ec890f4529640fe07f95f65eb00d7f0c56\",\"signature\":\"c547c6ee049a2e058a18d871605584047ff862ecec78bac9c84aff4fdc32b662\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.refuse",
+      "change": "new",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"refuse\",\"start\":7596,\"end\":7846,\"body\":\"dedf6d29471c42b1f8190068677ad1c26f387fe3969e6134810e0621853aad5b\",\"signature\":\"efdd78df3683248d096bb3f8f3876c5b4cc0df4977a2025c1bcff57365e649e6\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-test-page.ts",
+      "function": "loggingTestNotice",
+      "change": "new",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingTestNotice\",\"start\":2180,\"end\":2447,\"body\":\"d5208ed2409e79fd57acec3a878807d875d8bc12df04793f5ab81c0e763b2040\",\"signature\":\"ccb0c4536fc79565d6337bab2df72c70f94e337c42d81ae5b3bbb57c53ee2794\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:LoggingRoutes/MethodDeclaration:readPage\",\"name\":\"(anonymous)\",\"start\":6861,\"end\":6903,\"body\":\"d157a17dd1f9dead8ba7f2284d06a80fac51d392eb601e8f2cf7d089493d4891\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"constructor\",\"start\":1705,\"end\":2107,\"body\":\"f030fade87e94f39c5a374e6029cddde21d378f4f74adc024ffc89ef1823b535\",\"signature\":\"2983f0fcbe211bd90f04095742ca6785eef8079f7d485872f19c5ac15154636f\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.path",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:LoggingRoutes/Constructor:constructor\",\"name\":\"path\",\"start\":1841,\"end\":1912,\"body\":\"68742a35900d0d75138de90e81d11d5d3f84732a8e094917099342c03a2cbc7c\",\"signature\":\"a93c89840be224624fddefc7a3332efbc442053887d5bf652073d01d4ad10237\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-test-page.ts",
+      "function": "loggingRequestNotice",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingRequestNotice\",\"start\":3461,\"end\":3582,\"body\":\"c158e70c2fad564681b2adb50af3214443feab83556e93845b88e4367f8c5e34\",\"signature\":\"82ca4f80dbe3b09a71060f7d1ff4438d81af5c285838c278097843a8b3da5e53\"}"
+    }
+  ]
+}

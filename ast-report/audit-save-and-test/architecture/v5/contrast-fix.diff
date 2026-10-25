@@ -1,0 +1,12 @@
+diff --git a/src/interfaces/web/account/members-style.ts b/src/interfaces/web/account/members-style.ts
+index 45cb5015..cf9bec4a 100644
+--- a/src/interfaces/web/account/members-style.ts
++++ b/src/interfaces/web/account/members-style.ts
+@@ -30,6 +30,7 @@ p,li,form{overflow-wrap:anywhere;min-width:0}
+ .invite-card form{display:grid;gap:12px}
+ label,legend{font-size:15px}
+ input[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}
++.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}
+ fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}
+ legend{padding:0;margin-bottom:6px}
+ .role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}

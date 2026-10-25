@@ -1,0 +1,144 @@
+{
+  "base": "74f756562231fb6aafd6a87f4bbd0f02bc0a208e",
+  "candidate": "4ae3cc7f950c53cc619c307159643b6771caff5a",
+  "executableCandidate": "ed529f8f225dd3d91311e669417347e07236582b",
+  "carryForward": "Only the immutable base metrics record changed after executable candidate. Source, tests, scripts, build inputs and suite selection are unchanged.",
+  "coverage": {
+    "backendTests": 3077,
+    "portalTests": 29,
+    "failures": 0,
+    "skips": 0,
+    "sourceFingerprint": "ca94711b44ed03931d5d60928365145ad5858d7ea7c8e52cbd934d17a03a5182",
+    "inputsFingerprint": "974bdc0ba2600c8d08c58965b047eadfc99916adbd6dbfd7dc245dc019a0f1e3",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit",
+    "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+    "captureId": "3eb5218125575d2e60b4968bdbbe2d8f5e00957c10b9e43fcea1eefa06118c44",
+    "comparisonIdentity": {
+      "sourceFingerprint": "ca94711b44ed03931d5d60928365145ad5858d7ea7c8e52cbd934d17a03a5182",
+      "inputsFingerprint": "974bdc0ba2600c8d08c58965b047eadfc99916adbd6dbfd7dc245dc019a0f1e3",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit"
+    },
+    "status": "verified",
+    "capturedCommit": "ed529f8f225dd3d91311e669417347e07236582b",
+    "buildFingerprint": "0cc317b7d8ca1305f5334345685e4ca32adf238cf8dfe7ba49516b462a43846b",
+    "captureManifestFingerprint": "475c9e08e36be0c855b5383941f236224f00ef53eb8c403935b7f81d1c04472e"
+  },
+  "metrics": {
+    "processExitCode": 1,
+    "outcomes": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "crapExitCode": 0,
+    "crapRows": 17,
+    "limitViolations": 0,
+    "targetMisses": 0,
+    "unmeasured": 0,
+    "unknownRequired": 0,
+    "productionMI": [
+      {
+        "file": "src/interfaces/web/account/logging-routes.ts",
+        "base": 47.8,
+        "head": 48.4
+      },
+      {
+        "file": "src/interfaces/web/account/logging-page.ts",
+        "base": 69,
+        "head": 65.4
+      },
+      {
+        "file": "src/interfaces/web/account/logging-test-page.ts",
+        "base": 71.8,
+        "head": 70.4
+      }
+    ],
+    "css": "members-style.ts is not measured by ast-metrics",
+    "review": "Retained high test-file MI regression 36 to 28; medium new LoggingRoutes.change complexity 12; no tool failures"
+  },
+  "habitHooks": {
+    "exitCode": 1,
+    "total": 27,
+    "complexity": 3,
+    "nonNullAssertions": 16,
+    "parameterCount": 2,
+    "comments": 5,
+    "oversizedFile": 1,
+    "snooze": []
+  },
+  "apiSurface": {
+    "exitCode": 0,
+    "currentSnapshots": 48,
+    "diagnosticLimit": "Narrow emitter ignores 33 unrelated diagnostics in 2 outside-public files; full typecheck passed."
+  },
+  "typecheck": {
+    "exitCode": 0
+  },
+  "portalBuild": {
+    "exitCode": 0
+  },
+  "collector": {
+    "exitCode": 0,
+    "tests": 10,
+    "failures": 0,
+    "skips": 0,
+    "history": "First precommit run 9/10; stale no-CSRF-output assertion corrected to allow hidden form CSRF and assert blank token while retaining Bearer/encrypted-credential exclusions; complete group retry 10/10."
+  },
+  "selfHostedContainer": {
+    "exitCode": 0,
+    "tests": 11,
+    "failures": 0,
+    "skips": 0
+  },
+  "ordinary": {
+    "exitCode": 0,
+    "backendTests": 4773,
+    "portalTests": 49,
+    "failures": 0,
+    "skips": 0
+  },
+  "hostedImage": {
+    "exitCode": 0,
+    "tests": 7,
+    "failures": 0,
+    "skips": 0,
+    "platform": "linux/amd64",
+    "buildId": "q9nbhc3yd3pd5mtwahpyb1r7i",
+    "manifest": "sha256:1ba7b9ab61f6d19b505deb334929f28d9e5a26eba1b903b3ea0c9eedc4f953c9",
+    "durationMs": 579182.079875
+  },
+  "evidenceStatus": "Historical candidate 4ae3cc7f; user added Save confirmation, scroll preservation, and masked Bearer preview requirements while image check was active. Not validation of the forthcoming candidate.",
+  "hostedBuild": {
+    "status": "passed",
+    "testsByStage": [
+      3077,
+      29,
+      20,
+      1070,
+      119,
+      13
+    ],
+    "failures": 0,
+    "skips": 0,
+    "scope": "Inside historical hosted image candidate4ae3cc7f; no duplicate standalone build:hosted."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "version": "v5",
+  "approved": true,
+  "managerFeedback": "Manager visually approved v5 at 800px: legible labels, proper L2 boundaries/owner responsibilities, amber public projection owner correct; no crossings/overlap.",
+  "scope": "Architecture rendering; final candidate pin pending test/snapshot repair commit.",
+  "historicalReviewedSource": "869de8c5a3e70cea19aea3a4807633fb8d369cea",
+  "supersedesDiagram": "v4"
+}
