@@ -21,8 +21,13 @@ Merge still requires the parent, resolution of S2.5-R1 in this PR, and independe
 architect approval. S2.5-01c adds checked Members removal and safe self-removal
 navigation in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254).
 Its recorded selected tests and build gates pass for the original candidate.
-The PR retains its historical final quality and review evidence. S2.5-02 remains
-planned.
+The PR retains its historical final quality and review evidence.
+S2.5-02 adds integrated verification, a scoped WorkOS proof, restore controls,
+and a complete successor notice/help proposal in stacked
+[PR #255](https://github.com/tomer-mayara/Thermus/pull/255). Its
+[implementation and release record](../implementation/admin-s2-5-02.md) separates
+completed proof from the remaining owner and release gates. The ticket is not
+released or Done.
 Ticket records describe their historical increments; their earlier missing
 features are not the status of the combined candidate. Merged does not mean
 released, and passing controlled tests does not complete owner gates.
@@ -2912,11 +2917,15 @@ Scenario: Refuse removal during storage outage
   Then removal is blocked without deletion and current authorized product/MCP access works
 ```
 
-**Current gap.** Existing read/invitation/current-access cases do not establish this
-complete removal journey. Add the integrated case when leaf dependencies are ready;
-it may already pass. Missing source behavior gets its own focused red → green →
-refactor step. Keep controlled fault proof separate from scoped live provider proof;
-a live test cannot prove absence of every arbitrary late effect.
+**Implementation status.** The stacked [S2.5-02 record](../implementation/admin-s2-5-02.md)
+now owns the four integrated PostgreSQL cases, the scoped WorkOS proof, the
+disposable restore drill, runbooks, and complete notice/help review bundle. These
+cases characterize the leaf implementation; fixture corrections do not count as
+new source behavior. Any later source gap requires its own focused red → green →
+refactor step. Controlled fault proof remains separate from scoped live provider
+proof; a live test cannot prove absence of every arbitrary late effect. Actual
+S2-04 release, required review, exact-byte owner approval, publication, and
+deployed presentation remain release gates, not implied by a passing test.
 
 **Verification and release steps.**
 

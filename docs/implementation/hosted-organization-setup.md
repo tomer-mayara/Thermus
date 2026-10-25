@@ -66,6 +66,21 @@ Current live configuration is unverified: the saved client differs from the
 connected staging client and the saved issuer is missing. No successful real
 password, verification, reset, or cutover result is claimed for S1-02.
 
+## Ordinary membership removal
+
+S2.5 uses the checked Members action for ordinary active User/Admin membership
+removal. Follow the [removal runbook](admin-s2-5-02-removal-runbook.md). Its release
+and notice holds still apply; this setup document does not activate removal.
+Do not run independent operator, WorkOS, or IdP membership reductions during a
+customer removal or unresolved hold. Do not reactivate a deleted membership,
+replace all roles, or delete an account to repair that action. Rejoin requires a
+new authorized invitation. Preserve replacement memberships and later grants.
+
+The historical read-after-write procedure below applies only to its old
+Super Admin role-assignment operation. Current member reads cannot settle a
+pending customer removal, authorize a retry, or clear its durable hold. A restore
+must keep the removal privilege hold outside restored rows as the runbook says.
+
 ## Historical Super Admin procedure
 
 The remaining procedure records the earlier AUTH-07W/AUTH-08W operating model.

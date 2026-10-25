@@ -6,16 +6,16 @@
     "contract": true,
     "deployment": false,
     "crossCutting": false,
-    "component": true,
-    "internalInterface": true,
-    "sensitiveBehavior": true,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": true,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included.",
+    "modelUpdated": false,
+    "summary": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -29,24 +29,19 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "src/interfaces/web/account/administration-routes.ts",
-      "src/interfaces/web/account/administration-pages.ts",
-      "src/interfaces/web/account/account-form.ts",
-      "src/interfaces/web/account/account-pages.ts",
-      "src/accounts/organizations/administration-overviews.ts",
-      "src/accounts/organizations/membership-removal-checks.ts",
-      "src/logs/audit/audit-log.ts",
-      "src/logs/audit/audit-event-projection.ts",
-      "src/logs/audit/otlp-audit-encoding.ts",
       "architecture/components.md",
-      "docs/implementation/admin-s2-5-01c.md",
+      "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+      "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+      "test/acceptance/auth/hosted-removal.live.ts",
+      "test/support/hosted-live/removal-fixtures.ts",
+      "test/support/hosted-live/live-run.ts",
+      "test/support/hosted-live/local-https-site.ts",
+      "package.json",
       "docs/implementation/test-gate-policy.md",
-      "test/acceptance/auth/hosted-member-removal.test.ts",
-      "test/acceptance/auth/hosted-member-self-removal.test.ts",
-      "test/acceptance/auth/hosted-member-removal-scope.test.ts",
-      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
-      "test/integration/hosted-admin/account-routes-removal.test.ts",
-      "test/integration/hosted-admin/account-routes-removal-audit.test.ts"
+      "docs/implementation/admin-s2-5-02.md",
+      "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "docs/implementation/admin-s4-recovery.md",
+      "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json"
     ]
   }
 }
