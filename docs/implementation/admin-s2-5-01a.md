@@ -1,6 +1,6 @@
 # S2.5-01a implementation record
 
-Date: 25 October 2026. Status: implemented; full validation and review in progress
+Date: 25 October 2026. Status: implemented. See the current validation and review
 in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
 
 ## Scope and behavior
@@ -80,11 +80,22 @@ The corrected candidate passes the full ordinary suite: 4827 backend cases and
 build, declaration snapshot checks, and all 28 live WorkOS password-profile
 cases pass. The live run includes the changed membership-reader compositions;
 it does not exercise the new deletion method against live WorkOS.
+The hosted Linux AMD64 image passes all seven cases. Its clean image build also
+runs and passes the complete hosted offline build, including the renderer gate.
+The maintained PR comments record the separate self-hosted container result.
 
 An initial full suite passed 4815 backend cases and 49 portal cases before the
 review correction. That result does not validate the corrected candidate; its
-full suite is run again. This history preserves the earlier result without
+full suite was run again. This history preserves the earlier result without
 treating the missing regression as evidence that the first version was correct.
+
+All 17 added or changed functions pass the CRAP goals. The metrics process still
+reports low file maintainability in the existing provider and composition files,
+and a high finding in the expanded connection test. The PR review records the
+reason for each retained finding. No new production file or metric exception is
+added. The API snapshot check passes; declaration-only diagnostics in two
+unchanged, unlisted modules do not affect those snapshots. Full type checking
+also passes.
 
 The public directory declaration changes. Independent human architect approval
 is required before merge under the repository policy. The existing component
