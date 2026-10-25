@@ -861,6 +861,18 @@ page. These are separate remote reads, not a transaction. The member overview
 includes the organization name from the same current membership read that
 authorizes it. Trusted member subjects supply the You label; safe invitation
 fields supply expiry. The page shows only active members and pending invitations.
+The directory member contract also retains `ordinary`, `external`, or `unknown`
+management evidence, and includes it in the membership revision. All current
+role grants remain available to callers; display roles do not replace them.
+Hosted composition supplies `workosMembershipReads()` through the shared SDK
+client. It maps raw membership GET/list replies before the SDK can default a
+missing or null management field to false. Each read still sends one request.
+The directory can delete one exact membership ID through WorkOS. A normal
+void completion reports applied. Only the documented directory-managed 422
+refusal reports unsupported without effect; other failures leave the effect
+unknown. The existing client sends no automatic retry and keeps its five-second
+request timeout. No browser route or administration method calls this deletion
+boundary. It supplies no admission, current-authority, or last-Admin check.
 The old `/invitations` page checks current authority and redirects to Members.
 Privileged mutations and their recording rules
 remain described under resource ownership and design choices below.

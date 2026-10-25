@@ -4,6 +4,7 @@ import type {
   ListOrganizationMembershipsOptions,
   OrganizationMembershipStatus,
   SendInvitationOptions,
+  WorkOS,
 } from '@workos-inc/node';
 import type { AuthenticatedUser, RoleGrant } from '../../identity/access-context.ts';
 import type {
@@ -13,6 +14,8 @@ import type {
   InvitationState,
   InvitationUpdateResult,
   MemberPageRequest,
+  MembershipManagement,
+  MembershipDeletionResult,
   OrganizationDirectory,
   OrganizationInvitation,
   OrganizationMember,
@@ -30,7 +33,7 @@ interface MembershipRecord {
   // WorkOS changes it with each change of the roles or the status.
   readonly updatedAt: string;
   // True when a directory connection manages the membership.
-  readonly directoryManaged: boolean;
+  readonly directoryManaged?: unknown;
   readonly roles?: readonly { readonly slug: string }[];
 }
 
@@ -52,14 +55,16 @@ interface WorkOSList<T> {
 }
 
 // The calls of the pinned SDK client that access resolution and organization administration need. The client fits this
-// shape. It has no call that replaces the roles of a membership, or that creates, reactivates, deactivates, or deletes
-// a membership, because the directory makes no such change.
+// shape. Membership deletion names one exact ID. There is no user, factor, role, creation, or status writer.
 export interface WorkOSOrganizationsOptions {
   // The one authority of the WorkOS environment, from workosAuthority(). Only its users have WorkOS memberships.
   readonly authority: string;
-  readonly userManagement: {
+  readonly memberships: {
     listOrganizationMemberships(options: ListOrganizationMembershipsOptions): Promise<WorkOSList<MembershipRecord>>;
     getOrganizationMembership(organizationMembershipId: string): Promise<MembershipRecord>;
+  };
+  readonly userManagement: {
+    deleteOrganizationMembership(organizationMembershipId: string): Promise<void>;
     getUser(userId: string): Promise<{ readonly email: string }>;
     listInvitations(options: ListInvitationsOptions): Promise<WorkOSList<InvitationRecord>>;
     getInvitation(invitationId: string): Promise<InvitationRecord>;
@@ -82,6 +87,9 @@ const PAGE_SIZE = 100;
 const MEMBERSHIP_PAGE_LIMIT = 10;
 const NO_MEMBERSHIPS: readonly OrganizationMembership[] = Object.freeze([]);
 const APPLIED = Object.freeze({ outcome: 'applied' as const });
+const UNSUPPORTED = Object.freeze({ outcome: 'unsupported' as const });
+// Only this documented 422 proves that the provider refused deletion without an effect.
+const DIRECTORY_MANAGED_CODES: ReadonlySet<unknown> = new Set(['organization_membership_directory_managed']);
 const ADDRESS_IN_USE = Object.freeze({ outcome: 'address-in-use' as const });
 const NOT_PENDING = Object.freeze({ outcome: 'not-pending' as const });
 // WorkOS refuses a send to an address that has a pending invitation of the organization, for any role and in any
@@ -96,12 +104,14 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   // WorkOS can accept an invitation for another address of the same domain, so the directory claims no strict match.
   readonly invitationIdentityPolicy = 'provider-rules';
   private readonly authority: string;
+  private readonly memberships: WorkOSOrganizationsOptions['memberships'];
   private readonly userManagement: WorkOSOrganizationsOptions['userManagement'];
   private readonly authorization: WorkOSOrganizationsOptions['authorization'];
   private readonly clock: () => Date;
 
   constructor(options: WorkOSOrganizationsOptions) {
     this.authority = options.authority;
+    this.memberships = options.memberships;
     this.userManagement = options.userManagement;
     this.authorization = options.authorization;
     this.clock = options.clock ?? (() => new Date());
@@ -139,7 +149,7 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     const { organizationId, statuses, cursor } = request;
     // Without a status, WorkOS gives only active memberships.
     if (statuses.length === 0) throw new Error('A member read must name at least one membership status');
-    const page = await this.userManagement.listOrganizationMemberships({ organizationId, statuses: [...statuses], limit: PAGE_SIZE, ...afterOf(cursor) });
+    const page = await this.memberships.listOrganizationMemberships({ organizationId, statuses: [...statuses], limit: PAGE_SIZE, ...afterOf(cursor) });
     const records = page.data.map((record) => checkedMemberRecord(record, request));
     const organizationRoles = records.length === 0 ? [] : await this.organizationRoles(organizationId);
     const members: OrganizationMember[] = [];
@@ -150,6 +160,16 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   async member(membershipId: string): Promise<OrganizationMember | undefined> {
     const record = await this.currentMembership(membershipId);
     return record === undefined ? undefined : this.memberOf(record, await this.organizationRoles(record.organizationId));
+  }
+
+  async deleteMembership(membershipId: string): Promise<MembershipDeletionResult> {
+    try {
+      await this.userManagement.deleteOrganizationMembership(membershipId);
+    } catch (error) {
+      if (hasStatus(error, 422) && hasCode(error, DIRECTORY_MANAGED_CODES)) return UNSUPPORTED;
+      throw error;
+    }
+    return APPLIED;
   }
 
   // WorkOS has no state filter for invitations, so the read keeps only the states that it names.
@@ -198,7 +218,7 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   }
 
   private async activeMembership(userId: string, organizationId: string): Promise<MembershipRecord | undefined> {
-    const page = await this.userManagement.listOrganizationMemberships({ userId, organizationId, statuses: ['active'], limit: MEMBERSHIP_READ_LIMIT });
+    const page = await this.memberships.listOrganizationMemberships({ userId, organizationId, statuses: ['active'], limit: MEMBERSHIP_READ_LIMIT });
     if (page.data.length > 1 || Boolean(page.listMetadata.after)) {
       throw new Error('WorkOS answered more than one active membership, or a next page, for one user in one organization');
     }
@@ -217,7 +237,7 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     const cursors = new Set<string>();
     let after: string | undefined;
     for (let pages = 0; pages < MEMBERSHIP_PAGE_LIMIT; pages += 1) {
-      const page = await this.userManagement.listOrganizationMemberships({ userId, statuses: ['active'], limit: PAGE_SIZE, ...afterOf(after) });
+      const page = await this.memberships.listOrganizationMemberships({ userId, statuses: ['active'], limit: PAGE_SIZE, ...afterOf(after) });
       records.push(...page.data.map((record) => checkedActiveRecord(record, userId)));
       const next = page.listMetadata.after;
       if (!next) return eachOrganizationOnce(records);
@@ -243,12 +263,12 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     const { id: membershipId, userId: subject, organizationId, status } = record;
     const grants = grantsOfRoles(roleListOf(record), organizationRoles, organizationId);
     const { email } = await this.userManagement.getUser(record.userId);
-    return Object.freeze({ membershipId, subject, organizationId, email, status, grants, revision: revisionOf(record) });
+    return Object.freeze({ membershipId, subject, organizationId, email, status, management: managementOf(record), grants, revision: revisionOf(record) });
   }
 
   // The membership with this ID in any organization. A WorkOS 404 gives undefined.
   private async currentMembership(membershipId: string): Promise<MembershipRecord | undefined> {
-    const record = await unlessNotFound(() => this.userManagement.getOrganizationMembership(membershipId));
+    const record = await unlessNotFound(() => this.memberships.getOrganizationMembership(membershipId));
     if (record !== undefined && record.id !== membershipId) throw new Error('WorkOS answered a membership that the read did not ask for');
     return record;
   }
@@ -311,11 +331,16 @@ function roleListOf(membership: MembershipRecord): readonly { readonly slug: str
   return membership.roles;
 }
 
-// WorkOS changes the update time with each change of the roles or the status. The status and the roles make two states
-// with the same time differ.
+function managementOf(membership: MembershipRecord): MembershipManagement {
+  if (membership.directoryManaged === false) return 'ordinary';
+  if (membership.directoryManaged === true) return 'external';
+  return 'unknown';
+}
+
+// The facts distinguish a changed membership even when WorkOS gives the same update time.
 function revisionOf(membership: MembershipRecord): string {
   const slugs = roleListOf(membership).map(({ slug }) => slug).sort();
-  return createHash('sha256').update(JSON.stringify([membership.updatedAt, membership.status, slugs])).digest('base64url');
+  return createHash('sha256').update(JSON.stringify([membership.updatedAt, membership.status, slugs, managementOf(membership)])).digest('base64url');
 }
 
 // WorkOS can still give the state pending after the expiry time, so the clock decides.
@@ -368,4 +393,38 @@ function hasStatus(error: unknown, status: number): boolean {
 
 function hasCode(error: unknown, codes: ReadonlySet<unknown>): boolean {
   return typeof error === 'object' && error !== null && 'code' in error && codes.has(error.code);
+}
+
+
+interface MembershipWireRecord {
+  readonly id: string;
+  readonly user_id: string;
+  readonly organization_id: string;
+  readonly organization_name: string;
+  readonly status: OrganizationMembershipStatus;
+  readonly updated_at: string;
+  readonly directory_managed?: unknown;
+  readonly roles?: MembershipRecord['roles'];
+}
+
+// SDK 11 defaults missing or null management evidence to false. Read it through the same client's transport before
+// that default can make unknown evidence look ordinary. Each read still sends only one GET.
+export function workosMembershipReads(workos: Pick<WorkOS, 'get'>): WorkOSOrganizationsOptions['memberships'] {
+  return {
+    async getOrganizationMembership(membershipId) {
+      const id = encodeURIComponent(membershipId).replace(/%3A/gi, ':');
+      if (id === '.' || id === '..') throw new TypeError('Invalid membership path segment');
+      const { data } = await workos.get<MembershipWireRecord>(`/user_management/organization_memberships/${id}`);
+      return membershipRecordOf(data);
+    },
+    async listOrganizationMemberships(options) {
+      const query = { user_id: options.userId, organization_id: options.organizationId, statuses: options.statuses?.join(','), limit: options.limit, before: options.before, after: options.after, order: options.order || 'desc' };
+      const { data } = await workos.get<{ readonly data: readonly MembershipWireRecord[]; readonly list_metadata: WorkOSList<MembershipRecord>['listMetadata'] }>('/user_management/organization_memberships', { query });
+      return { data: data.data.map(membershipRecordOf), listMetadata: data.list_metadata };
+    },
+  };
+}
+
+function membershipRecordOf(record: MembershipWireRecord): MembershipRecord {
+  return { id: record.id, userId: record.user_id, organizationId: record.organization_id, organizationName: record.organization_name, status: record.status, updatedAt: record.updated_at, directoryManaged: record.directory_managed, roles: record.roles };
 }

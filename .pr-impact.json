@@ -5,38 +5,39 @@
     "external": false,
     "contract": false,
     "deployment": false,
+    "crossCutting": false,
     "component": false,
     "internalInterface": true,
     "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
-    "crossCutting": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The protected web Test action saves the submitted Audit settings, including the export switch, before the existing saved-destination Test. Only a confirmed saved or unchanged result permits the Test, using returned settings and revision with a blank token and no preview. Failed, stale or uncertain Saves send nothing; failed Test cannot roll back Save. Save and Test return the styled form directly. A server-confirmed saved message appears above the buttons for 30 seconds or until editing; a small hash-pinned script preserves scroll through a consumed, expiring position/time record with no form content. Uncertain Save keeps GET-only recovery with no immediate write form or automatic retry. The public saved projection adds optional tokenPreview, derived from a valid saved Bearer credential: first four characters plus ****, or only **** for short tokens. It appears only as an escaped empty-input placeholder and is excluded from Test inputs, storage, sender destinations and Audit events. This public declaration and web-to-audit runtime collaboration require T2 internalInterface review; sensitiveBehavior covers mutation, recovery and limited credential display. No new source owner, dependency, datastore, runtime framework, backend flash state or deployment is added. Registry prose and active plan describe the new behavior; the approved legal package and historical evidence stay unchanged.",
+    "summary": "S2.5-01a extends the organizations-owned directory contract with portable ordinary/external/unknown management evidence and exact-ID membership deletion. WorkOS implements applied on normal void completion, unsupported only for its documented no-effect 422 refusal, and unchanged thrown errors with unknown effect otherwise. Hosted composition binds a required raw membership reader through the same SDK client so missing/null wire evidence is not defaulted to false; read queries, one-request reads, all role grants, and existing zero-retry/five-second limits remain. Member revisions include normalized management evidence. No application caller invokes deletion: admission, authorization, last-Admin safety, browser UI, storage, and recovery stay in later tickets. Registry prose describes the boundary and binding; all 13 registry diagrams, components, dependency edges, external service selection, and deployment remain unchanged. The shared public declaration and provider binding require internalInterface review; sensitiveBehavior covers membership deletion and unknown evidence.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
-      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Selected C4 components: system and audit logs in the Node server",
-      "Runtime view",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
       "Deployment view"
     ],
     "evidence": [
+      "src/accounts/organizations/organization-directory.ts",
+      "src/accounts/providers/workos/workos-organizations.ts",
+      "src/app/hosted-workos-application.ts",
+      "docs/api-surface/src/accounts/organizations/organization-directory.d.ts",
       "architecture/components.md",
       "docs/design/organization-admin-plan.md",
-      "docs/implementation/admin-s2-02b.md",
-      "docs/implementation/admin-s2-04-direct-axiom.md",
-      "src/interfaces/web/account/logging-routes.ts",
-      "src/interfaces/web/account/logging-page.ts",
-      "src/interfaces/web/account/logging-test-page.ts",
-      "src/logs/audit/destination-settings-service.ts",
-      "test/unit/html/logging-test-routes.test.ts",
-      "test/acceptance/logging/hosted-save-and-test.test.ts",
-      "test/acceptance/logging/hosted-save-feedback.test.ts",
-      "docs/api-surface/src/logs/audit/destination-settings-service.d.ts"
+      "docs/implementation/admin-s2-5-01a.md",
+      "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "test/integration/auth/workos-connection.test.ts",
+      "test/unit/auth-workos/workos-membership-reads.test.ts",
+      "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+      "test/unit/auth-workos/workos-organizations-members.test.ts"
     ]
   }
 }

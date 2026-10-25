@@ -60,6 +60,7 @@ class MembershipReadsDouble {
       assert.ok(answer, `the double has no page for the cursor ${String(options.after)}`);
       return answer;
     },
+    deleteOrganizationMembership: notCalled,
     getOrganizationMembership: notCalled,
     getUser: notCalled,
     listInvitations: notCalled,
@@ -84,7 +85,7 @@ class MembershipReadsDouble {
 
 function directoryWith(pages: readonly MembershipPage[]) {
   const reads = new MembershipReadsDouble(pages);
-  return { reads, organizations: new WorkOSOrganizations({ authority, ...reads }) };
+  return { reads, organizations: new WorkOSOrganizations({ authority, memberships: reads.userManagement, ...reads }) };
 }
 
 async function assertReadFailure(read: Promise<unknown>, message: RegExp): Promise<void> {

@@ -6,6 +6,7 @@ import type {
   InvitationSendResult,
   InvitationUpdateResult,
   MemberPageRequest,
+  MembershipDeletionResult,
   OrganizationDirectory,
   OrganizationInvitation,
   OrganizationMember,
@@ -120,6 +121,13 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
     this.memberReads.push(membershipId);
     const state = this.members.find((member) => member.membershipId === membershipId);
     return state === undefined ? undefined : memberOf(state);
+  }
+
+  async deleteMembership(membershipId: string): Promise<MembershipDeletionResult> {
+    const member = this.members.find((state) => state.membershipId === membershipId);
+    if (member === undefined) throw new Error(`No membership ${membershipId}`);
+    this.members = this.members.filter((state) => state !== member);
+    return { outcome: 'applied' };
   }
 
   async invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>> {

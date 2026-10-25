@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
-import type { Invitation, OrganizationMembership, WorkOS } from '@workos-inc/node';
-import { WorkOSOrganizations } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import type { Invitation, OrganizationMembership } from '@workos-inc/node';
+import { WorkOSOrganizations, workosMembershipReads, type WorkOSOrganizationsOptions } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { activeUserSeatCount } from '../../../../src/accounts/organizations/administration-overviews.ts';
 import { invitationsOf } from '../../../../src/accounts/organizations/directory-reads.ts';
@@ -16,7 +16,7 @@ import type { AdministrationMembershipName } from '../../../support/hosted-live/
 import type { LiveRun } from '../../../support/hosted-live/live-run.ts';
 import { rolesOf } from '../../../support/hosted-live/operator-runbook.ts';
 
-type UserManagement = WorkOS['userManagement'];
+type MembershipReads = WorkOSOrganizationsOptions['memberships'];
 
 interface MembershipState {
   readonly status: string;
@@ -66,10 +66,10 @@ function memberSummary(member: OrganizationMember | undefined): string {
 
 // The SDK client of the run, but each membership list asks WorkOS for pages of two, so that a member read gets several
 // pages. Each other call goes to the SDK client unchanged.
-function withPagesOfTwo(userManagement: UserManagement, reads: MembershipListRead[]): UserManagement {
-  const paged: UserManagement = Object.create(userManagement);
+function withPagesOfTwo(memberships: MembershipReads, reads: MembershipListRead[]): MembershipReads {
+  const paged: MembershipReads = Object.create(memberships);
   paged.listOrganizationMemberships = async (options) => {
-    const page = await userManagement.listOrganizationMemberships({ ...options, limit: pageLimit });
+    const page = await memberships.listOrganizationMemberships({ ...options, limit: pageLimit });
     reads.push({ statuses: options.statuses ?? [], size: page.data.length });
     return page;
   };
@@ -93,10 +93,10 @@ export function describeAdministrationProofs(run: LiveRun): void {
   const { workos, settings } = run;
   const authority = workosAuthority(settings.clientId);
   // The directory of the hosted edition, as the composition makes it, against the staging environment.
-  const directory = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const directory = new WorkOSOrganizations({ authority, memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
 
   function pagedDirectory(reads: MembershipListRead[]): WorkOSOrganizations {
-    return new WorkOSOrganizations({ authority, userManagement: withPagesOfTwo(workos.userManagement, reads), authorization: workos.authorization });
+    return new WorkOSOrganizations({ authority, memberships: withPagesOfTwo(workosMembershipReads(workos), reads), userManagement: workos.userManagement, authorization: workos.authorization });
   }
 
   async function membershipStateOfUser(userId: string, organizationId: string): Promise<MembershipState> {

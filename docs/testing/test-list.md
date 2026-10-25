@@ -1,5 +1,29 @@
 # Test inventory
 
+## Current S2.5-01a inventory scope
+
+The [implementation record](../implementation/admin-s2-5-01a.md) records runs,
+review corrections, and limits. These cases use controlled provider connections;
+they do not complete the live deletion proof or the Slice 2.5 release.
+
+- `test/acceptance/auth/hosted-membership-deletion.test.ts` checks exact-member
+  deletion, preserved account/factor/other membership reads, changed management
+  revisions, known refusal, and an applied deletion whose response is lost.
+  Real SDK cases retain missing/null wire evidence as unknown on ID and page reads.
+- `test/unit/auth-workos/workos-organizations-members.test.ts` checks portable
+  management and revisions while retaining all grants and existing read guards.
+  `workos-organizations-deletion.test.ts` checks exact-ID dispatch, void completion,
+  the one proven refusal, and unchanged errors with uncertain effects.
+- `test/unit/auth-workos/workos-membership-reads.test.ts` checks raw field mapping,
+  query/pagination preservation, and path encoding before the SDK's lossy default.
+- `test/integration/auth/workos-connection.test.ts` exercises the source adapter
+  through production client settings. The local HTTP service observes one DELETE
+  after success, refusal, or a lost reply; the existing five-second timeout holds.
+
+S2.5-01a adds no browser removal path. Last-Admin and serialization checks remain
+S2.5-01b; browser removal remains S2.5-01c. The changed live-test compositions use
+the same raw membership reader as production, with their existing assertions.
+
 ## Current S1-05 inventory scope
 
 The combined Slice 1 journey is in

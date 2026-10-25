@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { WorkOSGoogleOnboarding } from '../../../src/accounts/providers/workos/workos-google-onboarding.ts';
-import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
 import type { ChangeRecord } from '../../../src/accounts/organizations/change-records.ts';
 import { WorkOSFake, type FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 
@@ -16,7 +16,7 @@ async function fixture(t: TestContext) {
   const { workos, settings } = world.connection();
   const records: ChangeRecord[] = [];
   const seats: number[] = [];
-  const directory = new WorkOSOrganizations({ authority: 'workos:client_test', userManagement: workos.userManagement, authorization: workos.authorization });
+  const directory = new WorkOSOrganizations({ authority: 'workos:client_test', memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
   const policy = new WorkOSGoogleOnboarding({ organizationId, authority: 'workos:client_test', workos, settings, directory,
     records: { record: (entry) => records.push(entry) }, billing: { stateOf: async () => ({ organizationId, plan: 'free', billedSeats: 0 }), updateSeats: async (_id, count) => {
       seats.push(count); return { organizationId, plan: 'free', billedSeats: 0 };

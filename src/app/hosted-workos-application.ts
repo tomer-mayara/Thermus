@@ -126,7 +126,7 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
 }
 
 async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {
-  const { WorkOSOrganizations } = await import('../accounts/providers/workos/workos-organizations.ts');
+  const { WorkOSOrganizations, workosMembershipReads } = await import('../accounts/providers/workos/workos-organizations.ts');
   const { WorkOSAuthProvider } = await import('../accounts/providers/workos/workos-auth-provider.ts');
   const { WorkOSBrowserSession } = await import('../accounts/providers/workos/workos-browser-session.ts');
   const { WorkOSSessionRoutes } = await import('../interfaces/web/auth/workos/workos-session-routes.ts');
@@ -139,7 +139,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   const authority = workosAuthority(settings.clientId);
   // One directory gives the current grants to access resolution, and the organizations, members, and invitations and
   // their changes to the account routes.
-  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const organizations = new WorkOSOrganizations({ authority, memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const { WorkOSGoogleOnboarding } = await import('../accounts/providers/workos/workos-google-onboarding.ts');
   const onboarding = parts.onboarding === undefined ? undefined : new WorkOSGoogleOnboarding({

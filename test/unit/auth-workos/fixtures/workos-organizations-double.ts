@@ -19,7 +19,7 @@ export interface MembershipRecord {
   readonly organizationName: string;
   readonly status: OrganizationMembershipStatus;
   readonly updatedAt: string;
-  readonly directoryManaged: boolean;
+  readonly directoryManaged?: unknown;
   readonly roles?: readonly { readonly slug: string }[];
 }
 
@@ -142,6 +142,7 @@ export class WorkOSOrganizationsDouble {
 
   readonly userManagement = {
     listOrganizationMemberships: async (options: ListOrganizationMembershipsOptions) => this.answer('listOrganizationMemberships', options, () => listOf(this.membershipList)),
+    deleteOrganizationMembership: async (id: string): Promise<void> => this.answer('deleteOrganizationMembership', id, () => { this.memberships.delete(id); }),
     getOrganizationMembership: async (id: string) => this.answer('getOrganizationMembership', id, () => this.memberships.get(id) ?? missing()),
     getUser: async (userId: string) => this.answer('getUser', userId, () => ({ email: this.emails.get(userId) ?? missing() })),
     listInvitations: async (options: ListInvitationsOptions) => this.answer('listInvitations', options, () => listOf(this.invitationList)),
@@ -164,7 +165,7 @@ export class WorkOSOrganizationsDouble {
   // The directory under test. The default clock gives the fixed time.
   directory(clock: () => Date = () => new Date(now)): WorkOSOrganizations {
     const { userManagement, authorization } = this;
-    return new WorkOSOrganizations({ authority, userManagement, authorization, clock });
+    return new WorkOSOrganizations({ authority, memberships: userManagement, userManagement, authorization, clock });
   }
 
   methods(): string[] {
