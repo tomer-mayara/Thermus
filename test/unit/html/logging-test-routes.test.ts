@@ -9,7 +9,7 @@ const session: SignedInBrowserSession = { status: 'signed-in', user: context.use
 const fields = { csrf_token: 'csrf', organization_id: 'trusted:a', expected_revision: 'r1', endpoint: 'https://collector.example/v1/logs', destination: 'custom', auth: 'bearer', token: '' };
 
 test('Given edited protected settings, when Test is submitted, then Save runs first and only its returned version reaches Test', async () => {
-  const saved = { revision: 'r2', endpoint: 'https://saved.example/v1/logs', axiomDataset: 'saved-dataset', auth: 'bearer' as const, enabled: true, tokenPresent: true };
+  const saved = { revision: 'r2', endpoint: 'https://saved.example/v1/logs', axiomDataset: 'saved-dataset', auth: 'bearer' as const, enabled: true, tokenPresent: true, tokenPreview: 'priv****' };
   const calls: unknown[] = [];
   const routes = new LoggingRoutes({ publicBaseUrl: 'https://example.test/nested/', organizationsPage: '/nested/organizations', service: {
     read: async () => ({ status: 'found', settings: saved }),

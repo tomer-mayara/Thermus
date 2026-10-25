@@ -16,6 +16,11 @@ existing layout. Enable export is an On/Off switch with a stable label. Pointer
 and Space change its native checkbox value, including without scripts. The
 change is saved when the Admin selects Save or Test.
 
+Confirmed Save returns the form in place. Show `saved` above the buttons for
+30 seconds or until another edit, with no button shift when it clears. The page
+restores the submit scroll position from a short-lived record of position and
+time; it stores no form content. The native form still works without scripts.
+
 The page keeps this warning, with a link to the Privacy Policy:
 
 > Send organization data only if you have authority to do so. Check destination access and retention. Read our Privacy Policy.
@@ -25,8 +30,10 @@ Terms, Privacy, stored agreements, capture rules, delivery limits, and backup
 scope stay unchanged. The prior notice package remains an immutable record.
 
 The saved format stays the same: a nonempty dataset selects Axiom on read; no
-dataset selects Custom. No migration is needed. A saved Bearer token stays hidden
-and can be retained with blank input only for the same endpoint. A changed
+dataset selects Custom. No migration is needed. The token field shows only a
+saved preview as its placeholder: first four characters plus `****`, or just
+`****` for a token of four or fewer characters. Its value stays empty. The full
+credential stays hidden and blank input retains it only for the same endpoint. A changed
 endpoint needs a new token. Existing None-auth settings remain readable and
 unchanged until an Admin saves a Bearer token. Every form Save, including turning
 export off, needs that upgrade. Test also performs this Save before sending its

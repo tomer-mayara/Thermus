@@ -16,7 +16,7 @@ function fixture() {
 
 test('Given an Axiom dataset field, when Save runs, then it reaches the service with the protected settings', async () => {
   const { routes, writes, request } = fixture();
-  assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ destination: 'axiom', axiom_dataset: 'audit-log-test' }), session, context)).status, 303);
+  assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ destination: 'axiom', axiom_dataset: 'audit-log-test' }), session, context)).status, 200);
   assert.deepEqual(writes, [['trusted:a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: '', enabled: false, axiomDataset: 'audit-log-test' }]]);
 });
 
@@ -53,7 +53,7 @@ test('Given an Admin reading Audit logs, when the page renders, then the short p
 });
 test('Given a valid form, when Save runs, then only the trusted tenant and settings reach the service', async () => {
   const { routes, writes, request } = fixture();
-  assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ enabled: 'on' }), session, context)).status, 303);
+  assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ enabled: 'on' }), session, context)).status, 200);
   assert.deepEqual(writes, [['trusted:a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: '', enabled: true }]]);
 });
 test('Given a forged, stale or extra-field form, when Save runs, then there is no write', async () => {

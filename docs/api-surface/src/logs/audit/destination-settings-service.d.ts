@@ -9,6 +9,7 @@ export interface PublicDestinationSettings {
     readonly auth: 'none' | 'bearer';
     readonly enabled: boolean;
     readonly tokenPresent: boolean;
+    readonly tokenPreview?: string;
 }
 export interface DestinationSettingsSaveInput {
     readonly expectedRevision: string | null;

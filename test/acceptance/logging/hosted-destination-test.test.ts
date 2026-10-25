@@ -13,8 +13,8 @@ test('Given a current Admin and an Axiom destination, when the Admin saves its d
   const axiomEndpoint = 'https://us-east-1.aws.edge.axiom.co/v1/logs';
   const visible = { endpoint: axiomEndpoint, destination: 'axiom', auth: 'bearer', token: '', axiom_dataset: 'audit-log-test' };
   const saved = await browser.submit({ ...initial, fields: { ...initial.fields, ...visible, token: secret } });
-  assert.equal(saved.status, 303);
-  const page = await browser.follow(saved);
+  assert.equal(saved.status, 200);
+  const page = saved;
   const testForm = formLabelled(formsIn(page.body), 'Test');
   assert.match(page.body, /name="axiom_dataset"[^>]*value="audit-log-test"/);
   assert.ok(!page.body.includes(secret));
@@ -24,10 +24,10 @@ test('Given a current Admin and an Axiom destination, when the Admin saves its d
   const expectedDestination = { endpoint: axiomEndpoint, auth: { type: 'bearer', token: secret }, axiomDataset: 'audit-log-test' };
   assert.deepEqual(calls.map(call => call.destination), [expectedDestination]);
   const enable = formLabelled(formsIn(page.body), 'Save');
-  assert.equal((await browser.submit({ ...enable, fields: { ...enable.fields, ...visible, enabled: 'on' } })).status, 303);
+  assert.equal((await browser.submit({ ...enable, fields: { ...enable.fields, ...visible, enabled: 'on' } })).status, 200);
   const enabled = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
   assert.deepEqual(await service.authorizeExport(tenantId, enabled.fields.expected_revision), { status: 'ready', destination: expectedDestination });
-  assert.equal((await browser.submit({ ...enabled, fields: { ...enabled.fields, ...visible, enabled: 'on', axiom_dataset: 'audit-next' } })).status, 303);
+  assert.equal((await browser.submit({ ...enabled, fields: { ...enabled.fields, ...visible, enabled: 'on', axiom_dataset: 'audit-next' } })).status, 200);
   assert.deepEqual(await service.authorizeExport(tenantId, enabled.fields.expected_revision), { status: 'changed' });
 });
 
@@ -47,8 +47,8 @@ for (const config of [hostedRootConfig, hostedConfig]) {
         assert.equal(calls.length, 0);
         const save = formLabelled(formsIn(page.body), 'Save');
         const upgraded = await browser.submit({ ...save, fields: { ...save.fields, endpoint, token: secret } });
-        assert.equal(upgraded.status, 303);
-        page = await browser.follow(upgraded);
+        assert.equal(upgraded.status, 200);
+        page = upgraded;
       }
       const selected = formLabelled(formsIn(page.body), 'Test');
       const form: PageForm = { ...selected, fields: { ...selected.fields, endpoint, token: '' } };
@@ -122,6 +122,7 @@ for (const change of ['revision', 'read-failure'] as const) {
     finish({ kind: 'accepted' });
     const answer = await answerPromise;
     assert.equal(answer.status, change === 'revision' ? 409 : 503);
+    assert.doesNotMatch(answer.body, /id="logging-saved">saved/);
     assert.match(answer.body, /Test result suppressed/);
     assert.doesNotMatch(answer.body, /Destination accepted/);
     assert.match(answer.body, /Read saved settings/);

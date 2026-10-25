@@ -5,7 +5,7 @@ import type { DestinationSettingsService, DestinationSettingsSaveInput, Destinat
 import type { AdministrationHandler } from './administration-routes.ts';
 import { readForm } from './account-form.ts';
 import type { FormRefusal } from './account-form.ts';
-import { accessDeniedPage, seeOther } from './account-pages.ts';
+import { accessDeniedPage } from './account-pages.ts';
 import { loggingForm } from './logging-form.ts';
 import { loggingPage } from './logging-page.ts';
 import type { LoggingNotice } from './logging-page.ts';
@@ -66,11 +66,11 @@ export class LoggingRoutes {
     }
     const saved = await this.saveSettings(request, context, settings);
     if (!('settings' in saved)) return this.saveFailure(saved, csrfToken, context);
-    if (action === 'save') return seeOther(new URL(this.paths.logging, this.origin).href);
+    if (action === 'save') return this.page(undefined, saved.settings, csrfToken, context.tenantId, true);
     const tested = await this.testSaved(request, context, saved.settings);
     const notice = loggingTestNotice(tested);
-    if (tested.status !== 'tested') return this.readPage(csrfToken, context, notice);
-    return this.page(notice, saved.settings, csrfToken, context.tenantId);
+    if (tested.status !== 'tested') return this.readPage(csrfToken, context, notice, saved.settings.revision);
+    return this.page(notice, saved.settings, csrfToken, context.tenantId, true);
   }
 
   private async saveSettings(request: Request, context: RequestContext, settings: DestinationSettingsSaveInput): Promise<DestinationSettingsSaveResult> {
@@ -85,10 +85,10 @@ export class LoggingRoutes {
   }
 
   private async testSaved(request: Request, context: RequestContext, settings: PublicDestinationSettings): Promise<DestinationTestResult> {
-    const { revision, tokenPresent: _, ...destination } = settings;
+    const destination = { endpoint: settings.endpoint, ...(settings.axiomDataset === undefined ? {} : { axiomDataset: settings.axiomDataset }), auth: settings.auth, enabled: settings.enabled };
     request.signal.throwIfAborted();
     let result: DestinationTestResult;
-    try { result = await this.options.service?.test?.(context.tenantId, { ...destination, expectedRevision: revision, token: '' }, context.user, request.signal) ?? { status: 'unavailable' }; }
+    try { result = await this.options.service?.test?.(context.tenantId, { ...destination, expectedRevision: settings.revision, token: '' }, context.user, request.signal) ?? { status: 'unavailable' }; }
     catch {
       request.signal.throwIfAborted();
       result = { status: 'unconfirmed' };
@@ -104,14 +104,14 @@ export class LoggingRoutes {
     return this.page(unavailable);
   }
 
-  private async readPage(csrfToken: string, context: RequestContext, notice?: LoggingNotice): Promise<Response> {
+  private async readPage(csrfToken: string, context: RequestContext, notice?: LoggingNotice, savedRevision?: string | null): Promise<Response> {
     const result = await this.options.service?.read(context.tenantId).catch(() => ({ status: 'unavailable' as const }));
     if (result === undefined || result.status === 'unavailable') return this.page(notice === undefined ? unavailable : { ...notice, status: 503, message: `${notice.message} Current saved settings are unavailable. Read saved settings before another change.` });
-    return this.page(notice, result.settings, csrfToken, context.tenantId);
+    return this.page(notice, result.settings, csrfToken, context.tenantId, savedRevision !== undefined && result.settings.revision === savedRevision);
   }
 
-  private page(notice?: LoggingNotice, settings?: PublicDestinationSettings, csrfToken = '', tenantId = ''): Response {
-    return loggingPage({ ...(notice === undefined ? {} : { notice }), ...(settings === undefined ? {} : { settings }), tenantId, csrfToken, action: this.paths.save, testAction: this.paths.test, navigation: this.paths });
+  private page(notice?: LoggingNotice, settings?: PublicDestinationSettings, csrfToken = '', tenantId = '', saved = false): Response {
+    return loggingPage({ ...(notice === undefined ? {} : { notice }), ...(settings === undefined ? {} : { settings }), saved, tenantId, csrfToken, action: this.paths.save, testAction: this.paths.test, navigation: this.paths });
   }
 
   private refuse(name: FormRefusal | 'changeStale' | 'methodNotAllowed', allow?: string): Response {

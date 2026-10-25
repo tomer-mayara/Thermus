@@ -8,6 +8,7 @@ export interface LoggingNotice { readonly title: string; readonly message: strin
 interface LoggingPage {
   readonly settings?: PublicDestinationSettings;
   readonly notice?: LoggingNotice;
+  readonly saved?: boolean;
   readonly tenantId: string;
   readonly csrfToken: string;
   readonly action: string;
@@ -17,30 +18,54 @@ interface LoggingPage {
 
 const destinationScript = `
 const destinationChoices = document.querySelector('#logging-destination');
-const datasetFields = document.querySelector('#logging-axiom-fields');
-const dataset = document.querySelector('#logging-dataset');
+const form = destinationChoices?.closest('form');
+const saved = document.querySelector('#logging-saved');
+function clearSaved() {
+  if (saved) saved.textContent = '';
+}
 function updateDestination() {
-  const axiom = destinationChoices.querySelector('input[name="destination"]:checked').value === 'axiom';
+  const datasetFields = document.querySelector('#logging-axiom-fields');
+  const dataset = document.querySelector('#logging-dataset');
+  const selected = destinationChoices?.querySelector('input[name="destination"]:checked');
+  if (!selected || !datasetFields || !dataset) return;
+  const axiom = selected.value === 'axiom';
   datasetFields.hidden = !axiom;
   dataset.toggleAttribute('disabled', !axiom);
   dataset.toggleAttribute('required', axiom);
 }
-destinationChoices.addEventListener('change', updateDestination);
+destinationChoices?.addEventListener('change', updateDestination);
 updateDestination();
+if (saved?.textContent === 'saved') setTimeout(clearSaved, 30000);
+form?.addEventListener('input', clearSaved);
+form?.addEventListener('change', clearSaved);
+const loggingLink = document.querySelector('nav a[aria-current="page"]');
+const scrollKey = loggingLink ? 'thermus:audit-scroll:' + loggingLink.href : '';
+try {
+  const stored = window.sessionStorage.getItem(scrollKey);
+  window.sessionStorage.removeItem(scrollKey);
+  const position = JSON.parse(stored ?? 'null');
+  const age = position ? Date.now() - position.at : -1;
+  if (position && Number.isFinite(position.at) && Number.isFinite(position.y) && position.y >= 0 && age >= 0 && age <= 120000) {
+    window.requestAnimationFrame(() => window.scrollTo(0, Math.min(position.y, Math.max(0, document.documentElement.scrollHeight - window.innerHeight))));
+  }
+} catch {}
+form?.addEventListener('submit', () => {
+  try { window.sessionStorage.setItem(scrollKey, JSON.stringify({ y: window.scrollY, at: Date.now() })); } catch {}
+});
 `;
 
 export function loggingPage(page: LoggingPage): Response {
   const notice = page.notice === undefined ? '' : `<section class="logging-result" role="${page.notice.status >= 400 ? 'alert' : 'status'}" aria-labelledby="logging-result-title"><h3 id="logging-result-title">${escapeHtml(page.notice.title)}</h3><p>${escapeHtml(page.notice.message)}</p></section>`;
   const response = membersPageLayout(page.navigation, `<div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Audit logs</h1></div>
 <section class="invite-card" aria-labelledby="destination-heading"><h2 id="destination-heading">Audit log destination</h2>
-${notice}
+${page.settings === undefined ? notice : ''}
 <p>Save one destination for your organization's audit logs. Thermus system logs are internal.</p>
 <aside class="destination-notice" role="note" aria-label="Organization data"><p>Send organization data only if you have authority to do so. Check destination access and retention. Read our <a href="https://thermus.ai/privacy/">Privacy Policy</a>.</p></aside>
-${page.settings === undefined ? `<p><a href="${escapeHtml(page.navigation.logging)}">Read saved settings</a></p>` : destinationForm(page, page.settings)}</section>`, { title: 'Audit logs', current: 'logging', ...(page.settings === undefined ? {} : { script: destinationScript }) });
+${page.settings === undefined ? `<p><a href="${escapeHtml(page.navigation.logging)}">Read saved settings</a></p>` : destinationForm(page, page.settings, notice)}</section>`, { title: 'Audit logs', current: 'logging', script: destinationScript });
   return new Response(response.body, { status: page.notice?.status ?? 200, headers: response.headers });
 }
 
-function destinationForm(page: LoggingPage, settings: PublicDestinationSettings): string {
+function destinationForm(page: LoggingPage, settings: PublicDestinationSettings, notice: string): string {
   return `<form method="post" action="${escapeHtml(page.action)}">
 ${hiddenField('csrf_token', page.csrfToken)}${hiddenField('organization_id', page.tenantId)}${hiddenField('expected_revision', settings.revision ?? '')}
 <fieldset id="logging-destination"><legend>Destination</legend><label class="role-option"><input type="radio" name="destination" value="axiom" required${settings.axiomDataset ? ' checked' : ''}> Axiom</label>
@@ -51,9 +76,11 @@ ${hiddenField('csrf_token', page.csrfToken)}${hiddenField('organization_id', pag
 <p id="logging-dataset-help">Required for Axiom: 1–128 letters, digits, or hyphens.</p></div>
 <noscript><p>For Axiom, enter a dataset. For Custom, clear the Axiom dataset.</p></noscript>
 ${hiddenField('auth', 'bearer')}
-<label for="logging-token">Bearer token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192"${settings.tokenPresent ? '' : ' required'} aria-describedby="logging-token-help" value="">
+<label for="logging-token">Bearer token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192"${settings.tokenPresent ? '' : ' required'} aria-describedby="logging-token-help" placeholder="${escapeHtml(settings.tokenPreview ?? '')}" value="">
 <p id="logging-token-help">${settings.tokenPresent ? 'A token is saved. Leave Token blank to keep it for the same endpoint.' : 'No token is saved. Enter a Bearer token.'} A changed endpoint needs a new token.${settings.revision && settings.auth === 'none' ? ' Enter a Bearer token to Save or Test.' : ''}</p>
-<label class="logging-switch"><input type="checkbox" name="enabled" role="switch"${settings.enabled ? ' checked' : ''}><span class="logging-switch-track" aria-hidden="true"></span><span>Enable export</span><span class="logging-switch-off" aria-hidden="true">Off</span><span class="logging-switch-on" aria-hidden="true">On</span></label><div class="logging-actions"><button type="submit">Save</button>
+<label class="logging-switch"><input type="checkbox" name="enabled" role="switch"${settings.enabled ? ' checked' : ''}><span class="logging-switch-track" aria-hidden="true"></span><span>Enable export</span><span class="logging-switch-off" aria-hidden="true">Off</span><span class="logging-switch-on" aria-hidden="true">On</span></label>
+${notice}<p class="logging-save-status" role="status"><span id="logging-saved">${page.saved ? 'saved' : ''}</span></p>
+<div class="logging-actions"><button type="submit">Save</button>
 <button type="submit" class="secondary-action" formaction="${escapeHtml(page.testAction)}">Test</button></div></form>
 <p>Test saves these settings, then sends one synthetic event, even when export is disabled. Check your destination for receipt.</p>`;
 }

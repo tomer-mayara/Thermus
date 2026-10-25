@@ -14,6 +14,7 @@ export interface PublicDestinationSettings {
   readonly auth: 'none' | 'bearer';
   readonly enabled: boolean;
   readonly tokenPresent: boolean;
+  readonly tokenPreview?: string;
 }
 export interface DestinationSettingsSaveInput {
   readonly expectedRevision: string | null;
@@ -94,8 +95,9 @@ export class DestinationSettingsService {
       if (result.status === 'unavailable') return { status: 'unavailable' };
       return { status: 'absent', settings: { revision: null, endpoint: '', auth: 'none', enabled: false, tokenPresent: false } };
     }
-    if (this.token(tenantId, result.settings) === null) return { status: 'unavailable' };
-    return { status: 'found', settings: project(result.settings) };
+    const token = this.token(tenantId, result.settings);
+    if (token === null) return { status: 'unavailable' };
+    return { status: 'found', settings: project(result.settings, token) };
   }
 
   async save(tenantId: string, input: DestinationSettingsSaveInput): Promise<DestinationSettingsSaveResult> {
@@ -113,7 +115,7 @@ export class DestinationSettingsService {
     const encryptedCredential = desired.auth === 'none' ? null
       : token === previousToken && settings?.encryptedCredential ? settings.encryptedCredential : this.codec.encrypt(tenantId, token);
     const result = await this.store.save(tenantId, desired.expectedRevision, { endpoint: desired.endpoint, ...(desired.axiomDataset ? { axiomDataset: desired.axiomDataset } : {}), auth: desired.auth, enabled: desired.enabled, encryptedCredential }).catch(() => ({ status: 'unconfirmed' as const }));
-    if (result.status === 'saved' || result.status === 'unchanged') return { status: result.status, settings: project(result.settings) };
+    if (result.status === 'saved' || result.status === 'unchanged') return { status: result.status, settings: project(result.settings, token) };
     return { status: result.status };
   }
 
@@ -151,6 +153,6 @@ function retainedToken(input: DestinationSettingsSaveInput, current: StoredDesti
   return current?.auth === 'bearer' && current.endpoint === input.endpoint ? previous : null;
 }
 
-function project(settings: StoredDestinationSettings): PublicDestinationSettings {
-  return { revision: settings.revision, endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth, enabled: settings.enabled, tokenPresent: settings.auth === 'bearer' };
+function project(settings: StoredDestinationSettings, token: string): PublicDestinationSettings {
+  return { revision: settings.revision, endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth, enabled: settings.enabled, tokenPresent: settings.auth === 'bearer', ...(settings.auth === 'bearer' ? { tokenPreview: `${token.length > 4 ? token.slice(0, 4) : ''}****` } : {}) };
 }

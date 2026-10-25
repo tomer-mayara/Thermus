@@ -48,6 +48,7 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .logging-switch-on{display:none}
 .logging-switch input:checked~.logging-switch-off{display:none}
 .logging-switch input:checked~.logging-switch-on{display:inline}
+.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}
 .logging-actions{display:flex;flex-wrap:wrap;gap:12px}
 .logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}
 .logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}

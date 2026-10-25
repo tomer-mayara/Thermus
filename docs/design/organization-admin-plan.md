@@ -311,10 +311,11 @@ Destination: (*) Axiom  ( ) Custom
 OTLP logs endpoint [ https://us-east-1.aws.edge.axiom.co/v1/logs   ]
 Connection: HTTPS · OTLP/HTTP JSON
 Axiom dataset [ audit-log-test                                 ]
-Bearer token [                                                  ]
+Bearer token [ abcd****                                         ]
 Saved token: Set · Leave blank to keep it for the same endpoint.
 A changed endpoint requires a new token.
 [ Off ] Enable export
+[saved — clears after 30 seconds]
 [Save]  [Test — optional]
 Test saves these settings, then sends one synthetic event. Check receipt.
 ```
@@ -705,7 +706,11 @@ Members layout unchanged. Show Enable export as an On/Off switch with a stable
 label. It keeps the native checkbox value and works with a pointer or keyboard,
 also without scripts. Save or Test saves the switch as shown. Choose
 Axiom or Custom. Use one public HTTPS OTLP logs endpoint and one write-only
-Bearer token field. Axiom requires its dataset;
+Bearer token field. Show the saved token's first four characters followed by
+`****` as a placeholder; the input value stays empty. Mask tokens of four or
+fewer characters completely. Typing a token replaces it; blank input keeps it.
+Derive this hint from the valid saved credential without storing another copy.
+Axiom requires its dataset;
 Custom omits it. A dataset uses 1–128 ASCII letters,
 digits, or hyphens and supplies only `x-axiom-dataset`; no arbitrary header editor
 is added. Direct Axiom uses the full logs URL and Bearer token, not the web stream
@@ -719,7 +724,9 @@ Blank Bearer input retains it only for unchanged endpoint/auth; a changed
 endpoint needs a replacement. The service keeps its existing None support for
 stored settings and sender compatibility; the Admin form offers only Bearer.
 Encrypt secrets server-side with a key
-outside the store; never echo them. All writes reject stale forms/revisions. A Save
+outside the store; never return a complete credential. Only the narrow saved
+preview above may reach the Admin form. Keep it out of Test inputs, Audit events,
+and sender destinations. All writes reject stale forms/revisions. A Save
 timeout can leave its commit unconfirmed; show that outcome and reload current
 settings/revision before another write. A timed-out Save may commit after that
 read; subsequent writes still require atomic expected-revision checks. Never
@@ -736,8 +743,16 @@ Keep no history/dashboard/version controls. Show the result inside the normal
 Audit settings layout. State that settings were saved when the send fails; a
 failed Test does not roll back Save. An uncertain Save keeps a styled recovery
 notice with only a GET saved-state link and no write form. No automatic retry.
-The server returns the result to the POST; a deliberate browser resubmission may
-send another Test event. Test proves neither continued delivery nor durable
+Save and Test return the confirmed form directly to the POST. Show `saved` above
+the buttons only for the confirmed saved version shown in the form, for 30 seconds
+or until the form changes.
+Reserve its height so clearing it does not move the buttons. The small page
+script preserves scroll across submission using one expiring, consumed record
+of position and time in tab storage. It stores no credentials or form content,
+and storage failure must not block submission. Recovery pages handle the same
+record safely. Without scripts, the native form and honest result still work;
+timed hiding and scroll restoration need scripts. A deliberate browser
+resubmission may send another Test event. Test proves neither continued delivery nor durable
 storage and is never a prerequisite to enable.
 
 **Egress and revisions.** At actual connection, enforce public HTTPS/IP, allow

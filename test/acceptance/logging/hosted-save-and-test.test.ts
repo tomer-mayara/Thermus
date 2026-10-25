@@ -75,8 +75,10 @@ for (const failure of ['invalid', 'endpoint-token', 'unconfirmed', 'test-failed'
       assert.match(answer.body, /Settings saved/);
       assert.match(answer.body, /Test attempt failed/);
       assert.equal(calls.length, 1);
+      assert.match(answer.body, /id="logging-saved">saved/);
     } else {
       assert.match(answer.body, /No Test was sent/);
+      assert.doesNotMatch(answer.body, /id="logging-saved">saved/);
       assert.equal(calls.length, 0);
     }
     assert.doesNotMatch(browserSite.log.lines.join('\n'), /private-storage-cause|private-sender-cause|private-user|private-endpoint-secret/);

@@ -31,7 +31,7 @@ test('S2-04 Given a current password-authenticated Admin and a reachable Collect
   assert.equal(journey.session.mfaCompleted, false);
   assert.deepEqual([journey.accessBefore.status, journey.accessAfter.status], [200, 200]);
   assert.deepEqual(JSON.parse(journey.accessBefore.body), JSON.parse(journey.accessAfter.body));
-  assert.deepEqual([journey.saved, journey.enabled, ...journey.administration], [303, 303, 303, 303, 303, 303]);
+  assert.deepEqual([journey.saved, journey.enabled, ...journey.administration], [200, 200, 303, 303, 303, 200]);
   assert.ok(journey.disabled.status === 'found');
   assert.ok(journey.enabledSettings.status === 'found');
   assert.equal(journey.disabled.settings.enabled, false);

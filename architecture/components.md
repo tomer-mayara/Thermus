@@ -275,8 +275,14 @@ cannot override TLS or connection options. Dotted arrows show labelled compositi
 or source dependencies; solid arrows show runtime collaboration through supplied roles.
 
 The [settings service](../src/logs/audit/destination-settings-service.ts) validates
-settings, including an optional Axiom dataset, and exposes token presence, never
-the token. A nonblank dataset contains at most 128 ASCII letters, digits, or
+settings, including an optional Axiom dataset, and exposes token presence plus
+a narrow saved preview, never the complete token. For a valid Bearer credential
+longer than four characters, the preview is its first four characters plus
+`****`; credentials of four or fewer characters are fully masked. The preview is derived after
+decryption, not stored separately, and reaches only the Admin form placeholder.
+The input value stays empty. Web omits the preview from Test input; sender
+destinations and Audit events do not gain it.
+A nonblank dataset contains at most 128 ASCII letters, digits, or
 hyphens. The web form offers Axiom and Custom choices and only Bearer
 authentication. Axiom requires a dataset; Custom excludes it. The web boundary
 maps that choice into the existing service input and rejects duplicate or
@@ -478,9 +484,15 @@ Test phases separately. A fresh post-settlement read must confirm the same
 revision before a sender outcome can leave the service. A changed or absent
 revision suppresses it; a failed read gives an unconfirmed result. No SQL lock
 spans the network attempt. A Save can race an attempt; sent data cannot be recalled.
-The browser receives fixed safe results inside the Audit settings layout. An
-uncertain Save keeps only the styled GET recovery link, without a write form or
-automatic retry. Direct POST responses add no result history or session state;
+Save and Test return fixed safe results inside the Audit settings layout. A
+confirmed Save shows `saved` above the buttons for 30 seconds or until another
+edit. A small hash-pinned page script keeps a one-use, expiring scroll position
+and timestamp in tab storage; it stores no form or credential data. Browser
+storage failure does not prevent native submission. Timed hiding and scroll
+restoration need scripts; native forms and honest results remain available
+without them. An uncertain Save keeps only the styled GET recovery link, without
+a write form or automatic retry. Direct POST responses add no server-side result
+history or session state;
 a deliberate browser resubmission can send another synthetic event.
 
 [DestinationTestLifetime](../src/logs/audit/destination-test.ts) permits four

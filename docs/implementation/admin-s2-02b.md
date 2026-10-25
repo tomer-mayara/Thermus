@@ -21,6 +21,19 @@ a GET link to current settings, no immediate write form and no automatic retry.
 The service's Test operation still checks the full saved version before sending
 and confirms its revision afterward. It does not save or enable anything itself.
 
+Save now returns the confirmed form directly too. The action area shows `saved`
+for 30 seconds, or until an edit clears it. The page keeps the submit scroll
+position with a short-lived tab-storage record; it records no form or token
+data. Failure to use browser storage does not block the native form. The no-script
+form still shows honest results, but timed hiding and scroll restoration need
+scripts. A deliberate POST resubmission remains subject to revision checks.
+
+The saved public projection adds an optional `tokenPreview`: four characters
+plus `****`, or just `****` for tokens of four or fewer characters. Only a valid
+saved Bearer credential produces it. The token field uses this escaped hint as
+a placeholder and keeps an empty value, so blank input still retains the token.
+No new plaintext is stored. The route omits the preview from Test input.
+
 The implementation starts with a failing acceptance case, then focused tests for
 save-before-test ordering, no send after failed Save, cancellation, and safe result
 display. PR #250 records complete validation and current-candidate review.
