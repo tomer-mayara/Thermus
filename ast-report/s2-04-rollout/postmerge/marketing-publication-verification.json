@@ -1,0 +1,60 @@
+{
+  "mergedCommit": "f0092febe3443b411e817b721fcb96928a3a4bd1",
+  "productionDeploy": "6add6e411d03bbad9772d021",
+  "productionReadyUtc": "02:49:55 UTC",
+  "copiedStarter": {
+    "exactMatchAfterKnownTopicPersonalizationReversal": true,
+    "personalizationIds": 1,
+    "publishedCharacters": 5923,
+    "canonicalSha256": "0007730fd4461a087d5ba2cf97b0e1dda8532b6e241fd7d8ded0c043c24ce7e7"
+  },
+  "legal": [
+    {
+      "name": "terms",
+      "canonicalSha256": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+      "publishedContentSha256": "a454152f453928372d4898a0dd2693249178b006b53e1c44e1c799bf2b0efabd",
+      "completeDomMatchesLocalBuild": true,
+      "domComparisonNormalization": "Only local email_off and /email_off HTML comment guards removed; all other markup compared exactly.",
+      "completeTextMatchesApprovedCanonical": true,
+      "linksMatchCanonical": true,
+      "tableRowsMatchCanonical": true,
+      "tableRowCount": 0,
+      "linkCount": 17,
+      "versionMatches": true,
+      "h1Count": 1,
+      "overflow": false
+    },
+    {
+      "name": "privacy",
+      "canonicalSha256": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "publishedContentSha256": "d914ccc2c5d5f998558bc1e790be18fed5dddbda7737150b5930f9b9c5e459df",
+      "completeDomMatchesLocalBuild": true,
+      "domComparisonNormalization": "Only local email_off and /email_off HTML comment guards removed; all other markup compared exactly.",
+      "completeTextMatchesApprovedCanonical": true,
+      "linksMatchCanonical": true,
+      "tableRowsMatchCanonical": true,
+      "tableRowCount": 12,
+      "linkCount": 19,
+      "versionMatches": true,
+      "h1Count": 1,
+      "overflow": false
+    }
+  ],
+  "homepage": {
+    "evidence": "Manager observed correct live hero, Audit, email/password, and first Admin copy through accessibility inspection.",
+    "visualEvidence": [
+      "caption-desktop.png",
+      "logs-desktop.png"
+    ],
+    "visualReview": "Manager inspected at 1800px; readable with no overflow."
+  },
+  "limits": [
+    "Direct automated Markdown GET returned Cloudflare 403 error 1010.",
+    "Normal Brave navigation to /guide/audit-logs.md and /thermus.md showed ERR_BLOCKED_BY_CLIENT.",
+    "Direct live Markdown readback is not verified. Changed canonical source and build/deploy are verified, with live homepage, copied starter, and complete legal DOM evidence.",
+    "No security bypass or configuration changes.",
+    "Initial legal capture used a nonexistent article selector and contained no legal content; legal-published-readback-final.json using .legal-content is authoritative.",
+    "Earlier 574-byte clipboard read was stale; final copied starter is the authoritative 5923-character capture."
+  ],
+  "result": "Verified within the stated publication evidence; direct Markdown navigation remains unverified."
+}

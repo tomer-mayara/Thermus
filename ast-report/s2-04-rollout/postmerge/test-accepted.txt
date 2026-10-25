@@ -1,0 +1,9 @@
+Browser tab: 248732281, Title: "Test accepted", URL: "https://app.thermus.ai/logging/test".
+1 AXWebArea Test accepted, URL: app.thermus.ai/logging/test
+	2 container
+		3 heading Test accepted, Value: 1
+			4 text Test accepted
+		5 text Destination accepted the Test event. Test proves neither continued delivery nor durable storage. Test is not required to enable export.
+		6 link Description: Read saved settings, Value: app.thermus.ai/logging
+
+The focused UI element is 1 AXWebArea Test accepted, URL: app.thermus.ai/logging/test

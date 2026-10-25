@@ -1,0 +1,33 @@
+{
+  "observedAt": "2026-10-25T02:44:15.626Z",
+  "url": "https://app.axiom.co/thermus-ai-spao/stream/audit-log-test?rowId=0dmdknlbh8yyo-08ed0afcce004dbe-00000000",
+  "eventTimeLocal": "2026-10-24T20:43:06.048-06:00",
+  "event": {
+    "attributes": {
+      "actor": {
+        "authority": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP",
+        "subject": "user_01M5N91ZHHHBEFYPRWH861FVG7"
+      },
+      "destination": {
+        "revision": "5a7a6fde-b3d5-4429-a35f-601df04c504c"
+      },
+      "organization": {
+        "id": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP:org_01M5N95EJA1AKHHERCD7971AJ7"
+      },
+      "synthetic": {
+        "type": "destination_test"
+      }
+    },
+    "scope": {
+      "name": "thermus.audit"
+    },
+    "service": {
+      "name": "thermus.audit"
+    },
+    "body": "audit.destination.test",
+    "observed_time": "1970-01-01T00:00:00Z",
+    "severity": "info",
+    "severity_number": 9,
+    "severity_text": "INFO"
+  }
+}

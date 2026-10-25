@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-10-25T02:49:49.742Z",
+  "rows": [
+    {
+      "revision": "e822382d-cacb-46a2-9294-11f634822f42",
+      "enabled": true,
+      "endpoint": "https://us-east-1.aws.edge.axiom.co/v1/logs",
+      "auth": "bearer",
+      "axiom_dataset": "audit-log-test",
+      "encrypted_credential_present": true
+    }
+  ],
+  "unchangedByAdminSave": true
+}

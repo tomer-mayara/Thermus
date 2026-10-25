@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-10-25T02:45:35.145104+00:00",
+  "marker": "S2-04 production Audit d78d0d40-0359-422c-ba8d-7829b5f89e8b",
+  "url": "https://example.com/",
+  "calls": [
+    {
+      "name": "warmup-final",
+      "reason": "S2-04 snapshot warm-up",
+      "exit": 0,
+      "elapsedMs": 1487,
+      "bytes": 1341,
+      "sha256": "a090a900df29b8f88aafc1bf04528678bfe659343e431842c375f5114e06b177",
+      "stderrBytes": 0,
+      "nonemptyResult": true
+    },
+    {
+      "name": "canary",
+      "reason": "S2-04 production Audit d78d0d40-0359-422c-ba8d-7829b5f89e8b",
+      "exit": 0,
+      "elapsedMs": 1111,
+      "bytes": 1341,
+      "sha256": "a090a900df29b8f88aafc1bf04528678bfe659343e431842c375f5114e06b177",
+      "stderrBytes": 0,
+      "nonemptyResult": true
+    }
+  ],
+  "finishedAt": "2026-10-25T02:45:37.743856+00:00"
+}

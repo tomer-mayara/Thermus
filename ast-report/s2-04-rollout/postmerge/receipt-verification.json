@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-10-25T02:47:36.194483+00:00",
+  "testBody": "audit.destination.test",
+  "testRevision": "5a7a6fde-b3d5-4429-a35f-601df04c504c",
+  "mcpBody": "mcp.tool.completed",
+  "reason": "S2-04 production Audit d78d0d40-0359-422c-ba8d-7829b5f89e8b",
+  "clientBytes": 1341,
+  "exportBytes": 1341,
+  "capturedBytes": 1341,
+  "originalBytes": 1341,
+  "truncated": false,
+  "exactResultMatches": true,
+  "allSameOrganization": true,
+  "allSameActor": true,
+  "sameAuditServiceAndScope": true,
+  "adminAction": "save",
+  "adminOutcome": "unchanged",
+  "adminFields": [
+    "actor",
+    "organization",
+    "action",
+    "outcome"
+  ],
+  "noSourceFileLineKeys": true,
+  "noCredentialOrRoutingPayloadKeys": true
+}

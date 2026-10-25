@@ -1,0 +1,45 @@
+{
+  "observedAt": "2026-10-25T02:46:54.570Z",
+  "event": {
+    "attributes": {
+      "actor": {
+        "authority": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP",
+        "subject": "user_01M5N91ZHHHBEFYPRWH861FVG7"
+      },
+      "duration": {
+        "ms": 115.05991300009191
+      },
+      "input": {
+        "reason": "S2-04 production Audit d78d0d40-0359-422c-ba8d-7829b5f89e8b",
+        "url": "https://example.com/"
+      },
+      "operation": {
+        "id": "86f017e4-bd1d-4ea5-afb6-c8ece8cf30be"
+      },
+      "organization": {
+        "id": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP:org_01M5N95EJA1AKHHERCD7971AJ7"
+      },
+      "result": {
+        "captured_bytes": 1341,
+        "original_bytes": 1341,
+        "text": "This domain is for use in documentation examples without needing permission. This is not a service; avoid relying on it for testing and monitoring purposes.\n\nهذا النطاق مُخصص للاستخدام في أمثلة التوثيق دون الحاجة إلى إذن. هذه ليست خدمة، يُرجى تجنب الاعتماد عليها لأغراض الاختبار والمراقبة.\n\n该域名仅用于文档示例，无需获得许可。这并非一项服务，请勿将其用于测试和监控目的。\n\nL’usage de ce domaine est réservé à des exemples de documentation, sans autorisation préalable. Il ne s’agit pas d’un service; son utilisation à des fins de test ou de surveillance est à éviter.\n\nДанный домен предназначен для использования в примерах документации без необходимости получения предварительного разрешения. Это не сервис; не рекомендуется его использование для тестирования и мониторинга.\n\nEste dominio está destinado al uso en ejemplos de documentación sin necesidad de permiso. Esto no es un servicio; evitar utilizarlo para realizar pruebas o monitoreos.\n\n[Learn more](https://iana.org/help/example-domains)",
+        "truncated": false
+      },
+      "tool": {
+        "name": "getURLAsMarkdown"
+      },
+      "outcome": "success"
+    },
+    "scope": {
+      "name": "thermus.audit"
+    },
+    "service": {
+      "name": "thermus.audit"
+    },
+    "body": "mcp.tool.completed",
+    "observed_time": "1970-01-01T00:00:00Z",
+    "severity": "info",
+    "severity_number": 9,
+    "severity_text": "INFO"
+  }
+}

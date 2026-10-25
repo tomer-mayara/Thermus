@@ -1,0 +1,110 @@
+{
+  "at": "2026-10-25T02:59:31.317871+00:00",
+  "candidate": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "mergedMain": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "scope": "Completed internal S2-04 rollout with explicit website readback limits",
+  "review": "Manager reviewed reports and screenshots; independent runtime and publication reviews retained in the reports",
+  "exactProtectedValueScan": "passed; secret values not emitted",
+  "files": [
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/README.md",
+      "bytes": 4418,
+      "sha256": "0031ba66ea6f88123b1dee95fa7f86153ac631446672862fdaa4337d9701cc77"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/release-complete.json",
+      "bytes": 4582,
+      "sha256": "8981d9dfdfbac32894c05daea3f97ddec0fb593d836331849511c1c592fd7c0a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/test-accepted.txt",
+      "bytes": 529,
+      "sha256": "004b367b1c54c29170f7972f2399bfa18466398e59cc7e980cd71475722f01b5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/test-accepted.png",
+      "bytes": 23616,
+      "sha256": "3801b5dba4c2c882710ca52ff5b517a8bb3fb1c7e312a34b837cda407534b8b7"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/axiom-production-test-receipt.json",
+      "bytes": 949,
+      "sha256": "1e5c66a82712bc4e1475767065667ab6ea3225907249caf9ca8fb4e42aafc831"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/axiom-production-mcp-receipt.json",
+      "bytes": 2488,
+      "sha256": "970f74f215e3da673af23e0860f33a04cc027953918baa03ece01b0a0affe4b5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/axiom-production-admin-receipt.json",
+      "bytes": 850,
+      "sha256": "1f357df6dabb8ae50d698f989e41aa4e938fb283b4546343b77f530a37892d02"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/mcp-canary-summary.json",
+      "bytes": 832,
+      "sha256": "c9e2ae9f9f6fbcbadf230cc5de73596d4f4dd5161d73db7e9d64e23ed7923a62"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/mcp-canary.txt",
+      "bytes": 1341,
+      "sha256": "a090a900df29b8f88aafc1bf04528678bfe659343e431842c375f5114e06b177"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/receipt-verification.json",
+      "bytes": 719,
+      "sha256": "a9a2786053c8f8f4ea2d40cc0a19ee8a739c3cb728595be25f0b5618d095675a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/system-log-separation.json",
+      "bytes": 6177,
+      "sha256": "d918f1e36b881e3c86b86b8f694421efbf967147e662c45e414f6d76d82fd893"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/render-auto-deploy.json",
+      "bytes": 230,
+      "sha256": "21b8477f52737dc9612f8d57949567199d9afc451266edf339728d76099228bb"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/enabled-settings-final.json",
+      "bytes": 362,
+      "sha256": "c6eb8122688f4a00e0c21bbeec8d25d1862a67e488e627b1315e36be68a17ef5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/health-final.json",
+      "bytes": 125,
+      "sha256": "d71018a3a47e04d2eeb51b60101fce2b0c45933b360cc190ef52e934088bb4a3"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/marketing-copy-deployment.json",
+      "bytes": 303,
+      "sha256": "314c48e866c3a90341a6278d94b5602758391e25cafb20fcb14d1375436f8cc9"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/marketing-publication-verification.json",
+      "bytes": 2876,
+      "sha256": "ed88cba9d29ba01b9533a733783ae8bb6931dc739fae2b348dfe5a549176c341"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/marketing-copy-review.json",
+      "bytes": 2012,
+      "sha256": "40f0fa3c4a46564a945e8a040c8d6a6f23da1be3d07ac786e0d1f92c98886d8a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/marketing-caption-desktop.png",
+      "bytes": 126871,
+      "sha256": "994212ae83e51e0884740cab29c71c9d32893101b4b1329cfce3b5d0b109b883"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/marketing-logs-desktop.png",
+      "bytes": 95859,
+      "sha256": "eac6335438f44349f6cd01eca6e66de59f54d978f5dfe4ee1cbdab1bcab97813"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/reports-before-completion.json",
+      "bytes": 37029,
+      "sha256": "4a2ae3d7fcae92c5b30a9f131563a16a200451452a547c4c0f3ebc1f1453a4c2"
+    }
+  ]
+}

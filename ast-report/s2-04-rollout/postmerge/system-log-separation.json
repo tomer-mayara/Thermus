@@ -1,0 +1,204 @@
+{
+  "observedAt": "2026-10-25T02:50:19.889Z",
+  "scope": "Render application log page, exact bounded production verification interval",
+  "query": {
+    "resource": "srv-db8mnqg473hc739d529g",
+    "startTime": "2026-10-25T02:43:00Z",
+    "endTime": "2026-10-25T02:48:55Z",
+    "type": "app",
+    "limit": 100
+  },
+  "hasMore": false,
+  "count": 9,
+  "canaryOperation": "86f017e4-bd1d-4ea5-afb6-c8ece8cf30be",
+  "matchedCompletion": true,
+  "canaryReasonAbsent": true,
+  "resultContentAbsent": true,
+  "noToolContentFields": true,
+  "records": [
+    {
+      "at": "2026-10-25T02:44:41.980918012Z",
+      "prefix": "[2026-10-25 02:44:41] \u001b[32mINFO\u001b[0m [fetch-tool.js:23]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "stepId",
+        "outcome",
+        "durationMs"
+      ],
+      "data": {
+        "event": "pipeline.step.completed",
+        "operationId": "07c7cd20-6226-4ba7-8ea4-3b9abebe8beb",
+        "stepId": "outgoing.observe_request",
+        "outcome": "allowed",
+        "durationMs": 0
+      }
+    },
+    {
+      "at": "2026-10-25T02:44:42.229830855Z",
+      "prefix": "[2026-10-25 02:44:42] \u001b[32mINFO\u001b[0m [fetch-tool.js:23]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "stepId",
+        "outcome",
+        "durationMs"
+      ],
+      "data": {
+        "event": "pipeline.step.completed",
+        "operationId": "07c7cd20-6226-4ba7-8ea4-3b9abebe8beb",
+        "stepId": "incoming.process_html",
+        "outcome": "allowed",
+        "durationMs": 175
+      }
+    },
+    {
+      "at": "2026-10-25T02:44:42.233006835Z",
+      "prefix": "[2026-10-25 02:44:42] \u001b[32mINFO\u001b[0m [fetch-tool-server.js:146]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "authority",
+        "subject",
+        "tenantId",
+        "tool",
+        "status",
+        "durationMs"
+      ],
+      "data": {
+        "event": "mcp.tool.completed",
+        "operationId": "07c7cd20-6226-4ba7-8ea4-3b9abebe8beb",
+        "authority": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP",
+        "subject": "user_01M5N91ZHHHBEFYPRWH861FVG7",
+        "tenantId": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP:org_01M5N95EJA1AKHHERCD7971AJ7",
+        "tool": "getURLAsMarkdown",
+        "status": "success",
+        "durationMs": 250.2478770003654
+      }
+    },
+    {
+      "at": "2026-10-25T02:45:36.427625938Z",
+      "prefix": "[2026-10-25 02:45:36] \u001b[32mINFO\u001b[0m [fetch-tool.js:23]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "stepId",
+        "outcome",
+        "durationMs"
+      ],
+      "data": {
+        "event": "pipeline.step.completed",
+        "operationId": "650074a0-fefa-4040-a201-1733ee3dadd2",
+        "stepId": "outgoing.observe_request",
+        "outcome": "allowed",
+        "durationMs": 0
+      }
+    },
+    {
+      "at": "2026-10-25T02:45:36.555340452Z",
+      "prefix": "[2026-10-25 02:45:36] \u001b[32mINFO\u001b[0m [fetch-tool.js:23]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "stepId",
+        "outcome",
+        "durationMs"
+      ],
+      "data": {
+        "event": "pipeline.step.completed",
+        "operationId": "650074a0-fefa-4040-a201-1733ee3dadd2",
+        "stepId": "incoming.process_html",
+        "outcome": "allowed",
+        "durationMs": 45
+      }
+    },
+    {
+      "at": "2026-10-25T02:45:36.556419329Z",
+      "prefix": "[2026-10-25 02:45:36] \u001b[32mINFO\u001b[0m [fetch-tool-server.js:146]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "authority",
+        "subject",
+        "tenantId",
+        "tool",
+        "status",
+        "durationMs"
+      ],
+      "data": {
+        "event": "mcp.tool.completed",
+        "operationId": "650074a0-fefa-4040-a201-1733ee3dadd2",
+        "authority": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP",
+        "subject": "user_01M5N91ZHHHBEFYPRWH861FVG7",
+        "tenantId": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP:org_01M5N95EJA1AKHHERCD7971AJ7",
+        "tool": "getURLAsMarkdown",
+        "status": "success",
+        "durationMs": 128.13536499999464
+      }
+    },
+    {
+      "at": "2026-10-25T02:45:37.51208892Z",
+      "prefix": "[2026-10-25 02:45:37] \u001b[32mINFO\u001b[0m [fetch-tool.js:23]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "stepId",
+        "outcome",
+        "durationMs"
+      ],
+      "data": {
+        "event": "pipeline.step.completed",
+        "operationId": "86f017e4-bd1d-4ea5-afb6-c8ece8cf30be",
+        "stepId": "outgoing.observe_request",
+        "outcome": "allowed",
+        "durationMs": 0
+      }
+    },
+    {
+      "at": "2026-10-25T02:45:37.626709382Z",
+      "prefix": "[2026-10-25 02:45:37] \u001b[32mINFO\u001b[0m [fetch-tool.js:23]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "stepId",
+        "outcome",
+        "durationMs"
+      ],
+      "data": {
+        "event": "pipeline.step.completed",
+        "operationId": "86f017e4-bd1d-4ea5-afb6-c8ece8cf30be",
+        "stepId": "incoming.process_html",
+        "outcome": "allowed",
+        "durationMs": 42
+      }
+    },
+    {
+      "at": "2026-10-25T02:45:37.627673086Z",
+      "prefix": "[2026-10-25 02:45:37] \u001b[32mINFO\u001b[0m [fetch-tool-server.js:146]: ",
+      "keys": [
+        "event",
+        "operationId",
+        "authority",
+        "subject",
+        "tenantId",
+        "tool",
+        "status",
+        "durationMs"
+      ],
+      "data": {
+        "event": "mcp.tool.completed",
+        "operationId": "86f017e4-bd1d-4ea5-afb6-c8ece8cf30be",
+        "authority": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP",
+        "subject": "user_01M5N91ZHHHBEFYPRWH861FVG7",
+        "tenantId": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP:org_01M5N95EJA1AKHHERCD7971AJ7",
+        "tool": "getURLAsMarkdown",
+        "status": "success",
+        "durationMs": 115.05991300009191
+      }
+    }
+  ],
+  "limits": [
+    "This checks the defined completion and pipeline records in this time window, not all possible System/provider/error logs.",
+    "Initial query limit 200 was refused by connector validation; retry used supported limit 100 and returned all nine rows. No product failure occurred."
+  ]
+}

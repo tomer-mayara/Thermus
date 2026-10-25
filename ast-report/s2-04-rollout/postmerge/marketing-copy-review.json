@@ -1,0 +1,44 @@
+{
+  "base": "a53783560778cb0e568ca26838c7af226dc41dfc",
+  "approved_legal_head": "1cd32b128698b95f624f0fed15ca3c58d95a62d0",
+  "base_tree_matches_approved_head": true,
+  "runtime": "Node v24.20.0",
+  "check_attempts": [
+    {
+      "log": "npm-check-1.log",
+      "exit_code": 1,
+      "reason": "Existing onboarding oracle still required customer/audit/export wording after copy moved to organization Audit export. Corrected existing oracle."
+    },
+    {
+      "log": "npm-check-2.log",
+      "exit_code": 0,
+      "tests": 62,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "log": "npm-check-3.log",
+      "exit_code": 0,
+      "tests": 62,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "reason": "Final check after manager corrections: atomic enable-and-Save instruction, creator-only agreement, invitation join path."
+    }
+  ],
+  "legal_sha256": {
+    "terms": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+    "privacy": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6"
+  },
+  "diff_check": "pass",
+  "changes": "Product copy and existing copy oracles only. No new behavior, tests, dependencies, prices, CTA wiring, legal text, layout or styles. Canonical guide rebuilt with prepare-guide.",
+  "review_limits": [
+    "No browser visual inspection was performed, as delegated scope forbids browser actions.",
+    "No commits, pushes, PR actions, deploys, or provider changes performed.",
+    "No complete-candidate PR classification or merge eligibility claim; manager owns full candidate review."
+  ],
+  "final_copy_status": "Receiver URL wording corrected; configured receiver path is not assumed. npm run build passed; canonical guide regenerated and published complete-guide text checked. Broad suite not repeated for this prose-only correction; previous final suite remains 62/62.",
+  "final_audit_guide_sha256": "173081e9e6c1c79fa979349b8be5533474981bdb3b7fc5e727de6b5854130011",
+  "final_build_log": "npm-build-4.log"
+}
