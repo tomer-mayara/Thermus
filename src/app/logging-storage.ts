@@ -7,10 +7,12 @@ import { DestinationSettingsService } from '../logs/audit/destination-settings-s
 import { loadLoggingStorageConfig } from '../runtime/config/logging-storage-config.ts';
 import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
+import type { RemovalOperationStore } from '../accounts/organizations/removal-operation-store.ts';
 
-// Stores customer audit destination settings, not system log output or audit history.
+// One private SQL runtime owns destination settings and membership-removal intent.
 export interface HostedLoggingStorage {
   readonly store: DestinationSettingsStore;
+  readonly removalStore?: RemovalOperationStore;
   readonly service?: DestinationSettingsService;
   readonly dispatch?: RevisionBoundAuditSink;
   close(): Promise<void>;
@@ -25,7 +27,7 @@ export async function openLoggingStorage(environment: Readonly<Record<string, st
   try {
     const { openDestinationSettingsRuntime } = await import('../logs/audit/pg-destination-settings-store.ts');
     const runtime = await openDestinationSettingsRuntime(config);
-    return composeLoggingStorage(runtime, config.encryptionKey);
+    return composeLoggingStorage({ ...runtime, removalStore: runtime.store }, config.encryptionKey);
   } catch {
     logger.error('Logging storage is unavailable: DATABASE_URL and DATABASE_CA_CERT_PATH must permit a verified TLS connection.');
     return undefined;
@@ -33,8 +35,8 @@ export async function openLoggingStorage(environment: Readonly<Record<string, st
 }
 
 /** Test and customer export share the sender's native DNS, TLS, and HTTP admission. */
-export function composeLoggingStorage(runtime: Pick<HostedLoggingStorage, 'store' | 'close'>, key: Uint8Array, sender: DestinationTestSender & TrackedAuditSender = new OtlpAuditSender()): HostedLoggingStorage & { readonly service: DestinationSettingsService; readonly dispatch: RevisionBoundAuditSink } {
+export function composeLoggingStorage(runtime: Pick<HostedLoggingStorage, 'store' | 'removalStore' | 'close'>, key: Uint8Array, sender: DestinationTestSender & TrackedAuditSender = new OtlpAuditSender()): HostedLoggingStorage & { readonly service: DestinationSettingsService; readonly dispatch: RevisionBoundAuditSink } {
   const service = new DestinationSettingsService(runtime.store, key, sender);
   const dispatch = new AuditCollector(service, sender);
-  return { store: runtime.store, service, dispatch, close: () => { dispatch.close(); return runtime.close(); } };
+  return { store: runtime.store, removalStore: runtime.removalStore, service, dispatch, close: () => { dispatch.close(); return runtime.close(); } };
 }

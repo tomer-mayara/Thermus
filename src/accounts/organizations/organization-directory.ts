@@ -56,6 +56,7 @@ export interface MemberPageRequest {
   readonly organizationId: string;
   readonly statuses: readonly MembershipStatus[];
   readonly cursor?: string;
+  readonly signal?: AbortSignal;
 }
 
 export interface InvitationPageRequest {
@@ -96,10 +97,11 @@ export interface MembershipDeletionResult {
 // looks like a missing record or a result. After such a failure, the effect of a change is not known.
 export interface OrganizationDirectory {
   // Only the memberships of the user that it gets.
-  membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]>;
+  // An optional signal stops later provider reads. A read already sent keeps its existing timeout.
+  membershipsOf(user: AuthenticatedUser, signal?: AbortSignal): Promise<readonly OrganizationMembership[]>;
   memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;
   // The membership with this ID in any organization, or undefined.
-  member(membershipId: string): Promise<OrganizationMember | undefined>;
+  member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined>;
   // Deletes only this membership. Admission and safety checks belong to its caller.
   deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;
   invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;

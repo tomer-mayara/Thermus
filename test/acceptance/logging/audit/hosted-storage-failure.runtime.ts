@@ -7,6 +7,10 @@ import { HostedPortal } from '../../../../src/app/hosted-portal.ts';
 import { createHostedToolOperations, fetchToolServers } from '../../../../src/app/fetch-tool.ts';
 import { createPgSettingsRuntime } from '../../../../src/logs/audit/bounded-sql-runtime.ts';
 import { PgDestinationSettingsStore } from '../../../../src/logs/audit/pg-destination-settings-store.ts';
+import { OrganizationAdministration } from '../../../../src/accounts/organizations/organization-administration.ts';
+import { BillingFree } from '../../../../src/accounts/billing/billing-free.ts';
+import { WorkOSOrganizations, workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { WorkOSFake } from '../../../support/doubles/workos/workos-fake.ts';
 import { RendererProcessDouble } from '../../../support/doubles/website-fetcher/renderer-process-double.ts';
 import { connectMcpClient } from '../../../support/drivers/mcp/mcp-sdk-client.ts';
@@ -15,23 +19,39 @@ import { hostedFetchSettings } from '../../../support/fixtures/hosted-placeholde
 import { composeApplicationWithWorkOSFake } from '../../../support/in-process/workos-site.ts';
 import { postgresSettingsSite } from '../../../support/in-process/postgres-settings-site.ts';
 
-test('Given current WorkOS access and a settings read blocked by PostgreSQL, when an admitted client calls MCP, then the tool and health check succeed while storage times out and active storage closes within the shared shutdown deadline', { timeout: 30_000 }, async (t) => {
+test('Given a current WorkOS Admin and locked settings and removal tables, when removal and an admitted MCP request run, then unavailable admission and unknown writes send no deletion while product and health stay usable', { timeout: 30_000 }, async (t) => {
+  const release = Promise.withResolvers<void>();
+  const lockCleanup = new AsyncDisposableStack();
+  t.after(() => lockCleanup.disposeAsync());
   const sql = await postgresSettingsSite(t);
   const holder = createPgSettingsRuntime({ ...sql.connection, bounds: { operationMs: 10_000 } });
-  const runtime = createPgSettingsRuntime({ ...sql.connection, bounds: { operationMs: 1_000, statementMs: 5_000 } });
+  const runtime = createPgSettingsRuntime({ ...sql.connection, bounds: { active: 1, pending: 0, operationMs: 1_000, statementMs: 5_000 } });
   const store = new PgDestinationSettingsStore(runtime);
-  const release = Promise.withResolvers<void>();
   const locked = Promise.withResolvers<void>();
-  t.after(async () => { release.resolve(); await Promise.all([holder.close(), runtime.close()]); });
+  t.after(() => Promise.all([holder.close(), runtime.close()]));
   const user = { id: 'user_storage', email: 'storage@example.com', firstName: 'Storage' };
   const world = await WorkOSFake.start(t, hostedRootConfig.publicBaseUrl, ['org_storage']);
-  world.users = [user];
-  world.memberships = [{ userId: user.id, organizationId: 'org_storage', roles: ['user'] }];
+  const other = { id: 'user_storage_other', email: 'other-storage@example.com', firstName: 'Other' };
+  world.users = [user, other];
+  world.memberships = [
+    { userId: user.id, organizationId: 'org_storage', roles: ['admin'] },
+    { userId: other.id, organizationId: 'org_storage', roles: ['admin'] },
+  ];
+  const { settings, workos } = world.connection();
+  const directory = new WorkOSOrganizations({ authority: workosAuthority(settings.clientId), memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
+  const target = (await directory.memberPage({ organizationId: 'org_storage', statuses: ['active'] })).items.find(member => member.subject === other.id);
+  assert.ok(target);
+  assert.equal(target.management, 'ordinary');
+  const deletions = t.mock.method(directory, 'deleteMembership');
+  const administration = new OrganizationAdministration({ directory, billing: new BillingFree(), records: { record: () => {} }, removalStore: store });
+  t.after(() => administration.close());
+  const actor = { user: { authority: workosAuthority(settings.clientId), subject: user.id } };
+  const request = { organizationId: 'org_storage', membershipId: target.membershipId, revision: target.revision };
   const logger = { info: (_message: string) => {}, error: (_message: string) => {} };
   const portal = await HostedPortal.load(['https://api.workos.com', world.settings.authkitIssuer]);
   const application = portal.withApplication(await composeApplicationWithWorkOSFake(hostedRootConfig, world, {
     logger, buildServer: fetchToolServers(createHostedToolOperations(hostedFetchSettings, logger), logger),
-    loggingStorage: { store, close: () => runtime.close() },
+    loggingStorage: { store, removalStore: store, close: () => runtime.close() },
   }));
   t.after(() => application.close());
   const token = await world.connectToken(user, { org_id: 'org_storage' });
@@ -44,22 +64,30 @@ test('Given current WorkOS access and a settings read blocked by PostgreSQL, whe
   RendererProcessDouble.install(t).serve(url, { finalUrl: url, html: `<html><body><main><p>${text}</p></main></body></html>` });
   const holding = holder.run(async (session) => {
     await session.query('BEGIN');
-    await session.query('LOCK TABLE thermus_admin.logging_destination_settings IN ACCESS EXCLUSIVE MODE');
+    await session.query('LOCK TABLE thermus_admin.logging_destination_settings, thermus_admin.membership_removal_operations IN ACCESS EXCLUSIVE MODE');
     locked.resolve();
     await release.promise;
     await session.query('ROLLBACK');
   });
+  lockCleanup.defer(async () => { release.resolve(); await holding; });
   await locked.promise;
   const started = performance.now();
   let storageSettled = false;
   const reading = store.read('workos:client_placeholder:org_storage').finally(() => { storageSettled = true; });
+  const unavailableRemoval = administration.removeMember(actor, request);
   const result = await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason: 'Read while settings storage is unavailable' } });
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.content, [{ type: 'text', text }]);
   assert.equal(storageSettled, false, 'MCP completed while the real SQL settings read remained blocked.');
   assert.equal(await (await application.handle(new Request('https://thermus.example/healthz'))).text(), 'ok\n');
+  assert.equal(await unavailableRemoval, 'unavailable', 'Occupied shared SQL capacity refuses admission before it can send a write.');
   assert.deepEqual(await reading, { status: 'unavailable' });
   assert.ok(performance.now() - started < 2_000);
+  const admissionStarted = performance.now();
+  assert.equal(await administration.removeMember(actor, request), 'unknown', 'A dispatched admission blocked by SQL has no confirmed commit result.');
+  assert.ok(performance.now() - admissionStarted < 2_000);
+  assert.equal(deletions.mock.calls.length, 0);
+  assert.equal(world.fake.takeRequests().filter(request => request.method === 'DELETE').length, 0);
   const active = store.read('workos:client_placeholder:org_storage');
   await delay(50);
   const closing = performance.now();

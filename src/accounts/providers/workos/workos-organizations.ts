@@ -132,12 +132,12 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   // Each active membership of the user, from every page, with every current grant. The read names the status active,
   // so that no default filter of WorkOS decides. A user of another authority has no WorkOS membership, so its subject
   // is never sent to WorkOS.
-  async membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]> {
+  async membershipsOf(user: AuthenticatedUser, signal?: AbortSignal): Promise<readonly OrganizationMembership[]> {
     if (user.authority !== this.authority) return NO_MEMBERSHIPS;
     const memberships: OrganizationMembership[] = [];
-    for (const record of await this.activeMembershipsOf(user.subject)) {
+    for (const record of await this.activeMembershipsOf(user.subject, signal)) {
       const { organizationId, organizationName } = record;
-      memberships.push(Object.freeze({ organizationId, organizationName, active: true, grants: await this.grantsOf(record) }));
+      memberships.push(Object.freeze({ organizationId, organizationName, active: true, grants: await this.grantsOf(record, signal) }));
     }
     return Object.freeze(memberships);
   }
@@ -146,20 +146,20 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   // The user reads of a member page run one after the other, so that the WorkOS calls of a page are bounded and come in
   // page order.
   async memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>> {
-    const { organizationId, statuses, cursor } = request;
+    const { organizationId, statuses, cursor, signal } = request;
     // Without a status, WorkOS gives only active memberships.
     if (statuses.length === 0) throw new Error('A member read must name at least one membership status');
-    const page = await this.memberships.listOrganizationMemberships({ organizationId, statuses: [...statuses], limit: PAGE_SIZE, ...afterOf(cursor) });
+    const page = await readWhileActive(signal, () => this.memberships.listOrganizationMemberships({ organizationId, statuses: [...statuses], limit: PAGE_SIZE, ...afterOf(cursor) }));
     const records = page.data.map((record) => checkedMemberRecord(record, request));
-    const organizationRoles = records.length === 0 ? [] : await this.organizationRoles(organizationId);
+    const organizationRoles = records.length === 0 ? [] : await this.organizationRoles(organizationId, signal);
     const members: OrganizationMember[] = [];
-    for (const record of records) members.push(await this.memberOf(record, organizationRoles));
+    for (const record of records) members.push(await this.memberOf(record, organizationRoles, signal));
     return pageOf(members, page.listMetadata.after);
   }
 
-  async member(membershipId: string): Promise<OrganizationMember | undefined> {
-    const record = await this.currentMembership(membershipId);
-    return record === undefined ? undefined : this.memberOf(record, await this.organizationRoles(record.organizationId));
+  async member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined> {
+    const record = await this.currentMembership(membershipId, signal);
+    return record === undefined ? undefined : this.memberOf(record, await this.organizationRoles(record.organizationId, signal), signal);
   }
 
   async deleteMembership(membershipId: string): Promise<MembershipDeletionResult> {
@@ -232,12 +232,12 @@ export class WorkOSOrganizations implements OrganizationDirectory {
 
   // Reads each page in order. A read that does not end fails, with a repeated cursor or after the page limit, so that
   // no partial list looks complete.
-  private async activeMembershipsOf(userId: string): Promise<readonly MembershipRecord[]> {
+  private async activeMembershipsOf(userId: string, signal?: AbortSignal): Promise<readonly MembershipRecord[]> {
     const records: MembershipRecord[] = [];
     const cursors = new Set<string>();
     let after: string | undefined;
     for (let pages = 0; pages < MEMBERSHIP_PAGE_LIMIT; pages += 1) {
-      const page = await this.memberships.listOrganizationMemberships({ userId, statuses: ['active'], limit: PAGE_SIZE, ...afterOf(after) });
+      const page = await readWhileActive(signal, () => this.memberships.listOrganizationMemberships({ userId, statuses: ['active'], limit: PAGE_SIZE, ...afterOf(after) }));
       records.push(...page.data.map((record) => checkedActiveRecord(record, userId)));
       const next = page.listMetadata.after;
       if (!next) return eachOrganizationOnce(records);
@@ -248,27 +248,27 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     throw new Error(`WorkOS gave more than ${MEMBERSHIP_PAGE_LIMIT} pages of memberships for one user`);
   }
 
-  private async grantsOf(membership: MembershipRecord): Promise<readonly RoleGrant[]> {
+  private async grantsOf(membership: MembershipRecord, signal?: AbortSignal): Promise<readonly RoleGrant[]> {
     const membershipRoles = roleListOf(membership);
-    return grantsOfRoles(membershipRoles, await this.organizationRoles(membership.organizationId), membership.organizationId);
+    return grantsOfRoles(membershipRoles, await this.organizationRoles(membership.organizationId, signal), membership.organizationId);
   }
 
-  private async organizationRoles(organizationId: string): Promise<readonly RoleRecord[]> {
-    return (await this.authorization.listOrganizationRoles(organizationId)).data;
+  private async organizationRoles(organizationId: string, signal?: AbortSignal): Promise<readonly RoleRecord[]> {
+    return (await readWhileActive(signal, () => this.authorization.listOrganizationRoles(organizationId))).data;
   }
 
   // A WorkOS membership has no email, and the user list of an organization gives only the users with an active
   // membership. Thus each member read also reads its user.
-  private async memberOf(record: MembershipRecord, organizationRoles: readonly RoleRecord[]): Promise<OrganizationMember> {
+  private async memberOf(record: MembershipRecord, organizationRoles: readonly RoleRecord[], signal?: AbortSignal): Promise<OrganizationMember> {
     const { id: membershipId, userId: subject, organizationId, status } = record;
     const grants = grantsOfRoles(roleListOf(record), organizationRoles, organizationId);
-    const { email } = await this.userManagement.getUser(record.userId);
+    const { email } = await readWhileActive(signal, () => this.userManagement.getUser(record.userId));
     return Object.freeze({ membershipId, subject, organizationId, email, status, management: managementOf(record), grants, revision: revisionOf(record) });
   }
 
   // The membership with this ID in any organization. A WorkOS 404 gives undefined.
-  private async currentMembership(membershipId: string): Promise<MembershipRecord | undefined> {
-    const record = await unlessNotFound(() => this.memberships.getOrganizationMembership(membershipId));
+  private async currentMembership(membershipId: string, signal?: AbortSignal): Promise<MembershipRecord | undefined> {
+    const record = await readWhileActive(signal, () => unlessNotFound(() => this.memberships.getOrganizationMembership(membershipId)));
     if (record !== undefined && record.id !== membershipId) throw new Error('WorkOS answered a membership that the read did not ask for');
     return record;
   }
@@ -298,6 +298,16 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     const record = await unlessNotFound(() => this.userManagement.getInvitation(invitationId));
     if (record !== undefined && record.id !== invitationId) throw new Error('WorkOS answered an invitation that the read did not ask for');
     return record;
+  }
+}
+
+// Stop later reads without claiming that the provider cancelled a request already sent.
+async function readWhileActive<T>(signal: AbortSignal | undefined, read: () => Promise<T>): Promise<T> {
+  signal?.throwIfAborted();
+  try {
+    return await read();
+  } finally {
+    signal?.throwIfAborted();
   }
 }
 

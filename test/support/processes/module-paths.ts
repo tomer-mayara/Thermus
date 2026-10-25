@@ -32,6 +32,7 @@ export const programEntry = fileURLToPath(new URL(`../../../src/index.${extensio
 
 // The preloads load by URL through --import. The probe runs as the main module of a new Node process.
 export const crashChildHelper = siblingModule('crash-child').href;
+export const membershipRemovalChild = fileURLToPath(siblingModule('membership-removal-child'));
 export const networkBlocker = siblingModule('deny-network').href;
 export const sqlTracer = siblingModule('trace-sqlite').href;
 export const foreignOriginProbe = fileURLToPath(siblingModule('foreign-origin-probe'));
@@ -58,6 +59,7 @@ export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.
 export const loggingSettingsMigrations = [
   '20261023211956_logging_destination_settings.sql',
   '20261024231921_add_logging_axiom_dataset.sql',
+  '20261025082850_membership_removal_operations.sql',
 ].map(name => fileURLToPath(new URL(`sql/migrations/${name}`, repositoryRoot)));
 
 // The audit sender gate copies only source modules and test support into an isolated Docker network.
