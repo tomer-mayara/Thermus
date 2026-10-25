@@ -88,3 +88,14 @@ test('Given a roleless invitation revoke, when projected and encoded, then OTLP 
   });
   assert.doesNotMatch(encoded, /target.email|"role"|operation.id|tool.name|duration.ms|input\.|result\./);
 });
+
+for (const name of [' Zoë O’Neil — 李 ', 'é'.repeat(512), '', ' ', 42, '\ud800', 'bad\nname', 'é'.repeat(513)]) {
+  test('Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact', () => {
+    const actor = Object.assign({}, event.actor, { name });
+    const record = JSON.parse(encodeAuditEvent({ ...event, actor } as AuditEvent).toString()).resourceLogs[0].scopeLogs[0].logRecords[0];
+    const attributes = Object.fromEntries(record.attributes.map((attribute: { key: string; value: unknown }) => [attribute.key, attribute.value]));
+    assert.deepEqual(attributes['actor.subject'], { stringValue: event.actor.subject });
+    const expected = typeof name === 'string' && (name.startsWith(' Zoë') || name.length === 512) ? { stringValue: name.trim() } : undefined;
+    assert.deepEqual(attributes['actor.name'], expected);
+  });
+}

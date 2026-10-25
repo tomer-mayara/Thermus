@@ -230,3 +230,23 @@ test('Given Test and export share a sender, when four native attempts are pendin
   await new Promise<void>(resolve => setImmediate(resolve));
   assert.deepEqual(await sender.send({ ...destination, endpoint: 'https://127.0.0.1/' }, event), { kind: 'permanent_failure', reason: 'unsafe_destination' });
 });
+
+test('Given a trusted display name, when a destination Test starts and its caller changes the actor, then the synthetic event keeps a frozen named copy', async () => {
+  const f = fixture();
+  const namedActor = { ...actor, name: 'Zoë O’Neil — 李', ignored: 'private-extra' };
+  const pending = new DestinationSettingsService(f.store, key, f.sender).test('tenant-a', form, namedActor);
+  namedActor.name = 'changed';
+  await pending;
+  assert.deepEqual(f.sends[0]?.event.actor, { ...actor, name: 'Zoë O’Neil — 李' });
+  assert.ok(Object.isFrozen(f.sends[0]?.event.actor));
+});
+
+for (const name of ['', ' ', 42, '\ud800', 'bad\nname', 'é'.repeat(513)]) {
+  test('Given invalid optional display metadata, when a saved destination is tested, then the synthetic event retains only the stable actor identity', async () => {
+    const f = fixture();
+    const namedActor = Object.assign({}, actor, { name }) as typeof actor & { name?: string };
+    const result = await new DestinationSettingsService(f.store, key, f.sender).test('tenant-a', form, namedActor);
+    assert.equal(result.status, 'tested');
+    assert.deepEqual(f.sends[0]?.event.actor, actor);
+  });
+}

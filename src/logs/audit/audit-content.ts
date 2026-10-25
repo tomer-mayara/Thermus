@@ -74,3 +74,10 @@ export function captureAuditResult(result: string, metadataBytes: number): Audit
   }
   return { text, originalBytes, capturedBytes: Buffer.byteLength(text), truncated };
 }
+
+/** Optional display metadata must not prevent capture of the stable actor identity. */
+export function auditActorName(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value.isWellFormed() || /\p{Cc}/u.test(value) || Buffer.byteLength(value) > AUDIT_CAPTURE_LIMITS.metadataBytes) return undefined;
+  const name = redactAuditText(value.trim());
+  return name !== '' && Buffer.byteLength(name) <= AUDIT_CAPTURE_LIMITS.metadataBytes ? name : undefined;
+}

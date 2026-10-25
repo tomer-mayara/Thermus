@@ -45,3 +45,38 @@ test('Given the production WorkOS connection and a write that never answers, whe
   assert.equal(signal.aborted, true);
   assert.equal(attempts, 1);
 });
+
+test('Given the production WorkOS connection and a profile response with a stalled body, when five seconds pass, then getUser aborts the body and fails without retry', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const reading = Promise.withResolvers<AbortSignal>();
+  const requests: { path: string; method: string | undefined }[] = [];
+  let bodyAborted = false;
+  t.mock.method(globalThis, 'fetch', async (input: string | URL | Request, init?: RequestInit) => {
+    requests.push({ path: new URL(input instanceof Request ? input.url : input).pathname, method: init?.method });
+    assert.ok(init?.signal);
+    const signal = init.signal;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        signal.addEventListener('abort', () => {
+          bodyAborted = true;
+          controller.error(new DOMException('Fixture body abort', 'AbortError'));
+        }, { once: true });
+      },
+      pull() { reading.resolve(signal); },
+    }, { highWaterMark: 0 });
+    return new Response(body, { status: 200, headers: { 'Content-Type': 'application/json' } });
+  });
+  const { workos } = await openWorkOSConnection(hostedRootConfig, logger, workOSSettingsFor(hostedRootConfig.publicBaseUrl));
+  const profile = workos.userManagement.getUser('user_01ADA');
+  const signal = await reading.promise;
+
+  t.mock.timers.tick(4_999);
+  assert.equal(signal.aborted, false);
+  assert.equal(bodyAborted, false);
+  t.mock.timers.tick(1);
+
+  await assert.rejects(profile, { name: 'OauthException', message: 'Error: Request timeout' });
+  assert.equal(signal.aborted, true);
+  assert.equal(bodyAborted, true);
+  assert.deepEqual(requests, [{ path: '/user_management/users/user_01ADA', method: 'GET' }]);
+});

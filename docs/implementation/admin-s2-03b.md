@@ -92,9 +92,13 @@ edition does not open SQL or load tenant destination settings.
 
 ## Public contracts and composition
 
-The existing AuditLog event projection, MCP/web capture APIs, and settings-store
-read/save contract are unchanged. `AuditSnapshots.writeAuditEvent` returns a
-boolean admission result and never waits for SQL. `true` can mean provisional
+The snapshot correction leaves the AuditLog event projection, MCP/web capture
+APIs, and settings-store read/save contract unchanged. The later actor-name
+addition carries optional `actor.name` beside the authoritative actor IDs in the
+same detached event. Pending copies and byte accounting include that name; a
+profile failure omits it before capture and does not change settings admission.
+It adds no profile read to the snapshot owner.
+`AuditSnapshots.writeAuditEvent` returns a boolean admission result and never waits for SQL. `true` can mean provisional
 admission to a pending batch; it is not proof of dispatch or receipt. A fresh
 enabled snapshot, or a successful enabled load, sends one detached, frozen
 `{destinationRevision, event}` to `RevisionBoundAuditSink.admit`.

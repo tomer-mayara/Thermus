@@ -1,3 +1,5 @@
+import { auditActorName } from './audit-content.ts';
+import type { AuditContext } from './audit-log.ts';
 import { DestinationCredentialCodec } from './destination-credential-codec.ts';
 import { validDestinationEndpoint } from './destination-endpoint.ts';
 import type { DestinationSettingsStore, StoredDestinationSettings } from './destination-settings-store.ts';
@@ -59,13 +61,14 @@ export class DestinationSettingsService {
   }
 
   /** Tenant and actor come from the caller's current trusted Admin context. */
-  test(tenantId: string, input: DestinationSettingsSaveInput, actor: { readonly authority: string; readonly subject: string }, signal?: AbortSignal): Promise<DestinationTestResult> {
+  test(tenantId: string, input: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal?: AbortSignal): Promise<DestinationTestResult> {
     const desired = { ...input };
-    const trustedActor = { authority: actor.authority, subject: actor.subject };
+    const name = auditActorName(actor.name);
+    const trustedActor = Object.freeze({ authority: actor.authority, subject: actor.subject, ...(name === undefined ? {} : { name }) });
     return this.tests.run(control => this.testSaved(tenantId, desired, trustedActor, control), signal);
   }
 
-  private async testSaved(tenantId: string, desired: DestinationSettingsSaveInput, actor: { readonly authority: string; readonly subject: string }, signal: AbortSignal): Promise<DestinationTestResult> {
+  private async testSaved(tenantId: string, desired: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal: AbortSignal): Promise<DestinationTestResult> {
     const current = await this.readStored(tenantId);
     if (signal.aborted) return { status: 'cancelled' };
     if (current.status === 'unavailable') return { status: 'unavailable' };

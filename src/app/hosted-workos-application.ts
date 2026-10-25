@@ -140,7 +140,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
   // One directory gives the current grants to access resolution, and the organizations, members, and invitations and
   // their changes to the account routes.
   const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
-  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
+  const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: config.mcpResourceUrl, keySet: authkitKeySet, grants: organizations, userManagement: workos.userManagement });
   const { WorkOSGoogleOnboarding } = await import('../accounts/providers/workos/workos-google-onboarding.ts');
   const onboarding = parts.onboarding === undefined ? undefined : new WorkOSGoogleOnboarding({
     ...parts.onboarding, authority, workos, settings, records: accountChangeRecorder(logger), billing: parts.billing, directory: organizations,

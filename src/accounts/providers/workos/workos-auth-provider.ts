@@ -23,6 +23,8 @@ export interface WorkOSAuthProviderOptions {
   // The AuthKit key set. In production: createRemoteJWKSet(<authkitIssuer>/oauth2/jwks).
   readonly keySet: JWTVerifyGetKey;
   readonly grants: ActiveGrantReader;
+  // Optional display data. Failure keeps access and the ID; production uses the SDK timeout and zero retries.
+  readonly userManagement?: { getUser(userId: string): Promise<unknown> };
 }
 
 interface ConnectClaims {
@@ -86,10 +88,21 @@ export class WorkOSAuthProvider implements IdentityVerifier, AccessResolver {
     if (organizationId === undefined || organizationId === '') return ORGANIZATION_REQUIRED;
     const activeGrants = await grants.activeGrants(user.subject, organizationId);
     if (activeGrants === undefined) return MEMBERSHIP_INACTIVE;
+    const name = await this.userName(user.subject);
+    const trustedUser = { authority, subject: user.subject, selectedOrganizationId: organizationId, ...(name === undefined ? {} : { name }) };
     return {
       allowed: true,
-      context: createRequestContext({ user, tenantId: hostedTenantId(authority, organizationId), organizationId, grants: activeGrants }),
+      context: createRequestContext({ user: trustedUser, tenantId: hostedTenantId(authority, organizationId), organizationId, grants: activeGrants }),
     };
+  }
+
+  private async userName(subject: string): Promise<string | undefined> {
+    try {
+      const profile = await this.options.userManagement?.getUser(subject);
+      return profileNameOf(profile, subject);
+    } catch {
+      return undefined;
+    }
   }
 
   // A token fault gives no cause: a jose error can hold the claims of the token.
@@ -150,4 +163,15 @@ function isText(value: unknown): value is string {
 
 function isTime(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
+}
+
+function profileNameOf(profile: unknown, subject: string): string | undefined {
+  if (typeof profile !== 'object' || profile === null || !('id' in profile) || profile.id !== subject) return undefined;
+  const user = profile as { name?: unknown; firstName?: unknown; lastName?: unknown };
+  // A nonempty native name takes precedence; invalid display data is omitted by the request context.
+  if (typeof user.name === 'string' && (user.name.trim() !== '' || /\p{Cc}/u.test(user.name))) return user.name;
+  if (user.name != null && typeof user.name !== 'string') return undefined;
+  const parts = [user.firstName, user.lastName];
+  if (parts.some(part => part != null && (typeof part !== 'string' || /\p{Cc}/u.test(part)))) return undefined;
+  return parts.filter((part): part is string => typeof part === 'string').map(part => part.trim()).filter(Boolean).join(' ') || undefined;
 }

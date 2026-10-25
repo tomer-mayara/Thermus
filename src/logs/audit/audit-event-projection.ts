@@ -1,5 +1,5 @@
 import type { AdministrationChange, AuditContext, AuditEvent, DestinationChange, ToolCompletion, ToolInput } from './audit-log.ts';
-import { AUDIT_CAPTURE_LIMITS, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
+import { AUDIT_CAPTURE_LIMITS, auditActorName, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
 
 const toolStatuses = new Set(['success', 'access_denied', 'fetch_failed', 'processing_failed', 'cancelled', 'busy', 'search_failed', 'withheld']);
 const changeOutcomes = new Set(['applied', 'unchanged', 'denied', 'stale', 'not-pending', 'address-in-use', 'unsupported', 'failed', 'unknown']);
@@ -12,7 +12,8 @@ function metadata(value: unknown): value is string {
 function contextOf(value: AuditContext): AuditContext | undefined {
   const timestamp = value.timestamp;
   const organizationId = value.organizationId;
-  const actor = { authority: value.actor.authority, subject: value.actor.subject };
+  const name = auditActorName(value.actor.name);
+  const actor = Object.freeze({ authority: value.actor.authority, subject: value.actor.subject, ...(name === undefined ? {} : { name }) });
   if (![organizationId, actor.authority, actor.subject].every(metadata)) return undefined;
   if (typeof timestamp !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(timestamp)) return undefined;
   const parsed = Date.parse(timestamp);

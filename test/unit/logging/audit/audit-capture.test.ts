@@ -248,3 +248,20 @@ test('Given an unclosed string of escaped quotes before a credential URL, when c
   assert.equal(event.result.truncated, false);
   assert.equal(event.result.capturedBytes, Buffer.byteLength(event.result.text));
 });
+
+for (const name of ['Zoë O’Neil — 李', 'é'.repeat(512)]) {
+  test('Given a trusted display name, when an audit event is projected, then the actor keeps the name in a frozen detached record', () => {
+    const actor = { ...context.actor, name };
+    const events = capture({ ...context, actor, tool: 'search', input: { query: 'query', reason: 'reason' }, result: 'result' });
+    assert.deepEqual(events[0]?.actor, actor);
+    assert.notEqual(events[0]?.actor, actor);
+    assert.ok(Object.isFrozen(events[0]?.actor));
+  });
+}
+
+for (const name of ['', ' ', 42, '\ud800', 'line\nname', '\u0085name', 'é'.repeat(513)]) {
+  test(`Given an invalid optional name ${JSON.stringify(name).slice(0, 35)}, when an audit event is projected, then the event keeps its identity and omits the name`, () => {
+    const events = capture({ ...context, actor: Object.assign({}, context.actor, { name }) as ToolCompletion['actor'], tool: 'search', input: { query: 'query', reason: 'reason' }, result: 'result' });
+    assert.deepEqual(events[0]?.actor, context.actor);
+  });
+}

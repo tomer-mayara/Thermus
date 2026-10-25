@@ -112,8 +112,6 @@ function changesIn(site: WorkOSSite): WorkOSChange[] {
     .map(({ method, path, body }) => ({ method, path: path.split('?')[0] ?? path, body }));
 }
 
-// A single-role write on the authorization resource of Acme. WorkOS names that resource by the external ID of Acme,
-// not by its organization ID.
 function changeRecords(site: WorkOSSite): Readonly<Record<string, unknown>>[] {
   const prefix = 'INFO Account change record: ';
   return site.log.lines.filter((line) => line.startsWith(prefix)).map((line) => JSON.parse(line.slice(prefix.length)) as Readonly<Record<string, unknown>>);
@@ -199,10 +197,14 @@ describe('Hosted WorkOS edition: changes on stale, inactive, foreign, and forged
       await browser.open('invitations'),
       await browser.post('invitations/send', { organization_id: acme, email: 'new@example.com', role: 'user', csrf_token: csrfToken }),
     ];
-    const administrationRequests = site.world.fake.takeRequests()
+    const requests = site.world.fake.takeRequests();
+    const ownProfilePath = `/user_management/users/${dan.id}`;
+    const administrationRequests = requests
+      .filter(({ method, path }) => !(method === 'GET' && path === ownProfilePath))
       .filter(({ path }) => /role_assignments|\/invitations|\/users\/|organization_memberships\/om_/.test(path) || (path.includes('organization_id=') && !path.includes('user_id=')));
 
     for (const answer of answers) assert.equal(answer.status, 403, answer.body);
+    assert.equal(requests.filter(({ method, path }) => method === 'GET' && path === ownProfilePath).length, answers.length);
     assert.deepEqual(administrationRequests, []);
   });
 });

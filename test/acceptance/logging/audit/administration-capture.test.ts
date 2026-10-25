@@ -15,6 +15,8 @@ test('Given a current Admin and saved destination, when Test completes, then Sav
   assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome]), [['save', 'saved'], ['save', 'unchanged'], ['test', 'tested']]);
   assert.equal(sent.length, 1);
   assert.equal(sent[0]?.eventName, 'audit.destination.test');
+  assert.deepEqual(sent[0]?.actor, { authority: 'workos:client_test', subject: admin.id, name: 'Admin Example' });
+  assert.ok(events.every(event => (event.actor as { name?: string }).name === 'Admin Example'));
   assert.doesNotMatch(JSON.stringify(events), /accepted|collector|revision/);
 });
 
@@ -42,7 +44,7 @@ for (const failure of ['none', 'throw', 'refuse', 'record-throw'] as const) {
     assert.equal(events.length, 1);
     assert.equal(events[0]?.eventName, 'organization.changed');
     assert.equal(events[0]?.organizationId, tenantId);
-    assert.equal(events[0]?.actor.subject, admin.id);
+    assert.deepEqual(events[0]?.actor, { authority: 'workos:client_test', subject: admin.id, name: 'Admin Example' });
     assert.doesNotMatch(response.body, /private-export-cause|private-record-cause/);
   });
 }

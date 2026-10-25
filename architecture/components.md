@@ -373,6 +373,22 @@ parameters from tool input/results, and bounds the exported copy. It adds no
 source location or stack, has no generic message method, and catches projection
 and synchronous sink failures. It imports no system logger. There is no shared
 base class or forwarding path between these owners.
+Customer events retain authoritative `actor.authority` and `actor.subject` and
+can add optional `actor.name` from the resolved account profile. The name is an
+event-time snapshot for readability, not identity authority. The projection
+omits blank, control, ill-formed, or over-1,024-UTF-8-byte names and keeps the
+ID-only event. MCP, portal administration, destination metadata, and synthetic
+Test events use this field. System logs retain their existing ID-only contract.
+The identity owner defines optional resolved `user.name`. WorkOS reads the
+matching profile through its existing SDK only after authority, organization,
+and current grant checks allow access. It prefers a nonempty native name. A
+missing, null, or blank native name permits joined trimmed first/last names. An
+invalid nonempty native name is omitted, even if the split fields are valid.
+One read has no retries and a five-second deadline that aborts
+the request and body read. Failure omits the name without changing access. This
+read occurs even with export disabled; denied resolutions make no profile read.
+Better Auth uses the name from its existing account read. There is no new cache,
+datastore, token-template change, component, or dependency edge.
 AuditLog needs no separate role interface while it has one implementation.
 AuditEventSink is the neutral destination contract: its synchronous
 `writeAuditEvent` call may refuse admission and does not await export. When hosted
@@ -479,8 +495,9 @@ The [projection owner](../src/logs/audit/audit-event-projection.ts) reserves
 serialized input/metadata space before assigning result space. Fixed limits are
 65,536 result UTF-8 bytes, 131,072 serialized event UTF-8 bytes, and 1,024 UTF-8
 bytes per opaque metadata field. Maximum valid product input contracts stay
-unchanged. Oversized or unsupported metadata drops the event. Only the exported
-result is truncated at Unicode boundaries, with a marker and original/captured
+unchanged. Oversized or unsupported required metadata drops the event; an
+invalid optional actor name is omitted without dropping the event. Only the
+exported result is truncated at Unicode boundaries, with a marker and original/captured
 UTF-8 sizes; the client result stays complete. Redaction covers recognized
 credential patterns, not arbitrary secrets in free text. See the
 [capture record](../docs/implementation/admin-s2-03a.md) for the supported fields

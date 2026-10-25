@@ -48,7 +48,7 @@ function coverageStartsOf({ node }: Candidate): readonly number[] {
   const starts = new Set([node.getStart()]);
   const children = node.getChildren().flatMap((child) => child.kind === ts.SyntaxKind.SyntaxList && child.getChildren().every(ts.isModifier) ? child.getChildren() : [child]);
   for (const child of children) {
-    if (omittedRangeModifiers.has(child.kind)) continue;
+    if (ts.isJSDoc(child) || omittedRangeModifiers.has(child.kind)) continue;
     starts.add(child.getStart());
     break;
   }
