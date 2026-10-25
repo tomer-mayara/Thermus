@@ -3,18 +3,19 @@ import { test } from 'node:test';
 import { AuditSnapshots, type RevisionBoundAuditEvent } from '../../../../src/logs/audit/audit-snapshots.ts';
 import { eventFor, immediateTurn, settings, SnapshotStoreSpy } from './fixtures/audit-snapshot-fixtures.ts';
 
-test('Given an unknown tenant, when capture occurs, then reads start asynchronously and the triggering event is never admitted', async t => {
+test('Given an unknown tenant, when capture occurs, then reads start asynchronously and the triggering event is admitted after enabled settings load', async t => {
   const store = new SnapshotStoreSpy();
   const admitted: RevisionBoundAuditEvent[] = [];
   const snapshots = new AuditSnapshots(store, { admit: item => { admitted.push(item); } }); t.after(() => snapshots.close());
-  assert.equal(snapshots.writeAuditEvent(eventFor()), false);
+  const first = eventFor();
+  assert.equal(snapshots.writeAuditEvent(first), true);
   assert.deepEqual(store.reads, []);
   await immediateTurn();
   assert.deepEqual(store.reads, ['tenant-a']);
   await store.answer(settings());
   const next = eventFor();
   assert.equal(snapshots.writeAuditEvent(next), true);
-  assert.deepEqual(admitted, [{ destinationRevision: 'revision-a', event: next }]);
+  assert.deepEqual(admitted, [{ destinationRevision: 'revision-a', event: first }, { destinationRevision: 'revision-a', event: next }]);
 });
 
 test('Given absent or disabled settings, when further activity occurs within freshness, then no event or additional read is admitted', async t => {
@@ -35,15 +36,16 @@ test('Given an expired enabled revision, when refresh fails, then old content re
   const admitted: RevisionBoundAuditEvent[] = [];
   const snapshots = new AuditSnapshots(store, { admit: item => { admitted.push(item); } }, { now: () => now }); t.after(() => snapshots.close());
   snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(settings());
+  admitted.length = 0;
   now = 30_000;
-  assert.equal(snapshots.writeAuditEvent(eventFor()), false);
+  assert.equal(snapshots.writeAuditEvent(eventFor()), true);
   await immediateTurn(); await store.answer({ status: 'unavailable' });
   snapshots.writeAuditEvent(eventFor()); await immediateTurn();
   assert.equal(store.reads.length, 2); assert.equal(admitted.length, 0);
   now += 5_000;
   snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(settings(true, 'revision-b'));
   snapshots.writeAuditEvent(eventFor());
-  assert.equal(admitted.length, 1); assert.equal(admitted[0]?.destinationRevision, 'revision-b');
+  assert.equal(admitted.length, 2); assert.equal(admitted[0]?.destinationRevision, 'revision-b');
 });
 
 test('Given repeated activity and many tenants, when loads are scheduled before the event loop runs, then scheduled and native work stay within two reservations', async t => {
@@ -94,7 +96,7 @@ test('Given a slow read, when its deadline passes and activity repeats, then it 
   snapshots.writeAuditEvent(eventFor('tenant-b')); await immediateTurn();
   assert.deepEqual(store.reads, ['tenant-a']);
   await store.answer(settings());
-  assert.equal(snapshots.writeAuditEvent(eventFor()), false);
+  assert.equal(snapshots.writeAuditEvent(eventFor()), true);
   await immediateTurn(); assert.deepEqual(store.reads, ['tenant-a', 'tenant-a']);
   await store.answer({ status: 'absent' }); assert.equal(admitted.length, 0);
 });
@@ -122,7 +124,7 @@ test('Given small resident and byte bounds, when tenant churn occurs, then old s
   now = 5_000;
   snapshots.writeAuditEvent(eventFor('tenant-b')); await immediateTurn(); assert.deepEqual(store.reads, ['tenant-a', 'tenant-b']);
   await store.answer(settings());
-  assert.equal(snapshots.writeAuditEvent(eventFor()), false);
+  assert.equal(snapshots.writeAuditEvent(eventFor()), true);
   await immediateTurn(); assert.equal(store.reads.length, 3);
   await store.answer(settings());
 });
@@ -148,6 +150,7 @@ test('Given fresh enabled settings, when downstream refuses or throws, then capt
   let calls = 0;
   const snapshots = new AuditSnapshots(store, { admit: () => { if (++calls === 1) throw new Error('private-export-cause'); return false; } }); t.after(() => snapshots.close());
   snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(settings());
+  calls = 0;
   assert.equal(snapshots.writeAuditEvent(eventFor()), false);
   assert.equal(snapshots.writeAuditEvent(eventFor()), false); assert.equal(calls, 2);
 });
@@ -157,10 +160,11 @@ test('Given a fresh enabled snapshot, when an admitted event is later mutated by
   const admitted: RevisionBoundAuditEvent[] = [];
   const snapshots = new AuditSnapshots(store, { admit: item => { admitted.push(item); } }); t.after(() => snapshots.close());
   snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(settings());
-  const event = eventFor(); snapshots.writeAuditEvent(event);
+  const event = eventFor('tenant-a', 'fresh-event'); snapshots.writeAuditEvent(event);
   Object.assign(event, { organizationId: 'tenant-b' }); Object.assign(event.actor, { subject: 'other' });
-  assert.equal(admitted[0]?.event.organizationId, 'tenant-a'); assert.equal(admitted[0]?.event.actor.subject, 'admin');
-  assert.ok(Object.isFrozen(admitted[0])); assert.ok(Object.isFrozen(admitted[0]?.event));
+  assert.equal(admitted.length, 2);
+  assert.equal(admitted.at(-1)?.event.organizationId, 'tenant-a'); assert.equal(admitted.at(-1)?.event.actor.subject, 'fresh-event');
+  assert.ok(Object.isFrozen(admitted.at(-1))); assert.ok(Object.isFrozen(admitted.at(-1)?.event));
 });
 
 test('Given a read whose completion passes its deadline before the timer callback runs, when it resolves, then the late snapshot is refused with backoff', async t => {
@@ -197,7 +201,8 @@ test('Given valid settings with adversarial destination getters, when metadata l
   snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(answer);
   Object.assign(answer.settings, { enabled: false, revision: 'changed-later' });
   assert.equal(snapshots.writeAuditEvent(eventFor()), true);
-  assert.equal(admitted[0]?.destinationRevision, 'revision-a'); assert.equal(destinationReads, 0);
+  assert.equal(admitted.length, 2);
+  assert.equal(admitted.at(-1)?.destinationRevision, 'revision-a'); assert.equal(destinationReads, 0);
   assert.doesNotMatch(JSON.stringify(admitted), /private-destination-cause|changed-later/);
 });
 
@@ -216,7 +221,7 @@ for (const failure of ['synchronous', 'rejected', 'enabled-getter', 'revision-ge
       return Promise.resolve(result);
     } };
     const snapshots = new AuditSnapshots(store, { admit: item => { admitted.push(item); } }, { now: () => now }); t.after(() => snapshots.close());
-    assert.equal(snapshots.writeAuditEvent(eventFor()), false);
+    assert.equal(snapshots.writeAuditEvent(eventFor()), true);
     assert.equal(reads, 0); await immediateTurn(); assert.equal(reads, 1);
     snapshots.writeAuditEvent(eventFor()); await immediateTurn(); assert.equal(reads, 1);
     now += 5_000; snapshots.writeAuditEvent(eventFor()); await immediateTurn();
@@ -237,10 +242,11 @@ test('Given exactly enough bytes for one resident and load, when a valid multiby
   const snapshots = new AuditSnapshots(store, { admit: item => { admitted.push(item); } }, { bounds: { metadataBytes: 528 } }); t.after(() => snapshots.close());
   snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(settings(true, 'é'.repeat(64)));
   assert.equal(snapshots.writeAuditEvent(eventFor()), true);
-  assert.equal(admitted[0]?.destinationRevision, 'é'.repeat(64));
+  assert.equal(admitted.length, 2);
+  assert.equal(admitted.at(-1)?.destinationRevision, 'é'.repeat(64));
 });
 
-test('Given unknown or disabled capture, when an event contains content getters, then loading touches only its tenant and retains none of that content', async t => {
+test('Given unknown then disabled capture, when an event contains a throwing getter, then pending admission refuses it safely and fresh disabled capture never reads content', async t => {
   const store = new SnapshotStoreSpy();
   const snapshots = new AuditSnapshots(store, { admit: () => {} }); t.after(() => snapshots.close());
   let contentReads = 0;
@@ -249,5 +255,5 @@ test('Given unknown or disabled capture, when an event contains content getters,
   assert.equal(snapshots.writeAuditEvent(event), false);
   await immediateTurn(); await store.answer(settings(false));
   assert.equal(snapshots.writeAuditEvent(event), false);
-  assert.equal(contentReads, 0);
+  assert.equal(contentReads, 1);
 });

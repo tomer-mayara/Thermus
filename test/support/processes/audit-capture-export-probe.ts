@@ -41,8 +41,6 @@ try {
   assert.ok(saved.status === 'saved');
   assert.ok(saved.settings.revision);
   const revision = saved.settings.revision;
-  audit.toolCompleted({ ...completion, operationId: 'cold-trigger-operation', result: 'cold-trigger-content' });
-  await new Promise<void>(resolve => setImmediate(resolve));
   const beforeDispatchReads = reads;
   const guard = setTimeout(() => attempted.resolve({ kind: 'unconfirmed', reason: 'timeout' }), 7_000);
   let exported: AuditSendOutcome;

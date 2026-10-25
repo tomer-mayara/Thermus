@@ -378,15 +378,25 @@ AuditEventSink is the neutral destination contract: its synchronous
 `writeAuditEvent` call may refuse admission and does not await export. When hosted
 settings storage is available, app supplies one AuditLog backed by
 [AuditSnapshots](../src/logs/audit/audit-snapshots.ts) to MCP and web. The snapshot
-owner uses the existing settings store to load only enabled/revision metadata
-for future activity. Fresh enabled snapshots forward detached, frozen events
-with a saved revision to RevisionBoundAuditSink. Hosted storage supplies an
+owner uses the existing settings store to load enabled/revision metadata.
+Fresh enabled snapshots forward detached, frozen events with a saved revision to
+RevisionBoundAuditSink. Hosted storage supplies an
 [AuditCollector](../src/logs/audit/audit-collector.ts) through that contract.
-Unknown, disabled, and expired snapshots drop the current event. Loading never
-waits in a product response and never revives the triggering content. Without
-hosted storage, and in the local edition, app retains the discard AuditLog.
-The collector owns bounded memory admission and asynchronous dispatch. No event
-content is written to SQL.
+For a missing or expired snapshot, the owner holds bounded projected events
+while one asynchronous settings load runs. A current enabled result binds that
+batch once to its observed revision. It reports the observation before admitting
+the batch in arrival order. A fresh disabled snapshot refuses new events;
+disabled, absent, invalid, failed, or late load results discard pending content.
+Loading never waits in a product response. `true` from capture can mean only
+provisional pending admission, not dispatch or receipt.
+
+The first metadata read decides admission. An Enable concurrent with that read
+can be observed and authorize pending content; the read does not establish the
+settings at each event's timestamp. Once a batch is discarded, later Enable or
+recovery cannot revive it. The collector still checks current enabled state and
+the exact captured revision before every send. Without hosted storage, and in
+the local edition, app retains the discard AuditLog. The collector owns bounded
+memory admission and asynchronous dispatch. No event content is written to SQL.
 
 MCP captures validated fetch/search input and final public text after SDK
 projection and safe error/cancellation mapping. Invalid arguments, unknown tools,
@@ -406,16 +416,21 @@ accounted metadata. Tenant IDs are at most 1,024 UTF-8 bytes; saved revisions ar
 at most 128. Resident accounting reserves tenant bytes, the full revision
 allowance, and 128 bookkeeping bytes. A load also reserves tenant bytes and 256
 bookkeeping bytes, including its reference to an expired resident after eviction. This bounds retained fields and record counts; it does not
-measure JavaScript heap. Entries hold no endpoint, ciphertext, credential, or
-triggering content. Freshness/backoff eviction happens on activity, with no idle
-poll or refresh timer. Unexpired failure backoff cannot be evicted to bypass it.
+measure JavaScript heap. Resident entries hold metadata only, with no endpoint,
+ciphertext, credential, or event content. Each load may separately retain 16
+events and 1 MiB of serialized UTF-8 event bytes, with a 131,072-byte event limit.
+The two-load bound therefore permits at most 32 pending events and 2 MiB,
+separate from the collector's queue. Events are detached and frozen at pending
+admission. Freshness/backoff eviction happens on activity, with no idle poll or
+refresh timer. Unexpired failure backoff cannot be evicted to bypass it.
 
-An absolute load deadline starts at admission; expired work cannot start a read or
-apply a result even if its timer has not run. Expiry invalidates capture but keeps
-an active read's global and per-tenant
-reservation until the underlying store promise settles. An identity check rejects
-late results after timeout, eviction, or close. Close cancels scheduled callbacks
-and deadlines, clears resident snapshots, and prevents new reads without waiting
+An absolute load deadline starts at admission; later events share it without
+extension. Expired work cannot start a read or apply a result even if its timer
+has not run. Expiry clears pending payloads and invalidates capture, but keeps an
+active read's global and per-tenant metadata reservation until the underlying
+store promise settles. An identity check rejects late results after timeout,
+eviction, or close. Close cancels scheduled callbacks and deadlines, clears
+resident snapshots and pending payloads, and prevents new reads without waiting
 for an uncooperative store. At most two started unresolved read reservations can
 remain until settlement; the SQL owner bounds and closes its separate work.
 Snapshots are not authority for remote dispatch; the destination service freshly
@@ -427,7 +442,10 @@ sending, and backoff states. Defaults are 128 global/16 tenant items, 8 MiB/1 Mi
 serialized envelopes, 131,072 event bytes, 32 tenants, and two active exports with
 one per tenant. Tenant FIFO includes backoff. Each item has one 30-second age
 from admission; an authorization read has at most 2.5 seconds. These are content
-and record bounds, not measured JavaScript heap.
+and record bounds, not measured JavaScript heap. Pending capture can add up to
+2.5 seconds before collector admission, so content retention across those owners
+can reach 32.5 seconds. Physical read/native cleanup can retain charged metadata
+after content has been cleared.
 
 The destination service reads one full current saved version before each attempt.
 It requires enabled state and the captured revision, then recovers that version's
@@ -1056,9 +1074,10 @@ TLS/grants. Missing or failed storage leaves MCP and admitted product access
 independent of SQL. The local edition does not open this pool.
 
 Hosted application close starts MCP cleanup and hosted storage cleanup together.
-Hosted composition first closes snapshots, then the collector stops admission,
-clears content and aborts attempts, then SQL closes. The SQL runtime rejects new
-work, expires admitted calls and bounds pool closure within the existing process
+Hosted composition first closes snapshots and clears their pending content,
+then the collector stops admission, clears content and aborts attempts, then SQL
+closes. The SQL runtime rejects new work, expires admitted calls and bounds pool
+closure within the existing process
 shutdown deadline. Unsettled read/native work retains charged metadata
 reservations; late results cannot start dispatch or restore content. The settings
 datastore persists across runtime closure; export queues are memory-only.
@@ -1088,9 +1107,10 @@ The following limits affect architectural decisions today:
   [accountChangeRecorder](../src/app/application.ts). Step records are explicitly
   [best effort](../src/pipelines/execution/step-record.ts). These streams provide
   no customer audit access. Separate customer capture is wired through a supplied
-  AuditLog. Hosted activity-driven snapshots gate future capture, and bounded
-  asynchronous dispatch freshly authorizes each attempt. Queue pressure, expiry,
-  failure, and restart can lose events; retries can duplicate receipt. Thermus
+  AuditLog. Hosted activity-driven snapshots gate capture and retain bounded
+  events while initial or expired settings load. Bounded asynchronous dispatch
+  freshly authorizes each attempt. Queue pressure, expiry, failure, and restart
+  can lose events; retries can duplicate receipt. Thermus
   stores no audit history and promises no durable destination storage.
 - [BillingFree](../src/accounts/billing/billing-free.ts) returns a free plan and
   zero billed seats, including after seat updates. The billing role is a seam,

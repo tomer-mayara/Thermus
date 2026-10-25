@@ -87,7 +87,7 @@ export async function runHostedAuditJourney(t: TestContext, destination: { endpo
   const unchanged = await browser.submit({ ...unchangedForm, fields: { ...unchangedForm.fields, endpoint: destination.endpoint, auth: 'bearer', token: '', enabled: 'on' } });
 
   const deadline = Date.now() + 10_000;
-  while (outcomes.length < 5 && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10));
+  while (outcomes.length < 6 && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10));
   const accessAfter = await browser.open('portal/access');
   return {
     tenant, actor: admin.id, authority: `workos:${site.world.settings.clientId}`, session: JSON.parse(session.body),

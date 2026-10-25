@@ -1,8 +1,8 @@
 import type { AuditEvent } from '../../../../../src/logs/audit/audit-log.ts';
 import type { ReadSettingsResult } from '../../../../../src/logs/audit/destination-settings-store.ts';
 
-export function eventFor(organizationId = 'tenant-a'): AuditEvent {
-  return { eventName: 'audit.destination.changed', timestamp: '2026-10-24T12:00:00.000Z', organizationId, actor: { authority: 'provider', subject: 'admin' }, action: 'save', outcome: 'saved' };
+export function eventFor(organizationId = 'tenant-a', subject = 'admin'): AuditEvent {
+  return { eventName: 'audit.destination.changed', timestamp: '2026-10-24T12:00:00.000Z', organizationId, actor: { authority: 'provider', subject }, action: 'save', outcome: 'saved' };
 }
 
 export function settings(enabled = true, revision = 'revision-a'): ReadSettingsResult {

@@ -1,16 +1,17 @@
 # Organization administration plan
 
-Plan reviewed: 24 October 2026. Slice 1 implementation is merged; its release
-prerequisites remain. The combined Slice 2 candidate includes settings, Save/Test,
-capture, snapshots, delivery, visible help, and controlled integration proof.
+Plan reviewed: 25 October 2026. Slice 1 and Slice 2 are merged, and the internal
+Thermus AI rollout is live. [PR #252](https://github.com/tomer-mayara/Thermus/pull/252)
+contains the first-event capture follow-up. Its revised contract below supersedes
+the original rule that dropped the event which loaded or refreshed settings.
+This correction has not yet been verified against the live customer destination.
+
 The [Slice 2 review and remaining work](#slice-2-review-and-remaining-work)
-records the redaction correction, the single stack integration path, and merge checks.
+retains the original stack review, redaction correction, and merge checks.
 The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
-owns the separate activation requirements. PR #245 records the code integration;
-Slice 2 release remains separate.
-Ticket records describe their historical increments; their earlier missing
-features are not the status of the combined candidate. Merged does not mean
-released, and passing controlled tests does not complete owner gates.
+retains the rollout and release evidence. Ticket records describe their historical
+increments; earlier missing features and candidate holds are not the current
+internal rollout status. Historical gate passes do not verify this follow-up.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -63,9 +64,11 @@ settings store and bounded SQL runtime. S2-01b in PR #238 implements the Admin
 settings page and Save. S2-02a implements the isolated sender, and S2-02b adds
 the saved-destination Test. The S2-03a candidate captures customer tool/Admin
 events through a supplied sink. S2-03b adds fresh enabled/revision snapshots from
-activity-driven settings reads. Unknown, disabled, or expired snapshots drop the
-current event. S2-03c connects the revision-bound handoff to bounded memory
-admission and current-version dispatch.
+activity-driven settings reads. The 25 October follow-up keeps the first event
+after startup or freshness expiry in bounded memory while those settings load.
+An enabled result binds it to the observed revision; a disabled or failed result
+discards it. This supersedes the original S2-03b warm-up drop rule. S2-03c connects
+the revision-bound handoff to bounded memory admission and current-version dispatch.
 [Tool completion records](../../src/interfaces/mcp/tool-completion-record.ts)
 now omit tool URLs, queries, reasons, and results from operator output.
 
@@ -677,20 +680,38 @@ Choose fixed v1 schemas/limits and test maximum inputs, escaping, and byte/Unico
 boundaries, not just examples. No per-org numeric setting, chunks/reassembly, or
 general text serializer.
 
-At event creation, use an available per-org settings snapshot. Disabled/unknown
-snapshots drop that event; never retain it for later Enable. Bind queued work to
-tenant/revision. Eligible trusted-tenant activity schedules asynchronous loading
-of missing or due-for-refresh snapshots, including cached-disabled values. Allow
-one in-flight load per org and bound admitted work, time, and resources. Keep only
-enabled/revision metadata in snapshots, never endpoints or credentials. Bound resident
-snapshot/backoff items and bytes; evict through activity, treating evicted orgs as
-unknown. Late loads cannot restore evicted or shutdown state. Never await refresh
-in a tool/admin response. Successful loads affect future captures only; never revive
-old content/revisions. Idle tenants cause no reads. S2-03 fixes refresh/backoff
-bounds; add no general cache framework. A failed refresh makes the
-capture snapshot unknown until a later activity-driven load succeeds; retain only
-bounded backoff bookkeeping. Pending items still use their separate current-store
-dispatch checks; no dropped content is revived.
+At event creation, use an available fresh per-org settings snapshot. A fresh
+enabled snapshot binds the event to its saved revision; a fresh disabled snapshot
+drops it. If the snapshot is missing or expired, keep the detached, frozen event
+only while one bounded asynchronous settings load runs. This includes the first
+event after startup and the event that starts a freshness refresh. Other events
+for that org may join the same pending batch within its fixed limits. Never await
+this load in a tool/admin response.
+
+A successful, current, unexpired enabled read binds the pending events once to
+that observed revision. Notify the collector of the observation, then admit the
+batch in arrival order. A disabled, absent, invalid, failed, or late result drops
+the batch permanently. Close also clears it. Fresh disabled snapshots, failure
+backoff, and exhausted capacity refuse new content. A later Enable or recovery
+cannot revive discarded events. The initial read is the admission decision; it
+does not prove enabled state at the event timestamp. An Enable that overlaps the
+pending read can be observed and authorize that batch. Each send still requires
+the collector's separate fresh enabled/exact-revision check.
+
+Keep only enabled/revision metadata in resident snapshots, never endpoints or
+credentials. Each load may hold at most 16 events and 1 MiB of serialized UTF-8
+event bytes, with at most 131,072 bytes per event. Two load reservations bound
+pending capture to 32 events and 2 MiB, separate from the collector queue. The
+2.5-second load deadline starts with the first event and later events cannot
+extend it. Drop pending payloads at timeout or close, but charge an unresolved
+physical read until its promise settles. These limits bound content and records,
+not JavaScript heap.
+
+Bound resident snapshot/backoff items and bytes; evict through activity, treating
+evicted orgs as unknown. Late loads cannot restore evicted or shutdown state.
+Idle tenants cause no reads. A failed refresh leaves capture unknown with only
+bounded backoff bookkeeping until later eligible activity starts a new load.
+Add no general cache framework, idle polling, durable event store, or replay.
 
 Customer sink failure cannot change tool results or fail/replay completed admin
 actions. Isolate it from throwing post-write `ChangeRecorder.record()` calls made
@@ -1664,7 +1685,7 @@ reference and adds no S2 prerequisite.
 | S2-02a | Audit API foundation and existing runtime contracts | Narrow safe OTLP/HTTP JSON sender. | Actual-connection egress and bounded protocol outcomes pass. |
 | S2-02b | S2-01b, S2-02a | Save the current form, then optionally Test that saved destination. | Save-before-Test, failed Save, saved-revision, disabled Test, and late-result cases pass. |
 | S2-03a | S2-01b | Safe customer events and operator-content removal. | Final public content and shipped admin events have correct isolation and byte bounds. |
-| S2-03b | S2-01a, S2-03a | Activity-driven settings snapshots. | Cold start, remote Enable, read recovery, and no idle reads pass. |
+| S2-03b | S2-01a, S2-03a | Activity-driven settings snapshots and bounded pending capture. | First event after startup/expiry, remote Enable, read recovery, bounded retention, and no idle reads pass. |
 | S2-03c | S2-02a, S2-02b, S2-03b | Bounded queue, current-revision dispatch, and retries. | Isolation, overload, outage, retry, and shutdown cases pass. |
 | S2-04 | Implemented S2-01/02/03 and configured Slice 1 implementation | Integrated verification, owner rollout, documents, and release. | Full Slice 2 journey and actual storage/Collector/manual/legal/$0 proof pass. |
 
@@ -2169,66 +2190,79 @@ are not a latency guarantee.
 
 #### S2-03b — Activity-driven settings snapshots
 
+**25 October correction.** The original S2-03b candidate discarded the event that
+started a settings load. That rule loses the first event after startup and after
+the 30-second freshness period. The following acceptance criteria and steps
+supersede that rule; the linked original PR remains historical evidence.
+
 **Acceptance specification first:**
 
 ```gherkin
-Scenario: Learn settings without waiting in the product path
-  Given a cold runtime or cached-disabled organization with remote Enable
-  When eligible trusted-tenant activity occurs
-  Then the current event is dropped if its snapshot is unknown or disabled
-  And a bounded asynchronous load makes later activity use the new saved revision
+Scenario: Capture the first event without waiting in the product path
+  Given enabled saved settings and a new runtime or expired snapshot
+  When the first trusted-tenant tool or Admin action completes
+  Then its response returns without waiting for settings or export
+  And its bounded audit event waits for one settings load
+  And a current enabled result admits that event once under the observed revision
 
-Scenario: Recover from a failed load without idle reads
-  Given a settings read that fails and then recovers
-  When later eligible activity reaches the fixed retry/refresh boundary
-  Then loading recovers for future events and idle tenants cause no reads
+Scenario: Discard unresolved content safely
+  Given audit events waiting for one settings load
+  When the result is disabled, absent, invalid, failed, or too late, or the owner closes
+  Then all waiting content is discarded
+  And a later Enable or successful load cannot revive that content
+
+Scenario: Keep pending capture bounded
+  Given an active metadata read and events for its organization
+  When more events arrive before that read settles
+  Then admitted events keep their arrival order and share its original deadline
+  And events beyond the count or byte limit are refused without delaying product work
 ```
 
-**Gap / expected red at the parent.** There is no activity-driven customer settings snapshot owner.
-Cold-start, cached-disabled refresh, and recovery cases should be red. The 03a capture
-contract and product response isolation stay green.
+**Gap / expected red at the follow-up base.** The original owner intentionally
+loses the first event. New startup/restart and freshness-expiry acceptance cases
+must fail before the correction. Capture projection, product response isolation,
+and collector revision checks remain green.
 
 **Ordered TDD steps:**
 
-1. Red: snapshot-owner cases start unknown, enabled, and disabled with a controlled
-   clock/store. Green: capture uses only the available snapshot and binds admitted events to
-   tenant/revision; unknown/disabled drops now. Refactor with no retained pre-Enable content
-   and no settings read awaited by MCP/admin responses.
-2. Red: repeated eligible activity starts overlapping missing/due loads or exceeds admitted
-   resources; include late loads after eviction/shutdown. Green: one in-flight load per org
-   with fixed global/load/time bounds and
-   asynchronous scheduling. Bound resident snapshot/backoff items and bytes, retaining only
-   enabled/revision metadata, never endpoint/token. Evict through activity; an evicted org
-   becomes unknown; late loads cannot restore evicted/shutdown state. Refactor
-   without a cache framework, idle timer, keepalive, or tenant polling service.
-3. Red: an instance caches disabled settings while another enables them. Green: refresh
-   cached-disabled values on eligible activity under fixed freshness bounds. A successful load
-   affects future captures only. Refactor and prove it never revives the event that caused
-   loading or any old revision's content.
-4. Red: failed/slow reads and repeated activity defeat backoff or leak work. Green: a
-   failed refresh leaves no usable capture snapshot until a later activity-driven
-   load succeeds. Retain only bounded backoff bookkeeping and enforce fixed deadlines.
-   Pending queue items keep their separate current-store checks; never revive dropped
-   content. Refactor with cancellation and safe shutdown; store failure cannot alter
-   tool/admin outcomes or trigger a Node restart.
-5. Run real capture/snapshot/store collaboration for cold enabled restart, remote Enable,
-   failure/recovery, and two tenants. Use explicit controlled completion signals rather than
-   sleep-based timing assertions. Verify no reads during an idle interval and document the
-   chosen refresh/backoff/admission bounds.
+1. Red: cold and expired enabled settings lose the first bounded event. Green:
+   retain a detached, frozen copy during one settings load and bind it once to
+   that read's enabled revision. Refactor within the existing snapshot owner;
+   no synchronous SQL wait or separate worker is needed.
+2. Red: concurrent events exceed pending count/byte limits, mutate retained
+   content, reorder, or extend the load deadline. Green: one fixed-deadline batch
+   per load, 16 events/1 MiB per batch, 131,072 event bytes, and the existing two
+   global load reservations. Notify the collector before FIFO admission. Keep
+   snapshot/backoff metadata separate from this temporary content account.
+3. Red: disabled, absent, invalid, failed, timed-out, or closed loads retain or
+   revive their content. Green: clear each batch permanently; retain only bounded
+   failure bookkeeping and unsettled physical-read reservations as required.
+   Fresh disabled state drops immediately. Refactor and test later Enable and
+   recovery without replay. The read result decides initial admission; document
+   the concurrent-Enable observation window instead of an event-time guarantee.
+4. Red: late results after deadline, eviction, or shutdown restore capture, or
+   uncooperative reads release their slots early. Green: preserve absolute
+   deadlines, identity checks, failure backoff, and accounting until physical
+   settlement. Pending collector work keeps its separate fresh authorization;
+   no old revision is retargeted and no failure changes tool/Admin results.
+5. Run real capture/snapshot/store and hosted MCP/Admin collaboration for the
+   first event after startup/restart and expiry, query/result preservation,
+   remote Enable, failure/recovery, and tenant isolation. Use controlled
+   completion signals and clocks. Remove required warm-up requests from the
+   integrated Collector journey. Idle time starts no reads.
 
-**Homes and anchors.** Add the proposed narrow snapshot owner beside customer capture,
-consuming the 01a public store contract and 03a sink boundary. Existing
-`test/support/in-process/` sites and `test/support/doubles/logging/` show support roles.
-Keep owner units with audit, real cross-package collaboration under `test/integration/`,
-and public cold/recovery acceptance under `test/acceptance/`. Snapshot freshness is not
-authority to dispatch; 03c owns current store checks.
+**Homes and anchors.** Keep the snapshot owner beside customer capture, using the
+01a store and 03a sink boundaries. Keep units under audit, real cross-package
+collaboration under `test/integration/`, and startup/recovery behavior under
+`test/acceptance/`. Existing `test/support/in-process/` sites and
+`test/support/doubles/logging/` supply controlled collaborators. Snapshot
+freshness is not dispatch authority; 03c owns current store checks.
 
-**Implementation candidate.** The [S2-03b record](../implementation/admin-s2-03b.md)
-describes the snapshot owner, fixed resource bounds, failure behavior, and shutdown.
-Cold/disabled/expired activity drops the current event; loads affect future capture
-only. That slice used a refusing downstream sink; S2-03c supplies dispatch.
-The linked PR records its acceptance and complete-candidate execution evidence;
-refresh applicable evidence when its candidate changes.
+**Current implementation contract.** The
+[S2-03b record](../implementation/admin-s2-03b.md) describes pending capture,
+resource bounds, failure behavior, and shutdown. S2-03c supplies dispatch.
+The original PR's drop-first-event evidence does not verify this correction;
+refresh the affected tests and complete-candidate checks for the follow-up PR.
 
 #### S2-03c — Bounded queue and current-revision dispatch
 
@@ -2342,9 +2376,10 @@ Scenario: Use Audit logs while the product stays available
   Given configured Slice 1 implementation and completed Slice 2 implementation groups
   And a current password-authenticated Admin, reachable supported OTLP destination, and available capacity
   When the Admin saves a disabled destination, Tests it once, and enables it
-  And eligible activity loads the saved revision after Enable
-  And subsequent MCP and shipped Admin actions use an available enabled snapshot
-  Then the saved tenant receives bounded tool content and administration metadata
+  And the first eligible MCP action after startup or freshness expiry completes
+  And the settings read succeeds with enabled state before its deadline
+  Then that action is admitted without a warm-up request
+  And the saved tenant receives its bounded input/result and shipped Admin metadata
   And operator output excludes tool content and product outcomes stay independent
 ```
 
