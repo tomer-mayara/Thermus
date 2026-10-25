@@ -4,15 +4,15 @@ import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 import { formsIn, formLabelled } from '../../../support/drivers/browser/hosted-browser.ts';
 import { serveAuditAdministrationSite as captureSite, auditAdministrationAdmin as admin } from '../../../support/in-process/audit-administration-site.ts';
 
-test('Given a current Admin and saved destination, when Test completes, then one action event is separate from its one synthetic test and contains no sender response', async t => {
+test('Given a current Admin and saved destination, when Test completes, then Save and Test action events are separate from the synthetic test and contains no sender response', async t => {
   const events: AuditEvent[] = [];
   const { browser, sent } = await captureSite(t, event => { events.push(event); });
   const form = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
   await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: 'audit-test-token' } });
-  const saved = formLabelled(formsIn((await browser.open('logging')).body), 'Test saved destination');
+  const saved = formLabelled(formsIn((await browser.open('logging')).body), 'Test');
   const response = await browser.submit({ ...saved, fields: { ...saved.fields, endpoint: 'https://collector.example/v1/logs', token: '' } });
   assert.equal(response.status, 200, response.body);
-  assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome]), [['save', 'saved'], ['test', 'tested']]);
+  assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome]), [['save', 'saved'], ['save', 'unchanged'], ['test', 'tested']]);
   assert.equal(sent.length, 1);
   assert.equal(sent[0]?.eventName, 'audit.destination.test');
   assert.doesNotMatch(JSON.stringify(events), /accepted|collector|revision/);
@@ -52,7 +52,7 @@ test('Given a current Admin and enabled capture, when Audit logs Save completes,
   const { browser, tenantId, store, site } = await captureSite(t, event => { events.push(event); });
   const form = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
   const response = await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://private-collector.example/v1/logs', auth: 'bearer', token: 'private-capture-token', enabled: 'on' } });
-  assert.equal(response.status, 303);
+  assert.equal(response.status, 200);
   assert.equal(store.writes, 1);
   assert.equal(events.length, 1);
   assert.equal(events[0]?.eventName, 'audit.destination.changed');
@@ -68,7 +68,7 @@ for (const failure of ['throw', 'refuse'] as const) {
     const { browser, store } = await captureSite(t, () => { captures++; if (failure === 'throw') throw new Error('private-sink-cause'); return false; });
     const form = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
     const response = await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: 'audit-test-token', enabled: 'on' } });
-    assert.equal(response.status, 303);
+    assert.equal(response.status, 200);
     assert.equal(store.writes, 1);
     assert.equal(captures, 1);
     assert.doesNotMatch(response.body, /private-sink-cause/);

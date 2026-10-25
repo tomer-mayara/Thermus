@@ -30,6 +30,7 @@ p,li,form{overflow-wrap:anywhere;min-width:0}
 .invite-card form{display:grid;gap:12px}
 label,legend{font-size:15px}
 input[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}
+.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}
 fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}
 legend{padding:0;margin-bottom:6px}
 .role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}
@@ -48,9 +49,11 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .logging-switch-on{display:none}
 .logging-switch input:checked~.logging-switch-off{display:none}
 .logging-switch input:checked~.logging-switch-on{display:inline}
+.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}
 .logging-actions{display:flex;flex-wrap:wrap;gap:12px}
 .logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}
 .logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}
+.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}
 .destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}
 .policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}
 .member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}

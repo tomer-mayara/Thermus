@@ -34,6 +34,7 @@ class DestinationStoreFake implements DestinationSettingsStore {
   async save(tenant: string, revision: string | null, desired: DestinationSettings) {
     assert.equal(tenant, tenantId);
     assert.equal(revision, this.current?.revision ?? null);
+    if (this.current !== undefined && this.current.endpoint === desired.endpoint && this.current.axiomDataset === desired.axiomDataset && this.current.auth === desired.auth && this.current.enabled === desired.enabled && this.current.encryptedCredential === desired.encryptedCredential) return { status: 'unchanged' as const, settings: { ...this.current } };
     this.saves++;
     this.current = { ...desired, revision: `runtime-saved-${this.saves}` };
     return { status: 'saved' as const, settings: { ...this.current } };
@@ -59,14 +60,14 @@ for (const submission of submissions) {
   assert.ok(!page.body.includes(submission.token) || submission.token === '');
   assert.match(page.body, /name="token"[^>]*value=""/);
   assert.doesNotMatch(page.body, /name="enabled" checked/);
-  const form = formLabelled(formsIn(page.body), 'Test saved destination');
+  const form = formLabelled(formsIn(page.body), 'Test');
   assert.equal(form.fields.destination, submission.axiomDataset ? 'axiom' : 'custom');
   assert.equal(form.fields.auth, 'bearer');
   const endpoint = /name="endpoint"[^>]*value="([^"]*)"/.exec(page.body)?.[1];
   assert.ok(endpoint);
   assert.equal(endpoint, submission.endpoint);
   const fields = { ...form.fields, endpoint, axiom_dataset: submission.axiomDataset ?? '', token: '' };
-  const unsaved = await browser.submit({ ...form, fields: { ...fields, token: 'unsaved-runtime-token' } });
+  const unsaved = await browser.submit({ ...form, fields: { ...fields, endpoint: `${endpoint}/changed` } });
   const tested = await browser.submit({ ...form, fields });
   const after = await service.read(tenantId);
   results.push({

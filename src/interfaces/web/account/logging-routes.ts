@@ -1,12 +1,14 @@
 import type { RequestContext } from '../../../accounts/identity/access-context.ts';
 import type { AuditLog, DestinationChange } from '../../../logs/audit/audit-log.ts';
-import { loggingTestAnswer } from './logging-test-page.ts';
-import type { DestinationSettingsService, DestinationSettingsSaveResult, DestinationTestResult } from '../../../logs/audit/destination-settings-service.ts';
+import { loggingRequestNotice, loggingTestNotice } from './logging-test-page.ts';
+import type { DestinationSettingsService, DestinationSettingsSaveInput, DestinationSettingsSaveResult, DestinationTestResult, PublicDestinationSettings } from '../../../logs/audit/destination-settings-service.ts';
 import type { AdministrationHandler } from './administration-routes.ts';
 import { readForm } from './account-form.ts';
-import { accessDeniedPage, noticePage, seeOther } from './account-pages.ts';
+import type { FormRefusal } from './account-form.ts';
+import { accessDeniedPage } from './account-pages.ts';
 import { loggingForm } from './logging-form.ts';
-import { loggingNotice, loggingPage } from './logging-page.ts';
+import { loggingPage } from './logging-page.ts';
+import type { LoggingNotice } from './logging-page.ts';
 
 export interface LoggingRoutesOptions {
   readonly publicBaseUrl: string;
@@ -14,6 +16,8 @@ export interface LoggingRoutesOptions {
   readonly service?: Pick<DestinationSettingsService, 'read' | 'save'> & Partial<Pick<DestinationSettingsService, 'test'>>;
   readonly audit?: Pick<AuditLog, 'destinationChanged'>;
 }
+
+const unavailable: LoggingNotice = { title: 'Audit logs unavailable', message: 'Audit logs settings are unavailable. Read saved settings before making another change.', status: 503 };
 
 // Current access is resolved before this boundary. The tenant and Admin permission come only from that decision.
 export class LoggingRoutes {
@@ -33,74 +37,87 @@ export class LoggingRoutes {
         return accessDeniedPage(this.paths.organizations);
       }
       try {
-        if (path === this.paths.test) return await this.test(request, session.csrfToken, context);
-        if (path === this.paths.save) return await this.save(request, session.csrfToken, context);
-        if (request.method !== 'GET' && request.method !== 'HEAD') return noticePage('methodNotAllowed', { Allow: 'GET, HEAD' });
-        const result = await this.options.service?.read(context.tenantId);
-        if (result === undefined || result.status === 'unavailable') return this.unavailable();
-        return loggingPage({ settings: result.settings, tenantId: context.tenantId, csrfToken: session.csrfToken, action: this.paths.save, testAction: this.paths.test, navigation: this.paths });
+        if (path === this.paths.test || path === this.paths.save) return await this.change(request, session.csrfToken, context, path === this.paths.test ? 'test' : 'save');
+        if (request.method !== 'GET' && request.method !== 'HEAD') return this.refuse('methodNotAllowed', 'GET, HEAD');
+        return await this.readPage(session.csrfToken, context);
       } catch {
         request.signal.throwIfAborted();
         // Collaborator errors can contain credentials. Do not pass their causes to the account failure reporter.
-        return this.unavailable();
+        return this.page(unavailable);
       }
     };
   }
 
-  private async save(request: Request, csrfToken: string, context: RequestContext): Promise<Response> {
-    const { tenantId } = context;
-    if (request.method !== 'POST') return noticePage('methodNotAllowed', { Allow: 'POST' });
-    if (request.headers.get('Origin') !== this.origin) return noticePage('forgedRequest');
+  private async change(request: Request, csrfToken: string, context: RequestContext, action: 'save' | 'test'): Promise<Response> {
+    if (request.method !== 'POST') return this.refuse('methodNotAllowed', 'POST');
+    if (request.headers.get('Origin') !== this.origin) return this.refuse('forgedRequest');
     const body = await readForm(request);
     const form = typeof body === 'string' ? body : loggingForm(body, csrfToken);
-    if (typeof form === 'string') return noticePage(form);
-    if (form.tenantId !== tenantId) {
-      this.keep(context, 'save', 'stale');
-      return noticePage('changeStale');
+    if (typeof form === 'string') return this.refuse(form);
+    if (form.tenantId !== context.tenantId) {
+      this.keep(context, action, 'stale');
+      return this.refuse('changeStale');
     }
     const { tenantId: _, ...settings } = form;
     request.signal.throwIfAborted();
-    if (this.options.service === undefined) {
-      this.keep(context, 'save', 'unavailable');
-      return this.unavailable();
+    if (this.options.service === undefined || (action === 'test' && this.options.service.test === undefined)) {
+      this.keep(context, action, 'unavailable');
+      return this.page(unavailable);
     }
+    const saved = await this.saveSettings(request, context, settings);
+    if (!('settings' in saved)) return this.saveFailure(saved, csrfToken, context);
+    if (action === 'save') return this.page(undefined, saved.settings, csrfToken, context.tenantId, true);
+    const tested = await this.testSaved(request, context, saved.settings);
+    const notice = loggingTestNotice(tested);
+    if (tested.status !== 'tested') return this.readPage(csrfToken, context, notice, saved.settings.revision);
+    return this.page(notice, saved.settings, csrfToken, context.tenantId, true);
+  }
+
+  private async saveSettings(request: Request, context: RequestContext, settings: DestinationSettingsSaveInput): Promise<DestinationSettingsSaveResult> {
     let result: DestinationSettingsSaveResult;
-    try {
-      result = await this.options.service.save(tenantId, settings);
-    } catch {
+    try { result = await this.options.service?.save(context.tenantId, settings) ?? { status: 'unavailable' }; }
+    catch {
       request.signal.throwIfAborted();
       result = { status: 'unconfirmed' };
     }
     this.keep(context, 'save', result.status);
-    return this.saveAnswer(result);
+    return result;
   }
 
-  private async test(request: Request, csrfToken: string, context: RequestContext): Promise<Response> {
-    const { tenantId, user: actor } = context;
-    if (request.method !== 'POST') return noticePage('methodNotAllowed', { Allow: 'POST' });
-    if (request.headers.get('Origin') !== this.origin) return noticePage('forgedRequest');
-    const body = await readForm(request);
-    const form = typeof body === 'string' ? body : loggingForm(body, csrfToken);
-    if (typeof form === 'string') return noticePage(form);
-    if (form.tenantId !== tenantId) {
-      this.keep(context, 'test', 'stale');
-      return noticePage('changeStale');
-    }
-    const { tenantId: _, ...settings } = form;
+  private async testSaved(request: Request, context: RequestContext, settings: PublicDestinationSettings): Promise<DestinationTestResult> {
+    const destination = { endpoint: settings.endpoint, ...(settings.axiomDataset === undefined ? {} : { axiomDataset: settings.axiomDataset }), auth: settings.auth, enabled: settings.enabled };
     request.signal.throwIfAborted();
-    if (this.options.service?.test === undefined) {
-      this.keep(context, 'test', 'unavailable');
-      return this.unavailable();
-    }
     let result: DestinationTestResult;
-    try {
-      result = await this.options.service.test(tenantId, settings, actor, request.signal);
-    } catch {
+    try { result = await this.options.service?.test?.(context.tenantId, { ...destination, expectedRevision: settings.revision, token: '' }, context.user, request.signal) ?? { status: 'unavailable' }; }
+    catch {
       request.signal.throwIfAborted();
       result = { status: 'unconfirmed' };
     }
     this.keep(context, 'test', result.status);
-    return loggingTestAnswer(result, this.paths.logging);
+    return result;
+  }
+
+  private async saveFailure(result: Exclude<DestinationSettingsSaveResult, { readonly settings: PublicDestinationSettings }>, csrfToken: string, context: RequestContext): Promise<Response> {
+    if (result.status === 'conflict') return this.readPage(csrfToken, context, loggingRequestNotice('changeStale'));
+    if (result.status === 'invalid') return this.readPage(csrfToken, context, { title: 'Invalid settings', message: 'Check the public HTTPS endpoint, Axiom dataset, authentication, and token. No settings were saved. No Test was sent.', status: 400 });
+    if (result.status === 'unconfirmed') return this.page({ title: 'Save unconfirmed', message: 'The Save result is unconfirmed. No Test was sent. Read saved settings before making another change. A pending Save can finish after that read.', status: 503 });
+    return this.page(unavailable);
+  }
+
+  private async readPage(csrfToken: string, context: RequestContext, notice?: LoggingNotice, savedRevision?: string | null): Promise<Response> {
+    const result = await this.options.service?.read(context.tenantId).catch(() => ({ status: 'unavailable' as const }));
+    if (result === undefined || result.status === 'unavailable') return this.page(notice === undefined ? unavailable : { ...notice, status: 503, message: `${notice.message} Current saved settings are unavailable. Read saved settings before another change.` });
+    return this.page(notice, result.settings, csrfToken, context.tenantId, savedRevision !== undefined && result.settings.revision === savedRevision);
+  }
+
+  private page(notice?: LoggingNotice, settings?: PublicDestinationSettings, csrfToken = '', tenantId = '', saved = false): Response {
+    return loggingPage({ ...(notice === undefined ? {} : { notice }), ...(settings === undefined ? {} : { settings }), saved, tenantId, csrfToken, action: this.paths.save, testAction: this.paths.test, navigation: this.paths });
+  }
+
+  private refuse(name: FormRefusal | 'changeStale' | 'methodNotAllowed', allow?: string): Response {
+    const response = this.page(loggingRequestNotice(name));
+    if (allow !== undefined) response.headers.set('Allow', allow);
+    return response;
   }
 
   private keep(context: RequestContext, action: DestinationChange['action'], outcome: DestinationChange['outcome']): void {
@@ -109,17 +126,5 @@ export class LoggingRoutes {
     } catch {
       // Capture failure cannot change Save or Test, and must not expose an export cause.
     }
-  }
-
-  private saveAnswer(result: DestinationSettingsSaveResult): Response {
-    if (result.status === 'saved' || result.status === 'unchanged') return seeOther(new URL(this.paths.logging, this.origin).href);
-    if (result.status === 'conflict') return noticePage('changeStale');
-    if (result.status === 'unconfirmed') return loggingNotice({ title: 'Save unconfirmed', message: 'The Save result is unconfirmed. Read saved settings before making another change. A pending Save can finish after that read.', status: 503 }, this.paths.logging);
-    if (result.status === 'invalid') return loggingNotice({ title: 'Invalid settings', message: 'Check the public HTTPS endpoint, Axiom dataset, authentication, and token. No settings were saved.', status: 400 }, this.paths.logging);
-    return this.unavailable();
-  }
-
-  private unavailable(): Response {
-    return loggingNotice({ title: 'Audit logs unavailable', message: 'Audit logs settings are unavailable. Read saved settings before making another change.', status: 503 }, this.paths.logging);
   }
 }

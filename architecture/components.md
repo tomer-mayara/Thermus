@@ -275,16 +275,25 @@ cannot override TLS or connection options. Dotted arrows show labelled compositi
 or source dependencies; solid arrows show runtime collaboration through supplied roles.
 
 The [settings service](../src/logs/audit/destination-settings-service.ts) validates
-settings, including an optional Axiom dataset, and exposes token presence, never
-the token. A nonblank dataset contains at most 128 ASCII letters, digits, or
+settings, including an optional Axiom dataset, and exposes token presence plus
+a narrow saved preview, never the complete token. For a valid Bearer credential
+longer than four characters, the preview is its first four characters plus
+`****`; credentials of four or fewer characters are fully masked. The preview is derived after
+decryption, not stored separately, and reaches only the Admin form placeholder.
+The input value stays empty. Web omits the preview from Test input; sender
+destinations and Audit events do not gain it.
+A nonblank dataset contains at most 128 ASCII letters, digits, or
 hyphens. The web form offers Axiom and Custom choices and only Bearer
 authentication. Axiom requires a dataset; Custom excludes it. The web boundary
 maps that choice into the existing service input and rejects duplicate or
 contradictory fields. The saved dataset determines the selected choice on read;
 the storage format and service contract do not need a separate destination kind.
-Existing None-auth rows remain readable; the form requires a Bearer token Save
-before testing them. Test compares the dataset
-with the saved version; unsaved edits send nothing. The
+Existing None-auth rows remain readable; the form requires a Bearer token Save.
+The web Test action saves the form first, including the export switch, then
+calls the service Test with the returned saved settings and revision, and a
+blank token input. Only saved or unchanged outcomes permit that call. Failed,
+stale, or uncertain saves send no Test event. The service Test compares the
+dataset with the saved version; it still refuses unsaved input. The
 [credential codec](../src/logs/audit/destination-credential-codec.ts) uses AES-256-GCM
 with tenant ID as authenticated data. Wrong keys, changed ciphertext, and tenant
 mismatch fail closed. Blank Bearer input retains the saved token only when
@@ -468,11 +477,23 @@ AuditEventSink; the Slice 2 PostgreSQL settings store holds no audit history or 
 The [Test operation](../src/logs/audit/destination-settings-service.ts) takes the
 trusted tenant and actor from the protected web route. It compares submitted
 fields with one fresh full saved version, decrypts its credential, and sends one
-`audit.destination.test` event even when export is disabled. It neither calls
-Save nor changes Enable. A fresh post-settlement read must confirm the same
+`audit.destination.test` event even when export is disabled. This service operation
+neither calls Save nor changes Enable. The web Test action performs Save first;
+a failed Test cannot undo that committed write. The route records the Save and
+Test phases separately. A fresh post-settlement read must confirm the same
 revision before a sender outcome can leave the service. A changed or absent
 revision suppresses it; a failed read gives an unconfirmed result. No SQL lock
 spans the network attempt. A Save can race an attempt; sent data cannot be recalled.
+Save and Test return fixed safe results inside the Audit settings layout. A
+confirmed Save shows `saved` above the buttons for 30 seconds or until another
+edit. A small hash-pinned page script keeps a one-use, expiring scroll position
+and timestamp in tab storage; it stores no form or credential data. Browser
+storage failure does not prevent native submission. Timed hiding and scroll
+restoration need scripts; native forms and honest results remain available
+without them. An uncertain Save keeps only the styled GET recovery link, without
+a write form or automatic retry. Direct POST responses add no server-side result
+history or session state;
+a deliberate browser resubmission can send another synthetic event.
 
 [DestinationTestLifetime](../src/logs/audit/destination-test.ts) permits four
 active operations per service and gives the caller a five-second total deadline.

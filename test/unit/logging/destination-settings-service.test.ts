@@ -13,7 +13,7 @@ test('Given an Axiom dataset, when saved and read, then the dataset is public an
   const fake = storeFake();
   const service = new DestinationSettingsService(fake.store, key, senderStub);
   const axiom = { ...input, axiomDataset: 'audit-log-test' };
-  assert.deepEqual(await service.save('tenant-a', axiom), { status: 'saved', settings: { revision: 'revision-1', endpoint: input.endpoint, auth: 'bearer', enabled: true, tokenPresent: true, axiomDataset: axiom.axiomDataset } });
+  assert.deepEqual(await service.save('tenant-a', axiom), { status: 'saved', settings: { revision: 'revision-1', endpoint: input.endpoint, auth: 'bearer', enabled: true, tokenPresent: true, tokenPreview: 'priv****', axiomDataset: axiom.axiomDataset } });
   assert.deepEqual(await service.authorizeExport('tenant-a', 'revision-1'), { status: 'ready', destination: { endpoint: input.endpoint, auth: { type: 'bearer', token: input.token }, axiomDataset: axiom.axiomDataset } });
   assert.ok(!JSON.stringify([...fake.rows.values()]).includes(input.token));
 });
@@ -71,12 +71,12 @@ test('Given absent settings, when read, then the destination starts disabled wit
   assert.deepEqual(await service.read('tenant-a'), { status: 'absent', settings: { revision: null, endpoint: '', auth: 'none', enabled: false, tokenPresent: false } });
 });
 
-test('Given a bearer destination, when saved and reread, then only token presence is public and the ciphertext is tenant bound', async () => {
+test('Given a bearer destination, when saved and reread, then only token presence and its masked prefix are public and ciphertext is tenant bound', async () => {
   const fake = storeFake();
   const service = new DestinationSettingsService(fake.store, key, senderStub);
   assert.equal((await service.save('tenant-a', input)).status, 'saved');
   const result = await service.read('tenant-a');
-  assert.deepEqual(result, { status: 'found', settings: { revision: 'revision-1', endpoint: input.endpoint, auth: 'bearer', enabled: true, tokenPresent: true } });
+  assert.deepEqual(result, { status: 'found', settings: { revision: 'revision-1', endpoint: input.endpoint, auth: 'bearer', enabled: true, tokenPresent: true, tokenPreview: 'priv****' } });
   assert.ok(!JSON.stringify([...fake.rows.values()]).includes(input.token));
   fake.rows.set('tenant-b', fake.rows.get('tenant-a')!);
   assert.deepEqual(await service.read('tenant-b'), { status: 'unavailable' });
@@ -229,3 +229,24 @@ test('Given malformed stored settings, when read or saved, then no configured va
 test('Given an empty userinfo marker in an endpoint, when saved, then the endpoint is refused', async () => {
   assert.deepEqual(await new DestinationSettingsService(storeFake().store, key, senderStub).save('tenant-a', { ...input, endpoint: 'https://@collector.example' }), { status: 'invalid', reason: 'endpoint' });
 });
+
+for (const token of ['a', 'ab', 'abc', 'abcd', 'abcde', 'long-private-token']) {
+  test(`Given a saved Bearer token of ${token.length} characters, when projected to an Admin, then only its masked prefix is shown and storage keeps no preview`, async () => {
+    const fake = storeFake();
+    const service = new DestinationSettingsService(fake.store, key, senderStub);
+    const saved = await service.save('tenant-a', { ...input, token });
+    assert.ok(saved.status === 'saved');
+    const expected = token.length <= 4 ? '****' : `${token.slice(0, 4)}****`;
+    assert.equal(saved.settings.tokenPreview, expected);
+    const read = await service.read('tenant-a');
+    assert.ok(read.status === 'found');
+    assert.equal(read.settings.tokenPreview, expected);
+    assert.deepEqual(Object.keys(fake.rows.get('tenant-a') ?? {}).sort(), ['auth', 'enabled', 'encryptedCredential', 'endpoint', 'revision']);
+    const kept = await service.save('tenant-a', { ...input, expectedRevision: read.settings.revision, token: '' });
+    assert.ok(kept.status === 'unchanged');
+    assert.equal(kept.settings.tokenPreview, expected);
+    const none = await service.save('tenant-a', { ...input, expectedRevision: read.settings.revision, auth: 'none', token: '' });
+    assert.ok(none.status === 'saved');
+    assert.equal(Object.hasOwn(none.settings, 'tokenPreview'), false);
+  });
+}

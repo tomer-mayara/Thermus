@@ -74,7 +74,7 @@ for (const [failure, outcome, status] of [[new Error('check failure'), 'failed',
   });
 }
 
-test('Given saved Audit logs settings, when Save and Test complete and settings are read, then only the two actions emit safe metadata', async () => {
+test('Given saved Audit logs settings, when Save and Test complete and settings are read, then both Saves and Test emit safe metadata', async () => {
   const events: AuditEvent[] = [];
   const settings = { revision: 'r1', endpoint: 'https://private-collector.example/v1/logs', auth: 'none' as const, enabled: true, tokenPresent: false };
   const { routes } = serveAdministration({}, { routes: {
@@ -82,11 +82,11 @@ test('Given saved Audit logs settings, when Save and Test complete and settings 
     logging: { read: async () => ({ status: 'found', settings }), save: async () => ({ status: 'saved', settings }), test: async () => ({ status: 'tested', revision: 'r1', outcome: { kind: 'accepted' } }) },
   } });
   const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: settings.endpoint, destination: 'custom', auth: 'bearer', token: '' };
-  assert.equal((await routes.handle(changePost('/logging/save', fields))).status, 303);
+  assert.equal((await routes.handle(changePost('/logging/save', fields))).status, 200);
   assert.equal((await routes.handle(changePost('/logging/test', fields))).status, 200);
   assert.equal((await routes.handle(accountRequest('/logging', 'session=ann'))).status, 200);
-  assert.equal(events.length, 2);
-  assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome, event.organizationId]), [['save', 'saved', 'tenant-org-a'], ['test', 'tested', 'tenant-org-a']]);
+  assert.equal(events.length, 3);
+  assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome, event.organizationId]), [['save', 'saved', 'tenant-org-a'], ['save', 'saved', 'tenant-org-a'], ['test', 'tested', 'tenant-org-a']]);
   assert.doesNotMatch(JSON.stringify(events), /private-collector|accepted|csrf|r1/);
 });
 
@@ -103,7 +103,7 @@ test('Given a throwing capture API, when an invitation or Audit logs action comp
   const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: settings.endpoint, destination: 'custom', auth: 'bearer', token: '' };
   const saved = await routes.handle(changePost('/logging/save', fields));
   const tested = await routes.handle(changePost('/logging/test', fields));
-  assert.deepEqual([invitation.status, saved.status, tested.status], [303, 303, 200]);
-  assert.deepEqual([organizations.administrationCalls.length, saves, tests], [1, 1, 1]);
+  assert.deepEqual([invitation.status, saved.status, tested.status], [303, 200, 200]);
+  assert.deepEqual([organizations.administrationCalls.length, saves, tests], [1, 2, 1]);
   assert.deepEqual(failures, []);
 });

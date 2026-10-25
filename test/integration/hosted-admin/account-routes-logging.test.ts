@@ -50,7 +50,7 @@ test('Given password Admin access, when Test runs through account routes, then t
   assert.match(JSON.stringify(sent), /"organizationId":"tenant-org-a"/);
   assert.match(response.headers.get('Set-Cookie') ?? '', /session=refreshed/);
   assert.equal(response.headers.get('Cache-Control'), 'no-store');
-  assert.equal(store.writes, 1);
+  assert.equal(store.writes, 2);
   assert.deepEqual(failures, []);
 });
 

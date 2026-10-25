@@ -6,7 +6,7 @@
     "contract": false,
     "deployment": false,
     "component": false,
-    "internalInterface": false,
+    "internalInterface": true,
     "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The existing web owner replaces the long Audit explanation with the owner-requested authority/privacy warning and exposes Axiom or Custom selection. Its private form parser requires a valid dataset for Axiom, excludes a dataset for Custom, and permits only Bearer writes. The Audit panel fills the available page width, with Save and gray secondary Test actions beside each other. Enable export uses a native accessible on/off switch; its draft state is applied only by Save, with the same field and no new script. The page maps the choice to the existing optional dataset field; the settings service, store, sender, public declarations, components, edges, registry diagrams, containers and deployment stay unchanged. Existing None-auth rows remain readable and unchanged until an explicit Bearer Save; old rendered forms fail closed and require reload. A static hash-pinned script controls the dataset field only on Audit pages; Members retains script denial. Admin, origin, CSRF, revision, encrypted token retention and saved-Test rules remain in place. Registry prose and the active plan now state this UI behavior. This local credential-form and CSP change requires T1 Team review; it changes no separate supported portal/client protocol or external integration.",
+    "summary": "The protected web Test action saves the submitted Audit settings, including the export switch, before the existing saved-destination Test. Only a confirmed saved or unchanged result permits the Test, using returned settings and revision with a blank token and no preview. Failed, stale or uncertain Saves send nothing; failed Test cannot roll back Save. Save and Test return the styled form directly. A server-confirmed saved message appears above the buttons for 30 seconds or until editing; a small hash-pinned script preserves scroll through a consumed, expiring position/time record with no form content. Uncertain Save keeps GET-only recovery with no immediate write form or automatic retry. The public saved projection adds optional tokenPreview, derived from a valid saved Bearer credential: first four characters plus ****, or only **** for short tokens. It appears only as an escaped empty-input placeholder and is excluded from Test inputs, storage, sender destinations and Audit events. This public declaration and web-to-audit runtime collaboration require T2 internalInterface review; sensitiveBehavior covers mutation, recovery and limited credential display. No new source owner, dependency, datastore, runtime framework, backend flash state or deployment is added. Registry prose and active plan describe the new behavior; the approved legal package and historical evidence stay unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,15 +27,16 @@
     "evidence": [
       "architecture/components.md",
       "docs/design/organization-admin-plan.md",
+      "docs/implementation/admin-s2-02b.md",
       "docs/implementation/admin-s2-04-direct-axiom.md",
-      "src/interfaces/web/account/logging-form.ts",
+      "src/interfaces/web/account/logging-routes.ts",
       "src/interfaces/web/account/logging-page.ts",
-      "src/interfaces/web/account/members-page-layout.ts",
-      "src/interfaces/web/account/members-style.ts",
-      "test/unit/html/logging-form.test.ts",
-      "test/unit/html/logging-page.test.ts",
-      "test/acceptance/logging/hosted-destination-settings.test.ts",
-      "test/acceptance/logging/hosted-destination-test.test.ts"
+      "src/interfaces/web/account/logging-test-page.ts",
+      "src/logs/audit/destination-settings-service.ts",
+      "test/unit/html/logging-test-routes.test.ts",
+      "test/acceptance/logging/hosted-save-and-test.test.ts",
+      "test/acceptance/logging/hosted-save-feedback.test.ts",
+      "docs/api-surface/src/logs/audit/destination-settings-service.d.ts"
     ]
   }
 }

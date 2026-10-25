@@ -38,8 +38,8 @@ test('Given an Admin choosing an audit destination, when Audit logs opens, then 
   assert.doesNotMatch(page.body, /What export includes|Settings have no backup|name="auth" value="none"|Axiom dataset \(optional\)/);
   const form = formLabelled(formsIn(page.body), 'Save');
   const saved = await browser.submit({ ...form, fields: { ...form.fields, ...destination, destination: 'axiom', axiom_dataset: 'audit-log-test', token: secret } });
-  assert.equal(saved.status, 303);
-  const reread = await browser.follow(saved);
+  assert.equal(saved.status, 200);
+  const reread = saved;
   assert.match(reread.body, /name="destination" value="axiom"[^>]*checked/);
   assert.ok(!reread.body.includes(secret));
 });
@@ -100,10 +100,10 @@ for (const config of [hostedRootConfig, hostedConfig]) {
     assert.equal(form.fields.expected_revision, '');
     assert.equal(form.fields.auth, 'bearer');
     const saved = await browser.submit({ ...form, fields: { ...form.fields, ...destination, token: secret } });
-    assert.equal(saved.status, 303);
-    assert.equal(saved.location?.pathname, `${new URL(config.publicBaseUrl).pathname.replace(/\/$/, '')}/logging`);
+    assert.equal(saved.status, 200);
+    assert.equal(saved.location, undefined);
     assert.match(saved.headers.get('Cache-Control') ?? '', /no-store/);
-    const page = await browser.follow(saved);
+    const page = saved;
     assert.equal(page.status, 200);
     assert.ok(!page.body.includes(secret));
     assert.match(page.body, /token.*(saved|present)|saved.*token/i);
@@ -117,7 +117,7 @@ for (const config of [hostedRootConfig, hostedConfig]) {
     const ciphertextBefore = store.settings.get(tenantId)?.encryptedCredential;
     const currentForm = formLabelled(formsIn(page.body), 'Save');
     const unchanged = await browser.submit({ ...currentForm, fields: { ...currentForm.fields, ...destination, token: secret } });
-    assert.equal(unchanged.status, 303);
+    assert.equal(unchanged.status, 200);
     const after = await service.read(tenantId);
     assert.deepEqual(after, reread);
     assert.equal(store.settings.get(tenantId)?.encryptedCredential, ciphertextBefore);
@@ -128,7 +128,7 @@ test('Given a saved destination and two forms, when a tenant is forged or an old
   const { browser, service, tenantId, otherOrganization, site } = await loggingSite(t);
   const old = await saveForm(browser);
   const saved = await browser.submit({ ...old, fields: { ...old.fields, ...destination, token: secret } });
-  assert.equal(saved.status, 303);
+  assert.equal(saved.status, 200);
   const current = await service.read(tenantId);
   const stale = await browser.submit({ ...old, fields: { ...old.fields, endpoint: 'https://other.example/v1/logs', auth: 'bearer', token: '' } });
   assert.equal(stale.status, 409);
@@ -174,17 +174,17 @@ test('Given a committed Save whose answer is lost, when the browser receives an 
   const reloaded = await saveForm(browser);
   assert.notEqual(reloaded.fields.expected_revision, '');
   const resumed = await browser.submit({ ...reloaded, fields: { ...reloaded.fields, ...destination, token: '' } });
-  assert.equal(resumed.status, 303);
+  assert.equal(resumed.status, 200);
 });
 
 test('Given a saved Axiom destination, when a browser without scripts selects Custom and clears its dataset, then the same endpoint retains the write-only token and an endpoint change needs a new token', async (t) => {
   const { browser, service, store, tenantId } = await loggingSite(t);
   const initial = await saveForm(browser);
   const saved = await browser.submit({ ...initial, fields: { ...initial.fields, ...destination, destination: 'axiom', axiom_dataset: 'audit-log-test', token: secret } });
-  assert.equal(saved.status, 303);
+  assert.equal(saved.status, 200);
   const current = await saveForm(browser);
   const custom = await browser.submit({ ...current, fields: { ...current.fields, ...destination, destination: 'custom', axiom_dataset: '', token: '' } });
-  assert.equal(custom.status, 303);
+  assert.equal(custom.status, 200);
   const reread = await service.read(tenantId);
   assert.ok(reread.status === 'found');
   assert.equal(reread.settings.axiomDataset, undefined);

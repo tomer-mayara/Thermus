@@ -91,12 +91,14 @@ test('Given disabled saved Bearer destinations at two receivers, when their real
   ]);
   assert.equal(results.length, 2);
   for (const result of results) {
-    assert.equal(result.unsaved.status, 409);
-    assert.match(result.unsaved.body, /Save your edits before Test/);
+    assert.equal(result.unsaved.status, 400);
+    assert.match(result.unsaved.body, /No settings were saved/);
     assert.equal(result.tested.status, 200);
     assert.match(result.tested.body, /Destination accepted the Test event/);
-    assert.match(result.tested.body, /neither continued delivery nor durable storage/);
-    assert.doesNotMatch(result.tested.body, /audit-runtime-only-token|runtime-test-csrf|encryptedCredential/);
+    assert.match(result.tested.body, /Settings saved/);
+    assert.doesNotMatch(result.tested.body, /audit-runtime-only-token|encryptedCredential/);
+    assert.match(result.tested.body, /<input type="hidden" name="csrf_token" value="runtime-test-csrf">/);
+    assert.match(result.tested.body, /name="token"[^>]*value=""/);
     assert.equal(result.unchanged, true);
     assert.equal(result.saves, 1);
     assert.equal(result.settings.enabled, false);

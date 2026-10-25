@@ -31,7 +31,7 @@ test('S2-04 Given a current password-authenticated Admin and a reachable Collect
   assert.equal(journey.session.mfaCompleted, false);
   assert.deepEqual([journey.accessBefore.status, journey.accessAfter.status], [200, 200]);
   assert.deepEqual(JSON.parse(journey.accessBefore.body), JSON.parse(journey.accessAfter.body));
-  assert.deepEqual([journey.saved, journey.enabled, ...journey.administration], [303, 303, 303, 303, 303, 303]);
+  assert.deepEqual([journey.saved, journey.enabled, ...journey.administration], [200, 200, 303, 303, 303, 200]);
   assert.ok(journey.disabled.status === 'found');
   assert.ok(journey.enabledSettings.status === 'found');
   assert.equal(journey.disabled.settings.enabled, false);
@@ -40,7 +40,7 @@ test('S2-04 Given a current password-authenticated Admin and a reachable Collect
   assert.match(journey.tested.body, /Destination accepted the Test event/);
   assert.equal(journey.enabledSettings.settings.enabled, true);
   assert.notEqual(journey.enabledSettings.settings.revision, journey.disabled.settings.revision);
-  assert.equal(journey.settingsWrites, 3);
+  assert.equal(journey.settingsWrites, 4);
   assert.deepEqual(journey.cold.content, [{ type: 'text', text: journey.productText }]);
   assert.deepEqual(journey.product.content, [{ type: 'text', text: journey.productText }]);
   assert.ok(Buffer.byteLength(journey.productText) > 65_536);
