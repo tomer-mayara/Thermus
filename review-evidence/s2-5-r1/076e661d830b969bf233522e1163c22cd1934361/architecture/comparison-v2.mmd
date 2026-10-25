@@ -1,0 +1,14 @@
+%%{init: {"flowchart": {"wrappingWidth": 220, "nodeSpacing": 30, "rankSpacing": 45}}}%%
+flowchart TB
+  subgraph server["L2 container: Thermus Node server · hosted"]
+    org["organizations · TypeScript<br/>Current authority and target checks<br/>Complete scan and last-Admin rule"]
+    adapter["workos · TypeScript / SDK<br/>Current memberships, roles and management<br/>Safety facts and display records"]
+    org -->|"REMOVED FROM SAFETY SCAN<br/>memberPage: facts plus unused email"| adapter
+    org -->|"ADDED TO SAFETY SCAN<br/>memberFactsPage: complete facts, no email"| adapter
+    org -->|"UNCHANGED<br/>member(), display pages, exact deletion"| adapter
+  end
+  provider["External system: WorkOS<br/>Memberships, role catalog and users"]
+  adapter -->|"UNCHANGED SDK HTTPS integration"| provider
+  linkStyle 0 stroke:#b91c1c,color:#991b1b,stroke-width:2px
+  linkStyle 1 stroke:#15803d,color:#166534,stroke-width:2px
+  style server fill:#fafafa,stroke:#777777,color:#222222

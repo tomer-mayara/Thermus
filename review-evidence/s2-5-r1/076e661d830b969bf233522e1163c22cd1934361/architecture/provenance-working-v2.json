@@ -1,0 +1,735 @@
+{
+  "parent": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "draftHead": "1a192d743a4c71ae6faebfd00f7ae6fd4c72ea0e",
+  "state": "working tree; manager must pin final committed SHA",
+  "files": [
+    {
+      "path": "architecture/components.md",
+      "before": {
+        "exists": true,
+        "lineCount": 1270,
+        "sha256": "e9c46a639da01243352e62cd4f13c947233f333fef78eae7321d4b3e8a95c465",
+        "anchors": [
+          {
+            "line": 23,
+            "text": "## Context"
+          },
+          {
+            "line": 49,
+            "text": "## arc42 building-block view"
+          },
+          {
+            "line": 51,
+            "text": "### C4 containers: hosted edition"
+          },
+          {
+            "line": 88,
+            "text": "### C4 containers: local edition"
+          },
+          {
+            "line": 118,
+            "text": "### Containers and source owners"
+          },
+          {
+            "line": 136,
+            "text": "### Selected C4 components: tool processing in the Node server"
+          },
+          {
+            "line": 188,
+            "text": "### Selected C4 components: hosted authentication in the Node server"
+          },
+          {
+            "line": 253,
+            "text": "### Selected C4 components: hosted membership removal in the Node server"
+          },
+          {
+            "line": 347,
+            "text": "### Selected C4 components: hosted Audit logs settings and delivery in the Node server"
+          },
+          {
+            "line": 427,
+            "text": "### Selected C4 components: system and audit logs in the Node server"
+          },
+          {
+            "line": 638,
+            "text": "### Selected C4 components: local authentication in the Node server"
+          },
+          {
+            "line": 676,
+            "text": "## Runtime view"
+          },
+          {
+            "line": 682,
+            "text": "### Collaboration overview"
+          },
+          {
+            "line": 754,
+            "text": "### Scenario: MCP page fetch and renderer cancellation"
+          },
+          {
+            "line": 826,
+            "text": "### Scenario: hosted default sign-in landing"
+          },
+          {
+            "line": 892,
+            "text": "### Scenario: hosted member read"
+          },
+          {
+            "line": 1013,
+            "text": "## Deployment view"
+          },
+          {
+            "line": 1023,
+            "text": "### Self-hosted Compose"
+          },
+          {
+            "line": 1047,
+            "text": "### Recorded hosted Render target"
+          },
+          {
+            "line": 1102,
+            "text": "## Ownership"
+          },
+          {
+            "line": 1140,
+            "text": "## Behavior and resource ownership"
+          },
+          {
+            "line": 1218,
+            "text": "## Design choices and current soft spots"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 1278,
+        "sha256": "c31fc96bb231598edde5c8b351c4c988386ce90c6a8b7de7d81e5bef8d76ac4d",
+        "anchors": [
+          {
+            "line": 23,
+            "text": "## Context"
+          },
+          {
+            "line": 49,
+            "text": "## arc42 building-block view"
+          },
+          {
+            "line": 51,
+            "text": "### C4 containers: hosted edition"
+          },
+          {
+            "line": 88,
+            "text": "### C4 containers: local edition"
+          },
+          {
+            "line": 118,
+            "text": "### Containers and source owners"
+          },
+          {
+            "line": 136,
+            "text": "### Selected C4 components: tool processing in the Node server"
+          },
+          {
+            "line": 188,
+            "text": "### Selected C4 components: hosted authentication in the Node server"
+          },
+          {
+            "line": 253,
+            "text": "### Selected C4 components: hosted membership removal in the Node server"
+          },
+          {
+            "line": 312,
+            "text": "without a user lookup for each member. The direct target `member()` read still"
+          },
+          {
+            "line": 355,
+            "text": "### Selected C4 components: hosted Audit logs settings and delivery in the Node server"
+          },
+          {
+            "line": 435,
+            "text": "### Selected C4 components: system and audit logs in the Node server"
+          },
+          {
+            "line": 646,
+            "text": "### Selected C4 components: local authentication in the Node server"
+          },
+          {
+            "line": 684,
+            "text": "## Runtime view"
+          },
+          {
+            "line": 690,
+            "text": "### Collaboration overview"
+          },
+          {
+            "line": 762,
+            "text": "### Scenario: MCP page fetch and renderer cancellation"
+          },
+          {
+            "line": 834,
+            "text": "### Scenario: hosted default sign-in landing"
+          },
+          {
+            "line": 900,
+            "text": "### Scenario: hosted member read"
+          },
+          {
+            "line": 1021,
+            "text": "## Deployment view"
+          },
+          {
+            "line": 1031,
+            "text": "### Self-hosted Compose"
+          },
+          {
+            "line": 1055,
+            "text": "### Recorded hosted Render target"
+          },
+          {
+            "line": 1110,
+            "text": "## Ownership"
+          },
+          {
+            "line": 1148,
+            "text": "## Behavior and resource ownership"
+          },
+          {
+            "line": 1226,
+            "text": "## Design choices and current soft spots"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 118,
+        "sha256": "e816b32b8915560eb51e4731ac8da7f744f98e3fdf9f64756492d444ba47eea0",
+        "anchors": [
+          {
+            "line": 102,
+            "text": "memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;"
+          },
+          {
+            "line": 104,
+            "text": "member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined>;"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 123,
+        "sha256": "364bfdbd9d2e89fca71d2f9deac027d3fe45465e2baf9a80d8520ad6eb264f96",
+        "anchors": [
+          {
+            "line": 17,
+            "text": "export interface OrganizationMemberFacts {"
+          },
+          {
+            "line": 28,
+            "text": "export interface OrganizationMember extends OrganizationMemberFacts {"
+          },
+          {
+            "line": 105,
+            "text": "memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;"
+          },
+          {
+            "line": 107,
+            "text": "memberFactsPage(request: MemberPageRequest): Promise<Page<OrganizationMemberFacts>>;"
+          },
+          {
+            "line": 109,
+            "text": "member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined>;"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-checks.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 55,
+        "sha256": "fe53ae18b41d57ba44dea2fc1a7f6fd6622b09ecc607cd677b761c4b6e79cb7c",
+        "anchors": [
+          {
+            "line": 2,
+            "text": "import { latestOfEach, readDirectoryPages } from './directory-reads.ts';"
+          },
+          {
+            "line": 8,
+            "text": "const REMOVAL_PAGE_LIMIT = 10;"
+          },
+          {
+            "line": 17,
+            "text": "export async function checkRemoval(directory: OrganizationDirectory, user: AuthenticatedUser, request: MemberRemovalRequest, read: CurrentRead): Promise<RemovalRefusal | undefined> {"
+          },
+          {
+            "line": 19,
+            "text": "const target = await read(signal => directory.member(request.membershipId, signal));"
+          },
+          {
+            "line": 24,
+            "text": "const pages = await readDirectoryPages(cursor => read(signal => directory.memberPage({ organizationId: request.organizationId, statuses: ['active'], cursor, signal })), REMOVAL_PAGE_LIMIT);"
+          },
+          {
+            "line": 25,
+            "text": "const members = latestOfEach(pages, member => member.membershipId).filter(member => member.organizationId === request.organizationId && member.status === 'active');"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 55,
+        "sha256": "22697d95d43749739820ffd59dbf04d7c1acdf3abd748d5367455d756235154f",
+        "anchors": [
+          {
+            "line": 2,
+            "text": "import { latestOfEach, readDirectoryPages } from './directory-reads.ts';"
+          },
+          {
+            "line": 3,
+            "text": "import type { OrganizationDirectory, OrganizationMemberFacts, OrganizationMembership } from './organization-directory.ts';"
+          },
+          {
+            "line": 8,
+            "text": "const REMOVAL_PAGE_LIMIT = 10;"
+          },
+          {
+            "line": 17,
+            "text": "export async function checkRemoval(directory: OrganizationDirectory, user: AuthenticatedUser, request: MemberRemovalRequest, read: CurrentRead): Promise<RemovalRefusal | undefined> {"
+          },
+          {
+            "line": 19,
+            "text": "const target = await read(signal => directory.member(request.membershipId, signal));"
+          },
+          {
+            "line": 24,
+            "text": "const pages = await readDirectoryPages(cursor => read(signal => directory.memberFactsPage({ organizationId: request.organizationId, statuses: ['active'], cursor, signal })), REMOVAL_PAGE_LIMIT);"
+          },
+          {
+            "line": 25,
+            "text": "const members = latestOfEach(pages, member => member.membershipId).filter(member => member.organizationId === request.organizationId && member.status === 'active');"
+          },
+          {
+            "line": 33,
+            "text": "function targetRefusal(target: OrganizationMemberFacts, request: MemberRemovalRequest): RemovalRefusal | undefined {"
+          },
+          {
+            "line": 41,
+            "text": "export function removalSupported(member: OrganizationMemberFacts): boolean {"
+          },
+          {
+            "line": 52,
+            "text": "function targetFacts(target: OrganizationMemberFacts): string {"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/accounts/organizations/directory-reads.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 39,
+        "sha256": "163386a8605d211ebabd1d4d6a103cd8018a7ce6187605adcac260b154677301",
+        "anchors": [
+          {
+            "line": 9,
+            "text": "const records = await readDirectoryPages((cursor) => directory.memberPage({ organizationId, statuses: MEMBER_STATUSES, cursor }));"
+          },
+          {
+            "line": 10,
+            "text": "return latestOfEach(records, ({ membershipId }) => membershipId).filter((member) => member.organizationId === organizationId);"
+          },
+          {
+            "line": 14,
+            "text": "const records = await readDirectoryPages((cursor) => directory.invitationPage({ organizationId, states, cursor }));"
+          },
+          {
+            "line": 15,
+            "text": "return latestOfEach(records, ({ invitationId }) => invitationId).filter((invitation) => invitation.organizationId === organizationId);"
+          },
+          {
+            "line": 19,
+            "text": "export async function readDirectoryPages<T>(read: (cursor: string | undefined) => Promise<Page<T>>, limit = PAGE_LIMIT): Promise<readonly T[]> {"
+          },
+          {
+            "line": 35,
+            "text": "export function latestOfEach<T>(records: readonly T[], idOf: (record: T) => string): T[] {"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 39,
+        "sha256": "163386a8605d211ebabd1d4d6a103cd8018a7ce6187605adcac260b154677301",
+        "anchors": [
+          {
+            "line": 9,
+            "text": "const records = await readDirectoryPages((cursor) => directory.memberPage({ organizationId, statuses: MEMBER_STATUSES, cursor }));"
+          },
+          {
+            "line": 10,
+            "text": "return latestOfEach(records, ({ membershipId }) => membershipId).filter((member) => member.organizationId === organizationId);"
+          },
+          {
+            "line": 14,
+            "text": "const records = await readDirectoryPages((cursor) => directory.invitationPage({ organizationId, states, cursor }));"
+          },
+          {
+            "line": 15,
+            "text": "return latestOfEach(records, ({ invitationId }) => invitationId).filter((invitation) => invitation.organizationId === organizationId);"
+          },
+          {
+            "line": 19,
+            "text": "export async function readDirectoryPages<T>(read: (cursor: string | undefined) => Promise<Page<T>>, limit = PAGE_LIMIT): Promise<readonly T[]> {"
+          },
+          {
+            "line": 35,
+            "text": "export function latestOfEach<T>(records: readonly T[], idOf: (record: T) => string): T[] {"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 79,
+        "sha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+        "anchors": [
+          {
+            "line": 3,
+            "text": "import { checkRemoval, currentAdmin } from './membership-removal-checks.ts';"
+          },
+          {
+            "line": 51,
+            "text": "const refusal = await checkRemoval(this.directory, user, request, read => lifetime.wait(read));"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 79,
+        "sha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+        "anchors": [
+          {
+            "line": 3,
+            "text": "import { checkRemoval, currentAdmin } from './membership-removal-checks.ts';"
+          },
+          {
+            "line": 51,
+            "text": "const refusal = await checkRemoval(this.directory, user, request, read => lifetime.wait(read));"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 51,
+        "sha256": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+        "anchors": [
+          {
+            "line": 3,
+            "text": "const TOTAL_BUDGET_MS = 30_000;"
+          },
+          {
+            "line": 7,
+            "text": "private readonly deadline = performance.now() + TOTAL_BUDGET_MS;"
+          },
+          {
+            "line": 10,
+            "text": "private readonly timer = setTimeout(() => this.stop(), TOTAL_BUDGET_MS);"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 51,
+        "sha256": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+        "anchors": [
+          {
+            "line": 3,
+            "text": "const TOTAL_BUDGET_MS = 30_000;"
+          },
+          {
+            "line": 7,
+            "text": "private readonly deadline = performance.now() + TOTAL_BUDGET_MS;"
+          },
+          {
+            "line": 10,
+            "text": "private readonly timer = setTimeout(() => this.stop(), TOTAL_BUDGET_MS);"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/accounts/organizations/administration-overviews.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 96,
+        "sha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+        "anchors": [
+          {
+            "line": 54,
+            "text": "export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string, organizationName: string): Promise<MemberOverview> {"
+          },
+          {
+            "line": 61,
+            "text": "export async function activeUserSeatCount(directory: OrganizationDirectory, organizationId: string): Promise<number> {"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 96,
+        "sha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+        "anchors": [
+          {
+            "line": 54,
+            "text": "export async function readMemberOverview(directory: OrganizationDirectory, organizationId: string, organizationName: string): Promise<MemberOverview> {"
+          },
+          {
+            "line": 61,
+            "text": "export async function activeUserSeatCount(directory: OrganizationDirectory, organizationId: string): Promise<number> {"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 440,
+        "sha256": "71aca4b60b4492eab3be02de8755ce777b7ad7a338181971b9e08f328a6e08f0",
+        "anchors": [
+          {
+            "line": 148,
+            "text": "async memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>> {"
+          },
+          {
+            "line": 160,
+            "text": "async member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined> {"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 455,
+        "sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+        "anchors": [
+          {
+            "line": 22,
+            "text": "OrganizationMemberFacts,"
+          },
+          {
+            "line": 149,
+            "text": "async memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>> {"
+          },
+          {
+            "line": 161,
+            "text": "async memberFactsPage(request: MemberPageRequest): Promise<Page<OrganizationMemberFacts>> {"
+          },
+          {
+            "line": 167,
+            "text": "return pageOf(records.map(record => memberFactsOf(record, organizationRoles)), page.listMetadata.after);"
+          },
+          {
+            "line": 170,
+            "text": "async member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined> {"
+          },
+          {
+            "line": 273,
+            "text": "const facts = memberFactsOf(record, organizationRoles);"
+          },
+          {
+            "line": 313,
+            "text": "function memberFactsOf(record: MembershipRecord, organizationRoles: readonly RoleRecord[]): OrganizationMemberFacts {"
+          }
+        ]
+      }
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "before": {
+        "exists": true,
+        "lineCount": 176,
+        "sha256": "a61ff08194c3ecbffe9d05fce232d9a79d04255f7e853eb5e87e2f06355bbce0",
+        "anchors": [
+          {
+            "line": 55,
+            "text": "const WORKOS_REQUEST_TIMEOUT_MS = 5_000;"
+          },
+          {
+            "line": 89,
+            "text": "maxRetries: 0,"
+          },
+          {
+            "line": 90,
+            "text": "timeout: WORKOS_REQUEST_TIMEOUT_MS,"
+          },
+          {
+            "line": 92,
+            "text": "const authkitKeySet = createRemoteJWKSet(new URL(`${settings.authkitIssuer}/oauth2/jwks`), { timeoutDuration: WORKOS_REQUEST_TIMEOUT_MS });"
+          }
+        ]
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 176,
+        "sha256": "a61ff08194c3ecbffe9d05fce232d9a79d04255f7e853eb5e87e2f06355bbce0",
+        "anchors": [
+          {
+            "line": 55,
+            "text": "const WORKOS_REQUEST_TIMEOUT_MS = 5_000;"
+          },
+          {
+            "line": 89,
+            "text": "maxRetries: 0,"
+          },
+          {
+            "line": 90,
+            "text": "timeout: WORKOS_REQUEST_TIMEOUT_MS,"
+          },
+          {
+            "line": 92,
+            "text": "const authkitKeySet = createRemoteJWKSet(new URL(`${settings.authkitIssuer}/oauth2/jwks`), { timeoutDuration: WORKOS_REQUEST_TIMEOUT_MS });"
+          }
+        ]
+      }
+    },
+    {
+      "path": "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+      "before": {
+        "exists": false
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 76,
+        "sha256": "d45133c24f32360ff8710524baad6b8630d839cf4c83521e180f89e2366a4434",
+        "anchors": [
+          {
+            "line": 8,
+            "text": "test('Given 100 active memberships and display-user reads that each cost 300 ms, when the current Admin removes an ordinary User, then only that target is deleted after admission and its exact operation has a terminal receipt within 30 seconds', async t => {"
+          },
+          {
+            "line": 55,
+            "text": "const target = await directory.member('member-1');"
+          }
+        ]
+      }
+    },
+    {
+      "path": "test/integration/auth/workos-member-facts.test.ts",
+      "before": {
+        "exists": false
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 43,
+        "sha256": "e41233d9990b91e9afce6c43d9d4f366876ff467278245b036040263f5045a12",
+        "anchors": [
+          {
+            "line": 25,
+            "text": "const before = await directory.member(membershipId);"
+          },
+          {
+            "line": 27,
+            "text": "const direct = await directory.member(membershipId);"
+          },
+          {
+            "line": 32,
+            "text": "const page = await directory.memberFactsPage({ organizationId, statuses: ['active', 'inactive', 'pending'], cursor: 'prior-members' });"
+          }
+        ]
+      }
+    },
+    {
+      "path": "test/unit/auth-workos/workos-organizations-member-facts.test.ts",
+      "before": {
+        "exists": false
+      },
+      "after": {
+        "exists": true,
+        "lineCount": 130,
+        "sha256": "e670eed88ad0e2e729ee166c5be96c1274439e6f32faffcf3ecccc6c5a7d87e5",
+        "anchors": [
+          {
+            "line": 3,
+            "text": "import type { MembershipStatus, OrganizationMemberFacts } from '../../../src/accounts/organizations/organization-directory.ts';"
+          },
+          {
+            "line": 8,
+            "text": "test('Given mixed member statuses, all roles and a cursor, when safety facts are paged, then the exact filtered page has all safety fields and no email or user read', async () => {"
+          },
+          {
+            "line": 14,
+            "text": "const page = await directory.memberFactsPage({ organizationId: acme, statuses, cursor: 'previous-members' });"
+          },
+          {
+            "line": 23,
+            "text": "const expected: OrganizationMemberFacts = {"
+          },
+          {
+            "line": 46,
+            "text": "const direct = await directory.member(record.id);"
+          },
+          {
+            "line": 51,
+            "text": "const [facts] = (await directory.memberFactsPage({ organizationId: acme, statuses: ['active'] })).items;"
+          },
+          {
+            "line": 59,
+            "text": "test('Given unchanged membership roles in reverse order, when a later facts page uses the current catalog, then its revision stays equal and grants use the current application permissions', async () => {"
+          },
+          {
+            "line": 64,
+            "text": "const [first] = (await directory.memberFactsPage({ organizationId: acme, statuses: ['active'] })).items;"
+          },
+          {
+            "line": 68,
+            "text": "const [second] = (await directory.memberFactsPage({ organizationId: acme, statuses: ['active'] })).items;"
+          },
+          {
+            "line": 79,
+            "text": "const page = await double.directory().memberFactsPage({ organizationId: acme, statuses: ['pending'] });"
+          },
+          {
+            "line": 90,
+            "text": "await assert.rejects(double.directory().memberFactsPage({ organizationId: acme, statuses: ['active'] }), /did not ask for/);"
+          },
+          {
+            "line": 95,
+            "text": "test('Given no explicit statuses, when facts are read, then no provider request starts', async () => {"
+          },
+          {
+            "line": 97,
+            "text": "await assert.rejects(double.directory().memberFactsPage({ organizationId: acme, statuses: [] }), /status/);"
+          },
+          {
+            "line": 105,
+            "text": "await assert.rejects(double.directory().memberFactsPage({ organizationId: acme, statuses: ['active'] }), /no role/);"
+          },
+          {
+            "line": 116,
+            "text": "await assert.rejects(double.directory().memberFactsPage({ organizationId: acme, statuses: ['active'], cursor: 'later' }), caught => caught === error);"
+          },
+          {
+            "line": 120,
+            "text": "test('Given a valid first facts page, when the current Admin catalog loses an application permission before a later read, then the later facts page fails closed', async () => {"
+          },
+          {
+            "line": 124,
+            "text": "await directory.memberFactsPage({ organizationId: acme, statuses: ['active'] });"
+          },
+          {
+            "line": 127,
+            "text": "await assert.rejects(directory.memberFactsPage({ organizationId: acme, statuses: ['active'], cursor: 'later' }), /must give exactly/);"
+          }
+        ]
+      }
+    }
+  ]
+}

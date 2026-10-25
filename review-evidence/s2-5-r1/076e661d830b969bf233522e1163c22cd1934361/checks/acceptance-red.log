@@ -1,0 +1,30 @@
+✖ Given 100 active memberships and display-user reads that each cost 300 ms, when the current Admin removes an ordinary User, then only that target is deleted after admission and its exact operation has a terminal receipt within 30 seconds (13.58125ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 412.651875
+
+✖ failing tests:
+
+test at test/acceptance/auth/hosted-member-removal-budget.test.ts:1:566
+✖ Given 100 active memberships and display-user reads that each cost 300 ms, when the current Admin removes an ordinary User, then only that target is deleted after admission and its exact operation has a terminal receipt within 30 seconds (13.58125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unknown'
+  - 'applied'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/acceptance/auth/hosted-member-removal-budget.test.ts:65:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unknown',
+    expected: 'applied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

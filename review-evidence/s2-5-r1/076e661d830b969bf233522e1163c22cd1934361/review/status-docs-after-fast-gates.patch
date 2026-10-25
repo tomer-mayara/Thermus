@@ -1,0 +1,241 @@
+--- a/docs/implementation/admin-s2-5-r1.md
++++ b/docs/implementation/admin-s2-5-r1.md
+@@ -1,7 +1,7 @@
+ # S2.5-R1 — Membership safety facts
+ 
+-Status: the source repair and 511 focused cases pass in the working candidate;
+-complete-candidate checks and independent architect review remain pending.
++Status: the source repair and selected behavioral checks are complete.
++Independent human architect review of the current candidate remains pending.
+ This increment is
+ [PR #257](https://github.com/tomer-mayara/Thermus/pull/257), stacked on S2.5-02 at
+ `0530dd634fe8302b55d4a0669463ef733199cc40`. This is branch implementation status,
+@@ -72,10 +72,39 @@
+ of simulated time, deletes only the User after admission, retains the Admin and
+ reads the exact matching applied receipt from the store fake. It does not prove
+ PostgreSQL durability. Preserve the failed pause-seam run as test-fix history.
+-The PR Validation record must retain command scope and accessible log artifacts
+-and bind them to the final candidate. Complete-candidate gates are still pending;
+-earlier stack passes are historical evidence until that candidate passes its
+-selected gates.
++The test-only assertion cleanup replaced a non-null assertion with explicit
++presence checks; its exact facts test passed 19 cases. Final Habit Hooks reports
++465 retained findings and no non-null assertion, with an empty snooze file.
++The maintained Validation and Quality review records in
++[PR #257](https://github.com/tomer-mayara/Thermus/pull/257) retain final candidate
++pins, commands, log links, retry history, coverage and metrics, tier decisions
++and review holds. Earlier stack runs remain historical evidence.
++
++## Selected behavioral checks
++
++The complete candidate passed the selected behavioral gates. The ordinary suite,
++typecheck and portal build were repeated after the test-only assertion cleanup.
++Production source stayed fixed during these gates.
++
++| Selected check | Result |
++| --- | --- |
++| Full ordinary `npm test` | Passed after assertion cleanup; exact backend/portal counts are in PR Validation. |
++| Typecheck and portal build | Passed after assertion cleanup. |
++| Private PostgreSQL | 26 passed, including integrated removal and restart cases. |
++| Customer Collector | 10 passed. |
++| Members Chromium | One passed at 390 × 844; manager inspected the image. |
++| WorkOS staging live selection | 29 passed, including scoped removal and exact-fixture cleanup. |
++| Native self-hosted container | 11 passed. |
++| Linux AMD64 hosted container | Seven passed, including the nested hosted offline build/checks. |
++
++The Docker gates used the task-owned `thermus-s25-r1` Colima profile with an
++explicit per-command context. After retaining evidence, the manager deleted that
++VM, its container data and `colima-thermus-s25-r1` context. Before/after records
++show the global `colima` context and all six shared container IDs unchanged.
++The gate results do not establish a production deployment, live removal-table
++migration, approved notice selection or an organization-capacity guarantee.
++The controlled regression uses prompt membership/catalog calls and a store fake;
++SQL durability and staging provider behavior have their separate gate evidence.
+ 
+ ## Architecture and remaining gates
+ 
+@@ -93,8 +122,9 @@
+ whether the new operation preserves safety without display work; L4 would repeat
+ adapter internals. No new decision record is required by this repair scope.
+ 
+-Public declaration generation changes only `organization-directory.d.ts`. The
+-manager must complete the selected source checks and metrics, review the complete
+-candidate and retain current-head approval evidence. The [S2.5-02 ledger](admin-s2-5-02.md) owns the separate release
+-and owner gates. This repair does not close them, release removal or make
+-S2.5-02 Done.
++Public declaration generation changes only `organization-directory.d.ts`.
++The maintained PR Validation and Quality review records give the current
++candidate's evidence and eligibility. Independent authorized human architect
++approval of that candidate remains required; agent review does not supply it.
++The [S2.5-02 ledger](admin-s2-5-02.md) owns the separate release and owner gates.
++This repair does not close them, release removal or make S2.5-02 Done.
+--- a/docs/implementation/admin-s2-5-02.md
++++ b/docs/implementation/admin-s2-5-02.md
+@@ -1,22 +1,22 @@
+ # S2.5-02 integrated verification and release controls
+ 
+-Status: implementation exists and historical behavioral gates passed. The P2
+-found on 25 October 2026 has a source repair with passing focused checks in
+-draft PR #257; complete-candidate gates and current-head architect review remain
++Status: S2.5-R1 completes the source repair and selected behavioral checks in
++PR #257. Independent human architect review of the current candidate remains
+ pending. PRs #253 and #255 are Draft again. The
+ [stack review](admin-s2-5-stack-review.md) records the finding and focused checks;
+ [S2.5-R1](../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration)
+ is implemented on its repair branch; its [record](admin-s2-5-r1.md) gives the
+-focused results and limits. The PR Validation and Quality review records retain
+-earlier candidate evidence and review status. Actual release remains pending. This is
++current behavioral gate results, red/green history, cleanup and limits. The PR
++Validation and Quality review records retain earlier candidate evidence and
++review status. Actual release remains pending. This is
+ [PR #255](https://github.com/tomer-mayara/Thermus/pull/255), stacked on
+ [S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254) at
+ `2271545702a8f1ec28c6f7dd913fec7024ecadeb`. The ticket is not released or Done.
+ The [plan](../design/organization-admin-plan.md#s25-02--integrated-verification-runbooks-and-release)
+ retains the release exit. This document is the sole current Slice 2.5 release
+ gate ledger. The actual Slice 1/S2-04 release and owner notice decisions remain
+-prerequisites. Passing earlier gates does not close the P2 or certify a later
+-repaired candidate.
++prerequisites. The source repair and passing gates do not supply current-head
++human approval or release authorization.
+ 
+ ## Repair candidate and final checks
+ 
+@@ -41,10 +41,12 @@
+ specification failed before source changes; facts and
+ coordinator tests also recorded their expected red steps. The repair record
+ reports 465 focused checks, including the regression, and 46 hosted
+-display/removal acceptance cases passing. The plan
+-owns the implementation requirements; this ledger keeps final-candidate checks,
+-current-head architect approval and release gates open. Earlier complete-stack
+-passes do not certify this repaired candidate.
++display/removal acceptance cases passing. The selected complete-candidate
++behavioral gates also pass, with ordinary/typecheck/portal repeated after the
++test-only assertion cleanup. The plan owns the implementation requirements.
++The maintained PR Validation and Quality review records retain current candidate
++pins, coverage/metrics, tier decisions and review holds. This ledger keeps
++current-head human architect approval and release gates open.
+ 
+ ## What this increment verifies
+ 
+@@ -81,21 +83,30 @@
+ passes the journey and all cleanup checks. Final local run identities, later
+ review corrections and complete-gate results belong in the PR Validation record.
+ 
+-The new cases characterize the existing leaf implementation. Their first runs
++The original S2.5-02 cases characterize the existing leaf implementation. Their first runs
+ found a TypeScript mock seam and fixture expectations to correct; those failures
+-are not claims of new source behavior or manufactured TDD red steps. Production
+-source, public declarations, dependencies, deployment and registry views remain
+-unchanged from the actual parent.
+-
+-## Latest complete-candidate gate results
++are not claims of new source behavior or manufactured TDD red steps. In that predecessor increment, production source, public declarations,
++dependencies, deployment and registry views stayed unchanged from its actual
++parent. R1 changes the directory contract and safety scan as its record states.
++
++## Behavioral gate evidence
++
++The [R1 record](admin-s2-5-r1.md#selected-behavioral-checks) gives the repaired
++candidate's passing selected gates. Current candidate pins, commands, artifacts,
++coverage/metrics, eligibility and review holds belong to the maintained
++Validation and Quality review records in
++[PR #257](https://github.com/tomer-mayara/Thermus/pull/257).
++
++### Historical S2.5-02 gate results
+ 
+ These results cover the implementation and test bytes of
+ `b429c308f013478cd99ee69f22a9f53d5e3687d4`, with later document-only changes.
+ They do not claim that every earlier run used that committed SHA. The PR
+ Validation record retains full commands, timestamps, failure/retry history, and
+-evidence. Historical behavioral gates passed; the open P2 repair, its final-candidate
+-checks, required independent human review, actual release and owner decisions
+-remain open.
++evidence. These are predecessor results, not a second certification of the
++repaired candidate. The R1 record supersedes their behavioral gate status.
++Independent current-head human review, actual release and owner decisions remain
++open.
+ 
+ | Selected check | Latest result |
+ | --- | --- |
+@@ -111,8 +122,9 @@
+ | Public API snapshot check | Passed: 49 snapshots. |
+ | Fresh selected coverage | Passed: 3,219 backend and 29 portal unit tests; 1,120 integration tests; 594 backend and 20 portal acceptance tests. Verified capture covers 172 source files from 1,321 processes. |
+ 
+-The PR keeps the earlier quality reports and manager review. The open P2 repair,
+-refreshed final-candidate evidence, and earlier actual Slice 1/S2-04 release,
++The PR keeps the earlier quality reports and manager review as history. The
++repaired candidate has its own maintained evidence. Earlier actual Slice 1/S2-04
++release,
+ independent required review, exact notice approval/integration/publication/
+ presentation, production storage/capacity, and deployed removal journey remain
+ separate gates below. The ticket is not Done.
+@@ -183,7 +195,7 @@
+ | Gate | State and owner action |
+ | --- | --- |
+ | Deployment preflight | Before any push, merge or configuration action that can trigger deployment, hold intermediate/automatic deployments and verify the actual controls and target. Pin and keep the intended no-removal deployed candidate through earlier release and removal preparation. No remote control change is claimed by this record. |
+-| Repair, stack and independent review | Complete S2.5-R1 and select checks for the repaired complete candidate. Keep #253 and #255 Draft until their checks and review permit Ready. Merge parents only with their required approvals/checks; refresh this increment and all affected evidence for its actual final head. |
++| Repair, stack and independent review | R1 source repair and selected behavioral checks are complete. Obtain independent authorized human architect approval of the current candidate and follow the maintained PR quality/eligibility records. Keep #253 and #255 Draft until their checks and review permit Ready. Merge parents only with their required approvals/checks; refresh this increment and all affected evidence for its actual final head. |
+ | Actual earlier release | Identify a no-removal candidate and finish actual Slice 1/S2-04 activation, notice, invitation dispositions and destination journey in their release records. A merged code candidate or healthy deployment alone is not that release. |
+ | Exact notice approval | Owner reviews all five complete documents, manifest and data-flow review, confirms effective date and existing-organization handling. A later date needs revised bytes/hashes and approval. |
+ | Notice and help integration | After approval, add a successor frozen runtime bundle without overwriting history, select the approved versions, integrate help at the chosen location, and verify signup/acceptance records. |
+--- a/docs/design/organization-admin-plan.md
++++ b/docs/design/organization-admin-plan.md
+@@ -11,12 +11,13 @@
+ [#253](https://github.com/tomer-mayara/Thermus/pull/253),
+ [#254](https://github.com/tomer-mayara/Thermus/pull/254), and
+ [#255](https://github.com/tomer-mayara/Thermus/pull/255). The 25 October
+-[stack review](../implementation/admin-s2-5-stack-review.md) found one open P2:
++[stack review](../implementation/admin-s2-5-stack-review.md) found a P2:
+ the safety scan reads unused display email for every member and can exhaust the
+ operation budget. [S2.5-R1](#s25-r1--read-safety-facts-without-display-hydration)
+-is implemented in draft PR #257 and passes focused checks. Complete-candidate
+-gates and current-head architect review remain pending. PRs #253 and #255 are
+-Draft again. The [S2.5-02 ledger](../implementation/admin-s2-5-02.md) is the sole current Slice 2.5
++completes the source repair and selected behavioral checks in PR #257.
++Independent human architect review of the current candidate remains pending.
++PRs #253 and #255 are Draft again. The
++[S2.5-02 ledger](../implementation/admin-s2-5-02.md) is the sole current Slice 2.5
+ release gate ledger. Removal is not released, and S2.5-02 is not Done.
+ 
+ This document authorizes no access change, provider action, account change,
+@@ -2413,8 +2414,9 @@
+ 
+ **Current status — 25 October 2026.** Ordinary User/Admin removal and self-removal
+ are implemented under password authentication. Independent review found a P2
+-in the safety scan. S2.5-R1 implements the repair and passes focused checks; its
+-complete-candidate gates and current-head architect review remain pending. Removal is not released. Role changes and MFA remain Slice 3 work;
++in the safety scan. S2.5-R1 completes the source repair and selected behavioral
++checks. Independent human architect review of the current candidate remains
++pending. Removal is not released. Role changes and MFA remain Slice 3 work;
+ settings backup remains Slice 4 work.
+ 
+ The [S2.5-02 ledger](../implementation/admin-s2-5-02.md) alone owns the current
+@@ -2429,10 +2431,10 @@
+ | Ticket | Functional dependencies | Current state and evidence |
+ | --- | --- | --- |
+ | S2.5-01a | Existing S1-04a member/provider boundary | Implemented: narrow deletion and current management facts. [Record](../implementation/admin-s2-5-01a.md), PR #251. |
+-| S2.5-01b | S2.5-01a; S2-01a store; S2-03a safe recording | Implemented: durable admission, last-Admin checks and bounded lifetime. The safety scan needs S2.5-R1; PR #253 is Draft again. [Record](../implementation/admin-s2-5-01b.md). |
++| S2.5-01b | S2.5-01a; S2-01a store; S2-03a safe recording | Implemented: durable admission, last-Admin checks and bounded lifetime. S2.5-R1 supplies the safety-scan repair; PR #253 is Draft again. [Record](../implementation/admin-s2-5-01b.md). |
+ | S2.5-01c | S2.5-01b | Implemented: checked Members removal and safe self-removal navigation. [Record](../implementation/admin-s2-5-01c.md), PR #254. |
+-| S2.5-R1 | Existing S2.5-01a/b/c implementation | Source repair and focused checks pass in draft PR #257. Complete-candidate gates and architect approval remain pending. [Record](../implementation/admin-s2-5-r1.md). |
+-| S2.5-02 | S2.5-01c and S2.5-R1; actual S2-04 release before rollout | Integrated and staging proof exists; PR #255 is Draft. Final repaired-candidate checks, review and release gates remain. [Current ledger](../implementation/admin-s2-5-02.md). |
++| S2.5-R1 | Existing S2.5-01a/b/c implementation | Source repair and selected behavioral checks complete in PR #257. Current-head human architect approval remains pending. [Record](../implementation/admin-s2-5-r1.md). |
++| S2.5-02 | S2.5-01c and S2.5-R1; actual S2-04 release before rollout | Repaired-candidate behavioral gates pass; PR #255 is Draft. Current-head human review and release gates remain. [Current ledger](../implementation/admin-s2-5-02.md). |
+ 
+ There is no circular implementation dependency. Development uses the existing
+ Slice 2 store and safe recording contract. Actual Slice 1/2 release is a removal
+@@ -2515,9 +2517,11 @@
+ 
+ #### S2.5-R1 — Read safety facts without display hydration
+ 
+-**Repair implemented in the draft candidate; final checks and review pending.**
++**Source repair and selected behavioral checks complete; human review pending.**
+ The [R1 record](../implementation/admin-s2-5-r1.md) records observed red/green
+-steps and focused results. Removal now scans `memberFactsPage` without per-member
++steps, current behavioral gates, cleanup and limits. The maintained PR Validation
++and Quality review records give current candidate pins, coverage/metrics,
++eligibility and review holds. Removal now scans `memberFactsPage` without per-member
+ email reads; `member()` and display pages keep their current contract. The
+ original P2 occurred because the coordinator used `memberPage`, whose WorkOS
+ adapter serially fetches every member's email. Safety checks do not use email.

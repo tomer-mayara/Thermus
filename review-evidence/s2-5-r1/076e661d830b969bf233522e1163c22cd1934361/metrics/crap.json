@@ -1,0 +1,736 @@
+{
+  "version": 1,
+  "base": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "head": "076e661d830b969bf233522e1163c22cd1934361",
+  "rows": [
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "checkRemoval",
+      "change": "changed",
+      "paths": 9,
+      "share": 1,
+      "crap": 9,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"checkRemoval\",\"start\":917,\"end\":2312,\"body\":\"fe234f88f36111c80f91d025c8ccbb0248e655f8452348334c8f305bf57be952\",\"signature\":\"d168efdb08c162a33c12587f8e607ecb15a84e09fbdc7293b7f83ca776f6b9cc\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.activeMembership",
+      "change": "unchanged",
+      "paths": 7,
+      "share": 1,
+      "crap": 7,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"activeMembership\",\"start\":12409,\"end\":13195,\"body\":\"0290f676b196d9274fee9978c70b1bdf81d4fbf24069faa803ac8a24f49aceca\",\"signature\":\"d80b933d099e908f413d47cd9aa0454198260ec34191a493b02bdc724940d0a8\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.changeInvitation",
+      "change": "unchanged",
+      "paths": 6,
+      "share": 1,
+      "crap": 6,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"changeInvitation\",\"start\":16215,\"end\":16786,\"body\":\"f9d13f79b66cadfd70e106e2bb135546f4b0c5d6ea601da94d00394e664bca72\",\"signature\":\"f8cf20c438935994c352285a1a24903e359e60d135212ba1d1c50d3f5da78583\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "targetRefusal",
+      "change": "changed",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"targetRefusal\",\"start\":2314,\"end\":2688,\"body\":\"75e4da9e5d736dafbad56069f20404959b039e0dd4983306ba7a4229779e424b\",\"signature\":\"e890b64122b1740ff701293864d3c4040fb497921e5a0a68ff235bff8e5a6d9a\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "checkedActiveRecord",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"checkedActiveRecord\",\"start\":18186,\"end\":18656,\"body\":\"7709fb201f500995eb76b5f6cb86d4cdb6171ae325c0e2a6224c908918ab14cb\",\"signature\":\"4566a32c65bdd5203970c08ec4743d20b35c5f64db1f6b2247d83c6a44c6be24\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.invitationPage",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"invitationPage\",\"start\":10001,\"end\":10846,\"body\":\"1f2006328a956157132e3f9515b717da11e9e40b79b87decc0de859eb3a58353\",\"signature\":\"1b0e1ebc65cc8bebe97addc504ffb312e7f9baf61e99c25efc4483cd9a56f31f\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.sendInvitation",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"sendInvitation\",\"start\":11422,\"end\":11997,\"body\":\"57fce16cb775caa9d54d6777c5550aed742d6d1b9fa4db86c64ee1d8d4516b85\",\"signature\":\"21148ecc98814706561e4b857829c00ad3e484dbc05da9cd424d4a980b4f0d0b\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:currentAdmin\",\"name\":\"(anonymous)\",\"start\":769,\"end\":911,\"body\":\"223c171bc4cfa12b89df76e72534dbd5251034cedbd19f303c523fa68a90c07c\",\"signature\":\"d8f3120bc4f5fbe91972be30339f41fb87df21a1d77fcfe40399183bfd9e1f01\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "removalSupported",
+      "change": "changed",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"removalSupported\",\"start\":2785,\"end\":3040,\"body\":\"bc282b1231bff7c641849fb532b7c6548e5c4c6ffa1f69b3074d3235f7f89f99\",\"signature\":\"6ad431d7a8c3af49e99077b41c269e2d40a6de7c118a217331bb3c470810ddda\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "hasCode",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"hasCode\",\"start\":22883,\"end\":23055,\"body\":\"709a0efcf881c432b8bb94af0b95c05b7169e2512cb841d2f60d0b6351eec7ba\",\"signature\":\"9d142460384c6a017fb017add8c059135f10be0ac8d134bae70a82e86596ee89\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "hasStatus",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"hasStatus\",\"start\":22716,\"end\":22881,\"body\":\"db7f704a9ee01eef308454bd49801e86f5acf817c0ca87a1aafd84abc5b03bca\",\"signature\":\"f0c775b0020cc918ed9e0e4a2c89016194e4250c1313c6da189150f147772633\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "invitationStateOf",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"invitationStateOf\",\"start\":20483,\"end\":20849,\"body\":\"9b1862576d017b6b01ae1ce4bdd94aef36b672fa2bea75a8c7ac4792a0fe8715\",\"signature\":\"d7c55d0438dc67bc5d58b3b83c05bb6c98bf7267dcfd1fc030cc549436b0dcc6\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "isInvitationOf",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"isInvitationOf\",\"start\":21435,\"end\":21716,\"body\":\"fc34ab5384ed46820fcd8372e40636cf8645f654876464311d3d2354e272e909\",\"signature\":\"97b369fe64c3a726cfda3bb924b67e38d84c72eef8b300129a400437037254e1\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.activeMembershipsOf",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"activeMembershipsOf\",\"start\":13355,\"end\":14282,\"body\":\"0311ad7f0e3a10a2b6673511212ff2eaf8818146884bcd13ae859b3a486f9d1f\",\"signature\":\"364f4d89e00e395561b8271296cd54ba39cbd849f788d1dd0d33e28d5a5fac40\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.deleteMembership",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"deleteMembership\",\"start\":9565,\"end\":9899,\"body\":\"476fb34f9bb3d8b92792531544ab9b0e9824b62ed2749cf8bed487d42e34988b\",\"signature\":\"52885ad5be07fa46b94908086a4a4dd04ce06287786d1cf92de41e59d86ec72b\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.memberPage",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"memberPage\",\"start\":7584,\"end\":8487,\"body\":\"92dce2dbbe886d36a1aff1a37689637f3558db978ef5ac553bd04e358972c27d\",\"signature\":\"541c4f565cfb176edc733d337b431d34ffbc6cc95546124487b5adb87bb8c5b4\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "checkedMemberRecord",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"checkedMemberRecord\",\"start\":19010,\"end\":19321,\"body\":\"96a365ed3f554a14feb58535c25d228812de41f341227249ebeb8226e7e58b9e\",\"signature\":\"1d9981666f26652b7d2cf51d0b84ed3576eb5541db749a8a32f6d554ec9ef3c6\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "getOrganizationMembership",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"FunctionDeclaration:workosMembershipReads/ObjectLiteralExpression:@23715\",\"name\":\"getOrganizationMembership\",\"start\":23721,\"end\":24093,\"body\":\"a1200ac1d1349f0d1716e0c57d830a8ca9aa539430c62bdc7790e28fd518dd6f\",\"signature\":\"ec901e58b62a19d155ac3ff00b621fdfad515f2537ef480e5a4216c0f777d5c7\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "managementOf",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"managementOf\",\"start\":19794,\"end\":20018,\"body\":\"85c05b01a1984703803b88f61869990ef03605725d9e0da852f1b09eb6cb932a\",\"signature\":\"9da0c844107530f0b374118234d4126eaa0b497ca218a9faab26ebfbff987fc3\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "pageOf",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"pageOf\",\"start\":21960,\"end\":22197,\"body\":\"44dad92d64dc24e1b00d3069c9411fa9234c3cb565b644e142702094f2454140\",\"signature\":\"31884727fc163cfc73e1658e40586feb6fcde6660fe74c9554db6b1ba2e2ffad\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "unlessNotFound",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"unlessNotFound\",\"start\":22292,\"end\":22499,\"body\":\"c22ed5e4452ecf4dedf5d1589cb62e0f954fae7e39045ac2301276ae84203491\",\"signature\":\"383110f47e802825a1e0078d3d2d22f23e1eb7453264937995a098f7a40139bd\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.currentInvitation",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"currentInvitation\",\"start\":17088,\"end\":17441,\"body\":\"edb586710812526900d6817e1c98f24f9c432e8d167d0ca2b0e0a0e2f8df728f\",\"signature\":\"89524aacc26733e2631e14f74f12bb335989138284963734ebc83d15a74e492d\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.currentMembership",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"currentMembership\",\"start\":15445,\"end\":15859,\"body\":\"599ecced5effa1e40f707d52c480bfcfdc2d306c75550a759d39e3aa5af6fb8a\",\"signature\":\"ed9bff4ccb8554d3cedf0137301bbc2fec6ed939e165f8e7920e26796e32d43a\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.memberFactsPage",
+      "change": "new",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"memberFactsPage\",\"start\":8491,\"end\":9245,\"body\":\"420ae9335d731565bfdd0f68e2519f7990372160b9e5b5043ed52b6a2cffc72e\",\"signature\":\"4dbbfd14b2852473df13b460608a5c9d1cd803056699223b5ae1e67f0f01718d\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.membershipsOf",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"membershipsOf\",\"start\":6766,\"end\":7323,\"body\":\"5aece63cbf916a46a2a1544e4af98139a4fe015130db084732c20e4acddd2e5b\",\"signature\":\"47d206847d4597df7701b696310728a988263d95dee5e9c9c10c1f176c89e4d7\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":1767,\"end\":1855,\"body\":\"0882115b70a5454ec98f5a0697e4f7b5781214ba551e5a8f61b473b1c0331c6e\",\"signature\":\"d8f3120bc4f5fbe91972be30339f41fb87df21a1d77fcfe40399183bfd9e1f01\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":2071,\"end\":2142,\"body\":\"d5cb0c35d7b842ec3df86c071e3192f081104d9df2a9681864b647afb1560d88\",\"signature\":\"d8f3120bc4f5fbe91972be30339f41fb87df21a1d77fcfe40399183bfd9e1f01\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "adminGrants",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"adminGrants\",\"start\":3042,\"end\":3304,\"body\":\"b93a15645aa04dca747671f4a536a544923b3620cee662d312e1e2a77e5305cf\",\"signature\":\"3d6d7f510c87eb22dca2949eb649497dcfd15cb41284af70731bbbab0f64cd01\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "afterOf",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"afterOf\",\"start\":21718,\"end\":21851,\"body\":\"70edb0ca471b064a0664f42cacc71e3ed1a73f48796543f0c29d96a60b6283e9\",\"signature\":\"a8d0b9679142c16389b5e312b37c9a99f90bd56c97710e7247fb2bacb72da18e\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "eachOrganizationOnce",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"eachOrganizationOnce\",\"start\":18658,\"end\":19008,\"body\":\"875ea261167876f8be74eefebb541ca753943f9622bd486b6cfcf95f1eca5436\",\"signature\":\"e3c703bb00b07cb41cc9178b83256b310bdf0f840ab29de79943b32fa36476e3\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "invitationOf",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"invitationOf\",\"start\":21005,\"end\":21383,\"body\":\"32a93e7b237e06431e582cea46914c1b8fb9c6b79664c3bdd36f1f4d7a0e4112\",\"signature\":\"457f01c492b87d83a2a09904dfd576c218bb05d77bbaa5ccd8723d1152dfb01c\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "listOrganizationMemberships",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"FunctionDeclaration:workosMembershipReads/ObjectLiteralExpression:@23715\",\"name\":\"listOrganizationMemberships\",\"start\":24099,\"end\":24689,\"body\":\"279d12890ee61e41b4b54d2481c40b53f2177c6e4a00e45c94ba189ce69d9816\",\"signature\":\"be28441b6acf23bb51944c25fa044b412656b35f304a6dcc259f51bead33e1ca\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "roleListOf",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"roleListOf\",\"start\":19422,\"end\":19792,\"body\":\"820c50769186dd9b9b5ba8dd744a7a0c28fd38e070ed7ea76c1c6679f697467c\",\"signature\":\"fb1f71fe10a7d2315356dac6095e52506c19041e4e51ad2406b577e2b14705ba\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.activeGrants",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"activeGrants\",\"start\":5856,\"end\":6116,\"body\":\"769a2432557389c7d88668dd7712234e071df1cf6eac5cd22b84e582040b6d53\",\"signature\":\"d51d811e27dd33cacdca99d6ce2602adb63b5c512e8a9be8a491509dbd7af744\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.activeOrganizationName",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"activeOrganizationName\",\"start\":6232,\"end\":6495,\"body\":\"aa26dfed35d8771c34993c6697c7b86000fb2bb88bbf2e94f607156cc8185cea\",\"signature\":\"b5db331d6faddea5bbe1985e5d6f5c7b06cc4c02d93269741ac6510a0bfe6c63\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.invitation",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"invitation\",\"start\":10951,\"end\":11258,\"body\":\"2b8c86abc3f500cfd289e335a8eabbbd357665bc1bde3e6d18c2f8067a65a166\",\"signature\":\"ca75ae178402e5ae204d5b032b148c0769a86506c23d7afe738d36b1de689351\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.isNoLongerPending",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"isNoLongerPending\",\"start\":16790,\"end\":17020,\"body\":\"cee1f5c34c1f01f8c99a7b54249db4f37aea2a3dbc6a7c081bf3a616e81fd0c5\",\"signature\":\"05ac843afa554ac9c4fe6145ab4a89862803bc4cf1030a641fa4f94e164c874d\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.member",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"member\",\"start\":9249,\"end\":9561,\"body\":\"01a8778b716d9ef1cae1a2cece45bf204812429b773bf76ff87b70aec7913b7b\",\"signature\":\"a7676092ffa2ede89864bfefb9b7a91e3889924143a0b73e8ae72279bea7cb49\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:adminGrants\",\"name\":\"(anonymous)\",\"start\":3149,\"end\":3175,\"body\":\"13f860634f5e0a8393892b01f76364fbdf6b25fbdd10f8536d93feedcd066e52\",\"signature\":\"71f64630c3a696c7b603300f5949799f467096165dbd5e012343a10bbf957fbf\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:adminGrants\",\"name\":\"(anonymous)\",\"start\":3200,\"end\":3231,\"body\":\"764afea66ebb5d5b557d5ea8afcd7245ef1b8479ef543bd2855f63e8731b22cb\",\"signature\":\"71f64630c3a696c7b603300f5949799f467096165dbd5e012343a10bbf957fbf\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:adminGrants\",\"name\":\"(anonymous)\",\"start\":3259,\"end\":3300,\"body\":\"4bab10261d1382c352d9e2e9f9c7e9aebf7b725ffe61a9301bf0db014a47e958\",\"signature\":\"33159f328a97cf0013e670d0c09efeea21249b125dad91fa363651923cdaed33\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":1131,\"end\":1178,\"body\":\"d7295a61b368f10d08ff9fb861e7e346b5c2520283a18310f6f2216b4e4cbe91\",\"signature\":\"822bfa7a67a97895a1fd467a8b9f60e8549f70ed4e9425df39ce9ef426343a4a\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":1251,\"end\":1307,\"body\":\"b4bb20dc2633005c6335824e23d007ed377dce85d5bdce6f353867bcd38ee70c\",\"signature\":\"822bfa7a67a97895a1fd467a8b9f60e8549f70ed4e9425df39ce9ef426343a4a\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":1535,\"end\":1668,\"body\":\"2e71af2a89b80a14e6ef68f3b9db01e0ba605e740cdad58bbd9984df84f4a7df\",\"signature\":\"1ba2d59adee088a3f329d3b821e1113dfe8b63e8697626883210d5d4bc050ef5\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":1729,\"end\":1758,\"body\":\"e4bf358263381cf8da4fd0853a78de47b3ea1e47315e5d5e9b776e57f69ad4b8\",\"signature\":\"d8f3120bc4f5fbe91972be30339f41fb87df21a1d77fcfe40399183bfd9e1f01\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":1895,\"end\":1949,\"body\":\"dbb3faa44fb790db2ba71ed8ed6665d39343d79435c3c7983a505f22d1030f6f\",\"signature\":\"d8f3120bc4f5fbe91972be30339f41fb87df21a1d77fcfe40399183bfd9e1f01\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval\",\"name\":\"(anonymous)\",\"start\":2220,\"end\":2256,\"body\":\"448175fa9053e5dbc2ec69379f934c5015b190f49c8f1334c3b141039f2efd94\",\"signature\":\"d8f3120bc4f5fbe91972be30339f41fb87df21a1d77fcfe40399183bfd9e1f01\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:checkRemoval/ArrowFunction:@1535\",\"name\":\"(anonymous)\",\"start\":1550,\"end\":1667,\"body\":\"0e696cc2e15e98bc97c272a854d4c9e7a149c7fa8fc92a6e0c52be06b16b9713\",\"signature\":\"822bfa7a67a97895a1fd467a8b9f60e8549f70ed4e9425df39ce9ef426343a4a\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:removalSupported\",\"name\":\"(anonymous)\",\"start\":2989,\"end\":3036,\"body\":\"1a9683721f2d947ccc15a20997fcbeccc726ec4c9fb03d7d79de36eb4c249738\",\"signature\":\"71f64630c3a696c7b603300f5949799f467096165dbd5e012343a10bbf957fbf\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:targetFacts\",\"name\":\"(anonymous)\",\"start\":3497,\"end\":3549,\"body\":\"c057cdd8e262f72dca60350d7a2cd4deac711276a531140dd8fddcf1ee3502f2\",\"signature\":\"71f64630c3a696c7b603300f5949799f467096165dbd5e012343a10bbf957fbf\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:targetFacts\",\"name\":\"(anonymous)\",\"start\":3556,\"end\":3618,\"body\":\"2f31b5d34f3ad240618f8a63025c78fd61b5d8f5791749030d8acd251bcb10c7\",\"signature\":\"d9836c22792f5b249d41aa4e7dbc6a9fa8349dc3d6e710df86ac71e99cdceaef\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "currentAdmin",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"currentAdmin\",\"start\":631,\"end\":915,\"body\":\"9077fb3e7344765c03011a5bc352574a3b9b6af25db5134ecea1b1cdee06ecb5\",\"signature\":\"5a8502d9725c4cb007a9ce33bb1c8aed274bf3eda0ce57f3b237d345af3f7b8e\"}"
+    },
+    {
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "function": "targetFacts",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"targetFacts\",\"start\":3398,\"end\":3768,\"body\":\"b2525a455025e155f53f920ad172f8f16ff065883aa60a0affc3a0fdde979564\",\"signature\":\"eade54bc0146e04eda3095e6452743b5f0f3cee91bdf3a89e9bf11708c5d51e0\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:eachOrganizationOnce\",\"name\":\"(anonymous)\",\"start\":18801,\"end\":18839,\"body\":\"62518c77267e3f68bada6f23e23cdade83229d143d3ec479883b0bf75e7b87d1\",\"signature\":\"1e77cb9deb0ac85970c46159d63cf504adb7c8e4e1577c21fb89758499c2e45a\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:revisionOf\",\"name\":\"(anonymous)\",\"start\":20214,\"end\":20232,\"body\":\"637d879e253708b57c83cbd1178d439fa018206300a997fc84d9e43db5114503\",\"signature\":\"4607bd85a7e5b950e095229f3386ea2c82af4c5f530bf959ab2a3c3496314fd1\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "memberFactsOf",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"memberFactsOf\",\"start\":17445,\"end\":17878,\"body\":\"b6491aad93d69f5a060d0a368536c24c17a68702aeff3b47a122e56029ab6266\",\"signature\":\"2bf7d360ce006764f3816665d618fbfccc1e2e196b48f19fcd174bae50502e2f\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "membershipRecordOf",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membershipRecordOf\",\"start\":24699,\"end\":25032,\"body\":\"4546091587fb9c0b8ce0800f16d465bcd1de206d47a3fda67930ca7947b83582\",\"signature\":\"7e9ef15fe238e3421e02cf83ca994c023db4adb9fad741f6511fa0123f0e5ae1\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "readWhileActive",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"readWhileActive\",\"start\":17969,\"end\":18184,\"body\":\"0e441885fd3dfe62f511cbc039a4e479118935dccc93bd17afdfc97676acd9ab\",\"signature\":\"72e1b0c269e8b87e3bbe837069a92764dfde5163192935f5fcff6ea3eee33e04\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "revisionOf",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"revisionOf\",\"start\":20111,\"end\":20393,\"body\":\"2a5cf8971b6d468f0baf01cf200aabcd6abea216f92b3539ee7109bfb1595248\",\"signature\":\"71f240b84ad27a2b72e5dd560b1f3753a6bae5ba8fdde2b32da366b90dbf53cf\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/Constructor:constructor\",\"name\":\"(anonymous)\",\"start\":5712,\"end\":5728,\"body\":\"1e41c183db9d24ba683dfa82e61efd0292c5dca2bf508935444f03f017be3131\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:activeMembershipsOf\",\"name\":\"(anonymous)\",\"start\":13703,\"end\":13824,\"body\":\"730ae470e3f03293b39470fee9cdbe5e51375af3cfafa8945a01a0b9bda5a619\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:activeMembershipsOf\",\"name\":\"(anonymous)\",\"start\":13863,\"end\":13910,\"body\":\"320aa5233db14578f44f9e39a6a3124eec836e7b129c58985b4ebc2bd2caf562\",\"signature\":\"f6517520cb29dc5b87b7b06b634104564a223040909115e237caf42e75504642\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:currentInvitation\",\"name\":\"(anonymous)\",\"start\":17223,\"end\":17276,\"body\":\"33d75336393d664d1f635c6e5ac41b4e0643d5c615e6c2c8379e72f4da592418\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:currentMembership\",\"name\":\"(anonymous)\",\"start\":15611,\"end\":15695,\"body\":\"fc8b9b288ec306a230fbc5c316f2df5fc23b384316f82bb4135ee4e6d16e56a8\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:currentMembership/ArrowFunction:@15611\",\"name\":\"(anonymous)\",\"start\":15632,\"end\":15694,\"body\":\"4877d6bb0671c065640a64175417ea836ed34c936cbee122399069bc62e0ff08\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:memberFactsPage\",\"name\":\"(anonymous)\",\"start\":8802,\"end\":8935,\"body\":\"75cf905fb5ae57c54c0c031320914e337159dbfc72753451f82ba87d15a25b27\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:memberFactsPage\",\"name\":\"(anonymous)\",\"start\":8972,\"end\":9018,\"body\":\"520bfd8aabfac5219621da789b9a36b68137f167add07cc1740a4fbbe88d40c8\",\"signature\":\"11cc5124f411535a2f76764e9040f200e8edd6b09ecb1bd3c8f90d379e29f86a\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:memberFactsPage\",\"name\":\"(anonymous)\",\"start\":9163,\"end\":9213,\"body\":\"4458aa909f6d4fe910b00c9f545ad310d1af24d55671b9c1d9bd59da43abff66\",\"signature\":\"11cc5124f411535a2f76764e9040f200e8edd6b09ecb1bd3c8f90d379e29f86a\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:memberOf\",\"name\":\"(anonymous)\",\"start\":15256,\"end\":15304,\"body\":\"cc7270a84503465927601b7ac5af9231a6d085dc59c678a2b310de0de221839f\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:memberPage\",\"name\":\"(anonymous)\",\"start\":7948,\"end\":8081,\"body\":\"75cf905fb5ae57c54c0c031320914e337159dbfc72753451f82ba87d15a25b27\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:memberPage\",\"name\":\"(anonymous)\",\"start\":8118,\"end\":8166,\"body\":\"520bfd8aabfac5219621da789b9a36b68137f167add07cc1740a4fbbe88d40c8\",\"signature\":\"f6517520cb29dc5b87b7b06b634104564a223040909115e237caf42e75504642\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:organizationRoles\",\"name\":\"(anonymous)\",\"start\":14742,\"end\":14804,\"body\":\"3965128a7b14e653873f8ce9a9715c2bd1c5f3bc510d4f850718ae153d37493c\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:resendInvitation\",\"name\":\"(anonymous)\",\"start\":12139,\"end\":12195,\"body\":\"0fa0cb194cd0543808e86e58b1ab0177ca82b8b91bab5d1d9e139d921d70fe8b\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:WorkOSOrganizations/MethodDeclaration:revokeInvitation\",\"name\":\"(anonymous)\",\"start\":12343,\"end\":12399,\"body\":\"ccf4a988eb22af3e1d56f3b16f0d0bedd2c6f2bf33d0dd8bd822979f3a5fa636\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"constructor\",\"start\":5444,\"end\":5734,\"body\":\"4b3f28c40e93c28518415f3b43b5833f4f21ac053016e6e6398be3a5a8909af8\",\"signature\":\"6137a240c784da45ea4b4f59be89fe403a7a2d8b2386aa6b2a9a86d1553d3ee6\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.grantsOf",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"grantsOf\",\"start\":14286,\"end\":14584,\"body\":\"e3ab8e00d4efa3a6cf58a63112c49184c6812d42a8c0a490ea525df1a05bbb02\",\"signature\":\"e3f2355484d24bbdff218220ea0fd155c37495750f2447c11873773e7e0fca76\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.memberOf",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"memberOf\",\"start\":15000,\"end\":15357,\"body\":\"da069c0779d057b189a19007f72d5dc76f8978e7373996387feb883807dd450e\",\"signature\":\"49c1710e26ba4c897c6966ffcaf41caddc184848d2d9df1d5bd9b54e1b1de4d7\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.organizationRoles",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"organizationRoles\",\"start\":14588,\"end\":14816,\"body\":\"18a72823766ed5922611f1cd47a6bdbf79bbd0349704563d798c8e9119c2c82c\",\"signature\":\"4d4c60f0988d2c42bc7542be90bec47c375803482b8dbfb4df9405d7e37fdc05\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.resendInvitation",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"resendInvitation\",\"start\":12001,\"end\":12201,\"body\":\"102bd4eba1cadc1107a9d72376fa7ef4b87ec313efcea6e33b5c8f1f494c4fa3\",\"signature\":\"0569fcb10c062ea88fa193dfc893a232c77968677ad0a1dc6cf820844fa97e12\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workos-organizations\\WorkOSOrganizations.revokeInvitation",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:WorkOSOrganizations\",\"name\":\"revokeInvitation\",\"start\":12205,\"end\":12405,\"body\":\"84dda2ed06491066e52a7d5ab61c597fdff3cc51611a51ffb824559f0f17dcb4\",\"signature\":\"0569fcb10c062ea88fa193dfc893a232c77968677ad0a1dc6cf820844fa97e12\"}"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "function": "workosMembershipReads",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"workosMembershipReads\",\"start\":23594,\"end\":24697,\"body\":\"e7924cc166e65b2530586b28af0f564159cc6cd72740192d29cceed1a6bb129e\",\"signature\":\"fed03676f75282ab78adca4f169e1e68cf44d1457148ebfd5c6c1606985ad1d6\"}"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-25T22:05:55.434933+00:00",
+  "sourceReview": "Accepted facts-only boundary and minimal scan change. Raw management, all grants, direct/page agreement, stop and pagination semantics preserved. Independent review-domain.md agrees; manager read source and new acceptance/unit/integration tests.",
+  "architectureReview": "800px comparison inspected; labels, boundaries and targets readable; same owners, scope and neutral retained relationships. All registry Mermaid blocks unchanged; L4 omitted with boundary rationale.",
+  "browserReview": "390px full-page screenshot inspected. Labels and confirmation controls readable, focus ring visible, no horizontal clipping; keyboard test passed.",
+  "pending": "New unit-test non-null assertion cleanup, remaining live/container gates, metrics, committed pin and human architect approval.",
+  "sourceHashes": {
+    "src/accounts/organizations/organization-directory.ts": "364bfdbd9d2e89fca71d2f9deac027d3fe45465e2baf9a80d8520ad6eb264f96",
+    "src/accounts/organizations/membership-removal-checks.ts": "22697d95d43749739820ffd59dbf04d7c1acdf3abd748d5367455d756235154f",
+    "src/accounts/providers/workos/workos-organizations.ts": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "globalContext": "colima",
+  "sharedContainers": [
+    "6bfb5dd8ffec itsaplan-web-1",
+    "3f56f623eede itsaplan-api-1",
+    "8b49558a8780 itsaplan-bot-1",
+    "6d094ec75fe3 itsaplan-worker-1",
+    "e0cf47519c16 itsaplan-minio-1",
+    "6b7e6d3dd5d9 itsaplan-postgres-1"
+  ],
+  "ownedContainers": [],
+  "hostedBuildLogHash": "fa6c88e8354c796fed4ad1ef0aa1e2c9ea0130bfe52e1535374f7a378f6200f3"
+}

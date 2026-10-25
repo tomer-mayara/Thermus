@@ -1,0 +1,5 @@
+{
+  "source": ".cache/s25-02/live/s25-02-mvodln1y-e282ac.jsonl",
+  "sha256": "90f680e0665ca691169a2f82cc37ba8eac16bc28f71ec75a6941592c67b3d863",
+  "notes": "Only the current R1 run; original manifest retained without edits. Planning commit and dirty-worktree fields are historical labels. Final per-file candidate binding records the source/runtime-input identity."
+}

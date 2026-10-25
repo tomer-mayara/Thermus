@@ -1,0 +1,66 @@
+✔ Given a target Admin with two memberships, a global account, and a personal factor, when Members removes one membership and a fresh User invitation is accepted, then only invited User access returns and the other account state stays intact (752.561417ms)
+✔ Given applied removal and a throwing customer Audit sink, when Members submits and reads again, then the outcome and receipt or hold stay unchanged with one deletion (171.888959ms)
+✔ Given unknown removal and a throwing customer Audit sink, when Members submits and reads again, then the outcome and receipt or hold stay unchanged with one deletion (209.005292ms)
+✔ Given a valid Admin form with a forged organization, when Members refuses it, then no customer event is captured for the forged tenant and no provider deletion is sent (164.083125ms)
+✔ Given a password-authenticated Admin, two active Admins, and an ordinary User, when the Admin confirms Remove through Members, then only that membership is removed and the current count is two (307.263333ms)
+✔ Given a valid removable target and only actor authority changed, when the removal form is submitted, then no provider deletion occurs (85.908667ms)
+✔ Given a valid removable target and only saved organization stale, when the removal form is submitted, then no provider deletion occurs (104.194084ms)
+✔ Given a valid removable target and only organization forged, when the removal form is submitted, then no provider deletion occurs (129.817042ms)
+✔ Given a valid removable target and only saved target stale, when the removal form is submitted, then no provider deletion occurs (130.346459ms)
+✔ Given a valid removable target and only target forged, when the removal form is submitted, then no provider deletion occurs (193.029542ms)
+✔ Given a valid removable target and only revision stale, when the removal form is submitted, then no provider deletion occurs (123.530333ms)
+✔ Given a valid removable target and only revision forged, when the removal form is submitted, then no provider deletion occurs (71.313583ms)
+✔ Given a valid removable target and only method invalid, when the removal form is submitted, then no provider deletion occurs (94.126208ms)
+✔ Given a valid removable target and only origin invalid, when the removal form is submitted, then no provider deletion occurs (99.250125ms)
+✔ Given a valid removable target and only CSRF invalid, when the removal form is submitted, then no provider deletion occurs (116.809458ms)
+✔ Given a password-only last Admin and a valid self-removal form, when Remove is confirmed, then the page asks for another Admin and links to invitations without deleting the membership (87.997833ms)
+✔ Given an uncertain removal that deleted its target, when the Admin repeats the same POST and refreshes Members, then the POST is busy, current facts are shown, and no deletion is replayed (101.064375ms)
+✔ Given a confirmed removal followed by failed Members reads, when the Admin refreshes, then completion remains separate from the read failure and no deletion is replayed (86.097ms)
+✔ Given an Admin with another eligible membership, when the Admin removes itself and follows workspace guidance, then old organization browser and MCP access are refused and the other workspace can be selected (404.247958ms)
+✔ Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation and eligible signup are usable without restoring access (149.169541ms)
+✔ Given a creator Admin with a retained start record and another Admin, when the creator removes itself, then signup offers saved-start support without making or restoring a membership (138.088875ms)
+✔ Given a provider that requires reauthentication after self-removal, when the Admin uses sign-in guidance, then the new identity-only selection offers current no-membership guidance without protected removal details (154.410292ms)
+✔ Given an unknown self-removal that took effect, when old POST and Members are refused, then identity-only guidance remains usable and the pending operation is not settled or replayed (111.428959ms)
+✔ Given an ordinary active membership, another membership, an account, and a personal factor, when the directory deletes the exact membership and WorkOS confirms completion, then only that membership is absent on reread (123.819166ms)
+✔ Given all current role slugs and ordinary management, when management changes without a new timestamp, then member and page facts retain all grants and external management with a new revision (46.755917ms)
+✔ Given directory-managed refusal, when the directory deletes the intended membership, then it reports only the known outcome and sends one DELETE (71.921625ms)
+✔ Given response lost after deletion, when the directory deletes the intended membership, then it reports only the known outcome and sends one DELETE (32.698958ms)
+✔ Given explicit ordinary management, when real membership wire evidence becomes undefined with the same timestamp, then member and page report unknown with a new revision (52.121458ms)
+✔ Given explicit ordinary management, when real membership wire evidence becomes null with the same timestamp, then member and page report unknown with a new revision (44.660709ms)
+▶ The hosted active product member count through the public routes, with session and directory doubles
+  ✔ Given members on several pages with repeated page boundaries, when Admin-only and combined User/Admin members open the members page, then each active product member counts once, including Admin-only members, while default-role, pending, and inactive memberships and pending invitations do not count (32.270458ms)
+  ✔ Given a member page or an invitation page that fails to load, when Members opens, then each gives the failure page without a partial number or list, and the operator gets the path and the cause (5.169459ms)
+✔ The hosted active product member count through the public routes, with session and directory doubles (38.119041ms)
+▶ Hosted invitation management with the real composition, routes, service, and MCPServer, and provider doubles
+  ✔ Given a directory change that fails after its effect, when an Admin sends an invitation after the provider refreshed the session, then the browser gets a safe unconfirmed notice with the refreshed cookie, a status read shows the pending invitation, and a fresh duplicate form sends nothing again (21.635375ms)
+  ✔ Given a directory that cannot make a change safely, when an Admin sends an invitation, then it gets 503 with the notice, nothing changes, and each record says unsupported (2.423958ms)
+  ✔ Given the change recorder of the hosted edition, when an Admin sends and resends an invitation, then the operator log gets one info line with each record, and no line holds the form token, the session cookie, or an invitation token (3.809667ms)
+  ✔ Given an outage of the member pages after the provider refreshed the session, when the members page opens, then it gets the failure page with the refreshed session cookie and no partial count, and the operator log gets one line (0.723084ms)
+  ✔ Given the production hosted application with the WorkOS provider, when the member and invitation pages and their changes arrive with the session cookie, form token, and values of the doubles, then each asks for a sign-in without a cookie or a form, and nothing is recorded (842.524041ms)
+✔ Hosted invitation management with the real composition, routes, service, and MCPServer, and provider doubles (872.084041ms)
+▶ Forged and foreign targets and actors without authority
+  ✔ Given a foreign invitation and unsupported invitation roles, when an Admin attempts native changes, then each is denied without changing memberships or invitations (97.786208ms)
+  ✔ Given an actor of another authority with the subject of an Admin, when it asks for administration in Acme, then each operation is denied with change records before any WorkOS read (34.623209ms)
+✔ Forged and foreign targets and actors without authority (133.031042ms)
+▶ Inactive memberships and invitations with the real WorkOS directory
+  ✔ Given Eve with an inactive membership in Acme that had User and Admin, when Dan invites Eve as Admin and Eve accepts in the provider fake, then the invitation makes the membership pending with only Admin, and the acceptance makes it active with only Admin, so that no User returns; WorkOS gets only the send, and no membership create, update, deactivation, reactivation, or deletion (62.559958ms)
+  ✔ Given Cal and Sam with Admin alone, when each sends invitations, then both manage either invitation role, duplicates change nothing, and invited addresses and active members give address-in-use (131.957625ms)
+  ✔ Given User invitations of Dan that WorkOS shows as accepted, revoked, expired, and pending, when Dan reads the invitation overview and then resends and revokes each, then the overview shows the WorkOS state of each without a token or link, only the pending invitation changes, and each other change is not-pending with its record and without a WorkOS change (102.653417ms)
+✔ Inactive memberships and invitations with the real WorkOS directory (297.818333ms)
+▶ Member pages and WorkOS outages
+  ✔ Given WorkOS member pages of two that repeat one membership on the next page, when Dan reads the member overview, then each membership of Acme shows once with its status and application roles, the count includes each active product member once, including Admin alone, while default-role, pending, and inactive memberships count zero (131.215666ms)
+  ✔ Given a WorkOS outage on the later member pages and then on the invitation reads, when Dan reads the overviews and sends an invitation, then each overview rejects without a partial result, billing gets no count, and the send fails with a failed record before any WorkOS send (48.074958ms)
+✔ Member pages and WorkOS outages (179.5105ms)
+▶ Unconfirmed native invitation writes
+  ✔ Given WorkOS creates the invitation but closes the connection before its response, when an Admin sends and then checks current invitations, then the outcome stays unconfirmed and the SDK sends only once (170.990916ms)
+  ✔ Given a native resend response has no invitation data, when an Admin checks the pending invitation, then the write remains unconfirmed and no SDK write repeats (61.995ms)
+  ✔ Given a native revoke response has no invitation data, when an Admin checks the pending invitation, then the write remains unconfirmed and no SDK write repeats (74.640625ms)
+✔ Unconfirmed native invitation writes (307.911208ms)
+ℹ tests 46
+ℹ suites 6
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8710.775375

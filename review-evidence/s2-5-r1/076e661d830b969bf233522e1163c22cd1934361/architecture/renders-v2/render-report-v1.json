@@ -1,0 +1,44 @@
+{
+  "parent": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "head": "working draft; final SHA refresh required",
+  "viewport": {
+    "width": 800,
+    "height": 1000
+  },
+  "deviceScaleFactor": 1,
+  "mermaid": "11.16.0",
+  "playwright": "1.62.0",
+  "browser": "156.0.8078.4",
+  "executablePath": "/Users/tomermayara/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "mermaidAsset": "/tmp/advanced-mermaid-pr221.X3GtVH/tool/node_modules/mermaid/dist/mermaid.min.js",
+  "mermaidAssetSha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "registrySha256": "c31fc96bb231598edde5c8b351c4c988386ce90c6a8b7de7d81e5bef8d76ac4d",
+  "diagrams": [
+    {
+      "name": "comparison-v2",
+      "source": "comparison-v2.mmd",
+      "sha256": "9372ee58c60292ebf480adf228bb47ec8d570cd9712fed135fc24980cf46811a",
+      "image": "comparison-v2-800.png",
+      "vector": "comparison-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 752.484375
+      },
+      "viewBox": {
+        "x": 0,
+        "y": 0,
+        "width": 741,
+        "height": 697
+      },
+      "scaledFontPx": 17.27395411605938,
+      "nodeCount": 3,
+      "pngSha256": "c6385fe2cd2aa2217de328437503171fc608df8216f35dfa6b0d54d43af7920d",
+      "svgSha256": "92bf243c16587082e8b2d65bbb11caac215286c8ca1257d10c46df22e187995a",
+      "parse": "passed",
+      "visualReview": "passed: at 800px labels readable, title clear, node boundaries/arrow targets correct, no label crossing unrelated boxes; neutral label backgrounds"
+    }
+  ],
+  "blockedRequests": []
+}

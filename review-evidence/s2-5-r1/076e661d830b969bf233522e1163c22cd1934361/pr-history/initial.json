@@ -1,0 +1,116 @@
+{
+  "initialPr": {
+    "status": "fulfilled",
+    "value": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "url": "https://github.com/tomer-mayara/Thermus/pull/257",
+        "number": 257,
+        "state": "open",
+        "merged": false,
+        "mergeable": true,
+        "draft": true,
+        "body": "## Description\n\nRepairs S2.5-R1: the removal safety scan currently hydrates every member’s email, although its checks do not use email. Successful display reads can consume the 30-second operation budget and leave an unnecessary durable hold.\n\nStacked on #255. The repair will add a narrow facts-only page on the existing directory, preserve display/direct-target reads and all safety/lifetime/receipt rules, and begin with the failing 100-member regression.\n\nImplementation and final verification are in progress. No deployment, provider settings, database schema or notice publication is included. Expected T2 architecture review because the public directory contract changes; final facts and evidence will replace this draft report.",
+        "title": "Use membership facts for the removal safety scan",
+        "base": "codex/s2-5-02-removal-verification",
+        "base_sha": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "head": "codex/s2-5-r1-removal-facts",
+        "head_sha": "1a192d743a4c71ae6faebfd00f7ae6fd4c72ea0e",
+        "head_repo_id": 1410584924,
+        "head_repo_full_name": "tomer-mayara/Thermus",
+        "merge_commit_sha": "81b575f1ef9416e0806f7c446ec3864c2852e50b",
+        "user": {
+          "login": "tomer-mayara",
+          "name": "tomer-mayara",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+          "id": 48661201
+        },
+        "requested_reviewers": null,
+        "requested_team_reviewers": null,
+        "diff": null,
+        "comments": null,
+        "created_at": "2026-10-25T21:49:28Z",
+        "updated_at": "2026-10-25T21:53:16Z",
+        "closed_at": null,
+        "merged_at": null,
+        "commits": 1,
+        "changed_files": 1,
+        "additions": 20,
+        "deletions": 0,
+        "display_url": "https://github.com/tomer-mayara/Thermus/pull/257",
+        "display_title": "Use membership facts for the removal safety scan"
+      },
+      "isError": false
+    }
+  },
+  "initialComments": {
+    "status": "fulfilled",
+    "value": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "comments": [
+          {
+            "url": "https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671",
+            "body": "## Validation\n\nAcceptance-first regression has a recorded failing result on the parent implementation: unknown instead of applied. The repair and focused tests are in progress. Full selected source checks, dedicated gates, coverage, metrics, and exact final candidate binding are still pending. This draft does not claim release readiness.\n",
+            "user": {
+              "login": "tomer-mayara",
+              "name": "tomer-mayara",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+              "id": 48661201
+            },
+            "id": 6403840671,
+            "pull_request_review_id": null,
+            "in_reply_to_id": null,
+            "created_at": null,
+            "updated_at": null,
+            "review": null,
+            "side": null,
+            "line": null,
+            "start_line": null,
+            "path": null,
+            "body_html": "<h2 dir=\"auto\">Validation</h2>\n<p dir=\"auto\">Acceptance-first regression has a recorded failing result on the parent implementation: unknown instead of applied. The repair and focused tests are in progress. Full selected source checks, dedicated gates, coverage, metrics, and exact final candidate binding are still pending. This draft does not claim release readiness.</p>"
+          },
+          {
+            "url": "https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871",
+            "body": "## Quality review\n\nS2.5-R1 is scoped to one facts-only membership page on the existing directory boundary and its use by removal. Current authorization, last-Admin, pagination, deadlines and durable-state rules must remain unchanged. Expected T2 Need architect for the public directory contract change; final checker facts, declaration diffs, architecture comparison and retained findings will be recorded here. No human approval or merge eligibility is established.\n",
+            "user": {
+              "login": "tomer-mayara",
+              "name": "tomer-mayara",
+              "email": null,
+              "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+              "id": 48661201
+            },
+            "id": 6403840871,
+            "pull_request_review_id": null,
+            "in_reply_to_id": null,
+            "created_at": null,
+            "updated_at": null,
+            "review": null,
+            "side": null,
+            "line": null,
+            "start_line": null,
+            "path": null,
+            "body_html": "<h2 dir=\"auto\">Quality review</h2>\n<p dir=\"auto\">S2.5-R1 is scoped to one facts-only membership page on the existing directory boundary and its use by removal. Current authorization, last-Admin, pagination, deadlines and durable-state rules must remain unchanged. Expected T2 Need architect for the public directory contract change; final checker facts, declaration diffs, architecture comparison and retained findings will be recorded here. No human approval or merge eligibility is established.</p>"
+          }
+        ],
+        "url": "https://github.com/tomer-mayara/Thermus/issues/257",
+        "title": "tomer-mayara/Thermus Issue #257 comments",
+        "display_url": "https://github.com/tomer-mayara/Thermus/issues/257",
+        "display_title": "tomer-mayara/Thermus Issue #257 comments"
+      },
+      "isError": false
+    }
+  }
+}

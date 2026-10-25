@@ -1,0 +1,17 @@
+{
+  "candidate": "076e661d830b969bf233522e1163c22cd1934361",
+  "parentMergeBase": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "reviewed": true,
+  "reviewedAt": "2026-10-25T22:59:15.867675+00:00",
+  "implementation": "Manager inspected three changed production files, all added/changed test seams, public declaration and source-free status docs. Independent domain reviewer found no further defect. Explicit test presence guard reviewed; source hashes match the accepted implementation.",
+  "behavior": "Final ordinary5031backend+49portal, typecheck, portal, PG26, Collector10, browser1, live29, native11, hostedAMD64seven/nestedoffline all pass. Fresh verified combined coverage bound to this exact SHA. Full logs and input binding retain earlier working-tree labels and test/doc-only transitions.",
+  "quality": "All14 changed/new rows measured100percent, CRAP max9changed/3new, no increment-used exception. Retained MI/native/habit findings each reviewed with explicit reason. No production source edit after gates. Authoritative checker T2 locally eligible/no blockers.",
+  "architecture": "Public directory declaration and internal interface change; same component/edge set. All15 registry diagrams unchanged. Compared exact actual-parent revision and finalcandidate, reviewed full public declaration diff. Final embedded Mermaid equals reviewedv2 standalone source and800pximage. L4 omitted with recorded contract rationale. NativeCSSparser limitation is preexisting and doesnot establish uncertainty about this inspected increment.",
+  "publication": "Manager approved exact evidence scope, final report drafts and preservation of prior versions. Staging inventory and exact configured-secret scan still required before push.",
+  "humanApproval": "Not established. Independent authorized current-head human architect approval and parent-stack integration remain required.",
+  "release": "No production release, schema deployment or notice publication.",
+  "sourceInputBinding": "final-candidate-binding.json",
+  "metricsReview": "review/metric-dispositions.json",
+  "habitReview": "review/habit-dispositions.json",
+  "architectureProvenance": "architecture/provenance-final.json"
+}

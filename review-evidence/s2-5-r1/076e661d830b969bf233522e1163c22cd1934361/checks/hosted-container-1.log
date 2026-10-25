@@ -1,0 +1,24 @@
+
+> thermus@0.0.0 test:container:hosted
+> npm run build && node --test dist/test/acceptance/auth/hosted-image.test.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+▶ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts
+  ✔ Given the unmodified image and placeholder runtime settings, when the real CLI starts, then portal, assets and health work, MCP remains protected, and foreign origins are refused (5721.797333ms)
+  ✔ Given the organization Audit bundle in the prepared image, when signup is enabled, then startup succeeds and the exact notice is readable before sign-in (4192.310416ms)
+  ✔ Given a Connect User at the external-provider seam, when the image fetches public HTTPS and a controlled JavaScript page, then the real renderer verifies TLS and returns script output cleaned with the shipped native policy (4114.651833ms)
+  ✔ Given the final hosted runtime, when calls target private addresses, exceed capacity, disconnect or receive SIGTERM during rendering, then the guards refuse unsafe work, cancellation releases capacity after settlement, and the CLI exits within its shutdown bound (3571.184542ms)
+  ✔ Given invalid local startup inputs, when the image starts, then the real CLI fails before listening (7814.251958ms)
+  ✔ Given a final image with its portal hidden by an empty mount, when startup runs, then it fails before listening (2157.726458ms)
+✔ Given a clean hosted build without live secrets, when checks pass, then the final Linux AMD64 image serves and renders within its safety and shutdown contracts (1157592.129041ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1157886.805667

@@ -1,0 +1,330 @@
+✔ Given a current Admin without MFA proof, when an ordinary membership is removed, then only its exact ID is deleted after durable admission and completion is recorded (4.890041ms)
+✔ Given a User or foreign authority, when removal is requested, then it is denied before admission (0.267541ms)
+✔ Given unavailable removal storage, when removal is requested, then it is unavailable while organization access still works (0.236416ms)
+✔ Given authority that changes during durable admission, when current reads resume, then removal is denied and its own no-send intent is completed (0.199667ms)
+✔ Given an otherwise valid removal with only another organization, when current target facts are checked, then no provider delete runs (0.220583ms)
+✔ Given an otherwise valid removal with only another membership ID, when current target facts are checked, then no provider delete runs (0.118833ms)
+✔ Given an otherwise valid removal with only stale revision, when current target facts are checked, then no provider delete runs (0.114292ms)
+✔ Given an otherwise valid removal with only inactive status, when current target facts are checked, then no provider delete runs (0.136667ms)
+✔ Given an otherwise valid removal with only pending status, when current target facts are checked, then no provider delete runs (0.167ms)
+✔ Given an otherwise valid removal with only unknown role, when current target facts are checked, then no provider delete runs (0.125625ms)
+✔ Given an otherwise valid removal with only permissionless extra role, when current target facts are checked, then no provider delete runs (0.121ms)
+✔ Given an otherwise valid removal with only no roles, when current target facts are checked, then no provider delete runs (0.100542ms)
+✔ Given an otherwise valid removal with only external management, when current target facts are checked, then no provider delete runs (0.106792ms)
+✔ Given an otherwise valid removal with only unknown management, when current target facts are checked, then no provider delete runs (0.129541ms)
+✔ Given a target that disappeared, when removal is requested, then its stale form cannot delete another membership (0.109208ms)
+✔ Given one active Admin plus inactive and pending Admins and an invitation, when self-removal is requested, then the last Admin is retained (0.155708ms)
+✖ Given a second active Admin on a later page, when self-removal is requested, then all pages are read and removal is allowed (1.596625ms)
+✖ Given a later page failure or a repeating cursor, when the full Admin count cannot be established, then removal refuses without a partial count (0.334708ms)
+✖ Given the last Admin duplicated across pages, when a newer record makes the other Admin inactive, then duplicates and stale active state do not permit self-removal (0.188916ms)
+✔ Given a target that changes from User to Admin between its direct read and the member pages, when removal finishes its checks, then the changed target is refused (0.117208ms)
+✖ Given 10 active-member pages, when a removal needs the complete count, then the fixed ten-page budget allows completion (0.156417ms)
+✖ Given 11 active-member pages, when a removal needs the complete count, then the fixed ten-page budget refuses without reading page eleven (0.136292ms)
+✔ Given another Admin without product:access, when the only usable Admin requests self-removal, then the unusable Admin does not prevent last-Admin refusal (0.115875ms)
+✔ Given another Admin without user-grants:manage, when the only usable Admin requests self-removal, then the unusable Admin does not prevent last-Admin refusal (0.070291ms)
+✔ Given another Admin without admin-grants:manage, when the only usable Admin requests self-removal, then the unusable Admin does not prevent last-Admin refusal (0.069ms)
+✖ Given the actor loses Admin permissions before the member pages return, when target facts stay unchanged, then the paged current actor still refuses removal (0.130167ms)
+✔ Given an Admin plus User target, when direct and page grant order differs but facts match, then supported combined grants can be removed (8.167584ms)
+✖ Given target missing changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.301625ms)
+✖ Given target membershipId changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.162917ms)
+✖ Given target organizationId changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.15675ms)
+✖ Given target revision changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.208917ms)
+✖ Given target status changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.1215ms)
+✖ Given target management changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.136375ms)
+✖ Given target subject changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.132959ms)
+✖ Given target roles changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.13075ms)
+✖ Given target permissions changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.116875ms)
+✔ Given request and actor objects that the caller later mutates, when removal continues after an await, then the captured organization, actor, target, and revision decide it (0.1695ms)
+✖ Given current safety facts and unavailable display pages, when removal runs, then the facts scan alone permits the exact deletion (0.890917ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 22
+ℹ fail 16
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 294.998083
+
+✖ failing tests:
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:4910
+✖ Given a second active Admin on a later page, when self-removal is requested, then all pages are read and removal is allowed (1.596625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 3
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:104:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:5388
+✖ Given a later page failure or a repeating cursor, when the full Admin count cannot be established, then removal refuses without a partial count (0.334708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'applied'
+  - 'unavailable'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:116:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:6018
+✖ Given the last Admin duplicated across pages, when a newer record makes the other Admin inactive, then duplicates and stale active state do not permit self-removal (0.188916ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'applied'
+  - 'last-admin'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:124:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'last-admin',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:7010
+✖ Given 10 active-member pages, when a removal needs the complete count, then the fixed ten-page budget allows completion (0.156417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 10
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:142:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 10,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:7010
+✖ Given 11 active-member pages, when a removal needs the complete count, then the fixed ten-page budget refuses without reading page eleven (0.136292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'applied'
+  - 'unavailable'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:141:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:8434
+✖ Given the actor loses Admin permissions before the member pages return, when target facts stay unchanged, then the paged current actor still refuses removal (0.130167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'applied'
+  - 'denied'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:163:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'denied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target missing changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.301625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target membershipId changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.162917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target organizationId changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.15675ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target revision changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.208917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target status changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.1215ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target management changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.136375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target subject changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.132959ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target roles changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.13075ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:9778
+✖ Given target permissions changes between direct and complete page reads, when a form uses its old facts, then removal is stale (0.116875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'applied' !== 'stale'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:196:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'applied',
+    expected: 'stale',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/organizations/membership-removal-rules.test.ts:1:11593
+✖ Given current safety facts and unavailable display pages, when removal runs, then the facts scan alone permits the exact deletion (0.890917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unavailable'
+  - 'applied'
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/organizations/membership-removal-rules.test.ts:223:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unavailable',
+    expected: 'applied',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

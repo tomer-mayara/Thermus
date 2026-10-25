@@ -1,0 +1,12 @@
+✔ Given raw WorkOS management evidence false, when the pinned client reads a facts page, then it retains the raw safety facts, exact filters and cursor without a user request (113.177417ms)
+✔ Given raw WorkOS management evidence true, when the pinned client reads a facts page, then it retains the raw safety facts, exact filters and cursor without a user request (52.021917ms)
+✔ Given raw WorkOS management evidence undefined, when the pinned client reads a facts page, then it retains the raw safety facts, exact filters and cursor without a user request (78.877ms)
+✔ Given raw WorkOS management evidence null, when the pinned client reads a facts page, then it retains the raw safety facts, exact filters and cursor without a user request (48.407708ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 844.124667

@@ -1,0 +1,27 @@
+✔ Given mixed member statuses, all roles and a cursor, when safety facts are paged, then the exact filtered page has all safety fields and no email or user read (1.726167ms)
+✔ Given raw management false, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.3755ms)
+✔ Given raw management true, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.210917ms)
+✔ Given raw management undefined, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.176458ms)
+✔ Given raw management null, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.178416ms)
+✔ Given raw management "false", when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.179792ms)
+✔ Given raw management 0, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.132ms)
+✔ Given raw management {}, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.129458ms)
+✔ Given unchanged membership roles in reverse order, when a later facts page uses the current catalog, then its revision stays equal and grants use the current application permissions (0.196ms)
+✔ Given an empty final facts page with cursor null, when it is read, then the page is frozen and no role or user read starts (0.215875ms)
+✔ Given an empty final facts page with cursor "", when it is read, then the page is frozen and no role or user read starts (0.080541ms)
+✔ Given an out-of-scope org_02GLOBEX active record, when active facts are read, then the whole page fails before the role read (0.472667ms)
+✔ Given an out-of-scope org_01ACME inactive record, when active facts are read, then the whole page fails before the role read (0.084625ms)
+✔ Given no explicit statuses, when facts are read, then no provider request starts (0.109458ms)
+✔ Given an unsafe role list undefined, when facts are read, then the page fails closed without user reads (0.095958ms)
+✔ Given an unsafe role list [{"slug":"admin"},{"slug":"unlisted"}], when facts are read, then the page fails closed without user reads (0.066834ms)
+✔ Given a failed listOrganizationMemberships read, when facts are read, then the original error reaches the caller instead of a partial page (0.106125ms)
+✔ Given a failed listOrganizationRoles read, when facts are read, then the original error reaches the caller instead of a partial page (0.1155ms)
+✔ Given a valid first facts page, when the current Admin catalog loses an application permission before a later read, then the later facts page fails closed (0.177625ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 505.627458

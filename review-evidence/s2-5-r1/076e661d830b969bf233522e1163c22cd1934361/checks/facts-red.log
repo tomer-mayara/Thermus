@@ -1,0 +1,196 @@
+✖ Given mixed member statuses, all roles and a cursor, when safety facts are paged, then the exact filtered page has all safety fields and no email or user read (2.96425ms)
+✖ Given raw management false, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (2.747333ms)
+✖ Given raw management true, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.157375ms)
+✖ Given raw management undefined, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.141333ms)
+✖ Given raw management null, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.143292ms)
+✖ Given raw management "false", when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.138334ms)
+✖ Given raw management 0, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.140125ms)
+✖ Given raw management {}, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.144792ms)
+✖ Given unchanged membership roles in reverse order, when a later facts page uses the current catalog, then its revision stays equal and grants use the current application permissions (0.148084ms)
+✖ Given an empty final facts page with cursor null, when it is read, then the page is frozen and no role or user read starts (0.166375ms)
+✖ Given an empty final facts page with cursor "", when it is read, then the page is frozen and no role or user read starts (0.070542ms)
+✖ Given an out-of-scope org_02GLOBEX active record, when active facts are read, then the whole page fails before the role read (0.072875ms)
+✖ Given an out-of-scope org_01ACME inactive record, when active facts are read, then the whole page fails before the role read (0.063916ms)
+✖ Given no explicit statuses, when facts are read, then no provider request starts (0.069417ms)
+✖ Given an unsafe role list undefined, when facts are read, then the page fails closed without user reads (0.063917ms)
+✖ Given an unsafe role list [{"slug":"admin"},{"slug":"unlisted"}], when facts are read, then the page fails closed without user reads (0.048167ms)
+✖ Given a failed listOrganizationMemberships read, when facts are read, then the original error reaches the caller instead of a partial page (0.082209ms)
+✖ Given a failed listOrganizationRoles read, when facts are read, then the original error reaches the caller instead of a partial page (0.060416ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 0
+ℹ fail 18
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1046.209167
+
+✖ failing tests:
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:225
+✖ Given mixed member statuses, all roles and a cursor, when safety facts are paged, then the exact filtered page has all safety fields and no email or user read (2.96425ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:14:32)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:1694
+✖ Given raw management false, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (2.747333ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:51:38)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:1694
+✖ Given raw management true, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.157375ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:51:38)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:1694
+✖ Given raw management undefined, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.141333ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:51:38)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:1694
+✖ Given raw management null, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.143292ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:51:38)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:1694
+✖ Given raw management "false", when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.138334ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:51:38)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:1694
+✖ Given raw management 0, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.140125ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:51:38)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:1694
+✖ Given raw management {}, when facts and the direct member are read, then every safety field and revision agrees without a paged user read (0.144792ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:51:38)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:2623
+✖ Given unchanged membership roles in reverse order, when a later facts page uses the current catalog, then its revision stays equal and grants use the current application permissions (0.148084ms)
+  TypeError: directory.memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:64:36)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:3713
+✖ Given an empty final facts page with cursor null, when it is read, then the page is frozen and no role or user read starts (0.166375ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:79:43)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:3713
+✖ Given an empty final facts page with cursor "", when it is read, then the page is frozen and no role or user read starts (0.070542ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:79:43)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:4375
+✖ Given an out-of-scope org_02GLOBEX active record, when active facts are read, then the whole page fails before the role read (0.072875ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:90:45)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:4375
+✖ Given an out-of-scope org_01ACME inactive record, when active facts are read, then the whole page fails before the role read (0.063916ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:90:45)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:4849
+✖ Given no explicit statuses, when facts are read, then no provider request starts (0.069417ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:97:43)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:5184
+✖ Given an unsafe role list undefined, when facts are read, then the page fails closed without user reads (0.063917ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:105:45)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:5184
+✖ Given an unsafe role list [{"slug":"admin"},{"slug":"unlisted"}], when facts are read, then the page fails closed without user reads (0.048167ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:105:45)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:5682
+✖ Given a failed listOrganizationMemberships read, when facts are read, then the original error reaches the caller instead of a partial page (0.082209ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:116:45)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
+
+test at test/unit/auth-workos/workos-organizations-member-facts.test.ts:1:5682
+✖ Given a failed listOrganizationRoles read, when facts are read, then the original error reaches the caller instead of a partial page (0.060416ms)
+  TypeError: double.directory(...).memberFactsPage is not a function
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organizations-member-facts.test.ts:116:45)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7)
