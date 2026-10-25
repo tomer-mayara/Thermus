@@ -38,6 +38,16 @@ button{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88
 button:hover{border-color:#F3F2EE;background:#2C2D34}
 .invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}
 .invite-card button:hover{background:#F06B45;border-color:#F06B45}
+.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}
+.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}
+.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}
+.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}
+.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}
+.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}
+.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}
+.logging-switch-on{display:none}
+.logging-switch input:checked~.logging-switch-off{display:none}
+.logging-switch input:checked~.logging-switch-on{display:inline}
 .logging-actions{display:flex;flex-wrap:wrap;gap:12px}
 .logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}
 .logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}

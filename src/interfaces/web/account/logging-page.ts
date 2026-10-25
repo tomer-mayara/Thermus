@@ -44,7 +44,7 @@ ${hiddenField('csrf_token', page.csrfToken)}${hiddenField('organization_id', pag
 ${hiddenField('auth', 'bearer')}
 <label for="logging-token">Bearer token</label><input id="logging-token" name="token" type="password" autocomplete="new-password" maxlength="8192"${settings.tokenPresent ? '' : ' required'} aria-describedby="logging-token-help" value="">
 <p id="logging-token-help">${settings.tokenPresent ? 'A token is saved. Leave Token blank to keep it for the same endpoint.' : 'No token is saved. Enter a Bearer token.'} A changed endpoint needs a new token.${settings.revision && settings.auth === 'none' ? ' Save a Bearer token before Test.' : ''}</p>
-<label><input type="checkbox" name="enabled"${settings.enabled ? ' checked' : ''}> Enable export</label><div class="logging-actions"><button type="submit">Save</button>
+<label class="logging-switch"><input type="checkbox" name="enabled" role="switch"${settings.enabled ? ' checked' : ''}><span class="logging-switch-track" aria-hidden="true"></span><span>Enable export</span><span class="logging-switch-off" aria-hidden="true">Off</span><span class="logging-switch-on" aria-hidden="true">On</span></label><div class="logging-actions"><button type="submit">Save</button>
 <button type="submit" class="secondary-action" formaction="${escapeHtml(page.testAction)}" formnovalidate>Test saved destination</button></div></form>
 <p>Save edits before Test. Test sends one synthetic event to the saved destination, even when export is disabled. Check your destination for receipt.</p></section>`, { title: 'Audit logs', current: 'logging', script: destinationScript });
 }
