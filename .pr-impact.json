@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "Resolved identity and customer Audit contracts add optional display names while retaining authority and subject as the stable identity. After current grants allow access, WorkOS reads the matching profile once through the existing SDK with its five-second transport deadline and zero retries; missing, invalid, or unavailable names preserve ID-only access and events. Better Auth uses its existing account read. MCP completions, browser administration, destination actions, and synthetic Test records carry bounded actor.name to OTLP. Display data never grants access or routes tenants; System records stay ID-only. No component, cross-component dependency, datastore, cache, token configuration, or deployment is added. Registry prose is updated; all registry Mermaid views remain unchanged.",
+    "summary": "Resolved identity and customer Audit contracts add optional display names while retaining authority and subject as the stable identity. After current grants allow access, WorkOS reads the matching profile once through the existing SDK with its five-second transport deadline and zero retries; missing, invalid, or unavailable names preserve ID-only access and events. Better Auth uses its existing account read. MCP completions, browser administration, destination actions, and synthetic Test records carry bounded actor.name to OTLP. Display data never grants access or routes tenants; System records stay ID-only. No component, cross-component dependency, datastore, cache, token configuration, or deployment is added. Registry prose is updated; all registry Mermaid views remain unchanged. The coverage mapper now skips JSDoc trivia when matching exact V8 function boundaries; production behavior and metric thresholds are unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -43,7 +43,9 @@
       "src/logs/audit/otlp-audit-encoding.ts",
       "test/acceptance/logging/audit/actor-name.test.ts",
       "test/integration/auth/workos-actor-name.test.ts",
-      "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+      "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+      "script/code-quality/coverage/source-bindings.ts",
+      "docs/implementation/ast-metrics-review.md"
     ]
   }
 }
