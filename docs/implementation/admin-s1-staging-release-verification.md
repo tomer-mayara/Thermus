@@ -1,5 +1,13 @@
 # Slice 1 Staging release verification
 
+Historical record: the status and production observations below are from
+23 October 2026. Later setup/deployment observations in the
+[S2-04 ledger](admin-s2-04.md#evidence-and-release-holds) supersede the old
+"signup remains closed" state; they do not by themselves prove release. Use that
+ledger for current earlier-release holds and the
+[S2.5-02 ledger](admin-s2-5-02.md) for removal release gates. Preserve the dated
+native-flow, legal and test evidence below.
+
 Status: reviewed on 23 October 2026. The owner approved the complete organization
 legal package at 19:45:23 UTC, and its public policy pages are published and
 verified. The runtime candidate passes its source, image, and Staging journey

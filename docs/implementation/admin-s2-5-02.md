@@ -1,14 +1,42 @@
 # S2.5-02 integrated verification and release controls
 
-Status: implementation and behavioral gates pass, 25 October 2026. The PR
-Validation and Quality review records hold final candidate evidence and review
-status. Actual release remains pending. This is
+Status: implementation exists and historical behavioral gates passed; one P2 repair is
+open after independent review on 25 October 2026. PRs #253 and #255 are Draft again. The
+[stack review](admin-s2-5-stack-review.md) records the finding and focused checks;
+[S2.5-R1](../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration)
+is not implemented. The PR Validation and Quality review records retain earlier
+candidate evidence and review status. Actual release remains pending. This is
 [PR #255](https://github.com/tomer-mayara/Thermus/pull/255), stacked on
 [S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254) at
 `2271545702a8f1ec28c6f7dd913fec7024ecadeb`. The ticket is not released or Done.
 The [plan](../design/organization-admin-plan.md#s25-02--integrated-verification-runbooks-and-release)
-retains the release exit. The actual S2-04 release and owner notice decisions
-remain prerequisites.
+retains the release exit. This document is the sole current Slice 2.5 release
+gate ledger. The actual Slice 1/S2-04 release and owner notice decisions remain
+prerequisites. Passing earlier gates does not close the P2 or certify a later
+repaired candidate.
+
+## Open implementation repair
+
+**P2 — remove display-only hydration from the safety scan.** The coordinator's
+complete active-member check uses the WorkOS `memberPage` display path, which
+serially fetches email for each member. The safety decision does not use email.
+A cache-only probe through the real adapter and coordinator models one active
+Admin, an ordinary User target and 100 active memberships. Each successful user
+lookup advances the controlled clock by 300 ms. At 100 lookups and 30,000 ms,
+removal returns unknown with no DELETE, the durable row remains pending, and the
+next valid request returns busy. The manager independently reran the probe with
+the same assertions and result. This is conditional simulated-latency evidence,
+not a live latency benchmark or a new organization-capacity promise.
+
+S2.5-R1 must read complete safety pages without per-member display hydration.
+The existing single direct-target display read may remain to keep the repair small.
+Keep full grants/permissions, management evidence, revisions, pagination,
+actor/target consistency, last-Admin checks, the 30-second budget and all lifetime,
+receipt and no-replay rules. Do not replace the extra reads with a parallel email
+flood, cache, mirror, larger deadline or feature flag. Write the regression
+acceptance specification first, then focused failing contract/adapter/rule tests.
+The plan owns those implementation steps; this ledger tracks the open repair and
+its final-candidate checks. No source repair is included in this document update.
 
 ## What this increment verifies
 
@@ -57,8 +85,9 @@ These results cover the implementation and test bytes of
 `b429c308f013478cd99ee69f22a9f53d5e3687d4`, with later document-only changes.
 They do not claim that every earlier run used that committed SHA. The PR
 Validation record retains full commands, timestamps, failure/retry history, and
-evidence. Behavioral gates pass; required independent human review, actual
-release and owner decisions remain open.
+evidence. Historical behavioral gates passed; the open P2 repair, its final-candidate
+checks, required independent human review, actual release and owner decisions
+remain open.
 
 | Selected check | Latest result |
 | --- | --- |
@@ -74,7 +103,8 @@ release and owner decisions remain open.
 | Public API snapshot check | Passed: 49 snapshots. |
 | Fresh selected coverage | Passed: 3,219 backend and 29 portal unit tests; 1,120 integration tests; 594 backend and 20 portal acceptance tests. Verified capture covers 172 source files from 1,321 processes. |
 
-The PR keeps the final quality reports and manager review. The earlier actual S2-04 release,
+The PR keeps the earlier quality reports and manager review. The open P2 repair,
+refreshed final-candidate evidence, and earlier actual Slice 1/S2-04 release,
 independent required review, exact notice approval/integration/publication/
 presentation, production storage/capacity, and deployed removal journey remain
 separate gates below. The ticket is not Done.
@@ -144,13 +174,55 @@ selects the earlier audit documents; it does not read this Markdown proposal.
 
 | Gate | State and owner action |
 | --- | --- |
-| Stack and independent review | Merge #251, #253 and #254 in order only after their required current-candidate approvals and checks; review this increment separately. |
-| Actual earlier release | Complete the actual S2-04 activation, notice and destination journey in its ledger. A merged code candidate is not that release. |
+| Deployment preflight | Before any push, merge or configuration action that can trigger deployment, hold intermediate/automatic deployments and verify the actual controls and target. Pin and keep the intended no-removal deployed candidate through earlier release and removal preparation. No remote control change is claimed by this record. |
+| Repair, stack and independent review | Complete S2.5-R1 and select checks for the repaired complete candidate. Keep #253 and #255 Draft until their checks and review permit Ready. Merge parents only with their required approvals/checks; refresh this increment and all affected evidence for its actual final head. |
+| Actual earlier release | Identify a no-removal candidate and finish actual Slice 1/S2-04 activation, notice, invitation dispositions and destination journey in their release records. A merged code candidate or healthy deployment alone is not that release. |
 | Exact notice approval | Owner reviews all five complete documents, manifest and data-flow review, confirms effective date and existing-organization handling. A later date needs revised bytes/hashes and approval. |
 | Notice and help integration | After approval, add a successor frozen runtime bundle without overwriting history, select the approved versions, integrate help at the chosen location, and verify signup/acceptance records. |
 | Publication and presentation | Publish only the approved scope; verify public URLs and deployed desktop/mobile copy, versions, links and agreement presentation. Not performed by this PR. |
-| Production storage and $0 capacity | After all release approvals, apply the reviewed removal migration to the intended existing project with owner credentials; check least privilege, private API denial, pool/TLS setup, current usage and bounded proof. No new paid resource. |
-| Removal rollout | Confirm the intended Render target, complete applicable release gates, then run a scoped deployed journey and retain receipts, safe audit and current access evidence. Pending. |
+| Production storage and $0 capacity | After repaired-candidate and notice approvals, apply the additive removal migration while the identified earlier no-removal release runs. Check least privilege, private API denial, pool/TLS setup, current usage and bounded proof. No new paid resource. |
+| Removal rollout | After the deployment preflight and all required gates, publish/deploy the exact approved removal SHA and documents, then run a scoped deployed journey and retain receipts, safe audit and current access evidence. Pending. |
+
+## Ordered release sequence
+
+1. Before any push, merge or configuration action that can trigger deployment,
+   hold every intermediate and automatic deployment. Verify the actual repository,
+   branch/SHA, Render workspace/service, deploy hooks/controls and existing database
+   target. Pin and keep the intended no-removal deployed candidate. The dated
+   auto-deploy setting or an older healthy deployment does not prove current
+   controls. No remote control change is claimed by this record. Do not use the
+   absent table as the exposure gate: combined code can already show Remove and
+   its old runtime notices do not describe removal.
+2. With the intended no-removal candidate pinned, complete actual Slice 1/S2-04
+   release. Record inherited native-flow/mailbox dispositions, approved current
+   notices, and deployed Save/Test/Enable/MCP/Admin export proof. Keep that candidate
+   deployed during the following removal preparation and additive data setup.
+3. Complete S2.5-R1. Obtain owner approval of the exact complete successor package,
+   effective date, existing-organization handling and help placement. Integrate
+   approved frozen runtime documents and help without replacing history. Run the
+   selected complete-candidate checks and obtain required current-head review.
+   Preserve the deployment hold until the final candidate and data setup are ready.
+4. While the identified no-removal release remains deployed, apply the reviewed
+   additive removal schema/grants in the intended existing project. Verify effective
+   runtime privileges, private API denial, TLS/pool setup and bounded $0 headroom.
+   Hold the removal candidate until both data setup and approved runtime copy are
+   ready. Do not start another service or accept a paid feature.
+5. Publish the exact approved public copy and deploy only the exact approved removal
+   SHA, frozen notice versions and help. Verify direct/slash public URLs, desktop/
+   mobile runtime copy, links and agreement-version recording. Then perform the
+   bounded deployed Members removal, current counts, last-Admin, self-removal,
+   portal/MCP denial, preserved other access and safe audit journey. Retain exact
+   receipts and environment/candidate pins; best-effort audit absence cannot settle
+   an unknown operation.
+6. Record the owner release decision only after all ledger gates close. On rollback,
+   retain pending/terminal operation rows and the reviewed schema/grants; stop old
+   write-capable senders as the runbook requires. Never erase a hold to make the
+   prior application run. A source rollback or current membership read cannot undo
+   or settle a possible provider effect.
+
+Missing storage fails closed before provider deletion, but it is not a feature
+visibility or legal-notice switch. The successor proposal remains unapproved and
+unpublished; this sequence grants no production write or publication authority.
 
 The [user/operator runbook](admin-s2-5-02-removal-runbook.md) covers fresh-invitation
 rejoin, last-Admin refusal, honest unknown results, no blind retry, operator/IdP
