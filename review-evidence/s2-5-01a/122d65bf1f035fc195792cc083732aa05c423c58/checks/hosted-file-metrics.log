@@ -1,0 +1,14 @@
+src/app/hosted-workos-application.ts: score 56.2, 25 decision paths, 12 functions
+  score  paths  lines  name
+    0.0      1      1  (anonymous)
+    0.0      1      1  (anonymous)
+    0.0      1      1  (anonymous)
+    0.0      1      1  (anonymous)
+    0.0      2      1  (anonymous)
+    0.0      2      1  (anonymous)
+   50.6      8     30  composeWorkOSApplication
+   52.2      3     20  openWorkOSApplication
+   62.2      1     16  openWorkOSConnection
+   62.6      3     49  workosProviderParts
+   88.0      1      1  (anonymous)
+   89.5      1      1  (anonymous)

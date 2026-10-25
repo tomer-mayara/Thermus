@@ -1,0 +1,39 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "headSha": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "summary": {
+    "filesChanged": 20,
+    "filesAdded": 3,
+    "filesDeleted": 0,
+    "high": 2,
+    "medium": 0,
+    "low": 0,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "src/accounts/providers/workos/workos-organizations.ts",
+      "message": "Maintainability index: 53 -\u003e 48 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 53.483376839832225,
+      "after": 48.11091770208057
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/integration/auth/workos-connection.test.ts",
+      "message": "Maintainability index: 49 -\u003e 39 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 49.030188904827206,
+      "after": 39.14425971208052
+    }
+  ],
+  "improvements": [],
+  "gate": "failed"
+}

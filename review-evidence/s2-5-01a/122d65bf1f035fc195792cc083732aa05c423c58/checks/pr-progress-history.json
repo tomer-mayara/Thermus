@@ -1,0 +1,87 @@
+{
+  "recordedBeforeFinalReview": true,
+  "pr": {
+    "url": "https://github.com/tomer-mayara/Thermus/pull/251",
+    "number": 251,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "body": "## Description\n\nThe organization directory lacked exact-membership deletion and dropped management evidence needed by later removal checks. S2.5-01a adds the portable contract and WorkOS implementation: normal void completion is applied, the documented no-effect refusal is unsupported, and other failures remain uncertain. Raw membership reads preserve missing/null evidence before the pinned SDK can default it to false.\n\nNo application route calls deletion. S2.5-01b still owns admission, current authority, serialization, and last-Admin safety.\n\n## Review\n\nExpected **T2 Need architect** for the changed shared declaration and internal provider binding. Final checker classification and metrics are pending.\n\nArchitecture facts so far:\n\n- The public declaration of `organization-directory.ts` adds management facts and the deletion contract.\n\n<details><summary>Declaration diff</summary>\n\n```diff\ndiff --git a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\nindex 59fd7de3..d1f5e593 100644\n--- a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n@@ -6,12 +6,14 @@ export interface OrganizationMembership {\n     readonly grants: readonly RoleGrant[];\n }\n export type MembershipStatus = 'active' | 'inactive' | 'pending';\n+export type MembershipManagement = 'ordinary' | 'external' | 'unknown';\n export interface OrganizationMember {\n     readonly membershipId: string;\n     readonly subject: string;\n     readonly organizationId: string;\n     readonly email: string;\n     readonly status: MembershipStatus;\n+    readonly management: MembershipManagement;\n     readonly grants: readonly RoleGrant[];\n     readonly revision: string;\n }\n@@ -51,10 +53,14 @@ export interface InvitationSendResult {\n export interface InvitationUpdateResult {\n     readonly outcome: 'applied' | 'not-pending' | 'unsupported';\n }\n+export interface MembershipDeletionResult {\n+    readonly outcome: 'applied' | 'unsupported';\n+}\n export interface OrganizationDirectory {\n     membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]>;\n     memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;\n     member(membershipId: string): Promise<OrganizationMember | undefined>;\n+    deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;\n     invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;\n     invitation(invitationId: string): Promise<OrganizationInvitation | undefined>;\n     sendInvitation(request: InvitationRequest): Promise<InvitationSendResult>;\n```\n\n</details>\n\nThe committed impact declaration records the internal interface and sensitive membership behavior. Components, dependency edges, registry diagrams, and deployment stay unchanged. Registry prose describes the required raw-reader binding and unused deletion boundary.\n\nThe acceptance-first sequence and independent review caught and fixed the SDK normalization edge case. The corrected full suite passes 4,827 backend and 49 portal tests; type checking, portal build, snapshots, and all 28 live WorkOS cases pass. Container/build gates and metrics remain in progress. Scoped live deletion proof remains S2.5-02.\n\nMerge status: **blocked** by pending final checks and independent human architect approval of the final candidate.\n\n---\nCandidate: [313f980a](https://github.com/tomer-mayara/Thermus/commit/313f980a3ac76ec9c95d5dbc346fb9bb7699e442) · [Validation](https://github.com/tomer-mayara/Thermus/pull/251#issuecomment-6394917607) · [Quality review](https://github.com/tomer-mayara/Thermus/pull/251#issuecomment-6394917737)",
+    "title": "Add the S2.5-01a membership deletion boundary",
+    "base": "main",
+    "base_sha": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+    "head": "codex/s2-5-01a-membership-deletion",
+    "head_sha": "313f980a3ac76ec9c95d5dbc346fb9bb7699e442",
+    "head_repo_id": 1410584924,
+    "head_repo_full_name": "tomer-mayara/Thermus",
+    "merge_commit_sha": "5821162c45de0a8963d18a58975fff650d3fcf0e",
+    "user": {
+      "login": "tomer-mayara",
+      "name": "tomer-mayara",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+      "id": 48661201
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-25T07:20:33Z",
+    "updated_at": "2026-10-25T07:54:14Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 2,
+    "changed_files": 28,
+    "additions": 1098,
+    "deletions": 67,
+    "display_url": "https://github.com/tomer-mayara/Thermus/pull/251",
+    "display_title": "Add the S2.5-01a membership deletion boundary"
+  },
+  "comments": [
+    {
+      "url": "https://github.com/tomer-mayara/Thermus/pull/251#issuecomment-6394917607",
+      "body": "## Validation\n\nImplementation and complete-candidate checks are in progress. The current published commit records the approved ticket specification only; no validation result yet certifies a complete committed implementation.\n\nThe acceptance-first sequence found missing management facts and deletion behavior, then made focused tests pass. Independent review exposed a WorkOS SDK normalization edge case, now covered by failing real-wire acceptance cases. The complete validation will be rerun after that correction. Final base/head-bound results and any gate limitations will replace this progress record.",
+      "user": {
+        "login": "tomer-mayara",
+        "name": "tomer-mayara",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+        "id": 48661201
+      },
+      "id": 6394917607,
+      "pull_request_review_id": null,
+      "in_reply_to_id": null,
+      "created_at": null,
+      "updated_at": null,
+      "review": null,
+      "side": null,
+      "line": null,
+      "start_line": null,
+      "path": null,
+      "body_html": "<h2 dir=\"auto\">Validation</h2>\n<p dir=\"auto\">Implementation and complete-candidate checks are in progress. The current published commit records the approved ticket specification only; no validation result yet certifies a complete committed implementation.</p>\n<p dir=\"auto\">The acceptance-first sequence found missing management facts and deletion behavior, then made focused tests pass. Independent review exposed a WorkOS SDK normalization edge case, now covered by failing real-wire acceptance cases. The complete validation will be rerun after that correction. Final base/head-bound results and any gate limitations will replace this progress record.</p>"
+    },
+    {
+      "url": "https://github.com/tomer-mayara/Thermus/pull/251#issuecomment-6394917737",
+      "body": "## Quality review\n\nThe candidate is in progress. Expected review tier: T2 Need architect because the shared OrganizationDirectory declaration changes. Independent human architect approval of the final candidate is required before merge; agent review is not that approval.\n\nIndependent agent review found that pinned WorkOS 11 converts a missing/null management field to false. The correction must preserve unknown wire evidence before that serializer. All other reviewed deletion paths keep exact-ID writes, proven no-effect refusals, and uncertain errors distinct. Final impact, declaration diffs, metrics, architecture assessment, and manager review will replace this progress record.",
+      "user": {
+        "login": "tomer-mayara",
+        "name": "tomer-mayara",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+        "id": 48661201
+      },
+      "id": 6394917737,
+      "pull_request_review_id": null,
+      "in_reply_to_id": null,
+      "created_at": null,
+      "updated_at": null,
+      "review": null,
+      "side": null,
+      "line": null,
+      "start_line": null,
+      "path": null,
+      "body_html": "<h2 dir=\"auto\">Quality review</h2>\n<p dir=\"auto\">The candidate is in progress. Expected review tier: T2 Need architect because the shared OrganizationDirectory declaration changes. Independent human architect approval of the final candidate is required before merge; agent review is not that approval.</p>\n<p dir=\"auto\">Independent agent review found that pinned WorkOS 11 converts a missing/null management field to false. The correction must preserve unknown wire evidence before that serializer. All other reviewed deletion paths keep exact-ID writes, proven no-effect refusals, and uncertain errors distinct. Final impact, declaration diffs, metrics, architecture assessment, and manager review will replace this progress record.</p>"
+    }
+  ]
+}

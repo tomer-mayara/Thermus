@@ -1,0 +1,60 @@
+{
+  "base": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "head": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "registry": "architecture/components.md",
+  "unchangedMermaidBlocks": 13,
+  "views": [
+    {
+      "title": "Context",
+      "line": 30
+    },
+    {
+      "title": "C4 containers: hosted edition",
+      "line": 57
+    },
+    {
+      "title": "C4 containers: local edition",
+      "line": 89
+    },
+    {
+      "title": "Selected C4 components: tool processing in the Node server",
+      "line": 140
+    },
+    {
+      "title": "Selected C4 components: hosted authentication in the Node server",
+      "line": 189
+    },
+    {
+      "title": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "line": 250
+    },
+    {
+      "title": "Selected C4 components: system and audit logs in the Node server",
+      "line": 333
+    },
+    {
+      "title": "Selected C4 components: local authentication in the Node server",
+      "line": 535
+    },
+    {
+      "title": "Collaboration overview",
+      "line": 582
+    },
+    {
+      "title": "Scenario: MCP page fetch and renderer cancellation",
+      "line": 649
+    },
+    {
+      "title": "Scenario: hosted default sign-in landing",
+      "line": 720
+    },
+    {
+      "title": "Scenario: hosted member read",
+      "line": 787
+    },
+    {
+      "title": "Deployment view",
+      "line": 908
+    }
+  ]
+}

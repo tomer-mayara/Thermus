@@ -1,0 +1,73 @@
+{
+  "candidate": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "base": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "sourceTestAndBuildInputsMatch": "313f980a3ac76ec9c95d5dbc346fb9bb7699e442",
+  "lastChanges": "metrics history and implementation record only",
+  "checks": {
+    "ordinary": {
+      "exit": 0,
+      "backendPassed": 4827,
+      "portalPassed": 49
+    },
+    "typecheck": {
+      "exit": 0
+    },
+    "portalBuild": {
+      "exit": 0
+    },
+    "hostedLive": {
+      "exit": 0,
+      "passed": 28
+    },
+    "hostedImage": {
+      "exit": 0,
+      "passed": 7,
+      "platform": "linux/amd64",
+      "builtCandidate": "543550dff9d1d88aaa69e2285678e18b74b36aed"
+    },
+    "hostedOfflineBuild": {
+      "exit": 0,
+      "execution": "Dockerfile.hosted checked-build RUN --network=none npm run build:hosted",
+      "passedByPhase": [
+        3118,
+        29,
+        20,
+        1074,
+        119,
+        13
+      ]
+    },
+    "selfHostedContainer": {
+      "exit": 0,
+      "passed": 11
+    },
+    "apiSurface": {
+      "exit": 0
+    },
+    "crap": {
+      "exit": 0,
+      "changedFunctions": 17,
+      "misses": 0
+    },
+    "metricsProcess": {
+      "exit": 1,
+      "reason": "permitted retained file maintainability findings; no tool failure"
+    },
+    "habitHooks": {
+      "exit": 1,
+      "retainedByRule": {
+        "high-complexity": 1,
+        "non-essential-comment": 224,
+        "oversized-file": 10
+      },
+      "snooze": []
+    },
+    "reviewTier": {
+      "exit": 0,
+      "tier": "T2 Need architect",
+      "localEligibility": "eligible",
+      "overallMergeStatus": "blocked",
+      "blocker": "independent authorized human architect approval of current candidate"
+    }
+  }
+}
