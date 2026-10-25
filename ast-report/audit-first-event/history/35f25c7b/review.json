@@ -1,0 +1,67 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "headSha": "35f25c7b9a13f46e9e4cd60bb329aa1f552a43a9",
+  "summary": {
+    "filesChanged": 14,
+    "filesAdded": 1,
+    "filesDeleted": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 1,
+    "improvements": 1
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "src/logs/audit/audit-snapshot-state.ts",
+      "message": "Maintainability index: 68 -\u003e 62 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 67.58503629937391,
+      "after": 61.657440403935894
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/acceptance/logging/audit/activity-snapshots.test.ts",
+      "message": "Maintainability index: 43 -\u003e 38 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 43.104454448717846,
+      "after": 38.00116283378367
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "message": "Too many Lines of code (156 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "message": "Efferent coupling too high: got 13 (max: 10)",
+      "before": 0,
+      "after": 0
+    }
+  ],
+  "improvements": [
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "maintainability-improvement",
+      "file": "test/support/in-process/audit-collector-site.ts",
+      "message": "Maintainability index: 55 -\u003e 66",
+      "before": 54.8416524752544,
+      "after": 65.55744709228127
+    }
+  ],
+  "gate": "failed"
+}

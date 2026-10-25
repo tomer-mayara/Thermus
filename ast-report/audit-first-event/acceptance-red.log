@@ -1,0 +1,82 @@
+✖ Given a cold runtime and enabled saved settings, when trusted activity occurs, then the first event returns without waiting and is captured once with its input and result (5.498959ms)
+✖ Given cached disabled settings and remote Enable, when activity reaches freshness expiry, then refresh captures its triggering event without reviving content observed while disabled (1.175958ms)
+✖ Given a failed settings read and later recovery, when only time passes then no reads occur, and later eligible activity recovers future capture (1.668625ms)
+✖ Given enabled saved settings and an expired snapshot, when the first later search completes, then its query and result reach the same destination once (0.771167ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.666875
+
+✖ failing tests:
+
+test at dist/test/acceptance/logging/audit/activity-snapshots.test.js:4:1
+✖ Given a cold runtime and enabled saved settings, when trusted activity occurs, then the first event returns without waiting and is captured once with its input and result (5.498959ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/activity-snapshots.test.js:12:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/activity-snapshots.test.js:25:1
+✖ Given cached disabled settings and remote Enable, when activity reaches freshness expiry, then refresh captures its triggering event without reviving content observed while disabled (1.175958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/activity-snapshots.test.js:38:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/activity-snapshots.test.js:44:1
+✖ Given a failed settings read and later recovery, when only time passes then no reads occur, and later eligible activity recovers future capture (1.668625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/activity-snapshots.test.js:66:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/activity-snapshots.test.js:69:1
+✖ Given enabled saved settings and an expired snapshot, when the first later search completes, then its query and result reach the same destination once (0.771167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/activity-snapshots.test.js:78:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

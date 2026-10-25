@@ -1,0 +1,12 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-snapshot.ts"
+  ],
+  "head": "f0d4efe3d48ea19bfe86457d923605325e0beae1",
+  "exitCode": 0,
+  "seconds": 2.445,
+  "log": "head-snapshot.log"
+}

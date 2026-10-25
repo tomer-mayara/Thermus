@@ -1,0 +1,18 @@
+✔ Given a cold runtime and enabled saved settings, when trusted activity occurs, then the first event returns without waiting and is captured once with its input and result (5.496041ms)
+✔ Given cached disabled settings and remote Enable, when activity reaches freshness expiry, then refresh captures its triggering event without reviving content observed while disabled (1.063875ms)
+✔ Given a failed settings read and later recovery, when only time passes then no reads occur, and later eligible activity recovers future capture (1.235084ms)
+✔ Given enabled saved settings and an expired snapshot, when the first later search completes, then its query and result reach the same destination once (1.008209ms)
+✔ Given an unknown tenant, when several events await one settings read, then capture returns immediately and flushes each detached event once in arrival order (3.352125ms)
+✔ Given expired enabled settings, when the next event refreshes to another revision, then that event uses only the new revision (0.887083ms)
+✔ Given pending content and a absent read, when later settings enable export, then rejected content never returns (1.458916ms)
+✔ Given pending content and a disabled read, when later settings enable export, then rejected content never returns (0.651292ms)
+✔ Given pending content and a unavailable read, when later settings enable export, then rejected content never returns (0.491333ms)
+✔ Given a pending batch, when one downstream event throws or is refused, then later events are still offered once and no batch is replayed (0.61775ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 61.460084

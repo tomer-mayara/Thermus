@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/pr-review/api-surface.ts",
+    "--check"
+  ],
+  "head": "35f25c7b9a13f46e9e4cd60bb329aa1f552a43a9",
+  "exitCode": 0,
+  "seconds": 1.79,
+  "log": "api-surface.log"
+}

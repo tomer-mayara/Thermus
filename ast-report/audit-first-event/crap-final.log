@@ -1,0 +1,29 @@
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.read | changed | 10 | 99.5% | 10.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.writeAuditEvent | changed | 9 | 100% | 9.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.loadLater | changed | 7 | 100% | 7.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.flushPending | new | 6 | 99% | 6.0 | ok |
+| src/logs/audit/audit-snapshot-state.ts | snapshotFrom | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshot-state.ts | snapshotBounds | unchanged | 4 | 82.1% | 4.1 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshot-state.ts | boundedSnapshotText | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshot-state.ts | retainPendingEvent | new | 4 | 100% | 4.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.close | changed | 4 | 100% | 4.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.makeRoom | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshot-state.ts | detachedAuditEvent | unchanged | 3 | 93.4% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots. | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.current | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.expire | changed | 3 | 100% | 3.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.residentFor | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.finish | changed | 2 | 100% | 2.0 | ok |
+| src/logs/audit/audit-snapshot-state.ts | clearPendingEvents | new | 1 | 100% | 1.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots. | new | 1 | 100% | 1.0 | ok |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-snapshots.ts | audit-snapshots\AuditSnapshots.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+
+Known limit violations: 0. Measured target misses: 0. Unmeasured functions: 0. Required functions with unknown assessment or identity: 0.

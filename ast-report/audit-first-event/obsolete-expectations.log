@@ -1,0 +1,399 @@
+✖ Given cold hosted capture with saved Enable, when an invitation then a later MCP call complete, then both paths share activity-loaded settings and only future content reaches the saved revision (565.566458ms)
+✖ Given cold hosted capture with saved Enable, when MCP activity loads settings then an invitation completes, then the web action uses that same snapshot without another store read (87.497833ms)
+✖ Given an enabled snapshot in one hosted process, when that process restarts against the saved store, then the new process drops its cold event and learns only for later activity (142.930416ms)
+✖ Given hosted capture caches disabled settings, when another process enables a new revision, then due activity drops now and later activity uses the refreshed revision without idle reads (99.300333ms)
+✖ Given an unavailable settings read, when later hosted activity reaches backoff and the store recovers, then public outcomes stay complete and only future activity is captured (85.993875ms)
+✖ Given two trusted hosted tenants have different saved revisions, when both call MCP and an Admin acts in A, then each admitted event keeps its own tenant and revision (119.099541ms)
+✔ Given hosted logging storage is unavailable, when MCP and Admin actions complete, then customer capture stays discarded and neither path reads settings (98.42725ms)
+✖ Given a held send, when activity refresh observes revision, then the old attempt is aborted without polling or retargeting (9.190917ms)
+✔ Given a held send, when activity refresh observes disabled, then the old attempt is aborted without polling or retargeting (2.505875ms)
+✔ Given a held send, when activity refresh observes absent, then the old attempt is aborted without polling or retargeting (1.427125ms)
+✔ Given an authorization still in progress, when observation disables its revision, then the late ready result cannot start a send (1.44125ms)
+✔ Given no admitted work, when observations name many tenants, then they retain no destination admission state (0.279291ms)
+✔ Given a failing metadata refresh, when an old send is held, then no successful observation is invented (2.43575ms)
+✖ Given a downstream observation hook that throws, when valid metadata loads, then future capture still uses the successful snapshot (0.819083ms)
+✖ Given an unknown tenant, when capture occurs, then reads start asynchronously and the triggering event is never admitted (2.088875ms)
+✔ Given absent or disabled settings, when further activity occurs within freshness, then no event or additional read is admitted (10.064625ms)
+✖ Given an expired enabled revision, when refresh fails, then old content remains unusable until later activity loads a new revision (1.06625ms)
+✔ Given repeated activity and many tenants, when loads are scheduled before the event loop runs, then scheduled and native work stay within two reservations (1.70375ms)
+✔ Given a timed-out read, when backoff ends and its resident is evicted, then the physical read still owns its global and per-tenant reservation (2.888125ms)
+✖ Given a slow read, when its deadline passes and activity repeats, then it retains admission and late completion cannot enable capture (1.10425ms)
+✔ Given queued and native loads, when close runs twice, then it returns immediately and late completion restores nothing (0.840208ms)
+✖ Given small resident and byte bounds, when tenant churn occurs, then old snapshots become unknown and pinned failure backoff is not bypassed (1.023041ms)
+✔ Given invalid tenant or settings metadata, when activity occurs, then bounded projection refuses it without touching destination fields (0.777708ms)
+✖ Given fresh enabled settings, when downstream refuses or throws, then capture is nonthrowing and later capture can still proceed (1.244375ms)
+✔ Given a fresh enabled snapshot, when an admitted event is later mutated by its caller, then its bound tenant and content stay detached (1.463542ms)
+✔ Given a read whose completion passes its deadline before the timer callback runs, when it resolves, then the late snapshot is refused with backoff (0.443666ms)
+✔ Given a scheduled load whose deadline passes before its callback runs, when the callback executes, then no native read starts and backoff applies (0.462ms)
+✔ Given valid settings with adversarial destination getters, when metadata loads, then capture uses only detached enabled and revision values (0.50325ms)
+✖ Given a synchronous settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.343916ms)
+✖ Given a rejected settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.330667ms)
+✖ Given a enabled-getter settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.14275ms)
+✖ Given a revision-getter settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.136042ms)
+✖ Given a invalid-enabled settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.141833ms)
+✔ Given a byte budget smaller than one resident plus its load, when activity occurs, then no read can bypass the shared metadata account (2.95325ms)
+✔ Given exactly enough bytes for one resident and load, when a valid multibyte revision loads, then future capture stays within the fixed allowances (0.816ms)
+✖ Given unknown or disabled capture, when an event contains content getters, then loading touches only its tenant and retains none of that content (0.44225ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 17
+ℹ fail 19
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1433.155208
+
+✖ failing tests:
+
+test at dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:5:1
+✖ Given cold hosted capture with saved Enable, when an invitation then a later MCP call complete, then both paths share activity-loaded settings and only future content reaches the saved revision (565.566458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:9:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:18:1
+✖ Given cold hosted capture with saved Enable, when MCP activity loads settings then an invitation completes, then the web action uses that same snapshot without another store read (87.497833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:22:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:31:1
+✖ Given an enabled snapshot in one hosted process, when that process restarts against the saved store, then the new process drops its cold event and learns only for later activity (142.930416ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:37:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:48:1
+✖ Given hosted capture caches disabled settings, when another process enables a new revision, then due activity drops now and later activity uses the refreshed revision without idle reads (99.300333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:58:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:65:1
+✖ Given an unavailable settings read, when later hosted activity reaches backoff and the store recovers, then public outcomes stay complete and only future activity is captured (85.993875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:76:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:82:1
+✖ Given two trusted hosted tenants have different saved revisions, when both call MCP and an Admin acts in A, then each admitted event keeps its own tenant and revision (119.099541ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  5 !== 3
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/hosted-snapshot-composition.test.js:92:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 5,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-collector-observation.test.js:7:5
+✖ Given a held send, when activity refresh observes revision, then the old attempt is aborted without polling or retargeting (9.190917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-collector-observation.test.js:30:16)
+      at runNextTicks (node:internal/process/task_queues:65:5)
+      at process.processImmediate (node:internal/timers:541:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-collector-observation.test.js:77:1
+✖ Given a downstream observation hook that throws, when valid metadata loads, then future capture still uses the successful snapshot (0.819083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-collector-observation.test.js:89:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:5:1
+✖ Given an unknown tenant, when capture occurs, then reads start asynchronously and the triggering event is never admitted (2.088875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:10:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:34:1
+✖ Given an expired enabled revision, when refresh fails, then old content remains unusable until later activity loads a new revision (1.06625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:44:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:101:1
+✖ Given a slow read, when its deadline passes and activity repeats, then it retains admission and late completion cannot enable capture (1.10425ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:119:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:140:1
+✖ Given small resident and byte bounds, when tenant churn occurs, then old snapshots become unknown and pinned failure backoff is not bypassed (1.023041ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:159:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:187:1
+✖ Given fresh enabled settings, when downstream refuses or throws, then capture is nonthrowing and later capture can still proceed (1.244375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:198:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:272:5
+✖ Given a synchronous settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.343916ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:294:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:272:5
+✖ Given a rejected settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.330667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:294:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:272:5
+✖ Given a enabled-getter settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.14275ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:294:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:272:5
+✖ Given a revision-getter settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.136042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:294:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:272:5
+✖ Given a invalid-enabled settings read failure, when activity repeats, then failure is contained and backoff prevents another read (0.141833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:294:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:328:1
+✖ Given unknown or disabled capture, when an event contains content getters, then loading touches only its tenant and retains none of that content (0.44225ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-snapshots.test.js:339:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

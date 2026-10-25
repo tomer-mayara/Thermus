@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "--test",
+    "dist/test/acceptance/auth/self-hosted-container.test.js"
+  ],
+  "head": "35f25c7b9a13f46e9e4cd60bb329aa1f552a43a9",
+  "exitCode": 0,
+  "seconds": 114.074,
+  "log": "self-hosted.log"
+}

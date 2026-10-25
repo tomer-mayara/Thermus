@@ -1,0 +1,11 @@
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+test/unit/logging/audit/audit-snapshot-pending.test.ts(26,46): error TS2339: Property 'event' does not exist on type 'never'.
+test/unit/logging/audit/audit-snapshot-pending.test.ts(27,57): error TS2339: Property 'event' does not exist on type 'never'.
+test/unit/logging/audit/audit-snapshot-pending.test.ts(27,88): error TS2339: Property 'event' does not exist on type 'never'.
+test/unit/logging/audit/audit-snapshot-pending.test.ts(54,48): error TS2339: Property 'event' does not exist on type 'never'.
+test/unit/logging/audit/audit-snapshot-pending.test.ts(106,46): error TS2339: Property 'event' does not exist on type 'never'.
+test/unit/logging/audit/audit-snapshot-pending.test.ts(184,47): error TS2339: Property 'event' does not exist on type 'never'.
+test/unit/logging/audit/audit-snapshot-pending.test.ts(184,73): error TS2339: Property 'destinationRevision' does not exist on type 'never'.

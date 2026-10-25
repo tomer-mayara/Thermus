@@ -1,0 +1,31 @@
+── high-complexity (1 issue) ──
+
+High cyclomatic complexity means one function makes too many decisions at once. The count is the symptom; tangled responsibilities are the cause.
+
+**Untangle the decisions:**
+1. Lift guards out first — turn precondition checks into early returns so the happy path stays flat. Much of the count is preconditions wrapped around the real work.
+2. Change the shape of what remains: an `if`/`else` chain switching on one value is often a lookup table or polymorphism in disguise; a nested loop is often a filter/map pipeline.
+3. If the branches are genuinely separate jobs, extract one function per branch, each named for the responsibility it handles.
+
+Useful tip: describe each branch in one sentence. Two branches with the same sentence belong together; a branch you cannot name cleanly wants its own function.
+
+**AVOID**: merging conditions with and/or, or rewriting branches as ternaries, just to lower the score — the decisions remain, only the counter moves. You are done when a first-time reader can hold the whole function in their head.
+
+src/logs/audit/audit-snapshots.ts:103
+
+── non-essential-comment (6 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+src/logs/audit/audit-snapshots.ts:43
+src/logs/audit/audit-snapshots.ts:67
+src/logs/audit/audit-snapshots.ts:92
+src/logs/audit/audit-snapshots.ts:96
+src/logs/audit/audit-snapshots.ts:128
+src/logs/audit/audit-snapshots.ts:15

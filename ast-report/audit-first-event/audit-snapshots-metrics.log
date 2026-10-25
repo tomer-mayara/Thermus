@@ -1,0 +1,17 @@
+src/logs/audit/audit-snapshots.ts: score 48.6, 58 decision paths, 15 functions
+  score  paths  lines  name
+   54.1     10     22  audit-snapshots\AuditSnapshots.read
+   62.0      4     12  audit-snapshots\AuditSnapshots.close
+   66.3      4      9  audit-snapshots\AuditSnapshots.makeRoom
+   67.3      3      9  audit-snapshots\AuditSnapshots.expire
+   71.5      2      6  audit-snapshots\AuditSnapshots.finish
+   74.6      9     18  audit-snapshots\AuditSnapshots.writeAuditEvent
+   79.3      1      4  audit-snapshots\AuditSnapshots.constructor
+   81.1      7     17  audit-snapshots\AuditSnapshots.loadLater
+   82.7      3     13  audit-snapshots\AuditSnapshots.residentFor
+   84.9      3      2  audit-snapshots\AuditSnapshots.
+   86.3      3      3  audit-snapshots\AuditSnapshots.current
+   88.0      1      1  audit-snapshots\AuditSnapshots.
+   88.0      1      1  audit-snapshots\AuditSnapshots.
+   89.5      1      1  audit-snapshots\AuditSnapshots.
+   94.6      6      9  audit-snapshots\AuditSnapshots.flushPending

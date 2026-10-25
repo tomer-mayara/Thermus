@@ -1,0 +1,8 @@
+src/logs/audit/audit-snapshot-state.ts: score 61.7, 21 decision paths, 6 functions
+  score  paths  lines  name
+   66.0      4      8  retainPendingEvent
+   68.1      5      7  snapshotFrom
+   71.4      4      7  snapshotBounds
+   83.7      1      4  clearPendingEvents
+   85.7      4      3  boundedSnapshotText
+   95.2      3      8  detachedAuditEvent

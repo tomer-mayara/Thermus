@@ -1,0 +1,19 @@
+✔ Given enabled saved settings and a loaded snapshot, when bounded public content is captured, then one authorized event reaches the sender without writing audit content to SQL (11.1195ms)
+✔ Given captured work for a saved revision, when another instance changes settings before authorization, then the old event drops without retargeting (1.3065ms)
+✔ Given independent enabled tenants, when each captures public content and the collector then closes, then their events stay separate and closed capture sends nothing (2.02ms)
+✔ Given hosted storage owns customer dispatch, when cold activity loads settings and a later tool completes, then the shared capture path admits both final results to that dispatcher without changing the tool response (461.484584ms)
+✔ Given enabled hosted export, when a tool and an invitation complete, then the production capture and dispatch assembly exports their redacted final customer events without writing event content to settings (135.94575ms)
+✔ Given queued hosted content for a saved revision, when another instance replaces that revision before the attempt read finishes, then the old event is dropped without retargeting (120.371ms)
+✔ Given a stalled customer export and more calls than tenant queue capacity, when tools and an Admin invitation complete and the app closes, then product results remain usable and shutdown cancels export before storage closes (168.520916ms)
+✔ Given enabled snapshots and an unavailable dispatch settings read, when MCP and Admin work completes, then no new export starts and their public results stay complete (87.530625ms)
+✔ Given one held export and queued content for the old revision, when public activity refreshes remotely disabled settings, then the shared snapshot owner cancels old export and late sender success starts no retry (101.082708ms)
+✔ Given an in-flight settings load, when the hosted application closes and its store settles later, then storage closes once and the late result admits no old content (467.365208ms)
+✔ Given hosted provider composition fails after snapshot creation, when the failure reaches the caller, then the new snapshot owner closes and storage stays with its caller (70.617167ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1246.773209

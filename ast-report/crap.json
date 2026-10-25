@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "base": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "head": "f0d4efe3d48ea19bfe86457d923605325e0beae1",
+  "rows": [
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.read",
+      "change": "changed",
+      "paths": 10,
+      "share": 0.995,
+      "crap": 10.0000125,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"read\",\"start\":5149,\"end\":6176,\"body\":\"44cdcc9ff77fedcc10d2bf208b7feae934372c8d56d16c0298d3936c82c64d54\",\"signature\":\"bf715ada398af901eccc7afe4d8b08ed19ace965a31980e573babc9f6be14a82\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.writeAuditEvent",
+      "change": "changed",
+      "paths": 9,
+      "share": 1,
+      "crap": 9,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"writeAuditEvent\",\"start\":1579,\"end\":2470,\"body\":\"7963d7e8051fd70a8fcdca3f1bcc4f31235352f929937292f29e159e9c87cd56\",\"signature\":\"9d1e2e5abec007bdc8bd3b5f1bd90207b96e2d86db44f654a2f0ddfd43955915\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.loadLater",
+      "change": "changed",
+      "paths": 7,
+      "share": 1,
+      "crap": 7,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"loadLater\",\"start\":4052,\"end\":5145,\"body\":\"496777f2f9b0f54a5713fe7be6064d7dedd4d30677df1181511d530a0fca1a3d\",\"signature\":\"4bb71dd5689dcda77108664bb1ecc52b5ec7ec8a2b2d6df21941ec2a939d3915\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.flushPending",
+      "change": "new",
+      "paths": 6,
+      "share": 0.99,
+      "crap": 6.000036,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"flushPending\",\"start\":6180,\"end\":6707,\"body\":\"a0afc3da7e129f35d73a120594e234de9dea9e5587f5b1f3332fc6fbdde5e645\",\"signature\":\"5746e2a3fdc6016d65422b4ce65af5b52afdba3b5730bf66f1c95ed9bb7805bc\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshot-state.ts",
+      "function": "snapshotFrom",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"snapshotFrom\",\"start\":1731,\"end\":2175,\"body\":\"edf3e6bb66986666fc4b83ee49875479c35b8a51db36309a5e66b04f3ff9e6b2\",\"signature\":\"91b4707e624740a97767fa816162ae36bee8414ef182fb9f2a4bf7d1729fd088\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshot-state.ts",
+      "function": "snapshotBounds",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 0.821,
+      "crap": 4.091765424,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"snapshotBounds\",\"start\":1190,\"end\":1520,\"body\":\"d01b561633570c431b89cb6ec77738e8e926993ccd0885a9b842ceace29645ec\",\"signature\":\"aaf6a81bd5a8bc40d466baeee69723ce38d54cd1c8f254b127a211fa7abf67c3\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshot-state.ts",
+      "function": "boundedSnapshotText",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"boundedSnapshotText\",\"start\":1522,\"end\":1729,\"body\":\"8c8a5261f64f7d23e5514df2d421bc8bac30b247d931730378aac3f957783d12\",\"signature\":\"7ae4ade45e0d2c3640a1e3ac783233cff147c669102fb3cceaec79815651fb3e\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshot-state.ts",
+      "function": "retainPendingEvent",
+      "change": "new",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"retainPendingEvent\",\"start\":2580,\"end\":3008,\"body\":\"c9e5381c9ee34709480168edca09e390501eb5d9e7be8c019bf888a1e30fddbb\",\"signature\":\"de296f98bac6b843df0470246335493a1c466ce8b4515a056295dbfaea2300bf\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.close",
+      "change": "changed",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"close\",\"start\":2474,\"end\":2868,\"body\":\"a5cbe1e3c77029e14107d462a8d6ed3e8b52a19845299e11952dadeb35247af7\",\"signature\":\"af1bd0462e424c75e204fe261aca95992e478736caa68426fd246bbd3320ed85\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.makeRoom",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"makeRoom\",\"start\":3494,\"end\":4048,\"body\":\"e31eb56d88f821e4175b193fc4068af7c28cf0ebebb94207a995b2126f4aabae\",\"signature\":\"c65af5ade3eeff420bf3f36e1a8a8c6f06851b8663bd4dd883dc83d749643fc0\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshot-state.ts",
+      "function": "detachedAuditEvent",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 0.934,
+      "crap": 3.002587464,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"detachedAuditEvent\",\"start\":2177,\"end\":2578,\"body\":\"7926da3beefa23ced576038f2d512983fbfc3e8cba4cd346c5889be0a50cb910\",\"signature\":\"d8892e80409e429e3b805b87a9b498b50d667bb8fead561552d17cb298277544\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:AuditSnapshots/MethodDeclaration:makeRoom\",\"name\":\"(anonymous)\",\"start\":3749,\"end\":3893,\"body\":\"f5456de5614b959428131875794414c34c073ed44abbdd3629c4956c135d46b2\",\"signature\":\"a050d4d4c8f7d9f2e361f9d7d3587738720f2b0695fe43b5ad833255189d4498\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.current",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"current\",\"start\":6711,\"end\":6867,\"body\":\"c5ca3233e9645fd82a5dd50178944ad7e6da701f7bfeea90e928d5685bb791da\",\"signature\":\"c32278011e5d4a07bce2d68a6934296290ac1e7a16e00bead750c04073faaedf\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.expire",
+      "change": "changed",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"expire\",\"start\":6871,\"end\":7190,\"body\":\"e659a3523ecf15c1253e895c49288e285289b8e158130ccd8068fc9d6b71829a\",\"signature\":\"b4fece898d5175b19cda462a69a34ddf672e42608d13ecf4a320fc92a40d588a\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.residentFor",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"residentFor\",\"start\":2872,\"end\":3490,\"body\":\"4da2de9520dcc4f23843e9de6720e699b54b24a6a564e4fad354100690e0de08\",\"signature\":\"378d038253973194492ab6191149cbbfd6fd436e0c99f346393f306fa0463cf1\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.finish",
+      "change": "changed",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"finish\",\"start\":7194,\"end\":7457,\"body\":\"354eee41243e3aad7994ca7ebb8beba7edbc61d320af52c960b87726811ed067\",\"signature\":\"b4fece898d5175b19cda462a69a34ddf672e42608d13ecf4a320fc92a40d588a\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshot-state.ts",
+      "function": "clearPendingEvents",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"clearPendingEvents\",\"start\":3010,\"end\":3126,\"body\":\"b5e16bff191b74544d2e3edfbb779a4c61ee4fa27a7dd3da07311c58a70f6a61\",\"signature\":\"94966f054082623d47b1e04d772b84ccdfe97114d389df75bf5dd592cc086cd0\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:AuditSnapshots/Constructor:constructor\",\"name\":\"(anonymous)\",\"start\":1546,\"end\":1569,\"body\":\"5c30cafc2815d967af3f20b34c3fbdb3d1e3125fb8408b0b12739651f199cb53\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:AuditSnapshots/MethodDeclaration:loadLater\",\"name\":\"(anonymous)\",\"start\":4967,\"end\":4998,\"body\":\"802304df20cceafc2e6084f2a16f2d125bb454aeb424f726e7b38666eb3c4dbb\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:AuditSnapshots/MethodDeclaration:loadLater\",\"name\":\"(anonymous)\",\"start\":5055,\"end\":5122,\"body\":\"37e3a59e565c49c78bdf3114b9c66ebc150d1dd599192b9e28e23329afc510ca\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-snapshots.ts",
+      "function": "audit-snapshots\\AuditSnapshots.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:AuditSnapshots\",\"name\":\"constructor\",\"start\":1291,\"end\":1575,\"body\":\"97e378fac0f7920ed78e42da375abf722ff62f8e1207f8f9a006d2e7a16ee4e0\",\"signature\":\"39e2fb7e35ac5e6310186ef7aa993bf86537bd702bffaac5e7df6bea93b1fcd8\"}"
+    }
+  ]
+}

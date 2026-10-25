@@ -1,0 +1,17 @@
+flowchart TB
+  subgraph hosted["Thermus hosted Node server (L2)"]
+    mcp["mcp · TypeScript<br/>Final tool input and result"]
+    web["web · TypeScript<br/>Administration outcomes"]
+    audit["audit-logs · TypeScript / pg<br/>CHANGED initial capture<br/>Before: drop on missing or expired cache<br/>After: bounded staging during settings read<br/>Retained: revision checks and export"]
+    mcp -->|"Runtime: capture outcome"| audit
+    web -->|"Runtime: capture outcome"| audit
+  end
+  sql[("L2: PostgreSQL<br/>Saved destination settings")]
+  destination["External L2: Audit destination<br/>Collector or compatible OTLP service"]
+  audit -->|"Retained SQL reads / writes"| sql
+  audit -->|"Retained HTTPS / OTLP JSON"| destination
+  classDef changed fill:#fff4d6,stroke:#946200,color:#332400,stroke-width:2px
+  classDef stable fill:#f5f5f5,stroke:#666666,color:#222222
+  class audit changed
+  class mcp,web,sql,destination stable
+  style hosted fill:#ffffff,stroke:#777777,color:#222222
