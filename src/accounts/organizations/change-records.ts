@@ -4,8 +4,8 @@ import type { AuthenticatedUser } from '../identity/access-context.ts';
 // directory sent no invitation, because the address belongs to a member or has a pending invitation.
 export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-pending' | 'address-in-use' | 'unsupported';
 
-// A record also keeps the outcome of a change that failed: 'failed' before the directory change started, so that
-// nothing changed, and 'unknown' during the directory change, so that its effect is not known.
+// 'failed' means no directory write started. 'unknown' means completion is unconfirmed;
+// removal can also have an uncertain admission or final receipt, without a known provider effect.
 export type ChangeOutcome = ChangeResult | 'failed' | 'unknown' | 'last-admin' | 'busy' | 'unavailable';
 
 // The provider write started, but its result is not confirmed. A caller can offer a current read, not a blind retry.
