@@ -507,7 +507,9 @@ repeated names can have distinct identities.
 
 For emitted JavaScript, the V8 whole range must match one executable
 JavaScript declaration. V8 can omit export or stripped TypeScript modifiers
-from its start. Both emitted declaration boundaries must have exact source-map
+from its start. Leading JSDoc comments are not executable tokens and do not
+set the runtime start. This also applies to documented exported functions.
+Both emitted declaration boundaries must have exact source-map
 entries that resolve to the expected source file. The mapped end must equal
 the source declaration end; its kind must match, and its mapped start must
 lie inside that declaration's signature before the body. A nearby map entry
