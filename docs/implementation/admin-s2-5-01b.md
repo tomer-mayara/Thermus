@@ -1,6 +1,7 @@
 # S2.5-01b implementation record
 
-Date: 25 October 2026. Status: implemented candidate; final review is in progress.
+Date: 25 October 2026. Status: implementation and local review complete;
+the stacked parent and independent human architect approval still block merge.
 
 [PR #253](https://github.com/tomer-mayara/Thermus/pull/253) adds one owner for
 membership removal. It is stacked on
@@ -148,3 +149,17 @@ history, metrics, architecture comparison, and required human approval. Local
 PostgreSQL, controlled provider fixtures, and staging authentication checks do not
 prove live removal, a deployed migration, restore safety, or release eligibility.
 S2.5-01c and S2.5-02 retain those separate work items and gates.
+
+The complete ordinary suite passed 4,920 backend and 49 portal tests. Typecheck
+and the portal build passed. Separate gates passed 22 PostgreSQL cases, 28 live
+staging cases, 10 Collector cases, 11 self-hosted container cases, and seven
+Linux AMD64 hosted image cases. The image also ran the offline hosted build.
+The first self-hosted run failed because Docker had no free space. Removal of
+old, stopped Thermus test artifacts allowed the retry; no database volume was
+removed. The review record retains that failure and all earlier red steps.
+
+The checker reports T2 with no local eligibility blocker. Three new-file MI
+exceptions retain the small removal owner, rule file, and lifetime owner.
+Existing low scores and hook findings have explicit reasons. One composition
+function has no exact source-mapped coverage; its one path bounds CRAP to 1–2,
+which meets the checker goal. A local eligibility result is not human approval.

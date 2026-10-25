@@ -1,5 +1,24 @@
 # Test inventory
 
+## Current S2.5-01b inventory scope
+
+The [implementation record](../implementation/admin-s2-5-01b.md) records actual
+runs and limits. Browser removal and customer Audit capture remain S2.5-01c.
+
+- `test/acceptance/auth/membership-removal.runtime.ts` checks separate-pool
+  contention, another organization's progress through the same one-slot pool,
+  last-Admin refusal, unknown effects, retained holds, and safe recording.
+- `test/acceptance/auth/membership-removal-restart.runtime.ts` checks three actual
+  process crashes and a fresh process on the same database, with no replay.
+- The organization removal unit files check current authority, exact target facts,
+  all roles, complete pages, the total deadline, close, and matching receipts.
+- `test/integration/auth/workos-removal-lifetime.test.ts` and the provider read
+  lifetime unit file check that stopped work cannot start another remote read.
+- The removal-store unit and PostgreSQL runtime files check atomic admission,
+  conditional completion, uncertain writes, and production same-store composition.
+  The hosted storage-failure case checks no deletion during a SQL outage while
+  MCP and health stay usable. Runtime files run in `test:logging:postgres`.
+
 ## Current S2.5-01a inventory scope
 
 The [implementation record](../implementation/admin-s2-5-01a.md) records runs,
@@ -20,8 +39,8 @@ they do not complete the live deletion proof or the Slice 2.5 release.
   through production client settings. The local HTTP service observes one DELETE
   after success, refusal, or a lost reply; the existing five-second timeout holds.
 
-S2.5-01a adds no browser removal path. Last-Admin and serialization checks remain
-S2.5-01b; browser removal remains S2.5-01c. The changed live-test compositions use
+S2.5-01a adds no browser removal path. S2.5-01b now supplies last-Admin and
+serialization checks; browser removal remains S2.5-01c. The changed live-test compositions use
 the same raw membership reader as production, with their existing assertions.
 
 ## Current S1-05 inventory scope
