@@ -1,0 +1,105 @@
+
+> thermus@0.0.0 test:container
+> npm run build && THERMUS_CONTAINER_GATE=1 node --test dist/test/acceptance/auth/self-hosted-container.test.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+▶ Self-hosted evaluation container without outbound access
+  ✖ Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address reports a renderer connection failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection
+  ✖ Given two users with tokens and consents, when the server container restarts, is replaced by a new container, and is replaced by a container of a rebuilt image on the same volume, then after each change the tenant, the user IDs, the native clients, the signing keys, the browser sessions, the consents, and the tokens of both users stay usable
+  ✖ Given two users with tokens and a stopped server, when the operator backs up the complete data volume and restores it into a new volume for a new server container, then both users keep their IDs, the tenant, their tokens, browser sessions, and consents; a fresh volume starts a new tenant, and a restored volume without its installation identity or without auth.secret stops the server before it listens, asks for a restore, and gets no new identity
+  ✖ Given a server container of the image with trusted rules, outbound access denied, and a test-only JavaScript page on 127.0.0.1 that only the renderer of this container can reach, when an authorized MCP client calls getURLAsMarkdown for the page, then LIGHTPANDA_BIN names the pinned executable, which reports 1.0.0, the client gets the exact cleaned Markdown, the server writes one safe completion record, and no container tries an outbound connection
+  ✖ Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, the address-policy refusals keep the generic fetch error, the renderer refusal reports a connection failure, each call gets one fetch_failed record, the page gets no connection, and no container tries an outbound connection
+  ✖ Given a fresh volume and a self-hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account
+  ✖ Given a fresh volume and a hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account
+  ✖ Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working
+  ✖ Given a live server container, when one-off command containers mount the same data volume or a command runs inside the server container, then each command fails with the lock error, asks for no password, and changes no account
+  ✖ Given an installation that starts with zero accounts and later has only a disabled account, when the server is stopped and a command container adds an account, then the new account signs in, consents, and uses MCP through the installation client, and the tenant stays the same
+  ✖ Given the self-hosted image and a signed-in local user, when the user calls hosted, paid, and private provider paths, then each gives 404 without adding an account and MCP lists only the fetch tool; when the image starts with DEPLOYMENT=hosted and valid WorkOS settings, then the missing hosted portal stops startup before listening with a safe FATAL line, no local data, and no outbound calls
+✖ Self-hosted evaluation container without outbound access (315329.319667ms)
+ℹ tests 11
+ℹ suites 1
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 11
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 315786.160959
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:119:5
+✖ Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address reports a renderer connection failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:162:5
+✖ Given two users with tokens and consents, when the server container restarts, is replaced by a new container, and is replaced by a container of a rebuilt image on the same volume, then after each change the tenant, the user IDs, the native clients, the signing keys, the browser sessions, the consents, and the tokens of both users stay usable
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:207:5
+✖ Given two users with tokens and a stopped server, when the operator backs up the complete data volume and restores it into a new volume for a new server container, then both users keep their IDs, the tenant, their tokens, browser sessions, and consents; a fresh volume starts a new tenant, and a restored volume without its installation identity or without auth.secret stops the server before it listens, asks for a restore, and gets no new identity
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:251:5
+✖ Given a server container of the image with trusted rules, outbound access denied, and a test-only JavaScript page on 127.0.0.1 that only the renderer of this container can reach, when an authorized MCP client calls getURLAsMarkdown for the page, then LIGHTPANDA_BIN names the pinned executable, which reports 1.0.0, the client gets the exact cleaned Markdown, the server writes one safe completion record, and no container tries an outbound connection
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:280:5
+✖ Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, the address-policy refusals keep the generic fetch error, the renderer refusal reports a connection failure, each call gets one fetch_failed record, the page gets no connection, and no container tries an outbound connection
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:300:9
+✖ Given a fresh volume and a self-hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:300:9
+✖ Given a fresh volume and a hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:318:5
+✖ Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:359:5
+✖ Given a live server container, when one-off command containers mount the same data volume or a command runs inside the server container, then each command fails with the lock error, asks for no password, and changes no account
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:386:5
+✖ Given an installation that starts with zero accounts and later has only a disabled account, when the server is stopped and a command container adds an account, then the new account signs in, consents, and uses MCP through the installation client, and the tenant stays the same
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:432:5
+✖ Given the self-hosted image and a signed-in local user, when the user calls hosted, paid, and private provider paths, then each gives 404 without adding an account and MCP lists only the fetch tool; when the image starts with DEPLOYMENT=hosted and valid WorkOS settings, then the missing hosted portal stops startup before listening with a safe FATAL line, no local data, and no outbound calls
+  'test did not finish before its parent and was cancelled'
+
+test at dist/test/acceptance/auth/self-hosted-container.test.js:114:1
+✖ Self-hosted evaluation container without outbound access (315329.319667ms)
+  AssertionError [ERR_ASSERTION]: The image build failed:
+  Dockerfile:19
+  --------------------
+    18 |     FROM scratch AS lightpanda-asset-arm64
+    19 | >>> ADD --checksum=sha256:69791924bcee43b13b224af4c845622c5fe66fdbc1b8143bfaa39ca8f85244f5 \
+    20 | >>>     https://github.com/lightpanda-io/browser/releases/download/1.0.0/lightpanda-aarch64-linux /lightpanda
+    21 |     FROM lightpanda-asset-${TARGETARCH} AS lightpanda-asset
+  --------------------
+  ERROR: failed to build: failed to solve: ResourceExhausted: failed to copy files: copy file range failed: no space left on device
+  
+  
+  102 !== 0
+  
+      at buildImage (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/container/container-gate.js:31:12)
+      at async buildGateImages (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/container/container-gate.js:25:23)
+      at async before.timeout (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/auth/self-hosted-container.test.js:116:18)
+      at async TestHook.run (node:internal/test_runner/test:1404:7)
+      at async Suite.runHook (node:internal/test_runner/test:1284:9)
+      at async Suite.run (node:internal/test_runner/test:1883:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 102,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

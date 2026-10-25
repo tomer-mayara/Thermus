@@ -1,0 +1,5 @@
+{
+  "path": "docs/metrics/2026-10-25-4d7f845b.json",
+  "sha256": "e74ad77f8048d74dce7da1f18cf5f618b4c0658afc1f87ccdf943d7bf74b4c4b",
+  "note": "First generated base record retained unchanged. Initial mapping omitted identities for documented exported functions; head reports use fresh coverage after the mapper repair. Existing history is never edited."
+}

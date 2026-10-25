@@ -1,0 +1,231 @@
+{
+  "phase": "after",
+  "originalCoverageCommit": "2d0ad41846a99ce8fac1a3bec6582f04df5178ca",
+  "runtime": "v24.20.0",
+  "fixtureCompiler": "6.0.2",
+  "rows": [
+    {
+      "label": "captureAuditResult",
+      "range": "3336:4131",
+      "called": 55,
+      "coveredShare": 1,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "captureAuditResult",
+        "start": 3431,
+        "end": 4240,
+        "body": "910b0b4a95be4b01aeb24e6aef67d78a94f2277b2a4a2d109211d1ed04be8158",
+        "signature": "3199f905a29776031fe00618c366cb9a7511fdb4f154c3a80f7ff57d1cf16322"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "auditActorName",
+      "range": "4227:4593",
+      "called": 221,
+      "coveredShare": 1,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "auditActorName",
+        "start": 4330,
+        "end": 4718,
+        "body": "21a02ff894fe3d1f586d6572452ded9108d37e7a3d4b3d1cbe8cab228c0e3755",
+        "signature": "c26229098c6feb7a0597d277488ad70e834d44c6530091f5fa35dd6e2768fbec"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "encodeAuditEvent",
+      "range": "3225:4419",
+      "called": 74,
+      "coveredShare": 1,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "encodeAuditEvent",
+        "start": 3304,
+        "end": 4459,
+        "body": "b50edcd569b7b3b50ed40a1f416f16fa8e23939f863f3e764f471d619a13f3d5",
+        "signature": "c39f9c13227a069fe96245a6aa5cc0c154a147f994d26be090f3c8578539c30d"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#plain",
+      "range": "39:69",
+      "called": 5,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "plain",
+        "start": 39,
+        "end": 77,
+        "body": "13e8a1539fd7a000055d31ba652be671bc2b0bf0b18ad530a3e27677c0bf5008",
+        "signature": "1f543265c3f8262cea3cf156b70a4223e1b7dfa34de79f4d4c88b3f8b77aafc9"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#named",
+      "range": "103:139",
+      "called": 5,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "named",
+        "start": 104,
+        "end": 155,
+        "body": "dc4a7b1f59986a503a4fa46c94b750398fe62af4c1e91ed29bd08978f4107697",
+        "signature": "ec6f71555544e0ab3844d23f063018a0962051815d4bb1a2da8a10630871df0f"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#primary",
+      "range": "189:227",
+      "called": 4,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "primary",
+        "start": 190,
+        "end": 251,
+        "body": "6d032b1df89091cbe7e4d6e4ef2bac4b561104cce20a5b53d47a949cbe8c7e3b",
+        "signature": "c10bfaacf0d2e18af6804cb22c255601f3ee8a0a82bb1c1b0dd6db5e8fdac0b6"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#asynchronous",
+      "range": "267:318",
+      "called": 2,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "asynchronous",
+        "start": 284,
+        "end": 359,
+        "body": "5d1ac797242c5ad6646a49ac1b2fe90136dcd35d2671b2bcc06318a647f535d1",
+        "signature": "97b356af2d8f6b823612546c660020785b5b7ffd723da5f47e447dea8080c1e8"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#generator",
+      "range": "362:404",
+      "called": 1,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "generator",
+        "start": 396,
+        "end": 464,
+        "body": "b6ea78d2181cf821eb0443b8d3a0053894ff7a1444ab6d6a2d3ad4f28fe8ad1c",
+        "signature": "0c929c56df40d173478c87364a098e522ea4438f10478247f4b0b7a4177c0d39"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#asyncGenerator",
+      "range": "454:518",
+      "called": 1,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "asyncGenerator",
+        "start": 507,
+        "end": 602,
+        "body": "519f81697a06f71194624acafe779a5b83cca3a04267349ce79a98a01d69944a",
+        "signature": "1fd4f8093e0a81adc356382393b9fd1d2850a7ab8aeb6f7a85c8b6dddcfab508"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#exercise",
+      "range": "560:713",
+      "called": 1,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "exercise",
+        "start": 637,
+        "end": 808,
+        "body": "954649b26e1919a3051b8e5e4d95b6d747a3c021bd692fd0a0fa2e76dac4d5cd",
+        "signature": "7ed2bb59b7595708104226ecdff7fe65370e9ce7d1602eab5cd92f055c383d32"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-anonymous-default.ts#default",
+      "range": "52:77",
+      "called": 1,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "(anonymous)",
+        "start": 37,
+        "end": 85,
+        "body": "13e8a1539fd7a000055d31ba652be671bc2b0bf0b18ad530a3e27677c0bf5008",
+        "signature": "c10bfaacf0d2e18af6804cb22c255601f3ee8a0a82bb1c1b0dd6db5e8fdac0b6"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    }
+  ]
+}

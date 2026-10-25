@@ -1,0 +1,23 @@
+{
+  "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+  "base": "4d7f845b8925389ec734645bd9b7cdde11cdea18",
+  "overallStatus": "blocked",
+  "PRState": "draft",
+  "blockers": [
+    "required container checks blocked by Docker disk full; owner volume-cleanup permission pending",
+    "independent architect approval of current candidate required before merge"
+  ],
+  "mechanicalCheck": "eligible",
+  "ordinaryTests": 4866,
+  "portalTests": 49,
+  "collectorTests": 10,
+  "hostedLiveTests": 28,
+  "productionSourceUnchangedSince": "d9d7b97d",
+  "historyRecordUnchanged": true,
+  "githubChecks": {
+    "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+    "checks": [],
+    "statuses": []
+  },
+  "managerReview": "accepted implementation, independent reviews, exact-boundary repair, retained findings and artifact/source comparison; gates/human approval remain required"
+}

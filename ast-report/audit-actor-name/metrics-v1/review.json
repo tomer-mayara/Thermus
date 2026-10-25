@@ -1,0 +1,90 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "4d7f845b8925389ec734645bd9b7cdde11cdea18",
+  "headSha": "2d0ad41846a99ce8fac1a3bec6582f04df5178ca",
+  "summary": {
+    "filesChanged": 24,
+    "filesAdded": 3,
+    "filesDeleted": 0,
+    "high": 2,
+    "medium": 3,
+    "low": 2,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "message": "Maintainability index: 68 -\u003e 62 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 67.88214987930108,
+      "after": 61.58154819136784
+    },
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/integration/auth/workos-connection.test.ts",
+      "message": "Maintainability index: 49 -\u003e 41 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 49.030188904827206,
+      "after": 41.202129750057594
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "message": "Cyclomatic complexity too high: got 56 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "line": 168,
+      "subject": "profileNameOf",
+      "message": "New function with cyclomatic complexity 12 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 12
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/interfaces/mcp/fetch-tool-server.ts",
+      "line": 35,
+      "subject": "callTool",
+      "message": "Cyclomatic complexity: 15 -\u003e 16 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 15,
+      "after": 16
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    }
+  ],
+  "improvements": [],
+  "gate": "failed"
+}

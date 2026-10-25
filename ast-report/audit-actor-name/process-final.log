@@ -1,0 +1,479 @@
+time="2026-10-25T12:00:36-06:00" level=error msg="quality gate failed: 2 high, 3 medium, 2 low regression(s)"
+# Code quality process
+
+## Delta
+
+Status: goal miss.
+
+```text
+  36.6  src/logs/audit/audit-event-projection.ts  below 85
+  38.6  src/logs/audit/destination-settings-service.ts  below 85
+  44.5  src/interfaces/mcp/fetch-tool-server.ts  below 85
+  53.9  src/logs/audit/otlp-audit-encoding.ts  below 85
+  56.2  src/app/hosted-workos-application.ts  below 85
+  61.6  src/accounts/providers/workos/workos-auth-provider.ts  below 85
+  63.9  src/accounts/providers/better-auth/better-auth-provider.ts  below 85
+  65.3  src/logs/audit/audit-content.ts  below 85
+  66.4  src/accounts/identity/access-context.ts  below 85
+  88.1  src/logs/audit/audit-log.ts
+  21.7  test/unit/logging/audit/destination-test.test.ts  no goal
+  22.7  test/integration/auth/local-access.test.ts  no goal
+  25.4  test/unit/logging/audit/audit-capture.test.ts  no goal
+  37.4  test/unit/logging/audit/otlp-audit-encoding.test.ts  no goal
+  37.5  test/acceptance/logging/audit/hosted-audit-journey.runtime.ts  no goal
+  37.6  test/acceptance/auth/hosted-workos-administration.test.ts  no goal
+  38.0  test/acceptance/logging/audit/administration-capture.test.ts  no goal
+  40.6  test/unit/auth/access-context.test.ts  no goal
+  41.2  test/integration/auth/workos-connection.test.ts  no goal
+  41.4  test/integration/auth/better-auth-provider-access.test.ts  no goal
+  47.9  test/integration/auth/workos-actor-name.test.ts  no goal
+  52.2  test/acceptance/logging/audit/actor-name.test.ts  no goal
+  56.3  test/support/in-process/audit-actor-name-site.ts  no goal
+  58.0  test/integration/auth/fixtures/token-provider-double.ts  no goal
+  65.4  script/code-quality/coverage/source-bindings.ts  no goal
+  not measured  docs/api-surface/src/accounts/identity/access-context.d.ts
+  not measured  docs/api-surface/src/logs/audit/audit-log.d.ts
+  not measured  docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+Result: 9 of 10 production files below 85. Goal: 85 or more for each production file. 15 other files without a goal. 3 files not measured.
+Comparison with origin/main: ast-report/compare.html
+```
+
+## Review
+
+Status: goal miss.
+
+## AST Metrics found blocking regressions
+
+2 new critical issue(s), 5 other regression(s)
+
+### Summary
+
+- ⚠️  **Complexity: +13**
+- ⚠️  **Ease of maintenance: -14**
+- ➖ **Outgoing dependencies: -**
+- ➖ **Probability of bugs: -**
+
+### Regressions
+
+- **src/accounts/providers/workos/workos-auth-provider.ts** (`src/accounts/providers/workos/workos-auth-provider.ts`, high)
+  Maintainability index: 68 -> 62 (below 85 is hard to maintain)
+  Suggested action: Refactor long or deeply nested functions and reduce responsibilities in this file
+- **test/integration/auth/workos-connection.test.ts** (`test/integration/auth/workos-connection.test.ts`, high)
+  Maintainability index: 49 -> 41 (below 85 is hard to maintain)
+  Suggested action: Refactor long or deeply nested functions and reduce responsibilities in this file
+- **src/accounts/providers/workos/workos-auth-provider.ts** (`src/accounts/providers/workos/workos-auth-provider.ts`, medium)
+  Cyclomatic complexity too high: got 56 (max: 40)
+- **profileNameOf** (`src/accounts/providers/workos/workos-auth-provider.ts:168`, medium)
+  New function with cyclomatic complexity 12 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **callTool** (`src/interfaces/mcp/fetch-tool-server.ts:35`, medium)
+  Cyclomatic complexity: 15 -> 16 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **src/logs/audit/audit-event-projection.ts** (`src/logs/audit/audit-event-projection.ts`, low)
+  Efferent coupling too high: got 11 (max: 10)
+- **src/logs/audit/destination-settings-service.ts** (`src/logs/audit/destination-settings-service.ts`, low)
+  Efferent coupling too high: got 11 (max: 10)
+
+## CRAP
+
+Status: passed.
+
+Reused verified compatible unit + integration coverage.
+
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/interfaces/mcp/fetch-tool-server.ts | callTool | changed | 16 | 99.7% | 16.0 | ok; for 15: split |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.testSaved | changed | 15 | 97.7% | 15.002737575 | ok; for 15: cover ≥ 100% |
+| src/logs/audit/destination-settings-service.ts | invalidInput | unchanged | 15 | 100% | 15.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | eventAttributes | unchanged | 15 | 100% | 15.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.save | unchanged | 14 | 100% | 14.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | inputOf | unchanged | 13 | 91.5% | 13.1 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | profileNameOf | new | 12 | 100% | 12.0 | ok |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.authorizeExport | unchanged | 11 | 94.2% | 11.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | projectAdministrationChange | unchanged | 11 | 95.7% | 11.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | safeFailure | unchanged | 11 | 99.2% | 11.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.token | unchanged | 10 | 97.2% | 10.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | safeSearchFailure | unchanged | 10 | 99.1% | 10.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | contextOf | changed | 9 | 97.9% | 9.0 | ok |
+| src/logs/audit/audit-event-projection.ts | projectToolCompletion | unchanged | 9 | 98.9% | 9.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | accessClaimsOf | unchanged | 8 | 100% | 8.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | typedClaimsOf | unchanged | 8 | 100% | 8.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | composeWorkOSApplication | unchanged | 8 | 100% | 8.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | auditActorName | new | 7 | 100% | 7.0 | ok |
+| src/logs/audit/audit-content.ts | redactTextMatch | unchanged | 6 | 97.1% | 6.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | displayNameOf | new | 6 | 100% | 6.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.resolve | changed | 6 | 100% | 6.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | activeStateOf | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | inputText | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | matchesSavedSettings | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | retainedToken | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | encodeAuditEvent | changed | 5 | 100% | 5.0 | ok |
+| src/logs/audit/otlp-audit-encoding.ts | timestampNanos | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | createRequestContext | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.resolve | changed | 4 | 100% | 4.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isTokenRejection | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | isTokenFault | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | prefixWithin | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | metadata | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | projectDestinationChange | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.read | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | project | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | stringAttribute | unchanged | 3 | 78.2% | 3.1 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | redactParameter | unchanged | 3 | 78.3% | 3.1 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | workosProviderParts | changed | 3 | 94.4% | 3.0 | ok |
+| src/app/hosted-workos-application.ts | openWorkOSApplication | unchanged | 3 | 94.9% | 3.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | copyUser | changed | 3 | 100% | 3.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.requireActive | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.signedPayload | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 3 | 100% | 3.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | connectClaimsOf | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | organizationIdOf | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.signedPayload | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | emitCompletion | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | captureAuditResult | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.administrationChanged | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.destinationChanged | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.toolCompleted | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | requirePermission | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.keySet | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.verifyAccessToken | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isEnabled | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isText | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isTime | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | isText | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | isTime | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.userName | new | 2 | 100% | 2.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.verifyAccessToken | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | new | 1 | 0% | 2.0 | ok |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | captureCompletion | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.readStored | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.test | changed | 2 | 100% | 2.0 | ok |
+| src/accounts/identity/access-context.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/identity/access-context.ts | access-context\AccessDeniedError.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | permissionsOfEveryGrant | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | introspectionRequest | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | hostedTenantId | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | nowInSeconds | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | openWorkOSConnection | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | createFetchToolServer | changed | 1 | 100% | 1.0 | ok |
+| src/logs/audit/audit-content.ts | redactAuditText | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | redactAuditUrl | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+
+Known limit violations: 0. Measured target misses: 2. Unmeasured functions: 0. Required functions with unknown assessment or identity: 0.
+
+## Architecture
+
+Status: passed.
+
+## Architecture of src/: base 4d7f845b → head
+
+Modularity 0.34 → 0.34 · cross share 0.31 → 0.31 · cycles 1 → 1 · communities 4 → 4 · functions ≥ 30: 0 → 0
+
+```mermaid
+flowchart LR
+  c_accounts["accounts<br/>36 files · MI 57.0 ↓0.1 · paths 948 ↑29<br/>● good: 0 fn ≥ 30"]
+  c_app["app<br/>70 files · MI 60.0 ↓0.1 · paths 1507 ↑10<br/>assessment incomplete: 1 unknown; 0 known fn ≥ 30"]
+  c_pipelines["pipelines<br/>62 files · MI 49.1 · paths 1401<br/>● good: 0 fn ≥ 30"]
+  c_shared_kernel["shared kernel<br/>3 files · MI 57.5 · paths 78<br/>● good: 0 fn ≥ 30"]
+  c_accounts -. "48 · cycle" .-> c_app
+  c_accounts -. "9 · cycle" .-> c_pipelines
+  c_accounts -- "1" --> c_shared_kernel
+  c_app -. "52 · cycle" .-> c_accounts
+  c_app -. "1 · cycle" .-> c_pipelines
+  c_app -- "3" --> c_shared_kernel
+  c_pipelines -. "11 · cycle" .-> c_accounts
+  c_pipelines -. "2 · cycle" .-> c_app
+  c_pipelines -- "2" --> c_shared_kernel
+  linkStyle 0 stroke:#d03b3b,stroke-width:2px
+  linkStyle 1 stroke:#d03b3b,stroke-width:2px
+  linkStyle 3 stroke:#d03b3b,stroke-width:2px
+  linkStyle 4 stroke:#d03b3b,stroke-width:2px
+  linkStyle 6 stroke:#d03b3b,stroke-width:2px
+  linkStyle 7 stroke:#d03b3b,stroke-width:2px
+  classDef touched stroke-width:3px
+  classDef gone stroke-dasharray:4 4,color:#999999
+  classDef good stroke:#0ca30c
+  class c_accounts,c_app touched
+  class c_accounts,c_pipelines,c_shared_kernel good
+```
+
+Legend: thick border = a community this pull request touched; `· new` and `· gone` = a community or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; border color = the CRAP band of the community (● good: complete assessment, no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base.
+
+### Community edge evidence
+
+Tool references and deduplicated file pairs have different units. An unchanged import means the same normalized file pair, after proven path moves; evidence kinds can differ.
+
+Dependency evidence incomplete: base has 1 issue; head has 1 issue. A missing pair on an incomplete side does not prove an import change.
+
+- base: <code>src/interfaces/user-portal/main.ts</code> → <code>./style.css</code> — unresolved-local.
+- head: <code>src/interfaces/user-portal/main.ts</code> → <code>./style.css</code> — unresolved-local.
+
+No new or gone community edges.
+
+## Components of src/
+
+Component dependency evidence is incomplete: known head dependencies and proven cycles are shown; edge and cycle changes are withheld. Additional dependencies or cycles may exist.
+
+```mermaid
+flowchart LR
+  c_app["app<br/>9 files · MI 60.0 · paths 174<br/>assessment incomplete: 3 unknown; 0 known fn ≥ 30"]
+  c_audit_logs["audit-logs<br/>21 files · MI 54.2 ↓0.1 · paths 588 ↑10<br/>assessment incomplete: 1 unknown; 0 known fn ≥ 30"]
+  c_better_auth["better-auth<br/>5 files · MI 58.7 ↓0.1 · paths 166 ↑1<br/>● good: 0 fn ≥ 30"]
+  c_billing["billing<br/>2 files · MI 68.8 · paths 6<br/>● good: 0 fn ≥ 30"]
+  c_cli["cli<br/>2 files · MI 53.7 · paths 56<br/>● good: 0 fn ≥ 30"]
+  c_config["config<br/>3 files · MI 57.6 · paths 78<br/>● good: 0 fn ≥ 30"]
+  c_execution["execution<br/>4 files · MI 83.4 · paths 10<br/>● good: 0 fn ≥ 30"]
+  c_html_processing["html-processing<br/>37 files · MI 46.9 · paths 946<br/>● good: 0 fn ≥ 30"]
+  c_http["http<br/>4 files · MI 64.5 · paths 66<br/>● good: 0 fn ≥ 30"]
+  c_identity["identity<br/>5 files · MI 66.4 ↑4.4 · paths 19 ↑7<br/>● good: 0 fn ≥ 30"]
+  c_mcp["mcp<br/>9 files · MI 51.2 · paths 186 ↑1<br/>● good: 0 fn ≥ 30"]
+  c_organizations["organizations<br/>7 files · MI 76.4 · paths 100<br/>● good: 0 fn ≥ 30"]
+  c_page_fetch["page-fetch<br/>5 files · MI 49.9 · paths 109<br/>● good: 0 fn ≥ 30"]
+  c_search["search<br/>6 files · MI 48.3 · paths 131<br/>● good: 0 fn ≥ 30"]
+  c_search_engine["search-engine<br/>2 files · MI 33.0 · paths 56<br/>● good: 0 fn ≥ 30"]
+  c_system_logs["system-logs<br/>3 files · MI 63.1 · paths 39<br/>● good: 0 fn ≥ 30"]
+  c_user_portal["user-portal<br/>8 files · MI 51.2 · paths 71<br/>● good: 0 fn ≥ 30"]
+  c_web["web<br/>29 files · MI 60.9 · paths 594<br/>● good: 0 fn ≥ 30"]
+  c_website_fetcher["website-fetcher<br/>6 files · MI 60.9 · paths 133<br/>● good: 0 fn ≥ 30"]
+  c_workos["workos<br/>15 files · MI 58.4 ↓0.5 · paths 521 ↑20<br/>● good: 0 fn ≥ 30"]
+  c_app -- "4" --> c_audit_logs
+  c_app -- "2" --> c_better_auth
+  c_app -- "2" --> c_billing
+  c_app -- "1" --> c_cli
+  c_app -- "4" --> c_config
+  c_app -- "2" --> c_execution
+  c_app -- "1" --> c_html_processing
+  c_app -- "2" --> c_http
+  c_app -- "2" --> c_identity
+  c_app -- "3" --> c_mcp
+  c_app -- "2" --> c_organizations
+  c_app -- "1" --> c_page_fetch
+  c_app -- "1" --> c_search
+  c_app -- "1" --> c_search_engine
+  c_app -- "5" --> c_system_logs
+  c_app -- "2" --> c_web
+  c_app -- "1" --> c_website_fetcher
+  c_app -- "1" --> c_workos
+  c_audit_logs -- "1" --> c_organizations
+  c_better_auth -- "2" --> c_http
+  c_better_auth -- "3" --> c_identity
+  c_cli -- "1" --> c_config
+  c_cli -- "2" --> c_identity
+  c_cli -- "1" --> c_system_logs
+  c_execution -- "1" --> c_website_fetcher
+  c_html_processing -- "1" --> c_execution
+  c_html_processing -- "2" --> c_website_fetcher
+  c_http -- "1" --> c_config
+  c_http -- "2" --> c_system_logs
+  c_mcp -- "1" --> c_audit_logs
+  c_mcp -- "2" --> c_execution
+  c_mcp -- "1" --> c_http
+  c_mcp -- "6" --> c_identity
+  c_mcp -- "3" --> c_page_fetch
+  c_mcp -- "3" --> c_search
+  c_mcp -- "1" --> c_system_logs
+  c_organizations -- "1" --> c_billing
+  c_organizations -- "4" --> c_identity
+  c_page_fetch -- "3" --> c_execution
+  c_page_fetch -- "1" --> c_identity
+  c_page_fetch -- "2" --> c_website_fetcher
+  c_search -- "3" --> c_execution
+  c_search -- "1" --> c_identity
+  c_search -- "1" --> c_search_engine
+  c_search -- "2" --> c_website_fetcher
+  c_search_engine -- "2" --> c_website_fetcher
+  c_web -- "6" --> c_audit_logs
+  c_web -- "1" --> c_billing
+  c_web -- "5" --> c_http
+  c_web -- "7" --> c_identity
+  c_web -- "9" --> c_organizations
+  c_web -- "3" --> c_workos
+  c_workos -- "1" --> c_billing
+  c_workos -- "6" --> c_identity
+  c_workos -- "4" --> c_organizations
+  classDef touched stroke-width:3px
+  classDef gone stroke-dasharray:4 4,color:#999999
+  classDef good stroke:#0ca30c
+  class c_app,c_audit_logs,c_better_auth,c_identity,c_mcp,c_workos touched
+  class c_better_auth,c_billing,c_cli,c_config,c_execution,c_html_processing,c_http,c_identity,c_mcp,c_organizations,c_page_fetch,c_search,c_search_engine,c_system_logs,c_user_portal,c_web,c_website_fetcher,c_workos good
+```
+
+Legend: thick border = a component this pull request touched; `· new` and `· gone` = a component or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; border color = the CRAP band of the component (● good: complete assessment, no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base. Edges count distinct importing files per target component.
+
+## Complexity of the changed files
+
+| File | Maintainability | Decision paths | CRAP ≥ 30 | Risk rank |
+| --- | --- | --- | --- | --- |
+| src/accounts/identity/access-context.ts | 62.0 → 66.4 ↑4.4 | 12 → 19 ↑7 | 0 → 0 | |
+| src/accounts/providers/better-auth/better-auth-provider.ts | 64.4 → 63.9 ↓0.5 | 41 → 42 ↑1 | 0 → 0 | |
+| src/accounts/providers/workos/workos-auth-provider.ts | 67.9 → 61.6 ↓6.3 | 36 → 56 ↑20 | 0 → 0 | |
+| src/app/hosted-workos-application.ts | 56.2 → 56.2 | 25 → 25 | 0 → 0 | |
+| src/interfaces/mcp/fetch-tool-server.ts | 44.7 → 44.5 ↓0.2 | 46 → 47 ↑1 | 0 → 0 | |
+| src/logs/audit/audit-content.ts | 66.0 → 65.3 ↓0.7 | 18 → 25 ↑7 | 0 → 0 | |
+| src/logs/audit/audit-event-projection.ts | 37.0 → 36.6 ↓0.4 | 54 → 55 ↑1 | 0 → 0 | |
+| src/logs/audit/audit-log.ts | 88.1 → 88.1 | 10 → 10 | 0 → 0 | |
+| src/logs/audit/destination-settings-service.ts | 39.0 → 38.6 ↓0.4 | 89 → 90 ↑1 | 0 → 0 | 1 |
+| src/logs/audit/otlp-audit-encoding.ts | 54.6 → 53.9 ↓0.7 | 27 → 28 ↑1 | 0 → 0 | |
+
+### Functions at CRAP 30 or more, added or worse
+
+None.
+
+Unmatched functions: 0 (anonymous, duplicate, or not in the coverage).
+
+Base functions without an estimated covered share: 70.
+
+Coverage: unit + integration suites at 19e60e2b.
+
+## Trend of src/ on main
+
+| Commit | PR | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 7cebe4cf | #233 | 2026-10-23 | 0.40 | 0.16 | 1 | 56.1 | – |
+| 1c7a0b68 | – | 2026-10-23 | 0.39 | 0.15 | 1 | 55.9 | 59 (estimate) |
+| bb19a988 | – | 2026-10-23 | 0.39 | 0.15 | 1 | 55.9 | 59 (estimate) |
+| b03e2d2c | – | 2026-10-23 | 0.39 | 0.15 | 1 | 55.9 | 0 (estimate; integration + unit) |
+| 7d01d2fb | – | 2026-10-24 | 0.39 | 0.15 | 1 | 55.9 | 0 (estimate; integration + unit) |
+| 845cec30 | – | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| a7411fd0 | #248 | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 74f75656 | – | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 9d0546b9 | #250 | 2026-10-25 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 4d7f845b | – | 2026-10-25 | 0.34 | 0.31 | 1 | 55.7 | 0 (estimate; integration + unit) |
+| this pull request | – | | 0.34 | 0.31 | 1 | 55.7 | 0 (measured; integration + unit) |
+
+Historical estimates use head coverage from the first recording pull request. Later estimates for the same base can differ. Counts include known lower-bound violations; other unknown functions are not counted.
+
+### Maintainability trend
+
+Missing values are gaps; lines stop at each gap.
+
+Maintainability (maintainability), 7cebe4cf to this pull request.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Maintainability"
+    x-axis ["7cebe4cf", "1c7a0b68", "bb19a988", "b03e2d2c", "7d01d2fb", "845cec30", "a7411fd0", "74f75656", "9d0546b9", "4d7f845b", "this pull request"]
+    y-axis "Maintainability" 55.7 --> 56.1
+    line [56.1, 55.9, 55.9, 55.9, 55.9, 55.8, 55.8, 55.8, 55.8, 55.7, 55.7]
+```
+
+
+### Functions ≥ 30 trend
+
+Missing values are gaps; lines stop at each gap or change of count basis.
+
+Functions ≥ 30 (head-derived estimate), 1c7a0b68 to bb19a988.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate"
+    x-axis ["1c7a0b68", "bb19a988"]
+    y-axis "Functions at CRAP 30 or more" 58 --> 60
+    line [59, 59]
+```
+
+Functions ≥ 30 (head-derived estimate; integration + unit), b03e2d2c to 7d01d2fb.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate; integration + unit"
+    x-axis ["b03e2d2c", "7d01d2fb"]
+    y-axis "Functions at CRAP 30 or more" 0 --> 1
+    line [0, 0]
+```
+
+Functions ≥ 30 (head-derived estimate), 845cec30 to 9d0546b9.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate"
+    x-axis ["845cec30", "a7411fd0", "74f75656", "9d0546b9"]
+    y-axis "Functions at CRAP 30 or more" 57 --> 59
+    line [58, 58, 58, 58]
+```
+
+4d7f845b: 0 (head-derived estimate; integration + unit). One point; no line.
+
+this pull request: 0 (measured; integration + unit). One point; no line.
+
+
+### Trend by component
+
+| Component | 7cebe4cf | 1c7a0b68 | bb19a988 | b03e2d2c | 7d01d2fb | 845cec30 | a7411fd0 | 74f75656 | 9d0546b9 | 4d7f845b | this pull request |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| app | MI 61.3; functions ≥ 30: – | MI 60.9; functions ≥ 30: 0 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.0; functions ≥ 30: 0 (measured; integration + unit) |
+| audit-logs | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 55.2; functions ≥ 30: 0 (estimate) | MI 54.8; functions ≥ 30: 0 (estimate) | MI 54.8; functions ≥ 30: 0 (estimate) | MI 54.7; functions ≥ 30: 0 (estimate) | MI 54.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 54.2; functions ≥ 30: 0 (measured; integration + unit) |
+| better-auth | MI 58.8; functions ≥ 30: – | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.7; functions ≥ 30: 0 (measured; integration + unit) |
+| billing | MI 68.8; functions ≥ 30: – | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (measured; integration + unit) |
+| cli | MI 53.8; functions ≥ 30: – | MI 53.8; functions ≥ 30: 3 (estimate) | MI 53.8; functions ≥ 30: 3 (estimate) | MI 53.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.7; functions ≥ 30: 0 (measured; integration + unit) |
+| config | MI 56.8; functions ≥ 30: – | MI 56.8; functions ≥ 30: 0 (estimate) | MI 56.8; functions ≥ 30: 0 (estimate) | MI 56.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 56.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 57.6; functions ≥ 30: 0 (measured; integration + unit) |
+| execution | MI 83.4; functions ≥ 30: – | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (measured; integration + unit) |
+| html-processing | MI 46.9; functions ≥ 30: – | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (measured; integration + unit) |
+| http | MI 64.6; functions ≥ 30: – | MI 64.6; functions ≥ 30: 0 (estimate) | MI 64.6; functions ≥ 30: 0 (estimate) | MI 64.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.5; functions ≥ 30: 0 (measured; integration + unit) |
+| identity | MI 62.0; functions ≥ 30: – | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 66.4; functions ≥ 30: 0 (measured; integration + unit) |
+| logging | MI 62.4; functions ≥ 30: – | MI 62.4; functions ≥ 30: 0 (estimate) | MI 62.4; functions ≥ 30: 0 (estimate) | MI 62.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.4; functions ≥ 30: 0 (estimate; integration + unit) | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – |
+| mcp | MI 51.1; functions ≥ 30: – | MI 51.1; functions ≥ 30: 5 (estimate) | MI 51.1; functions ≥ 30: 5 (estimate) | MI 51.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (measured; integration + unit) |
+| organizations | MI 75.0; functions ≥ 30: – | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 0 (measured; integration + unit) |
+| page-fetch | MI 49.9; functions ≥ 30: – | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 0 (measured; integration + unit) |
+| search | MI 48.3; functions ≥ 30: – | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 0 (measured; integration + unit) |
+| search-engine | MI 33.0; functions ≥ 30: – | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (measured; integration + unit) |
+| system-logs | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 63.1; functions ≥ 30: 0 (measured; integration + unit) |
+| user-portal | MI 52.7; functions ≥ 30: – | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (measured; integration + unit) |
+| web | MI 62.7; functions ≥ 30: – | MI 61.8; functions ≥ 30: 20 (estimate) | MI 61.8; functions ≥ 30: 20 (estimate) | MI 61.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 61.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 61.0; functions ≥ 30: 21 (estimate) | MI 61.0; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (measured; integration + unit) |
+| website-fetcher | MI 60.9; functions ≥ 30: – | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (measured; integration + unit) |
+| workos | MI 59.3; functions ≥ 30: – | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.4; functions ≥ 30: 0 (measured; integration + unit) |
+
+8 commits of main between 7cebe4cf and 1c7a0b68 have no record.
+1 commits of main between b03e2d2c and 7d01d2fb have no record.

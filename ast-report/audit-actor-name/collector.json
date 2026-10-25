@@ -1,0 +1,11 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "test:logging:collector"
+  ],
+  "head": "2c533aa6b4e457577e06bfe951bd6d6185e00205",
+  "exitCode": 0,
+  "seconds": 18.572,
+  "log": "collector.log"
+}

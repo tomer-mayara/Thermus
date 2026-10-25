@@ -1,0 +1,15 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-process.ts",
+    "--base",
+    "origin/main",
+    "--json",
+    "ast-report/process.json"
+  ],
+  "exitCode": 1,
+  "seconds": 16.97,
+  "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d"
+}

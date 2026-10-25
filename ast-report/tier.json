@@ -1,0 +1,319 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+  "mergeBase": "4d7f845b8925389ec734645bd9b7cdde11cdea18",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/logs/audit/destination-settings-service.ts (+2 -4 lines)",
+        "detail": "diff --git a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\nindex 1c0e69b6..86ff91e9 100644\n--- a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\n+++ b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\n@@ -1,3 +1,4 @@\n+import type { AuditContext } from './audit-log.ts';\n import type { DestinationSettingsStore } from './destination-settings-store.ts';\n import type { AuditDestination } from './audit-send.ts';\n import type { DestinationTestResult, DestinationTestSender } from './destination-test.ts';\n@@ -47,10 +48,7 @@ export declare class DestinationSettingsService {\n     private readonly tests;\n     constructor(store: DestinationSettingsStore, key: Uint8Array, sender: DestinationTestSender);\n     authorizeExport(tenantId: string, expectedRevision: string, signal?: AbortSignal): Promise<ExportAuthorization>;\n-    test(tenantId: string, input: DestinationSettingsSaveInput, actor: {\n-        readonly authority: string;\n-        readonly subject: string;\n-    }, signal?: AbortSignal): Promise<DestinationTestResult>;\n+    test(tenantId: string, input: DestinationSettingsSaveInput, actor: AuditContext['actor'], signal?: AbortSignal): Promise<DestinationTestResult>;\n     private testSaved;\n     read(tenantId: string): Promise<DestinationSettingsReadResult>;\n     save(tenantId: string, input: DestinationSettingsSaveInput): Promise<DestinationSettingsSaveResult>;\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/logs/audit/audit-log.ts (+1 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/logs/audit/audit-log.d.ts b/docs/api-surface/src/logs/audit/audit-log.d.ts\nindex dcddf95e..e81e5922 100644\n--- a/docs/api-surface/src/logs/audit/audit-log.d.ts\n+++ b/docs/api-surface/src/logs/audit/audit-log.d.ts\n@@ -6,6 +6,7 @@ export interface AuditContext {\n     readonly actor: {\n         readonly authority: string;\n         readonly subject: string;\n+        readonly name?: string;\n     };\n }\n interface ToolOutcome extends AuditContext {\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/accounts/identity/access-context.ts (+1 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/accounts/identity/access-context.d.ts b/docs/api-surface/src/accounts/identity/access-context.d.ts\nindex c7c9174b..64066d49 100644\n--- a/docs/api-surface/src/accounts/identity/access-context.d.ts\n+++ b/docs/api-surface/src/accounts/identity/access-context.d.ts\n@@ -1,6 +1,7 @@\n export interface AuthenticatedUser {\n     readonly authority: string;\n     readonly subject: string;\n+    readonly name?: string;\n     readonly selectedOrganizationId?: string;\n }\n export interface RoleGrant {\n"
+      }
+    ],
+    "summary": "T2: declarations changed in 3 public modules"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/destination-settings-service.ts (+2 -4 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/audit-log.ts (+1 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/identity/access-context.ts (+1 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "Resolved identity and customer Audit contracts add optional display names while retaining authority and subject as the stable identity. After current grants allow access, WorkOS reads the matching profile once through the existing SDK with its five-second transport deadline and zero retries; missing, invalid, or unavailable names preserve ID-only access and events. Better Auth uses its existing account read. MCP completions, browser administration, destination actions, and synthetic Test records carry bounded actor.name to OTLP. Display data never grants access or routes tenants; System records stay ID-only. No component, cross-component dependency, datastore, cache, token configuration, or deployment is added. Registry prose is updated; all registry Mermaid views remain unchanged. The coverage mapper now skips JSDoc trivia when matching exact V8 function boundaries; production behavior and metric thresholds are unchanged."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "Resolved identity and customer Audit contracts add optional display names while retaining authority and subject as the stable identity. After current grants allow access, WorkOS reads the matching profile once through the existing SDK with its five-second transport deadline and zero retries; missing, invalid, or unavailable names preserve ID-only access and events. Better Auth uses its existing account read. MCP completions, browser administration, destination actions, and synthetic Test records carry bounded actor.name to OTLP. Display data never grants access or routes tenants; System records stay ID-only. No component, cross-component dependency, datastore, cache, token configuration, or deployment is added. Registry prose is updated; all registry Mermaid views remain unchanged. The coverage mapper now skips JSDoc trivia when matching exact V8 function boundaries; production behavior and metric thresholds are unchanged."
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/ast-metrics-review.md"
+    },
+    {
+      "tier": "T1",
+      "key": "public_surface",
+      "fact": "docs/reference/mcp-fetch-tool.md"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "Resolved identity and customer Audit contracts add optional display names while retaining authority and subject as the stable identity. After current grants allow access, WorkOS reads the matching profile once through the existing SDK with its five-second transport deadline and zero retries; missing, invalid, or unavailable names preserve ID-only access and events. Better Auth uses its existing account read. MCP completions, browser administration, destination actions, and synthetic Test records carry bounded actor.name to OTLP. Display data never grants access or routes tenants; System records stay ID-only. No component, cross-component dependency, datastore, cache, token configuration, or deployment is added. Registry prose is updated; all registry Mermaid views remain unchanged. The coverage mapper now skips JSDoc trivia when matching exact V8 function boundaries; production behavior and metric thresholds are unchanged."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/accounts/identity/access-context.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/logs/audit/audit-log.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/logs/audit/destination-settings-service.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/authentication-design.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-03b.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-03c.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/ast-metrics-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-25-4d7f845b.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/reference/mcp-fetch-tool.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "script/code-quality/coverage/source-bindings.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/identity/access-context.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/providers/better-auth/better-auth-provider.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/providers/workos/workos-auth-provider.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/app/hosted-workos-application.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/mcp/fetch-tool-server.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/audit-content.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/audit-event-projection.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/audit-log.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/destination-settings-service.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/otlp-audit-encoding.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-workos-administration.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/logging/audit/actor-name.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/administration-capture.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/better-auth-provider-access.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/fixtures/token-provider-double.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/local-access.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/auth/workos-actor-name.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-connection.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/audit-actor-name-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/auth/access-context.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/audit-capture.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/destination-test.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/otlp-audit-encoding.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 71,
+    "productionLimit": 400,
+    "total": 455,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 16,
+    "removed": 0,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/accounts/identity/access-context.ts: 61.97944971334628 to 66.43000192353956",
+    "changed: src/accounts/providers/better-auth/better-auth-provider.ts: 64.36707232389914 to 63.940972723002375",
+    "changed: src/accounts/providers/workos/workos-auth-provider.ts: 67.88214987930108 to 61.58154819136784",
+    "changed: src/app/hosted-workos-application.ts: 56.20859397680054 to 56.18982766411584",
+    "changed: src/interfaces/mcp/fetch-tool-server.ts: 44.74554675681968 to 44.5450575532767",
+    "changed: src/logs/audit/audit-content.ts: 66.03646029274161 to 65.2884633138644",
+    "changed: src/logs/audit/audit-event-projection.ts: 36.99712939607105 to 36.562143613989605",
+    "changed: src/logs/audit/audit-log.ts: 88.05501787852491 to 88.05501787852491",
+    "changed: src/logs/audit/destination-settings-service.ts: 38.98567950220733 to 38.6204344918757",
+    "changed: src/logs/audit/otlp-audit-encoding.ts: 54.626113259105146 to 53.87515480541661"
+  ],
+  "crap": [
+    "src/interfaces/mcp/fetch-tool-server.ts: callTool: 16.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.testSaved: 15.002737575",
+    "src/accounts/providers/workos/workos-auth-provider.ts: profileNameOf: 12.0",
+    "src/logs/audit/audit-event-projection.ts: contextOf: 9.0",
+    "src/logs/audit/audit-content.ts: auditActorName: 7.0",
+    "src/accounts/identity/access-context.ts: displayNameOf: 6.0",
+    "src/accounts/providers/workos/workos-auth-provider.ts: workos-auth-provider\\WorkOSAuthProvider.resolve: 6.0",
+    "src/logs/audit/otlp-audit-encoding.ts: encodeAuditEvent: 5.0",
+    "src/accounts/providers/better-auth/better-auth-provider.ts: better-auth-provider\\BetterAuthProvider.resolve: 4.0",
+    "src/app/hosted-workos-application.ts: workosProviderParts: 3.0",
+    "src/accounts/identity/access-context.ts: copyUser: 3.0",
+    "src/accounts/providers/workos/workos-auth-provider.ts: (anonymous): 3.0",
+    "src/accounts/providers/workos/workos-auth-provider.ts: workos-auth-provider\\WorkOSAuthProvider.userName: 2.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 2.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.test: 2.0",
+    "src/accounts/identity/access-context.ts: (anonymous): 1.0",
+    "src/accounts/providers/better-auth/better-auth-provider.ts: (anonymous): 1.0",
+    "src/accounts/providers/better-auth/better-auth-provider.ts: (anonymous): 1.0",
+    "src/accounts/providers/workos/workos-auth-provider.ts: (anonymous): 1.0",
+    "src/accounts/providers/workos/workos-auth-provider.ts: (anonymous): 1.0",
+    "src/accounts/providers/workos/workos-auth-provider.ts: (anonymous): 1.0",
+    "src/interfaces/mcp/fetch-tool-server.ts: createFetchToolServer: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "outside scopes.production: test/integration/auth/workos-connection.test.ts: Maintainability index: 49 -> 41 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/logs/audit/destination-settings-service.ts",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/audit-content.ts)",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/audit-log.ts)",
+    "src/logs/audit/audit-log.ts",
+    "src/logs/audit/audit-log.ts (imports changed src/logs/audit/audit-event-projection.ts)",
+    "src/logs/audit/audit-log.ts (imports changed src/logs/audit/audit-content.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-log.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)",
+    "src/logs/audit/audit-send.ts (imports changed src/logs/audit/audit-log.ts)",
+    "src/accounts/identity/access-context.ts",
+    "src/accounts/identity/browser-session.ts (imports changed src/accounts/identity/access-context.ts)",
+    "src/accounts/identity/browser-session-controls.ts (imports changed src/accounts/identity/access-context.ts)",
+    "src/accounts/identity/identity-verifier.ts (imports changed src/accounts/identity/access-context.ts)",
+    "docs/reference/mcp-fetch-tool.md"
+  ],
+  "informational": [
+    "48 public modules, 3 snapshots changed",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-log.ts)",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)",
+    "public module touched, declarations unchanged: src/logs/audit/audit-send.ts (imports changed src/logs/audit/audit-log.ts)",
+    "public module touched, declarations unchanged: src/accounts/identity/browser-session.ts (imports changed src/accounts/identity/access-context.ts)",
+    "public module touched, declarations unchanged: src/accounts/identity/browser-session-controls.ts (imports changed src/accounts/identity/access-context.ts)",
+    "public module touched, declarations unchanged: src/accounts/identity/identity-verifier.ts (imports changed src/accounts/identity/access-context.ts)",
+    "ratchet.maintainability_index.existing_file_drop_note_at: src/accounts/providers/workos/workos-auth-provider.ts: 67.88214987930108 to 61.58154819136784",
+    "ratchet.review_findings_high: src/accounts/providers/workos/workos-auth-provider.ts: Maintainability index: 68 -> 62 (below 85 is hard to maintain)"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

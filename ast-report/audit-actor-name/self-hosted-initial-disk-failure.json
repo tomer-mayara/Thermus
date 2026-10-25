@@ -1,0 +1,11 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "test:container"
+  ],
+  "head": "05b0d00df028a220893fbc7fae14ac889a586fdd",
+  "exitCode": 1,
+  "seconds": 317.336,
+  "log": "self-hosted-initial-disk-failure.log"
+}

@@ -1,0 +1,28 @@
+{
+  "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d",
+  "base": "4d7f845b8925389ec734645bd9b7cdde11cdea18",
+  "ordinary": "npm test (all ordinary unit/integration/acceptance/interface plus portal source tests)",
+  "required": [
+    "npm test",
+    "npm run typecheck",
+    "npm run build:user-portal",
+    "npm run test:container",
+    "npm run build:hosted (inside hosted image build)",
+    "npm run test:container:hosted",
+    "npm run test:hosted-live (available Keychain-backed staging settings)",
+    "npm run test:logging:collector"
+  ],
+  "coverage": "complete unit + complete integration groups; both selected by npm test; fresh verified source/build-bound capture",
+  "notSelected": {
+    "PostgreSQL": "No store, SQL runtime, database configuration or store lifetime change.",
+    "Standalone renderer": "No fetch composition, pipeline, renderer or rules source change; hosted offline build includes its existing renderer gate.",
+    "Search live": "No search pipeline change.",
+    "Live production destination": "No release/production mutation in this request. Controlled real Collector verifies the added payload; live deployment awaits approval."
+  },
+  "collectorProvenance": "Collector 10/10 passed at 2c533aa6 with the one-line runtime name assertion present but not yet committed. That exact assertion was committed in 5a11cdac; subsequent 05b0d00d changes only an unrelated existing administration test. Source/runtime test identity is unchanged.",
+  "history": "Initial ordinary run 4865/4866 passed; only failure was exact-self-profile read assertion. Fixed at05b0d00d; focused8/8 then fullordinary4866/4866+49/49portal passed. 2d0ad418 subsequently removes only2stalecomments. 2e5d7ad3 repairs JSDoc coverage mapping with manual strict-boundary proof;19e60e2b records impact/history. Production source unchanged after d9d7b97d. Recollect coverage after mapper fix; no report edited.",
+  "blockers": [
+    "Self-hosted image build failed because Colima25GBdisk is full.361.1MBunusedbuildcache cleanup insufficient; userapproval pending before deleting219unusedanonymousvolumes (~8.3GB). No volume/image deletion.",
+    "Hosted offline build/image check not yet run because of same Docker storage constraint."
+  ]
+}

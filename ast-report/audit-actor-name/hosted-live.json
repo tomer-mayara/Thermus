@@ -1,0 +1,13 @@
+{
+  "command": [
+    "node",
+    "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "npm",
+    "run",
+    "test:hosted-live"
+  ],
+  "head": "2d0ad41846a99ce8fac1a3bec6582f04df5178ca",
+  "exitCode": 0,
+  "seconds": 532.74,
+  "log": "hosted-live.log"
+}

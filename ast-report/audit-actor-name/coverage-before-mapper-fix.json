@@ -1,0 +1,16 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-coverage.ts",
+    "--suite",
+    "unit",
+    "--suite",
+    "integration"
+  ],
+  "head": "2d0ad41846a99ce8fac1a3bec6582f04df5178ca",
+  "exitCode": 0,
+  "seconds": 106.103,
+  "log": "coverage-before-mapper-fix.log"
+}

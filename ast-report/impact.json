@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": true,
+    "deployment": false,
+    "component": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
+    "dependencyRisk": false,
+    "policy": false,
+    "crossCutting": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "Resolved identity and customer Audit contracts add optional display names while retaining authority and subject as the stable identity. After current grants allow access, WorkOS reads the matching profile once through the existing SDK with its five-second transport deadline and zero retries; missing, invalid, or unavailable names preserve ID-only access and events. Better Auth uses its existing account read. MCP completions, browser administration, destination actions, and synthetic Test records carry bounded actor.name to OTLP. Display data never grants access or routes tenants; System records stay ID-only. No component, cross-component dependency, datastore, cache, token configuration, or deployment is added. Registry prose is updated; all registry Mermaid views remain unchanged. The coverage mapper now skips JSDoc trivia when matching exact V8 function boundaries; production behavior and metric thresholds are unchanged.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "C4 containers: local edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: local authentication in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Runtime view",
+      "Deployment view"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "docs/design/authentication-design.md",
+      "docs/design/organization-admin-plan.md",
+      "docs/reference/mcp-fetch-tool.md",
+      "src/accounts/identity/access-context.ts",
+      "src/accounts/providers/workos/workos-auth-provider.ts",
+      "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "src/app/hosted-workos-application.ts",
+      "src/interfaces/mcp/fetch-tool-server.ts",
+      "src/logs/audit/audit-log.ts",
+      "src/logs/audit/audit-event-projection.ts",
+      "src/logs/audit/destination-settings-service.ts",
+      "src/logs/audit/otlp-audit-encoding.ts",
+      "test/acceptance/logging/audit/actor-name.test.ts",
+      "test/integration/auth/workos-actor-name.test.ts",
+      "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+      "script/code-quality/coverage/source-bindings.ts",
+      "docs/implementation/ast-metrics-review.md"
+    ]
+  },
+  "base": "4d7f845b8925389ec734645bd9b7cdde11cdea18",
+  "head": "19e60e2b14a36bb1a1527309dd31e78b7ef28e5d"
+}

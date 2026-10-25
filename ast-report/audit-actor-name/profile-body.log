@@ -1,0 +1,11 @@
+✔ Given the production WorkOS connection, when organization and membership writes get a server error, then each sends one POST with no retry (39.119583ms)
+✔ Given the production WorkOS connection and a write that never answers, when five seconds pass, then its transport signal aborts and the write fails without a second attempt (0.847333ms)
+✔ Given the production WorkOS connection and a profile response with a stalled body, when five seconds pass, then getUser aborts the body and fails without retry (1.129958ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.144042

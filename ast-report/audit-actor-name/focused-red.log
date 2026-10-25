@@ -1,0 +1,301 @@
+▶ Request context permissions
+  ✔ Given a User grant and a synthetic user-manager grant, when permissions are checked, then each grant contributes its explicit permissions (0.8955ms)
+  ✔ Given a synthetic account-manager grant alone, when product access is checked, then it is denied because the context adds no permission beyond the supplied grants (0.1195ms)
+  ✔ Given synthetic account-manager and User grants in either order, when the context is created, then it keeps every grant and the same complete permission set (0.116375ms)
+  ✔ Given grants that share a permission, when the context is created, then the permission set lists it once (0.07325ms)
+  ✔ Given no grants, when any permission is checked, then access is denied with no default permission (0.07725ms)
+  ✔ Given a denied permission check, when the error reaches a client, then its message is a safe generic text (0.235167ms)
+  ✔ Given a context, when permissions are checked repeatedly, then each check gives the same result and changes nothing (0.137333ms)
+✔ Request context permissions (2.696667ms)
+▶ Request context records
+  ✔ Given mutable input records, when they change after the context is created, then the context keeps the trusted values (0.156459ms)
+  ✔ Given a created context, when a handler tries to change it, then the context and its collections are frozen (0.093625ms)
+  ✔ Given input with extra provider fields, when the context is created, then it keeps only the access contract fields (0.122084ms)
+  ✔ Given an installation user without an organization, when the context is created, then it has no organization (0.224417ms)
+  ✔ Given an empty tenant ID, when a context is created, then creation fails instead of making a shared tenant (0.136125ms)
+  ✔ Given no tenant ID, when a context is created, then creation fails instead of making a shared tenant (0.055ms)
+✔ Request context records (0.990458ms)
+✖ Given a trusted display name, when a request context is copied, then its frozen user keeps that optional name (0.597209ms)
+✖ Given a trusted display name, when a request context is copied, then its frozen user keeps that optional name (0.156ms)
+✖ Given a trusted matching profile with 14 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (1.496959ms)
+✖ Given a trusted matching profile with 10 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (0.169875ms)
+✖ Given a trusted matching profile with 1 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (0.139041ms)
+✖ Given a trusted matching profile with 512 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (0.156792ms)
+✔ Given a unavailable optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.172542ms)
+✔ Given a missing optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.071625ms)
+✔ Given a null optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.071917ms)
+✔ Given a wrong user optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.442917ms)
+✔ Given a missing name optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.065833ms)
+✔ Given a blank optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.114416ms)
+✔ Given a wrong type optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.066917ms)
+✔ Given a malformed optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.049041ms)
+✔ Given a control optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.053792ms)
+✔ Given a trimmed control optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.055292ms)
+✔ Given a oversized optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.04475ms)
+✔ Given a invalid split optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.036917ms)
+✔ Given a wrong split type optional profile, when access is resolved, then access and the original identity survive without a client-supplied name (0.045584ms)
+✔ Given missing or failed grants, when access is resolved, then no optional profile read starts and the authorization outcome stays unchanged (0.438458ms)
+✔ Given validated search input and extra fields, when capture runs, then only named content and safe metadata are copied (3.919208ms)
+✔ Given known credential fields and encoded URL parameter names, when capture runs, then redaction applies to every public text field (0.728667ms)
+✔ Given unsupported capture data {"tool":"unknown"}, when capture runs, then it drops the event (0.093458ms)
+✔ Given unsupported capture data {"input":{"query":"","reason":"why"}}, when capture runs, then it drops the event (0.059916ms)
+✔ Given unsupported capture data {"input":{"query":"query","reason":""}}, when capture runs, then it drops the event (0.066083ms)
+✔ Given unsupported capture data {"input":{"query":"query","reason":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx, when capture runs, then it drops the event (0.113791ms)
+✔ Given unsupported capture data {"result":{}}, when capture runs, then it drops the event (0.081333ms)
+✔ Given unsupported capture data {"durationMs":-1}, when capture runs, then it drops the event (0.048458ms)
+✔ Given unsupported capture data {"organizationId":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx, when capture runs, then it drops the event (0.077375ms)
+✔ Given unsupported capture data {"actor":{"authority":"workos","subject":""}}, when capture runs, then it drops the event (0.096417ms)
+✔ Given unsupported capture data {"status":"raw_exception"}, when capture runs, then it drops the event (0.067208ms)
+✔ Given unsupported capture data {"timestamp":"not a time"}, when capture runs, then it drops the event (0.044667ms)
+✔ Given unsupported capture data {"input":{"query":"\ud800","reason":"why"}}, when capture runs, then it drops the event (0.063458ms)
+✔ Given maximum valid fetch input and escaped multibyte results, when capture runs, then input stays complete and both serialized budgets hold (14.770709ms)
+✔ Given a refused sink, when capture runs, then the caller receives no failure (0.131208ms)
+✔ Given a maximum valid fetch URL with lone surrogates and escaped reason text, when capture runs, then the validated input is preserved (2.025125ms)
+✔ Given a credential field with escaped quotes, when capture runs, then the whole credential value is redacted (0.117292ms)
+✔ Given maximum valid search input and a result at the byte boundary, when capture runs, then only the exported copy is truncated (7.229375ms)
+✔ Given a result exactly at the result byte limit, when capture runs, then no truncation marker is added (4.822875ms)
+✔ Given a Save or Test action with extra settings, when capture runs, then only action metadata reaches the sink (0.197041ms)
+✔ Given an unsupported admin action or outcome, when capture runs, then no event reaches the sink (0.0995ms)
+✔ Given maximum escaped input and identity metadata, when capture runs, then the event budget reserves every field before result text (10.258291ms)
+✔ Given unknown credential objects with throwing getters, when capture runs, then capture reads only named public fields (0.096208ms)
+✔ Given the result limit cuts a quoted credential after a backslash, when capture runs, then no credential tail survives redaction (19.05ms)
+✔ Given an incomplete quoted credential with an escaped quote and backslash, when capture runs, then the full remaining value is redacted (0.20225ms)
+✔ Given quoted credential content "first line\nPRIVATE-second-line", when capture runs, then its complete value is redacted (0.245708ms)
+✔ Given quoted credential content "first\\nPRIVATE-escaped-newline", when capture runs, then its complete value is redacted (0.122ms)
+✔ Given quoted credential content "first\\\"PRIVATE-escaped-quote", when capture runs, then its complete value is redacted (0.046166ms)
+✔ Given an accepted fetch URL with credential value "PRIVATE-quoted-secret", when capture runs, then the complete recognized query value is redacted (0.200084ms)
+✔ Given an accepted fetch URL with credential value 'PRIVATE-single-secret', when capture runs, then the complete recognized query value is redacted (0.094584ms)
+✔ Given an accepted fetch URL with credential value <PRIVATE-angle-secret>, when capture runs, then the complete recognized query value is redacted (0.064875ms)
+✔ Given quoted or angle credential parameters in search input, when capture runs, then query and reason retain only safe copies (0.068834ms)
+✔ Given a credential URL in public text "{\"url\":\"https://example.com/?token=PRIVATE\",\"public\":\"visible\"}", when capture runs, then only the credential value is replaced (0.091958ms)
+✔ Given a credential URL in public text "{\"message\":\"See https://example.com/?token=PRIVATE\",\"keep\":\"KEEP_PUBLIC\"}", when capture runs, then only the credential value is replaced (0.086291ms)
+✔ Given a credential URL in public text "\"https://example.com/?token=PRIVATE\"", when capture runs, then only the credential value is replaced (0.052ms)
+✔ Given a credential URL in public text "{\"https://example.com/?token=PRIVATE\":\"PUBLIC_VALUE\",\"keep\":\"KEEP_PUBLIC\"}", when capture runs, then only the credential value is replaced (0.064667ms)
+✔ Given a credential URL in public text "{'url':'https://example.com/?token=PRIVATE','public':'visible'}", when capture runs, then only the credential value is replaced (0.069708ms)
+✔ Given a credential URL in public text "[visible](https://example.com/?token=PRIVATE) suffix", when capture runs, then only the credential value is replaced (0.061458ms)
+✔ Given a credential URL in public text "[visible](https://example.com/?token=PRIVATE), suffix", when capture runs, then only the credential value is replaced (0.060791ms)
+✔ Given a credential URL in public text "[visible](https://example.com/?token=prefix(PRIVATE-tail)), suffix", when capture runs, then only the credential value is replaced (0.059ms)
+✔ Given a credential URL in public text "<https://example.com/?token=PRIVATE> suffix", when capture runs, then only the credential value is replaced (0.052208ms)
+✔ Given a credential URL in public text "https://example.com/?token=\"PRIVATE\\\"tail\" public", when capture runs, then only the credential value is replaced (0.061084ms)
+✔ Given a credential URL in public text "https://example.com/?token='PRIVATE\\'tail' public", when capture runs, then only the credential value is replaced (0.043417ms)
+✔ Given a credential URL in public text "https://example.com/?token=<PRIVATE> public", when capture runs, then only the credential value is replaced (0.042542ms)
+✔ Given a validated fetch URL with raw value prefix"PRIVATE-tail", when capture runs, then its complete query credential is removed (0.068417ms)
+✔ Given a validated fetch URL with raw value prefix'PRIVATE-tail', when capture runs, then its complete query credential is removed (0.037167ms)
+✔ Given a validated fetch URL with raw value prefix<PRIVATE-tail>, when capture runs, then its complete query credential is removed (0.034791ms)
+✔ Given a validated fetch URL with raw value PRIVATE(value)[with]{punctuation}, when capture runs, then its complete query credential is removed (0.190917ms)
+✔ Given the result byte limit cuts a quoted URL credential after an escape, when capture runs, then its full captured value is removed (6.887542ms)
+✔ Given an ambiguous URL credential prefix"PRIVATE-tail, when public text is captured, then redaction keeps the full query value private (0.10125ms)
+✔ Given an ambiguous URL credential prefix(PRIVATE-tail), when public text is captured, then redaction keeps the full query value private (0.06925ms)
+✔ Given an ambiguous URL credential "first"PRIVATE-tail, when public text is captured, then redaction keeps the full query value private (0.049041ms)
+✔ Given an ambiguous URL credential 'first'PRIVATE-tail, when public text is captured, then redaction keeps the full query value private (0.047375ms)
+✔ Given an ambiguous URL credential <first>PRIVATE-tail, when public text is captured, then redaction keeps the full query value private (0.049833ms)
+✔ Given an unclosed string of escaped quotes before a credential URL, when capture runs, then the full credential is removed and the prefix stays unchanged (0.125875ms)
+✖ Given a trusted display name, when an audit event is projected, then the actor keeps the name in a frozen detached record (0.973666ms)
+✖ Given a trusted display name, when an audit event is projected, then the actor keeps the name in a frozen detached record (0.212375ms)
+✔ Given an invalid optional name "", when an audit event is projected, then the event keeps its identity and omits the name (0.080958ms)
+✔ Given an invalid optional name " ", when an audit event is projected, then the event keeps its identity and omits the name (0.034667ms)
+✔ Given an invalid optional name 42, when an audit event is projected, then the event keeps its identity and omits the name (0.031875ms)
+✔ Given an invalid optional name "\ud800", when an audit event is projected, then the event keeps its identity and omits the name (0.031625ms)
+✔ Given an invalid optional name "line\nname", when an audit event is projected, then the event keeps its identity and omits the name (0.029959ms)
+✔ Given an invalid optional name "name", when an audit event is projected, then the event keeps its identity and omits the name (0.027375ms)
+✔ Given an invalid optional name "éééééééééééééééééééééééééééééééééé, when an audit event is projected, then the event keeps its identity and omits the name (0.027791ms)
+ℹ tests 97
+ℹ suites 2
+ℹ pass 89
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137.401
+
+✖ failing tests:
+
+test at dist/test/unit/auth/access-context.test.js:115:5
+✖ Given a trusted display name, when a request context is copied, then its frozen user keeps that optional name (0.597209ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'Zoë O’Neil — 李'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/auth/access-context.test.js:117:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Suite.postRun (node:internal/test_runner/test:1537:19)
+      at Suite.run (node:internal/test_runner/test:1905:10)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'Zoë O’Neil — 李',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/auth/access-context.test.js:115:5
+✖ Given a trusted display name, when a request context is copied, then its frozen user keeps that optional name (0.156ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/auth/access-context.test.js:117:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/auth/workos-actor-name.test.js:23:5
+✖ Given a trusted matching profile with 14 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (1.496959ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:environment',
+  -   name: 'Zoë O’Neil — 李',
+      selectedOrganizationId: 'org-1',
+      subject: 'user-1'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/auth/workos-actor-name.test.js:27:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1' },
+    expected: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1', name: 'Zoë O’Neil — 李' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/auth/workos-actor-name.test.js:23:5
+✖ Given a trusted matching profile with 10 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (0.169875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:environment',
+  -   name: 'Zoë O’Neil',
+      selectedOrganizationId: 'org-1',
+      subject: 'user-1'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/auth/workos-actor-name.test.js:27:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1' },
+    expected: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1', name: 'Zoë O’Neil' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/auth/workos-actor-name.test.js:23:5
+✖ Given a trusted matching profile with 1 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (0.139041ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:environment',
+  -   name: '李',
+      selectedOrganizationId: 'org-1',
+      subject: 'user-1'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/auth/workos-actor-name.test.js:27:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1' },
+    expected: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1', name: '李' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/auth/workos-actor-name.test.js:23:5
+✖ Given a trusted matching profile with 512 name characters, when access is resolved, then one profile read follows grants and its name is detached from input (0.156792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:environment',
+  -   name: 'éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé',
+      selectedOrganizationId: 'org-1',
+      subject: 'user-1'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/auth/workos-actor-name.test.js:27:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1' },
+    expected: { authority: 'workos:environment', subject: 'user-1', selectedOrganizationId: 'org-1', name: 'éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-capture.test.js:242:5
+✖ Given a trusted display name, when an audit event is projected, then the actor keeps the name in a frozen detached record (0.973666ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos',
+  -   name: 'Zoë O’Neil — 李',
+      subject: 'user-a'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-capture.test.js:245:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos', subject: 'user-a' },
+    expected: { authority: 'workos', subject: 'user-a', name: 'Zoë O’Neil — 李' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/unit/logging/audit/audit-capture.test.js:242:5
+✖ Given a trusted display name, when an audit event is projected, then the actor keeps the name in a frozen detached record (0.212375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos',
+  -   name: 'éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé',
+      subject: 'user-a'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/unit/logging/audit/audit-capture.test.js:245:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos', subject: 'user-a' },
+    expected: { authority: 'workos', subject: 'user-a', name: 'éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

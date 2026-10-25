@@ -1,0 +1,10 @@
+{
+  "command": [
+    "npm",
+    "test"
+  ],
+  "head": "2c533aa6b4e457577e06bfe951bd6d6185e00205",
+  "exitCode": 1,
+  "seconds": 307.297,
+  "log": "ordinary-initial-failed.log"
+}

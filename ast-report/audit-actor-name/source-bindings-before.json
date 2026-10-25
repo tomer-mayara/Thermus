@@ -1,0 +1,141 @@
+{
+  "phase": "before",
+  "originalCoverageCommit": "2d0ad41846a99ce8fac1a3bec6582f04df5178ca",
+  "runtime": "v24.20.0",
+  "fixtureCompiler": "6.0.2",
+  "rows": [
+    {
+      "label": "captureAuditResult",
+      "range": "3336:4131",
+      "called": 55,
+      "coveredShare": 1,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "auditActorName",
+      "range": "4227:4593",
+      "called": 221,
+      "coveredShare": 1,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "encodeAuditEvent",
+      "range": "3225:4419",
+      "called": 74,
+      "coveredShare": 1,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#plain",
+      "range": "39:69",
+      "called": 5,
+      "sourceIdentity": {
+        "version": "typescript-tokens-v2",
+        "kind": "FunctionDeclaration",
+        "owner": "",
+        "name": "plain",
+        "start": 39,
+        "end": 77,
+        "body": "13e8a1539fd7a000055d31ba652be671bc2b0bf0b18ad530a3e27677c0bf5008",
+        "signature": "1f543265c3f8262cea3cf156b70a4223e1b7dfa34de79f4d4c88b3f8b77aafc9"
+      },
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#named",
+      "range": "103:139",
+      "called": 5,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#primary",
+      "range": "189:227",
+      "called": 4,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#asynchronous",
+      "range": "267:318",
+      "called": 2,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#generator",
+      "range": "362:404",
+      "called": 1,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#asyncGenerator",
+      "range": "454:518",
+      "called": 1,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-function-forms.ts#exercise",
+      "range": "560:713",
+      "called": 1,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    },
+    {
+      "label": "documented-anonymous-default.ts#default",
+      "range": "52:77",
+      "called": 1,
+      "sourceIdentity": null,
+      "guards": {
+        "nearbyEndRejected": true,
+        "missingMapEndRejected": true,
+        "wrongSourceRejected": true
+      }
+    }
+  ]
+}

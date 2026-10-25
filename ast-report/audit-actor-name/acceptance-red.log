@@ -1,0 +1,235 @@
+✖ Given an authorized WorkOS user with a trusted profile, when search completes with forged client names, then customer OTLP contains the profile name and original WorkOS ID (562.963959ms)
+✖ Given an authorized WorkOS user with a trusted profile, when getURLAsMarkdown completes with forged client names, then customer OTLP contains the profile name and original WorkOS ID (78.965ms)
+✖ Given an authorized WorkOS user with a unavailable optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (88.918333ms)
+✖ Given an authorized WorkOS user with a blank optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (85.306459ms)
+✖ Given an authorized WorkOS user with a control optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (71.534166ms)
+✖ Given an authorized WorkOS user with a oversized optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (71.435917ms)
+✖ Given a current Admin and saved destination, when Test completes, then Save and Test action events are separate from the synthetic test and contains no sender response (221.187083ms)
+✖ Given a current Admin and none capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (75.763292ms)
+✖ Given a current Admin and throw capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (89.003375ms)
+✖ Given a current Admin and refuse capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (66.879667ms)
+✖ Given a current Admin and record-throw capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (102.44875ms)
+✔ Given a current Admin and enabled capture, when Audit logs Save completes, then one metadata event names the trusted tenant and actor without settings content (120.124958ms)
+✔ Given a current Admin and a customer sink that throws, when Audit logs Save completes, then its public outcome stays complete and its write is not replayed (43.768875ms)
+✔ Given a current Admin and a customer sink that refuses, when Audit logs Save completes, then its public outcome stays complete and its write is not replayed (57.562625ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 3
+ℹ fail 11
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2091.110792
+
+✖ failing tests:
+
+test at dist/test/acceptance/logging/audit/actor-name.test.js:5:5
+✖ Given an authorized WorkOS user with a trusted profile, when search completes with forged client names, then customer OTLP contains the profile name and original WorkOS ID (562.963959ms)
+  AssertionError [ERR_ASSERTION]: response has no JSON-RPC result: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params: the MCP-Protocol-Version header names protocol revision 2026-07-28, but the request is missing the required per-request envelope key(s): io.modelcontextprotocol/protocolVersion, io.modelcontextprotocol/clientCapabilities","data":{"envelope":{"missing":["io.modelcontextprotocol/protocolVersion","io.modelcontextprotocol/clientCapabilities"]}}},"id":1}
+      at rpcResult (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/drivers/mcp/mcp-http-request.js:38:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/actor-name.test.js:7:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/actor-name.test.js:5:5
+✖ Given an authorized WorkOS user with a trusted profile, when getURLAsMarkdown completes with forged client names, then customer OTLP contains the profile name and original WorkOS ID (78.965ms)
+  AssertionError [ERR_ASSERTION]: response has no JSON-RPC result: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params: the MCP-Protocol-Version header names protocol revision 2026-07-28, but the request is missing the required per-request envelope key(s): io.modelcontextprotocol/protocolVersion, io.modelcontextprotocol/clientCapabilities","data":{"envelope":{"missing":["io.modelcontextprotocol/protocolVersion","io.modelcontextprotocol/clientCapabilities"]}}},"id":1}
+      at rpcResult (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/drivers/mcp/mcp-http-request.js:38:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/actor-name.test.js:7:24)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/actor-name.test.js:17:5
+✖ Given an authorized WorkOS user with a unavailable optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (88.918333ms)
+  AssertionError [ERR_ASSERTION]: response has no JSON-RPC result: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params: the MCP-Protocol-Version header names protocol revision 2026-07-28, but the request is missing the required per-request envelope key(s): io.modelcontextprotocol/protocolVersion, io.modelcontextprotocol/clientCapabilities","data":{"envelope":{"missing":["io.modelcontextprotocol/protocolVersion","io.modelcontextprotocol/clientCapabilities"]}}},"id":1}
+      at rpcResult (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/drivers/mcp/mcp-http-request.js:38:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/actor-name.test.js:22:27)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/actor-name.test.js:17:5
+✖ Given an authorized WorkOS user with a blank optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (85.306459ms)
+  AssertionError [ERR_ASSERTION]: response has no JSON-RPC result: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params: the MCP-Protocol-Version header names protocol revision 2026-07-28, but the request is missing the required per-request envelope key(s): io.modelcontextprotocol/protocolVersion, io.modelcontextprotocol/clientCapabilities","data":{"envelope":{"missing":["io.modelcontextprotocol/protocolVersion","io.modelcontextprotocol/clientCapabilities"]}}},"id":1}
+      at rpcResult (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/drivers/mcp/mcp-http-request.js:38:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/actor-name.test.js:22:27)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/actor-name.test.js:17:5
+✖ Given an authorized WorkOS user with a control optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (71.534166ms)
+  AssertionError [ERR_ASSERTION]: response has no JSON-RPC result: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params: the MCP-Protocol-Version header names protocol revision 2026-07-28, but the request is missing the required per-request envelope key(s): io.modelcontextprotocol/protocolVersion, io.modelcontextprotocol/clientCapabilities","data":{"envelope":{"missing":["io.modelcontextprotocol/protocolVersion","io.modelcontextprotocol/clientCapabilities"]}}},"id":1}
+      at rpcResult (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/drivers/mcp/mcp-http-request.js:38:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/actor-name.test.js:22:27)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/actor-name.test.js:17:5
+✖ Given an authorized WorkOS user with a oversized optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (71.435917ms)
+  AssertionError [ERR_ASSERTION]: response has no JSON-RPC result: {"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params: the MCP-Protocol-Version header names protocol revision 2026-07-28, but the request is missing the required per-request envelope key(s): io.modelcontextprotocol/protocolVersion, io.modelcontextprotocol/clientCapabilities","data":{"envelope":{"missing":["io.modelcontextprotocol/protocolVersion","io.modelcontextprotocol/clientCapabilities"]}}},"id":1}
+      at rpcResult (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/support/drivers/mcp/mcp-http-request.js:38:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/actor-name.test.js:22:27)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/administration-capture.test.js:5:1
+✖ Given a current Admin and saved destination, when Test completes, then Save and Test action events are separate from the synthetic test and contains no sender response (221.187083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:client_test',
+  -   name: 'Admin Example',
+      subject: 'user_CAPTURE_ADMIN'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/administration-capture.test.js:16:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN' },
+    expected: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN', name: 'Admin Example' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/administration-capture.test.js:21:5
+✖ Given a current Admin and none capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (75.763292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:client_test',
+  -   name: 'Admin Example',
+      subject: 'user_CAPTURE_ADMIN'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/administration-capture.test.js:46:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN' },
+    expected: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN', name: 'Admin Example' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/administration-capture.test.js:21:5
+✖ Given a current Admin and throw capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (89.003375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:client_test',
+  -   name: 'Admin Example',
+      subject: 'user_CAPTURE_ADMIN'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/administration-capture.test.js:46:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN' },
+    expected: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN', name: 'Admin Example' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/administration-capture.test.js:21:5
+✖ Given a current Admin and refuse capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (66.879667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:client_test',
+  -   name: 'Admin Example',
+      subject: 'user_CAPTURE_ADMIN'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/administration-capture.test.js:46:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN' },
+    expected: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN', name: 'Admin Example' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/administration-capture.test.js:21:5
+✖ Given a current Admin and record-throw capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (102.44875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      authority: 'workos:client_test',
+  -   name: 'Admin Example',
+      subject: 'user_CAPTURE_ADMIN'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/acceptance/logging/audit/administration-capture.test.js:46:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN' },
+    expected: { authority: 'workos:client_test', subject: 'user_CAPTURE_ADMIN', name: 'Admin Example' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

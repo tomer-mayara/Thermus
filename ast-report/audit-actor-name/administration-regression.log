@@ -1,0 +1,24 @@
+▶ Hosted WorkOS edition: current grants and revocation at the next request
+  ✔ Given Ada and Hal with User and Admin, each with a browser session and an MCP token for Acme, when the provider removes Admin from Ada and User from Hal, then Ada loses administration but keeps product access, and Hal keeps product and administration access with Admin alone (343.398417ms)
+  ✔ Given Bea with only User in Acme and User in Globex, when the provider removes its last grant in Acme, then WorkOS keeps the membership with only the default role: Bea is refused in Acme at the next request and has no seat there, keeps its identity and Globex, and no default role restores access (174.172791ms)
+✔ Hosted WorkOS edition: current grants and revocation at the next request (518.220875ms)
+▶ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets
+  ✔ Given Dan signed in as Admin and then changed to User in WorkOS, when Dan opens administration pages or sends an invitation with the existing form token, then current membership checks deny each request before reading members or invitations or making changes (99.752583ms)
+✔ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets (99.886ms)
+▶ Hosted WorkOS edition: organization invitations
+  ✔ Given Dan with Admin alone, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link (251.764792ms)
+  ✔ Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, Members no longer shows the accepted invitation, and the active product members count Eve (199.25425ms)
+  ✔ Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers both roles and changes for the pending Admin invitation, the new Admin invitation succeeds, and the expired resend is refused (104.286167ms)
+✔ Hosted WorkOS edition: organization invitations (555.522125ms)
+▶ Hosted WorkOS edition: the active product member count from every WorkOS page
+  ✔ Given WorkOS pages of two memberships that repeat one membership on the next page, when Dan opens the members page, then each active product membership counts once, including Admin-only and combined User/Admin memberships, and default-role, inactive, and pending memberships count zero (208.124583ms)
+  ✔ Given a WorkOS outage on a later page of the members, when Dan opens the members page, then it gives the 500 failure page with an operator report and no partial count (68.963875ms)
+✔ Hosted WorkOS edition: the active product member count from every WorkOS page (277.321125ms)
+ℹ tests 8
+ℹ suites 4
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1597.689292

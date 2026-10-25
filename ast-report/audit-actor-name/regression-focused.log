@@ -1,0 +1,128 @@
+✔ Given enabled customer capture in organization A, when a tool has success, then only its validated input and final public outcome reach A's customer sink (46.833875ms)
+✔ Given enabled customer capture in organization A, when a tool has empty success, then only its validated input and final public outcome reach A's customer sink (9.378708ms)
+✔ Given enabled customer capture in organization A, when a tool has safe error, then only its validated input and final public outcome reach A's customer sink (6.843167ms)
+✔ Given enabled customer capture in organization A, when a tool has cancelled, then only its validated input and final public outcome reach A's customer sink (5.3335ms)
+✔ Given enabled customer capture in organization A, when a tool has withheld, then only its validated input and final public outcome reach A's customer sink (6.750875ms)
+✔ Given a customer sink that can throw, when a tool completes, then its exact public result remains and the operation runs once (4.366542ms)
+✔ Given a customer sink that can refuse, when a tool completes, then its exact public result remains and the operation runs once (3.688833ms)
+✔ Given customer capture for two trusted tenants, when each tenant calls a tool and names the other tenant in metadata, then each completion belongs to its authenticated tenant (6.417458ms)
+▶ Local MCP access with the real Better Auth provider and SQLite
+  ✖ Given two local users with session-bound MCP tokens, when each calls the protected tool, then each request works with its own user subject in the one installation tenant, both have the same evaluation grant, and the verified claims name the local issuer, the approved client, and the MCP resource (529.040583ms)
+  ✔ Given a user disabled while its browser session and token stay valid and a deleted user, when each calls the protected tool, then access resolution denies the disabled user with 403 after token verification, the deleted user gets 401, no tool runs for them, and the peer still works (585.782292ms)
+  ✔ Given two users with MCP tokens, when one user's sessions end, then introspection makes only that user's token fail with 401 and the peer keeps working with its token (443.532917ms)
+  ✔ Given two users with active MCP tokens, when protected requests exceed the shared provider rate limit, then all requests keep working and the next request still checks whether its session ended (860.726833ms)
+  ✔ Given tokens that each fail one check — a changed payload, the token of another installation, an ID token, an access token without the MCP resource, an expired token, and a malformed value — when each calls the MCP endpoint, then each gets 401 before any tool runs and the operator gets no failure report (723.112916ms)
+  ✔ Given an MCP server that requires the openid scope, when a user calls with a token granted only the profile scope, then the SDK answers 403 insufficient_scope with the required scope in its challenge and no tool runs (326.604958ms)
+  ✔ Given no resource-server client or one with a wrong secret, when a user calls with a valid token, then the client gets a generic 500, the operator gets one token-verification report without the token, and no tool runs (325.486167ms)
+  ✔ Given a user with a token, a consent, and a pending authorization code, when the operator disables the user, then sign-in is refused, the pending code and a refresh request fail, a new authorization asks for a sign-in, the token gets 401, and the peer keeps working (473.880875ms)
+  ✔ Given a user with a token and a consent, when the runtime closes and opens again on the same data directory, then the token is still accepted and a new authorization needs no sign-in or consent, because keys, sessions, clients, and consents persist (280.640083ms)
+  ✔ Given the approved native client, when authorizations use its exact redirect URI, another loopback port, another path, a client metadata URL, and an unknown client, then only the registered redirect URI, on any loopback port, gets a code, and the others go to the bundled authorization error page (281.845625ms)
+✖ Local MCP access with the real Better Auth provider and SQLite (4832.026666ms)
+▶ MCP access context with the real access contracts
+  ✔ Given four members in two tenants, when their requests resolve in reverse order and their protected work overlaps, then each request works only in its own trusted tenant (39.08275ms)
+  ✔ Given a member whose User grant is revoked while a synthetic user-manager grant remains, when the member calls again with the same token, then the next request is checked again and its protected work is refused (3.178875ms)
+  ✔ Given no token, when a client calls the protected tool, then the server returns 401, no tool, fetch, or clean step runs, and the operator gets no failure report (0.461334ms)
+  ✔ Given a rejected token, when a client calls the protected tool, then the server returns 401, no tool, fetch, or clean step runs, and the operator gets no failure report (0.309875ms)
+  ✔ Given a token without the required scope, when a client calls the protected tool, then the server returns 403, no tool, fetch, or clean step runs, and the operator gets no failure report (0.307459ms)
+  ✔ Given an inactive membership, when a client calls the protected tool, then the server returns 403, no tool, fetch, or clean step runs, and the operator gets no failure report (0.349583ms)
+  ✔ Given an access lookup outage, when a client calls the protected tool, then the server returns 500, no tool, fetch, or clean step runs, and the operator gets one access-resolution report (0.285792ms)
+  ✔ Given only a synthetic user-manager grant without product access, when the member calls the protected tool, then the permission check refuses before any fetch or clean step (1.308166ms)
+✔ MCP access context with the real access contracts (45.964625ms)
+▶ WorkOSAuthProvider access resolution
+  ✔ Given a WorkOS authority and an organization ID, when the hosted tenant ID is made, then it comes from only these two values (0.425375ms)
+  ✔ Given an active membership with User and synthetic user-manager grants, when access is resolved, then it is allowed in the tenant of the organization with both grants and their combined permissions, after one fresh read (0.778042ms)
+  ✔ Given only synthetic management grants without product permission, when access is resolved, then it is allowed with each grant, because each operation checks its required permission (0.115584ms)
+  ✔ Given only the default role, when access is resolved, then it is allowed with a context that has no permission (0.092375ms)
+  ✔ Given no active membership in the selected organization, when access is resolved, then it is denied as membership-inactive (0.075417ms)
+  ✔ Given a WorkOS user with the selected organization undefined, when access is resolved, then it is denied as organization-required without a read (0.090625ms)
+  ✔ Given a WorkOS user with the selected organization "", when access is resolved, then it is denied as organization-required without a read (0.067208ms)
+  ✔ Given a user of the authority workos:client_02OTHERENVIRONMENT, when access is resolved, then it is denied as account-inactive without a read (0.071917ms)
+  ✔ Given a user of the authority better-auth:installation-1, when access is resolved, then it is denied as account-inactive without a read (0.07975ms)
+  ✔ Given a user of the authority https://reasonable-field-33-staging.authkit.app, when access is resolved, then it is denied as account-inactive without a read (0.101375ms)
+  ✔ Given a grant read that fails with Error, when access is resolved, then the same error reaches the caller, so access fails closed (0.259917ms)
+  ✔ Given a grant read that fails with HostedRoleConfigurationError, when access is resolved, then the same error reaches the caller, so access fails closed (0.07425ms)
+  ✔ Given Connect tokens of one user in one organization from two MCP clients, when each is verified and resolved, then both contexts have the same tenant, and another organization has another tenant (7.095334ms)
+✔ WorkOSAuthProvider access resolution (10.092583ms)
+▶ WorkOSAuthProvider Connect token verification
+  ✔ Given a Connect user token from the AuthKit issuer for the MCP resource, when it is verified, then the identity has the user in the WorkOS authority with the organization of the token, the actual issuer and client, the scopes, the time claims, and the MCP resource (5.185917ms)
+  ✔ Given a Connect user token without org_id, when it is verified, then the user has no selected organization (1.422958ms)
+  ✔ Given a Connect user token whose scope has extra spaces, when it is verified, then the identity has only the named scopes and no scope is required (1.075375ms)
+  ✔ Given a Connect user token whose scope has no value, when it is verified, then the identity has only the named scopes and no scope is required (1.083625ms)
+  ✔ Given tokens of the same user from two MCP clients, when they are verified, then both users have the one WorkOS authority and each identity keeps its own client ID (1.7775ms)
+  ✔ Given tokens that expired 30 s ago or were issued 30 s in the future, when they are verified, then the clock tolerance of 60 s accepts them (1.740833ms)
+  ✔ Given a token with another issuer, when it is verified, then it is refused as an invalid token (1.505542ms)
+  ✔ Given a token with the issuer with a final slash, when it is verified, then it is refused as an invalid token (0.985542ms)
+  ✔ Given a token with another audience, when it is verified, then it is refused as an invalid token (0.98775ms)
+  ✔ Given a token with the environment client as its audience, when it is verified, then it is refused as an invalid token (1.068208ms)
+  ✔ Given a token with the shape of a browser session token with the same key (browser issuer, no audience), when it is verified, then it is refused as an invalid token (0.933583ms)
+  ✔ Given a token with the shape of an M2M token for the MCP resource (no sid, sub equal to client_id), when it is verified, then it is refused as an invalid token (1.214209ms)
+  ✔ Given a token with no sid, when it is verified, then it is refused as an invalid token (0.860125ms)
+  ✔ Given a token with a sub equal to its client_id, when it is verified, then it is refused as an invalid token (0.851292ms)
+  ✔ Given a token with no client_id, when it is verified, then it is refused as an invalid token (0.84525ms)
+  ✔ Given a token with no scope, when it is verified, then it is refused as an invalid token (0.871791ms)
+  ✔ Given a token with no sub, when it is verified, then it is refused as an invalid token (0.830708ms)
+  ✔ Given a token with an empty sid, when it is verified, then it is refused as an invalid token (0.816542ms)
+  ✔ Given a token with an empty client_id, when it is verified, then it is refused as an invalid token (0.819375ms)
+  ✔ Given a token with an empty sub, when it is verified, then it is refused as an invalid token (0.830917ms)
+  ✔ Given a token with a scope list, when it is verified, then it is refused as an invalid token (0.803ms)
+  ✔ Given a token with an empty org_id, when it is verified, then it is refused as an invalid token (0.799292ms)
+  ✔ Given a token with a numeric org_id, when it is verified, then it is refused as an invalid token (0.843125ms)
+  ✔ Given a token with a null org_id, when it is verified, then it is refused as an invalid token (0.770959ms)
+  ✔ Given a token with an expiry 61 s ago, when it is verified, then it is refused as an invalid token (0.870792ms)
+  ✔ Given a token with an issue time 120 s in the future, when it is verified, then it is refused as an invalid token (0.782125ms)
+  ✔ Given a token with HS256 with the published kid, when it is verified, then it is refused as an invalid token (0.539042ms)
+  ✔ Given a token with the algorithm none, when it is verified, then it is refused as an invalid token (0.147542ms)
+  ✔ Given a token with another key under the published kid, when it is verified, then it is refused as an invalid token (1.144917ms)
+  ✔ Given a token with a kid that the key set does not have, when it is verified, then it is refused as an invalid token (0.988958ms)
+  ✔ Given a token with a header that is not JSON, when it is verified, then it is refused as an invalid token (0.128625ms)
+  ✔ Given a token with one segment, when it is verified, then it is refused as an invalid token (0.073166ms)
+  ✔ Given a token with an empty value, when it is verified, then it is refused as an invalid token (0.065166ms)
+  ✔ Given an expired token with a private claim, when verification refuses it, then inspection of the error shows neither the token nor the private claim (0.91925ms)
+  ✔ Given the AuthKit key set of the WorkOS API, when a valid token is verified two times, then the key set is read one time (18.939834ms)
+  ✔ Given an AuthKit key set that answers HTTP 500, when a valid token is verified, then the key-set failure is thrown as an unexpected error and not as a token rejection (5.130708ms)
+  ✔ Given an AuthKit key set that does not answer within the timeout, when a valid token is verified, then the key-set failure is thrown as an unexpected error and not as a token rejection (105.17075ms)
+  ✔ Given an AuthKit key set that answers a body that is not a key set, when a valid token is verified, then the key-set failure is thrown as an unexpected error and not as a token rejection (3.340333ms)
+  ✔ Given an AuthKit key set on a port that refuses the connection, when a valid token is verified, then the fetch failure is thrown as an unexpected error and not as a token rejection (1.933791ms)
+✔ WorkOSAuthProvider Connect token verification (170.663625ms)
+ℹ tests 78
+ℹ suites 4
+ℹ pass 77
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6443.012
+
+✖ failing tests:
+
+test at dist/test/integration/auth/local-access.test.js:116:5
+✖ Given two local users with session-bound MCP tokens, when each calls the protected tool, then each request works with its own user subject in the one installation tenant, both have the same evaluation grant, and the verified claims name the local issuer, the approved client, and the MCP resource (529.040583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      grants: [
+        {
+          permissions: [
+            'product:access'
+  ...
+        authority: 'better-auth:ea132aff-93fc-4e3a-98f6-2c7388f6aea1',
+  +     name: 'alice@example.com',
+        subject: 'xFk5Z1VQwP0yl0wLNwSkqU6JB7C0od0f'
+      }
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/dist/test/integration/auth/local-access.test.js:127:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { user: { authority: 'better-auth:ea132aff-93fc-4e3a-98f6-2c7388f6aea1', subject: 'xFk5Z1VQwP0yl0wLNwSkqU6JB7C0od0f', name: 'alice@example.com' }, tenantId: 'local:ea132aff-93fc-4e3a-98f6-2c7388f6aea1', grants: [ [Object] ], permissions: [ 'product:access' ] },
+    expected: { user: { authority: 'better-auth:ea132aff-93fc-4e3a-98f6-2c7388f6aea1', subject: 'xFk5Z1VQwP0yl0wLNwSkqU6JB7C0od0f' }, tenantId: 'local:ea132aff-93fc-4e3a-98f6-2c7388f6aea1', grants: [ [Object] ], permissions: [ 'product:access' ] },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,19 @@
+flowchart TB
+  subgraph server["Container: Thermus Node server · hosted"]
+    mcp["mcp · TypeScript<br/>CHANGED: tool completion actor<br/>IDs plus optional name"]
+    web["web · TypeScript<br/>Existing trusted-context capture<br/>Admin, destination and Test actions"]
+    workos["workos · TypeScript / SDK<br/>CHANGED: after current grants allow access<br/>Read matching profile; failure keeps IDs"]
+    identity["identity · TypeScript<br/>CHANGED: frozen request user<br/>IDs plus optional bounded name"]
+    audit["audit-logs · TypeScript<br/>CHANGED: project optional actor.name<br/>Keep IDs; existing queue and export"]
+    mcp -->|resolve access| workos
+    web -->|resolve access| workos
+    workos -->|create trusted context| identity
+    mcp -->|completed tool outcome| audit
+    web -->|trusted action outcome| audit
+  end
+  provider["External system: WorkOS<br/>Existing identity and organization service"]
+  destination["External system: customer destination<br/>OpenTelemetry Collector or Axiom"]
+  workos -->|existing SDK HTTPS boundary| provider
+  audit -->|existing OTLP HTTPS boundary| destination
+  classDef changed fill:#fff3cd,stroke:#916900,color:#252525
+  class mcp,workos,identity,audit changed

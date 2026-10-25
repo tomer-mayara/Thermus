@@ -1,0 +1,108 @@
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/interfaces/mcp/fetch-tool-server.ts | callTool | changed | 16 | 99.7% | 16.0 | ok; for 15: split |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.testSaved | changed | 15 | 97.7% | 15.002737575 | ok; for 15: cover ≥ 100% |
+| src/logs/audit/destination-settings-service.ts | invalidInput | unchanged | 15 | 100% | 15.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | eventAttributes | unchanged | 15 | 100% | 15.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.save | unchanged | 14 | 100% | 14.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | inputOf | unchanged | 13 | 91.5% | 13.1 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | profileNameOf | new | 12 | 100% | 12.0 | ok |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.authorizeExport | unchanged | 11 | 94.2% | 11.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | projectAdministrationChange | unchanged | 11 | 95.7% | 11.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | safeFailure | unchanged | 11 | 99.2% | 11.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.token | unchanged | 10 | 97.2% | 10.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | safeSearchFailure | unchanged | 10 | 99.1% | 10.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | contextOf | changed | 9 | 97.9% | 9.0 | ok |
+| src/logs/audit/audit-event-projection.ts | projectToolCompletion | unchanged | 9 | 98.9% | 9.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | accessClaimsOf | unchanged | 8 | 100% | 8.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | typedClaimsOf | unchanged | 8 | 100% | 8.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | composeWorkOSApplication | unchanged | 8 | 100% | 8.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | auditActorName | new | 7 | 100% | 7.0 | ok |
+| src/logs/audit/audit-content.ts | redactTextMatch | unchanged | 6 | 97.1% | 6.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | displayNameOf | new | 6 | 100% | 6.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.resolve | changed | 6 | 100% | 6.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | activeStateOf | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | inputText | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | matchesSavedSettings | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | retainedToken | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | encodeAuditEvent | changed | 5 | 100% | 5.0 | ok |
+| src/logs/audit/otlp-audit-encoding.ts | timestampNanos | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | createRequestContext | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.resolve | changed | 4 | 100% | 4.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isTokenRejection | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | isTokenFault | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | prefixWithin | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | metadata | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | projectDestinationChange | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.read | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | project | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | stringAttribute | unchanged | 3 | 78.2% | 3.1 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | redactParameter | unchanged | 3 | 78.3% | 3.1 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | workosProviderParts | changed | 3 | 94.4% | 3.0 | ok |
+| src/app/hosted-workos-application.ts | openWorkOSApplication | unchanged | 3 | 94.9% | 3.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | copyUser | changed | 3 | 100% | 3.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.requireActive | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.signedPayload | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 3 | 100% | 3.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | connectClaimsOf | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | organizationIdOf | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.signedPayload | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | emitCompletion | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | captureAuditResult | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.administrationChanged | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.destinationChanged | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.toolCompleted | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | requirePermission | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.keySet | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.verifyAccessToken | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isEnabled | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isText | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | isTime | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | isText | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | isTime | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.userName | new | 2 | 100% | 2.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.verifyAccessToken | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | new | 1 | 0% | 2.0 | ok |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | captureCompletion | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.readStored | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.test | changed | 2 | 100% | 2.0 | ok |
+| src/accounts/identity/access-context.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/identity/access-context.ts | access-context\AccessDeniedError.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/identity/access-context.ts | permissionsOfEveryGrant | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | better-auth-provider\BetterAuthProvider.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/better-auth/better-auth-provider.ts | introspectionRequest | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-auth-provider.ts | hostedTenantId | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | nowInSeconds | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-auth-provider.ts | workos-auth-provider\WorkOSAuthProvider.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | openWorkOSConnection | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/mcp/fetch-tool-server.ts | createFetchToolServer | changed | 1 | 100% | 1.0 | ok |
+| src/logs/audit/audit-content.ts | redactAuditText | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-content.ts | redactAuditUrl | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+
+Known limit violations: 0. Measured target misses: 2. Unmeasured functions: 0. Required functions with unknown assessment or identity: 0.
