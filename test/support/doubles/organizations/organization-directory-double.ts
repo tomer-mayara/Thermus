@@ -10,6 +10,7 @@ import type {
   OrganizationDirectory,
   OrganizationInvitation,
   OrganizationMember,
+  OrganizationMemberFacts,
   OrganizationMembership,
   Page,
 } from '../../../../src/accounts/organizations/organization-directory.ts';
@@ -24,6 +25,7 @@ type ConfiguredMemberships = readonly OrganizationMembership[] | Error;
 export class OrganizationDirectoryDouble extends ChangeAnswers implements OrganizationDirectory {
   readonly membershipReads: AuthenticatedUser[] = [];
   readonly memberPageReads: MemberPageRequest[] = [];
+  readonly memberFactsPageReads: MemberPageRequest[] = [];
   readonly memberReads: string[] = [];
   readonly invitationPageReads: InvitationPageRequest[] = [];
   readonly invitationReads: string[] = [];
@@ -31,6 +33,7 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
   invitationIdentityPolicy: InvitationIdentityPolicy = 'invited-address';
   pageSize = 2;
   memberPageLayout?: PageLayout<OrganizationMember>;
+  memberFactsPageLayout?: PageLayout<OrganizationMemberFacts>;
   invitationPageLayout?: PageLayout<OrganizationInvitation>;
   // A directory of another authority knows no user of this one.
   authority?: string;
@@ -115,6 +118,13 @@ export class OrganizationDirectoryDouble extends ChangeAnswers implements Organi
     this.memberPageReads.push(request);
     const matching = this.members.filter((member) => member.organizationId === request.organizationId && request.statuses.includes(member.status)).map(memberOf);
     return pageAt(this.memberPageLayout?.(matching) ?? chunks(matching, this.pageSize), request.cursor);
+  }
+
+  async memberFactsPage(request: MemberPageRequest): Promise<Page<OrganizationMemberFacts>> {
+    this.memberFactsPageReads.push(request);
+    const matching = this.members.filter(member => member.organizationId === request.organizationId && request.statuses.includes(member.status))
+      .map(memberOf).map(({ email: _email, ...facts }) => facts);
+    return pageAt(this.memberFactsPageLayout?.(matching) ?? chunks(matching, this.pageSize), request.cursor);
   }
 
   async member(membershipId: string): Promise<OrganizationMember | undefined> {

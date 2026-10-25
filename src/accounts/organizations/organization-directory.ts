@@ -14,16 +14,19 @@ export type MembershipManagement = 'ordinary' | 'external' | 'unknown';
 
 // A membership of an organization for administration work. The revision changes with each change of the membership, so
 // that a change can require the state that the actor saw.
-export interface OrganizationMember {
+export interface OrganizationMemberFacts {
   readonly membershipId: string;
   // The member's identity subject in this directory's authority. Do not infer it from an email.
   readonly subject: string;
   readonly organizationId: string;
-  readonly email: string;
   readonly status: MembershipStatus;
   readonly management: MembershipManagement;
   readonly grants: readonly RoleGrant[];
   readonly revision: string;
+}
+
+export interface OrganizationMember extends OrganizationMemberFacts {
+  readonly email: string;
 }
 
 export type InvitationState = 'pending' | 'accepted' | 'revoked' | 'expired';
@@ -100,6 +103,8 @@ export interface OrganizationDirectory {
   // An optional signal stops later provider reads. A read already sent keeps its existing timeout.
   membershipsOf(user: AuthenticatedUser, signal?: AbortSignal): Promise<readonly OrganizationMembership[]>;
   memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;
+  // Current safety facts without display-user reads. The same scope and stop rules apply as for member pages.
+  memberFactsPage(request: MemberPageRequest): Promise<Page<OrganizationMemberFacts>>;
   // The membership with this ID in any organization, or undefined.
   member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined>;
   // Deletes only this membership. Admission and safety checks belong to its caller.

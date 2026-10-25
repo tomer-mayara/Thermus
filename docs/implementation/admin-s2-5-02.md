@@ -1,11 +1,14 @@
 # S2.5-02 integrated verification and release controls
 
-Status: implementation exists and historical behavioral gates passed; one P2 repair is
-open after independent review on 25 October 2026. PRs #253 and #255 are Draft again. The
+Status: implementation exists and historical behavioral gates passed. The P2
+found on 25 October 2026 has a source repair with passing focused checks in
+draft PR #257; complete-candidate gates and current-head architect review remain
+pending. PRs #253 and #255 are Draft again. The
 [stack review](admin-s2-5-stack-review.md) records the finding and focused checks;
 [S2.5-R1](../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration)
-is not implemented. The PR Validation and Quality review records retain earlier
-candidate evidence and review status. Actual release remains pending. This is
+is implemented on its repair branch; its [record](admin-s2-5-r1.md) gives the
+focused results and limits. The PR Validation and Quality review records retain
+earlier candidate evidence and review status. Actual release remains pending. This is
 [PR #255](https://github.com/tomer-mayara/Thermus/pull/255), stacked on
 [S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254) at
 `2271545702a8f1ec28c6f7dd913fec7024ecadeb`. The ticket is not released or Done.
@@ -15,11 +18,12 @@ gate ledger. The actual Slice 1/S2-04 release and owner notice decisions remain
 prerequisites. Passing earlier gates does not close the P2 or certify a later
 repaired candidate.
 
-## Open implementation repair
+## Repair candidate and final checks
 
-**P2 — remove display-only hydration from the safety scan.** The coordinator's
-complete active-member check uses the WorkOS `memberPage` display path, which
-serially fetches email for each member. The safety decision does not use email.
+**P2 — remove display-only hydration from the safety scan.** Before the repair,
+the coordinator's complete active-member check used the WorkOS `memberPage`
+display path, which serially fetches email for each member. The safety decision
+does not use email.
 A cache-only probe through the real adapter and coordinator models one active
 Admin, an ordinary User target and 100 active memberships. Each successful user
 lookup advances the controlled clock by 300 ms. At 100 lookups and 30,000 ms,
@@ -28,15 +32,19 @@ next valid request returns busy. The manager independently reran the probe with
 the same assertions and result. This is conditional simulated-latency evidence,
 not a live latency benchmark or a new organization-capacity promise.
 
-S2.5-R1 must read complete safety pages without per-member display hydration.
-The existing single direct-target display read may remain to keep the repair small.
+S2.5-R1 now reads complete safety pages through `memberFactsPage` without
+per-member display hydration. The single direct-target display read remains.
 Keep full grants/permissions, management evidence, revisions, pagination,
 actor/target consistency, last-Admin checks, the 30-second budget and all lifetime,
 receipt and no-replay rules. Do not replace the extra reads with a parallel email
-flood, cache, mirror, larger deadline or feature flag. Write the regression
-acceptance specification first, then focused failing contract/adapter/rule tests.
-The plan owns those implementation steps; this ledger tracks the open repair and
-its final-candidate checks. No source repair is included in this document update.
+flood, cache, mirror, larger deadline or feature flag. The regression acceptance
+specification failed before source changes; facts and
+coordinator tests also recorded their expected red steps. The repair record
+reports 465 focused checks, including the regression, and 46 hosted
+display/removal acceptance cases passing. The plan
+owns the implementation requirements; this ledger keeps final-candidate checks,
+current-head architect approval and release gates open. Earlier complete-stack
+passes do not certify this repaired candidate.
 
 ## What this increment verifies
 

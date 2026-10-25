@@ -305,6 +305,14 @@ incomplete, or last-Admin removal stops before the existing exact-ID WorkOS
 boundary can delete once. These are current reads, not a remote transaction;
 independent provider/operator writes remain a runbook constraint.
 
+The scan uses the directory's
+[membership-facts page](../src/accounts/organizations/organization-directory.ts)
+for current IDs, subject, organization, status, management, all grants and
+revision. The WorkOS adapter reads memberships and the current role catalog
+without a user lookup for each member. The direct target `member()` read still
+includes email; the safety comparison does not use it. Members display and seat
+counts retain the complete display pages and their current email reads.
+
 Unknown admission dispatches nothing. A possible provider effect keeps the pending
 row. Confirmed no-send or provider settlement can complete only the matching
 organization and operation ID. An uncertain completion requires a matching

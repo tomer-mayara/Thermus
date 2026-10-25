@@ -1,5 +1,34 @@
 # Test inventory
 
+## Current S2.5-R1 inventory scope
+
+The [repair record](../implementation/admin-s2-5-r1.md) distinguishes the branch
+implementation, verified runs and pending complete-candidate/release gates.
+Inventory presence alone is not a passing result.
+
+- `test/acceptance/auth/hosted-member-removal-budget.test.ts` uses the real
+  WorkOS adapter and public administration operation with 100 active memberships
+  and 300 ms simulated user reads. It checks applied removal within the existing
+  budget, one direct-target email lookup, exact deletion after admission, the
+  matching terminal receipt and retention of the acting Admin. Its store fake
+  does not prove PostgreSQL durability or live provider timing.
+- `test/unit/auth-workos/workos-organizations-member-facts.test.ts` checks exact
+  filters/cursor, all safety fields, role/catalog and management mapping,
+  direct-read revision parity, empty pages, scope errors and failed remote reads
+  without display-user calls.
+- `test/integration/auth/workos-member-facts.test.ts` uses the pinned WorkOS
+  client and raw membership reader against the controlled HTTP provider. It
+  checks missing/null management evidence, full roles, direct/facts revision
+  parity, exact query filters/cursor and no user HTTP request for facts pages.
+- Existing removal rule/lifetime and WorkOS lifetime cases now stop or alter the
+  facts-page path. They retain complete pagination, later-page Admin/target
+  decisions, unknown roles, changed safety fields, deadline and close checks.
+  Display member/email and enrichment-stop cases keep the display path.
+
+These files are in the ordinary suite. The separate PostgreSQL, browser, staging
+and container gates remain selected for the complete source candidate under the
+[test gate policy](../implementation/test-gate-policy.md).
+
 ## Current S2.5-02 inventory scope
 
 The [implementation record](../implementation/admin-s2-5-02.md) separates actual

@@ -1,6 +1,6 @@
 import type { AuthenticatedUser, RoleGrant } from '../identity/access-context.ts';
 import { latestOfEach, readDirectoryPages } from './directory-reads.ts';
-import type { OrganizationDirectory, OrganizationMember, OrganizationMembership } from './organization-directory.ts';
+import type { OrganizationDirectory, OrganizationMemberFacts, OrganizationMembership } from './organization-directory.ts';
 import type { MemberRemovalRequest } from './removal-operation-store.ts';
 
 type RemovalRefusal = 'denied' | 'stale' | 'unsupported' | 'last-admin';
@@ -21,7 +21,7 @@ export async function checkRemoval(directory: OrganizationDirectory, user: Authe
   const refusal = targetRefusal(target, request);
   if (refusal !== undefined) return refusal;
   const originalFacts = targetFacts(target);
-  const pages = await readDirectoryPages(cursor => read(signal => directory.memberPage({ organizationId: request.organizationId, statuses: ['active'], cursor, signal })), REMOVAL_PAGE_LIMIT);
+  const pages = await readDirectoryPages(cursor => read(signal => directory.memberFactsPage({ organizationId: request.organizationId, statuses: ['active'], cursor, signal })), REMOVAL_PAGE_LIMIT);
   const members = latestOfEach(pages, member => member.membershipId).filter(member => member.organizationId === request.organizationId && member.status === 'active');
   const currentTarget = members.find(member => member.membershipId === request.membershipId);
   if (currentTarget === undefined || targetFacts(currentTarget) !== originalFacts) return 'stale';
@@ -30,7 +30,7 @@ export async function checkRemoval(directory: OrganizationDirectory, user: Authe
   return undefined;
 }
 
-function targetRefusal(target: OrganizationMember, request: MemberRemovalRequest): RemovalRefusal | undefined {
+function targetRefusal(target: OrganizationMemberFacts, request: MemberRemovalRequest): RemovalRefusal | undefined {
   if (target.organizationId !== request.organizationId || target.membershipId !== request.membershipId) return 'denied';
   if (target.revision !== request.revision) return 'stale';
   if (!removalSupported(target)) return 'unsupported';
@@ -38,7 +38,7 @@ function targetRefusal(target: OrganizationMember, request: MemberRemovalRequest
 }
 
 // The overview uses this snapshot only to offer the form. Removal checks current facts again.
-export function removalSupported(member: OrganizationMember): boolean {
+export function removalSupported(member: OrganizationMemberFacts): boolean {
   return member.status === 'active' && member.management === 'ordinary'
     && member.grants.length > 0 && member.grants.every(grant => ['user', 'admin'].includes(grant.role));
 }
@@ -49,7 +49,7 @@ function adminGrants(grants: readonly RoleGrant[]): boolean {
 }
 
 // Preserve the direct read before later awaits can expose another mutable provider record.
-function targetFacts(target: OrganizationMember): string {
+function targetFacts(target: OrganizationMemberFacts): string {
   const grants = target.grants.map(grant => [grant.role, [...grant.permissions].sort()]).sort(([left], [right]) => String(left).localeCompare(String(right)));
   return JSON.stringify([target.membershipId, target.subject, target.organizationId, target.status, target.management, target.revision, grants]);
 }
