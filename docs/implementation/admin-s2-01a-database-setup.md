@@ -4,9 +4,34 @@ This runbook prepares the selected existing Supabase project for hosted Audit lo
 destination settings. It does not authorize a new project, plan upgrade, or unrelated data
 change. The deployment operator performs setup. Customer Admins do not receive
 database credentials. System logs remain internal engineering output. Slice 2
-customers receive audit events through their configured organization Collector;
+customers receive audit events through their configured organization Collector
+or supported OTLP service;
 this setup alone adds no delivery or in-app viewer. The existing SQL role/table and
-environment names stay compatible. S2-04 must complete the live rollout and recovery proof.
+environment names stay compatible. S2-04 must complete live rollout proof. The
+owner moved settings backup, restore and key-recovery proof to future Slice 4 on
+24 October 2026; Slice 2 runs without settings backups or a restore service.
+
+## Current setup observation — 24 October 2026
+
+The original migration and
+[additive Axiom dataset migration](../../sql/migrations/20261024231921_add_logging_axiom_dataset.sql)
+are applied to the selected project. `thermus_logging` now has LOGIN with the
+restricted reviewed scope and no runtime DELETE or DDL. The local production
+store connected through the actual pooler with verified client-to-pooler TLS and
+proved reconnect persistence, tenant predicates, credential encryption/decryption,
+revision conflict and bounded failure. The two exact owned fixture rows were
+removed; settings rows are zero.
+
+The official local CA is `ast-report/s2-04-rollout/supabase-ca.crt`, SHA-256
+`700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7`.
+The missing Render CA secret file observed at about 23:37 UTC was repaired by
+saving the official file and deploying approved main again. Deployment
+`dep-dbek395g1s2s73frt4i0` became live at 23:39:48 UTC; startup no longer reports
+storage unavailable and health was 200/ok at 23:40:10 UTC. This clears the CA
+file-setup failure, but does not itself prove an actual deployed SQL operation
+or the full browser/MCP journey. The [S2-04 ledger](admin-s2-04.md#evidence-and-release-holds)
+records exact evidence and limits. The steps below describe initial setup. Do not reapply
+the original migration or reset current credentials merely to repeat them.
 
 ## Review scope before applying SQL
 
@@ -54,9 +79,12 @@ fragment, including SSL options. The app sets verified TLS explicitly.
 Generate an independent random 32-byte key locally, for example with
 `openssl rand -base64 32`, and place it directly in protected secret storage.
 Set `LOGGING_DESTINATION_ENCRYPTION_KEY` to its canonical base64 value. Keep the
-same key across deployments and back it up separately from the database.
-Do not reuse WorkOS or cookie secrets. S2-01a validates this key; S2-01b owns
-credential encryption and recovery behavior.
+same key across deployments in protected service secret storage. This is not a
+separate key backup or a settings recovery guarantee. Do not reuse WorkOS or
+cookie secrets. S2-01a validates this key; S2-01b owns credential encryption and
+unavailable-key handling. If settings or the key are lost, an Admin may need to
+re-enter the destination and credential. Do not replace a working key during
+ordinary setup; incompatible stored credentials require reviewed handling.
 
 If the endpoint needs a dedicated official CA, obtain the correct PEM bundle
 and set `DATABASE_CA_CERT_PATH` to a readable server secret-file path. Otherwise
@@ -69,8 +97,9 @@ project's database settings and stage its server path before activation.
 Local fixture certificates and keys are test-only and must not be deployed.
 No Supabase API key, `SUPABASE_URL`, Auth SDK, or CLI token is needed at runtime.
 
-Stage these values only on the existing Render Thermus service. Coordinate its
-deploy with code rollout; a secret-file change can trigger a deploy. Missing,
+Save these values only on the existing Render Thermus service. Coordinate its
+deploy with code rollout; environment updates and secret-file changes can trigger
+a deploy. The 24 October environment update did so even with auto-deploy off. Missing,
 partial, or invalid storage configuration leaves storage unavailable, with MCP
 and admitted product access usable. There is no automatic migration, startup
 SQL probe, keepalive, or polling service.
@@ -83,22 +112,15 @@ tenant isolation, bounded acquisition/query failure, and MCP availability during
 outage. Confirm that database size, connections, egress, and Render network use
 stay within existing $0 capacity. Record only nonsecret facts and variable names.
 
-Follow the [S2-04 encrypted backup, scoped restore, and key recovery procedure](admin-s2-04.md#choose-the-backup-owner-and-storage).
-Its proposed owner, cadence, retention, and outside-project existing storage
-remain pending owner selection. Preserve the application key separately from
-the database archive and the wrapping secret separately from the archive.
-Before restore, stop every dispatch/settings writer and clear pending memory
-work. Restore into an isolated recovery database first. Disable recovered rows
-and assign fresh revisions before any storage-enabled restart. Copy only the
-reviewed private data in one scoped transaction; preserve unrelated project
-objects/data. Keep the current deployment key for a partial restore; clear only
-approved restored credentials that cannot use it and require Admin re-entry.
-Before a global key replacement, inventory and reconcile all affected Bearer
-rows. Hold maintenance if scope or key compatibility is unresolved.
-Each current Admin must review and explicitly Enable their
-destination afterward. The local procedure drill does not close live gates.
+Settings backup, storage/custody/retention, separate key recovery, and restore are
+future [Slice 4 work](admin-s4-recovery.md). They are not Slice 2 prerequisites.
+The retained procedure and local drill do not establish current backup or restore
+capability. Slice 2 keeps no durable audit queue, archive, history, or replay;
+provider residual copies are not a promised source of settings recovery.
 
-These are S2-04 rollout gates. Local PostgreSQL acceptance does not satisfy them.
+The actual TLS/role/isolation/persistence, bounded failure, MCP-availability and
+$0-capacity proofs above remain S2-04 rollout gates. Local PostgreSQL acceptance
+does not satisfy them.
 A pause, outage, or quota failure must stop storage-dependent writes and export;
 it must not restart healthy MCP or log out all users. Resume through the owner
 process and verify storage before restoring dependent functions.

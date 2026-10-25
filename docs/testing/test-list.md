@@ -975,13 +975,13 @@ specified above; bounded dispatch is specified below. Live endpoint release
 checks remain separate work.
 
 - `test/acceptance/logging/audit/audit-sender.test.ts` specifies refusal of a private destination without disclosure of event or credentials.
-- `test/unit/logging/audit/public-audit-destination.test.ts` specifies HTTPS syntax, None/Bearer validation, public IPv4/IPv6 policy, mixed or changed DNS answers, answer limits, and exact peer address comparison.
+- `test/unit/logging/audit/public-audit-destination.test.ts` specifies HTTPS syntax, None/Bearer validation, the optional Axiom dataset contract (1–128 ASCII letters, digits, or hyphens), public IPv4/IPv6 policy, mixed or changed DNS answers, answer limits, and exact peer address comparison.
 - `test/unit/logging/audit/otlp-audit-encoding.test.ts` specifies named event fields, decimal-string nanoseconds, administration targets, invalid events, the labelled synthetic Test record, and encoded request size.
 - `test/unit/logging/audit/otlp-audit-response.test.ts` specifies typed acceptance, warning, rejection, failure, malformed success, body size, and bounded Retry-After results.
-- `test/unit/logging/audit/otlp-audit-sender.test.ts` specifies one-shot orchestration, safe outcomes, cancellation, admission, and native DNS work lifetime.
+- `test/unit/logging/audit/otlp-audit-sender.test.ts` specifies one-shot orchestration, explicit Axiom dataset and Bearer headers, safe outcomes, cancellation, admission, and native DNS work lifetime.
 - `test/unit/logging/audit/audit-https-connection.test.ts` specifies pinned TLS address, hostname verification, peer refusal, and socket cleanup.
 - `test/unit/logging/audit/otlp-audit-request.test.ts` specifies explicit headers and checked socket, response and header overflow, unsupported success compression, cancellation before request, and disposal without combining oversized response data.
-- `test/integration/logging/audit/audit-sender.runtime.ts` specifies real TLS receiver and Collector None/Bearer collaboration, system-environment isolation, certificate and hostname failure, changed DNS, zero redirects, and cancellation recovery. Run `npm run test:logging:collector` with Docker Engine and OpenSSL. Its internal Docker bridge has public-shaped addresses; it does not contact a public Collector.
+- `test/integration/logging/audit/audit-sender.runtime.ts` specifies real TLS receiver and Collector None/Bearer collaboration, explicit Axiom headers for saved Test and export, system-environment isolation, certificate and hostname failure, changed DNS, zero redirects, and cancellation recovery. Run `npm run test:logging:collector` with Docker Engine and OpenSSL. Its internal Docker bridge has public-shaped addresses; it does not contact a public Collector or Axiom.
 
 The complete candidate's review evidence records execution results. Test source
 alone does not establish a passing local gate or Internet reachability.
@@ -993,13 +993,14 @@ fixed bounds, and evidence limits. These are executable specifications; the
 complete candidate review records their local results.
 
 - `test/acceptance/logging/hosted-destination-settings.test.ts` specifies current password-authenticated Admin access, native protected Save, tenant and revision refusal, None/Bearer state, and safe unconfirmed Save recovery.
-- `test/unit/logging/destination-settings-service.test.ts` specifies public projection, tenant-bound credential recovery, exact endpoint/token validation, semantic no-op, stale Save refusal, and late commit handling.
+- `test/unit/logging/destination-settings-service.test.ts` specifies public projection, tenant-bound credential recovery, endpoint/token/dataset validation, semantic no-op, stale Save refusal, and late commit handling. A dataset edit retains an otherwise unchanged encrypted token and advances the revision; clearing it restores generic OTLP headers.
 - `test/acceptance/logging/audit/destination-test.test.ts` specifies one labelled synthetic event from a disabled saved revision and suppression after that revision changes, with no settings write.
-- `test/acceptance/logging/hosted-destination-test.test.ts` specifies disabled saved None/Bearer Tests through hosted browser sessions at root and prefixed paths, unsaved edits, obsolete/unconfirmed result suppression, and Origin/CSRF/tenant/current Admin refusal.
+- `test/acceptance/logging/hosted-destination-test.test.ts` specifies disabled saved None/Bearer Tests through hosted browser sessions at root and prefixed paths, Axiom dataset Save/Test/Enable, unsaved dataset refusal, obsolete/unconfirmed result suppression, and Origin/CSRF/tenant/current Admin refusal.
 - `test/unit/logging/audit/destination-test.test.ts` specifies one full saved pre-read, saved credential use, unsaved/stale refusal, typed outcomes, post-read suppression, cancellation, five-second deadline, and retained four-slot Test admission while its callback or store reads remain pending.
 - `test/unit/html/logging-test-routes.test.ts` specifies trusted tenant/actor forwarding, method/Origin/CSRF/current Admin checks, exact fields, cancellation, and fixed safe text for operation and sender outcomes.
 - `test/integration/hosted-admin/account-routes-logging.test.ts` specifies current password Admin access before real settings/Test route collaboration, trusted actor/tenant forwarding, refreshed cookies, revoked access, and secret-safe failures.
 - `test/integration/logging/audit/audit-sender.runtime.ts` also specifies real routes, settings service, codec, sender, DNS/TLS, and Collector collaboration for disabled saved None/Bearer destinations. A supplied store and decided Admin context are its boundaries. It checks synthetic labels and unchanged settings. Run the complete `npm run test:logging:collector` group; its isolated public-shaped network is not proof of public Internet egress.
+- `test/acceptance/logging/audit/destination-settings.runtime.ts` specifies Axiom settings persistence after the SQL runtime reopens and isolation from another tenant. `test/integration/logging/audit/destination-settings.runtime.ts` adds real PostgreSQL dataset add/repeat/change/clear behavior, unchanged revisions for repeated settings, and stale or cross-tenant write refusal.
 
 The PostgreSQL settings group remains `npm run test:logging:postgres`. Neither
 controlled Collector proof nor a successful Test proves continued delivery or
@@ -1035,7 +1036,7 @@ review index.
 - `test/unit/logging/audit/audit-collector-observation.test.ts` specifies cancellation on successful current snapshot observations, absence of fabricated observations after read failure, no retained state for unknown tenants, and isolation from a throwing optional observation hook.
 - `test/unit/logging/audit/export-authorization.test.ts` specifies exactly one full-version read, exact enabled/revision checks, owner-controlled credential recovery, safe failure, and suppression after abort.
 - `test/unit/logging/audit/otlp-audit-sender.test.ts` adds separate outcome/physical settlement, safe unexpected error metadata, payload cancellation, and external abort-listener lifetime. Held-close warning cases check the same sent Buffer before and after abort, pending physical settlement, and the original warning when close completes without cancellation. The saved Test unit specifications retain their one-shot outcome behavior.
-- `test/integration/logging/audit/logging-storage-export.test.ts` specifies one production sender shared by export and Test, including four held native DNS operations and refusal until physical settlement.
+- `test/integration/logging/audit/logging-storage-export.test.ts` specifies one production sender shared by export and Test, including four held native DNS operations and refusal until physical settlement. Real service and queue collaboration forwards the current dataset to the sender and drops old queued work after a dataset-only change; an already in-flight event remains separate.
 - `test/integration/logging/audit/audit-sender.runtime.ts` adds production storage factory, AuditLog, snapshots, queue, fresh authorization, and real Collector collaboration. Run `npm run test:logging:collector` for the complete dedicated group.
 - `test/acceptance/logging/audit/hosted-storage-failure.runtime.ts` adds a warm enabled snapshot followed by a real PostgreSQL table lock during dispatch authorization; MCP, Admin, and portal health remain usable and closure stays within the existing deadline. Run `npm run test:logging:postgres` for the complete dedicated group.
 
@@ -1057,7 +1058,7 @@ source proof from actual owner setup, recovery, and release evidence.
 
 - `test/acceptance/logging/audit/hosted-audit-journey.runtime.ts` specifies password Admin browser sign-in, disabled Save, one saved Test, Enable, activity-driven loading, full MCP results, bounded redacted audit content, invitation actions, and receipt of the expected records in a real Collector's file output. It also checks unchanged product access and separation from system output. Run `npm run test:logging:collector` for this dedicated acceptance case and the sender integration cases.
 - `test/acceptance/logging/hosted-destination-settings.test.ts` adds the visible export disclosure before Save: input/result content, redaction limits, truncation, and best-effort loss/duplicates.
-- `test/unit/html/logging-routes.test.ts` adds the named help region and its placement before the settings form.
+- `test/unit/html/logging-routes.test.ts` adds the named help region and its placement before the settings form, duplicate dataset-field refusal, and dataset input validation with the browser's Unicode `v` pattern mode.
 
 The journey uses controlled WorkOS password exchange, settings storage, and tool
 operations. Native DNS, verified TLS, OTLP, and Collector receipt are real on the

@@ -1,0 +1,101 @@
+{
+  "status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+  "prepared_on": "2026-10-24",
+  "bundle_version": "s204-organization-audit-proposal-2026-10-24-v3",
+  "purpose": "organization-creation",
+  "proposed_effective_date": "2026-10-24",
+  "publication_date": null,
+  "approval": null,
+  "date_condition": "Requires owner approval and publication/opening on 24 October 2026. If delayed, revise dates, changed document versions, hashes, and approval.",
+  "hash_status": "Review hashes only. Changed bytes need a new version, hashes, and owner approval.",
+  "provenance": {
+    "source_bundle": "docs/legal/organization-signup-2026-10-23",
+    "source_manifest_sha256": "71ad7ced1d7be1e0b00aba4516e3408dd07893d19675c011ba017e8a9c54cf12",
+    "source_commit": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+    "source_approval": "2026-10-23T19:45:23Z",
+    "source_review": "docs/implementation/admin-s2-04-notice-review.md",
+    "help_source": "src/interfaces/web/account/logging-page.ts",
+    "encoding": "UTF-8",
+    "line_endings": "LF",
+    "final_newline": true,
+    "help_source_sha256": "058b8a70e911cf25a67c20d11b14ddfcf084416cbb0ab45e71f8578b80554189",
+    "help_extraction": {
+      "paragraphs": "All 12 static help paragraphs in loggingPage, in source order; HTML Privacy link represented as Markdown.",
+      "placement_headings": "Audit logs, Audit log destination and What export includes retain UI headings. Destination form help and Test saved destination mark review placement; form control labels and action labels are excluded.",
+      "dynamic_token_presence_prefix": "Excluded from audit-help.md; the following exact alternatives precede the common token-helper paragraph in the UI.",
+      "token_presence_alternatives": [
+        "A token is saved.",
+        "No token is saved."
+      ],
+      "excluded": "Workspace administration eyebrow, form labels and control values, dynamic settings/hidden fields, and loggingNotice result pages."
+    },
+    "help_source_refinement": "HTML input pattern escapes its hyphen for browser Unicode-v regex mode. Static help paragraphs and canonical help bytes are unchanged."
+  },
+  "documents": [
+    {
+      "file": "terms.md",
+      "version": "hosted-terms-organization-audit-proposal-2026-10-24-v3",
+      "utf8_bytes": 19946,
+      "sha256": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+      "changed_from_approved": true
+    },
+    {
+      "file": "privacy.md",
+      "version": "hosted-privacy-organization-audit-proposal-2026-10-24-v3",
+      "utf8_bytes": 35098,
+      "sha256": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "changed_from_approved": true
+    },
+    {
+      "file": "agreement.txt",
+      "version": "hosted-agreement-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 378,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "changed_from_approved": false
+    },
+    {
+      "file": "audit-help.md",
+      "version": "hosted-audit-help-proposal-2026-10-24-v3-r2",
+      "utf8_bytes": 1929,
+      "sha256": "1f4ad87cb93356115e2626f493d2f28040ab80ed94bd8353a3870efe4a27de4d",
+      "changed_from_approved": true
+    }
+  ],
+  "publication_scope": {
+    "terms": "Proposed complete replacement at thermus.ai/terms/ and hosted organization signup presentation.",
+    "privacy": "Proposed complete replacement at thermus.ai/privacy/ and hosted organization signup presentation.",
+    "agreement": "Retain exact approved checkbox wording and its existing version. New bundle binds it to changed Terms and Privacy versions.",
+    "help": "Concise static help paragraphs mirrored from the final source UI, with placement headings. Dynamic token-presence prefix has the two exact alternatives in provenance; controls remain in the existing form.",
+    "existing_agreements": "No automatic replacement or new acceptance claim. Owner must select any required existing-organization notice/agreement process before enabled export."
+  },
+  "owner_decisions_required": [
+    "Confirm effective date and complete Terms/Privacy/help bytes, versions, hashes and publication/runtime scope.",
+    "Confirm current provider/log settings and selected Axiom destination compatibility, recipient retention/access/onward-sharing policy, and any applicable agreement or notice requirements.",
+    "Decide existing-organization notice/agreement handling. Posting the new terms or signing in alone does not replace an existing agreement."
+  ],
+  "release_condition": "This complete draft implements the owner’s no-backup Slice 2 scope. Exact-byte approval and actual runtime/publication, provider/destination, capacity and S1/S2 verification remain unresolved.",
+  "owner_scope_decision": {
+    "date": "2026-10-24",
+    "instruction": "Let's move backups to a new Slice 4 - run slice 2 with no backup",
+    "effect": "No Slice 2 settings backup/restore, retention/custody/key-recovery promise or backup release prerequisite. Future Slice 4 owns that work.",
+    "collector_selection": "Owner confirmed no Collector exists and authorized direct Axiom support for audit-log-test. Optional saved dataset supplies x-axiom-dataset with the existing full HTTPS logs URL and Bearer token. Local production sender accepted and manager verified one synthetic marker in Axiom UI; full deployed Admin/browser/MCP journey remains pending."
+  },
+  "scope": "Organization Terms, Privacy and agreement bundle, plus Audit logs help for optional export.",
+  "superseded_unapproved_review": {
+    "bundle_version": "s204-organization-audit-proposal-2026-10-24-v2",
+    "manifest_sha256": "88661dc7da02fbaf4e47fbb423d85d751c9054b665aab358a83925d218e60b9e",
+    "document_hashes": {
+      "terms.md": "1baffa6f50989541b9ca973924f87a7db0a2fe242ade2bc825a32066a53e52b4",
+      "privacy.md": "a4cfb40d146195646fbd24942fcb965946f3b9dbbb2022e7f641b42a139652d4",
+      "agreement.txt": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "audit-help.md": "3a41b48a26536666efd5488baf682f569d6db67b8c51e821a2df08b81c5bc70a"
+    },
+    "status": "Superseded unapproved review only; no owner approval or publication."
+  },
+  "unapproved_help_refinement": {
+    "review_revision": 2,
+    "previous_manifest_sha256": "b002b7473c4de37e54d19e3b0e75fa7da4b9003d4dee34f0d1abca11e9df78ce",
+    "previous_help_sha256": "5c33fa9b400635741d4345c287119f54a82b4258db671def9dbfdd86b357717e",
+    "reason": "Manager review: mirror concise final UI copy; retain full detail in unchanged Terms/Privacy. No owner approval exists."
+  }
+}

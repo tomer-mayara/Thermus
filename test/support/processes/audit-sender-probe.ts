@@ -20,7 +20,7 @@ for (const submission of submissions) {
   const controller = new AbortController();
   const timer = submission.cancelAfterMs === undefined ? undefined : setTimeout(() => controller.abort(), submission.cancelAfterMs);
   try {
-    outcomes.push(await sender.send({ endpoint: submission.endpoint, auth: submission.auth }, submission.event, controller.signal));
+    outcomes.push(await sender.send({ endpoint: submission.endpoint, auth: submission.auth, axiomDataset: submission.axiomDataset }, submission.event, controller.signal));
   } finally {
     clearTimeout(timer);
   }

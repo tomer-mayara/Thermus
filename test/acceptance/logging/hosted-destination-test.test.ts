@@ -6,6 +6,31 @@ import { hostedConfig, hostedRootConfig } from '../../support/fixtures/hosted-co
 import type { AuditSendOutcome } from '../../../src/logs/audit/audit-send.ts';
 import { serveDestinationTestSite, destinationTestAdmin as admin, destinationTestOrganizationId as organizationId, destinationTestEndpoint as endpoint, destinationTestSecret as secret } from '../../support/in-process/logging-destination-test-site.ts';
 
+test('Given a current Admin and an Axiom destination, when the Admin saves its dataset, Tests, and enables export, then Test and export use the saved dataset and a dataset edit invalidates old work', async (t) => {
+  const { calls, service, tenantId, site } = await serveDestinationTestSite(t);
+  const { browser } = await signInThroughServer(site, admin, organizationId);
+  const initial = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
+  const axiomEndpoint = 'https://us-east-1.aws.edge.axiom.co/v1/logs';
+  const visible = { endpoint: axiomEndpoint, auth: 'bearer', token: '', axiom_dataset: 'audit-log-test' };
+  const saved = await browser.submit({ ...initial, fields: { ...initial.fields, ...visible, token: secret } });
+  assert.equal(saved.status, 303);
+  const page = await browser.follow(saved);
+  const testForm = formLabelled(formsIn(page.body), 'Test saved destination');
+  assert.match(page.body, /name="axiom_dataset"[^>]*value="audit-log-test"/);
+  assert.ok(!page.body.includes(secret));
+  const tested = await browser.submit({ ...testForm, fields: { ...testForm.fields, ...visible } });
+  assert.equal(tested.status, 200);
+  assert.match(tested.body, /Destination accepted the Test event/);
+  const expectedDestination = { endpoint: axiomEndpoint, auth: { type: 'bearer', token: secret }, axiomDataset: 'audit-log-test' };
+  assert.deepEqual(calls.map(call => call.destination), [expectedDestination]);
+  const enable = formLabelled(formsIn(page.body), 'Save');
+  assert.equal((await browser.submit({ ...enable, fields: { ...enable.fields, ...visible, enabled: 'on' } })).status, 303);
+  const enabled = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
+  assert.deepEqual(await service.authorizeExport(tenantId, enabled.fields.expected_revision), { status: 'ready', destination: expectedDestination });
+  assert.equal((await browser.submit({ ...enabled, fields: { ...enabled.fields, ...visible, enabled: 'on', axiom_dataset: 'audit-next' } })).status, 303);
+  assert.deepEqual(await service.authorizeExport(tenantId, enabled.fields.expected_revision), { status: 'changed' });
+});
+
 
 for (const config of [hostedRootConfig, hostedConfig]) {
   for (const auth of ['none', 'bearer'] as const) {
@@ -24,7 +49,7 @@ for (const config of [hostedRootConfig, hostedConfig]) {
       const before = await service.read(tenantId);
       const answer = await browser.submit(form);
       assert.equal(answer.status, 200);
-      assert.match(answer.body, /Collector accepted the Test event/);
+      assert.match(answer.body, /Destination accepted the Test event/);
       assert.equal(calls.length, 1);
       assert.deepEqual(calls[0]?.destination, { endpoint, auth: auth === 'none' ? { type: 'none' } : { type: 'bearer', token: secret } });
       assert.equal(calls[0]?.event.eventName, 'audit.destination.test');
@@ -40,7 +65,7 @@ for (const config of [hostedRootConfig, hostedConfig]) {
   }
 }
 
-for (const edits of [{ endpoint: 'https://edited.example/v1/logs' }, { endpoint: '' }, { token: secret }, { enabled: 'on' }, { auth: 'bearer' }] as Record<string, string>[]) {
+for (const edits of [{ endpoint: 'https://edited.example/v1/logs' }, { endpoint: '' }, { token: secret }, { enabled: 'on' }, { auth: 'bearer' }, { axiom_dataset: 'unsaved-dataset' }] as Record<string, string>[]) {
   test(`Given unsaved ${Object.keys(edits).join(', ')} edits, when Test is selected, then the browser asks to Save and sends nothing`, async (t) => {
     const { calls, service, tenantId, store, site } = await serveDestinationTestSite(t);
     const { browser } = await signInThroughServer(site, admin, organizationId);
@@ -81,7 +106,7 @@ for (const change of ['revision', 'read-failure'] as const) {
     const answer = await answerPromise;
     assert.equal(answer.status, change === 'revision' ? 409 : 503);
     assert.match(answer.body, /Test result suppressed/);
-    assert.doesNotMatch(answer.body, /Collector accepted/);
+    assert.doesNotMatch(answer.body, /Destination accepted/);
     assert.match(answer.body, /Read saved settings/);
     assert.equal(answer.headers.get('Cache-Control'), 'no-store');
     assert.equal(calls.length, 1);

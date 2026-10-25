@@ -42,6 +42,17 @@ test('Given an Admin who can enable export, when Audit logs opens, then help exp
   assert.match(page.body, /tool results stay complete/);
   assert.match(page.body, /Logs can be lost/);
   assert.match(page.body, /retries can create duplicates/);
+  assert.match(page.body, /Event fields exclude sign-in forms, cookies, Authorization headers, and the destination token/);
+  assert.match(page.body, /no audit history or replay/);
+  assert.match(page.body, /Disabling export cannot recall events already sent/);
+  assert.match(page.body, /Send organization data only if you have authority to do so/);
+  assert.match(page.body, /Check destination access and retention/);
+  assert.match(page.body, /href="https:\/\/thermus.ai\/privacy\/"/);
+  assert.match(page.body, /Settings have no backup/);
+  assert.match(page.body, /Lost settings may need to be entered again/);
+  assert.match(page.body, /Bearer token scoped to this dataset/);
+  assert.match(page.body, /Leave this field blank otherwise/);
+  assert.match(page.body, /Check your destination for receipt/);
   assert.match(page.body, /Test is optional and sends one synthetic event/);
   assert.match(page.body, /Test proves neither continued delivery nor durable storage/);
 });

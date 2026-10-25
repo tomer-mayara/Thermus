@@ -1,6 +1,7 @@
 /** The caller obtains the opaque tenant ID from current trusted organization access. */
 export interface DestinationSettings {
   readonly endpoint: string;
+  readonly axiomDataset?: string;
   readonly auth: 'none' | 'bearer';
   readonly enabled: boolean;
   readonly encryptedCredential: string | null;

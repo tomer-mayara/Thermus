@@ -27,11 +27,14 @@ transition, without a legacy customer migration or customer Super Admin role.
 | Slice | Scope at completion |
 |---|---|
 | 1 — Basic Admin portal | Narrow provider boundary, User/Admin roles, named organization and first Admin, creator agreement, active-member list, native invitations/acceptance, and workspace selection. Product + Members navigation; no member removal, role changes, MFA gate, flags, factors, or policy UI/state. |
-| 2 — Collector export | Slice 1 plus Audit logs settings, safe content capture, and bounded best-effort export. Password only; no MFA dependency or member-reduction coordinator. |
+| 2 — Collector export | Slice 1 plus Audit logs settings, safe content capture, and bounded best-effort export. No settings backup or restore service. Password only; no MFA dependency or member-reduction coordinator. |
 | 2.5 — Member removal | Slice 2 plus Remove, including self-removal, with durable last-active-Admin protection. Password only; no role changes or MFA features. |
 | 3 — Role changes and MFA | Change role reuses the Slice 2.5 coordinator and may ship independently of MFA. The separate MFA branch adds organization Security and personal factor controls after its free-entitlement/behavior gate passes. |
+| 4 — Settings backup and recovery | Select and prove scoped encrypted settings backups, retention, custody, separate key recovery, and safe restore. No audit event archive is implied. |
 
-Release in order **1 → 2 → 2.5 → 3**. Read-only feasibility work may run early.
+Release in order **1 → 2 → 2.5 → 3 → 4**. Read-only feasibility work may run early.
+On 24 October 2026, the owner moved backups to Slice 4 and chose to run Slice 2
+without backups. Backup and restore proof are no longer Slice 2 release gates.
 Use native forms/pages, existing assets, and app lifecycle. Add no modal framework,
 React/widget dependency, identity mirror, or general provider framework. Leave the
 working Better Auth local edition unchanged; keep later organization administration
@@ -286,13 +289,14 @@ read shows an error and refuses removal. Replacement reuses setup/verification.
 ### Audit logs UI — Slice 2
 
 The [audit log rules](#audit-logs--slice-2) define customer access and event safety.
-An Admin selects the organization, opens **Audit logs**, and saves its Collector
-endpoint, None/Bearer authentication, and Enable setting. Each load and Save checks
+An Admin selects the organization, opens **Audit logs**, and saves a full HTTPS
+logs endpoint for a Collector or supported OTLP service, optional Axiom dataset,
+None/Bearer authentication, and Enable setting. Each load and Save checks
 current Admin permission for that organization; a submitted organization ID is not
 authority. S2-01b implements the page and Save, S2-02b implements optional Test,
 and S2-03c implements bounded delivery. The mock shows the combined Slice 2 candidate.
 The server must have the private settings connection and encryption key from
-[owner setup](#owner-setup-for-supabase--slice-2). Admins enter their Collector
+[owner setup](#owner-setup-for-supabase--slice-2). Admins enter their destination
 credentials in this page; they do not receive the server's database credentials.
 
 ```text
@@ -301,8 +305,9 @@ Connect your agent | Members | Audit logs
                                -------
 Audit logs destination
 [ ] Enable export
-Collector endpoint [ https://collector.example.com/v1/logs       ]
+OTLP logs endpoint [ https://collector.example.com/v1/logs       ]
 Connection: HTTPS · OTLP/HTTP JSON
+Axiom dataset (optional) [                                      ]
 Authentication: ( ) None   (*) Bearer token
 Token [                                                        ]
 Saved token: Set · Blank retains it only for unchanged endpoint/auth.
@@ -583,7 +588,12 @@ audit delivery. Shared classes under `src/logs/` are appropriate only for real
 common behavior; these roles require no shared base class.
 
 Slice 2's first production audit sink sends OpenTelemetry OTLP/HTTP JSON to the
-organization's configured Collector. The existing `AuditEventSink.writeAuditEvent`
+organization's configured Collector or supported OTLP service. Direct Axiom
+export uses an optional saved dataset name as the `x-axiom-dataset` routing header,
+with the full HTTPS logs URL and Bearer token. The owner authorized this addition
+on 24 October 2026 after confirming that no Collector exists. This does not
+promise support for every provider or establish actual ingest compatibility.
+The existing `AuditEventSink.writeAuditEvent`
 contract separates event capture/projection from delivery. S2-03c implements this
 sink with bounded memory admission and dispatch through the S2-02a sender;
 the synchronous call does not wait for export. `DestinationSettingsStore` is a
@@ -686,10 +696,13 @@ Exclude sender responses, retries, and settings-read diagnostics from customer
 capture. An Audit logs action may record one administration event; the labelled
 synthetic Test record is separate. Export work must not capture itself.
 
-**Settings and Test.** Use one public HTTPS Collector endpoint, None or one Bearer
-token, native radios, and a write-only Token field. No private-network destination,
-custom auth headers, or client certificate. One validated Save atomically applies
-endpoint, auth, and Enable; failed validation applies nothing. New settings start
+**Settings and Test.** Use one public HTTPS OTLP logs endpoint for a Collector or
+supported service, None or one Bearer token, native radios, a write-only Token
+field, and one optional Axiom dataset field. A dataset uses 1–128 ASCII letters,
+digits, or hyphens and supplies only `x-axiom-dataset`; no arbitrary header editor
+is added. Direct Axiom uses the full logs URL and Bearer token, not the web stream
+page URL. No private-network destination, custom auth headers, or client
+certificate. One validated Save atomically applies endpoint, dataset, auth, and Enable; failed validation applies nothing. New settings start
 disabled until explicitly enabled. Every actual change, including toggles, updates
 one revision; unchanged Save, including re-entering the same token, does not.
 The destination owner decides semantic equality and preserves ciphertext on a
@@ -752,8 +765,10 @@ error body does not override that status classification. The sender parses bound
 the delay; drop work if it exceeds item lifetime rather than shorten it. Transport
 failures may be transient or unconfirmed under the bounded retry policy. The pinned
 exporter's callback cannot establish partial acceptance; a narrow OTLP/HTTP JSON
-sender is allowed. Sanitize diagnostics and promise no universal receiver or direct
-Axiom/Grafana support.
+sender is allowed. Sanitize diagnostics and promise no universal receiver or
+provider support. The 24 October direct-Axiom addition is limited to the optional
+dataset routing header, existing full HTTPS logs URL, and Bearer token; other
+provider-specific configuration remains outside this scope.
 
 ## Open gates and release procedure
 
@@ -763,7 +778,7 @@ shipped slice; no resources/provider settings changed.
 | Slice | Established | Remaining proof |
 |---|---|---|
 | 1 invitations | Documented recipients and pinned native lifecycle contract. | Prove the remaining [native active-role preservation and race cases](#native-invitations--slice-1); otherwise hold release and ask the user. No custom acceptance/activation registry. |
-| 2 settings; 2.5 coordination; 3 MFA facts | Authenticated Supabase dashboard confirms the selected project's identity, Free plan, health/region, and current usage. Account eligibility is resolved. | Follow [owner setup](#owner-setup-for-supabase--slice-2); prove SQL isolation, capacity, TLS, persistence, failure, and scoped recovery before rollout. Recheck usage then; connector access is no gate. |
+| 2 settings; 2.5 coordination; 3 MFA facts | Authenticated Supabase dashboard confirms the selected project's identity, Free plan, health/region, and current usage. Account eligibility is resolved. | Follow [owner setup](#owner-setup-for-supabase--slice-2); prove SQL isolation, capacity, TLS, persistence, and bounded failure behavior before rollout. Settings backup and restore proof belongs to Slice 4. Recheck usage then; connector access is no gate. |
 | 3 MFA only | Standalone API and pinned SDK support unbound request shape. [Pricing](https://workos.com/pricing) includes native MFA and lists TOTP/SMS for all accounts. Connected WorkOS billing shows Pay as you go and a current $0 estimate, without explicit MFA entitlement. | Keep WorkOS pending explicit free production create/challenge/verify/delete confirmation for TOTP without `user_id`; neither native pricing nor the estimate establishes it. Prove AuthKit/MCP isolation and the existing proof/lifecycle/recovery rules. Role changes remain independent. |
 
 Questions for WorkOS, not sent: Does native invitation acceptance preserve active
@@ -789,7 +804,7 @@ data. WorkOS owns accounts/memberships; PostgreSQL holds only application facts:
 | Slice | Durable facts |
 |---|---|
 | 1 | No new app database: existing provider metadata/external IDs hold creation/legal recovery. No Audit logs or MFA prerequisite. |
-| 2 | Collector endpoint/auth/enabled state, revision, and encrypted optional Bearer credential. No member-reduction coordinator yet. |
+| 2 | OTLP destination endpoint, optional Axiom dataset, auth/enabled state, revision, and encrypted optional Bearer credential. No member-reduction coordinator yet. |
 | 2.5 | Per-org serialized-operation and unknown external-write records that survive crashes/restarts. |
 | 3 | Role changes reuse those records; MFA adds role-policy flags, factor associations, and scoped recovery state, never TOTP secrets. |
 
@@ -831,21 +846,18 @@ the expected factor association atomically. Reuse this store for later slices.
 Prove database size, connections, applicable egress, and existing Render network
 headroom; external SQL must add no unexpected cost.
 
-Free requires [our own regular backups](https://supabase.com/docs/guides/platform/backups):
-logical exports of Thermus's private schema and needed role/grants, encrypted to
-existing operator-owned persistent storage outside the service/project at $0
-added cost. Follow the [S2-04 owner procedure](../implementation/admin-s2-04.md#choose-the-backup-owner-and-storage),
-select owner/cadence/retention/key recovery, and drill a scoped restore before
-release; never export/overwrite other applications' data. Before restoring,
-stop every export dispatch/settings writer and clear in-memory pending work.
-Restore first in isolation; disable restored rows and assign fresh revisions
-before storage-enabled restart. Keep the current global key for a partial restore;
-clear incompatible restored credentials for Admin re-entry. Reconcile all
-affected Bearer rows before a global key replacement. Restored export stays disabled until a current
-Admin reviews and explicitly re-enables its destination. Hold
-member reductions and later MFA admission until the operator resolves ambiguous
-state with independent evidence, not restored rows or an unchanged WorkOS read
-alone. Add no backup service/framework.
+**Owner scope decision, 24 October 2026:** run Slice 2 without settings backups.
+Settings loss or encryption-key loss can require an Admin to re-enter the
+destination and credential. Pending audit events have no history or replay, and
+Slice 2 provides no settings restore service. This does not claim that provider
+residual copies are available for recovery. Keep the application encryption key
+secure for normal operation; configuring it is still required.
+
+[Slice 4](#slice-4--settings-backup-and-recovery) owns regular scoped backups,
+backup storage/custody/retention, separate key recovery, and restore proof. The
+[future Slice 4 recovery procedure](../implementation/admin-s4-recovery.md)
+is retained as future-work reference and historical drill evidence, not a
+Slice 2 release prerequisite or present recovery guarantee.
 
 Outage/pause stops export and sensitive storage-dependent writes; fresh portal
 admission in the MFA branch fails closed. MCP and already-admitted portal product
@@ -854,6 +866,29 @@ healthy Node, cause health-check restart loops, or blanket MCP logout.
 Update deployment/pause/quota/reconnect/recovery runbooks during implementation.
 
 ### Owner setup for Supabase — Slice 2
+
+**Current setup observation, 24 October 2026:** original settings and additive
+`axiom_dataset` migrations are applied; the restricted runtime role has LOGIN.
+Real local production-store checks passed through the actual pooler: verified
+client-to-pooler TLS, reconnect persistence, tenant predicates, encrypted
+credential round trip, revision conflict and bounded query failure. Exact
+canaries were removed; the settings table is empty. A local production sender
+also reached Axiom `audit-log-test` and the manager verified its marker in the
+Axiom UI. These are not the deployed current-Admin/browser/MCP journey.
+
+Saving Render environment values unexpectedly deployed approved main
+`845cec3060b0880cd27c36047f1da57a1c3772ba`, not the direct-Axiom candidate.
+Auto-deploy remains off. The unreadable CA secret-file failure observed at about
+23:37 UTC was repaired. The manager saved the official CA and deployed approved
+main again as `dep-dbek395g1s2s73frt4i0`, live at 23:39:48 UTC. Startup no longer
+reports storage unavailable; health was 200/ok at 23:40:10 UTC. This is configured
+startup proof, not actual deployed SQL or the full release journey. Zero audit
+destinations are enabled. Signup is currently enabled. Current
+Production WorkOS inventory has one active verified password Admin and one User,
+with an accepted invitation. Full candidate/code/notice approval and deployed
+release proof remain pending. The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+retains exact evidence, identifiers, timing and limits. The ordered steps below
+describe initial setup; they do not direct reapplication of existing migrations.
 
 Owner means the Thermus deployment operator with Supabase/Render access. This is
 platform setup; customer Admins use Audit logs for Collector settings. S2-01a implements these server variables with validation and `.env.example`
@@ -904,14 +939,17 @@ Plain `pg` SQL needs none of the Supabase [publishable/secret or legacy
    that the app can read its configured runtime path.
 5. Open the existing [Render Thermus service](https://dashboard.render.com/web/srv-db8mnqg473hc739d529g),
    then [Environment → Add Environment Variable](https://render.com/docs/configure-environment-variables).
-   Add only service-scoped server values. **Save only** stages them until the next
-   deploy; coordinate activation with S2-01 code. **Save and deploy** redeploys the
-   existing build; **Save, rebuild, and deploy** rebuilds it. For an optional public CA,
+   Add only service-scoped server values. Do not assume an environment update
+   stages values without deployment: the 24 October update triggered a deploy.
+   Where the dashboard offers **Save only**, verify that action’s behavior before
+   relying on it. **Save and deploy** redeploys the existing build;
+   **Save, rebuild, and deploy** rebuilds it. For an optional public CA,
    use Secret Files → Add Secret File; **Save Changes triggers a deploy**. Coordinate
    it with rollout and verify the [Docker runtime path](https://render.com/docs/docker-secrets)
    `/etc/secrets/<filename>`. No environment group/config service is needed.
 6. Before Slice 2 rollout, prove actual TLS/role/schema isolation, persistence, and
-   the storage section's SQL bounds, outage, backup/key-recovery, and $0 checks.
+   the storage section's SQL bounds, outage, and $0 checks. Settings backup and
+   restore are deferred to Slice 4.
    Handoff only nonsecret facts/configured variable names. Put no secret values in
    chat, Git, frontend, or build logs.
 
@@ -1534,7 +1572,8 @@ another slice names a group. All groups have implementation candidates and
 linked records below. S2-04 adds integrated controlled proof, visible help, and
 owner procedures. The combined candidate is not released. The review below
 owns code-merge work; the [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
-owns actual storage, Collector, recovery, notice, capacity, and Slice 1 release proof.
+owns actual storage, Collector, notice, capacity, and Slice 1 release proof.
+Settings backup, key recovery, and restore are future Slice 4 work.
 
 #### Slice 2 review and remaining work
 
@@ -1570,8 +1609,9 @@ defaults to disabled; an Admin can explicitly enable on the first Save. Existing
 saved enabled state persists across deployment. Merging code does not authorize
 setting secrets, deployment, or enabling export. A previous live observation
 recorded Render auto-deploy as off; recheck deployment settings before a merge.
-Backup cadence, retention, and delegate suggestions remain owner choices, not new
-product features. Use the existing runbooks rather than add another recovery system.
+The owner moved backup cadence, retention, custody, key recovery, and restore to
+Slice 4. Slice 2 runs without settings backups; the existing procedure is future
+reference and adds no S2 prerequisite.
 
 **Simplicity decisions retained by this review:**
 
@@ -1628,7 +1668,8 @@ writer, event table, or durable export buffer. See
 S2-01b in PR #238 adds the Admin settings page and Save. S2-02a/b and
 S2-03a/b/c candidates add the sender, Test, capture, snapshots, and delivery;
 see their implementation records below. Actual Supabase setup and
-TLS/grant/backup/restore/$0 proof remain S2-04 owner gates.
+TLS/grant/persistence/$0 proof remain S2-04 owner gates. Backup/restore proof is
+deferred to Slice 4 by the owner’s 24 October scope decision.
 
 **Acceptance specification first:**
 
@@ -1701,8 +1742,9 @@ store contract cases under `test/interface/`, real SQL collaboration under
 
 **Done.** Atomic scoped storage and bounded runtime acceptance pass. Reviewed setup uses the
 selected existing project, private schema, and restricted runtime role. The app needs no
-Supabase API keys. Actual TLS/grant/backup/restore/$0 rollout proof is retained for 04;
-source/configuration completion does not pass that gate.
+Supabase API keys. Actual TLS/grant/persistence/$0 rollout proof is retained for 04;
+backup/restore proof is deferred to Slice 4. Source/configuration completion does
+not pass that gate.
 
 #### S2-01b — Admin settings, encrypted credential, and atomic Save
 
@@ -1869,9 +1911,12 @@ under `test/unit/logging/audit/`, because their real source collaborators share 
 owner. Real sender/Collector collaboration is under `test/integration/logging/audit/`.
 Separate interface tests are not needed to repeat the same wire cases.
 
-**Done.** One-shot protocol and actual-connection security acceptance pass with None/Bearer
-evidence and fixed bounds. No universal receiver, direct Axiom/Grafana support, custom
-headers, client certificates, or alternate transport is promised.
+**Done for the original S2-02a increment.** One-shot protocol and actual-connection
+security acceptance pass with None/Bearer evidence and fixed bounds. That increment
+promised no direct Axiom/Grafana support. The owner’s 24 October rollout addition
+now permits the narrow Axiom dataset routing header described above. It adds no
+universal receiver, arbitrary custom headers, client certificates, or alternate
+transport promise.
 
 #### S2-02b — Optional Test of the saved destination
 
@@ -2244,7 +2289,7 @@ This candidate does not claim the Done conditions below.
 ```gherkin
 Scenario: Use Audit logs while the product stays available
   Given configured Slice 1 implementation and completed Slice 2 implementation groups
-  And a current password-authenticated Admin, reachable Collector, and available capacity
+  And a current password-authenticated Admin, reachable supported OTLP destination, and available capacity
   When the Admin saves a disabled destination, Tests it once, and enables it
   And eligible activity loads the saved revision after Enable
   And subsequent MCP and shipped Admin actions use an available enabled snapshot
@@ -2254,8 +2299,9 @@ Scenario: Use Audit logs while the product stays available
 
 **Gap / expected red.** The integrated journey may already pass after 01–03. Treat a passing
 journey as characterization. Specify only missing product behavior red in its owning ticket
-before its focused fix. Legal approval, configuration, actual TLS/isolation, backup/restore,
-provider, and cost evidence are manual proofs, not tests of documents. The
+before its focused fix. Legal approval, configuration, actual TLS/isolation,
+provider, and cost evidence are manual proofs, not tests of documents. Backup and
+restore work is deferred to Slice 4. The
 [S2-04 evidence ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
 records which proofs ran and which release holds remain.
 
@@ -2266,7 +2312,7 @@ records which proofs ran and which release holds remain.
    their matrices. Integration needs implemented groups and configured Slice 1, not a
    completed Slice 1 release. Fix a discovered source gap red →
    green → refactor in its owner, then rerun the journey. A controlled receiver pass does not
-   replace actual Collector proof.
+   replace actual supported-destination proof, including direct Axiom for this rollout.
 2. Follow ordered owner setup on the selected existing project. Account eligibility is already
    resolved; recheck usage/headroom before rollout, not project selection. Prove actual
    verified TLS/hostname, restricted role/private-schema rights, persistence, and no access to
@@ -2274,16 +2320,14 @@ records which proofs ran and which release holds remain.
    recording values. Exercise acquisition/query stalls, idle disconnect, pause/quota/reconnect
    behavior, and MCP availability through controlled faults. Do not pause or exhaust the
    shared project; actual live proof is scoped TLS/role/isolation/persistence.
-3. Set the owner, cadence, retention, and key recovery for encrypted scoped logical backups to
-   existing operator-owned persistent storage outside the project at $0 added cost. Drill a
-   scoped restore without touching other applications. Stop dispatch and clear pending work
-   before restore; restored export stays disabled until an Admin reviews and explicitly
-   re-enables it. Prove the external key can recover credentials; retain only nonsecret
-   evidence and safe procedures.
+3. Record the owner’s no-backup Slice 2 scope in notice, help, and rollout evidence.
+   State the absence of settings backup/restore and audit history/replay. Settings or
+   encryption-key loss can require Admin re-entry. Do not require backup selection,
+   retention, custody, or a restore drill before Slice 2 release; Slice 4 owns them.
 4. Confirm database size/connections/egress and existing Render network headroom under
    realistic bounded load. Keep added ongoing cost $0; no new project, upgrade, trial, paid
    add-on, artificial keepalive, or backup framework. Update deployment, outage/pause/quota,
-   reconnect, key-loss, and restore runbooks.
+   reconnect, and key-loss runbooks. Retain restore procedures as future Slice 4 reference.
 5. Obtain approved privacy notice and Audit logs help explaining input/result export, recognized
    redaction limits, truncation, best-effort loss/duplicates, and Test's limited meaning.
    Verify native desktop/mobile/accessibility, role navigation, and secret-free errors. Update
@@ -2301,8 +2345,8 @@ implementation/runbook/portal documents in the implementation candidates. No tes
 prose/configuration or new general verification framework are needed.
 
 **Done.** All three ticket groups and the integrated journey are green; actual
-SQL/TLS/isolation/persistence/restore/key/$0 and Collector proof, approved privacy help,
-manual checks, required gates, and approvals are complete. Slice 1 is actually released.
+SQL/TLS/isolation/persistence/$0 and Collector proof, approved notice/help with the
+no-backup scope, manual checks, required gates, and approvals are complete. Slice 1 is actually released.
 Ship Product/Members/Audit logs only: no member removal, role changes, MFA, Supabase Auth/REST,
 identity mirror, or membership-reduction coordinator.
 
@@ -2326,3 +2370,21 @@ unverified. Security navigation/personal MFA controls belong only to the MFA exi
 | S3-04 | S3-03 | Two role-policy controls and next-sign-in decisions. | MFA sign-in/session cases pass each/both/default flags, failed reads, enrollment, selector, refresh/role/workspace changes, and current permissions. No extra policy-save challenge. |
 | S3-05 | S3-04 | Own-factor removal/replacement and scoped support recovery through shared setup. | MFA lifecycle cases pass all-membership checks, mandates, stale/abandoned attempts, cleanup failure, optional-org pending recovery, and locked-out last Admin; no codes or unrelated-session/MCP revocation. |
 | S3-06 | Release: S2.5-02. Role exit: S3-02. MFA exit: S3-05 | Scope-specific verification/docs/runbooks and separate branch releases. | Applicable rule/provider/$0/capacity/UI/restore checks pass. MFA proves retained old factors/policies cannot challenge MCP, not merely new-factor absence. All exclusions remain. |
+
+### Slice 4 — Settings backup and recovery
+
+The owner moved backups here on 24 October 2026: “Let's move backups to a new
+Slice 4 - run slice 2 with no backup”. This slice is future work. It does not
+promise an available recovery capability, provider restore access, or an audit
+event archive. Slice 2 may release without its backup and restore proofs.
+
+| ID | Depends on | Deliverable | Done |
+|---|---|---|---|
+| S4-01 | S2-04 | Select an existing $0 persistent destination outside the shared project and deployment service; name owner/delegate, custody/access, cadence/retention, and separate application/backup key recovery. Review complete notice/help changes and exact bytes before publication. | Actual access, capacity, cost, selected retention and recovery custody are proved; owner approves the complete changed notice and scope. No new paid service or backup framework. |
+| S4-02 | S4-01 | Scoped encrypted private-schema backup and isolated safe restore, using the retained S2-04 procedure as a starting point. Review any later Slice 2.5/3 state before restore. | Prove archive scope and hashes, separate key recovery, dispatch/writer stop and pending-memory clear, isolated restore with fresh revisions and disabled export, current-key reconciliation, and explicit Admin review before re-enable. Touch no other application data. Resolve ambiguous reduction/MFA state with independent evidence. |
+
+The [future Slice 4 recovery procedure](../implementation/admin-s4-recovery.md)
+contains earlier proposed defaults and a disposable drill. Reassess them against
+the actual Slice 4 state; they are not selected storage, approved retention,
+production restore proof, or a current product guarantee. Never infer a durable
+audit event buffer from settings backup work.

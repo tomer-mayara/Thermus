@@ -11,6 +11,29 @@ const completion: AuditEvent = {
   result: { text: 'runtime result', originalBytes: 14, capturedBytes: 14, truncated: false },
 };
 
+test('Given a saved Axiom dataset and a verified TLS receiver, when saved Test and normal export run, then only the configured dataset and Bearer headers reach the destination', { timeout: 120_000 }, async t => {
+  const site = await openAuditSenderSite(t, 'receiver');
+  const axiomDataset = 'audit-log-test';
+  const tested = await site.testSavedDestinations([{ endpoint: site.endpoint, axiomDataset, auth: 'bearer', token: site.token }]);
+  assert.equal(tested[0].tested.status, 200);
+  assert.equal(tested[0].unchanged, true);
+  assert.equal(tested[0].settings.enabled, false);
+  assert.deepEqual(await site.send([{ endpoint: site.endpoint, axiomDataset, auth: { type: 'bearer', token: site.token }, event: completion }]), [{ kind: 'accepted' }]);
+  const requests = await site.requests();
+  assert.equal(requests.length, 2);
+  for (const request of requests) {
+    assert.equal(request.path, '/v1/logs');
+    assert.equal(request.headers['x-axiom-dataset'], axiomDataset);
+    assert.equal(request.headers.authorization, `Bearer ${site.token}`);
+    assert.equal(request.headers['content-type'], 'application/json');
+    assert.equal(request.headers['x-system'], undefined);
+    assert.doesNotMatch(request.body, /audit-log-test|audit-runtime-only-token|platform-secret|fileName|lineNumber|stackTrace/);
+  }
+  assert.match(requests[0].body, /audit\.destination\.test/);
+  assert.match(requests[1].body, /mcp\.tool\.completed/);
+  t.diagnostic('Local verified TLS receiver checks the Axiom header contract. This does not prove live Axiom ingestion or durable storage.');
+});
+
 test('Given a trusted public-address TLS receiver, when None and Bearer events are sent, then only the supplied audit data and auth reach that socket', { timeout: 120_000 }, async (t) => {
   const site = await openAuditSenderSite(t, 'receiver');
   const outcomes = await site.send([
@@ -71,7 +94,7 @@ test('Given disabled saved None and Bearer destinations, when their real logging
     assert.equal(result.unsaved.status, 409);
     assert.match(result.unsaved.body, /Save your edits before Test/);
     assert.equal(result.tested.status, 200);
-    assert.match(result.tested.body, /Collector accepted the Test event/);
+    assert.match(result.tested.body, /Destination accepted the Test event/);
     assert.match(result.tested.body, /neither continued delivery nor durable storage/);
     assert.doesNotMatch(result.tested.body, /audit-runtime-only-token|runtime-test-csrf|encryptedCredential/);
     assert.equal(result.unchanged, true);

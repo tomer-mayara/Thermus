@@ -3,6 +3,7 @@ import type { AuditEvent } from './audit-log.ts';
 /** One caller-supplied destination. No environment, settings, or system-log defaults apply. */
 export interface AuditDestination {
   readonly endpoint: string;
+  readonly axiomDataset?: string;
   readonly auth: { readonly type: 'none' } | { readonly type: 'bearer'; readonly token: string };
 }
 

@@ -9,6 +9,46 @@ const senderStub: DestinationTestSender = { send: async () => { throw new Error(
 const key = Buffer.alloc(32, 7);
 const input = { expectedRevision: null as string | null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer' as const, enabled: true, token: 'private-token' };
 
+test('Given an Axiom dataset, when saved and read, then the dataset is public and its credential remains private', async () => {
+  const fake = storeFake();
+  const service = new DestinationSettingsService(fake.store, key, senderStub);
+  const axiom = { ...input, axiomDataset: 'audit-log-test' };
+  assert.deepEqual(await service.save('tenant-a', axiom), { status: 'saved', settings: { revision: 'revision-1', endpoint: input.endpoint, auth: 'bearer', enabled: true, tokenPresent: true, axiomDataset: axiom.axiomDataset } });
+  assert.deepEqual(await service.authorizeExport('tenant-a', 'revision-1'), { status: 'ready', destination: { endpoint: input.endpoint, auth: { type: 'bearer', token: input.token }, axiomDataset: axiom.axiomDataset } });
+  assert.ok(!JSON.stringify([...fake.rows.values()]).includes(input.token));
+});
+
+test('Given an invalid Axiom dataset, when saved, then no settings are written', async () => {
+  for (const axiomDataset of ['bad\r\nX-Injected: value', 'two words', 'audit_test', 'audit.test', 'ü', 'x'.repeat(129), 42, null]) {
+    const fake = storeFake();
+    const desired = { ...input, axiomDataset };
+    assert.deepEqual(await new DestinationSettingsService(fake.store, key, senderStub).save('tenant-a', desired as typeof input), { status: 'invalid', reason: 'dataset' });
+    assert.equal(fake.writes(), 0);
+  }
+});
+
+test('Given a blank or omitted Axiom dataset, when saved, then a generic Collector has no dataset header', async () => {
+  for (const axiomDataset of ['', undefined]) {
+    const fake = storeFake();
+    const desired = { ...input, axiomDataset };
+    const service = new DestinationSettingsService(fake.store, key, senderStub);
+    assert.equal((await service.save('tenant-a', desired)).status, 'saved');
+    assert.deepEqual(await service.authorizeExport('tenant-a', 'revision-1'), { status: 'ready', destination: { endpoint: input.endpoint, auth: { type: 'bearer', token: input.token } } });
+  }
+});
+
+test('Given a saved Axiom dataset, when it is repeated or cleared, then only clearing advances the revision and the saved token is retained', async () => {
+  const fake = storeFake();
+  const service = new DestinationSettingsService(fake.store, key, senderStub);
+  await service.save('tenant-a', { ...input, axiomDataset: 'audit-log-test' });
+  const ciphertext = fake.rows.get('tenant-a')?.encryptedCredential;
+  assert.equal((await service.save('tenant-a', { ...input, expectedRevision: 'revision-1', axiomDataset: 'audit-log-test', token: '' })).status, 'unchanged');
+  assert.equal((await service.save('tenant-a', { ...input, expectedRevision: 'revision-1', axiomDataset: '', token: '' })).status, 'saved');
+  assert.equal(fake.rows.get('tenant-a')?.encryptedCredential, ciphertext);
+  assert.deepEqual(await service.authorizeExport('tenant-a', 'revision-1'), { status: 'changed' });
+  assert.deepEqual(await service.authorizeExport('tenant-a', 'revision-2'), { status: 'ready', destination: { endpoint: input.endpoint, auth: { type: 'bearer', token: input.token } } });
+});
+
 function storeFake() {
   const rows = new Map<string, StoredDestinationSettings>();
   let writes = 0;
@@ -17,7 +57,7 @@ function storeFake() {
     async save(tenant, expected, desired) {
       const current = rows.get(tenant);
       if ((current?.revision ?? null) !== expected) return { status: 'conflict' };
-      if (current && JSON.stringify(desired) === JSON.stringify({ endpoint: current.endpoint, auth: current.auth, enabled: current.enabled, encryptedCredential: current.encryptedCredential })) return { status: 'unchanged', settings: current };
+      if (current && desired.endpoint === current.endpoint && desired.axiomDataset === current.axiomDataset && desired.auth === current.auth && desired.enabled === current.enabled && desired.encryptedCredential === current.encryptedCredential) return { status: 'unchanged', settings: current };
       const settings = { ...desired, revision: `revision-${++writes}` };
       rows.set(tenant, settings);
       return { status: 'saved', settings };
@@ -174,10 +214,11 @@ test('Given malformed stored settings, when read or saved, then no configured va
   const fake = storeFake();
   const service = new DestinationSettingsService(fake.store, key, senderStub);
   await service.save('tenant-a', input);
-  const current = fake.rows.get('tenant-a')!;
+  const current = fake.rows.get('tenant-a');
+  assert.ok(current);
   for (const invalid of [
     { endpoint: 'https://secret:password@collector.example' },
-    { auth: 'unexpected' }, { enabled: 'true' }, { revision: '' },
+    { auth: 'unexpected' }, { enabled: 'true' }, { revision: '' }, { axiomDataset: 'bad\r\ndataset' },
   ]) {
     fake.rows.set('tenant-a', { ...current, ...invalid } as StoredDestinationSettings);
     assert.deepEqual(await service.read('tenant-a'), { status: 'unavailable' });

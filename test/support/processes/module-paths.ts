@@ -55,7 +55,10 @@ export const fetchPublicScriptEntry = fileURLToPath(siblingModule('fetch-public-
 export const fetchUrlScript = fileURLToPath(new URL('script/fetch-url/fetch-url.ts', repositoryRoot));
 
 // The scoped owner setup used by the disposable PostgreSQL settings site.
-export const loggingSettingsMigration = fileURLToPath(new URL('sql/migrations/20261023211956_logging_destination_settings.sql', repositoryRoot));
+export const loggingSettingsMigrations = [
+  '20261023211956_logging_destination_settings.sql',
+  '20261024231921_add_logging_axiom_dataset.sql',
+].map(name => fileURLToPath(new URL(`sql/migrations/${name}`, repositoryRoot)));
 
 // The audit sender gate copies only source modules and test support into an isolated Docker network.
 export const auditSenderRuntime = {

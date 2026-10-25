@@ -20,7 +20,7 @@ test('Given a protected current form, when Test is submitted, then the current t
   assert.ok(handler);
   const response = await handler(request, session, context);
   assert.equal(response.status, 200);
-  assert.match(await response.text(), /Collector accepted the Test event/);
+  assert.match(await response.text(), /Destination accepted the Test event/);
   assert.deepEqual(calls, [['trusted:a', { expectedRevision: 'r1', endpoint: fields.endpoint, auth: 'none', token: '', enabled: false }, context.user, request.signal]]);
   assert.equal(saves, 0);
 });
@@ -86,9 +86,9 @@ test('Given an aborted valid Test request, when form reading ends, then Test doe
 });
 
 const sendAnswers = [
-  [{ kind: 'accepted' }, 200, /Collector accepted the Test event\./],
+  [{ kind: 'accepted' }, 200, /Destination accepted the Test event\./],
   [{ kind: 'warning' }, 200, /with a warning/],
-  [{ kind: 'partial_rejection', rejectedRecords: 1 }, 502, /Collector rejected the Test event/],
+  [{ kind: 'partial_rejection', rejectedRecords: 1 }, 502, /Destination rejected the Test event/],
   [{ kind: 'permanent_failure', reason: 'http_status', statusCode: 401 }, 502, /Test attempt failed/],
   [{ kind: 'transient_failure', reason: 'http_status', statusCode: 503, retryAfterMs: 1000 }, 503, /could not complete/],
   [{ kind: 'unconfirmed', reason: 'transport' }, 503, /result is unconfirmed/],
@@ -124,7 +124,7 @@ for (const [status, code, text] of [
     const html = await response.text();
     assert.equal(response.status, code);
     assert.match(html, text);
-    assert.doesNotMatch(html, /Collector accepted|<form/);
+    assert.doesNotMatch(html, /Destination accepted|<form/);
     assert.equal(response.headers.get('Cache-Control'), 'no-store');
   });
 }

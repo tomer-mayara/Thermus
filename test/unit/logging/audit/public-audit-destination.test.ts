@@ -4,6 +4,17 @@ import dns from 'node:dns/promises';
 import { parseAuditDestination, resolveAuditAddress, sameAuditAddress } from '../../../../src/logs/audit/public-audit-destination.ts';
 
 const endpoint = (value: string) => parseAuditDestination({ endpoint: value, auth: { type: 'none' } });
+
+test('Given an Axiom dataset, when parsed, then only a bounded ASCII dataset can become a header', () => {
+  for (const axiomDataset of ['audit-log-test', 'A0-' + 'x'.repeat(125)]) {
+    const destination = { endpoint: 'https://us-east-1.aws.edge.axiom.co/v1/logs', auth: { type: 'none' as const }, axiomDataset };
+    assert.deepEqual(parseAuditDestination(destination), { url: new URL(destination.endpoint), axiomDataset });
+  }
+  for (const axiomDataset of ['', 'bad\r\nX: injected', 'two words', 'audit_test', 'audit.test', 'ü', 'x'.repeat(129), null, 42]) {
+    const destination = { endpoint: 'https://us-east-1.aws.edge.axiom.co/v1/logs', auth: { type: 'none' as const }, axiomDataset };
+    assert.throws(() => parseAuditDestination(destination as { endpoint: string; auth: { type: 'none' } }));
+  }
+});
 for (const value of ['https://collector.example:0/v1/logs', 'http://collector.example/v1/logs', 'https://user:pass@collector.example/v1/logs', 'https://collector.example/v1/logs?token=x', 'https://collector.example/v1/logs?', 'https://collector.example/v1/logs#secret', 'https://collector.example/v1/logs#', 'https://collector.example/\nsecret', 'https:\\collector.example\\logs', 'https://collector.example/' + 'x'.repeat(2_048)]) {
   test(`Given unsafe URL syntax ${JSON.stringify(value.slice(0, 100))}, when parsed, then it is refused`, () => assert.throws(() => endpoint(value), /Audit send did not complete/));
 }

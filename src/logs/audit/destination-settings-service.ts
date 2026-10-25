@@ -10,6 +10,7 @@ export type { DestinationTestResult } from './destination-test.ts';
 export interface PublicDestinationSettings {
   readonly revision: string | null;
   readonly endpoint: string;
+  readonly axiomDataset?: string;
   readonly auth: 'none' | 'bearer';
   readonly enabled: boolean;
   readonly tokenPresent: boolean;
@@ -17,6 +18,7 @@ export interface PublicDestinationSettings {
 export interface DestinationSettingsSaveInput {
   readonly expectedRevision: string | null;
   readonly endpoint: string;
+  readonly axiomDataset?: string;
   readonly auth: 'none' | 'bearer';
   readonly enabled: boolean;
   readonly token: string;
@@ -26,7 +28,7 @@ export type DestinationSettingsReadResult =
   | { readonly status: 'unavailable' };
 export type DestinationSettingsSaveResult =
   | { readonly status: 'saved' | 'unchanged'; readonly settings: PublicDestinationSettings }
-  | { readonly status: 'invalid'; readonly reason: 'endpoint' | 'token' | 'settings' }
+  | { readonly status: 'invalid'; readonly reason: 'endpoint' | 'dataset' | 'token' | 'settings' }
   | { readonly status: 'conflict' | 'unavailable' | 'unconfirmed' };
 
 export type ExportAuthorization =
@@ -51,7 +53,7 @@ export class DestinationSettingsService {
       if (settings.enabled !== true || settings.revision !== expectedRevision) return { status: 'changed' };
       const token = this.token(tenantId, settings);
       if (token === null) return { status: 'unavailable' };
-      return { status: 'ready', destination: { endpoint: settings.endpoint, auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } } };
+      return { status: 'ready', destination: { endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } } };
     } catch { return { status: 'unavailable' }; }
   }
 
@@ -74,7 +76,7 @@ export class DestinationSettingsService {
     if (!matchesSavedSettings(desired, settings)) return { status: 'unsaved' };
     let outcome: AuditSendOutcome;
     try {
-      outcome = await this.sender.send({ endpoint: settings.endpoint, auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } }, {
+      outcome = await this.sender.send({ endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth === 'bearer' ? { type: 'bearer', token } : { type: 'none' } }, {
         eventName: 'audit.destination.test', timestamp: new Date().toISOString(), organizationId: tenantId, actor, destinationRevision: settings.revision,
       }, signal);
     } catch { outcome = { kind: 'unconfirmed', reason: 'transport' }; }
@@ -110,7 +112,7 @@ export class DestinationSettingsService {
     if (token === null) return { status: 'invalid', reason: 'token' };
     const encryptedCredential = desired.auth === 'none' ? null
       : token === previousToken && settings?.encryptedCredential ? settings.encryptedCredential : this.codec.encrypt(tenantId, token);
-    const result = await this.store.save(tenantId, desired.expectedRevision, { endpoint: desired.endpoint, auth: desired.auth, enabled: desired.enabled, encryptedCredential }).catch(() => ({ status: 'unconfirmed' as const }));
+    const result = await this.store.save(tenantId, desired.expectedRevision, { endpoint: desired.endpoint, ...(desired.axiomDataset ? { axiomDataset: desired.axiomDataset } : {}), auth: desired.auth, enabled: desired.enabled, encryptedCredential }).catch(() => ({ status: 'unconfirmed' as const }));
     if (result.status === 'saved' || result.status === 'unchanged') return { status: result.status, settings: project(result.settings) };
     return { status: result.status };
   }
@@ -131,13 +133,14 @@ export class DestinationSettingsService {
 }
 
 function matchesSavedSettings(input: DestinationSettingsSaveInput, saved: StoredDestinationSettings): boolean {
-  return input.token === '' && input.endpoint === saved.endpoint && input.auth === saved.auth && input.enabled === saved.enabled;
+  return input.token === '' && input.endpoint === saved.endpoint && (input.axiomDataset ?? '') === (saved.axiomDataset ?? '') && input.auth === saved.auth && input.enabled === saved.enabled;
 }
 
-function invalidInput(input: DestinationSettingsSaveInput): 'endpoint' | 'token' | 'settings' | undefined {
+function invalidInput(input: DestinationSettingsSaveInput): 'endpoint' | 'dataset' | 'token' | 'settings' | undefined {
   if (!['none', 'bearer'].includes(input.auth) || typeof input.enabled !== 'boolean'
     || !(input.expectedRevision === null || typeof input.expectedRevision === 'string')) return 'settings';
   if (typeof input.endpoint !== 'string' || !validDestinationEndpoint(input.endpoint)) return 'endpoint';
+  if (input.axiomDataset !== undefined && (typeof input.axiomDataset !== 'string' || (input.axiomDataset !== '' && !/^[A-Za-z0-9-]{1,128}$/.test(input.axiomDataset)))) return 'dataset';
   if (typeof input.token !== 'string' || input.token.length > 8192 || (input.token !== '' && !/^[A-Za-z0-9._~+/-]+=*$/.test(input.token))) return 'token';
   return undefined;
 }
@@ -149,5 +152,5 @@ function retainedToken(input: DestinationSettingsSaveInput, current: StoredDesti
 }
 
 function project(settings: StoredDestinationSettings): PublicDestinationSettings {
-  return { revision: settings.revision, endpoint: settings.endpoint, auth: settings.auth, enabled: settings.enabled, tokenPresent: settings.auth === 'bearer' };
+  return { revision: settings.revision, endpoint: settings.endpoint, ...(settings.axiomDataset ? { axiomDataset: settings.axiomDataset } : {}), auth: settings.auth, enabled: settings.enabled, tokenPresent: settings.auth === 'bearer' };
 }

@@ -19,6 +19,11 @@ function settingsStore(t: TestContext, query: () => Promise<{ rows: Record<strin
   return new PgDestinationSettingsStore(runtime);
 }
 
+test('Given a stored Axiom dataset, when settings are read, then its dataset accompanies the saved revision', async (t) => {
+  const store = settingsStore(t, async () => ({ rows: [{ ...row, axiom_dataset: 'audit-log-test' }] }));
+  assert.deepEqual(await store.read('trusted-tenant'), { status: 'found', settings: { ...stored, axiomDataset: 'audit-log-test' } });
+});
+
 test('Given a stored SQL row, when settings are read, then the public result preserves the opaque settings and revision', async (t) => {
   const store = settingsStore(t, async () => ({ rows: [row] }));
   assert.deepEqual(await store.read('trusted-tenant'), { status: 'found', settings: stored });
