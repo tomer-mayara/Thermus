@@ -1,0 +1,21 @@
+{
+  "base": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "head": "17085397bb0ce9af62d69bffe6a314513f277f7f",
+  "previousCandidate": "e77c075c3f8e37874dd89474e8a5f4f784f23e67",
+  "beforeMermaidBlocks": 13,
+  "afterMermaidBlocks": 13,
+  "unchanged": true,
+  "viewsReviewed": [
+    "Context",
+    "Hosted containers",
+    "Hosted Audit settings/delivery components",
+    "System and Audit components",
+    "Runtime collaboration",
+    "Deployment"
+  ],
+  "contract": "No public declaration or cross-component callable contract change. The complete candidate has a paired local page/parser change and Audit-only static hash-pinned script; this follow-up changes CSS and a form wrapper only. No L3 comparison or L4 detail needed.",
+  "prose": "The registry still describes current Audit selection and unchanged service/store/sender behavior. The active plan and implementation note now describe width and secondary actions.",
+  "review": "Manager inspected incremental source diff, 1440px and390px real Chromium renders and all geometry results. Independent reviewer confirmed scoped width override, native forms, accessible contrast/focus and no Members change. The complete candidate keeps the prior selector/CSP technical pass.",
+  "independentReviewer": "audit_selector_review: no findings. Gray Test contrast8.52:1 normal/6.34:1 hover; border3.91:1 and focus14.16:1 against card. Formaction, submit and formnovalidate unchanged. Members650px tablet width retained.",
+  "layout": "Audit matches page width:1200px at1440,976px at1024,720px at768. Save/Test share a row through390px; wrap at320/240 without overflow."
+}

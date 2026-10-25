@@ -7,6 +7,11 @@ OTLP logs URL and a Bearer token. Axiom requires a dataset; Custom omits it.
 Switching the choice changes only the form until Save. Test still requires the
 saved values, and it does not save edits or enable export.
 
+The destination panel fills the shared page content width, up to 1,200 pixels.
+Save and Test use their natural widths in one action row. Save stays orange;
+Test is gray. The row wraps when the controls cannot fit. Members keeps its
+existing layout.
+
 The page keeps this warning, with a link to the Privacy Policy:
 
 > Send organization data only if you have authority to do so. Check destination access and retention. Read our Privacy Policy.

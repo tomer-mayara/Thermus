@@ -2,28 +2,28 @@
   "version": 3,
   "measurementVersion": "own-characters-1",
   "unmeasuredFunctions": [],
-  "commit": "da8eab8f6698e93ba784efce29ced24b6dbc7cd6",
+  "commit": "17085397bb0ce9af62d69bffe6a314513f277f7f",
   "provenance": {
-    "sourceFingerprint": "79bb06e8543006b80422a33c20724761b7fd7d7f9733883b72d782214b728fc3",
-    "inputsFingerprint": "27a5e36208e76862955a607de351ddee723d3a888a547754b0b351155cbef38e",
+    "sourceFingerprint": "86b5dd607d321fb9b40c3cf02561b2869e74bd9a2e9997d0536503bcef878f45",
+    "inputsFingerprint": "e36a3be29141f873738372119075eabdfa178d5ea801a1d081f9ee66603083a1",
     "runtime": "node-24.20.0",
     "compiler": "typescript-7.0.2",
     "measurementVersion": "own-characters-1",
     "suite": "unit",
     "completionProtocol": "normal-exit-or-sealed-or-loader-1",
-    "captureId": "ec59b32951ea25078d58b84d4a790be92336b957e444ea001953c8003f8f9233",
+    "captureId": "0f39f0921203e874cacfbaea5ea6e59f388e808d6e064b2d45f503a2562d3eb7",
     "comparisonIdentity": {
-      "sourceFingerprint": "79bb06e8543006b80422a33c20724761b7fd7d7f9733883b72d782214b728fc3",
-      "inputsFingerprint": "27a5e36208e76862955a607de351ddee723d3a888a547754b0b351155cbef38e",
+      "sourceFingerprint": "86b5dd607d321fb9b40c3cf02561b2869e74bd9a2e9997d0536503bcef878f45",
+      "inputsFingerprint": "e36a3be29141f873738372119075eabdfa178d5ea801a1d081f9ee66603083a1",
       "runtime": "node-24.20.0",
       "compiler": "typescript-7.0.2",
       "measurementVersion": "own-characters-1",
       "suite": "unit"
     },
     "status": "verified",
-    "capturedCommit": "da8eab8f6698e93ba784efce29ced24b6dbc7cd6",
-    "buildFingerprint": "b2f54e94d871eb243b1e3468896893d423f41aba650b5dca25f72ff0ea0f490e",
-    "captureManifestFingerprint": "92f7cb88bffa1a9806c2183be87391358aff4e9adaa7d89448cff8a082b63889"
+    "capturedCommit": "17085397bb0ce9af62d69bffe6a314513f277f7f",
+    "buildFingerprint": "040f8752291ba7b5f1fb7b56ff597e8f4e7b32d686b4f0d35638ce4c7e3526a9",
+    "captureManifestFingerprint": "f42c3b31379553b2421f9d899bfe075ed6b7fa7b5ec937d5c0dc077e1d8509b8"
   },
   "suite": "unit",
   "processes": 425,
@@ -9893,37 +9893,37 @@
     {
       "path": "src/interfaces/web/account/logging-page.ts",
       "representation": "emitted-javascript",
-      "contentIdentity": "38c68500844ff57dcc381e79b0adebe874de46a9abe7d24bd4f852ea41a1c40c",
-      "sourceContentIdentity": "0c51feff7b1e672c37decb3dec4924a0a8e89d8f8e55239d9036f43743821a2b",
+      "contentIdentity": "daf7c56363b628376f429c47654ec5d3152be795de4b274058f6943228902782",
+      "sourceContentIdentity": "3bcca5e9ee5e70a09d0c6e68157c508646f6db48ea6a4a341c389101d71e1e7a",
       "functions": [
         {
           "name": "(anonymous)",
           "start": 0,
-          "end": 4211,
+          "end": 4271,
           "called": 8,
           "coveredShare": 1
         },
         {
           "name": "loggingPage",
           "start": 782,
-          "end": 3909,
+          "end": 3969,
           "called": 10,
-          "coveredShare": 0.984,
+          "coveredShare": 0.985,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
             "kind": "FunctionDeclaration",
             "owner": "",
             "name": "loggingPage",
             "start": 1208,
-            "end": 4361,
-            "body": "040b9129fd2abd37ddf9ea4a4a6ff1171dad20052d59527ab63106a5ed05260c",
+            "end": 4421,
+            "body": "67322af73eca55919294fab18101308e2d1a106ad58350617dcc170f52017418",
             "signature": "356a0b3b05eeb7273af34a44eaec3a4e0384d27570a7003832c7785b1924599d"
           }
         },
         {
           "name": "loggingNotice",
-          "start": 3917,
-          "end": 4170,
+          "start": 3977,
+          "end": 4230,
           "called": 21,
           "coveredShare": 1,
           "sourceIdentity": {
@@ -9931,8 +9931,8 @@
             "kind": "FunctionDeclaration",
             "owner": "",
             "name": "loggingNotice",
-            "start": 4363,
-            "end": 4718,
+            "start": 4423,
+            "end": 4778,
             "body": "06bf65c238ec6fdc15858b436343304de7f34435d1b6a94a1eddab2b33bda5f3",
             "signature": "3e34de129847f0173f79112a435c584d50f44fddd702f960e1567ec3d8630ec1"
           }
@@ -10181,13 +10181,13 @@
     {
       "path": "src/interfaces/web/account/members-style.ts",
       "representation": "emitted-javascript",
-      "contentIdentity": "ee492532ea05c6c6b3734e49dc04081dd4d3c831f006c4c0973dd3d960e27d29",
-      "sourceContentIdentity": "152a5ef229da92c4d9cd1e40720328d02f3a92acb6e7b260c3bc2252a9950b1a",
+      "contentIdentity": "5de6cbb9b520a56e64d4eb7b192c766e4047e1ef6b304125f12deae85beadf0d",
+      "sourceContentIdentity": "5e64d56fa171acb9b08c83cfc5e356334be690dc80b14c60a8765e2d69c99ae2",
       "functions": [
         {
           "name": "(anonymous)",
           "start": 0,
-          "end": 5262,
+          "end": 5517,
           "called": 8,
           "coveredShare": 1
         }
@@ -16157,7 +16157,7 @@
           "name": "(anonymous)",
           "start": 3346,
           "end": 3411,
-          "called": 2155,
+          "called": 2159,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -19576,7 +19576,7 @@
           "name": "sourceElement",
           "start": 3122,
           "end": 3205,
-          "called": 40267,
+          "called": 40273,
           "coveredShare": 0.88,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20164,7 +20164,7 @@
           "name": "visit",
           "start": 3021,
           "end": 4014,
-          "called": 31470,
+          "called": 31482,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20181,7 +20181,7 @@
           "name": "captureNodeText",
           "start": 4019,
           "end": 4551,
-          "called": 31467,
+          "called": 31479,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20249,7 +20249,7 @@
           "name": "nodeVisibility",
           "start": 5272,
           "end": 5400,
-          "called": 30668,
+          "called": 30680,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20266,7 +20266,7 @@
           "name": "childNodes",
           "start": 5412,
           "end": 5635,
-          "called": 31467,
+          "called": 31479,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20283,7 +20283,7 @@
           "name": "elementVisibility",
           "start": 5640,
           "end": 6337,
-          "called": 17383,
+          "called": 17389,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20300,7 +20300,7 @@
           "name": "recordNode",
           "start": 6342,
           "end": 7066,
-          "called": 30667,
+          "called": 30679,
           "coveredShare": 0.851,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20317,7 +20317,7 @@
           "name": "recordElement",
           "start": 7071,
           "end": 7674,
-          "called": 17382,
+          "called": 17388,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20334,7 +20334,7 @@
           "name": "hasHiddenContent",
           "start": 7686,
           "end": 7872,
-          "called": 16894,
+          "called": 16900,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -20351,7 +20351,7 @@
           "name": "recordVisibleElement",
           "start": 7877,
           "end": 8212,
-          "called": 16861,
+          "called": 16867,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -21287,7 +21287,7 @@
           "name": "apply",
           "start": 591,
           "end": 900,
-          "called": 17382,
+          "called": 17388,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -21338,7 +21338,7 @@
           "name": "hides",
           "start": 1228,
           "end": 1965,
-          "called": 17382,
+          "called": 17388,
           "coveredShare": 0.979,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -23627,7 +23627,7 @@
           "name": "data",
           "start": 2014,
           "end": 2093,
-          "called": 37,
+          "called": 36,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -23729,7 +23729,7 @@
           "name": "pull",
           "start": 2675,
           "end": 2704,
-          "called": 45,
+          "called": 44,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -23831,7 +23831,7 @@
           "name": "drainedOrClosed",
           "start": 4150,
           "end": 4421,
-          "called": 17,
+          "called": 16,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -23848,7 +23848,7 @@
           "name": "(anonymous)",
           "start": 4210,
           "end": 4417,
-          "called": 17,
+          "called": 16,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",
@@ -23865,7 +23865,7 @@
           "name": "settle",
           "start": 4248,
           "end": 4352,
-          "called": 17,
+          "called": 16,
           "coveredShare": 1,
           "sourceIdentity": {
             "version": "typescript-tokens-v2",

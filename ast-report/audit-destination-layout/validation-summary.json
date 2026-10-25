@@ -1,0 +1,432 @@
+{
+  "candidate": "17085397bb0ce9af62d69bffe6a314513f277f7f",
+  "base": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "sourceFinalBeforeTests": true,
+  "ordinaryCommandStartedBeforeCommit": "The final worktree source was already in place; committing it did not change any input. No executable edits followed.",
+  "ordinary": {
+    "backend": 4759,
+    "portal": 49,
+    "failures": 0,
+    "skips": 0,
+    "exitCode": 0
+  },
+  "focused": {
+    "tests": 132,
+    "failures": 0,
+    "skips": 0,
+    "exitCode": 0
+  },
+  "typecheck": "passed",
+  "portalBuild": "passed",
+  "apiSurface": {
+    "snapshots": 48,
+    "changed": 0,
+    "exitCode": 0,
+    "limit": "The narrow emitter ignores33 diagnostics in2 files outside public_surface; the full typecheck passed."
+  },
+  "habitHooks": {
+    "exitCode": 1,
+    "findings": 30,
+    "newFromLayout": 0,
+    "snooze": [],
+    "disposition": "Reasons retained in quality-notes.md; no tool failure."
+  },
+  "quality": {
+    "processExitCode": 1,
+    "outcomes": {
+      "Delta": "goal miss",
+      "Review": "goal miss",
+      "CRAP": "passed",
+      "Architecture": "passed"
+    },
+    "crapExitCode": 0,
+    "technicalBlockers": 0,
+    "tier": "T1 Team review"
+  },
+  "coverage": {
+    "sourceFingerprint": "86b5dd607d321fb9b40c3cf02561b2869e74bd9a2e9997d0536503bcef878f45",
+    "inputsFingerprint": "e36a3be29141f873738372119075eabdfa178d5ea801a1d081f9ee66603083a1",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit",
+    "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+    "captureId": "0f39f0921203e874cacfbaea5ea6e59f388e808d6e064b2d45f503a2562d3eb7",
+    "comparisonIdentity": {
+      "sourceFingerprint": "86b5dd607d321fb9b40c3cf02561b2869e74bd9a2e9997d0536503bcef878f45",
+      "inputsFingerprint": "e36a3be29141f873738372119075eabdfa178d5ea801a1d081f9ee66603083a1",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit"
+    },
+    "status": "verified",
+    "capturedCommit": "17085397bb0ce9af62d69bffe6a314513f277f7f",
+    "buildFingerprint": "040f8752291ba7b5f1fb7b56ff597e8f4e7b32d686b4f0d35638ce4c7e3526a9",
+    "captureManifestFingerprint": "f42c3b31379553b2421f9d899bfe075ed6b7fa7b5ec937d5c0dc077e1d8509b8"
+  },
+  "browser": {
+    "scenario": "Given desktop, tablet, mobile, and narrow viewports, when the real Audit page renders, then the panel fills the page content, Save and Test share a row when they fit, and Test is gray.",
+    "phase": "green",
+    "scope": "Chromium renders production LoggingRoutes, page, layout and stylesheet. Trusted local Admin fixture, in-memory settings store and controlled Test sender. No live writes.",
+    "measurements": [
+      {
+        "viewport": 1440,
+        "main": {
+          "x": 120,
+          "y": 89,
+          "width": 1200,
+          "height": 1049.25
+        },
+        "panel": {
+          "x": 120,
+          "y": 253.9375,
+          "width": 1200,
+          "height": 812.3125
+        },
+        "header": {
+          "x": 120,
+          "y": 0,
+          "width": 1200,
+          "height": 88
+        },
+        "save": {
+          "x": 149,
+          "y": 936,
+          "width": 67.53125,
+          "height": 48
+        },
+        "test": {
+          "x": 228.53125,
+          "y": 936,
+          "width": 189.59375,
+          "height": 48
+        },
+        "saveBackground": "rgb(232, 85, 42)",
+        "testBackground": "rgb(67, 69, 78)",
+        "overflow": false,
+        "saveType": "submit",
+        "testType": "submit",
+        "testAction": "/logging/test",
+        "testNoValidate": true
+      },
+      {
+        "viewport": 1024,
+        "main": {
+          "x": 24,
+          "y": 89,
+          "width": 976,
+          "height": 1072.5
+        },
+        "panel": {
+          "x": 24,
+          "y": 253.9375,
+          "width": 976,
+          "height": 835.5625
+        },
+        "header": {
+          "x": 24,
+          "y": 0,
+          "width": 976,
+          "height": 88
+        },
+        "save": {
+          "x": 53,
+          "y": 936,
+          "width": 67.53125,
+          "height": 48
+        },
+        "test": {
+          "x": 132.53125,
+          "y": 936,
+          "width": 189.59375,
+          "height": 48
+        },
+        "saveBackground": "rgb(232, 85, 42)",
+        "testBackground": "rgb(67, 69, 78)",
+        "overflow": false,
+        "saveType": "submit",
+        "testType": "submit",
+        "testAction": "/logging/test",
+        "testNoValidate": true
+      },
+      {
+        "viewport": 768,
+        "main": {
+          "x": 24,
+          "y": 89,
+          "width": 720,
+          "height": 1101.296875
+        },
+        "panel": {
+          "x": 24,
+          "y": 233.140625,
+          "width": 720,
+          "height": 885.15625
+        },
+        "header": {
+          "x": 24,
+          "y": 0,
+          "width": 720,
+          "height": 88
+        },
+        "save": {
+          "x": 53,
+          "y": 964.796875,
+          "width": 67.53125,
+          "height": 48
+        },
+        "test": {
+          "x": 132.53125,
+          "y": 964.796875,
+          "width": 189.59375,
+          "height": 48
+        },
+        "saveBackground": "rgb(232, 85, 42)",
+        "testBackground": "rgb(67, 69, 78)",
+        "overflow": false,
+        "saveType": "submit",
+        "testType": "submit",
+        "testAction": "/logging/test",
+        "testNoValidate": true
+      },
+      {
+        "viewport": 390,
+        "main": {
+          "x": 16,
+          "y": 193,
+          "width": 358,
+          "height": 1247.03125
+        },
+        "panel": {
+          "x": 16,
+          "y": 332.328125,
+          "width": 358,
+          "height": 1035.703125
+        },
+        "header": {
+          "x": 16,
+          "y": 0,
+          "width": 358,
+          "height": 192
+        },
+        "save": {
+          "x": 37,
+          "y": 1176.03125,
+          "width": 67.53125,
+          "height": 48
+        },
+        "test": {
+          "x": 116.53125,
+          "y": 1176.03125,
+          "width": 189.59375,
+          "height": 48
+        },
+        "saveBackground": "rgb(232, 85, 42)",
+        "testBackground": "rgb(67, 69, 78)",
+        "overflow": false,
+        "saveType": "submit",
+        "testType": "submit",
+        "testAction": "/logging/test",
+        "testNoValidate": true
+      },
+      {
+        "viewport": 320,
+        "main": {
+          "x": 16,
+          "y": 193,
+          "width": 288,
+          "height": 1403.125
+        },
+        "panel": {
+          "x": 16,
+          "y": 332.328125,
+          "width": 288,
+          "height": 1191.796875
+        },
+        "header": {
+          "x": 16,
+          "y": 0,
+          "width": 288,
+          "height": 192
+        },
+        "save": {
+          "x": 37,
+          "y": 1248.875,
+          "width": 67.53125,
+          "height": 48
+        },
+        "test": {
+          "x": 37,
+          "y": 1308.875,
+          "width": 189.59375,
+          "height": 48
+        },
+        "saveBackground": "rgb(232, 85, 42)",
+        "testBackground": "rgb(67, 69, 78)",
+        "overflow": false,
+        "saveType": "submit",
+        "testType": "submit",
+        "testAction": "/logging/test",
+        "testNoValidate": true
+      },
+      {
+        "viewport": 240,
+        "main": {
+          "x": 16,
+          "y": 193,
+          "width": 208,
+          "height": 1750.59375
+        },
+        "panel": {
+          "x": 16,
+          "y": 352.46875,
+          "width": 208,
+          "height": 1519.125
+        },
+        "header": {
+          "x": 16,
+          "y": 0,
+          "width": 208,
+          "height": 192
+        },
+        "save": {
+          "x": 37,
+          "y": 1529.84375,
+          "width": 67.53125,
+          "height": 48
+        },
+        "test": {
+          "x": 37,
+          "y": 1589.84375,
+          "width": 166,
+          "height": 68
+        },
+        "saveBackground": "rgb(232, 85, 42)",
+        "testBackground": "rgb(67, 69, 78)",
+        "overflow": false,
+        "saveType": "submit",
+        "testType": "submit",
+        "testAction": "/logging/test",
+        "testNoValidate": true
+      }
+    ],
+    "failures": [],
+    "screenshots": [
+      "green-1440.png",
+      "green-1024.png",
+      "green-768.png",
+      "green-390.png",
+      "green-320.png",
+      "green-240.png"
+    ],
+    "membersTabletWidth": 650,
+    "browserErrors": [],
+    "passed": true
+  },
+  "formBrowser": {
+    "scope": "Real Chromium with production LoggingRoutes, form, layout, service and credential codec; trusted local Admin fixture, in-memory store, controlled Test sender. No live customer writes.",
+    "checks": [
+      "Keyboard switching preserves edits and only Axiom submits a required dataset. Hash CSP executes without unsafe-inline.",
+      "Unsaved type change refuses Test with no send. Custom Save removes dataset and retains existing endpoint-bound credential; saved Test succeeds.",
+      "Members keeps default script denial; no browser script errors. 1200, 390 and 320 pixel layouts have no horizontal overflow.",
+      "JavaScript disabled: Axiom and Custom both save through native forms. Legacy None row stays unchanged on refused Test and upgrades only on explicit Bearer Save."
+    ],
+    "screenshots": [
+      "axiom-1200.png",
+      "axiom-390.png",
+      "axiom-320.png",
+      "custom-320.png"
+    ],
+    "passed": true
+  },
+  "independentReview": "No findings. Contrast, focus, native form semantics and shared Members layout verified.",
+  "notSelected": {
+    "postgres": "Store, SQL, config and lifetime unchanged.",
+    "workosLive": "Authentication and organization operations unchanged.",
+    "separateRendererAndSearchLive": "Pipeline unchanged; hosted build still runs mandatory offline renderer."
+  },
+  "approval": "Required current-candidate owner/team approval is pending.",
+  "containerGates": [
+    {
+      "name": "collector-gate",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "dist/test/integration/logging/audit/audit-sender.runtime.js",
+        "dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js"
+      ],
+      "environment": {},
+      "started": 1792902145.122775,
+      "status": "passed",
+      "exitCode": 0,
+      "ended": 1792902160.716324
+    },
+    {
+      "name": "self-hosted-container",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/self-hosted-container.test.js"
+      ],
+      "environment": {
+        "THERMUS_CONTAINER_GATE": "1"
+      },
+      "started": 1792902160.716923,
+      "status": "passed",
+      "exitCode": 0,
+      "ended": 1792902257.4272761
+    },
+    {
+      "name": "hosted-image",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/hosted-image.test.js"
+      ],
+      "environment": {},
+      "started": 1792902257.4279182,
+      "status": "passed",
+      "exitCode": 0,
+      "ended": 1792903137.819751
+    }
+  ],
+  "collector": {
+    "tests": 10,
+    "failures": 0,
+    "skips": 0
+  },
+  "selfHostedContainer": {
+    "tests": 11,
+    "failures": 0,
+    "skips": 0
+  },
+  "hostedImage": {
+    "tests": 7,
+    "failures": 0,
+    "skips": 0,
+    "platform": "linux/amd64",
+    "buildId": "aol9rcors0vkjk6a0od8kmlez",
+    "imageManifest": "sha256:29ae11531673650b22f118a8b764e296caa214717acd8f953eef9137397b913e"
+  },
+  "hostedBuild": {
+    "testsByStage": [
+      3071,
+      29,
+      20,
+      1070,
+      119,
+      13
+    ],
+    "failures": 0,
+    "result": "passed inside the image gate; no duplicate standalone run"
+  },
+  "allSelectedTestGates": "passed"
+}

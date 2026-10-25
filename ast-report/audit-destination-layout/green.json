@@ -1,0 +1,259 @@
+{
+  "scenario": "Given desktop, tablet, mobile, and narrow viewports, when the real Audit page renders, then the panel fills the page content, Save and Test share a row when they fit, and Test is gray.",
+  "phase": "green",
+  "scope": "Chromium renders production LoggingRoutes, page, layout and stylesheet. Trusted local Admin fixture, in-memory settings store and controlled Test sender. No live writes.",
+  "measurements": [
+    {
+      "viewport": 1440,
+      "main": {
+        "x": 120,
+        "y": 89,
+        "width": 1200,
+        "height": 1049.25
+      },
+      "panel": {
+        "x": 120,
+        "y": 253.9375,
+        "width": 1200,
+        "height": 812.3125
+      },
+      "header": {
+        "x": 120,
+        "y": 0,
+        "width": 1200,
+        "height": 88
+      },
+      "save": {
+        "x": 149,
+        "y": 936,
+        "width": 67.53125,
+        "height": 48
+      },
+      "test": {
+        "x": 228.53125,
+        "y": 936,
+        "width": 189.59375,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(67, 69, 78)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 1024,
+      "main": {
+        "x": 24,
+        "y": 89,
+        "width": 976,
+        "height": 1072.5
+      },
+      "panel": {
+        "x": 24,
+        "y": 253.9375,
+        "width": 976,
+        "height": 835.5625
+      },
+      "header": {
+        "x": 24,
+        "y": 0,
+        "width": 976,
+        "height": 88
+      },
+      "save": {
+        "x": 53,
+        "y": 936,
+        "width": 67.53125,
+        "height": 48
+      },
+      "test": {
+        "x": 132.53125,
+        "y": 936,
+        "width": 189.59375,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(67, 69, 78)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 768,
+      "main": {
+        "x": 24,
+        "y": 89,
+        "width": 720,
+        "height": 1101.296875
+      },
+      "panel": {
+        "x": 24,
+        "y": 233.140625,
+        "width": 720,
+        "height": 885.15625
+      },
+      "header": {
+        "x": 24,
+        "y": 0,
+        "width": 720,
+        "height": 88
+      },
+      "save": {
+        "x": 53,
+        "y": 964.796875,
+        "width": 67.53125,
+        "height": 48
+      },
+      "test": {
+        "x": 132.53125,
+        "y": 964.796875,
+        "width": 189.59375,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(67, 69, 78)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 390,
+      "main": {
+        "x": 16,
+        "y": 193,
+        "width": 358,
+        "height": 1247.03125
+      },
+      "panel": {
+        "x": 16,
+        "y": 332.328125,
+        "width": 358,
+        "height": 1035.703125
+      },
+      "header": {
+        "x": 16,
+        "y": 0,
+        "width": 358,
+        "height": 192
+      },
+      "save": {
+        "x": 37,
+        "y": 1176.03125,
+        "width": 67.53125,
+        "height": 48
+      },
+      "test": {
+        "x": 116.53125,
+        "y": 1176.03125,
+        "width": 189.59375,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(67, 69, 78)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 320,
+      "main": {
+        "x": 16,
+        "y": 193,
+        "width": 288,
+        "height": 1403.125
+      },
+      "panel": {
+        "x": 16,
+        "y": 332.328125,
+        "width": 288,
+        "height": 1191.796875
+      },
+      "header": {
+        "x": 16,
+        "y": 0,
+        "width": 288,
+        "height": 192
+      },
+      "save": {
+        "x": 37,
+        "y": 1248.875,
+        "width": 67.53125,
+        "height": 48
+      },
+      "test": {
+        "x": 37,
+        "y": 1308.875,
+        "width": 189.59375,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(67, 69, 78)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 240,
+      "main": {
+        "x": 16,
+        "y": 193,
+        "width": 208,
+        "height": 1750.59375
+      },
+      "panel": {
+        "x": 16,
+        "y": 352.46875,
+        "width": 208,
+        "height": 1519.125
+      },
+      "header": {
+        "x": 16,
+        "y": 0,
+        "width": 208,
+        "height": 192
+      },
+      "save": {
+        "x": 37,
+        "y": 1529.84375,
+        "width": 67.53125,
+        "height": 48
+      },
+      "test": {
+        "x": 37,
+        "y": 1589.84375,
+        "width": 166,
+        "height": 68
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(67, 69, 78)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "green-1440.png",
+    "green-1024.png",
+    "green-768.png",
+    "green-390.png",
+    "green-320.png",
+    "green-240.png"
+  ],
+  "membersTabletWidth": 650,
+  "browserErrors": [],
+  "passed": true
+}

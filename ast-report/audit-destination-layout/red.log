@@ -1,0 +1,315 @@
+{
+  "scenario": "Given desktop, tablet, mobile, and narrow viewports, when the real Audit page renders, then the panel fills the page content, Save and Test share a row when they fit, and Test is gray.",
+  "phase": "red",
+  "scope": "Chromium renders production LoggingRoutes, page, layout and stylesheet. Trusted local Admin fixture, in-memory settings store and controlled Test sender. No live writes.",
+  "measurements": [
+    {
+      "viewport": 1440,
+      "main": {
+        "x": 120,
+        "y": 89,
+        "width": 1200,
+        "height": 1182.09375
+      },
+      "panel": {
+        "x": 120,
+        "y": 253.9375,
+        "width": 720,
+        "height": 945.15625
+      },
+      "header": {
+        "x": 120,
+        "y": 0,
+        "width": 1200,
+        "height": 88
+      },
+      "save": {
+        "x": 149,
+        "y": 985.59375,
+        "width": 662,
+        "height": 48
+      },
+      "test": {
+        "x": 149,
+        "y": 1045.59375,
+        "width": 662,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(232, 85, 42)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 1024,
+      "main": {
+        "x": 24,
+        "y": 89,
+        "width": 976,
+        "height": 1182.09375
+      },
+      "panel": {
+        "x": 24,
+        "y": 253.9375,
+        "width": 720,
+        "height": 945.15625
+      },
+      "header": {
+        "x": 24,
+        "y": 0,
+        "width": 976,
+        "height": 88
+      },
+      "save": {
+        "x": 53,
+        "y": 985.59375,
+        "width": 662,
+        "height": 48
+      },
+      "test": {
+        "x": 53,
+        "y": 1045.59375,
+        "width": 662,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(232, 85, 42)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 768,
+      "main": {
+        "x": 59,
+        "y": 89,
+        "width": 650,
+        "height": 1216.546875
+      },
+      "panel": {
+        "x": 59,
+        "y": 233.140625,
+        "width": 650,
+        "height": 968.40625
+      },
+      "header": {
+        "x": 24,
+        "y": 0,
+        "width": 720,
+        "height": 88
+      },
+      "save": {
+        "x": 88,
+        "y": 988.046875,
+        "width": 592,
+        "height": 48
+      },
+      "test": {
+        "x": 88,
+        "y": 1048.046875,
+        "width": 592,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(232, 85, 42)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 390,
+      "main": {
+        "x": 16,
+        "y": 193,
+        "width": 358,
+        "height": 1339.03125
+      },
+      "panel": {
+        "x": 16,
+        "y": 332.328125,
+        "width": 358,
+        "height": 1095.703125
+      },
+      "header": {
+        "x": 16,
+        "y": 0,
+        "width": 358,
+        "height": 192
+      },
+      "save": {
+        "x": 37,
+        "y": 1176.03125,
+        "width": 316,
+        "height": 48
+      },
+      "test": {
+        "x": 37,
+        "y": 1236.03125,
+        "width": 316,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(232, 85, 42)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 320,
+      "main": {
+        "x": 16,
+        "y": 193,
+        "width": 288,
+        "height": 1435.125
+      },
+      "panel": {
+        "x": 16,
+        "y": 332.328125,
+        "width": 288,
+        "height": 1191.796875
+      },
+      "header": {
+        "x": 16,
+        "y": 0,
+        "width": 288,
+        "height": 192
+      },
+      "save": {
+        "x": 37,
+        "y": 1248.875,
+        "width": 246,
+        "height": 48
+      },
+      "test": {
+        "x": 37,
+        "y": 1308.875,
+        "width": 246,
+        "height": 48
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(232, 85, 42)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    },
+    {
+      "viewport": 240,
+      "main": {
+        "x": 16,
+        "y": 193,
+        "width": 208,
+        "height": 1782.59375
+      },
+      "panel": {
+        "x": 16,
+        "y": 352.46875,
+        "width": 208,
+        "height": 1519.125
+      },
+      "header": {
+        "x": 16,
+        "y": 0,
+        "width": 208,
+        "height": 192
+      },
+      "save": {
+        "x": 37,
+        "y": 1529.84375,
+        "width": 166,
+        "height": 48
+      },
+      "test": {
+        "x": 37,
+        "y": 1589.84375,
+        "width": 166,
+        "height": 68
+      },
+      "saveBackground": "rgb(232, 85, 42)",
+      "testBackground": "rgb(232, 85, 42)",
+      "overflow": false,
+      "saveType": "submit",
+      "testType": "submit",
+      "testAction": "/logging/test",
+      "testNoValidate": true
+    }
+  ],
+  "failures": [
+    "1440px: Audit panel does not fill page content width",
+    "1440px: Save and Test do not share a row",
+    "1440px: Save stretches across the form",
+    "1440px: Test lacks gray secondary background",
+    "1024px: Audit panel does not fill page content width",
+    "1024px: Save and Test do not share a row",
+    "1024px: Save stretches across the form",
+    "1024px: Test lacks gray secondary background",
+    "768px: Audit panel does not fill page content width",
+    "768px: Save and Test do not share a row",
+    "768px: Save stretches across the form",
+    "768px: Test lacks gray secondary background",
+    "390px: Save and Test do not share a row",
+    "390px: Save stretches across the form",
+    "390px: Test lacks gray secondary background",
+    "320px: Save stretches across the form",
+    "320px: Test lacks gray secondary background",
+    "240px: Save stretches across the form",
+    "240px: Test lacks gray secondary background"
+  ],
+  "screenshots": [
+    "red-1440.png",
+    "red-1024.png",
+    "red-768.png",
+    "red-390.png",
+    "red-320.png",
+    "red-240.png"
+  ],
+  "membersTabletWidth": 650,
+  "browserErrors": [],
+  "passed": false
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 1440px: Audit panel does not fill page content width
+1440px: Save and Test do not share a row
+1440px: Save stretches across the form
+1440px: Test lacks gray secondary background
+1024px: Audit panel does not fill page content width
+1024px: Save and Test do not share a row
+1024px: Save stretches across the form
+1024px: Test lacks gray secondary background
+768px: Audit panel does not fill page content width
+768px: Save and Test do not share a row
+768px: Save stretches across the form
+768px: Test lacks gray secondary background
+390px: Save and Test do not share a row
+390px: Save stretches across the form
+390px: Test lacks gray secondary background
+320px: Save stretches across the form
+320px: Test lacks gray secondary background
+240px: Save stretches across the form
+240px: Test lacks gray secondary background
+
+false !== true
+
+    at file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/ast-report/audit-destination-layout/browser-check.mjs:91:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.20.0

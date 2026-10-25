@@ -699,7 +699,10 @@ Exclude sender responses, retries, and settings-read diagnostics from customer
 capture. An Audit logs action may record one administration event; the labelled
 synthetic Test record is separate. Export work must not capture itself.
 
-**Settings and Test.** Choose Axiom or Custom. Use one public HTTPS OTLP logs
+**Settings and Test.** The destination panel fills the shared page content width,
+up to 1,200 pixels. Keep Save and gray secondary Test beside each other at their
+natural widths, with a gap. Wrap the action row when it cannot fit. Keep the
+Members layout unchanged. Choose Axiom or Custom. Use one public HTTPS OTLP logs
 endpoint and one write-only Bearer token field. Axiom requires its dataset;
 Custom omits it. A dataset uses 1–128 ASCII letters,
 digits, or hyphens and supplies only `x-axiom-dataset`; no arbitrary header editor
