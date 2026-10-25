@@ -1,0 +1,380 @@
+{
+  "at": "2026-10-25T00:57:40.132881+00:00",
+  "unscopedExit": 2,
+  "scopedExit": 0,
+  "findings": [
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 5,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 8,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 10,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 12,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 14,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 17,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 19,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 21,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 23,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 26,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 28,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 30,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 32,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 35,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 37,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 39,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 41,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 44,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 46,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 51,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 54,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 56,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 59,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 61,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 68,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 70,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 72,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 74,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 77,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 79,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 81,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 83,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 86,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 88,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 90,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 92,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 95,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 109,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 111,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 117,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 119,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 121,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 127,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 129,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 133,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 135,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 137,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 139,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 142,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 144,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 154,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 156,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 159,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "line": 161,
+      "intentional": true,
+      "reason": "Unified diff empty context marker"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/privacy.md",
+      "line": 205,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/privacy.md",
+      "line": 206,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/terms.md",
+      "line": 107,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    },
+    {
+      "file": "docs/legal/organization-audit-2026-10-24-proposal-v3/terms.md",
+      "line": 108,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "line": 116,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "line": 117,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "line": 336,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    },
+    {
+      "file": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "line": 337,
+      "intentional": true,
+      "reason": "Frozen Markdown hard line break in contact address"
+    }
+  ],
+  "decision": "Retain exact legal Markdown hard-break bytes and unified-diff syntax; all other candidate files pass whitespace check."
+}

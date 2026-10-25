@@ -1,0 +1,8 @@
+{
+  "previous_version": "v1",
+  "changed_files": [
+    "src/interfaces/web/account/logging-page.ts"
+  ],
+  "registry_unchanged": true,
+  "renders_reused_byte_for_byte": true
+}

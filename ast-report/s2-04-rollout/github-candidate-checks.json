@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-25T01:05:09.500Z",
+  "candidate": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "mergeable": true,
+  "draftAtRead": true,
+  "headRevision": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "checks": [],
+  "statuses": [],
+  "annotations": [],
+  "hasMore": false,
+  "job": null,
+  "jobs": [],
+  "log": null,
+  "logTruncated": false,
+  "scope": "GitHub check/status readback; no remote check or status entries. Required repository local gates are recorded separately; this is not a CI pass."
+}

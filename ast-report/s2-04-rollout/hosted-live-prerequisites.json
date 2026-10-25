@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-10-25T00:09:19.989514+00:00",
+  "method": "local presence checks and existing protected staging launcher with a boolean-only child; no provider API or live tests",
+  "ambient_settings_present": {
+    "WORKOS_API_KEY": false,
+    "WORKOS_CLIENT_ID": false,
+    "WORKOS_AUTHKIT_ISSUER": false
+  },
+  "launcher_present": true,
+  "launcher_readable": true,
+  "launcher_child_settings_present": {
+    "WORKOS_API_KEY": true,
+    "WORKOS_CLIENT_ID": true,
+    "WORKOS_AUTHKIT_ISSUER": true
+  },
+  "staging_key_prefix": true,
+  "designated_staging_client_matches": true,
+  "designated_staging_issuer_matches": true,
+  "launcher_child_node24": true,
+  "pinned_lightpanda_present": true,
+  "pinned_lightpanda_executable": true,
+  "playwright_package_present": true,
+  "playwright_chromium_executable_present": true,
+  "openssl_in_path": true,
+  "ipv4_loopback_ports_bindable": {
+    "46443": true,
+    "46480": true
+  },
+  "ipv6_loopback_ports_bindable": {
+    "46443": true,
+    "46480": true
+  },
+  "provider_profile_and_registered_urls_checked_in_this_audit": false,
+  "gate_started": false,
+  "note": "Names and booleans only; no secret values retained. Port availability is point-in-time. The gate preflight must verify current provider settings; file/key presence is not a gate pass."
+}

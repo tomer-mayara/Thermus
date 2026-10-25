@@ -1,0 +1,15 @@
+flowchart TB
+  subgraph logs_server["Container: Thermus Node server"]
+    logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings and queue lifetime"]
+    logs_mcp["mcp · TypeScript<br/>Final public capture<br/>Content-free diagnostics"]
+    logs_web["web · TypeScript<br/>Trusted Admin capture<br/>Settings and invitation routes"]
+    logs_audit["audit-logs · TypeScript / pg<br/>Redact, bound, and gate capture<br/>Queue; authorize export; settings / Test"]
+    logs_system["system-logs · TypeScript<br/>Internal diagnostics<br/>Caller location retained"]
+  end
+  logs_collector["External: customer Collector<br/>Customer events and Test / OTLP HTTPS"]
+  logs_app ==>|supplies AuditLog| logs_mcp
+  logs_app ==>|supplies settings and AuditLog| logs_web
+  logs_mcp -->|validated final tool outcome| logs_audit
+  logs_web -->|settings and action metadata| logs_audit
+  logs_mcp -->|completion diagnostics| logs_system
+  logs_audit -->|authorized export and saved Test| logs_collector

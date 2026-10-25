@@ -1,0 +1,31 @@
+{
+  "status": "SANITIZED BASELINE SUMMARY; NOT RELEASE PROOF",
+  "observed_at": "2026-10-25T00:11:19.308Z",
+  "scope": "Existing CLI MCP baseline while Audit export was disabled.",
+  "existing_registration": true,
+  "cli_registration_distinct_from_production_web_client": true,
+  "new_client_scopes_or_permission_change": false,
+  "prior_attempt": "Expired-grant refresh failed; the existing CLI registration reauthenticated through the signed-in browser. No old refresh was replayed.",
+  "after_reauthentication": {
+    "tool": "page fetch",
+    "target": "https://example.com/",
+    "exit": 0,
+    "stderr_empty": true,
+    "intended_internal_organization_matched": true,
+    "intended_existing_admin_matched": true,
+    "audit_export_enabled": false
+  },
+  "provenance": {
+    "source": "mcp-login-facts.json (retain privately; do not publish raw cache claims)",
+    "source_sha256": "3949b1f2c8ae51cec927055952f10ff6b28c1e0629dd7e85667f3fb8fd470bd6",
+    "basis": "Selected nonsecret facts plus manager-confirmed expired-grant diagnosis and successful baseline result. Raw login/cache/token/API response files are excluded."
+  },
+  "excluded_fields": [
+    "Client/user/organization identifiers",
+    "Issuer URL",
+    "OAuth authorization URL",
+    "Scopes and token/cache contents",
+    "Raw stdout/stderr or API responses"
+  ],
+  "limits": "A CLI baseline is separate from the Production web registration and does not prove deployed Audit Save/Test/Enable, export, legal approval or release completion."
+}

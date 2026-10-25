@@ -1,0 +1,306 @@
+{
+  "captured_at": "2026-10-25T00:08:08.034516+00:00",
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "current_head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+  "candidate": "stable working source after test-oracle and text-input CSS corrections; not a committed release candidate",
+  "selection": [
+    "src",
+    "test",
+    "sql",
+    "architecture/components.md",
+    "Dockerfile.hosted.dockerignore",
+    "docs/legal/organization-audit-2026-10-24-proposal-v3"
+  ],
+  "tracked_diff_sha256": "f14d407f54b5b4661b90cac58df4ba0e50b9b63cd61f501459a8d318d07e349a",
+  "complete_review_diff_sha256": "dcdad710e5947be82f457e2391b01d316d6c472831a700641c3a2baecbb396bd",
+  "files": [
+    {
+      "path": "Dockerfile.hosted.dockerignore",
+      "sha256": "7d9b2206fa2d9b670b236b0445a45f04239783c092dedc66f7165c2e03bd7e90",
+      "base_sha256": "99ca23c10b0c0d9ebe7b941419c2fb325b3cd67e4943f54f6e49662b787ad8e8",
+      "untracked": false
+    },
+    {
+      "path": "architecture/components.md",
+      "sha256": "1bfc16c8128c1e4f6d0a5b7b35d348cd2e477c135bd8779f86ef899e542be9f5",
+      "base_sha256": "d6a46f4bfccc3b8aed21debacc4df9af093c6b70ffd3d1572e823726b19f1117",
+      "untracked": false
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+      "sha256": "268f457e758d73dabd08d95d81ed19f720fe66f8665bc59b9fe29849f85a844b",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/agreement.txt",
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/audit-help.md",
+      "sha256": "1f4ad87cb93356115e2626f493d2f28040ab80ed94bd8353a3870efe4a27de4d",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch",
+      "sha256": "b5f1267f184d22fd71cd1303c94ac253e19addc375ded8388304b3c7653ff784",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md",
+      "sha256": "7df2d2c278f38a2319199d6260a6da719c769b8870b06f4ae6738bb81d91e67c",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/manifest.json",
+      "sha256": "9ff7e5f5fa48bad17dcf5cde7248aa226700e2b10f3eb9da26a1de42c6f90075",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/privacy.md",
+      "sha256": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/terms.md",
+      "sha256": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "sql/migrations/20261024231921_add_logging_axiom_dataset.sql",
+      "sha256": "fe1995ed7f44515d20cf82ba42b6aba7559bf84300f5840a19b3138db909559f",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "sha256": "59ab755b0a45912020b1d037c84c62b93ce87516ce82e35d31680c4ac2961c41",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "sha256": "3dcd48e41523d691edb76735d49fe4e447fb376244eaa3f2f1465598ce873ff3",
+      "base_sha256": "122e49369dbec054f6899c7d49ee0a3fd806598b80a9c3780cefa026cc816aa4",
+      "untracked": false
+    },
+    {
+      "path": "src/interfaces/web/account/logging-form.ts",
+      "sha256": "e73e26db746b44456b2945d402109568293e3573bd0abb66a9121855b8514843",
+      "base_sha256": "d3a8c62b2d445768f10c90586536bd139239551c8e86df8be1a5571b45092838",
+      "untracked": false
+    },
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "sha256": "058b8a70e911cf25a67c20d11b14ddfcf084416cbb0ab45e71f8578b80554189",
+      "base_sha256": "86dfa7d198189ad11b55c9221c33e1bba5fd299a43cdb778421e6a9c51506679",
+      "untracked": false
+    },
+    {
+      "path": "src/interfaces/web/account/logging-routes.ts",
+      "sha256": "4229cfdc71e53b6a924ab1d7926d65ea06dfabe87d13e2e60fee10e4ebdb04e8",
+      "base_sha256": "c547f373ff59de4df1f9396fb31941002bf57d1a5274a596eeff13fb130e1fbe",
+      "untracked": false
+    },
+    {
+      "path": "src/interfaces/web/account/logging-test-page.ts",
+      "sha256": "03f114ae37ad3eefd42050f77339d23518b56b2021f426ca4001fcaab1572925",
+      "base_sha256": "b147d32c670e6e2ecf391a81a3d16933cb0fe0761e02eeb3e433cdb3f4f1b5d3",
+      "untracked": false
+    },
+    {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "sha256": "51993f89125398e7ed672d07d21e92933b858e5cccae0ac88da89a4911c5f64f",
+      "base_sha256": "80daaa8e84ad6cfbb2a88a7ac4152a606d3af6aebfce613f92d5d92e13d398e0",
+      "untracked": false
+    },
+    {
+      "path": "src/logs/audit/audit-send.ts",
+      "sha256": "039ada2b8d9cdee3815c3e5f78443eba6c12e74ab29361dc54c6bd8d5f581377",
+      "base_sha256": "cea257cbbe55813c01cbf71a84d7487f9cc5d4de9bdb1e9d951beff902477056",
+      "untracked": false
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "sha256": "799fc560e474796eab8a170367c36a2c7f7ced28e1f87f61739ae6034450b40f",
+      "base_sha256": "28ae8f8dc810dd4b0bf8c91919e61b4eb333a7101fda6dc37638781b19675f2e",
+      "untracked": false
+    },
+    {
+      "path": "src/logs/audit/destination-settings-store.ts",
+      "sha256": "7e93097df8191ed983052de5aad3e7c5bbe1eaad25813d90564c26417a83efa4",
+      "base_sha256": "1b78171a63b9fd669aa4a1efc70a6a8878a4262de5b2fc0ebaf3e5142bbb3860",
+      "untracked": false
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-request.ts",
+      "sha256": "6218836a8d49503624fc650cdf08a09517de9f75b252b1bda5714a12904b4dfb",
+      "base_sha256": "50711fd6b54e3028b94744b79b47c1613b45727ef9e9c89251183083c7f46314",
+      "untracked": false
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-sender.ts",
+      "sha256": "d9ae23a2d724d5f0561751493b2bd0a1dee4a251a632376d9529cd2c22d43636",
+      "base_sha256": "8aeb983e5a43c2e40cffe75a7757d37b6946bc756cc2347ab90646a42353abcc",
+      "untracked": false
+    },
+    {
+      "path": "src/logs/audit/pg-destination-settings-store.ts",
+      "sha256": "4b3517cc84644bce708138d196e4da09e7f114566211544a5c937cfcd8469b7f",
+      "base_sha256": "79ee42ff569e113e336cfad396f15df90c404b05262f3d495975ad6158ebfeb4",
+      "untracked": false
+    },
+    {
+      "path": "src/logs/audit/public-audit-destination.ts",
+      "sha256": "edca6ea8be1d18c749fd259439430bcc9d576f3300616d2ec0919b79eeff2133",
+      "base_sha256": "cf6953498d19bf01bc9002012829e7dd04c3b8def102f40a4ec92cebea2cb3dd",
+      "untracked": false
+    },
+    {
+      "path": "test/acceptance/auth/hosted-image.test.ts",
+      "sha256": "e4a2ca655948dbffa9eb8ba368953ab95cd6c29e6dd239ef13bdcb0cf88448fe",
+      "base_sha256": "d5e1d868ee015a948f04f64ddf61f8f47be8aa7ca63f8770a57c5d5223ff844e",
+      "untracked": false
+    },
+    {
+      "path": "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "sha256": "afae5ce897e02dc04123744dcbcdb09de449b1d3a197d53f09c4eff01e474cd9",
+      "base_sha256": "dee15a39bdbd8866b544e614f332f69bb1098d17c29d5c61867b0253f90b3136",
+      "untracked": false
+    },
+    {
+      "path": "test/acceptance/logging/audit/destination-settings.runtime.ts",
+      "sha256": "0d763a145bd948f5afba5bdd3a773383859c974b74a2ba2339bef2558f34ce5b",
+      "base_sha256": "b8c64bb99920f9e69572ab030e49489915571fa959f19b3d8a3e351aaf00ec61",
+      "untracked": false
+    },
+    {
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+      "sha256": "916b44a8661d3091f2ef4899dbd87113fb4115ebcfd2130e71b46079aac0a6bb",
+      "base_sha256": "216c616d145122200a23953b6a652344212cc1f1ce489d8e94860bc1d482e775",
+      "untracked": false
+    },
+    {
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts",
+      "sha256": "1500077e5b85e3a4defb4853d017760f021c10e05eb267ce3ac3bbc1372c371f",
+      "base_sha256": "54158da97fe81cb934effa841f5db783b603083652ff2b128e4239212ae64b78",
+      "untracked": false
+    },
+    {
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts",
+      "sha256": "b1bcafffe8157d67e1d70ac83b509774a53f545f744d1a1da15c553dd3649f00",
+      "base_sha256": "f22ca85794bed6656e1a5349b93cf0f407d5d87c11b022b539ee15ccb9b8a98b",
+      "untracked": false
+    },
+    {
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts",
+      "sha256": "1169670845842be563c3133dc62598d706d197adafc8b6d3498cd81847bb437f",
+      "base_sha256": "5944d230b2f8ca2b0e00421afb5238eeb271ee4fac6a7675eefa7e068a808776",
+      "untracked": false
+    },
+    {
+      "path": "test/integration/logging/audit/destination-settings.runtime.ts",
+      "sha256": "226ba1689314c88184ccc95a82370ea8b7c5202998842037b5030054265474fa",
+      "base_sha256": "cd9a1808140bb21f5edbc78bfcb2f113b179a8ef3ae4df22fa1a4e96382e9157",
+      "untracked": false
+    },
+    {
+      "path": "test/integration/logging/audit/logging-storage-export.test.ts",
+      "sha256": "db54a0c68469ea7ffcac8908c4684328992b4966388048baed0e7ea13594e429",
+      "base_sha256": "d5f83f0129b77a1e933058ecbcee98e73a5f61230da78329a28821b34f6bd42e",
+      "untracked": false
+    },
+    {
+      "path": "test/support/container/audit-sender-site.ts",
+      "sha256": "20857c3489c703e1f25817f97ac7f9bf107dba7e1ca65fd27453b31a00db2bcf",
+      "base_sha256": "c556a2c9655a3502147d7ef400e7b7d3eb7717ef39b31f3c63566c4aa7bbdfa7",
+      "untracked": false
+    },
+    {
+      "path": "test/support/doubles/logging/destination-settings-fake.ts",
+      "sha256": "3cb55be9bb1b29f60daf3bff4ea1258576af8365b3dae8e30a15a56efb316253",
+      "base_sha256": "1df5eeb9a3634196465fa7b7b329ca3d6186f207943e93e06358e81ad5f3337e",
+      "untracked": false
+    },
+    {
+      "path": "test/support/in-process/postgres-settings-site.ts",
+      "sha256": "fae54e63aa3fed99550c0f26f63574530189405116f58a0f1cb51904889d7fe4",
+      "base_sha256": "9224871c564f4c4dbee39fe441148d0a53dcfb2c015830638694bbd8b10ff3e4",
+      "untracked": false
+    },
+    {
+      "path": "test/support/processes/audit-destination-test-probe.ts",
+      "sha256": "487d54b1c1e9fefe3e77ebe77cc1673c57239972fb333c5cdfe4a8224c03254a",
+      "base_sha256": "70635770f11aa8d5e4b8f5815b9b9e60676cb32568632677d4e325dd48ac3ccf",
+      "untracked": false
+    },
+    {
+      "path": "test/support/processes/audit-sender-probe.ts",
+      "sha256": "8f7367d548e4ef8fe603ca792fa3caa914372afe5b3009ef7209103db5a30ed8",
+      "base_sha256": "57dae457253871564969cf0897deb2b2777256521b796dac31bd599d7f44dd79",
+      "untracked": false
+    },
+    {
+      "path": "test/support/processes/module-paths.ts",
+      "sha256": "b32e4db62cdd14c304e75141f195a34ff53c4e984f0879c179c54888064bdea9",
+      "base_sha256": "9b223981cdee5fa3e691f9dc9adaf6bd8ce0dc148aa7d3690da484e9327c4445",
+      "untracked": false
+    },
+    {
+      "path": "test/unit/auth-workos/workos-organization-audit-documents.test.ts",
+      "sha256": "4878c6b3c87d1a05c171fcd538737bfcb4a15ef45082f7fa83a5990068d163ee",
+      "base_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untracked": true
+    },
+    {
+      "path": "test/unit/html/logging-routes.test.ts",
+      "sha256": "83fc9c4e1433ca8f3af63f8eb7d45b5bf385d9eac307ddf5402cd026b52d29ce",
+      "base_sha256": "545d63eb31b14d1e21a4e0ab8a681fdd391ba03bf7c5920e6b3855c7267702f5",
+      "untracked": false
+    },
+    {
+      "path": "test/unit/html/logging-test-routes.test.ts",
+      "sha256": "b4795c490a87ce8fbb1fba69ef94137817f6b95036c39d6af56419c5fe74e8da",
+      "base_sha256": "e490d4055abc12dee2b4a4bc7b76d7b573a4609569c8d23fb3fe4ea4b0c2a20b",
+      "untracked": false
+    },
+    {
+      "path": "test/unit/logging/audit/otlp-audit-request.test.ts",
+      "sha256": "a012414db936ab7e74b7c8bd343015cbe2d24730019ca313745d03086740efc7",
+      "base_sha256": "46e0c8bc843fadd743132bf22488f16ac1a731a05642fdc0ae98c933c030ecbc",
+      "untracked": false
+    },
+    {
+      "path": "test/unit/logging/audit/otlp-audit-sender.test.ts",
+      "sha256": "bc22b36c7c88fbaf2a9af22864704bc8473e5218679e0418ba0b7d221ba5cee4",
+      "base_sha256": "11badd0a3e4bd4c3d42e9408a431b01965cbf5d1d63eb90a908bc1a76b22e7f2",
+      "untracked": false
+    },
+    {
+      "path": "test/unit/logging/audit/pg-destination-settings-store.test.ts",
+      "sha256": "0c8075b0c7747fcf384c346c1af1c07bb69e61ead92ddaa19cdb96f390719f3f",
+      "base_sha256": "f72987d1f9ab303ae5f84d3ec086cd7466e1a14aace3f237c96bd42eb91d1d97",
+      "untracked": false
+    },
+    {
+      "path": "test/unit/logging/audit/public-audit-destination.test.ts",
+      "sha256": "b22f532c88d00a07bf3ddae3734b385d1af28bb149d094c97c1b85ea05decb62",
+      "base_sha256": "a494a9101932662b87115a80283a7edda0e82b3ca1e609be65ad6639e78f4196",
+      "untracked": false
+    },
+    {
+      "path": "test/unit/logging/destination-settings-service.test.ts",
+      "sha256": "48e712165b449441b8cd82ea9fab014a0e10b615a56d3907d79e3d3b9d976373",
+      "base_sha256": "84b381dba06489a59f8b0489a4cb8ec3eb7e0167e8def1056e7031a068f35162",
+      "untracked": false
+    }
+  ]
+}

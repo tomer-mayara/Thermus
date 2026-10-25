@@ -1,0 +1,109 @@
+{
+  "reviewedAt": "2026-10-24T23:58:10.068284+00:00",
+  "manager": "Codex parent session",
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "scope": "Direct Axiom field, saved revision authority, bounded sender, exact organization Audit bundle, rollout setup, and deferred Slice4 backups",
+  "sourceReview": "Read complete production diff; no remaining correctness finding. Dataset stays parameterized and validated before headers. System sink/records unchanged. Blank dataset restores generic OTLP. Existing endpoint-bound token retention remains.",
+  "subagentReview": [
+    "axiom_audit_destination: implementation and focused/dedicated proofs reviewed",
+    "rollout_notice: factual/legal proposal and ledger reviewed; no human legal approval inferred",
+    "rollout_gate_review: independent code/architecture/Marketing/habit review accepted",
+    "audit_notice_runtime: exact runtime/Marketing bytes and manual UI review accepted"
+  ],
+  "fixedFindings": [
+    "Hosted Docker context includes exact proposed legal inputs",
+    "Queued dataset change has real service/collector integration proof",
+    "HTML pattern hyphen escaped for Unicode-v",
+    "Malformed-settings test now asserts its valid seed exists",
+    "Text dataset field now uses shared form styling"
+  ],
+  "visualReview": [
+    "All six L3/registry renders at800px reviewed",
+    "1200px complete UI and390px form inspected; before short field corrected in v2",
+    "Marketing exact-byte source and retained62test/browser evidence reviewed"
+  ],
+  "limits": [
+    "T2 current-head human approval pending",
+    "Exact-byte notice and publication/runtime approval pending",
+    "Actual deployed Save/Test/Enable/MCP export not yet done",
+    "Prepared dataset-only Axiom token not yet created",
+    "Final metrics and committed-head evidence pending"
+  ],
+  "sourceHashes": {
+    "src/interfaces/web/account/logging-page.ts": "058b8a70e911cf25a67c20d11b14ddfcf084416cbb0ab45e71f8578b80554189",
+    "src/interfaces/web/account/members-style.ts": "51993f89125398e7ed672d07d21e92933b858e5cccae0ac88da89a4911c5f64f",
+    "test/unit/logging/destination-settings-service.test.ts": "48e712165b449441b8cd82ea9fab014a0e10b615a56d3907d79e3d3b9d976373"
+  },
+  "latestSourceReviewAt": "2026-10-25T00:55:02.855784+00:00",
+  "sourceReviewFinal": "Final independent review found no remaining defect in persistence, revision authorization, outgoing headers, generic OTLP compatibility, or System/Audit separation. Manager accepted the review.",
+  "finalSelectedGates": [
+    {
+      "name": "ordinary",
+      "command": [
+        "pnpm",
+        "exec",
+        "npm",
+        "test"
+      ],
+      "exit": 0,
+      "seconds": 558.5,
+      "inputsChangedDuringRun": []
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "exec",
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 3.5,
+      "inputsChangedDuringRun": []
+    },
+    {
+      "name": "portal-build",
+      "command": [
+        "pnpm",
+        "exec",
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "exit": 0,
+      "seconds": 1.4,
+      "inputsChangedDuringRun": []
+    },
+    {
+      "name": "hosted-container",
+      "command": [
+        "pnpm",
+        "exec",
+        "npm",
+        "run",
+        "test:container:hosted"
+      ],
+      "exit": 0,
+      "seconds": 989.0,
+      "inputsChangedDuringRun": []
+    },
+    {
+      "name": "hosted-live",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+        "pnpm",
+        "exec",
+        "npm",
+        "run",
+        "test:hosted-live"
+      ],
+      "exit": 0,
+      "seconds": 527.3,
+      "inputsChangedDuringRun": []
+    }
+  ]
+}

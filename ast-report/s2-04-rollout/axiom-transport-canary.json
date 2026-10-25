@@ -1,0 +1,11 @@
+{
+  "time": "2026-10-24T23:26:33.348Z",
+  "scope": "Local production Audit sender to selected Axiom dataset; not deployed Admin proof",
+  "dataset": "audit-log-test",
+  "endpoint": "https://us-east-1.aws.edge.axiom.co/v1/logs",
+  "marker": "46468255-b32a-4b31-9abd-a1e296837a9e",
+  "result": {
+    "kind": "accepted"
+  },
+  "sourceSha256": "d9ae23a2d724d5f0561751493b2bd0a1dee4a251a632376d9529cd2c22d43636"
+}

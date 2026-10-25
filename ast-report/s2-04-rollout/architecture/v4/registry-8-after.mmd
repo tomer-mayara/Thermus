@@ -1,0 +1,18 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  local_browser["External software: browser<br/>Displays generated authentication HTML"]
+  subgraph local_auth_server["Container: Thermus Node server · local"]
+    local_root["Component: app<br/>Open installation and supply authentication roles<br/>TypeScript"]
+    local_web["Component: web<br/>Generated sign-in and consent pages<br/>TypeScript"]
+    local_mcp["Component: mcp<br/>Authenticate and bind request access<br/>TypeScript"]
+    local_identity["Component: identity<br/>Trusted access records and neutral auth contracts<br/>TypeScript"]
+    local_better["Component: better-auth<br/>Local verification, provider handler and installation<br/>TypeScript / Better Auth"]
+  end
+  local_data["Container: installation datastore<br/>Accounts, keys and installation identity<br/>SQLite / filesystem"]
+  local_browser -->|HTTP auth requests / form submissions| local_web
+  local_root ==>|binds runtime handler to web ProviderHandler| local_web
+  local_root ==>|supplies verifier and resolver| local_mcp
+  local_web -->|calls supplied ProviderHandler| local_better
+  local_mcp -->|calls supplied IdentityVerifier / AccessResolver| local_better
+  local_better -->|creates trusted access records| local_identity
+  local_better -->|SQLite / filesystem reads and writes| local_data

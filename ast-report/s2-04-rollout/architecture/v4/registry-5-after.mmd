@@ -1,0 +1,23 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  hosted_portal["Container: user portal<br/>Account and connection UI<br/>Browser JavaScript / HTML / CSS"]
+  subgraph account_server["Container: Thermus Node server · hosted"]
+    account_root["Component: app<br/>Select edition and bind account roles<br/>TypeScript"]
+    account_web["Component: web<br/>Account and provider-specific browser routes<br/>TypeScript"]
+    account_mcp["Component: mcp<br/>Authenticate and bind request access<br/>TypeScript"]
+    account_identity["Component: identity<br/>Trusted access records and neutral auth contracts<br/>TypeScript"]
+    account_org["Component: organizations<br/>Check current customer roles and invitations<br/>TypeScript"]
+    account_billing["Component: billing<br/>Free-plan state and seat-update role<br/>TypeScript"]
+    account_workos["Component: workos<br/>Verify access, manage sessions and directory<br/>TypeScript / WorkOS SDK"]
+  end
+  hosted_workos["External system: WorkOS / AuthKit<br/>Remote identity and organization data"]
+  hosted_portal -->|HTTP account routes| account_web
+  account_root ==>|constructs / supplies session and account roles| account_web
+  account_root ==>|constructs / supplies verification roles| account_mcp
+  account_web -->|calls supplied BrowserSession / AccessResolver| account_workos
+  account_mcp -->|calls supplied IdentityVerifier / AccessResolver| account_workos
+  account_web -->|requests account administration| account_org
+  account_org -->|calls supplied OrganizationDirectory| account_workos
+  account_org -->|calls supplied Billing| account_billing
+  account_workos -->|creates trusted access records| account_identity
+  account_workos -->|SDK HTTPS / JWT key set| hosted_workos

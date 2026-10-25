@@ -1,0 +1,28 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  subgraph tool_server["Container: Thermus Node server · either edition"]
+    tool_root["Component: app<br/>Construct and share tool collaborators<br/>TypeScript"]
+    tool_mcp["Component: mcp<br/>Adapt authorized tool requests and results<br/>TypeScript"]
+    tool_fetch["Component: page-fetch<br/>Check URL and permission, coordinate fetch<br/>TypeScript"]
+    tool_search["Component: search<br/>Check query and permission, coordinate search<br/>TypeScript"]
+    tool_execution["Component: execution<br/>Step roles, observation and execution records<br/>TypeScript"]
+    tool_html["Component: html-processing<br/>Clean HTML and produce Markdown<br/>TypeScript"]
+    tool_engine["Component: search-engine<br/>Build and validate Brave HTML search<br/>TypeScript"]
+    tool_fetcher["Component: website-fetcher<br/>Validate destinations and bound rendering<br/>TypeScript"]
+  end
+  tool_child["Container: renderer child<br/>Render one public page<br/>Lightpanda"]
+  tool_web["External systems: public websites<br/>Pages and Brave HTML search"]
+  tool_root ==>|constructs / supplies tool operations| tool_mcp
+  tool_root ==>|constructs / supplies fetch collaborators| tool_fetch
+  tool_root ==>|constructs / supplies search collaborators| tool_search
+  tool_mcp -->|calls supplied fetch operation| tool_fetch
+  tool_mcp -->|calls supplied search operation| tool_search
+  tool_fetch -->|uses outgoing observer / execution records| tool_execution
+  tool_search -->|uses outgoing observer / execution records| tool_execution
+  tool_fetch -->|calls supplied IncomingStep| tool_html
+  tool_search -->|calls supplied IncomingStep| tool_html
+  tool_fetch -->|calls supplied WebsiteFetcher| tool_fetcher
+  tool_search -->|calls supplied SearchEngine| tool_engine
+  tool_engine -->|calls supplied WebsiteFetcher| tool_fetcher
+  tool_fetcher -->|execFile / stdout JSON| tool_child
+  tool_child -->|HTTP / HTTPS page requests| tool_web

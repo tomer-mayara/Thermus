@@ -1,0 +1,685 @@
+{
+  "version": 1,
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "rows": [
+    {
+      "file": "src/logs/audit/public-audit-destination.ts",
+      "function": "parseAuditDestination",
+      "change": "changed",
+      "paths": 17,
+      "share": 0.924,
+      "crap": 17.126864064,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"parseAuditDestination\",\"start\":1206,\"end\":2666,\"body\":\"26dc6ebe01450289cc70cdd070ae81b715b088b6ce23a54b9762fcb8757970dc\",\"signature\":\"7572edb5921fca91ee80b63c3fa17f519e85b52ec68c71da3b2db3b635975185\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.testSaved",
+      "change": "changed",
+      "paths": 15,
+      "share": 0.977,
+      "crap": 15.002737575,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"testSaved\",\"start\":3600,\"end\":5319,\"body\":\"cc7bb612093c7ecb028c03a20a7e8f901bafd1c3651e21a4224bfccb28f9973c\",\"signature\":\"02d33539af1b85210cbc7c12fee7c899252f2bd808610f9cb9d2cae0cb27fcd4\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "invalidInput",
+      "change": "changed",
+      "paths": 15,
+      "share": 1,
+      "crap": 15,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"invalidInput\",\"start\":8491,\"end\":9272,\"body\":\"d839d48f0ce14bf3f161ff48032959db60c57260503b87bc884e3d80563fc6fe\",\"signature\":\"e10479a229a1dc744a63e56342d19540d8104ccd6f6ee9b59c507deddca8ca85\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.save",
+      "change": "changed",
+      "paths": 14,
+      "share": 1,
+      "crap": 14,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"save\",\"start\":5861,\"end\":7372,\"body\":\"59b9f1a2c6e9ff923136ccf8cf451cd0c0171a3e8652af55b12fbd61e4ff3ef7\",\"signature\":\"2c99518822b0292b639445cd5ed9cfb5cc94b1e78ac3c3481331e3d17d899b92\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.",
+      "change": "unchanged",
+      "paths": 13,
+      "share": 0.94,
+      "crap": 13.036504,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:LoggingRoutes/MethodDeclaration:handlerFor\",\"name\":\"(anonymous)\",\"start\":1948,\"end\":3216,\"body\":\"07e74a0c0cb4db59179cbd9f21c0d5407f7ae2d7c1c9ec3f9e48e6b3ccf6f83a\",\"signature\":\"a6d6e642995224c83fbcb57626d244625fdecb005e9a5e045ed19c06206c2740\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-form.ts",
+      "function": "loggingForm",
+      "change": "changed",
+      "paths": 13,
+      "share": 1,
+      "crap": 13,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingForm\",\"start\":269,\"end\":1489,\"body\":\"9879af620080c6277219cca7870d23dc41831f5d58c84271c7b255279fffc2ba\",\"signature\":\"1879c60d9b4fd9c5b6d8a067999c1e9a8c39c623cd9d07509502cd71eca315dc\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "openWorkOSApplication",
+      "change": "changed",
+      "paths": 3,
+      "share": 0,
+      "crap": 12,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"openWorkOSApplication\",\"start\":2937,\"end\":4573,\"body\":\"024a504f8c32503318b27f54b520db448dcffee61d2a741cff8ff01a806addf4\",\"signature\":\"e684970237247e254427ab5f64eb3c2d51e839173e2531b257157df240bfddbe\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.authorizeExport",
+      "change": "changed",
+      "paths": 11,
+      "share": 0.942,
+      "crap": 11.023608552,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"authorizeExport\",\"start\":2140,\"end\":3109,\"body\":\"189518470a4af33f99b407b3b9e1e2727f3ad3a1c82b27d53c09cc0e48d04126\",\"signature\":\"8892e11549a2a61a9950538714c10f2cb99f4a96d77ff8d49880a8a4260e43ae\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.token",
+      "change": "unchanged",
+      "paths": 10,
+      "share": 0.972,
+      "crap": 10.0021952,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"token\",\"start\":7537,\"end\":8181,\"body\":\"c70f55f067482f65dfd399227630ca7f78afdd1c0ee847d805c4d1682b105f86\",\"signature\":\"489d2eba1ff0afeb3485197b0e55f39ec0833bc49908792d891030c681f0177e\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "composeWorkOSApplication",
+      "change": "unchanged",
+      "paths": 8,
+      "share": 0.76,
+      "crap": 8.884736,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"composeWorkOSApplication\",\"start\":5781,\"end\":7619,\"body\":\"44ed07691ae7fec93c4aec8c404ecc9d2031c7701a4c9966b05a662cdefd5bb1\",\"signature\":\"7765862f63bf0aec2df041b4c208a0f58be0a5a1f995bc777cca6539d5a203f5\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.saveAnswer",
+      "change": "changed",
+      "paths": 6,
+      "share": 0.609,
+      "crap": 8.151952956,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"saveAnswer\",\"start\":6015,\"end\":6821,\"body\":\"6c452be34fa2aec4ebd23484f8f0f7e2f901deaf3b237b9deae4327bf9ec4279\",\"signature\":\"6a9ba1f3e761f40f8ce36d27939f714e1a2b3bd1255303c77d9f6f71bc5907c7\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.save",
+      "change": "unchanged",
+      "paths": 8,
+      "share": 0.868,
+      "crap": 8.147197952,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"save\",\"start\":3225,\"end\":4384,\"body\":\"e526e4d6a8d04e1af0503399d1c97d53b40d16a4fe6f11ee0fa84306eebf4919\",\"signature\":\"c180be2c1c92868a022061deee16d749edc380ef2bcdc5649ff5fb32defe7813\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.test",
+      "change": "unchanged",
+      "paths": 8,
+      "share": 1,
+      "crap": 8,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"test\",\"start\":4388,\"end\":5603,\"body\":\"f1955eb5919c19ff0cec4b92c500dea746284440d3b11a7c9d12fb3c7e0dfa6e\",\"signature\":\"c180be2c1c92868a022061deee16d749edc380ef2bcdc5649ff5fb32defe7813\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "failureOutcome",
+      "change": "unchanged",
+      "paths": 6,
+      "share": 1,
+      "crap": 6,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"failureOutcome\",\"start\":947,\"end\":1439,\"body\":\"453893a85a6a734fd26f1d23eff326454053952613d0242bdf8da517957f64be\",\"signature\":\"39a07f5b25c67314760b6b08b284a87b18bd6a7c8afd4b71b5d0ea9adf93a0cc\"}"
+    },
+    {
+      "file": "src/logs/audit/public-audit-destination.ts",
+      "function": "publicAddress",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 0.95,
+      "crap": 5.003125,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"publicAddress\",\"start\":949,\"end\":1204,\"body\":\"99ab0817205f0aae3702b54ccc9fd15504b09c64a9f6eb7776852eb67b935b50\",\"signature\":\"3bd07ca689e58056ebd1b4deccf1ad1bb404c0446c35c9743b58f0f335d8479f\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 0.993,
+      "crap": 5.000008575,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:requestAuditExport/ArrowFunction:@633/ArrowFunction:@1146\",\"name\":\"(anonymous)\",\"start\":1717,\"end\":2229,\"body\":\"476a4b0a425ad4de5fa1f5798cd30a4b450623877eea9b9d5e31c9e784a6cca3\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-page.ts",
+      "function": "loggingPage",
+      "change": "changed",
+      "paths": 5,
+      "share": 0.997,
+      "crap": 5.000000675,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingPage\",\"start\":619,\"end\":4408,\"body\":\"ed7b273fbab997cd1a6985054e83e6a76ae77f870752051a446da009edd332cb\",\"signature\":\"356a0b3b05eeb7273af34a44eaec3a4e0384d27570a7003832c7785b1924599d\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "matchesSavedSettings",
+      "change": "changed",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"matchesSavedSettings\",\"start\":8185,\"end\":8489,\"body\":\"d9453fffa331643351ca84e62e631e19a04c30bc50c654cc4629d549f9ff0889\",\"signature\":\"c417387bfc2d8df681c100257d5d3bfd2b87d76cd4dcd8c3d147dead534a9292\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "retainedToken",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"retainedToken\",\"start\":9274,\"end\":9598,\"body\":\"3f327b16b715ef9933384c5d4fa5150b7024560c8208426ba9158bf575ab2d69\",\"signature\":\"a06ac536b1ec681d6adbe2ec9ee79acba4765bf6919ade58578eb32bbbcaa6e6\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "pg-destination-settings-store\\PgDestinationSettingsStore.",
+      "change": "new",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:PgDestinationSettingsStore/MethodDeclaration:save\",\"name\":\"(anonymous)\",\"start\":2042,\"end\":2620,\"body\":\"aa90562106bd3865ce56c201c0cec0d278b82689d2da5546fc2bf5143506fbaa\",\"signature\":\"b1012ca0dbbef7fd9cb344cfdb41ee18cd86c6e8762181156227779b256b9600\"}"
+    },
+    {
+      "file": "src/logs/audit/public-audit-destination.ts",
+      "function": "resolveAuditAddress",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"resolveAuditAddress\",\"start\":2668,\"end\":3464,\"body\":\"00d5df4c04552dbf9aa46f0a22365298f17e09306ed47b390b465a9042de778b\",\"signature\":\"791c9698cd6fe8232259839d796efd7ebb28548cedcd91ba2a41d8f5ffcfacb8\"}"
+    },
+    {
+      "file": "src/logs/audit/public-audit-destination.ts",
+      "function": "sameAuditAddress",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"sameAuditAddress\",\"start\":3466,\"end\":3799,\"body\":\"a83ece6cf6b93b925c437c2cd01d7545c9b8cf78357b1c73f84c1ede59fc1a80\",\"signature\":\"82db73f107349a6e66e695d86fd03ba2eb7cb21791f7a93a760231292a3725d6\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.handlerFor",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 0.899,
+      "crap": 4.016484816,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"handlerFor\",\"start\":1764,\"end\":3221,\"body\":\"16c46921e08d43993149e3337f47b68e225fc9080b3faa8450fbe7f3e18d2e0c\",\"signature\":\"b55a31736fcf2ac8f09dc0ef52f80e224f9b10c43a61d6d664d98043d5a2843c\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.read",
+      "change": "unchanged",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"read\",\"start\":5323,\"end\":5857,\"body\":\"e468613174ea90100960ef003e87692f92d531e9058f6f6cc04c1f03b83216d8\",\"signature\":\"5da8aa3a2b51d8dea76f9d83f85583e8ea5095e2f0935640576c7f8ba9e743a0\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 4,
+      "share": 1,
+      "crap": 4,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:requestAuditExport\",\"name\":\"(anonymous)\",\"start\":633,\"end\":2476,\"body\":\"c37649fe69a99545602d512519ea6e4c84c6ca9432ffc0b8f67e8724d397927e\",\"signature\":\"2c946681383e8edd583d1dee028fde9c37b401ff83b668ffaa302a7d7b54e540\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "attempt",
+      "change": "changed",
+      "paths": 3,
+      "share": 0.933,
+      "crap": 3.002706867,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"attempt\",\"start\":2023,\"end\":2799,\"body\":\"38df49bcab225fa6ac750d7e8ffcfc4d60d58f0fc5a3645b878edecb2a1e5ea6\",\"signature\":\"159f55d9644eda531e4e00f9c81eeaa12b1773322e5e068edc61d0b71199122c\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "workosProviderParts",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 0.943,
+      "crap": 3.001666737,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"workosProviderParts\",\"start\":7621,\"end\":11439,\"body\":\"aa847d72b79843a1510d1c52d5dd8cf36925cce997fd8f761f0acd31c414eb7e\",\"signature\":\"be984678096bd9d0ffa4e136db696b125c3d6a04f219d8bdc320558ae60ec422\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.start",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:OtlpAuditSender\",\"name\":\"start\",\"start\":3481,\"end\":4727,\"body\":\"9521c08186f3c5b772f536ded86f8aa8761ae369d66ff77c28a62fec0ea9ef0b\",\"signature\":\"1e9b5c0726bb15a608d23160b33acaa381945a97efb8f02c63a95ab9cf9f81ee\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 0.552,
+      "crap": 2.359661568,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:workosProviderParts/ObjectLiteralExpression:@11108\",\"name\":\"(anonymous)\",\"start\":11123,\"end\":11198,\"body\":\"76165b872db7a17d9ad2cceac1c5ce881ea03e9cb45836680728530f68db53ea\",\"signature\":\"86c4967a8a0171de111fc2f1356e057f17853e48ca4aa2f90e31e7cf102e1843\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.keep",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 0.619,
+      "crap": 2.221225364,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"keep\",\"start\":5607,\"end\":6011,\"body\":\"b39702145f227272f7fe5de5ce60d52237ef2d6315f96a053a75edf690b9c6e6\",\"signature\":\"5b6203cbb47bc3bc3c77b06e5a4337b1fcca9399ce4af64727aed1e8b472170a\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 0.756,
+      "crap": 2.058107136,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:workosProviderParts/ObjectLiteralExpression:@11108\",\"name\":\"(anonymous)\",\"start\":11212,\"end\":11348,\"body\":\"40b861d769946734de28a2fdee02e0391434b8aa8ca3fbb4ec745db4e1a59c52\",\"signature\":\"33074fc8194a51aa3b312d4f0e20b8bc26161b7b24fda1ea4cbb6816be2b854b\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 0.811,
+      "crap": 2.027005076,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:requestAuditExport/ArrowFunction:@633\",\"name\":\"(anonymous)\",\"start\":2266,\"end\":2447,\"body\":\"3950482b2c906409b25915b54546dbe30ffbe075cee6ebe064a817caecdf5577\",\"signature\":\"1de43539b30c3c4e5898b8989e6c9c9f6a48008bc6e1c6807391d7933a0a4246\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:composeWorkOSApplication\",\"name\":\"(anonymous)\",\"start\":6222,\"end\":6250,\"body\":\"ffb41f37e33521bac1416c0f9a6a11480179d376cee9615ae1e821357d28d370\",\"signature\":\"9ce78f36a2f28bfdeaf278c79fd44ca545f3e47c8f5967d038e74f852077a8bd\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:composeWorkOSApplication/ObjectLiteralExpression:@6174\",\"name\":\"(anonymous)\",\"start\":6183,\"end\":6194,\"body\":\"d224e89966f32161e56d6817c4b423d089cefd95b5b73379395a428e79c69cfd\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:composeWorkOSApplication/ObjectLiteralExpression:@6801\",\"name\":\"(anonymous)\",\"start\":6822,\"end\":6874,\"body\":\"abca50da2dc6c4968943eaaf0c7a1d00391dcb0eb28bbae286fed006a455fb1e\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:composeWorkOSApplication/ObjectLiteralExpression:@7175\",\"name\":\"(anonymous)\",\"start\":7396,\"end\":7494,\"body\":\"3e644c97f167abeed6bd302f8f16ef48e22fdce0385f6d67b77da6c205d3a0e4\",\"signature\":\"c295144a329178b58f922ef3fc735191dbfca883144fd60efbde5d339d17a444\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:workosProviderParts/ObjectLiteralExpression:@10799\",\"name\":\"(anonymous)\",\"start\":11042,\"end\":11076,\"body\":\"7a4a2d77a76db0cbacd1dc2496fc5da3492da3bb7b0f92704148cd0184c1b459\",\"signature\":\"5a47e2ce38dc5da0f61b56143083a83c45997d36a8243c818bbee50d7b4ed9ba\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "openWorkOSConnection",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"openWorkOSConnection\",\"start\":4803,\"end\":5779,\"body\":\"12e96d8f0de3e891a013075573f81ee417ae9dde5fe5fd5d7c2f9e011e951e61\",\"signature\":\"91c8edee72aacdd465fbd7eb0af34c3fb4dbbddc64069878fc94c828f8ab2d4a\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-test-page.ts",
+      "function": "loggingTestAnswer",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingTestAnswer\",\"start\":2166,\"end\":2560,\"body\":\"b25a733b0c9824722cae1029bc94be2ee99b4ceece152bc7bcc57ca6a6f3eab5\",\"signature\":\"968703711b235908efc85f12fb51108533d23614884e177137fab8c1a5163a6d\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.readStored",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"readStored\",\"start\":7376,\"end\":7533,\"body\":\"7538616bab4e7d92ab719322a6b2b609b16d6efa08b83cdb9f548998eda561a1\",\"signature\":\"c611673032d7b898b0be2ce923264f999b8b12216d79177439bf2078761dfd14\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "project",
+      "change": "changed",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"project\",\"start\":9600,\"end\":9920,\"body\":\"675cb75fbd709411f85bc3816cda4cb77bd9e90b39c549ab9e05915403648206\",\"signature\":\"bc8008c5ecbf96708fac8ed48b9c4b9b4e12e6abf840f5bbe81e1153ab394181\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:requestAuditExport/ArrowFunction:@633/ArrowFunction:@1146\",\"name\":\"(anonymous)\",\"start\":1247,\"end\":1529,\"body\":\"2363ab2e7a759caa02c8834263699f80336d0d8cdd14a7f3d55b7f3251e3ee84\",\"signature\":\"21a5f7ec51680df1340c5c28dbecf3b5ea11b0508c87a09065d32561ef450564\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:requestAuditExport/ArrowFunction:@633/ArrowFunction:@1146\",\"name\":\"(anonymous)\",\"start\":1601,\"end\":1687,\"body\":\"2d6919c4fc3120754c4161f64fb25d9879e510d332b0eaf11d30cbf2cac5867d\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "beginAttempt",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"beginAttempt\",\"start\":2899,\"end\":3152,\"body\":\"ceed77c4c76f81f6368ff824533c608eb6077663375862677ceb918c142ae88a\",\"signature\":\"7a316e152cb3252a99bee6512110b1b57a35a246b78cceaa29d88091b89ba366\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "openDestinationSettingsRuntime",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 0,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"openDestinationSettingsRuntime\",\"start\":3085,\"end\":3368,\"body\":\"0f98bcdf3752ccc140c141f087bf36ec2fa0209b05084c10f268de8191c3f43a\",\"signature\":\"de0ffa5d459766d9923dbb84e98cbcb7eee50fd87863d50086b2b4e81950f98f\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "pg-destination-settings-store\\PgDestinationSettingsStore.",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:PgDestinationSettingsStore/MethodDeclaration:read\",\"name\":\"(anonymous)\",\"start\":1466,\"end\":1748,\"body\":\"a8fd19db0c658c99a61fed61ae5cbde5bd9513d01cce4689c23af9ee8075b935\",\"signature\":\"0420cf1461357eed3a45468800d68d85cb8eef967fb55ce664bf03e0b7253998\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "pg-destination-settings-store\\PgDestinationSettingsStore.read",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:PgDestinationSettingsStore\",\"name\":\"read\",\"start\":1364,\"end\":1838,\"body\":\"57dc30c70de769c72cc0a6775b471d2ac0948854b840431e7427d888b9be0e6f\",\"signature\":\"33da352cec5740c7b738348be2ad819096422c45e1daa6f12465f78a7752d07d\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "pg-destination-settings-store\\PgDestinationSettingsStore.save",
+      "change": "changed",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:PgDestinationSettingsStore\",\"name\":\"save\",\"start\":1842,\"end\":2691,\"body\":\"ca7c77b60e40211caf4bbb6d2e35147f598ff5d59aaecc1653825c74d7e9c19c\",\"signature\":\"07961b5c07c4a71174fc968c06373952552a79f6a707545c251ff012fe4d44e0\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "settings",
+      "change": "changed",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"settings\",\"start\":2695,\"end\":3083,\"body\":\"6e4f8123ef316cce05ab9ac9a85070bb0e4c00ea96d6784df65d8c7e5a348f9c\",\"signature\":\"bbb37c376eeb8920a771df0aeb5e1d6679b4fcbdb3c0fbf7ec8984f8c8ed2683\"}"
+    },
+    {
+      "file": "src/app/hosted-workos-application.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:openWorkOSApplication\",\"name\":\"(anonymous)\",\"start\":4337,\"end\":4365,\"body\":\"36caf8fa0db7b519442ad71d55bf0ea2d358f7d23688dc270f83ab887a0c019d\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-page.ts",
+      "function": "loggingNotice",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingNotice\",\"start\":4410,\"end\":4765,\"body\":\"06bf65c238ec6fdc15858b436343304de7f34435d1b6a94a1eddab2b33bda5f3\",\"signature\":\"3e34de129847f0173f79112a435c584d50f44fddd702f960e1567ec3d8630ec1\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"constructor\",\"start\":1358,\"end\":1760,\"body\":\"f030fade87e94f39c5a374e6029cddde21d378f4f74adc024ffc89ef1823b535\",\"signature\":\"2983f0fcbe211bd90f04095742ca6785eef8079f7d485872f19c5ac15154636f\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.path",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:LoggingRoutes/Constructor:constructor\",\"name\":\"path\",\"start\":1494,\"end\":1565,\"body\":\"68742a35900d0d75138de90e81d11d5d3f84732a8e094917099342c03a2cbc7c\",\"signature\":\"a93c89840be224624fddefc7a3332efbc442053887d5bf652073d01d4ad10237\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/logging-routes.ts",
+      "function": "logging-routes\\LoggingRoutes.unavailable",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:LoggingRoutes\",\"name\":\"unavailable\",\"start\":6825,\"end\":7057,\"body\":\"80d1cbc5c4472f9a0971a2197f4b8cfc14229815c0af691a1b5d1af4bd12f63a\",\"signature\":\"b2e486dca88d50b95f7a0ebc34067459499aae08067814f2e2d8da17a35b83ee\"}"
+    },
+    {
+      "file": "src/logs/audit/audit-send.ts",
+      "function": "audit-send\\AuditSendFailure.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:AuditSendFailure\",\"name\":\"constructor\",\"start\":2100,\"end\":2204,\"body\":\"7d5b7b16479e244e68131cd904bfd3ea974841649abb3bbc0d5add06906929ff\",\"signature\":\"4f17e45dad0951aac3eb84c6e4453f00bf224c6a95c02bb288d66929996cfb36\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:DestinationSettingsService/MethodDeclaration:save\",\"name\":\"(anonymous)\",\"start\":7148,\"end\":7190,\"body\":\"a6693f9f875aca67c64effddb3fb7f8513dcf48e90b7d40dacb974e83e43232d\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:DestinationSettingsService/MethodDeclaration:test\",\"name\":\"(anonymous)\",\"start\":3515,\"end\":3582,\"body\":\"7a1029fd21f888b209d23dc4e3cc32822ff5e0d286a018069df1e38cf2c6e72f\",\"signature\":\"f606e4fd1e8854126c1f4fd69a4a0247e012e099c452e3dc6f127d6164399399\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"constructor\",\"start\":1848,\"end\":2034,\"body\":\"af5fecfe4d41d93a9889724bc96a44d5e97aad6ba7e20582d4c519ad0337a002\",\"signature\":\"d080ca448df463deb28b8fc5a687c4af7a72fcb865c78ddfa2d58c28f099eefc\"}"
+    },
+    {
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "function": "destination-settings-service\\DestinationSettingsService.test",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:DestinationSettingsService\",\"name\":\"test\",\"start\":3193,\"end\":3596,\"body\":\"eea9393e45a7b24a65f18dbc2a79cc4d61e50db2f4cef6071d65a35681b9b1a4\",\"signature\":\"16081036b0454a437366c4a0dd06b82179e07d0a2519f43a91263d46cac92bb9\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:requestAuditExport/ArrowFunction:@633\",\"name\":\"(anonymous)\",\"start\":1146,\"end\":2237,\"body\":\"47b84785686a908a34fa56574e59192c58723af44de1cae055c4db5cb53e6bc6\",\"signature\":\"9501a7a32802a13ff5b4d61b28f4719c40059b575891ae7416d150761cc550fa\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:requestAuditExport/ArrowFunction:@633/ObjectLiteralExpression:@690\",\"name\":\"(anonymous)\",\"start\":793,\"end\":805,\"body\":\"b32addcd2b58f4b7b48cf55a6240913ed8657367ed556cb78e8c754494865ff9\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-request.ts",
+      "function": "requestAuditExport",
+      "change": "changed",
+      "paths": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"requestAuditExport\",\"start\":379,\"end\":2480,\"body\":\"721b7c9fca026d2ecd27be0e1ba3f296b70599e19069c99f875c5fcff3b17206\",\"signature\":\"4e76556b701ac55a17e1048f4a4f0812d9fe790d3039e72665b39b98fdf87374\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "clear",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:attempt\",\"name\":\"clear\",\"start\":2143,\"end\":2170,\"body\":\"377b92c70c7c0b2e6f23111e840f0c3e6f46e3c46554e5aa7adc72ea87323bc5\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "clearPayload",
+      "change": "changed",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"clearPayload\",\"start\":1734,\"end\":2021,\"body\":\"b8ddaa88fd77e23df3d396b8dc22ccc1d15b59b03d34b81fce9562aaa05ee2a3\",\"signature\":\"e4c4a702e8703a36ca043ce44cd7cf0f8af834dcbf376f2d42db143e4fc7f787\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:OtlpAuditSender/MethodDeclaration:start\",\"name\":\"(anonymous)\",\"start\":4022,\"end\":4095,\"body\":\"74dc1a426551897c14fbf7b7a78fbcdfb93221afc8b17ab11542d51f57301978\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:OtlpAuditSender/MethodDeclaration:start\",\"name\":\"(anonymous)\",\"start\":4182,\"end\":4278,\"body\":\"904df815fae0a59b71a773683ec5d5313e1c7f1a1ed29d468f12b26731ef9328\",\"signature\":\"cf97d8843d2c3c736eed44c50fe07733195424603151c4be13b353b780b57ca5\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:OtlpAuditSender/MethodDeclaration:start\",\"name\":\"(anonymous)\",\"start\":4501,\"end\":4571,\"body\":\"f932566aad5199786eca6a92cee88d7e51f31bd4ef71e95eefced44590e211ed\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:OtlpAuditSender/MethodDeclaration:start\",\"name\":\"(anonymous)\",\"start\":4637,\"end\":4667,\"body\":\"be3b3eab7fc6258ce5d9c7afb3f8d55e73af67f9b059f5ad0ca16a8f41e82b0e\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:OtlpAuditSender/MethodDeclaration:start/ArrowFunction:@4182\",\"name\":\"(anonymous)\",\"start\":4239,\"end\":4261,\"body\":\"de13c6e34be79af2e60067121b8e8fff0065af842134055626dbc690254bf264\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:OtlpAuditSender/MethodDeclaration:start/ObjectLiteralExpression:@4681\",\"name\":\"(anonymous)\",\"start\":4711,\"end\":4719,\"body\":\"a61a86b4b038a85bc15a633d16dbe4b60bb86e15e3c4021983fdf212319cc185\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.cancel",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"ClassDeclaration:OtlpAuditSender/MethodDeclaration:start\",\"name\":\"cancel\",\"start\":3967,\"end\":3991,\"body\":\"89ab67917627a3ed02856ea4cff3c59c5c82b91fd6c5be1a0c2d7f140fc1d557\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "otlp-audit-sender\\OtlpAuditSender.send",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"MethodDeclaration\",\"owner\":\"ClassDeclaration:OtlpAuditSender\",\"name\":\"send\",\"start\":3309,\"end\":3477,\"body\":\"3e4e8636be0605d0ce641bd95d104a5272d583cf033515bc37ba89d02ccae8d2\",\"signature\":\"39fcc062b47dcefbcae64f080e7e022ca621e8beb5af95088fa963dcbe5a264a\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-sender.ts",
+      "function": "prepare",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"prepare\",\"start\":1557,\"end\":1732,\"body\":\"4f6347b5db638a4010e769f934b82e225c1eb4b422b4cd15483cf996113afbb5\",\"signature\":\"1062bfcd476f775213d8d6a4b90d358410488fcfc3cf69bd513dcca1fded7d76\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:openDestinationSettingsRuntime/ObjectLiteralExpression:@3285\",\"name\":\"(anonymous)\",\"start\":3342,\"end\":3363,\"body\":\"9de9ca9e17df7c06261071e012dad95f3a0b257aeb0be93735c82611382e844b\",\"signature\":\"25651b318587428812bfb0a4e1af5e80d738935bc72a9dd99222281982a16957\"}"
+    },
+    {
+      "file": "src/logs/audit/pg-destination-settings-store.ts",
+      "function": "pg-destination-settings-store\\PgDestinationSettingsStore.constructor",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"Constructor\",\"owner\":\"ClassDeclaration:PgDestinationSettingsStore\",\"name\":\"constructor\",\"start\":1293,\"end\":1360,\"body\":\"058e2876bdd3abb6b90505fdd3579099255a3016832a5d4d3ea20ecb495abf98\",\"signature\":\"e095a1835f16156b294df5afb0ad5d1c31db178c9c419e9f02b6ae24b407fbe6\"}"
+    },
+    {
+      "file": "src/logs/audit/public-audit-destination.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:resolveAuditAddress\",\"name\":\"(anonymous)\",\"start\":3308,\"end\":3348,\"body\":\"b7b428f169f3dfd2fccfe1beb8b97f70ef916bc4420c2f07c736f8b39d658cfb\",\"signature\":\"ca28b148de0fe8249c0f682c4171fd9201581d4b26a3b502f8eb87ce15bcb19e\"}"
+    }
+  ]
+}

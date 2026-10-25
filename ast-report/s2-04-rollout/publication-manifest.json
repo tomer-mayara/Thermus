@@ -1,0 +1,855 @@
+{
+  "version": 1,
+  "preparedAt": "2026-10-25T01:10:25.216068+00:00",
+  "candidate": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "status": "Prepared for evidence publication; no human/source or notice approval claimed.",
+  "files": [
+    {
+      "path": "ast-report/s2-04-rollout/README.md",
+      "bytes": 2582,
+      "sha256": "d88f5b230170b7d14a045d2552051e59c4e2fb3cf861ef4b40da287fe20cdbaa"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/api-final.log",
+      "bytes": 132,
+      "sha256": "3b9787b95fd96a9b3f9c113391eaa5a2c3342e3c34d5bdacf48c9d2e883c044c"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/api-surface-check.log",
+      "bytes": 132,
+      "sha256": "3b9787b95fd96a9b3f9c113391eaa5a2c3342e3c34d5bdacf48c9d2e883c044c"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v1/candidate-manifest.json",
+      "bytes": 13784,
+      "sha256": "93d2d21c8d3b94695fc577347f43eb87d817163e3295b4d1232f048a3397666b"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v1/review.md",
+      "bytes": 11879,
+      "sha256": "302af46a005e43bcb1ec98795edaf433682d004076862ee9fbdda33b9a15f2b4"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v2/candidate-manifest.json",
+      "bytes": 13814,
+      "sha256": "2d0f606419db914619aa6e557bdf4234053d96fb9498111465b207db08bd1160"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v2/refresh-delta.json",
+      "bytes": 176,
+      "sha256": "1cf7d5447c8fd46421f33ee5ed9baa93f8b6e22f41a7cd52dadf57d2f71f988f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v2/review.md",
+      "bytes": 12887,
+      "sha256": "6e409a5e9f6d12a65e0e91e5c34477bca940091bff97cc4f523c826fdd9f4220"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/candidate-manifest.json",
+      "bytes": 14114,
+      "sha256": "9354dc5e7a6081c991c7a736f61f251d578d16268621b133d26b74bbc1cb4cc1"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/complete-candidate.diff",
+      "bytes": 273533,
+      "sha256": "dcdad710e5947be82f457e2391b01d316d6c472831a700641c3a2baecbb396bd"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/diagram-inventory.json",
+      "bytes": 3685,
+      "sha256": "55eb576b949de3b7f618cebbfd17d160e6a2b31926db9b190145bde46e68cc2b"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/l3-800.png",
+      "bytes": 118578,
+      "sha256": "e9fe8a506f19296aa9f5e83d0fae5f7e11facb7618df7aff63dc4b737fb3fbd5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/l3.mmd",
+      "bytes": 1433,
+      "sha256": "7c6ecc9513aa3bbdbdf8893a7c5061a8c8233ffea5219adace3fab8cd8cbec72"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/refresh-delta.json",
+      "bytes": 568,
+      "sha256": "093335f0122eca8c1aa531a2636916e56942ffa8aaea041d9a4d284e9c4af1e0"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-1-after-800.png",
+      "bytes": 70777,
+      "sha256": "f74bfe4bbbacf510ac57c3ddd189b354aa40512cd7467db82b742bd88c24eee2"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-1-after.mmd",
+      "bytes": 1212,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-1-before.mmd",
+      "bytes": 1181,
+      "sha256": "8add4682bdd88dff77abb80c072308658bc8d05b298e3c9e557ab5915562baee"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-13-after-800.png",
+      "bytes": 74531,
+      "sha256": "fcf0d6422b31ae4f283a7052b4c5fe81b7a8c426a7953d75d34045fc56aee943"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-13-after.mmd",
+      "bytes": 2150,
+      "sha256": "7585ee2a08ce28bf32504d62fb6c5fd20b6056f6b5634194f694569ea5456a14"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-13-before.mmd",
+      "bytes": 2107,
+      "sha256": "7d0e3a9a26536fe1fb34ff2a6681c25fa18569b3435f4730719f5752fc4e65db"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-2-after-800.png",
+      "bytes": 95803,
+      "sha256": "5b4f5388132c9976c903146c91e7156363ba4c5a5bcdfa55f4fc6c5bc00ea23f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-2-after.mmd",
+      "bytes": 1673,
+      "sha256": "3eb90a094cf9b44d2232c3639fa35ebaca66fcef9f939b85e63d25c1c8362a51"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-2-before.mmd",
+      "bytes": 1616,
+      "sha256": "044afa7b7d6dda59ccc9244be56f7ea36ed2df6e59575157877e3a77d35c703b"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-6-after-800.png",
+      "bytes": 139144,
+      "sha256": "e4e2b9bad58b1d0b6b256f9e6fd334dcd4c2378cb4c3e41a7172eab5284a0b10"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-6-after.mmd",
+      "bytes": 1132,
+      "sha256": "7a7ef444a6897ab5c59fbba1095146ca8e0bea1449a6af9da65d0dab4ee53dcc"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-6-before.mmd",
+      "bytes": 1083,
+      "sha256": "c439417a6cac5aed29a668b78291ecd916d39719c7b654d17c3fb6f1bf6824d9"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-7-after-800.png",
+      "bytes": 124818,
+      "sha256": "0bbcfb3791727ef0fba1634c6d67264dd319eb6d298a8c66de29beba4ca53f65"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-7-after.mmd",
+      "bytes": 1066,
+      "sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-7-before.mmd",
+      "bytes": 1013,
+      "sha256": "521c3bc179dac03b4b2be092c782171e6bd63cb1ac1405d7c57cb02a456cdc39"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-after.md",
+      "bytes": 73729,
+      "sha256": "1bfc16c8128c1e4f6d0a5b7b35d348cd2e477c135bd8779f86ef899e542be9f5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/registry-before.md",
+      "bytes": 71558,
+      "sha256": "d6a46f4bfccc3b8aed21debacc4df9af093c6b70ffd3d1572e823726b19f1117"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/render-validation.json",
+      "bytes": 1061,
+      "sha256": "b0cfcd6a6d7f67d9c96c06f776885d0a69ec86469fe8b9d965d3aa0b0de3bd49"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v3/review.md",
+      "bytes": 14071,
+      "sha256": "0569b8a15ed0dafde3df5b9e14c3cc2c8e3514ae81d7f1119a0a41cebf9fda4a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/artifact-manifest.json",
+      "bytes": 26037,
+      "sha256": "b958f9246d8cf3e2fcdf0b49efbde70da6cfba21e5c8bb8a1e863b263c375e9d"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/candidate-manifest.json",
+      "bytes": 43873,
+      "sha256": "d95ae135f92a59374ecb22ed4f613e7224a977e5b7949fe93b2ffbd38e768af2"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/complete-candidate.diff",
+      "bytes": 474952,
+      "sha256": "0b8871b750bf2e8665ac3d3e76a4822a389017b80c3ac6d8df8e280c07ee0d15"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/declaration-diffs.patch",
+      "bytes": 1844,
+      "sha256": "10678f0519cc169b49293a810693097e3252225f08fcbf32775152b206b66071"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/declaration-review.json",
+      "bytes": 2036,
+      "sha256": "6c39a5b37479598e247edd980469e8e4e175da851568ce6972bbce059758d576"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/deployed-setup-limit.json",
+      "bytes": 1138,
+      "sha256": "dbeff5cc79a5451d14964e9fc70fc4d5bcbff4315ae6b92ef0059abebd01f1a1"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/diagram-inventory.json",
+      "bytes": 8262,
+      "sha256": "ea9b1cb83cf1366a6457be2f7ed1a2f700817b1b475f152201d39e71588e7f0e"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/l3-800.png",
+      "bytes": 118578,
+      "sha256": "e9fe8a506f19296aa9f5e83d0fae5f7e11facb7618df7aff63dc4b737fb3fbd5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/l3.mmd",
+      "bytes": 1433,
+      "sha256": "7c6ecc9513aa3bbdbdf8893a7c5061a8c8233ffea5219adace3fab8cd8cbec72"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/puppeteer-config.json",
+      "bytes": 180,
+      "sha256": "73c41ff534a1a87f9b31d1944d5047424bab18144a3a30a5c6cdd4aa1120378a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/refresh-delta.json",
+      "bytes": 1708,
+      "sha256": "30c694553253f90d0ee2bfee5d42f214396ae0797329092df25ba9528400d7ac"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-1-after-800.png",
+      "bytes": 70777,
+      "sha256": "f74bfe4bbbacf510ac57c3ddd189b354aa40512cd7467db82b742bd88c24eee2"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-1-after.mmd",
+      "bytes": 1212,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-1-before.mmd",
+      "bytes": 1181,
+      "sha256": "8add4682bdd88dff77abb80c072308658bc8d05b298e3c9e557ab5915562baee"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-10-after.mmd",
+      "bytes": 2494,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-10-before.mmd",
+      "bytes": 2494,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-11-after.mmd",
+      "bytes": 2240,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-11-before.mmd",
+      "bytes": 2240,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-12-after.mmd",
+      "bytes": 2814,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-12-before.mmd",
+      "bytes": 2814,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-13-after-800.png",
+      "bytes": 74531,
+      "sha256": "fcf0d6422b31ae4f283a7052b4c5fe81b7a8c426a7953d75d34045fc56aee943"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-13-after.mmd",
+      "bytes": 2150,
+      "sha256": "7585ee2a08ce28bf32504d62fb6c5fd20b6056f6b5634194f694569ea5456a14"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-13-before.mmd",
+      "bytes": 2107,
+      "sha256": "7d0e3a9a26536fe1fb34ff2a6681c25fa18569b3435f4730719f5752fc4e65db"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-2-after-800.png",
+      "bytes": 95803,
+      "sha256": "5b4f5388132c9976c903146c91e7156363ba4c5a5bcdfa55f4fc6c5bc00ea23f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-2-after.mmd",
+      "bytes": 1673,
+      "sha256": "3eb90a094cf9b44d2232c3639fa35ebaca66fcef9f939b85e63d25c1c8362a51"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-2-before.mmd",
+      "bytes": 1616,
+      "sha256": "044afa7b7d6dda59ccc9244be56f7ea36ed2df6e59575157877e3a77d35c703b"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-3-after.mmd",
+      "bytes": 1410,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-3-before.mmd",
+      "bytes": 1410,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-4-after.mmd",
+      "bytes": 1986,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-4-before.mmd",
+      "bytes": 1986,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-5-after.mmd",
+      "bytes": 1750,
+      "sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-5-before.mmd",
+      "bytes": 1750,
+      "sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-6-after-800.png",
+      "bytes": 139144,
+      "sha256": "e4e2b9bad58b1d0b6b256f9e6fd334dcd4c2378cb4c3e41a7172eab5284a0b10"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-6-after.mmd",
+      "bytes": 1132,
+      "sha256": "7a7ef444a6897ab5c59fbba1095146ca8e0bea1449a6af9da65d0dab4ee53dcc"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-6-before.mmd",
+      "bytes": 1083,
+      "sha256": "c439417a6cac5aed29a668b78291ecd916d39719c7b654d17c3fb6f1bf6824d9"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-7-after-800.png",
+      "bytes": 124818,
+      "sha256": "0bbcfb3791727ef0fba1634c6d67264dd319eb6d298a8c66de29beba4ca53f65"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-7-after.mmd",
+      "bytes": 1066,
+      "sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-7-before.mmd",
+      "bytes": 1013,
+      "sha256": "521c3bc179dac03b4b2be092c782171e6bd63cb1ac1405d7c57cb02a456cdc39"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-8-after.mmd",
+      "bytes": 1342,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-8-before.mmd",
+      "bytes": 1342,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-9-after.mmd",
+      "bytes": 1289,
+      "sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-9-before.mmd",
+      "bytes": 1289,
+      "sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-after.md",
+      "bytes": 73729,
+      "sha256": "1bfc16c8128c1e4f6d0a5b7b35d348cd2e477c135bd8779f86ef899e542be9f5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/registry-before.md",
+      "bytes": 71558,
+      "sha256": "d6a46f4bfccc3b8aed21debacc4df9af093c6b70ffd3d1572e823726b19f1117"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/render-captures.mjs",
+      "bytes": 1720,
+      "sha256": "5b4beb4c87b9ff80275eefbeddeaee0e2e67d8db7fa648f3f1ac8e07e0b8eb1b"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/render-validation.json",
+      "bytes": 3814,
+      "sha256": "7d3a073d2f0745cd7e5f42b5a38c8da099b1f554d750d56c1d3b3faa0bebac0a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/review-notes-since-v3.patch",
+      "bytes": 7685,
+      "sha256": "c90302dd6959a451b5f4156026290367caf81f4258dc6e9c29592df4b4c84658"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/review.md",
+      "bytes": 28842,
+      "sha256": "0190ba7b9c85aa7fb6e29865ba9cdc5b1aadb7ad88b3030750a31520cf9a84f2"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/source-tree-manifest.json",
+      "bytes": 92599,
+      "sha256": "06babb599598090fe9890d71b324f704f2e634e3642910bcec2208603846fa86"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/architecture/v4/verification.json",
+      "bytes": 900,
+      "sha256": "68b89b8b59b89c35a9a24c7a9a75f44c51960d48658020ce15fe668815661926"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/axiom-account-readback.json",
+      "bytes": 745,
+      "sha256": "bd1e37f13cc23cb546575089b764152ebb08877b0195231b596dab040fb697dd"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/axiom-canary-receipt.png",
+      "bytes": 49374,
+      "sha256": "cb3655c07cea50ef8afc1944e6fb0e5ca4557c0b0aaccf481c7625ebf3122cef"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/axiom-transport-canary.json",
+      "bytes": 409,
+      "sha256": "8223504ed3c8a86e1736d591c750bce221b48f93322ad458d97a339c82938820"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/checks/obsolete-image-cancellation.json",
+      "bytes": 319,
+      "sha256": "02bb8067dc84587c78aaa26aebacb19dde6bb40b03c2fa77218b17571ef9a220"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/checks/results.json",
+      "bytes": 1030,
+      "sha256": "2c6f562e0f0e5d68a1ffd2cbf40c08c70c9af7f6a7075e4a632ec9e445f7c9c0"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/checks/self-hosted-container.log",
+      "bytes": 5283,
+      "sha256": "0eaeeb642d9d6e2d5d1848c3c1b0ad52d4baede589065074dce25a334ba39222"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/checks/settings-oracle-tsx.log",
+      "bytes": 4487,
+      "sha256": "c9cd69fbbefc1e0d2edda36afe1f44022356927221b93d790075d721f30e1c16"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/checks/settings-oracle.log",
+      "bytes": 1755,
+      "sha256": "dc6c42763b2f723c0b7bf44c6ba30fd0227be477c7f1e2c2c8e7eb3024489ed2"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/crap-final.log",
+      "bytes": 10030,
+      "sha256": "98bf729321b828ca766eb49888a4346cc686f08e5ba49911347ac372b458ed30"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/feature-secret-review.json",
+      "bytes": 222,
+      "sha256": "0f07a4b75d36c75d41764c5dfd49a756a1068018bb245f886ce5706c5378da76"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/hosted-build.log",
+      "bytes": 664292,
+      "sha256": "da526d6853ea14df40b8de92238252d02646ca94b64c610cf1aa0c2ba0229cd7"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/hosted-container-inputs.json",
+      "bytes": 142324,
+      "sha256": "2b14ca9933648717ba2832d58743d1930ded9112fcf882dc4be0daf49daa073d"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/hosted-container.log",
+      "bytes": 1886,
+      "sha256": "8edabf2182d7d882daaa6c9b9d1cd688ca19d9e1d4f02e76321db85720db0291"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/hosted-live-inputs.json",
+      "bytes": 142324,
+      "sha256": "c56f17d7aac61835267116ed953b9f61c0b9fcbe645a6a4ec0b127ff6f5991e2"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/hosted-live.log",
+      "bytes": 14553,
+      "sha256": "30295fc15988cb20e3cecf1be6d1e19e34721ea34bbdc45bedf51ebb3e3f6b66"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/ordinary-inputs.json",
+      "bytes": 142324,
+      "sha256": "914f986ecbeac265c18252e68ab5aa0a584c0da43e9917ccf45b5ba2d5294593"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/ordinary.log",
+      "bytes": 706098,
+      "sha256": "177c792353e4be54c2f85acb2c6f86ce9f8afc7103d8b0255aa14fea1ff38708"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/portal-build-inputs.json",
+      "bytes": 142324,
+      "sha256": "da4a70e83a81f2ae09a82a0446eb1d7c63b2f87f91939cc88879c22f9e959e66"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/portal-build.log",
+      "bytes": 536,
+      "sha256": "84433c488ed9794ccce24755e1be3884ec88b5bb5d16f0ca69b6abb7ec1092c8"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/results.json",
+      "bytes": 1129,
+      "sha256": "3ef5dae5c68fed0c44726cef7741460c1916719267488688db9d786df6613555"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/typecheck-inputs.json",
+      "bytes": 142324,
+      "sha256": "d6a21e87f65facc35af6c69e50c68969974bbf0c02bc7f8a8e657706d07d9a65"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-checks/typecheck.log",
+      "bytes": 158,
+      "sha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/final-quality-commands.json",
+      "bytes": 1034,
+      "sha256": "0702e4602844b781797f97b74ec56c15c906b5c4ef72f745462e1a1d4910c3ee"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/github-candidate-checks.json",
+      "bytes": 568,
+      "sha256": "65203b119270010c239427b3d96ea5859c618235a863bb90c98014ce1bb33833"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/habit-hooks-committed.log",
+      "bytes": 10290,
+      "sha256": "d75e8d896ca5b6c5872714da1f84f6c38593031e3f548ae78a136afc750bdac7"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/habit-hooks-final.log",
+      "bytes": 10290,
+      "sha256": "bbbd3be1a23bc77dc32124665a32f4c8e9e73e4dc4516c1f35ade12402239239"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/habit-hooks.log",
+      "bytes": 10349,
+      "sha256": "1511e9189feb8d36f4014d05ff00af4017d025f6713cd88af03c51f4184b5284"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/habit-review.md",
+      "bytes": 13714,
+      "sha256": "2cae7264575c3364bb1b06451d4788ab6d64ce6d0ff212178d8056fbdf3736df"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/hosted-live-prerequisites.json",
+      "bytes": 1308,
+      "sha256": "9f184cbc140b3110de5cec364cac3d4f26d6e54aa9e5e16ce5f5be4e1cc9e88d"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/legal-approval-review.md",
+      "bytes": 8145,
+      "sha256": "fef9240b9c22849a31cfb4e792a51d111615e0c2dd3e1f6ac1fd3ba8a1c878f5"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/legal-byte-verification.json",
+      "bytes": 2714,
+      "sha256": "2318cb0694548a8fff333270d3149078324e66f6767e3af325170777a3a48c91"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/live-admin-settings-read.json",
+      "bytes": 576,
+      "sha256": "b68d42af04f81b488bbddc2d57c063dd78f4c2cea520db126112c0866764d8c1"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/live-admin-settings-read.png",
+      "bytes": 152526,
+      "sha256": "b5144e843e01f4a15a450b7a5b12ead5908dd6c7b90c2e6a92af7e61c1695877"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/live-store-proof.json",
+      "bytes": 647,
+      "sha256": "635f6dc6e8eb4bcd1cfae35a8985f54d91a0d9f6dde5ca8a9ead6bc7499ef973"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/manager-review-draft.json",
+      "bytes": 3798,
+      "sha256": "bc425a701d9f61462b08de215c6141432eccec815f9173280ea1a5ae6a0fa34c"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/manager-review-final.json",
+      "bytes": 4784,
+      "sha256": "4a18946e1e1800a0be0addd2d06312a7c182cdb3a1ee99cf9b4bc228e40c14fb"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/marketing-review.md",
+      "bytes": 5093,
+      "sha256": "e6ac979f065acaeb3942e682b4d99a64215a9dd511214bb6e48d6933c3cb0899"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-clean-candidate.log",
+      "bytes": 431997,
+      "sha256": "d9e4d7a2b8544e9eb6856fa5232660c81c45079ce65b78d1814594458e158418"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-delta-initial.log",
+      "bytes": 2753,
+      "sha256": "bfa00b1ff30e2906fe8133921ae2af02e9faf0787fa979caa3edb9b0a9b3efcc"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-dispositions.md",
+      "bytes": 17615,
+      "sha256": "d6773b28c72c592f3cca28e2b2e94859cfcb321dd63ef90e12fb2bbd0afe0cc8"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-final.log",
+      "bytes": 38407,
+      "sha256": "c2f85a0b27dad05644f1de75ec0623289e57a69e6dd96d6a6cc18464c68abe7f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-precommit-failed.json",
+      "bytes": 669,
+      "sha256": "d65cd6e7b261035e61f03c15acfe245d1b0e068f9d540936a323ac74acbcb9e0"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-precommit-failed.md",
+      "bytes": 357,
+      "sha256": "34049a0ae771231e363deb4749340698a4fc31efde34f7a61ed2c7a49a563f5a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-precommit.log",
+      "bytes": 672,
+      "sha256": "84389d0f1b44ff36c38e7bf13f4505274da6434716104a3763540226f2d65444"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-review-initial.json",
+      "bytes": 4187,
+      "sha256": "9b09e02f6810bceb05064ae2ca23910c2d9b360a17f0fd06c6796cad60c6f9d0"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-review-initial.log",
+      "bytes": 2477,
+      "sha256": "4a32617ecd8a996f615e4eeb1ee6ffb5196c798ecbff5c8aa327dc9de2199c5f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-source-185e372a-process.json",
+      "bytes": 39317,
+      "sha256": "6b3a7d0cd1dea8abb58428376e98a76182fc119725bec0759cb9c0334ea72d1a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-source-185e372a-process.md",
+      "bytes": 38300,
+      "sha256": "2c66b7f24e8b4bb283d69cc95f44f50b925cca780bcef4142978f3676ffe1986"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/metrics-source-185e372a-review.json",
+      "bytes": 4187,
+      "sha256": "7629c06120d4c0a3b93ac36579d72241daa11e0fc9af06ef2321a340bbf5a2f4"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/coverage.json",
+      "bytes": 855422,
+      "sha256": "f15f081cf2a202740f59ea86448e173b164906a36443b4f3f1ee5bc4eadb8da9"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/crap.json",
+      "bytes": 42628,
+      "sha256": "f23a7007288f49f0558b4d6fa05e38659dfb0f1dc9b154c9833999bd3039773e"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/impact.json",
+      "bytes": 2850,
+      "sha256": "2ee5e443cf14bf9fdcf324e010e0a556e858622fa662e9285553f6d3fc6c9307"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/pr-review.json",
+      "bytes": 17430,
+      "sha256": "53ca31745f500c27e033373c2799c089d651df4222f93550a57abc98bc725424"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/process.json",
+      "bytes": 39314,
+      "sha256": "e31059550e6e5cd8aa2977f3238d0a3795b5e7cd2dfdc4ef6af92fed63f9efcd"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/process.md",
+      "bytes": 38297,
+      "sha256": "dc8ed111c9a71a31840205bc67880b47ccc9a8fbd6560b31ab3d8ef4ba3f9906"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/review.json",
+      "bytes": 4187,
+      "sha256": "f5ca5b38c21a8d4cb72bc075ba87a654366d4d4f4c931ecce7ef01a8fea9812b"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/snapshot-base.json",
+      "bytes": 1017528,
+      "sha256": "c9f6f767caaea1e44d117a79c45b8fd6293625f5d17d111ec18aa0f44667e9ff"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/quality/snapshot.json",
+      "bytes": 1018151,
+      "sha256": "9ef01d110284aa695478baf8b3f35a9ce3b57cc991b657f8c53805152cc61c93"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/release-gate-review.md",
+      "bytes": 14046,
+      "sha256": "2b838918bc6008639f2739049bf59b25595c5d3d61741aa0d81bb2921221b813"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/render-storage-setup.json",
+      "bytes": 465,
+      "sha256": "8b6a615a4c76bb7f96f01d873f99285a48676c361b59a0cac8f364eeeeaf9b95"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/review-draft/mcp-baseline-summary.json",
+      "bytes": 1513,
+      "sha256": "0c083fdb45fda2821a950590d063fd31e71f3a5fd4dae41f16a221d5a1efb460"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/review-draft/pr248-initial-evidence.json",
+      "bytes": 3098,
+      "sha256": "91a61a7e5448ea7384e8a5b3b87187e85666ad26cb4f53e353f7a442ceab1eb4"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/review-draft/validation-provenance.json",
+      "bytes": 6921,
+      "sha256": "94fd5b335f931b4a440c0e2bf1e0b0f7635d2cc44071fdfa92bc6cd57394a579"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/runtime-login.json",
+      "bytes": 459,
+      "sha256": "cb1af7fede5445ac9d235bdb74481a5ba61aa60bbd4de5998a6187ad195479dc"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/snapshot-head.log",
+      "bytes": 74,
+      "sha256": "f17774699d1bc3903bb7c9c2ff562e6be402ca0ed6ee5662e034ec3763b910c2"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/ui/review.md",
+      "bytes": 3581,
+      "sha256": "7bb08c40e9c8b6319cdcdd434015de2cc1439911b1a9c3b630e988384fbb988f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/ui/v2/audit-1200-full.png",
+      "bytes": 224268,
+      "sha256": "d3d54e460ee5ffc4b544f5b6b44523b45835df95f3b5f4fcd8dfe28a036da4d8"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/ui/v2/audit-320-form.png",
+      "bytes": 61917,
+      "sha256": "499ed680af655b15285296042da853bbbba5506696f4131b82ad8180be15fc8f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/ui/v2/audit-390-form.png",
+      "bytes": 61115,
+      "sha256": "e90a3cc8481b5eab7d7e3aeeea7b6310e38d91af47300c05a44c93c7cfab08ee"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/ui/v2/browser-facts.json",
+      "bytes": 14566,
+      "sha256": "0cfcbd9579651bb454910283948023bc3f6491a2e15389e3efa98fe6703ca274"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/ui/v2/fixture-requests.json",
+      "bytes": 1118,
+      "sha256": "ff0575138ceb08004571d732f1b5645b338fffc3ec1132202b1ed58ccb20da3e"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/ui/v2/review.md",
+      "bytes": 2144,
+      "sha256": "171bc6811bf8690dfae9523c6eded0d1ada31ca782e69026d8f0cb26e08f90af"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/whitespace-review.json",
+      "bytes": 12422,
+      "sha256": "0a33a14b1807fdc3b1a7804a33628186d030d89e565454658750c8e4b77a8a1b"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-collector-final-green.txt",
+      "bytes": 3458,
+      "sha256": "cffe8ac7008ce132742138a871154f4709f8cc30938de48054763eee7476e611"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-collector-green.txt",
+      "bytes": 4267,
+      "sha256": "b578cff0a3270f0d306e8fbd65452ee82fcbd57733d67796c51e6fbe74ef76af"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-focused-complete.txt",
+      "bytes": 24851,
+      "sha256": "b273719baf2e99338157439f26660ad7aadc78deb60a7ff29fd16763957b18de"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-focused-final-green.txt",
+      "bytes": 24721,
+      "sha256": "6efe928e811babaa6f135903c2b6fcadf253a9fded2776d19e1a542638fc762c"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-focused-first-green.txt",
+      "bytes": 22647,
+      "sha256": "dbfa21c0993da8497283c9cc96f6cfb776fe29de663f30148ead950cfc673618"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-focused-green.txt",
+      "bytes": 24151,
+      "sha256": "fa5a8980b5b74e069ac2ec81332fd4398137e1a17e3876a9e2ccacda470be9ce"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-help-red.txt",
+      "bytes": 39901,
+      "sha256": "8aa615df0a6df47d40d6384b04a59f4da57dcaad3880630897f2ccf10b7e5c46"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-pattern-red.txt",
+      "bytes": 905,
+      "sha256": "20b0824db80b72d9dac7eec6587992532de69b4390790c5ff718ccf0c324329a"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-postgres-green.txt",
+      "bytes": 2556,
+      "sha256": "a48fddbd4d13a2726897dfa84de36478840fae083230ab1241fd3ee1f7089360"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/axiom-postgres-red.txt",
+      "bytes": 5683,
+      "sha256": "5631aecfe029496e312f14454b362668b7905f7878adfc379a6047c5853e4fd8"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/worker-checks/provenance.json",
+      "bytes": 2666,
+      "sha256": "472fcb9e32699265073612762bedceb3d825f8167ff5a246e97a06b7b425e8d2"
+    }
+  ],
+  "privacyScan": {
+    "privateValuesChecked": 7,
+    "matchingFiles": [],
+    "patternSuspects": []
+  },
+  "limits": [
+    "Raw OAuth/login/cache outputs and prepared-token screen are excluded.",
+    "Large repeated source copies and prior redundant renders remain local; pinned Git source URLs and current complete diff are review evidence accessible through this repository.",
+    "Raw V8 captures remain local; normalized verified coverage and provenance are included.",
+    "No v3 public/runtime publication or new credential creation has occurred."
+  ]
+}

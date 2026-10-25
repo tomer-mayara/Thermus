@@ -1,0 +1,112 @@
+$ npm run build && node --test --test-concurrency=1 dist/test/acceptance/logging/audit/destination-settings.runtime.js dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js dist/test/integration/logging/audit/destination-settings.runtime.js
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✖ Given tenant settings, when the SQL runtime reopens, then committed settings persist and other tenants stay isolated (14489.84725ms)
+✖ Given competing first saves, when both expect absence, then one commits and the other conflicts (8316.235292ms)
+✔ Given a real SQL query that stalls, when a storage deadline passes, then callers return and late work stays bounded (7709.085166ms)
+✔ Given a table lock in real PostgreSQL, when public settings calls stall, then reads fail safely and writes remain unconfirmed (9654.8555ms)
+node:internal/modules/esm/resolve:272
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/tomermayara/.codex/worktrees/logs-restack/Thermus/dist/test/support/processes/use-hosted-portal-fixture.js' imported from /Users/tomermayara/.codex/worktrees/logs-restack/Thermus/dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js
+    at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    at moduleResolve (node:internal/modules/esm/resolve:879:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    at #resolve (node:internal/modules/esm/loader:687:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)
+    at ModuleJob.link (node:internal/modules/esm/module_job:381:17) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/tomermayara/.codex/worktrees/logs-restack/Thermus/dist/test/support/processes/use-hosted-portal-fixture.js'
+}
+
+Node.js v24.20.0
+✖ dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js (217.824542ms)
+node:internal/modules/cjs/loader:1568
+  throw err;
+  ^
+
+Error: Cannot find module '/Users/tomermayara/.codex/worktrees/logs-restack/Thermus/dist/test/integration/logging/audit/destination-settings.runtime.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)
+    at Module._load (node:internal/modules/cjs/loader:1341:5)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v24.20.0
+✖ dist/test/integration/logging/audit/destination-settings.runtime.js (102.0315ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 2
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41079.287625
+
+✖ failing tests:
+
+test at dist/test/acceptance/logging/audit/destination-settings.runtime.js:7:1
+✖ Given tenant settings, when the SQL runtime reopens, then committed settings persist and other tenants stay isolated (14489.84725ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'unconfirmed'
+  - 'saved'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/logs-restack/Thermus/dist/test/acceptance/logging/audit/destination-settings.runtime.js:12:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unconfirmed',
+    expected: 'saved',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/destination-settings.runtime.js:23:1
+✖ Given competing first saves, when both expect absence, then one commits and the other conflicts (8316.235292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   'unconfirmed',
+  +   'unconfirmed'
+  -   'conflict',
+  -   'saved'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/logs-restack/Thermus/dist/test/acceptance/logging/audit/destination-settings.runtime.js:29:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'unconfirmed', 'unconfirmed' ],
+    expected: [ 'conflict', 'saved' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js:1:1
+✖ dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js (217.824542ms)
+  'test failed'
+
+test at dist/test/integration/logging/audit/destination-settings.runtime.js:1:1
+✖ dist/test/integration/logging/audit/destination-settings.runtime.js (102.0315ms)
+  'test failed'
+[ELIFECYCLE] Command failed with exit code 1.

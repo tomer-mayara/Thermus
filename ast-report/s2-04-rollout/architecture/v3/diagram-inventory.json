@@ -1,0 +1,93 @@
+[
+  {
+    "number": 1,
+    "title": "Context",
+    "changed": true,
+    "before_sha256": "8add4682bdd88dff77abb80c072308658bc8d05b298e3c9e557ab5915562baee",
+    "after_sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+  },
+  {
+    "number": 2,
+    "title": "C4 containers: hosted edition",
+    "changed": true,
+    "before_sha256": "044afa7b7d6dda59ccc9244be56f7ea36ed2df6e59575157877e3a77d35c703b",
+    "after_sha256": "3eb90a094cf9b44d2232c3639fa35ebaca66fcef9f939b85e63d25c1c8362a51"
+  },
+  {
+    "number": 3,
+    "title": "C4 containers: local edition",
+    "changed": false,
+    "before_sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909",
+    "after_sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+  },
+  {
+    "number": 4,
+    "title": "Selected C4 components: tool processing in the Node server",
+    "changed": false,
+    "before_sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57",
+    "after_sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+  },
+  {
+    "number": 5,
+    "title": "Selected C4 components: hosted authentication in the Node server",
+    "changed": false,
+    "before_sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191",
+    "after_sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191"
+  },
+  {
+    "number": 6,
+    "title": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "changed": true,
+    "before_sha256": "c439417a6cac5aed29a668b78291ecd916d39719c7b654d17c3fb6f1bf6824d9",
+    "after_sha256": "7a7ef444a6897ab5c59fbba1095146ca8e0bea1449a6af9da65d0dab4ee53dcc"
+  },
+  {
+    "number": 7,
+    "title": "Selected C4 components: system and audit logs in the Node server",
+    "changed": true,
+    "before_sha256": "521c3bc179dac03b4b2be092c782171e6bd63cb1ac1405d7c57cb02a456cdc39",
+    "after_sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa"
+  },
+  {
+    "number": 8,
+    "title": "Selected C4 components: local authentication in the Node server",
+    "changed": false,
+    "before_sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0",
+    "after_sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+  },
+  {
+    "number": 9,
+    "title": "Collaboration overview",
+    "changed": false,
+    "before_sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9",
+    "after_sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9"
+  },
+  {
+    "number": 10,
+    "title": "Scenario: MCP page fetch and renderer cancellation",
+    "changed": false,
+    "before_sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d",
+    "after_sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+  },
+  {
+    "number": 11,
+    "title": "Scenario: hosted default sign-in landing",
+    "changed": false,
+    "before_sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686",
+    "after_sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+  },
+  {
+    "number": 12,
+    "title": "Scenario: hosted member read",
+    "changed": false,
+    "before_sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84",
+    "after_sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+  },
+  {
+    "number": 13,
+    "title": "Deployment view",
+    "changed": true,
+    "before_sha256": "7d0e3a9a26536fe1fb34ff2a6681c25fa18569b3435f4730719f5752fc4e65db",
+    "after_sha256": "7585ee2a08ce28bf32504d62fb6c5fd20b6056f6b5634194f694569ea5456a14"
+  }
+]

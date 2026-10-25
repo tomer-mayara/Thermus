@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-24T23:51:29.342534+00:00",
+  "revision": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "route": "https://app.thermus.ai/logging",
+  "actor": "Owner signed in as current Thermus AI Admin",
+  "observed": "Empty destination form, no saved token, Enable unchecked, no storage-unavailable response",
+  "sqlCounts": {
+    "saved": 0,
+    "enabled": 0,
+    "databaseBytes": 10991283
+  },
+  "actions": "GET only; no Save/Test/Enable",
+  "limits": "Does not prove deployed writes, persistence across restart, or Axiom receipt through deployed application."
+}

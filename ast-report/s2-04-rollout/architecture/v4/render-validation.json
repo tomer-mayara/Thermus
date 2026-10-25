@@ -1,0 +1,106 @@
+{
+  "cliVersion": "12.0.0",
+  "browser": "existing Chrome headless 136",
+  "configuration": [
+    "Mermaid source inline configuration",
+    "puppeteer-config.json"
+  ],
+  "renders": [
+    {
+      "name": "l3",
+      "width": 800,
+      "height": 1017.8167379127359,
+      "viewBox": "4 4 848 1078.8857421875"
+    },
+    {
+      "name": "registry-1-after",
+      "width": 800,
+      "height": 604.1775543831034,
+      "viewBox": "4 4 938.796875 709"
+    },
+    {
+      "name": "registry-2-after",
+      "width": 800,
+      "height": 976.557683547187,
+      "viewBox": "4 4 1028.984375 1256.0782470703125"
+    },
+    {
+      "name": "registry-6-after",
+      "width": 800,
+      "height": 1593.3361235460504,
+      "viewBox": "4 4 598.49267578125 1192"
+    },
+    {
+      "name": "registry-7-after",
+      "width": 800,
+      "height": 1525.9361179361179,
+      "viewBox": "28 4 635.9375 1213"
+    },
+    {
+      "name": "registry-13-after",
+      "width": 800,
+      "height": 639.4634378660397,
+      "viewBox": "4 4 1422.540283203125 1137.078125"
+    }
+  ],
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "validation_mode": "Exact source and render byte comparison with manager-reviewed v3; no rerender.",
+  "prior_visual_review": "v3 records manager acceptance of all six images at 800 pixels.",
+  "reuse_provenance": [
+    {
+      "name": "l3",
+      "source_sha256": "7c6ecc9513aa3bbdbdf8893a7c5061a8c8233ffea5219adace3fab8cd8cbec72",
+      "reused_from": "../v3/",
+      "source_identical_to_v3": true,
+      "width": 800,
+      "svg_sha256": "279434443344630eff1cada9cdba85c2fc521964a341417af82cf3ad2ebd4bed",
+      "png_800_sha256": "e9fe8a506f19296aa9f5e83d0fae5f7e11facb7618df7aff63dc4b737fb3fbd5"
+    },
+    {
+      "name": "registry-1-after",
+      "source_sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3",
+      "reused_from": "../v3/",
+      "source_identical_to_v3": true,
+      "width": 800,
+      "svg_sha256": "bfc615e5be3cde306cb12f1ab0b915b3b8ca9ef10ecf7aa3148e935c304ee651",
+      "png_800_sha256": "f74bfe4bbbacf510ac57c3ddd189b354aa40512cd7467db82b742bd88c24eee2"
+    },
+    {
+      "name": "registry-2-after",
+      "source_sha256": "3eb90a094cf9b44d2232c3639fa35ebaca66fcef9f939b85e63d25c1c8362a51",
+      "reused_from": "../v3/",
+      "source_identical_to_v3": true,
+      "width": 800,
+      "svg_sha256": "88cc14fcc14a602e7963f203912174076737599ee02d43422c95188ddedfbe23",
+      "png_800_sha256": "5b4f5388132c9976c903146c91e7156363ba4c5a5bcdfa55f4fc6c5bc00ea23f"
+    },
+    {
+      "name": "registry-6-after",
+      "source_sha256": "7a7ef444a6897ab5c59fbba1095146ca8e0bea1449a6af9da65d0dab4ee53dcc",
+      "reused_from": "../v3/",
+      "source_identical_to_v3": true,
+      "width": 800,
+      "svg_sha256": "f91e8e25fa1663c6d416a02fd606e4d9f7d57bfb2f6e0b4c2729a517867940f4",
+      "png_800_sha256": "e4e2b9bad58b1d0b6b256f9e6fd334dcd4c2378cb4c3e41a7172eab5284a0b10"
+    },
+    {
+      "name": "registry-7-after",
+      "source_sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa",
+      "reused_from": "../v3/",
+      "source_identical_to_v3": true,
+      "width": 800,
+      "svg_sha256": "31b61d9b27deb99e2b1c2c400ae24787410533d0622f9a0f91d06974ddd0eaf3",
+      "png_800_sha256": "0bbcfb3791727ef0fba1634c6d67264dd319eb6d298a8c66de29beba4ca53f65"
+    },
+    {
+      "name": "registry-13-after",
+      "source_sha256": "7585ee2a08ce28bf32504d62fb6c5fd20b6056f6b5634194f694569ea5456a14",
+      "reused_from": "../v3/",
+      "source_identical_to_v3": true,
+      "width": 800,
+      "svg_sha256": "93725a92d3a745889abdb8964666317c3ea2e089214ff97a38fa6bae543d922b",
+      "png_800_sha256": "fcf0d6422b31ae4f283a7052b4c5fe81b7a8c426a7953d75d34045fc56aee943"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+  "outcomes": [
+    {
+      "name": "Delta",
+      "status": "failed",
+      "text": "ast-metrics analyze failed with exit status 1."
+    },
+    {
+      "name": "Review",
+      "status": "unavailable",
+      "text": "A prerequisite failed. This stage did not run."
+    },
+    {
+      "name": "CRAP",
+      "status": "unavailable",
+      "text": "A prerequisite failed. This stage did not run."
+    },
+    {
+      "name": "Architecture",
+      "status": "unavailable",
+      "text": "A prerequisite failed. This stage did not run."
+    }
+  ]
+}

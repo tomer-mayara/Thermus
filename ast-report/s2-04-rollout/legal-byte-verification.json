@@ -1,0 +1,60 @@
+{
+  "verifiedAt": "2026-10-25T00:08:14.174Z",
+  "manifestSha256": "9ff7e5f5fa48bad17dcf5cde7248aa226700e2b10f3eb9da26a1de42c6f90075",
+  "bundleVersion": "s204-organization-audit-proposal-2026-10-24-v3",
+  "effectiveDate": "2026-10-24",
+  "approval": null,
+  "publicationDate": null,
+  "marketingHead": "1cd32b128698b95f624f0fed15ca3c58d95a62d0",
+  "documents": [
+    {
+      "file": "terms.md",
+      "bytes": 19946,
+      "sha256": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+      "version": "hosted-terms-organization-audit-proposal-2026-10-24-v3",
+      "runtimeEqualsProposal": true,
+      "manifestMatches": true,
+      "marketingWorkingEqualsProposal": true,
+      "marketingCommittedEqualsProposal": true,
+      "marketingWrapperMatches": true
+    },
+    {
+      "file": "privacy.md",
+      "bytes": 35098,
+      "sha256": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "version": "hosted-privacy-organization-audit-proposal-2026-10-24-v3",
+      "runtimeEqualsProposal": true,
+      "manifestMatches": true,
+      "marketingWorkingEqualsProposal": true,
+      "marketingCommittedEqualsProposal": true,
+      "marketingWrapperMatches": true
+    },
+    {
+      "file": "agreement.txt",
+      "bytes": 378,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "version": "hosted-agreement-organization-proposal-2026-10-23-v2",
+      "runtimeEqualsProposal": true,
+      "manifestMatches": true,
+      "equalsPreviousApprovedAgreement": true
+    }
+  ],
+  "help": {
+    "bytes": 1929,
+    "sha256": "1f4ad87cb93356115e2626f493d2f28040ab80ed94bd8353a3870efe4a27de4d",
+    "version": "hosted-audit-help-proposal-2026-10-24-v3-r2",
+    "sourceSha256": "058b8a70e911cf25a67c20d11b14ddfcf084416cbb0ab45e71f8578b80554189",
+    "staticParagraphs": 12,
+    "paragraphTextAndOrderMatchBothTokenStates": true,
+    "placementAndDynamicPrefix": {
+      "paragraphs": "All 12 static help paragraphs in loggingPage, in source order; HTML Privacy link represented as Markdown.",
+      "placement_headings": "Audit logs, Audit log destination and What export includes retain UI headings. Destination form help and Test saved destination mark review placement; form control labels and action labels are excluded.",
+      "dynamic_token_presence_prefix": "Excluded from audit-help.md; the following exact alternatives precede the common token-helper paragraph in the UI.",
+      "token_presence_alternatives": [
+        "A token is saved.",
+        "No token is saved."
+      ],
+      "excluded": "Workspace administration eyebrow, form labels and control values, dynamic settings/hidden fields, and loggingNotice result pages."
+    }
+  }
+}

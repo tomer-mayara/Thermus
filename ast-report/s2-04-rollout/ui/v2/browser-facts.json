@@ -1,0 +1,607 @@
+{
+  "candidate": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+  "fixture": "Rendered loggingPage source with local saved Axiom settings, disabled export, no real credential; same production layout, CSS, assets and CSP",
+  "sources": {
+    "src/interfaces/web/account/logging-page.ts": "058b8a70e911cf25a67c20d11b14ddfcf084416cbb0ab45e71f8578b80554189",
+    "src/interfaces/web/account/members-page-layout.ts": "8dce76dfb5d701b917613273ffe76ca57fb956769b8f7d1ebd9e06db62932ac0",
+    "src/interfaces/web/account/members-style.ts": "51993f89125398e7ed672d07d21e92933b858e5cccae0ac88da89a4911c5f64f"
+  },
+  "browser": "156.0.8078.4",
+  "widths": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "h1": "Audit logs",
+      "currentNavigation": "Audit logs",
+      "inputs": [
+        {
+          "id": "logging-endpoint",
+          "type": "url",
+          "name": "endpoint",
+          "labels": [
+            "OTLP logs endpoint"
+          ],
+          "x": 37,
+          "width": 246,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": 2048
+        },
+        {
+          "id": "logging-dataset",
+          "type": "text",
+          "name": "axiom_dataset",
+          "labels": [
+            "Axiom dataset (optional)"
+          ],
+          "x": 37,
+          "width": 246,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "solid",
+          "pattern": "[A-Za-z0-9\\-]{1,128}",
+          "maxLength": 128
+        },
+        {
+          "id": "",
+          "type": "radio",
+          "name": "auth",
+          "labels": [
+            "None"
+          ],
+          "x": 42,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        },
+        {
+          "id": "",
+          "type": "radio",
+          "name": "auth",
+          "labels": [
+            "Bearer token"
+          ],
+          "x": 121.3125,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        },
+        {
+          "id": "logging-token",
+          "type": "password",
+          "name": "token",
+          "labels": [
+            "Token"
+          ],
+          "x": 37,
+          "width": 246,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": 8192
+        },
+        {
+          "id": "",
+          "type": "checkbox",
+          "name": "enabled",
+          "labels": [
+            "Enable export"
+          ],
+          "x": 41,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save",
+          "type": "submit",
+          "formNoValidate": false,
+          "width": 246,
+          "height": 48
+        },
+        {
+          "text": "Test saved destination",
+          "type": "submit",
+          "formNoValidate": true,
+          "width": 246,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "h1": "Audit logs",
+      "currentNavigation": "Audit logs",
+      "inputs": [
+        {
+          "id": "logging-endpoint",
+          "type": "url",
+          "name": "endpoint",
+          "labels": [
+            "OTLP logs endpoint"
+          ],
+          "x": 37,
+          "width": 316,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": 2048
+        },
+        {
+          "id": "logging-dataset",
+          "type": "text",
+          "name": "axiom_dataset",
+          "labels": [
+            "Axiom dataset (optional)"
+          ],
+          "x": 37,
+          "width": 316,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "solid",
+          "pattern": "[A-Za-z0-9\\-]{1,128}",
+          "maxLength": 128
+        },
+        {
+          "id": "",
+          "type": "radio",
+          "name": "auth",
+          "labels": [
+            "None"
+          ],
+          "x": 42,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        },
+        {
+          "id": "",
+          "type": "radio",
+          "name": "auth",
+          "labels": [
+            "Bearer token"
+          ],
+          "x": 121.3125,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        },
+        {
+          "id": "logging-token",
+          "type": "password",
+          "name": "token",
+          "labels": [
+            "Token"
+          ],
+          "x": 37,
+          "width": 316,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": 8192
+        },
+        {
+          "id": "",
+          "type": "checkbox",
+          "name": "enabled",
+          "labels": [
+            "Enable export"
+          ],
+          "x": 41,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save",
+          "type": "submit",
+          "formNoValidate": false,
+          "width": 316,
+          "height": 48
+        },
+        {
+          "text": "Test saved destination",
+          "type": "submit",
+          "formNoValidate": true,
+          "width": 316,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "width": 1200,
+      "scrollWidth": 1200,
+      "h1": "Audit logs",
+      "currentNavigation": "Audit logs",
+      "inputs": [
+        {
+          "id": "logging-endpoint",
+          "type": "url",
+          "name": "endpoint",
+          "labels": [
+            "OTLP logs endpoint"
+          ],
+          "x": 53,
+          "width": 662,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": 2048
+        },
+        {
+          "id": "logging-dataset",
+          "type": "text",
+          "name": "axiom_dataset",
+          "labels": [
+            "Axiom dataset (optional)"
+          ],
+          "x": 53,
+          "width": 662,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "solid",
+          "pattern": "[A-Za-z0-9\\-]{1,128}",
+          "maxLength": 128
+        },
+        {
+          "id": "",
+          "type": "radio",
+          "name": "auth",
+          "labels": [
+            "None"
+          ],
+          "x": 58,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        },
+        {
+          "id": "",
+          "type": "radio",
+          "name": "auth",
+          "labels": [
+            "Bearer token"
+          ],
+          "x": 137.3125,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        },
+        {
+          "id": "logging-token",
+          "type": "password",
+          "name": "token",
+          "labels": [
+            "Token"
+          ],
+          "x": 53,
+          "width": 662,
+          "height": 52.34375,
+          "minHeight": "48px",
+          "fontSize": "17px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": 8192
+        },
+        {
+          "id": "",
+          "type": "checkbox",
+          "name": "enabled",
+          "labels": [
+            "Enable export"
+          ],
+          "x": 57,
+          "width": 20,
+          "height": 20,
+          "minHeight": "0px",
+          "fontSize": "13.3333px",
+          "visible": true,
+          "focusOutline": "none",
+          "pattern": "",
+          "maxLength": -1
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save",
+          "type": "submit",
+          "formNoValidate": false,
+          "width": 662,
+          "height": 48
+        },
+        {
+          "text": "Test saved destination",
+          "type": "submit",
+          "formNoValidate": true,
+          "width": 662,
+          "height": 48
+        }
+      ]
+    }
+  ],
+  "consoleErrors": [],
+  "externalRequestsBlocked": [],
+  "pattern": [
+    {
+      "value": "",
+      "expectedValid": true,
+      "valid": true,
+      "patternMismatch": false,
+      "valueLength": 0,
+      "validationMessage": ""
+    },
+    {
+      "value": "audit-log-test",
+      "expectedValid": true,
+      "valid": true,
+      "patternMismatch": false,
+      "valueLength": 14,
+      "validationMessage": ""
+    },
+    {
+      "value": "ABC012-xyz",
+      "expectedValid": true,
+      "valid": true,
+      "patternMismatch": false,
+      "valueLength": 10,
+      "validationMessage": ""
+    },
+    {
+      "value": "-a-",
+      "expectedValid": true,
+      "valid": true,
+      "patternMismatch": false,
+      "valueLength": 3,
+      "validationMessage": ""
+    },
+    {
+      "value": "aaaaaaaaaaaa… (128 chars)",
+      "expectedValid": true,
+      "valid": true,
+      "patternMismatch": false,
+      "valueLength": 128,
+      "validationMessage": ""
+    },
+    {
+      "value": "invalid_dataset",
+      "expectedValid": false,
+      "valid": false,
+      "patternMismatch": true,
+      "valueLength": 15,
+      "validationMessage": "Please match the requested format."
+    },
+    {
+      "value": "audit.log",
+      "expectedValid": false,
+      "valid": false,
+      "patternMismatch": true,
+      "valueLength": 9,
+      "validationMessage": "Please match the requested format."
+    },
+    {
+      "value": "a/b",
+      "expectedValid": false,
+      "valid": false,
+      "patternMismatch": true,
+      "valueLength": 3,
+      "validationMessage": "Please match the requested format."
+    },
+    {
+      "value": "a b",
+      "expectedValid": false,
+      "valid": false,
+      "patternMismatch": true,
+      "valueLength": 3,
+      "validationMessage": "Please match the requested format."
+    },
+    {
+      "value": "aé",
+      "expectedValid": false,
+      "valid": false,
+      "patternMismatch": true,
+      "valueLength": 2,
+      "validationMessage": "Please match the requested format."
+    },
+    {
+      "value": "aaaaaaaaaaaa… (129 chars)",
+      "expectedValid": false,
+      "valid": false,
+      "patternMismatch": true,
+      "valueLength": 129,
+      "validationMessage": "Please match the requested format."
+    }
+  ],
+  "keyboard": [
+    {
+      "tag": "A",
+      "id": "",
+      "type": "",
+      "text": "Skip to content",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "type": "",
+      "text": "",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "type": "",
+      "text": "Product / Connect",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "type": "",
+      "text": "Members",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "type": "",
+      "text": "Audit logs",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "type": "",
+      "text": "Switch workspace",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "type": "",
+      "text": "Privacy Policy",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "INPUT",
+      "id": "logging-endpoint",
+      "type": "url",
+      "text": "",
+      "label": "OTLP logs endpoint",
+      "outline": "solid"
+    },
+    {
+      "tag": "INPUT",
+      "id": "logging-dataset",
+      "type": "text",
+      "text": "",
+      "label": "Axiom dataset (optional)",
+      "outline": "solid"
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "type": "radio",
+      "text": "",
+      "label": "Bearer token",
+      "outline": "solid"
+    },
+    {
+      "tag": "INPUT",
+      "id": "logging-token",
+      "type": "password",
+      "text": "",
+      "label": "Token",
+      "outline": "solid"
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "type": "checkbox",
+      "text": "",
+      "label": "Enable export",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "submit",
+      "text": "Save",
+      "label": "",
+      "outline": "solid"
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "type": "submit",
+      "text": "Test saved destination",
+      "label": "",
+      "outline": "solid"
+    }
+  ],
+  "typedMaxLength": 128,
+  "nativeKeyboardToggles": {
+    "radioArrows": true,
+    "checkboxSpace": true,
+    "datasetShiftTabToEndpoint": true
+  },
+  "sourcesAfter": {
+    "src/interfaces/web/account/logging-page.ts": "058b8a70e911cf25a67c20d11b14ddfcf084416cbb0ab45e71f8578b80554189",
+    "src/interfaces/web/account/members-page-layout.ts": "8dce76dfb5d701b917613273ffe76ca57fb956769b8f7d1ebd9e06db62932ac0",
+    "src/interfaces/web/account/members-style.ts": "51993f89125398e7ed672d07d21e92933b858e5cccae0ac88da89a4911c5f64f"
+  }
+}

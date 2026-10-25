@@ -1,0 +1,70 @@
+[
+  {
+    "name": "ordinary",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 558.5,
+    "inputsChangedDuringRun": []
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 3.5,
+    "inputsChangedDuringRun": []
+  },
+  {
+    "name": "portal-build",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "build:user-portal"
+    ],
+    "exit": 0,
+    "seconds": 1.4,
+    "inputsChangedDuringRun": []
+  },
+  {
+    "name": "hosted-container",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "test:container:hosted"
+    ],
+    "exit": 0,
+    "seconds": 989.0,
+    "inputsChangedDuringRun": []
+  },
+  {
+    "name": "hosted-live",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "test:hosted-live"
+    ],
+    "exit": 0,
+    "seconds": 527.3,
+    "inputsChangedDuringRun": []
+  }
+]

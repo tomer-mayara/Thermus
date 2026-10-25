@@ -1,0 +1,13 @@
+{
+  "previous_version": "v2",
+  "changed_files": [
+    "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+    "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md",
+    "docs/legal/organization-audit-2026-10-24-proposal-v3/manifest.json",
+    "src/interfaces/web/account/members-style.ts",
+    "test/unit/logging/destination-settings-service.test.ts"
+  ],
+  "registry_unchanged": true,
+  "renders_reused_byte_for_byte": true,
+  "manager_visual_review": "Manager reported acceptance of all six images and scope before v3 refresh."
+}

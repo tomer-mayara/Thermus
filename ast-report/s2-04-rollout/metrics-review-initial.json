@@ -1,0 +1,122 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "headSha": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+  "summary": {
+    "filesChanged": 37,
+    "filesAdded": 2,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 8,
+    "low": 0,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/integration/logging/audit/logging-storage-export.test.ts",
+      "message": "Maintainability index: 44 -\u003e 38 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 43.798617069735045,
+      "after": 37.911512744115
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:max_loc",
+      "file": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "message": "Too many Lines of code (346 \u003e 150)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/interfaces/web/account/logging-form.ts",
+      "line": 6,
+      "subject": "loggingForm",
+      "message": "Cyclomatic complexity: 11 -\u003e 13 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 11,
+      "after": 13
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 46,
+      "subject": "DestinationSettingsService::authorizeExport",
+      "message": "Cyclomatic complexity: 10 -\u003e 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 10,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 101,
+      "subject": "DestinationSettingsService::save",
+      "message": "Cyclomatic complexity: 13 -\u003e 14 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 13,
+      "after": 14
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 67,
+      "subject": "DestinationSettingsService::testSaved",
+      "message": "Cyclomatic complexity: 14 -\u003e 15 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 14,
+      "after": 15
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/logs/audit/destination-settings-service.ts",
+      "line": 139,
+      "subject": "invalidInput",
+      "message": "Cyclomatic complexity: 11 -\u003e 15 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 11,
+      "after": 15
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/logs/audit/public-audit-destination.ts",
+      "line": 24,
+      "subject": "parseAuditDestination",
+      "message": "Cyclomatic complexity: 13 -\u003e 17 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 13,
+      "after": 17
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "test/support/doubles/logging/destination-settings-fake.ts",
+      "line": 15,
+      "subject": "DestinationSettingsFake::save",
+      "message": "Cyclomatic complexity: 9 -\u003e 10 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 9,
+      "after": 10
+    }
+  ],
+  "improvements": [],
+  "gate": "failed"
+}

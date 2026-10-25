@@ -1,0 +1,47 @@
+✔ Given an Axiom dataset, when saved and read, then the dataset is public and its credential remains private (23.042291ms)
+✔ Given an invalid Axiom dataset, when saved, then no settings are written (0.982917ms)
+✔ Given a blank or omitted Axiom dataset, when saved, then a generic Collector has no dataset header (5.216334ms)
+✔ Given a saved Axiom dataset, when it is repeated or cleared, then only clearing advances the revision and the saved token is retained (2.075542ms)
+✔ Given absent settings, when read, then the destination starts disabled without a credential (0.291667ms)
+✔ Given a bearer destination, when saved and reread, then only token presence is public and the ciphertext is tenant bound (1.641667ms)
+✔ Given unsafe endpoint http://collector.example, when saved, then all settings are refused (0.253ms)
+✔ Given unsafe endpoint https://user:secret@collector.example, when saved, then all settings are refused (0.068541ms)
+✔ Given unsafe endpoint https://collector.example/?secret, when saved, then all settings are refused (0.079167ms)
+✔ Given unsafe endpoint https://collector.example/#secret, when saved, then all settings are refused (0.090959ms)
+✔ Given unsafe endpoint https://127.1, when saved, then all settings are refused (0.885125ms)
+✔ Given unsafe endpoint https://10.1.1.1, when saved, then all settings are refused (0.078583ms)
+✔ Given unsafe endpoint https://172.16.0.1, when saved, then all settings are refused (0.056208ms)
+✔ Given unsafe endpoint https://192.168.0.1, when saved, then all settings are refused (0.038042ms)
+✔ Given unsafe endpoint https://169.254.169.254, when saved, then all settings are refused (0.034625ms)
+✔ Given unsafe endpoint https://[::1], when saved, then all settings are refused (0.089041ms)
+✔ Given unsafe endpoint https://[::ffff:127.0.0.1], when saved, then all settings are refused (0.069541ms)
+✔ Given unsafe endpoint https://localhost, when saved, then all settings are refused (0.02775ms)
+✔ Given unsafe endpoint https://a.localhost, when saved, then all settings are refused (0.026125ms)
+✔ Given unsafe endpoint https://192.0.0.1, when saved, then all settings are refused (0.029083ms)
+✔ Given unsafe endpoint https://192.0.2.1, when saved, then all settings are refused (1.604209ms)
+✔ Given unsafe endpoint https://198.51.100.1, when saved, then all settings are refused (0.076167ms)
+✔ Given unsafe endpoint https://203.0.113.1, when saved, then all settings are refused (0.049208ms)
+✔ Given saved Bearer, when the same token or a blank token is saved, then its ciphertext and revision are preserved (0.460459ms)
+✔ Given saved Bearer, when endpoint changes without a token, then Save refuses; None clears the credential (0.385083ms)
+✔ Given invalid token or missing Bearer, when saved, then no write occurs (0.123125ms)
+✔ Given corrupt or wrong-key credentials, when read or saved, then only a safe unavailable outcome escapes (0.229708ms)
+✔ Given two forms with one revision, when saved concurrently, then one wins and the stale form cannot replace it (0.612292ms)
+✔ Given input changes while storage is pending, when Save completes, then it uses the submitted snapshot (0.259125ms)
+✔ Given an unconfirmed Save with a late commit, when a reloaded form competes, then the expected revision prevents replacement (0.218625ms)
+✔ Given a competing commit before the late Save, when that late Save resumes, then it loses its stale revision (0.168125ms)
+✔ Given invalid public HTTPS syntax https://[2::1], when saved, then no settings change (0.064834ms)
+✔ Given invalid public HTTPS syntax https:collector.example, when saved, then no settings change (0.027125ms)
+✔ Given a token that cannot form one Bearer header value, when saved, then no settings change (0.044167ms)
+✔ Given a token that cannot form one Bearer header value, when saved, then no settings change (0.46625ms)
+✔ Given a token that cannot form one Bearer header value, when saved, then no settings change (0.217ms)
+✔ Given storage throws private diagnostics, when read or saved, then safe failure outcomes leave the owner (0.362208ms)
+✔ Given malformed stored settings, when read or saved, then no configured values escape and no update occurs (0.348125ms)
+✔ Given an empty userinfo marker in an endpoint, when saved, then the endpoint is refused (0.051208ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2145.108209

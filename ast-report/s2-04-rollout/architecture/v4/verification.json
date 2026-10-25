@@ -1,0 +1,42 @@
+{
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "tracked_worktree_clean": true,
+  "current_head_matches": true,
+  "embedded_mermaid_matches": true,
+  "prior_versions_unchanged": true,
+  "all_six_renders_reused": true,
+  "images": [
+    {
+      "name": "l3",
+      "width": 800,
+      "height": 1018
+    },
+    {
+      "name": "registry-1-after",
+      "width": 800,
+      "height": 605
+    },
+    {
+      "name": "registry-2-after",
+      "width": 800,
+      "height": 977
+    },
+    {
+      "name": "registry-6-after",
+      "width": 800,
+      "height": 1594
+    },
+    {
+      "name": "registry-7-after",
+      "width": 800,
+      "height": 1526
+    },
+    {
+      "name": "registry-13-after",
+      "width": 800,
+      "height": 640
+    }
+  ],
+  "review_sha256": "0190ba7b9c85aa7fb6e29865ba9cdc5b1aadb7ad88b3030750a31520cf9a84f2"
+}

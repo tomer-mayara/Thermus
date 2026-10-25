@@ -1,0 +1,16 @@
+flowchart TB
+  subgraph storage_server["Container: Thermus Node server · hosted"]
+    storage_app["app · TypeScript<br/>Compose service and dispatch<br/>Own SQL and queue lifetime"]
+    storage_web["web · TypeScript<br/>Audit logs read / Save / Test<br/>Trusted action capture"]
+    storage_identity["identity · TypeScript<br/>Access contracts"]
+    storage_logging["audit-logs · TypeScript / pg<br/>Protect settings; atomic Save<br/>Snapshots; bounded export / Test"]
+  end
+  storage_data[("L2: PostgreSQL<br/>Private tenant settings")]
+  storage_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
+  storage_app -.->|supplies| storage_web
+  storage_app -.->|service / dispatch / lifetime| storage_logging
+  storage_web -.->|source dependency| storage_identity
+  storage_web -->|trusted settings / action capture| storage_logging
+  storage_logging -->|SQL / verified TLS| storage_data
+  storage_logging -->|authorized export and saved Test / HTTPS POST| storage_collector
+  style storage_server fill:#fafafa,stroke:#777777,color:#222

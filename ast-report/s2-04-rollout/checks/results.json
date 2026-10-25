@@ -1,0 +1,73 @@
+[
+  {
+    "name": "ordinary",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "test"
+    ],
+    "exit": 0,
+    "seconds": 664.5
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "exit": 0,
+    "seconds": 4.5
+  },
+  {
+    "name": "portal-build",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "build:user-portal"
+    ],
+    "exit": 0,
+    "seconds": 3.3
+  },
+  {
+    "name": "hosted-build",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "build:hosted"
+    ],
+    "exit": 0,
+    "seconds": 204.1
+  },
+  {
+    "name": "self-hosted-container",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "test:container"
+    ],
+    "exit": 0,
+    "seconds": 297.1
+  },
+  {
+    "name": "hosted-container",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "test:container:hosted"
+    ],
+    "exit": 1,
+    "seconds": 1797.2
+  }
+]

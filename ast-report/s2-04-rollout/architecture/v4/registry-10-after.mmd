@@ -1,0 +1,51 @@
+%%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
+sequenceDiagram
+  actor Client as MCP client
+  participant MCP as mcp / request adapter
+  participant Auth as Auth provider / identity roles
+  participant Tools as app / tool operation
+  participant Adapter as mcp / fetch projection
+  participant Fetch as page-fetch / fetch operation
+  participant Renderer as website-fetcher / renderer adapter
+  participant Child as Lightpanda child process
+  participant HTML as html-processing / IncomingStep
+  Client->>MCP: HTTP MCP call with bearer token and URL
+  MCP->>Auth: Verify identity and resolve current access
+  alt Invalid token or access denied
+    Auth-->>MCP: Reject / deny
+    MCP-->>Client: Authentication or access error
+  else Trusted access context
+    MCP->>Tools: Fetch URL with context and AbortSignal
+    Note over Tools: Hosted: acquire shared fetch/search capacity or return busy
+    Tools->>Adapter: Invoke supplied fetch tool wrapper
+    Adapter->>Fetch: Run fetch operation
+    Fetch->>Fetch: Check permission and URL, run outgoing step
+    Fetch->>Renderer: Fetch validated destination with signal
+    Renderer->>Child: execFile fetch, capture JSON / HTML output
+    alt Request cancellation or server shutdown
+      MCP->>Renderer: Abort propagated through supplied signal
+      Renderer->>Renderer: Remove timers and abort listener
+      Renderer->>Child: Kill child with SIGKILL
+      Child-->>Renderer: Process completion callback
+      Renderer->>Renderer: Reject cancellation after callback
+      Renderer-->>Fetch: Cancellation
+      Fetch-->>Adapter: Cancellation
+      Adapter-->>Tools: Operation settles
+      Note over Tools: Hosted: release capacity in finally
+      Tools-->>MCP: Cancellation error
+      MCP->>MCP: Classify cancellation and record safe completion
+    else Render completes
+      Child-->>Renderer: Rendered page / completion callback
+      Renderer->>Renderer: Remove timers/listeners
+      Renderer-->>Fetch: WebsiteFetchResult
+      Fetch->>HTML: IncomingStep.execute(page, signal)
+      HTML-->>Fetch: Markdown or withheld outcome
+      Fetch-->>Adapter: Released Markdown or withheld outcome
+      Adapter->>Adapter: Map withheld to empty Markdown string
+      Adapter-->>Tools: Markdown string, possibly empty
+      Note over Tools: Hosted: release capacity in finally
+      Tools-->>MCP: Markdown string
+      MCP->>MCP: Record tool completion
+      MCP-->>Client: Text success, including empty text
+    end
+  end

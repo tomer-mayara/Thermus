@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-24T23:40:10.482326+00:00",
+  "deployId": "dep-dbek395g1s2s73frt4i0",
+  "revision": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "healthStatus": 200,
+  "healthBody": "ok",
+  "secretFile": "/etc/secrets/supabase-ca.crt",
+  "caSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+  "autoDeploy": "off",
+  "auditDestinationsEnabled": 0,
+  "limit": "No deployed Axiom Admin journey yet. New candidate remains draft."
+}

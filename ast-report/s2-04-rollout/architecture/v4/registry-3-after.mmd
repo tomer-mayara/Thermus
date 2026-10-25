@@ -1,0 +1,20 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  local_operator["Person: operator<br/>Manages the local installation"]
+  local_browser["External software: browser<br/>Displays generated authentication pages"]
+  local_client["External software: MCP client<br/>Calls Thermus tools"]
+  subgraph local_system["Software system: Thermus · local"]
+    local_server["Container: Thermus server<br/>Node.js / TypeScript + Better Auth<br/>MCP tools and generated auth pages"]
+    local_cli["Container: administration CLI<br/>Node.js / TypeScript<br/>User and client commands"]
+    local_renderer["Container: renderer child<br/>Lightpanda<br/>Renders one public page per fetch"]
+    local_data["Container: installation datastore<br/>SQLite and files<br/>Accounts, keys, secret, installation identity"]
+  end
+  local_public["External systems: public websites<br/>Includes Brave HTML search"]
+  local_operator -->|runs terminal commands| local_cli
+  local_browser -->|HTTP auth requests / form submissions| local_server
+  local_server -->|HTTP generated HTML / cookies| local_browser
+  local_client -->|MCP over HTTP / bearer token| local_server
+  local_server -->|SQLite / filesystem, locked installation| local_data
+  local_cli -->|SQLite / filesystem, locked installation| local_data
+  local_server -->|execFile / stdout JSON| local_renderer
+  local_renderer -->|HTTP / HTTPS page requests| local_public

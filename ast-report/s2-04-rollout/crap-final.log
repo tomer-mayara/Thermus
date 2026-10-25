@@ -1,0 +1,85 @@
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/logs/audit/public-audit-destination.ts | parseAuditDestination | changed | 17 | 92.4% | 17.1 | ok; for 15: split |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.testSaved | changed | 15 | 97.7% | 15.002737575 | ok; for 15: cover ≥ 100% |
+| src/logs/audit/destination-settings-service.ts | invalidInput | changed | 15 | 100% | 15.0 | ok |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.save | changed | 14 | 100% | 14.0 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes. | unchanged | 13 | 94% | 13.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-form.ts | loggingForm | changed | 13 | 100% | 13.0 | ok |
+| src/app/hosted-workos-application.ts | openWorkOSApplication | changed | 3 | 0% | 12.0 | ok |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.authorizeExport | changed | 11 | 94.2% | 11.0 | ok |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.token | unchanged | 10 | 97.2% | 10.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | composeWorkOSApplication | unchanged | 8 | 76% | 8.9 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.saveAnswer | changed | 6 | 60.9% | 8.2 | ok |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.save | unchanged | 8 | 86.8% | 8.1 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.test | unchanged | 8 | 100% | 8.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | failureOutcome | unchanged | 6 | 100% | 6.0 | ok; unchanged by this PR |
+| src/logs/audit/public-audit-destination.ts | publicAddress | unchanged | 5 | 95% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-request.ts | (anonymous) | unchanged | 5 | 99.3% | 5.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-page.ts | loggingPage | changed | 5 | 99.7% | 5.0 | ok |
+| src/logs/audit/destination-settings-service.ts | matchesSavedSettings | changed | 5 | 100% | 5.0 | ok |
+| src/logs/audit/destination-settings-service.ts | retainedToken | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/pg-destination-settings-store.ts | pg-destination-settings-store\PgDestinationSettingsStore. | new | 5 | 100% | 5.0 | ok |
+| src/logs/audit/public-audit-destination.ts | resolveAuditAddress | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/public-audit-destination.ts | sameAuditAddress | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.handlerFor | unchanged | 4 | 89.9% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.read | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-request.ts | (anonymous) | new | 4 | 100% | 4.0 | ok |
+| src/logs/audit/otlp-audit-sender.ts | attempt | changed | 3 | 93.3% | 3.0 | ok |
+| src/app/hosted-workos-application.ts | workosProviderParts | unchanged | 3 | 94.3% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender.start | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 2 | 55.2% | 2.4 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.keep | unchanged | 2 | 61.9% | 2.2 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 2 | 75.6% | 2.1 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-request.ts | (anonymous) | unchanged | 2 | 81.1% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | new | 1 | 0% | 2.0 | ok |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/app/hosted-workos-application.ts | openWorkOSConnection | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-test-page.ts | loggingTestAnswer | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.readStored | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | project | changed | 2 | 100% | 2.0 | ok |
+| src/logs/audit/otlp-audit-request.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-request.ts | (anonymous) | new | 1 | 0% | 2.0 | ok |
+| src/logs/audit/otlp-audit-sender.ts | beginAttempt | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/pg-destination-settings-store.ts | openDestinationSettingsRuntime | unchanged | 1 | 0% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/pg-destination-settings-store.ts | pg-destination-settings-store\PgDestinationSettingsStore. | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/pg-destination-settings-store.ts | pg-destination-settings-store\PgDestinationSettingsStore.read | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/logs/audit/pg-destination-settings-store.ts | pg-destination-settings-store\PgDestinationSettingsStore.save | changed | 2 | 100% | 2.0 | ok |
+| src/logs/audit/pg-destination-settings-store.ts | settings | changed | 2 | 100% | 2.0 | ok |
+| src/app/hosted-workos-application.ts | (anonymous) | unchanged | 1 | unknown | ≥ 1 | no coverage data; unchanged by this PR |
+| src/interfaces/web/account/logging-page.ts | loggingNotice | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.path | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/logging-routes.ts | logging-routes\LoggingRoutes.unavailable | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-send.ts | audit-send\AuditSendFailure.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/destination-settings-service.ts | destination-settings-service\DestinationSettingsService.test | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-request.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-request.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-request.ts | requestAuditExport | changed | 1 | unknown | ≥ 1 | no coverage data |
+| src/logs/audit/otlp-audit-sender.ts | clear | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | clearPayload | changed | 1 | 100% | 1.0 | ok |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender. | new | 1 | 100% | 1.0 | ok |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender. | new | 1 | 100% | 1.0 | ok |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender.cancel | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | otlp-audit-sender\OtlpAuditSender.send | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-sender.ts | prepare | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/pg-destination-settings-store.ts | (anonymous) | new | 1 | unknown | ≥ 1 | no coverage data |
+| src/logs/audit/pg-destination-settings-store.ts | pg-destination-settings-store\PgDestinationSettingsStore.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/public-audit-destination.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+
+Known limit violations: 0. Measured target misses: 2. Unmeasured functions: 3. Required functions with unknown assessment or identity: 2.
+Unmeasured values are lower bounds; the known violation count is not an exact total.

@@ -1,0 +1,25 @@
+{
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "kind": "Existing observed setup limit; no runtime source or diagram change.",
+  "scope": "Application client to the Supabase session pooler",
+  "client_to_pooler": {
+    "encrypted": true,
+    "authorized": true,
+    "protocol": "TLSv1.3",
+    "hostname_verification": "Normal Node hostname check, as recorded in the pinned rollout ledger."
+  },
+  "pooler_to_database": {
+    "pg_stat_ssl_ssl": false,
+    "not_established": [
+      "End-to-end TLS through the database",
+      "Whether the provider hop is network plaintext or a local provider connection"
+    ]
+  },
+  "ledger_url": "https://github.com/tomer-mayara/Thermus/blob/85206b1c22dab78e8379d7a10e2f2b9ac31af9c6/docs/implementation/admin-s2-04.md#L120",
+  "ledger_sha256": "0d2721d8910914f08cb0635080a6fc880265cc81037edd5456b7b1e384c7cadf",
+  "local_observation_path": "ast-report/s2-04-rollout/runtime-login.json",
+  "local_observation_sha256": "cb1af7fede5445ac9d235bdb74481a5ba61aa60bbd4de5998a6187ad195479dc",
+  "diagram_change": false,
+  "new_finding": false
+}

@@ -1,0 +1,112 @@
+--- v3/docs/legal/organization-audit-2026-10-24-proposal-v3/README.md
++++ 85206b1c22dab78e8379d7a10e2f2b9ac31af9c6/docs/legal/organization-audit-2026-10-24-proposal-v3/README.md
+@@ -1,9 +1,10 @@
+ # Proposed organization audit notice and help
+ 
+-Status: unapproved complete review candidate, 24 October 2026. Do not publish,
+-wire into runtime, or treat this draft as owner approval. The owner must first
+-confirm current provider and destination facts and approve the complete
+-bytes, versions, hashes, effective date, and execution scope.
++Status: unapproved complete review candidate, 24 October 2026. Runtime and
++public-page source changes are prepared in unmerged draft candidates for review.
++Do not deploy or publish this bundle, or treat this draft as owner approval. The
++owner must first confirm current provider and destination facts and approve the
++complete bytes, versions, hashes, effective date, and execution scope.
+ 
+ Read the complete [Terms](terms.md), [Privacy Policy](privacy.md), unchanged
+ [agreement checkbox](agreement.txt), and proposed complete [Audit logs help](audit-help.md).
+@@ -20,7 +21,7 @@
+ This revision supersedes the earlier unapproved v2 review hashes. Its manifest
+ retains those superseded hash values as history; they are not approval evidence.
+ 
+-Terms need narrow changes as well as Privacy and help. Approved Terms section 2
++The proposed Terms include narrow changes as well as Privacy and help. Approved Terms section 2
+ says that request reasons and URL paths enter operator logs. The defined records
+ now omit them. Section 1 adds the Admin's audit-destination function. Section 5
+ states the optional input/result export permission, destination responsibility,
+@@ -57,7 +58,7 @@
+ run slice 2 with no backup”. This draft therefore makes no backup cadence,
+ retention, storage, custody, or key-recovery promise. Backup and restore work
+ belongs to the future Slice 4. It is not a Slice 2 release prerequisite. The
+-public Privacy and help state the current absence of a settings backup/restore
++proposed Privacy and help state the current absence of a settings backup/restore
+ service and the possible need for an Admin to re-enter settings and credentials
+ after loss. Pending audit events still have no archive, history, or replay.
+ Provider residual-copy disclosures are retained and do not promise recovery.
+@@ -87,19 +88,22 @@
+ Approval should cover these exact complete files and the manifest; public policy
+ publication; hosted signup presentation and agreement-version recording; visible
+ Audit logs help with the optional Axiom dataset field; the actual data flows and no-backup scope; and any selected
+-existing-organization process. Approval does not clear the separate S1 runtime,
+-S2 actual storage/delivery, $0 capacity, or deployment verification holds.
++existing-organization process. Approval does not replace the remaining S1/S2
++deployed verification and release checks in the rollout ledger.
+ 
+-## Work after exact-byte approval
++## Prepared source and work after exact-byte approval
+ 
+-Runtime integration needs source changes. The existing approved bundle is
+-embedded in `src/accounts/providers/workos/workos-approved-organization-documents.ts`
+-and imported by `src/app/hosted-workos-application.ts`. Preserve that frozen module;
+-add a new approved bundle module and switch composition to it. Its runtime
+-purpose remains `organization-creation`. Update the applicable exact-byte,
+-version, rendered signup, and hosted-image specifications first under repository
+-BDD/TDD rules. Verify that new signup records the approved versions and that
+-historical records remain unchanged. This proposal performs none of that work.
++Runtime integration is prepared in unmerged [PR #248](https://github.com/tomer-mayara/Thermus/pull/248).
++The earlier approved module remains unchanged. The new frozen
++`workos-organization-audit-documents.ts` contains the candidate bytes, and
++`hosted-workos-application.ts` selects it. Its purpose remains
++`organization-creation`. Focused checks cover exact bytes, versions, rendered
++signup, recorded legal identifiers, and the unchanged approved source. The
++[implementation record](../../implementation/admin-s2-04-runtime-notice.md) retains
++those results. The manager recorded passing final ordinary, type, portal,
++Linux AMD64 image (7/7), and hosted-live (28/28) checks, with inputs unchanged
++during each run. Complete-candidate metrics and required human approval remain
++pending. Deployment and deployed presentation verification remain separate.
+ 
+ Audit logs help is hardcoded in
+ `src/interfaces/web/account/logging-page.ts`. The source candidate now contains
+@@ -107,11 +111,11 @@
+ exact deployed presentation after approval. Environment variables cannot replace
+ either the in-app legal bundle or that help.
+ 
+-Public publication also needs changes in the separate Thermus-Marketing
+-repository, at `src/pages/terms.astro` and `src/pages/privacy.astro` or its current
+-canonical equivalents. Use a fresh verified checkout; the local default checkout
+-was older than the approved S1 publication when inspected. Preserve all approved
+-text, links, tables, and attribution in HTML. Verify direct and slash policy
+-URLs, redirects, readable desktop/mobile presentation, and version/hash evidence.
+-Then verify actual in-app presentation and recording at the deployed candidate.
+-No publication, source edit, provider mutation, or deployment was done here.
++Matching public-page changes are prepared in draft
++[Marketing PR #27](https://github.com/tomer-mayara/Thermus-Marketing/pull/27), head
++`1cd32b128698b95f624f0fed15ca3c58d95a62d0`. Its Markdown copies match the proposal
++exactly; local rendering and desktop/mobile checks passed. After approval, publish
++and verify direct and slash policy URLs, redirects, readable presentation, and
++version/hash evidence. Verify actual in-app presentation and agreement recording
++as applicable to the selected rollout. Existing-organization handling remains an
++owner decision. The proposed bundle has not been published or deployed.
+--- v3/docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md
++++ 85206b1c22dab78e8379d7a10e2f2b9ac31af9c6/docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md
+@@ -65,14 +65,16 @@
+   setup runbook. Exact legal
+   copies retain approved Markdown hard breaks; patch context retains prefixes.
+ 
+-No executable test is added for these document changes. Live publication and
+-in-app presentation are unrun. The concise static help now mirrors the source candidate identified by its SHA-256
++No executable test is added for these document changes. Public publication/readback
++and deployed in-app presentation remain unverified. Local source presentation has
++been checked. The concise static help mirrors the source candidate identified by its SHA-256
+ in manifest provenance; the UI does not load the Markdown copy. Focused source
+ BDD/TDD results belong to the Axiom implementation agent and are not claimed as
+ this document task’s test run.
+ 
+-The manager must run complete-candidate checks, Habit Hooks, registry/impact
+-review and classification. This part changes contract documents and therefore
++The manager records completed checks and finishes complete-candidate metrics,
++Habit Hooks, registry/impact review, classification, and required human approval.
++This part changes contract documents and therefore
+ requires at least T1 Team review under current policy; independent human approval
+ of the actual committed candidate and separate exact-byte legal approval remain
+ required. Source-only production metrics are N/A for this document-only part.

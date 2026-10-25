@@ -1,0 +1,164 @@
+{
+  "reviewed_at": "2026-10-25T00:40:01.362147+00:00",
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "working_head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+  "final_candidate_commit": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "initial_manifest_sha256": "ed3630f34c84803f775708f911364cacc6a3436ed189bea72151fb93d408fd91",
+  "initial_source_test_sql_delta_to_current": [
+    "src/interfaces/web/account/members-style.ts",
+    "test/unit/logging/destination-settings-service.test.ts"
+  ],
+  "final_stages": {
+    "ordinary": {
+      "at": "2026-10-25T00:19:27.839244+00:00",
+      "working_head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+      "input_manifest_sha256": "914f986ecbeac265c18252e68ab5aa0a584c0da43e9917ccf45b5ba2d5294593",
+      "recorded_files": 1117,
+      "current_source_test_sql_mismatches": [],
+      "exit": 0,
+      "seconds": 558.5,
+      "inputsChangedDuringRun": []
+    },
+    "typecheck": {
+      "at": "2026-10-25T00:28:46.457937+00:00",
+      "working_head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+      "input_manifest_sha256": "d6a21e87f65facc35af6c69e50c68969974bbf0c02bc7f8a8e657706d07d9a65",
+      "recorded_files": 1117,
+      "current_source_test_sql_mismatches": [],
+      "exit": 0,
+      "seconds": 3.5,
+      "inputsChangedDuringRun": []
+    },
+    "portal-build": {
+      "at": "2026-10-25T00:28:50.070120+00:00",
+      "working_head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+      "input_manifest_sha256": "da4a70e83a81f2ae09a82a0446eb1d7c63b2f87f91939cc88879c22f9e959e66",
+      "recorded_files": 1117,
+      "current_source_test_sql_mismatches": [],
+      "exit": 0,
+      "seconds": 1.4,
+      "inputsChangedDuringRun": []
+    },
+    "hosted-container": {
+      "at": "2026-10-25T00:28:51.624777+00:00",
+      "working_head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+      "input_manifest_sha256": "2b14ca9933648717ba2832d58743d1930ded9112fcf882dc4be0daf49daa073d",
+      "recorded_files": 1117,
+      "current_source_test_sql_mismatches": [],
+      "exit": 0,
+      "seconds": 989.0,
+      "inputsChangedDuringRun": [],
+      "tests": {
+        "tests": 7,
+        "pass": 7,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "embedded_build_counts": [
+        3064,
+        29,
+        20,
+        1070,
+        119,
+        13
+      ]
+    },
+    "hosted-live": {
+      "at": "2026-10-25T00:45:20.795516+00:00",
+      "working_head": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+      "input_manifest_sha256": "c56f17d7aac61835267116ed953b9f61c0b9fcbe645a6a4ec0b127ff6f5991e2",
+      "recorded_files": 1117,
+      "current_source_test_sql_mismatches": [],
+      "exit": 0,
+      "seconds": 527.3,
+      "inputsChangedDuringRun": [],
+      "tests": {
+        "tests": 28,
+        "suites": 8,
+        "pass": 28,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    }
+  },
+  "worker_provenance": "../worker-checks/provenance.json; no full input manifest was captured for worker passes",
+  "warning": "Individual pass results remain scoped to their captured inputs; no pending stage is promoted to pass.",
+  "updated_at": "2026-10-25T00:55:43.812865+00:00",
+  "pending": [
+    "compatible final coverage",
+    "metrics process/CRAP",
+    "committed-candidate stamp/checker",
+    "approval and release-only evidence"
+  ],
+  "note": "Status-only prose after these runs does not change frozen executable or exact legal bytes. Final commit provenance remains pending.",
+  "committed_tested_candidate": "185e372a85dc749a36a0b058151d960d0c4f71da",
+  "commit_provenance_note": "Per-stage manifests retain original precommit HEAD and tested working-file fingerprints; no run or manifest was relabelled. Manager committed tested full source/docs/tests as 185e372a.",
+  "metrics_precommit_failure": {
+    "status": "tool failure",
+    "stage": "Delta",
+    "cause": "Native base comparison could not check out origin/main with dirty candidate; documented clean-tree requirement.",
+    "coverage_started": false,
+    "subsequent_stages": "Review, CRAP and Architecture unavailable",
+    "process": "ast-report/s2-04-rollout/metrics-precommit-failed.json",
+    "log": "ast-report/s2-04-rollout/metrics-precommit.log",
+    "resolution_status": "Tested candidate committed; normal process with coverage running as 78170. No pass yet."
+  },
+  "whitespace": {
+    "global_exit": 2,
+    "scoped_exit": 0,
+    "finding_count": 62,
+    "reasons": {
+      "Unified diff empty context marker": 54,
+      "Frozen Markdown hard line break in contact address": 8
+    },
+    "evidence": "ast-report/s2-04-rollout/whitespace-review.json",
+    "decision": "Retain exact legal Markdown hard-break bytes and unified-diff syntax; all other candidate files pass whitespace check."
+  },
+  "final_bound_at": "2026-10-25T01:09:19.615360+00:00",
+  "final_input_comparison": {
+    "hosted-container-inputs.json": {
+      "files_checked": 1117,
+      "changed_files": [
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md"
+      ],
+      "reason": "Status-only proposal prose changed after gates. Executable/source/test/SQL/build inputs and exact legal text are identical."
+    },
+    "hosted-live-inputs.json": {
+      "files_checked": 1117,
+      "changed_files": [
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md"
+      ],
+      "reason": "Status-only proposal prose changed after gates. Executable/source/test/SQL/build inputs and exact legal text are identical."
+    },
+    "ordinary-inputs.json": {
+      "files_checked": 1117,
+      "changed_files": [
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md"
+      ],
+      "reason": "Status-only proposal prose changed after gates. Executable/source/test/SQL/build inputs and exact legal text are identical."
+    },
+    "portal-build-inputs.json": {
+      "files_checked": 1117,
+      "changed_files": [
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md"
+      ],
+      "reason": "Status-only proposal prose changed after gates. Executable/source/test/SQL/build inputs and exact legal text are identical."
+    },
+    "typecheck-inputs.json": {
+      "files_checked": 1117,
+      "changed_files": [
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+        "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md"
+      ],
+      "reason": "Status-only proposal prose changed after gates. Executable/source/test/SQL/build inputs and exact legal text are identical."
+    }
+  }
+}

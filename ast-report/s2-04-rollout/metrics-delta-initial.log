@@ -1,0 +1,40 @@
+  39.7  src/logs/audit/destination-settings-service.ts  below 85
+  47.8  src/interfaces/web/account/logging-routes.ts  below 85
+  53.6  src/logs/audit/pg-destination-settings-store.ts  below 85
+  56.2  src/app/hosted-workos-application.ts  below 85
+  58.1  src/logs/audit/public-audit-destination.ts  below 85
+  60.0  src/logs/audit/otlp-audit-request.ts  below 85
+  64.4  src/logs/audit/otlp-audit-sender.ts  below 85
+  69.5  src/interfaces/web/account/logging-form.ts  below 85
+  71.8  src/interfaces/web/account/logging-test-page.ts  below 85
+  72.6  src/interfaces/web/account/logging-page.ts  below 85
+  111.8  src/logs/audit/audit-send.ts
+  10.8  test/acceptance/auth/hosted-workos-signup.test.ts  no goal
+  19.9  test/unit/logging/audit/otlp-audit-sender.test.ts  no goal
+  27.0  test/unit/logging/destination-settings-service.test.ts  no goal
+  30.2  test/acceptance/logging/hosted-destination-settings.test.ts  no goal
+  30.5  test/integration/logging/audit/audit-sender.runtime.ts  no goal
+  31.5  test/acceptance/logging/hosted-destination-test.test.ts  no goal
+  31.8  test/support/container/audit-sender-site.ts  no goal
+  33.6  test/integration/logging/audit/destination-settings.runtime.ts  no goal
+  34.2  test/acceptance/auth/hosted-image.test.ts  no goal
+  35.2  test/unit/html/logging-routes.test.ts  no goal
+  36.1  test/unit/html/logging-test-routes.test.ts  no goal
+  37.9  test/integration/logging/audit/logging-storage-export.test.ts  no goal
+  38.2  test/acceptance/logging/audit/hosted-audit-journey.runtime.ts  no goal
+  40.9  test/acceptance/logging/audit/destination-settings.runtime.ts  no goal
+  42.7  test/unit/logging/audit/otlp-audit-request.test.ts  no goal
+  45.7  test/unit/logging/audit/public-audit-destination.test.ts  no goal
+  49.4  test/unit/logging/audit/pg-destination-settings-store.test.ts  no goal
+  59.2  test/support/in-process/postgres-settings-site.ts  no goal
+  59.3  test/support/processes/audit-destination-test-probe.ts  no goal
+  59.4  test/unit/auth-workos/workos-organization-audit-documents.test.ts  no goal
+  62.4  test/support/processes/audit-sender-probe.ts  no goal
+  72.1  test/support/doubles/logging/destination-settings-fake.ts  no goal
+  93.6  test/support/processes/module-paths.ts  no goal
+  not measured  docs/api-surface/src/logs/audit/audit-send.d.ts
+  not measured  docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+  not measured  src/accounts/providers/workos/workos-organization-audit-documents.ts
+  not measured  src/interfaces/web/account/members-style.ts
+  not measured  src/logs/audit/destination-settings-store.ts
+Result: 10 of 11 production files below 85. Goal: 85 or more for each production file. 23 other files without a goal. 5 files not measured.

@@ -1,0 +1,16 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart TB
+  context_customer["Person: customer<br/>Uses tools and manages workspace access"]
+  context_operator["Person: operator<br/>Runs and administers Thermus"]
+  context_client["External software: MCP client<br/>Requests page fetch and search"]
+  context_thermus["Software system: Thermus<br/>Authorized web-to-Markdown tools and account UI"]
+  context_workos["External system: WorkOS / AuthKit<br/>Hosted identity and organizations"]
+  context_public["External systems: public websites<br/>Includes Brave HTML search"]
+  context_collector["External system: customer Collector<br/>Receives customer events and saved Test"]
+  context_customer -->|uses tools through client| context_client
+  context_customer -->|opens account and connection pages| context_thermus
+  context_operator -->|configures installation / manages local accounts| context_thermus
+  context_client -->|requests page fetch and search| context_thermus
+  context_thermus -->|uses hosted identity and organizations| context_workos
+  context_thermus -->|fetches public content| context_public
+  context_thermus -->|OTLP HTTP JSON / HTTPS| context_collector

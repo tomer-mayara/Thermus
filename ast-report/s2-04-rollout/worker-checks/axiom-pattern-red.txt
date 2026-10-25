@@ -1,0 +1,19 @@
+✖ Given the Axiom dataset form, when a browser applies its input pattern, then valid dataset names pass and invalid names fail (56.836709ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 231.722334
+
+✖ failing tests:
+
+test at dist/test/unit/html/logging-routes.test.js:18:1
+✖ Given the Axiom dataset form, when a browser applies its input pattern, then valid dataset names pass and invalid names fail (56.836709ms)
+  SyntaxError: Invalid regular expression: /^(?:[A-Za-z0-9-]{1,128})$/v: Invalid character class
+      at new RegExp (<anonymous>)
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/logs-restack/Thermus/dist/test/unit/html/logging-routes.test.js:24:28)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

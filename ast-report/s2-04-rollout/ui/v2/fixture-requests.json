@@ -1,0 +1,66 @@
+[
+  {
+    "method": "GET",
+    "url": "/fixture/logging"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/thermus-logo.svg"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-sans-latin.woff2"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-serif-500-latin.woff2"
+  },
+  {
+    "method": "GET",
+    "url": "/fixture/logging"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/thermus-logo.svg"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-sans-latin.woff2"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-serif-500-latin.woff2"
+  },
+  {
+    "method": "GET",
+    "url": "/fixture/logging"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/thermus-logo.svg"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-sans-latin.woff2"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-serif-500-latin.woff2"
+  },
+  {
+    "method": "GET",
+    "url": "/fixture/logging"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/thermus-logo.svg"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-sans-latin.woff2"
+  },
+  {
+    "method": "GET",
+    "url": "/assets/plex-serif-500-latin.woff2"
+  }
+]

@@ -1,0 +1,27 @@
+flowchart TB
+  clients["Clients / operator<br/>Thermus user-portal"]
+  interfaces["Request adapters<br/>mcp · web · cli"]
+  accounts["Account rules and roles<br/>identity · organizations · billing"]
+  hosted["Hosted provider<br/>workos"]
+  local["Local provider<br/>better-auth"]
+  workos_service(["WorkOS / AuthKit"])
+  local_data[("Local auth data directory")]
+  tools["Tool operations<br/>page-fetch · search"]
+  processing["Steps and HTML processing<br/>execution · html-processing"]
+  fetching["Search and page providers<br/>search-engine · website-fetcher"]
+  external_web(["Lightpanda → public web / Brave HTML"])
+  runtime["Composition and runtime<br/>app · config · http · system-logs · audit-logs"]
+  settings_data[("Optional hosted PostgreSQL<br/>Destination settings")]
+  clients --> interfaces
+  interfaces -->|supplied account roles| accounts
+  accounts -->|hosted selection| hosted
+  accounts -->|local selection| local
+  hosted --> workos_service
+  local --> local_data
+  interfaces -->|MCP tools| tools
+  tools --> processing
+  tools --> fetching
+  fetching --> external_web
+  runtime -.->|construct, serve, record, close| interfaces
+  interfaces -->|settings operations / customer capture| runtime
+  runtime -->|audit destination settings SQL| settings_data

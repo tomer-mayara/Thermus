@@ -1,0 +1,40 @@
+time="2026-10-24T18:16:01-06:00" level=error msg="quality gate failed: 1 high, 8 medium, 0 low regression(s)"
+## AST Metrics found blocking regressions
+
+1 new critical issue(s), 8 other regression(s)
+
+### Summary
+
+- ⚠️  **Complexity: +14**
+- ⚠️  **Ease of maintenance: -6**
+- ➖ **Outgoing dependencies: -**
+- ➖ **Probability of bugs: -**
+
+### Regressions
+
+- **test/integration/logging/audit/logging-storage-export.test.ts** (`test/integration/logging/audit/logging-storage-export.test.ts`, high)
+  Maintainability index: 44 -> 38 (below 85 is hard to maintain)
+  Suggested action: Refactor long or deeply nested functions and reduce responsibilities in this file
+- **src/accounts/providers/workos/workos-organization-audit-documents.ts** (`src/accounts/providers/workos/workos-organization-audit-documents.ts`, medium)
+  Too many Lines of code (346 > 150)
+- **loggingForm** (`src/interfaces/web/account/logging-form.ts:6`, medium)
+  Cyclomatic complexity: 11 -> 13 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **DestinationSettingsService::authorizeExport** (`src/logs/audit/destination-settings-service.ts:46`, medium)
+  Cyclomatic complexity: 10 -> 11 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **DestinationSettingsService::save** (`src/logs/audit/destination-settings-service.ts:101`, medium)
+  Cyclomatic complexity: 13 -> 14 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **DestinationSettingsService::testSaved** (`src/logs/audit/destination-settings-service.ts:67`, medium)
+  Cyclomatic complexity: 14 -> 15 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **invalidInput** (`src/logs/audit/destination-settings-service.ts:139`, medium)
+  Cyclomatic complexity: 11 -> 15 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **parseAuditDestination** (`src/logs/audit/public-audit-destination.ts:24`, medium)
+  Cyclomatic complexity: 13 -> 17 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **DestinationSettingsFake::save** (`test/support/doubles/logging/destination-settings-fake.ts:15`, medium)
+  Cyclomatic complexity: 9 -> 10 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points

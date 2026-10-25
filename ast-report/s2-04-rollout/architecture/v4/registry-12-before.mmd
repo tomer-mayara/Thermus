@@ -1,0 +1,59 @@
+%%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
+sequenceDiagram
+  actor Browser as Customer browser
+  participant Routes as web / account routes
+  participant Provider as workos / auth and directory
+  participant Admin as organizations / admin rules
+  participant Remote as WorkOS service
+  Browser->>Routes: GET /members with Cookie
+  Routes->>Provider: Authenticate cookie
+  Provider->>Remote: Session validation / refresh when needed
+  Remote-->>Provider: Session facts
+  alt Signed out
+    Provider-->>Routes: Signed-out state and cookie effects
+    Routes-->>Browser: Signed-out notice with cookie effects
+  else Signed-in session
+    Provider-->>Routes: User and cookie effects
+    Routes->>Provider: Resolve current access
+    Provider->>Remote: Read current organization grants
+    Remote-->>Provider: Current membership and roles
+    alt Access denied
+      Provider-->>Routes: Deny
+      Routes-->>Browser: Access notice with cookie effects
+    else Access allowed
+      Provider-->>Routes: Trusted organization context
+      Routes->>Admin: memberOverview(actor, organization)
+      Admin->>Provider: Read current actor memberships and roles
+      Provider->>Remote: Current membership and catalog reads (condensed)
+      Remote-->>Provider: Current facts
+      Provider-->>Admin: Validated memberships and grants
+      Note over Admin: Check current authority and organization name
+      alt Member overview denied
+        Admin-->>Routes: Denied
+        Routes-->>Browser: Refusal page with cookie effects
+      else Member overview authorized
+        Admin->>Provider: Read complete member pages
+        Provider->>Remote: Member, catalog and user reads (condensed)
+        Remote-->>Provider: Member data
+        Provider-->>Admin: Safe member fields
+        Admin-->>Routes: Complete member overview and organization name
+        Routes->>Admin: invitationOverview(actor, organization)
+        Admin->>Provider: Read current actor memberships and roles again
+        Provider->>Remote: Current membership and catalog reads (condensed)
+        Remote-->>Provider: Current facts
+        Provider-->>Admin: Validated memberships and grants
+        Note over Admin: Recheck current authority and organization name
+        alt Invitation overview denied
+          Admin-->>Routes: Denied
+          Routes-->>Browser: Refusal page, no partial Members page
+        else Invitation overview authorized
+          Admin->>Provider: Read complete invitation pages
+          Provider->>Remote: Invitation pages (condensed)
+          Remote-->>Provider: Invitation data
+          Provider-->>Admin: Safe invitation fields
+          Admin-->>Routes: Complete invitation overview
+          Routes-->>Browser: Combined Members HTML with cookie effects
+        end
+      end
+    end
+  end

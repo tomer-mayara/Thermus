@@ -1,0 +1,19 @@
+{
+  "candidate": "a7bdf1f32bb2d67e87d85ea03a701078ec04808b",
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "description": "The selected audit destination is Axiom, but the existing Collector configuration cannot send its required dataset header. This draft will add a narrow optional Axiom dataset setting to the customer Audit sender, preserve generic Collector delivery, and prepare the Slice 2 rollout.\n\nThe owner moved settings backups and recovery to future Slice 4. The rollout will use the existing Supabase Free project and Render service, with no new paid infrastructure. Render auto-deploy will remain off until the approved release passes live verification.\n\nReview is in progress. Direct Axiom implementation, source/legal disclosure updates, complete-candidate validation, architecture/quality classification, exact-byte notice approval, and live deployment evidence are pending. This draft is not eligible to merge.\n\nInitial documentation candidate: a7bdf1f3. Validation and Quality review comments will track the complete candidate.",
+  "comments": [
+    {
+      "id": 6390817756,
+      "url": "https://github.com/tomer-mayara/Thermus/pull/248#issuecomment-6390817756",
+      "body": "## Validation\n\nDraft evidence for documentation head `a7bdf1f32bb2d67e87d85ea03a701078ec04808b` against `845cec3060b0880cd27c36047f1da57a1c3772ba`.\n\nThe initial documentation change passed manual review and `git diff --check`. It adds no executable behavior and needs no prose tests. Direct Axiom and notice-runtime changes are in progress; complete-candidate tests, storage/Collector/container gates and deployment verification remain pending. Earlier Slice 2 passes do not establish this new candidate.\n\nThe existing Supabase schema migration has been applied. Restricted-role login now succeeds over verified TLS 1.3 to the session pooler. No destination is enabled and no Render deployment or auto-deploy change has occurred."
+    },
+    {
+      "id": 6390817906,
+      "url": "https://github.com/tomer-mayara/Thermus/pull/248#issuecomment-6390817906",
+      "body": "## Quality review\n\nDraft review for `a7bdf1f32bb2d67e87d85ea03a701078ec04808b` against `845cec3060b0880cd27c36047f1da57a1c3772ba`.\n\nFinal review tier, committed impact declaration, architecture comparison, public declaration snapshots, production metrics and habit-hooks are pending the complete source candidate. The initial documentation change does not alter production architecture; that statement does not cover the source work in progress.\n\nThe owner explicitly deferred backups/recovery to Slice 4 and selected direct Axiom delivery after confirming no Collector exists. The implementation will preserve the System/Audit boundary and generic Collector support. Exact-byte owner approval of updated notices and current-candidate human approval remain pending. Merge status: blocked."
+    }
+  ],
+  "notice": "Historical initial documentation candidate. Later reports supersede these statements; no source or notice approval was recorded.",
+  "archivedAt": "2026-10-25T00:42:46.869924+00:00"
+}

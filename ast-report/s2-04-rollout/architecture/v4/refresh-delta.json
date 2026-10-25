@@ -1,0 +1,31 @@
+{
+  "previous_version": "v3",
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "selected_v3_files": 48,
+  "selected_source_test_sql_build_context_identical": true,
+  "changed_files": [
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+      "v3_sha256": "268f457e758d73dabd08d95d81ed19f720fe66f8665bc59b9fe29849f85a844b",
+      "head_sha256": "6fb268c5d06a0cd3a51aa49e8d0f1dc15948abbc87bf26773e5b1914213a56b2"
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md",
+      "v3_sha256": "7df2d2c278f38a2319199d6260a6da719c769b8870b06f4ae6738bb81d91e67c",
+      "head_sha256": "d42ed59978605b8ff474a57c837ee54382b89f4e74ec90725bf8932d43b5d35c"
+    }
+  ],
+  "change_meaning": "Only legal review/rollout notes changed; they now describe prepared runtime/public candidates and recorded local checks. Approved/proposed legal bytes, help, runtime source, tests, SQL, Docker context, and architecture are unchanged.",
+  "registry_unchanged": true,
+  "all_13_mermaid_sources_unchanged": true,
+  "l3_unchanged": true,
+  "renders_reused_byte_for_byte": true,
+  "new_architecture_findings": [],
+  "prior_version_directory_sha256": {
+    "v1": "14b099ad241cf4e59116a1c206abbb9624fb925f68b8feb3e07b68131e6c20dc",
+    "v2": "813a7eed14c67981f9db92b5ebfe2e44d181297f2996da555e5d6b102c408340",
+    "v3": "e31b5fce0d4be521342fe44508998328578e2a98b58ffa74373c77526ec25a86"
+  },
+  "deployed_setup_limit": "Existing client-to-pooler TLS / pooler database ssl:false observation now explicitly recorded; no end-to-end TLS claim or inference about network plaintext/local provider hop."
+}

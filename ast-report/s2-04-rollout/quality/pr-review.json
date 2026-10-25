@@ -1,0 +1,397 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "mergeBase": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/logs/audit/destination-settings-service.ts (+3 -1 lines)",
+        "detail": "diff --git a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\nindex 4437e8b6..e97ec242 100644\n--- a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\n+++ b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts\n@@ -5,6 +5,7 @@ export type { DestinationTestResult } from './destination-test.ts';\n export interface PublicDestinationSettings {\n     readonly revision: string | null;\n     readonly endpoint: string;\n+    readonly axiomDataset?: string;\n     readonly auth: 'none' | 'bearer';\n     readonly enabled: boolean;\n     readonly tokenPresent: boolean;\n@@ -12,6 +13,7 @@ export interface PublicDestinationSettings {\n export interface DestinationSettingsSaveInput {\n     readonly expectedRevision: string | null;\n     readonly endpoint: string;\n+    readonly axiomDataset?: string;\n     readonly auth: 'none' | 'bearer';\n     readonly enabled: boolean;\n     readonly token: string;\n@@ -27,7 +29,7 @@ export type DestinationSettingsSaveResult = {\n     readonly settings: PublicDestinationSettings;\n } | {\n     readonly status: 'invalid';\n-    readonly reason: 'endpoint' | 'token' | 'settings';\n+    readonly reason: 'endpoint' | 'dataset' | 'token' | 'settings';\n } | {\n     readonly status: 'conflict' | 'unavailable' | 'unconfirmed';\n };\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/logs/audit/audit-send.ts (+1 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/logs/audit/audit-send.d.ts b/docs/api-surface/src/logs/audit/audit-send.d.ts\nindex a75baa3c..3b4e89aa 100644\n--- a/docs/api-surface/src/logs/audit/audit-send.d.ts\n+++ b/docs/api-surface/src/logs/audit/audit-send.d.ts\n@@ -1,6 +1,7 @@\n import type { AuditEvent } from './audit-log.ts';\n export interface AuditDestination {\n     readonly endpoint: string;\n+    readonly axiomDataset?: string;\n     readonly auth: {\n         readonly type: 'none';\n     } | {\n"
+      },
+      {
+        "key": "architecture.registry_view_changed",
+        "fact": "architecture/components.md: 5 views edited"
+      }
+    ],
+    "summary": "T2: declarations changed in 2 public modules; 5 registry views edited"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/destination-settings-service.ts (+3 -1 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/audit-send.ts (+1 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 5 views edited"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "The existing customer Audit destination gains one optional Axiom dataset field. Save validates and stores it in the current tenant/revision, saved Test and fresh export authorization forward it, and the existing Audit HTTPS sender emits x-axiom-dataset after the same public-address and TLS checks. Generic destinations omit it. No component, dependency, process, container or System logging behavior changes. Existing context, hosted Audit, logging and deployment views now name the compatible OTLP destination including Axiom. The hosted signup composition selects the complete proposed organization Audit notice bundle with its new versions and hashes; old approved bundles remain immutable. Backup and restore work moves to future Slice4 per owner instruction. This candidate needs exact-byte notice approval, current-head architect review and live deployment proof before rollout."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.deploy_and_data",
+      "fact": "Dockerfile.hosted.dockerignore"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "The existing customer Audit destination gains one optional Axiom dataset field. Save validates and stores it in the current tenant/revision, saved Test and fresh export authorization forward it, and the existing Audit HTTPS sender emits x-axiom-dataset after the same public-address and TLS checks. Generic destinations omit it. No component, dependency, process, container or System logging behavior changes. Existing context, hosted Audit, logging and deployment views now name the compatible OTLP destination including Axiom. The hosted signup composition selects the complete proposed organization Audit notice bundle with its new versions and hashes; old approved bundles remain immutable. Backup and restore work moves to future Slice4 per owner instruction. This candidate needs exact-byte notice approval, current-head architect review and live deployment proof before rollout."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.deploy_and_data",
+      "question": "What changes in the image, the runtime, or the stored data, and how is it rolled back? Record the recovery step."
+    },
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "Dockerfile.hosted.dockerignore"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/logs/audit/audit-send.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/logs/audit/destination-settings-service.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-01a-database-setup.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-04-direct-axiom.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-04-notice-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-04-runtime-notice.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-04.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s4-recovery.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/agreement.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/audit-help.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/changes.patch"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/data-flow-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/privacy.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/terms.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-24-845cec30.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "A",
+      "path": "sql/migrations/20261024231921_add_logging_axiom_dataset.sql"
+    },
+    {
+      "status": "A",
+      "path": "src/accounts/providers/workos/workos-organization-audit-documents.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/app/hosted-workos-application.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-form.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-test-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/audit-send.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/destination-settings-service.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/destination-settings-store.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/otlp-audit-request.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/otlp-audit-sender.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/pg-destination-settings-store.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/public-audit-destination.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-image.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-workos-signup.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/destination-settings.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/logging/audit/destination-settings.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/logging/audit/logging-storage-export.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/container/audit-sender-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/logging/destination-settings-fake.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/postgres-settings-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/processes/audit-destination-test-probe.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/processes/audit-sender-probe.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/processes/module-paths.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/auth-workos/workos-organization-audit-documents.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-test-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/otlp-audit-request.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/otlp-audit-sender.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/pg-destination-settings-store.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/public-audit-destination.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/destination-settings-service.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 436,
+    "productionLimit": 400,
+    "total": 3223,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 19,
+    "removed": 2,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "not applicable: src/accounts/providers/workos/workos-organization-audit-documents.ts: no raw MI in the head snapshot",
+    "changed: src/app/hosted-workos-application.ts: 56.20859397680054 to 56.20859397680054",
+    "changed: src/interfaces/web/account/logging-form.ts: 73.90121040809896 to 69.54433099587992",
+    "changed: src/interfaces/web/account/logging-page.ts: 72.85861970023612 to 72.64884464306762",
+    "changed: src/interfaces/web/account/logging-routes.ts: 47.791505447861134 to 47.791505447861134",
+    "changed: src/interfaces/web/account/logging-test-page.ts: 71.8038342317498 to 71.8038342317498",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot",
+    "changed: src/logs/audit/audit-send.ts: 112.12591906567519 to 111.78372265924504",
+    "changed: src/logs/audit/destination-settings-service.ts: 41.69472240093922 to 39.67749824225246",
+    "not applicable: src/logs/audit/destination-settings-store.ts: no raw MI in the base snapshot",
+    "changed: src/logs/audit/otlp-audit-request.ts: 60.36464327202974 to 60.04527294069668",
+    "changed: src/logs/audit/otlp-audit-sender.ts: 64.71989012659888 to 64.35978928522809",
+    "changed: src/logs/audit/pg-destination-settings-store.ts: 54.212735073143314 to 53.641844103270124",
+    "changed: src/logs/audit/public-audit-destination.ts: 60.33075525288621 to 58.08913637262679"
+  ],
+  "crap": [
+    "src/logs/audit/public-audit-destination.ts: parseAuditDestination: 17.1",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.testSaved: 15.002737575",
+    "src/logs/audit/destination-settings-service.ts: invalidInput: 15.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.save: 14.0",
+    "src/interfaces/web/account/logging-form.ts: loggingForm: 13.0",
+    "src/app/hosted-workos-application.ts: openWorkOSApplication: 12.0",
+    "src/logs/audit/destination-settings-service.ts: destination-settings-service\\DestinationSettingsService.authorizeExport: 11.0",
+    "src/interfaces/web/account/logging-routes.ts: logging-routes\\LoggingRoutes.saveAnswer: 8.2",
+    "src/interfaces/web/account/logging-page.ts: loggingPage: 5.0",
+    "src/logs/audit/destination-settings-service.ts: matchesSavedSettings: 5.0",
+    "src/logs/audit/pg-destination-settings-store.ts: pg-destination-settings-store\\PgDestinationSettingsStore.: 5.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 4.0",
+    "src/logs/audit/otlp-audit-sender.ts: attempt: 3.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 2.0",
+    "src/logs/audit/destination-settings-service.ts: project: 2.0",
+    "src/logs/audit/otlp-audit-request.ts: (anonymous): 2.0",
+    "src/logs/audit/pg-destination-settings-store.ts: pg-destination-settings-store\\PgDestinationSettingsStore.save: 2.0",
+    "src/logs/audit/pg-destination-settings-store.ts: settings: 2.0",
+    "src/logs/audit/otlp-audit-request.ts: requestAuditExport: pass from the bound [1, 2]",
+    "src/logs/audit/otlp-audit-sender.ts: clearPayload: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/otlp-audit-sender.ts: otlp-audit-sender\\OtlpAuditSender.: 1.0",
+    "src/logs/audit/pg-destination-settings-store.ts: (anonymous): pass from the bound [1, 2]"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: goal miss",
+    "Architecture: passed",
+    "outside scopes.production: test/integration/logging/audit/logging-storage-export.test.ts: Maintainability index: 44 -> 38 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/logs/audit/destination-settings-service.ts",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/destination-settings-store.ts)",
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/audit-send.ts)",
+    "src/logs/audit/otlp-audit-sender.ts",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-send.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/public-audit-destination.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-request.ts)",
+    "src/logs/audit/audit-send.ts"
+  ],
+  "informational": [
+    "48 public modules, 2 snapshots changed",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-send.ts)",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/public-audit-destination.ts)",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-request.ts)",
+    "size.production_lines_note_above: 436 production lines, above the limit of 400",
+    "size.total_lines_note_above: 3223 lines without generated files, above the limit of 1500"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

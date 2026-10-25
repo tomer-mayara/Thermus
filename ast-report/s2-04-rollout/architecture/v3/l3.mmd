@@ -1,0 +1,21 @@
+%%{init: {"flowchart": {"wrappingWidth": 210}}}%%
+flowchart TB
+  subgraph server["L2: Thermus hosted Node server"]
+    app["Component: app / TypeScript<br/>CHANGED: selects legal bundle<br/>Before: Slice 1; after: Audit notice"]
+    web["Component: web / TypeScript<br/>CHANGED: Admin Save / Test<br/>After: optional dataset and export help"]
+    audit["Component: audit-logs / TypeScript, pg<br/>CHANGED: versioned destination<br/>After: optional dataset in Test / export"]
+    system["Component: system-logs / TypeScript<br/>UNCHANGED: internal diagnostics<br/>Production console; separate OTel role"]
+  end
+  data[("L2: settings PostgreSQL<br/>CHANGED: nullable dataset column<br/>Before: generic destination settings")]
+  destination["External: customer Audit destination<br/>CHANGED: Collector or compatible OTLP<br/>After: direct Axiom dataset header"]
+  app -.->|composition: settings and capture roles| web
+  app -.->|composition: service, queue, sender| audit
+  web -->|runtime: current Admin Save / Test| audit
+  app -.->|composition: independent System sink| system
+  audit -->|runtime: tenant SQL / verified TLS| data
+  audit -->|runtime: authorized export / saved Test HTTPS| destination
+  classDef changed fill:#fff3cd,stroke:#8a6500,color:#222
+  classDef stable fill:#fafafa,stroke:#777,color:#222
+  class app,web,audit,data,destination changed
+  class system stable
+  style server fill:#fafafa,stroke:#777,color:#222

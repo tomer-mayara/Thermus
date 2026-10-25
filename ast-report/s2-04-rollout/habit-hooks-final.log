@@ -1,0 +1,159 @@
+── high-complexity (10 issues) ──
+
+High cyclomatic complexity means one function makes too many decisions at once. The count is the symptom; tangled responsibilities are the cause.
+
+**Untangle the decisions:**
+1. Lift guards out first — turn precondition checks into early returns so the happy path stays flat. Much of the count is preconditions wrapped around the real work.
+2. Change the shape of what remains: an `if`/`else` chain switching on one value is often a lookup table or polymorphism in disguise; a nested loop is often a filter/map pipeline.
+3. If the branches are genuinely separate jobs, extract one function per branch, each named for the responsibility it handles.
+
+Useful tip: describe each branch in one sentence. Two branches with the same sentence belong together; a branch you cannot name cleanly wants its own function.
+
+**AVOID**: merging conditions with and/or, or rewriting branches as ternaries, just to lower the score — the decisions remain, only the counter moves. You are done when a first-time reader can hold the whole function in their head.
+
+src/app/hosted-workos-application.ts:97
+src/interfaces/web/account/logging-form.ts:6
+src/interfaces/web/account/logging-routes.ts:30
+src/logs/audit/destination-settings-service.ts:46
+src/logs/audit/destination-settings-service.ts:67
+src/logs/audit/destination-settings-service.ts:101
+src/logs/audit/destination-settings-service.ts:139
+src/logs/audit/public-audit-destination.ts:24
+test/acceptance/auth/hosted-workos-signup.test.ts:457
+test/support/doubles/logging/destination-settings-fake.ts:15
+
+── non-null-assertion (15 issues) ──
+
+A null check — and especially a `!` — is usually covering an underlying design problem, not handling a value that's legitimately sometimes-missing. Before you write one, say out loud what the null actually represents and how it relates to the other objects. That sentence almost always names the real fix.
+
+Two design smells hide behind most null assertions:
+
+- **A circular dependency with no clear owner.** Two objects reference each other, so neither can be built first and one sits briefly null. The fix is to give the dependency a direction: work out which object owns the other (operates on its state, is its exclusive consumer) and have the owner *create* the owned so they're initialised together — or, if it's really an upward event, give the emitter an opaque handler (no-op default) that the owner wires after construction. The mutual reference disappears.
+- **Null standing in for a special case** — "outside the grid", "not found", "not loaded yet". Model that case explicitly: a subclass or a separate class with the same interface — a null object, like a `NullCell` that behaves as a blocked cell — resolved once at the boundary so no caller ever sees null.
+
+Sometimes a null genuinely is unavoidable. Even then `!` is wrong: it swallows the failure at runtime. Replace it with an explicit check — an `if`-guard / early return, or a throw with a clear message — so a broken assumption fails loudly, where it happens.
+
+The only exception: an extremely simple method where the nullable's scope is tiny, a wrong value genuinely cannot cause a silent error, and there's a real performance gain. This should be vanishingly rare — check in with a human before settling for it.
+
+test/unit/html/logging-routes.test.ts:19
+test/unit/html/logging-routes.test.ts:25
+test/unit/html/logging-routes.test.ts:35
+test/unit/html/logging-routes.test.ts:64
+test/unit/html/logging-routes.test.ts:70
+test/unit/html/logging-routes.test.ts:75
+test/unit/html/logging-routes.test.ts:81
+test/unit/html/logging-routes.test.ts:89
+test/unit/html/logging-routes.test.ts:98
+test/unit/html/logging-routes.test.ts:100
+test/unit/html/logging-routes.test.ts:104
+test/unit/html/logging-routes.test.ts:120
+test/unit/logging/destination-settings-service.test.ts:81
+test/unit/logging/destination-settings-service.test.ts:128
+test/unit/logging/destination-settings-service.test.ts:129
+
+── too-many-parameters (3 issues) ──
+
+High parameter count is a sign of coupling.
+Parameters that travel together across several calls are a missing abstraction.
+
+**Find the missing abstraction:**
+1. Look at the call sites and nearby functions — is there an existing class a group of these parameters belongs to? Search wider than the file that fired: values that keep appearing side by side are the entity, and it is usually one of the domain's own nouns — where that name already exists, it is the answer.
+2. If not, create it — then move behaviour that uses those fields onto it.
+3. If one object owns most of the parameters, it may be the natural home for this function.
+4. Use it at every site it fits, not only the one that fired — a call passing three of its fields is the same concept sitting under the threshold.
+
+Useful tip: rewrite each call site with the signature that feels natural there, and let that shape the final method. 
+
+**AVOID**: A `{ ...everything }` bag that merely renames the list hides the coupling instead of removing it. A `FooProps` or options object named after the function that takes it is the same bag: organised by method rather than by abstraction, so the next function invents another one and the concept stays unnamed. You are done when the entity carries a domain name and no call site still passes its fields loose.
+
+src/logs/audit/destination-settings-service.ts:61
+src/logs/audit/destination-settings-service.ts:67
+src/logs/audit/otlp-audit-request.ts:8
+
+── non-essential-comment (59 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+src/app/hosted-workos-application.ts:28
+src/app/hosted-workos-application.ts:29
+src/app/hosted-workos-application.ts:36
+src/app/hosted-workos-application.ts:37
+src/app/hosted-workos-application.ts:41
+src/app/hosted-workos-application.ts:44
+src/app/hosted-workos-application.ts:48
+src/app/hosted-workos-application.ts:50
+src/app/hosted-workos-application.ts:54
+src/app/hosted-workos-application.ts:78
+src/app/hosted-workos-application.ts:79
+src/app/hosted-workos-application.ts:140
+src/app/hosted-workos-application.ts:141
+src/logs/audit/audit-send.ts:3
+src/logs/audit/audit-send.ts:12
+src/logs/audit/audit-send.ts:19
+src/logs/audit/audit-send.ts:25
+src/logs/audit/audit-send.ts:32
+src/logs/audit/destination-settings-service.ts:45
+src/logs/audit/destination-settings-service.ts:60
+src/logs/audit/destination-settings-store.ts:1
+src/logs/audit/destination-settings-store.ts:24
+src/logs/audit/otlp-audit-request.ts:7
+src/logs/audit/otlp-audit-sender.ts:19
+src/logs/audit/otlp-audit-sender.ts:31
+src/logs/audit/otlp-audit-sender.ts:78
+src/logs/audit/otlp-audit-sender.ts:54
+src/logs/audit/otlp-audit-sender.ts:60
+src/logs/audit/public-audit-destination.ts:8
+src/logs/audit/public-audit-destination.ts:43
+test/acceptance/auth/hosted-image.test.ts:21
+test/acceptance/auth/hosted-workos-signup.test.ts:539
+test/support/container/audit-sender-site.ts:59
+test/support/container/audit-sender-site.ts:75
+test/support/container/audit-sender-site.ts:182
+test/support/in-process/postgres-settings-site.ts:12
+test/support/processes/audit-destination-test-probe.ts:26
+test/support/processes/module-paths.ts:3
+test/support/processes/module-paths.ts:4
+test/support/processes/module-paths.ts:5
+test/support/processes/module-paths.ts:6
+test/support/processes/module-paths.ts:18
+test/support/processes/module-paths.ts:21
+test/support/processes/module-paths.ts:24
+test/support/processes/module-paths.ts:25
+test/support/processes/module-paths.ts:30
+test/support/processes/module-paths.ts:33
+test/support/processes/module-paths.ts:43
+test/support/processes/module-paths.ts:44
+test/support/processes/module-paths.ts:50
+test/support/processes/module-paths.ts:53
+test/support/processes/module-paths.ts:57
+test/support/processes/module-paths.ts:63
+src/accounts/providers/workos/workos-organization-audit-documents.ts:3
+src/interfaces/web/account/logging-form.ts:16
+src/interfaces/web/account/logging-routes.ts:18
+src/interfaces/web/account/logging-routes.ts:44
+src/interfaces/web/account/logging-routes.ts:110
+test/support/doubles/logging/destination-settings-fake.ts:4
+
+── oversized-file (5 issues) ──
+
+Files over 200 lines accumulate unrelated concerns. The smell is poor cohesion — a file that asks the reader to hold too many ideas at once — not the raw line count.
+
+First identify the seams: which exports, types, or helper clusters actually belong together? A long file usually splits cleanly along one of: a data type and its operations, a feature pipeline, or one concern per file.
+
+Avoid mechanical splits. Carving the file at line 200 into `foo-1.ts` and `foo-2.ts`, or moving every private helper into a `utils.ts`, satisfies the threshold without making anything clearer — the cohesion problem just hops to a new place.
+
+If the file's structure resists splitting, that is itself the signal: responsibilities are tangled. Look for a missing abstraction (a class, a small module with a focused interface) that would let related pieces move together as a unit.
+
+A concrete technique: write a one-sentence description of what each emerging seam *would* be responsible for. If you cannot, you have not found the seam yet — do not split.
+
+test/acceptance/auth/hosted-workos-signup.test.ts
+test/support/container/audit-sender-site.ts
+test/unit/logging/audit/otlp-audit-sender.test.ts
+test/unit/logging/destination-settings-service.test.ts
+src/accounts/providers/workos/workos-organization-audit-documents.ts

@@ -1,0 +1,17 @@
+{
+  "time": "2026-10-24T23:30:39.526Z",
+  "project": "rnqktgtgrvvqptbaosth",
+  "runtimeRole": "thermus_logging",
+  "scope": "Local production store through actual Supabase pooler; no Render restart performed",
+  "reconnectedPersistence": true,
+  "tenantPredicateIsolation": true,
+  "tenantBoundCredentialRoundTrip": true,
+  "concurrentExpectedRevisionConflict": true,
+  "unchangedOtherTenant": true,
+  "queryFailure": {
+    "result": "unavailable",
+    "elapsedMs": 2009
+  },
+  "fixtureRows": 2,
+  "cleanup": "Two exact owned fixture IDs removed by administrative connection; settings table verified empty; runtime DELETE and DDL remain false."
+}

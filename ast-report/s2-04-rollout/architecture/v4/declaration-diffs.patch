@@ -1,0 +1,41 @@
+diff --git a/docs/api-surface/src/logs/audit/audit-send.d.ts b/docs/api-surface/src/logs/audit/audit-send.d.ts
+index a75baa3c..3b4e89aa 100644
+--- a/docs/api-surface/src/logs/audit/audit-send.d.ts
++++ b/docs/api-surface/src/logs/audit/audit-send.d.ts
+@@ -1,6 +1,7 @@
+ import type { AuditEvent } from './audit-log.ts';
+ export interface AuditDestination {
+     readonly endpoint: string;
++    readonly axiomDataset?: string;
+     readonly auth: {
+         readonly type: 'none';
+     } | {
+diff --git a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+index 4437e8b6..e97ec242 100644
+--- a/docs/api-surface/src/logs/audit/destination-settings-service.d.ts
++++ b/docs/api-surface/src/logs/audit/destination-settings-service.d.ts
+@@ -5,6 +5,7 @@ export type { DestinationTestResult } from './destination-test.ts';
+ export interface PublicDestinationSettings {
+     readonly revision: string | null;
+     readonly endpoint: string;
++    readonly axiomDataset?: string;
+     readonly auth: 'none' | 'bearer';
+     readonly enabled: boolean;
+     readonly tokenPresent: boolean;
+@@ -12,6 +13,7 @@ export interface PublicDestinationSettings {
+ export interface DestinationSettingsSaveInput {
+     readonly expectedRevision: string | null;
+     readonly endpoint: string;
++    readonly axiomDataset?: string;
+     readonly auth: 'none' | 'bearer';
+     readonly enabled: boolean;
+     readonly token: string;
+@@ -27,7 +29,7 @@ export type DestinationSettingsSaveResult = {
+     readonly settings: PublicDestinationSettings;
+ } | {
+     readonly status: 'invalid';
+-    readonly reason: 'endpoint' | 'token' | 'settings';
++    readonly reason: 'endpoint' | 'dataset' | 'token' | 'settings';
+ } | {
+     readonly status: 'conflict' | 'unavailable' | 'unconfirmed';
+ };

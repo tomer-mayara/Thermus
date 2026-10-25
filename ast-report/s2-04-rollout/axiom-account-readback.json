@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-24T23:45:06.075831+00:00",
+  "source": "Authenticated Axiom UI, Thermus AI (thermus-ai-spao)",
+  "plan": "Personal",
+  "platformFee": "Free",
+  "included": {
+    "loading": "500 GB/month",
+    "queryCompute": "10 GB-hr/month",
+    "storage": "25 GB"
+  },
+  "usagePeriod": "2026-10-13 to 2026-11-13",
+  "usage": {
+    "dataLoading": "<0.01 GB",
+    "queryCompute": "0 GB-hr",
+    "averageStorage": "<0.01 GB"
+  },
+  "dataset": "audit-log-test",
+  "retentionDays": 30,
+  "datasetsUsed": 3,
+  "datasetsAllowed": 3,
+  "auditFieldsUsed": 14,
+  "auditFieldsRemaining": 242,
+  "datasetStorageTotal": "<1 MB",
+  "limits": "Dated readback, not a future workload forecast. No plan, dataset, retention or sharing changes made."
+}

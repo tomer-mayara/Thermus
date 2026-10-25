@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-25T00:18:57.853655+00:00",
+  "pid": 79051,
+  "reason": "Manager cancels obsolete image context: captured before final text-input CSS selector fix. No product failure inferred; final candidate image gate will replace this attempt.",
+  "signal": "SIGINT",
+  "tag": "thermus-hosted-gate:43251fd1e44b"
+}

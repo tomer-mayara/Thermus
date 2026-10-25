@@ -1,0 +1,27 @@
+{
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "count": 2,
+  "fact": "d",
+  "diff_sha256": "10678f0519cc169b49293a810693097e3252225f08fcbf32775152b206b66071",
+  "modules": [
+    {
+      "path": "docs/api-surface/src/logs/audit/audit-send.d.ts",
+      "before_url": "https://github.com/tomer-mayara/Thermus/blob/845cec3060b0880cd27c36047f1da57a1c3772ba/docs/api-surface/src/logs/audit/audit-send.d.ts",
+      "after_url": "https://github.com/tomer-mayara/Thermus/blob/85206b1c22dab78e8379d7a10e2f2b9ac31af9c6/docs/api-surface/src/logs/audit/audit-send.d.ts",
+      "before_sha256": "2c4bebdf8982e0bc06c4c5c8cf774d2aeb3657bc2a5da9b080cd0ef64e9609b1",
+      "after_sha256": "02d4aa4fa6bd6bf296e94a7a8b3c3aa4f4897542b45de857e1f835eb7ecd89f4",
+      "observable_contract_changed": true,
+      "meaning": "Optional axiomDataset on AuditDestination lets a current saved destination supply the narrow x-axiom-dataset header. Omitted values retain generic OTLP behavior. The sender validates it before network work."
+    },
+    {
+      "path": "docs/api-surface/src/logs/audit/destination-settings-service.d.ts",
+      "before_url": "https://github.com/tomer-mayara/Thermus/blob/845cec3060b0880cd27c36047f1da57a1c3772ba/docs/api-surface/src/logs/audit/destination-settings-service.d.ts",
+      "after_url": "https://github.com/tomer-mayara/Thermus/blob/85206b1c22dab78e8379d7a10e2f2b9ac31af9c6/docs/api-surface/src/logs/audit/destination-settings-service.d.ts",
+      "before_sha256": "fd7b2f023619c5ce0dbf142ab1e2f6e130ff5e8d5faef542a7d064d55353b123",
+      "after_sha256": "0ca28096fcfae8b32011e42331eb260cdee18f7f32643d9a2ba4647c70a7ebcb",
+      "observable_contract_changed": true,
+      "meaning": "Optional axiomDataset is now in Save input and public read projection; invalid Save reason adds dataset. The service validates, normalizes blank to absent, persists it, checks saved Test equality, and returns it only after current enabled revision authorization."
+    }
+  ]
+}

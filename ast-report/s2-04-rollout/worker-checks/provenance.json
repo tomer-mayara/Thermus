@@ -1,0 +1,72 @@
+{
+  "archived_at": "2026-10-25T00:39:08.356486+00:00",
+  "source": "Axiom worker retained raw logs; copied without changes",
+  "full_input_manifest_captured": false,
+  "known_individual_hashes": {
+    "src/interfaces/web/account/logging-page.ts": "058b8a70e911cf25a67c20d11b14ddfcf084416cbb0ab45e71f8578b80554189",
+    "sql/migrations/20261024231921_add_logging_axiom_dataset.sql": "fe1995ed7f44515d20cf82ba42b6aba7559bf84300f5840a19b3138db909559f"
+  },
+  "limits": "Worker reported runtime gates preceded the UI pattern escape; final206 followed it. Later CSS selector and test setup assertion did not alter SQL/sender code. Individual hashes are not a complete input manifest. Initial Admin400 red and five unit reds survive only in tool transcripts. Do not label these runs full-head-bound.",
+  "files": [
+    {
+      "name": "axiom-focused-complete.txt",
+      "available": true,
+      "sha256": "b273719baf2e99338157439f26660ad7aadc78deb60a7ff29fd16763957b18de",
+      "bytes": 24851
+    },
+    {
+      "name": "axiom-postgres-green.txt",
+      "available": true,
+      "sha256": "a48fddbd4d13a2726897dfa84de36478840fae083230ab1241fd3ee1f7089360",
+      "bytes": 2556
+    },
+    {
+      "name": "axiom-collector-final-green.txt",
+      "available": true,
+      "sha256": "cffe8ac7008ce132742138a871154f4709f8cc30938de48054763eee7476e611",
+      "bytes": 3458
+    },
+    {
+      "name": "axiom-postgres-red.txt",
+      "available": true,
+      "sha256": "5631aecfe029496e312f14454b362668b7905f7878adfc379a6047c5853e4fd8",
+      "bytes": 5683
+    },
+    {
+      "name": "axiom-collector-green.txt",
+      "available": true,
+      "sha256": "b578cff0a3270f0d306e8fbd65452ee82fcbd57733d67796c51e6fbe74ef76af",
+      "bytes": 4267
+    },
+    {
+      "name": "axiom-help-red.txt",
+      "available": true,
+      "sha256": "8aa615df0a6df47d40d6384b04a59f4da57dcaad3880630897f2ccf10b7e5c46",
+      "bytes": 39901
+    },
+    {
+      "name": "axiom-pattern-red.txt",
+      "available": true,
+      "sha256": "20b0824db80b72d9dac7eec6587992532de69b4390790c5ff718ccf0c324329a",
+      "bytes": 905
+    },
+    {
+      "name": "axiom-focused-first-green.txt",
+      "available": true,
+      "sha256": "dbfa21c0993da8497283c9cc96f6cfb776fe29de663f30148ead950cfc673618",
+      "bytes": 22647
+    },
+    {
+      "name": "axiom-focused-green.txt",
+      "available": true,
+      "sha256": "fa5a8980b5b74e069ac2ec81332fd4398137e1a17e3876a9e2ccacda470be9ce",
+      "bytes": 24151
+    },
+    {
+      "name": "axiom-focused-final-green.txt",
+      "available": true,
+      "sha256": "6efe928e811babaa6f135903c2b6fcadf253a9fded2776d19e1a542638fc762c",
+      "bytes": 24721
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": true,
+    "deployment": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": true,
+    "dependencyRisk": false,
+    "policy": false,
+    "crossCutting": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "The existing customer Audit destination gains one optional Axiom dataset field. Save validates and stores it in the current tenant/revision, saved Test and fresh export authorization forward it, and the existing Audit HTTPS sender emits x-axiom-dataset after the same public-address and TLS checks. Generic destinations omit it. No component, dependency, process, container or System logging behavior changes. Existing context, hosted Audit, logging and deployment views now name the compatible OTLP destination including Axiom. The hosted signup composition selects the complete proposed organization Audit notice bundle with its new versions and hashes; old approved bundles remain immutable. Backup and restore work moves to future Slice4 per owner instruction. This candidate needs exact-byte notice approval, current-head architect review and live deployment proof before rollout.",
+    "views": [
+      "context",
+      "containers",
+      "components",
+      "runtime",
+      "deployment"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "src/logs/audit/audit-send.ts",
+      "src/logs/audit/destination-settings-service.ts",
+      "src/logs/audit/pg-destination-settings-store.ts",
+      "src/logs/audit/otlp-audit-sender.ts",
+      "src/logs/audit/otlp-audit-request.ts",
+      "src/logs/audit/public-audit-destination.ts",
+      "src/interfaces/web/account/logging-form.ts",
+      "src/interfaces/web/account/logging-page.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "src/app/hosted-workos-application.ts",
+      "sql/migrations/20261024231921_add_logging_axiom_dataset.sql",
+      "test/acceptance/logging/hosted-destination-test.test.ts",
+      "test/integration/logging/audit/logging-storage-export.test.ts",
+      "test/integration/logging/audit/audit-sender.runtime.ts",
+      "test/acceptance/logging/audit/destination-settings.runtime.ts",
+      "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "docs/implementation/admin-s2-04-direct-axiom.md",
+      "docs/implementation/admin-s2-04-runtime-notice.md",
+      "docs/implementation/admin-s2-04.md",
+      "docs/implementation/admin-s4-recovery.md",
+      "docs/legal/organization-audit-2026-10-24-proposal-v3/manifest.json",
+      "docs/api-surface"
+    ]
+  },
+  "base": "845cec3060b0880cd27c36047f1da57a1c3772ba",
+  "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6"
+}

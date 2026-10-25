@@ -1,0 +1,16 @@
+{
+  "time": "2026-10-24T23:20:17.173Z",
+  "project": "rnqktgtgrvvqptbaosth",
+  "endpoint": "aws-1-us-west-2.pooler.supabase.com:5432",
+  "client_to_pooler": {
+    "encrypted": true,
+    "authorized": true,
+    "protocol": "TLSv1.3",
+    "hostnameVerification": "enabled (default Node check)",
+    "ca": "official Supabase Root 2021"
+  },
+  "runtime_role": "thermus_logging",
+  "database": "postgres",
+  "pooler_to_database_ssl": false,
+  "settings_rows": 0
+}
