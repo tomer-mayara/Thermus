@@ -289,9 +289,10 @@ read shows an error and refuses removal. Replacement reuses setup/verification.
 ### Audit logs UI — Slice 2
 
 The [audit log rules](#audit-logs--slice-2) define customer access and event safety.
-An Admin selects the organization, opens **Audit logs**, and saves a full HTTPS
-logs endpoint for a Collector or supported OTLP service, optional Axiom dataset,
-None/Bearer authentication, and Enable setting. Each load and Save checks
+An Admin selects the organization, opens **Audit logs**, and chooses **Axiom** or
+**Custom**. Both use a full HTTPS OTLP logs endpoint and a Bearer token. Axiom
+requires a dataset; Custom has no dataset field. One Save applies these fields
+and Enable export. Each load and Save checks
 current Admin permission for that organization; a submitted organization ID is not
 authority. S2-01b implements the page and Save, S2-02b implements optional Test,
 and S2-03c implements bounded delivery. The mock shows the combined Slice 2 candidate.
@@ -304,25 +305,26 @@ Thermus       Workspace [Acme Labs v]             Alex  [Sign out]
 Connect your agent | Members | Audit logs
                                -------
 Audit logs destination
+[ Send organization data only if you have authority to do so.    ]
+[ Check destination access and retention. Read our Privacy Policy. ]
+Destination [ Axiom v ]  (Axiom / Custom)
 [ ] Enable export
-OTLP logs endpoint [ https://collector.example.com/v1/logs       ]
+OTLP logs endpoint [ https://us-east-1.aws.edge.axiom.co/v1/logs   ]
 Connection: HTTPS · OTLP/HTTP JSON
-Axiom dataset (optional) [                                      ]
-Authentication: ( ) None   (*) Bearer token
-Token [                                                        ]
-Saved token: Set · Blank retains it only for unchanged endpoint/auth.
-Changed endpoint + Bearer requires a new token. None removes the saved token.
+Axiom dataset [ audit-log-test                                 ]
+Bearer token [                                                  ]
+Saved token: Set · Leave blank to keep it for the same endpoint.
+A changed endpoint requires a new token.
 [Save]
 [Test saved destination — optional]
-Test: All test records accepted at 10:42 AM. Check your collector.
-Testing is recommended, not proof of continued delivery or storage.
-Enabled export includes MCP tool inputs/results and administration metadata.
-Oversized logged results are truncated with original size shown;
-your tool result is unchanged.
-No internal HTTP/sign-in forms/cookies/Authorization headers/logging tokens.
-Delivery is best effort. Overload/restart can lose logs; retries may duplicate them.
-A slow or unavailable Collector never delays tools.
+Save changes before Test. Test sends one synthetic event; check receipt.
 ```
+
+The warning links to the Privacy Policy. The page has no long export explanation
+or authentication toggle. The privacy, capture, delivery, and backup rules below
+still apply. The selector does not need a new database column: a saved dataset
+identifies Axiom; its absence identifies Custom. Existing unauthenticated settings
+remain readable, but a new Save through this form requires a Bearer token.
 
 ### Narrow screens — Slice 1
 
@@ -589,7 +591,7 @@ common behavior; these roles require no shared base class.
 
 Slice 2's first production audit sink sends OpenTelemetry OTLP/HTTP JSON to the
 organization's configured Collector or supported OTLP service. Direct Axiom
-export uses an optional saved dataset name as the `x-axiom-dataset` routing header,
+export uses its required dataset name as the `x-axiom-dataset` routing header,
 with the full HTTPS logs URL and Bearer token. The owner authorized this addition
 on 24 October 2026 after confirming that no Collector exists. This does not
 promise support for every provider or establish actual ingest compatibility.
@@ -696,9 +698,9 @@ Exclude sender responses, retries, and settings-read diagnostics from customer
 capture. An Audit logs action may record one administration event; the labelled
 synthetic Test record is separate. Export work must not capture itself.
 
-**Settings and Test.** Use one public HTTPS OTLP logs endpoint for a Collector or
-supported service, None or one Bearer token, native radios, a write-only Token
-field, and one optional Axiom dataset field. A dataset uses 1–128 ASCII letters,
+**Settings and Test.** Choose Axiom or Custom. Use one public HTTPS OTLP logs
+endpoint and one write-only Bearer token field. Axiom requires its dataset;
+Custom omits it. A dataset uses 1–128 ASCII letters,
 digits, or hyphens and supplies only `x-axiom-dataset`; no arbitrary header editor
 is added. Direct Axiom uses the full logs URL and Bearer token, not the web stream
 page URL. No private-network destination, custom auth headers, or client
@@ -707,8 +709,10 @@ disabled until explicitly enabled. Every actual change, including toggles, updat
 one revision; unchanged Save, including re-entering the same token, does not.
 The destination owner decides semantic equality and preserves ciphertext on a
 no-op; the store atomically checks revision and writes. No draft/active copies.
-None removes the saved token. Blank Bearer retains it only for unchanged endpoint/auth; changed
-endpoint + Bearer needs a replacement. Encrypt secrets server-side with a key
+Blank Bearer input retains it only for unchanged endpoint/auth; a changed
+endpoint needs a replacement. The service keeps its existing None support for
+stored settings and sender compatibility; the Admin form offers only Bearer.
+Encrypt secrets server-side with a key
 outside the store; never echo them. All writes reject stale forms/revisions. A Save
 timeout can leave its commit unconfirmed; show that outcome and reload current
 settings/revision before another write. A timed-out Save may commit after that
