@@ -1,7 +1,8 @@
 # S2.5-02 integrated verification and release controls
 
-Status: implementation and behavioral gates pass, 25 October 2026. Final
-quality review and actual release remain pending. This is
+Status: implementation and behavioral gates pass, 25 October 2026. The PR
+Validation and Quality review records hold final candidate evidence and review
+status. Actual release remains pending. This is
 [PR #255](https://github.com/tomer-mayara/Thermus/pull/255), stacked on
 [S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254) at
 `2271545702a8f1ec28c6f7dd913fec7024ecadeb`. The ticket is not released or Done.
@@ -56,8 +57,8 @@ These results cover the implementation and test bytes of
 `b429c308f013478cd99ee69f22a9f53d5e3687d4`, with later document-only changes.
 They do not claim that every earlier run used that committed SHA. The PR
 Validation record retains full commands, timestamps, failure/retry history, and
-evidence. Behavioral gates pass; final quality review, actual release and owner
-decisions remain open.
+evidence. Behavioral gates pass; required independent human review, actual
+release and owner decisions remain open.
 
 | Selected check | Latest result |
 | --- | --- |
@@ -71,8 +72,9 @@ decisions remain open.
 | Final Linux AMD64 hosted image gate | Passed: 7/7, six subcases and their parent. The isolated retry log is retained in the PR validation evidence. |
 | Typecheck and portal build | Passed. |
 | Public API snapshot check | Passed: 49 snapshots. |
+| Fresh selected coverage | Passed: 3,219 backend and 29 portal unit tests; 1,120 integration tests; 594 backend and 20 portal acceptance tests. Verified capture covers 172 source files from 1,321 processes. |
 
-Final quality review remains pending. The earlier actual S2-04 release,
+The PR keeps the final quality reports and manager review. The earlier actual S2-04 release,
 independent required review, exact notice approval/integration/publication/
 presentation, production storage/capacity, and deployed removal journey remain
 separate gates below. The ticket is not Done.
