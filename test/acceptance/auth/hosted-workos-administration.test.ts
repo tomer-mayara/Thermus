@@ -112,8 +112,6 @@ function changesIn(site: WorkOSSite): WorkOSChange[] {
     .map(({ method, path, body }) => ({ method, path: path.split('?')[0] ?? path, body }));
 }
 
-// A single-role write on the authorization resource of Acme. WorkOS names that resource by the external ID of Acme,
-// not by its organization ID.
 function changeRecords(site: WorkOSSite): Readonly<Record<string, unknown>>[] {
   const prefix = 'INFO Account change record: ';
   return site.log.lines.filter((line) => line.startsWith(prefix)).map((line) => JSON.parse(line.slice(prefix.length)) as Readonly<Record<string, unknown>>);
