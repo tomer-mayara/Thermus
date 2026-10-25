@@ -169,7 +169,7 @@ describe('Local MCP access with the real Better Auth provider and SQLite', () =>
     const authority = `better-auth:${installation.runtime.installationId}`;
     for (const [index, grant] of [aliceGrant, bobGrant].entries()) {
       assert.deepEqual(reports[index]?.context, {
-        user: { authority, subject: grant.id },
+        user: { authority, subject: grant.id, name: [alice, bob][index]?.email },
         tenantId: installation.runtime.tenantId,
         grants: [{ role: 'user', permissions: [productAccess] }],
         permissions: [productAccess],
