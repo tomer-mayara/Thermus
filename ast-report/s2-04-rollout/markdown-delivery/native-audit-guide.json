@@ -1,0 +1,9 @@
+{
+  "url": "https://thermus.ai/guide/audit-logs.md",
+  "at": "2026-10-25T03:42:10.395Z",
+  "method": "Native Brave navigation, then read the already loaded document",
+  "matchesCompleteSource": true,
+  "observedCharacters": 5147,
+  "sourceBytes": 5149,
+  "sourceSha256": "173081e9e6c1c79fa979349b8be5533474981bdb3b7fc5e727de6b5854130011"
+}

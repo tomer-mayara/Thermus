@@ -1,0 +1,33 @@
+{
+  "scope": "Verifier scripts and docs only; no source, Netlify config, legal content, or package manifest changed.",
+  "node": "v24.20.0",
+  "syntax_checks": {
+    "scripts/check-guide-access.mjs": "pass",
+    "scripts/check-discovery.mjs": "pass"
+  },
+  "diff_check": "pass",
+  "live_guide_access": {
+    "passed": true,
+    "requests": 22,
+    "log": "guide-access.json",
+    "complete_guide_get_bytes": 45826,
+    "complete_guide_head_bytes": 0,
+    "cors": "*"
+  },
+  "live_discovery": {
+    "passed": true,
+    "log": "discovery-2.log",
+    "stderr": "discovery-2.stderr",
+    "prior_attempt": {
+      "passed": false,
+      "stderr": "discovery.stderr",
+      "reason": "Strict redirect check rejected pre-existing HTML catalog canonicalization /contact-us to /contact-us/.",
+      "diagnostic": "redirect-diagnostic.json"
+    },
+    "redirect_policy": "API and Markdown reject redirects. HTML catalog targets follow redirects and must end on checked origin."
+  },
+  "tests": "No tests added or broad suite run; script and docs-only scope uses syntax and bounded live checks.",
+  "security_changes": false,
+  "external_mutations": "Only bounded read-only HTTP checks; personalized topic checks produce their documented server analytics events.",
+  "pending": "No pending verifier repair. Guide helper renamed request; syntax rechecked without repeating unchanged live guide behavior."
+}

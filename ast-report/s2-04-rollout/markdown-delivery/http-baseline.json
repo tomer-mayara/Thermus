@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-25T03:28:26.043625+00:00",
+  "client": "Python urllib default",
+  "responses": [
+    {
+      "path": "/",
+      "status": 403,
+      "headers": {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Server": "cloudflare",
+        "CF-RAY": "a4fe21900e7859d4-DEN"
+      },
+      "prefix": "error code: 1010\n"
+    },
+    {
+      "path": "/guide/audit-logs.md",
+      "status": 403,
+      "headers": {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Server": "cloudflare",
+        "CF-RAY": "a4fe2190a9dee66e-DEN"
+      },
+      "prefix": "error code: 1010\n"
+    },
+    {
+      "path": "/thermus.md",
+      "status": 403,
+      "headers": {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Server": "cloudflare",
+        "CF-RAY": "a4fe21911fa05382-DEN"
+      },
+      "prefix": "error code: 1010\n"
+    },
+    {
+      "path": "/robots.txt",
+      "status": 403,
+      "headers": {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Server": "cloudflare",
+        "CF-RAY": "a4fe2191c81379a1-DEN"
+      },
+      "prefix": "error code: 1010\n"
+    },
+    {
+      "path": "/privacy/",
+      "status": 403,
+      "headers": {
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Server": "cloudflare",
+        "CF-RAY": "a4fe2192987dd741-DEN"
+      },
+      "prefix": "error code: 1010\n"
+    }
+  ]
+}

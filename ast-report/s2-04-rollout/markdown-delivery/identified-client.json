@@ -1,0 +1,46 @@
+{
+  "at": "2026-10-25T03:31:20.384318+00:00",
+  "client": "Thermus-Markdown-Verification/1.0",
+  "responses": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 45826,
+      "headers": {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "x-nf-request-id": "01M5RHSQ3C1CSZZ6ADTE2D18P0",
+        "Server": "cloudflare",
+        "vary": "Accept-Encoding, Accept",
+        "CF-RAY": "a4fe25cd4c2151f1-DEN"
+      },
+      "prefix": "# Thermus product guide\n\nUpdated: 2026-10-24\n\nThermus is a Model Context Protocol (MCP) ga"
+    },
+    {
+      "path": "/thermus.md",
+      "status": 200,
+      "bytes": 45826,
+      "headers": {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Server": "cloudflare",
+        "vary": "Accept-Encoding",
+        "x-nf-request-id": "01M5RHSQQPWBT3J4MB2JBZYE57",
+        "CF-RAY": "a4fe25d09c697241-DEN"
+      },
+      "prefix": "# Thermus product guide\n\nUpdated: 2026-10-24\n\nThermus is a Model Context Protocol (MCP) ga"
+    },
+    {
+      "path": "/guide/audit-logs.md",
+      "status": 200,
+      "bytes": 5149,
+      "headers": {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Server": "cloudflare",
+        "vary": "Accept-Encoding",
+        "x-content-type-options": "nosniff",
+        "x-nf-request-id": "01M5RHSQZBWJPF0RFX42348N9Q",
+        "CF-RAY": "a4fe25d2efe49da4-DEN"
+      },
+      "prefix": "# Thermus request logs and organization Audit export\n\nUpdated: 2026-10-24\n\nSystem logs rem"
+    }
+  ]
+}

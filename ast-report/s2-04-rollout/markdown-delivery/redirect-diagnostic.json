@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/contact-us",
+    "status": 301,
+    "location": "/contact-us/"
+  },
+  {
+    "path": "/thermus.md",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/.well-known/agent-skills/thermus-product-guide/SKILL.md",
+    "status": 200,
+    "location": null
+  },
+  {
+    "path": "/openapi.json",
+    "status": 200,
+    "location": null
+  }
+]

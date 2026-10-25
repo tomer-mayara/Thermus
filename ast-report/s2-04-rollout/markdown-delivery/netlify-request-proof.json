@@ -1,0 +1,21 @@
+{
+  "site_id": "9753c4f4-c917-400e-9cd7-f638f81743a8",
+  "records": [
+    {
+      "request_id": "01M5RHS5TEHMQH5W7KEV8S6J2M",
+      "timestamp": "2026-10-25T03:31:01.582199586Z",
+      "method": "GET",
+      "url": "https://thermus.ai/thermus.md",
+      "status_code": 200,
+      "has_edge_function_invocation": false
+    },
+    {
+      "request_id": "01M5RHRPKWRV1DMFPD02FHFP1W",
+      "timestamp": "2026-10-25T03:30:46.012396645Z",
+      "method": "GET",
+      "url": "https://thermus.ai/",
+      "status_code": 200,
+      "has_edge_function_invocation": true
+    }
+  ]
+}
