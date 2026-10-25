@@ -277,7 +277,13 @@ or source dependencies; solid arrows show runtime collaboration through supplied
 The [settings service](../src/logs/audit/destination-settings-service.ts) validates
 settings, including an optional Axiom dataset, and exposes token presence, never
 the token. A nonblank dataset contains at most 128 ASCII letters, digits, or
-hyphens. The web form rejects duplicate dataset fields. Test compares the dataset
+hyphens. The web form offers Axiom and Custom choices and only Bearer
+authentication. Axiom requires a dataset; Custom excludes it. The web boundary
+maps that choice into the existing service input and rejects duplicate or
+contradictory fields. The saved dataset determines the selected choice on read;
+the storage format and service contract do not need a separate destination kind.
+Existing None-auth rows remain readable; the form requires a Bearer token Save
+before testing them. Test compares the dataset
 with the saved version; unsaved edits send nothing. The
 [credential codec](../src/logs/audit/destination-credential-codec.ts) uses AES-256-GCM
 with tenant ID as authenticated data. Wrong keys, changed ciphertext, and tenant

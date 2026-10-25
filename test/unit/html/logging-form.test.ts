@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { loggingForm } from '../../../src/interfaces/web/account/logging-form.ts';
 
 function validForm(): URLSearchParams {
-  return new URLSearchParams({ csrf_token: 'csrf', organization_id: 'tenant:a', expected_revision: '', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '' });
+  return new URLSearchParams({ csrf_token: 'csrf', organization_id: 'tenant:a', expected_revision: '', endpoint: 'https://collector.example/v1/logs', destination: 'custom', auth: 'bearer', token: '' });
 }
 
 test('Given an absent or checked native checkbox, when a valid Logging form is read, then enabled is false or true', () => {
@@ -32,4 +32,33 @@ test('Given unknown, missing or duplicate fields, when Logging reads a valid CSR
     const form = validForm(); change(form);
     assert.equal(loggingForm(form, 'csrf'), 'invalidRequest');
   }
+});
+
+test('Given an explicit Axiom destination, when the form is read, then a valid dataset is required', () => {
+  for (const dataset of [undefined, '', 'invalid_dataset', 'a'.repeat(129), 'audit-log-test']) {
+    const form = validForm(); form.set('destination', 'axiom');
+    if (dataset !== undefined) form.set('axiom_dataset', dataset);
+    const result = loggingForm(form, 'csrf');
+    if (dataset === 'audit-log-test') {
+      assert.notEqual(typeof result, 'string');
+      if (typeof result !== 'string') assert.equal(result.axiomDataset, dataset);
+    } else assert.equal(result, 'invalidRequest');
+  }
+});
+test('Given Custom with a dataset or a missing, duplicate or unknown destination, when the form is read, then it is refused', () => {
+  for (const change of [
+    (form: URLSearchParams) => form.set('axiom_dataset', 'audit-log-test'),
+    (form: URLSearchParams) => form.delete('destination'),
+    (form: URLSearchParams) => form.set('destination', 'unknown'),
+    (form: URLSearchParams) => form.set('destination', ''),
+    (form: URLSearchParams) => form.append('destination', 'custom'),
+    (form: URLSearchParams) => form.set('auth', 'none'),
+  ]) {
+    const form = validForm(); change(form);
+    assert.equal(loggingForm(form, 'csrf'), 'invalidRequest');
+  }
+});
+test('Given Custom and a blank dataset, when the form is read, then only Bearer settings reach the service', () => {
+  const form = validForm(); form.set('axiom_dataset', '');
+  assert.deepEqual(loggingForm(form, 'csrf'), { tenantId: 'tenant:a', expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: '', enabled: false });
 });

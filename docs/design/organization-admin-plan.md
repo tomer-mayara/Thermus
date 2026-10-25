@@ -307,14 +307,14 @@ Connect your agent | Members | Audit logs
 Audit logs destination
 [ Send organization data only if you have authority to do so.    ]
 [ Check destination access and retention. Read our Privacy Policy. ]
-Destination [ Axiom v ]  (Axiom / Custom)
-[ ] Enable export
+Destination: (*) Axiom  ( ) Custom
 OTLP logs endpoint [ https://us-east-1.aws.edge.axiom.co/v1/logs   ]
 Connection: HTTPS · OTLP/HTTP JSON
 Axiom dataset [ audit-log-test                                 ]
 Bearer token [                                                  ]
 Saved token: Set · Leave blank to keep it for the same endpoint.
 A changed endpoint requires a new token.
+[ ] Enable export
 [Save]
 [Test saved destination — optional]
 Save changes before Test. Test sends one synthetic event; check receipt.
@@ -1762,6 +1762,13 @@ and revision conflicts have source acceptance coverage. The
 [implementation record](https://github.com/tomer-mayara/Thermus/blob/e64a49c6cdbc6f5d7a47d2bfc0fd61907e3dca81/docs/implementation/admin-s2-01b.md)
 records checks and limits. This implementation record does not establish current
 merge status, deployed access, or customer delivery. The S2-02b candidate adds Test; S2-03 adds capture and dispatch.
+
+**Current form update.** The [Audit logs UI](#audit-logs-ui--slice-2) now requires
+an explicit Axiom or Custom choice. Axiom requires its dataset; both choices
+use Bearer authentication. The original TDD record below includes None support
+at the settings-service boundary. That support remains for stored settings and
+the sender; it is no longer a choice in the Admin form. The current form has the
+short authority/privacy warning, rather than the original long explanation.
 
 **Acceptance specification first:**
 

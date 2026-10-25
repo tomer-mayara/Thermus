@@ -13,7 +13,7 @@ export const destinationTestEndpoint = 'https://collector.example/v1/logs';
 export const destinationTestSecret = 'acceptance-only-private-test-token';
 
 export async function serveDestinationTestSite(t: TestContext, options: { config?: typeof hostedConfig; auth?: 'none' | 'bearer'; send?: () => Promise<AuditSendOutcome> } = {}) {
-  const { config = hostedConfig, auth = 'none', send } = options;
+  const { config = hostedConfig, auth = 'bearer', send } = options;
   const store = new DestinationSettingsFake();
   const calls: { destination: AuditDestination; event: AuditEvent }[] = [];
   const service = new DestinationSettingsService(store, Buffer.alloc(32, 7), {

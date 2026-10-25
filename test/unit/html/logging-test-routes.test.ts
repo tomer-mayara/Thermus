@@ -6,7 +6,7 @@ import type { SignedInBrowserSession } from '../../../src/accounts/identity/brow
 
 const context: RequestContext = { user: { authority: 'trusted', subject: 'admin' }, tenantId: 'trusted:a', organizationId: 'a', grants: [], permissions: ['admin-grants:manage'] };
 const session: SignedInBrowserSession = { status: 'signed-in', user: context.user, csrfToken: 'csrf', mfaCompleted: false, cookies: [], selectOrganization: async () => ({ status: 'refused', cookies: [] }) };
-const fields = { csrf_token: 'csrf', organization_id: 'trusted:a', expected_revision: 'r1', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '' };
+const fields = { csrf_token: 'csrf', organization_id: 'trusted:a', expected_revision: 'r1', endpoint: 'https://collector.example/v1/logs', destination: 'custom', auth: 'bearer', token: '' };
 
 test('Given a protected current form, when Test is submitted, then the current trusted tenant and actor reach Test once without Save', async () => {
   const calls: unknown[] = [];
@@ -21,7 +21,7 @@ test('Given a protected current form, when Test is submitted, then the current t
   const response = await handler(request, session, context);
   assert.equal(response.status, 200);
   assert.match(await response.text(), /Destination accepted the Test event/);
-  assert.deepEqual(calls, [['trusted:a', { expectedRevision: 'r1', endpoint: fields.endpoint, auth: 'none', token: '', enabled: false }, context.user, request.signal]]);
+  assert.deepEqual(calls, [['trusted:a', { expectedRevision: 'r1', endpoint: fields.endpoint, auth: 'bearer', token: '', enabled: false }, context.user, request.signal]]);
   assert.equal(saves, 0);
 });
 

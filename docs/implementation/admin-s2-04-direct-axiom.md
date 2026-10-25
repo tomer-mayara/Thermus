@@ -1,5 +1,33 @@
 # S2-04 direct Axiom audit destination
 
+## Current Admin form
+
+The Admin chooses **Axiom** or **Custom**. Both choices use a full public HTTPS
+OTLP logs URL and a Bearer token. Axiom requires a dataset; Custom omits it.
+Switching the choice changes only the form until Save. Test still requires the
+saved values, and it does not save edits or enable export.
+
+The page keeps this warning, with a link to the Privacy Policy:
+
+> Send organization data only if you have authority to do so. Check destination access and retention. Read our Privacy Policy.
+
+The former long export explanation and authentication radio buttons are removed.
+Terms, Privacy, stored agreements, capture rules, delivery limits, and backup
+scope stay unchanged. The prior notice package remains an immutable record.
+
+The saved format stays the same: a nonempty dataset selects Axiom on read; no
+dataset selects Custom. No migration is needed. A saved Bearer token stays hidden
+and can be retained with blank input only for the same endpoint. A changed
+endpoint needs a new token. Existing None-auth settings remain readable and
+unchanged until an Admin saves a Bearer token. They must be updated before using
+Test through the new form. The underlying service and sender retain None support.
+
+## Original PR #248 implementation record
+
+The sections below record the earlier optional-dataset implementation and its
+checks. The current form above supersedes its UI details; those earlier checks
+do not validate this later form change.
+
 The owner chose direct Axiom export because no Collector is running. This change
 adds one optional dataset field to the existing Audit destination. It adds no
 service, provider framework, environment variable, or arbitrary header map.

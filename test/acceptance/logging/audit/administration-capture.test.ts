@@ -8,7 +8,7 @@ test('Given a current Admin and saved destination, when Test completes, then one
   const events: AuditEvent[] = [];
   const { browser, sent } = await captureSite(t, event => { events.push(event); });
   const form = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
-  await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '' } });
+  await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: 'audit-test-token' } });
   const saved = formLabelled(formsIn((await browser.open('logging')).body), 'Test saved destination');
   const response = await browser.submit({ ...saved, fields: { ...saved.fields, endpoint: 'https://collector.example/v1/logs', token: '' } });
   assert.equal(response.status, 200, response.body);
@@ -67,7 +67,7 @@ for (const failure of ['throw', 'refuse'] as const) {
     let captures = 0;
     const { browser, store } = await captureSite(t, () => { captures++; if (failure === 'throw') throw new Error('private-sink-cause'); return false; });
     const form = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
-    const response = await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: 'on' } });
+    const response = await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: 'audit-test-token', enabled: 'on' } });
     assert.equal(response.status, 303);
     assert.equal(store.writes, 1);
     assert.equal(captures, 1);

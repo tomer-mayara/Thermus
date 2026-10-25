@@ -83,10 +83,10 @@ test('Given an open-source Collector with None and Bearer receivers, when audit 
   t.diagnostic(`Collector ${site.collectorImage}; isolated public-address TLS ${site.address}.`);
 });
 
-test('Given disabled saved None and Bearer destinations, when their real logging form Tests each saved revision, then the Collector receives one labelled synthetic event per destination and settings do not change', { timeout: 120_000 }, async (t) => {
+test('Given disabled saved Bearer destinations at two receivers, when their real logging form Tests each saved revision, then the Collector receives one labelled synthetic event per destination and settings do not change', { timeout: 120_000 }, async (t) => {
   const site = await openAuditSenderSite(t, 'collector');
   const results = await site.testSavedDestinations([
-    { endpoint: site.endpoint, auth: 'none', token: '' },
+    { endpoint: site.endpoint, auth: 'bearer', token: site.token },
     { endpoint: site.bearerEndpoint, auth: 'bearer', token: site.token },
   ]);
   assert.equal(results.length, 2);
@@ -102,7 +102,7 @@ test('Given disabled saved None and Bearer destinations, when their real logging
     assert.equal(result.settings.enabled, false);
     assert.equal(result.settings.revision, result.revision);
   }
-  assert.equal(results[0].settings.tokenPresent, false);
+  assert.equal(results[0].settings.tokenPresent, true);
   assert.equal(results[1].settings.tokenPresent, true);
   const exported = await site.collectorRecords(2);
   assert.equal(exported.length, 2);
