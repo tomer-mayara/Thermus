@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-25T01:42:48.856Z",
+  "scope": "Actual Supabase restricted pool; isolated local hosted composition; no deployed outage",
+  "controls": {
+    "poolMax": 1,
+    "heldIdleClient": true,
+    "transactions": false,
+    "locks": false,
+    "rowMutations": false,
+    "migrations": false,
+    "providerWrites": false,
+    "renderChanges": false,
+    "identity": "loopback WorkOSFake",
+    "toolOperation": "fixed harmless fetch result",
+    "mcp": "real hosted composition and SDK",
+    "portal": "existing production portal build"
+  },
+  "failure": {
+    "phase": "input compatibility",
+    "sanitized": true,
+    "message": "The probe did not complete its stated checks. No raw driver/provider error was retained.",
+    "cause": "Pinned Node24 compatibility preflight: source and dist matched; broad input fingerprint differed. No database or protected configuration was opened. Cause not attributed."
+  },
+  "cleanup": {
+    "resources": [
+      {
+        "resource": "MCP client",
+        "closed": true
+      },
+      {
+        "resource": "application",
+        "closed": true
+      },
+      {
+        "resource": "SQL runtime",
+        "closed": true
+      },
+      {
+        "resource": "pool",
+        "closed": true
+      }
+    ],
+    "poolTotal": 0,
+    "poolIdle": 0,
+    "poolWaiting": 0
+  },
+  "status": "failed",
+  "finishedAt": "2026-10-25T01:42:49.094Z"
+}

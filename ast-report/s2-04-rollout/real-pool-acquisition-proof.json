@@ -1,0 +1,111 @@
+{
+  "at": "2026-10-25T01:43:34.210Z",
+  "scope": "Actual Supabase restricted pool; isolated local hosted composition; no deployed outage",
+  "controls": {
+    "poolMax": 1,
+    "heldIdleClient": true,
+    "transactions": false,
+    "locks": false,
+    "rowMutations": false,
+    "migrations": false,
+    "providerWrites": false,
+    "renderChanges": false,
+    "identity": "loopback WorkOSFake",
+    "toolOperation": "fixed harmless fetch result",
+    "mcp": "real hosted composition and SDK",
+    "portal": "existing production portal build"
+  },
+  "provenance": {
+    "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+    "coverageCaptureCommit": "185e372a85dc749a36a0b058151d960d0c4f71da",
+    "sourceFingerprint": "92f0919104c68e7ab4e5d045b5cbc4cac62518c96d0db2f385aafe29952240b1",
+    "broadInputsMatch": false,
+    "broadInputsMismatchCause": "Not attributed; no secret-file hashes retained or published",
+    "coverageReuseClaim": false,
+    "buildFingerprint": "f1c43bd1c76b963a53214e7cee27147eccfd8d9340d1a9fc61351129b850b927",
+    "sourceAndDistCompatible": true,
+    "runtime": "v24.20.0",
+    "afterProbe": {
+      "sourceFingerprintMatches": true,
+      "distFingerprintMatches": true
+    }
+  },
+  "connection": {
+    "selectedProjectMatches": true,
+    "clientToPoolerEncrypted": true,
+    "authorized": true,
+    "hostnameVerification": "default Node verification enabled",
+    "tlsProtocol": "TLSv1.3",
+    "officialCaSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+    "restrictedRole": "thermus_logging",
+    "grants": {
+      "schemaUsage": true,
+      "select": true,
+      "insert": true,
+      "update": true,
+      "delete": false,
+      "schemaCreate": false
+    },
+    "preflightReadOnlyQueries": 1
+  },
+  "acquisition": {
+    "runtimeActive": 2,
+    "poolMax": 1,
+    "acquisitionMs": 1000,
+    "operationMs": 2000,
+    "pendingAcquisitionObserved": true,
+    "readResult": "unavailable",
+    "elapsedMs": 1004,
+    "acquireEventsBeforeCleanup": 1,
+    "heldClientStillOwned": true,
+    "storeClientAcquired": false,
+    "storeQueryCouldStart": false,
+    "pendingAfterTimeouts": 0
+  },
+  "mcp": {
+    "tool": "getURLAsMarkdown",
+    "completeExpectedResult": true,
+    "elapsedMs": 30,
+    "completedWhileActualStorePending": true,
+    "healthStatus": 200,
+    "healthBodyMatches": true,
+    "healthWhileActualStorePending": true,
+    "sameStoreInProductionComposition": true,
+    "liveWorkosClaim": false,
+    "liveRendererClaim": false,
+    "deployedOutageClaim": false
+  },
+  "cleanup": {
+    "resources": [
+      {
+        "resource": "held idle client",
+        "closed": true
+      },
+      {
+        "resource": "MCP client",
+        "closed": true
+      },
+      {
+        "resource": "application",
+        "closed": true
+      },
+      {
+        "resource": "SQL runtime",
+        "closed": true
+      },
+      {
+        "resource": "pool",
+        "closed": true
+      },
+      {
+        "resource": "loopback fake",
+        "closed": true
+      }
+    ],
+    "poolTotal": 0,
+    "poolIdle": 0,
+    "poolWaiting": 0
+  },
+  "status": "passed",
+  "finishedAt": "2026-10-25T01:43:36.839Z"
+}

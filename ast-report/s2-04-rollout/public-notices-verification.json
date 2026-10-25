@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-10-25T01:36:46.425Z",
+  "marketingCommit": "a53783560778cb0e568ca26838c7af226dc41dfc",
+  "status": "pass",
+  "results": [
+    {
+      "requested": "https://thermus.ai/privacy/",
+      "url": "https://thermus.ai/privacy/",
+      "version": "hosted-privacy-organization-audit-proposal-2026-10-24-v3",
+      "sha256": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "completeTextMatches": true,
+      "allLinksMatch": true,
+      "tableRows": 12,
+      "brokenAnchors": 0,
+      "overflow": false
+    },
+    {
+      "requested": "https://thermus.ai/terms/",
+      "url": "https://thermus.ai/terms/",
+      "version": "hosted-terms-organization-audit-proposal-2026-10-24-v3",
+      "sha256": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+      "completeTextMatches": true,
+      "allLinksMatch": true,
+      "tableRows": 0,
+      "brokenAnchors": 0,
+      "overflow": false
+    },
+    {
+      "requested": "https://thermus.ai/privacy",
+      "url": "https://thermus.ai/privacy/",
+      "version": "hosted-privacy-organization-audit-proposal-2026-10-24-v3",
+      "sha256": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "completeTextMatches": true,
+      "allLinksMatch": true,
+      "tableRows": 12,
+      "brokenAnchors": 0,
+      "overflow": false
+    },
+    {
+      "requested": "https://thermus.ai/terms",
+      "url": "https://thermus.ai/terms/",
+      "version": "hosted-terms-organization-audit-proposal-2026-10-24-v3",
+      "sha256": "ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3",
+      "completeTextMatches": true,
+      "allLinksMatch": true,
+      "tableRows": 0,
+      "brokenAnchors": 0,
+      "overflow": false
+    }
+  ]
+}

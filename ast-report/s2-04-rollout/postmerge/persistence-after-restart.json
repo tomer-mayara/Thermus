@@ -1,0 +1,22 @@
+{
+  "observedAt": "2026-10-25T01:51:57.742Z",
+  "scope": "Read-only Supabase after observed Render service restart",
+  "service": "srv-db8mnqg473hc739d529g",
+  "source": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "rows": [
+    {
+      "tenant_id": "workos:client_01M4VDKC291XX3CDEFP5ZKY5KP:org_01M5N95EJA1AKHHERCD7971AJ7",
+      "revision": "5a7a6fde-b3d5-4429-a35f-601df04c504c",
+      "endpoint": "https://us-east-1.aws.edge.axiom.co/v1/logs",
+      "auth": "bearer",
+      "enabled": false,
+      "axiom_dataset": "audit-log-test",
+      "encrypted_credential_present": true
+    }
+  ],
+  "expectedRevision": "5a7a6fde-b3d5-4429-a35f-601df04c504c",
+  "sameRevision": true,
+  "exportEnabled": false,
+  "credentialValueRead": false,
+  "browserTest": "pending: Mac locked; no accepted Test result yet"
+}

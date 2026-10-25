@@ -1,0 +1,11 @@
+{
+  "id": "6add5ca7404bebc124b25ca1",
+  "siteId": "9753c4f4-c917-400e-9cd7-f638f81743a8",
+  "state": "ready",
+  "branch": "main",
+  "commit": "a53783560778cb0e568ca26838c7af226dc41dfc",
+  "publishedAt": "2026-10-25T01:34:52.725Z",
+  "context": "production",
+  "skipped": null,
+  "manualDeploy": false
+}

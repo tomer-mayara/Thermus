@@ -1,0 +1,1523 @@
+{
+  "reviewedAt": "2026-10-25T01:53:33.091Z",
+  "method": "Offline parsing of captured production HTML/paragraphs; exact canonical UTF-8 hashes and complete production-rendered desktop/mobile document comparison; no provider/browser changes or link requests",
+  "approvalBasis": "Manager reports exact v3 package and current runtime/public scope approved; historical manifest status is not edited",
+  "bundleVersion": "s204-organization-audit-proposal-2026-10-24-v3",
+  "canonical": [
+    {
+      "file": "privacy.md",
+      "version": "hosted-privacy-organization-audit-proposal-2026-10-24-v3",
+      "sha256": "692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6",
+      "bytes": 35098,
+      "matches": true
+    },
+    {
+      "file": "audit-help.md",
+      "version": "hosted-audit-help-proposal-2026-10-24-v3-r2",
+      "sha256": "1f4ad87cb93356115e2626f493d2f28040ab80ed94bd8353a3870efe4a27de4d",
+      "bytes": 1929,
+      "matches": true
+    }
+  ],
+  "privacy": {
+    "versionMatches": true,
+    "copies": [
+      {
+        "branch": "desktop",
+        "fullMarkupMatches": true,
+        "fullTextMatches": true,
+        "textSha256": "5127f427313a35f7038510fb68859e706156fc7b73a8a060590997c85000fd19",
+        "blocks": [
+          {
+            "index": 1,
+            "tag": "h4",
+            "textSha256": "506ff394621596dd88138642eddfc1e41833b3ae92d95e5c77c94327098abd9a",
+            "matches": true
+          },
+          {
+            "index": 2,
+            "tag": "p",
+            "textSha256": "39075afc9b3be40777af90d011f119a4f03602b37f8bdc83051fcf6ef08093fe",
+            "matches": true
+          },
+          {
+            "index": 3,
+            "tag": "p",
+            "textSha256": "248156cc2e16ee1819d84b7d34ba6c4ac4c645d6d43cebaf0d8688bf7080f643",
+            "matches": true
+          },
+          {
+            "index": 4,
+            "tag": "p",
+            "textSha256": "f759c62a868427e8b42b18816bd0934b06b0582d6030df09aaf0ccddf6fc12fe",
+            "matches": true
+          },
+          {
+            "index": 5,
+            "tag": "h5",
+            "textSha256": "87624072facd4e5af87dcdd9604bfb4883d5afea27e99b13f6b06822513ff80a",
+            "matches": true
+          },
+          {
+            "index": 6,
+            "tag": "p",
+            "textSha256": "c4b249dca60e01ec39e56b8d25476c60783defb8620c7680f6af82fb27708e21",
+            "matches": true
+          },
+          {
+            "index": 7,
+            "tag": "p",
+            "textSha256": "1fa3cf209e1acf437a963d620c9cd43038ff3743342576add0a57bf66bfb6680",
+            "matches": true
+          },
+          {
+            "index": 8,
+            "tag": "h5",
+            "textSha256": "4a9938c3eb00cc04bb0ecf54e4ca1f7f2ae89d2c46d180d28fc921909b72215e",
+            "matches": true
+          },
+          {
+            "index": 9,
+            "tag": "h6",
+            "textSha256": "be63c8fca1fcb857f5dab051df80bf92738926cbdf6436c44282b069ee831fc8",
+            "matches": true
+          },
+          {
+            "index": 10,
+            "tag": "p",
+            "textSha256": "3d872432168b30871a4f9bfe2548f179b39fcf14da62b9a5e3b0289469d27cf4",
+            "matches": true
+          },
+          {
+            "index": 11,
+            "tag": "p",
+            "textSha256": "aadfa57cd7ceb4736c798bbc354fb7d78f201fc1922bcd18c76079909663a377",
+            "matches": true
+          },
+          {
+            "index": 12,
+            "tag": "p",
+            "textSha256": "49ad70e0a7fe5822a9f983efe37f2d7de290197d857dcc84d9446da80cd605f3",
+            "matches": true
+          },
+          {
+            "index": 13,
+            "tag": "h6",
+            "textSha256": "0933d86a716ffba577ee035230492eb9632c4c0b516cd36965fb4b3af1ce022a",
+            "matches": true
+          },
+          {
+            "index": 14,
+            "tag": "p",
+            "textSha256": "66791b2bb47263f90f81a8d1081309bacd50e8ff1931d24bf0925d1c01a0b583",
+            "matches": true
+          },
+          {
+            "index": 15,
+            "tag": "h6",
+            "textSha256": "4b9e88b56396bcc11559f9c56d3e9666fb24543d0c01df5a7a15a61d7cfa8906",
+            "matches": true
+          },
+          {
+            "index": 16,
+            "tag": "p",
+            "textSha256": "6e8a7fe6a8cf10aeee64d36eb2a4f63aff90b4a7c126a86b45e74da6816bc157",
+            "matches": true
+          },
+          {
+            "index": 17,
+            "tag": "p",
+            "textSha256": "81ae98c379177626332166415ddafbe1c002fa0d3e66a52e2b6ae839ed057c27",
+            "matches": true
+          },
+          {
+            "index": 18,
+            "tag": "p",
+            "textSha256": "f06e82f34f43b8655f3f8414a6c8317450e9da7a6a3bce35b163d454fafd0366",
+            "matches": true
+          },
+          {
+            "index": 19,
+            "tag": "h6",
+            "textSha256": "4f17a7680f8d69ac130b9f75c84755cba313df8dc490fa30a64c60a4ba2bf71a",
+            "matches": true
+          },
+          {
+            "index": 20,
+            "tag": "p",
+            "textSha256": "16f1341191152ab87d1209834e1d802aa16631f5c1ebcf0b7f903fc4b0e3cf2d",
+            "matches": true
+          },
+          {
+            "index": 21,
+            "tag": "p",
+            "textSha256": "dc3bfdfcf53ce7c9f79764251ca95d70208b7fcab7cb19d610985f927dfd45ef",
+            "matches": true
+          },
+          {
+            "index": 22,
+            "tag": "p",
+            "textSha256": "410184300009daa2c955eede91a3a46ebaeafff782b8d82913da731690e2af9a",
+            "matches": true
+          },
+          {
+            "index": 23,
+            "tag": "p",
+            "textSha256": "6f3ef9e559e3f9fb495658b5a3c21582729f7343bd3ff855b0717c8c2de9d7c4",
+            "matches": true
+          },
+          {
+            "index": 24,
+            "tag": "h6",
+            "textSha256": "3933fd198a6012531169110729a9d48c4d080ce7829d745ae829f013f73828a5",
+            "matches": true
+          },
+          {
+            "index": 25,
+            "tag": "p",
+            "textSha256": "df731f2a8e516f5fbc402285482ebd9c40bc18f538995390fb7fc384026b4b2c",
+            "matches": true
+          },
+          {
+            "index": 26,
+            "tag": "p",
+            "textSha256": "df179a76a3cd6c37d7008af0fa8d05fd7d19d81e1645bfe613dd40d262d8220d",
+            "matches": true
+          },
+          {
+            "index": 27,
+            "tag": "p",
+            "textSha256": "adae8d59cef3a68efe49e30b0cbaf6ba846e5e57f120c0000d7bd90f57d5e33b",
+            "matches": true
+          },
+          {
+            "index": 28,
+            "tag": "h6",
+            "textSha256": "3281f9e3082935a983205bb352ad36528c0c352c2d948eb906e7910eed5db082",
+            "matches": true
+          },
+          {
+            "index": 29,
+            "tag": "p",
+            "textSha256": "52c87f89d4f1e53fb8d9b998a498de9513066dbed7ca5ff4f6d36b831ad90dc2",
+            "matches": true
+          },
+          {
+            "index": 30,
+            "tag": "p",
+            "textSha256": "4c6f3835e77c95ea1cc82e1f77c909d60ea4faeb9d514c1741573dee2ea2880a",
+            "matches": true
+          },
+          {
+            "index": 31,
+            "tag": "p",
+            "textSha256": "54efd75ada5e9bdb11f7d954cb38bc93832f53586ab1b7a428f5509670903d05",
+            "matches": true
+          },
+          {
+            "index": 32,
+            "tag": "p",
+            "textSha256": "d0e9e8ee5118c598effd72146c16fb196eb7919cef08e40514a82971bf1376e1",
+            "matches": true
+          },
+          {
+            "index": 33,
+            "tag": "h6",
+            "textSha256": "3755595e68bdf5f1169fe5b3f1c3b297eb80d90e730a67dea582a86e04a53265",
+            "matches": true
+          },
+          {
+            "index": 34,
+            "tag": "p",
+            "textSha256": "c5183106de86cf58c622adbb48cb8560741c18873a39db015f7a08abe07de32d",
+            "matches": true
+          },
+          {
+            "index": 35,
+            "tag": "p",
+            "textSha256": "d200aa3974a0db8f3835c517093531fdcbd962b5667acd0551fcb1e27159360f",
+            "matches": true
+          },
+          {
+            "index": 36,
+            "tag": "h6",
+            "textSha256": "d322412af937d76197ae454abe4a1ccca0c910d2b7ff9b273af9a47f783a6e33",
+            "matches": true
+          },
+          {
+            "index": 37,
+            "tag": "p",
+            "textSha256": "942a4311c9299bc16cc0d5ed8323f057eb1d26f722896af349bae1d43ad9f0ec",
+            "matches": true
+          },
+          {
+            "index": 38,
+            "tag": "p",
+            "textSha256": "0e5b458eb50d964c4b2663d0504dfac21706906ea6cc9489b3850834552d327c",
+            "matches": true
+          },
+          {
+            "index": 39,
+            "tag": "p",
+            "textSha256": "b9037b875659b86d8457f0e5569f8b56939507abf94382296bf264be1cf2c24d",
+            "matches": true
+          },
+          {
+            "index": 40,
+            "tag": "p",
+            "textSha256": "64674b6cb16fe4c1dc952a9e0cc521e9001a30496497255dc370f002c9d67ad3",
+            "matches": true
+          },
+          {
+            "index": 41,
+            "tag": "p",
+            "textSha256": "e6aa564f8d3f5dd700da1d2c669dffadeb677f5af29d68e01f4ba4b44b09add4",
+            "matches": true
+          },
+          {
+            "index": 42,
+            "tag": "h5",
+            "textSha256": "27b512250375a791c0df98a94668b6172ab1459508a4f9e85503e855b5d61471",
+            "matches": true
+          },
+          {
+            "index": 43,
+            "tag": "ul",
+            "textSha256": "c6b3bd4341e055240b037a94e8149418800b797c7dd8c486cf66a19233d4ac60",
+            "matches": true
+          },
+          {
+            "index": 44,
+            "tag": "p",
+            "textSha256": "407a436ab6e6cb47362a6ed10856352e702ff234dd26b5a2337731c3e602b34b",
+            "matches": true
+          },
+          {
+            "index": 45,
+            "tag": "p",
+            "textSha256": "67c5c79180f790626121f4867f2e2cbab56ffa97280bbed3b752a2a45f62cb44",
+            "matches": true
+          },
+          {
+            "index": 46,
+            "tag": "h5",
+            "textSha256": "d0999a6dce70cca416efb8ca38dfb61c3d744fbaa61db998535ae0c34def33cf",
+            "matches": true
+          },
+          {
+            "index": 47,
+            "tag": "p",
+            "textSha256": "8968412fbee0227337be57ab50daafb8d88882cf76422cf57e9b0650caf3c717",
+            "matches": true
+          },
+          {
+            "index": 48,
+            "tag": "ul",
+            "textSha256": "9bbaab883fe6bd71a1b16907a00bc9c2b36541f40b8cd0cbbaa15232cc02cb26",
+            "matches": true
+          },
+          {
+            "index": 49,
+            "tag": "p",
+            "textSha256": "1fcc529c29c9793b02ede739ce3fb697c9c3400870f94f55ca30d5ff5dc24122",
+            "matches": true
+          },
+          {
+            "index": 50,
+            "tag": "ul",
+            "textSha256": "442749bb68658646c7c220ffead6bffa2ad4664c61dd234afe73217a4b430067",
+            "matches": true
+          },
+          {
+            "index": 51,
+            "tag": "p",
+            "textSha256": "49a4b50d2d04bdc81ac64e8396b71d0f3ff83e4b91c584c84b689e9a38b55521",
+            "matches": true
+          },
+          {
+            "index": 52,
+            "tag": "ul",
+            "textSha256": "a20caf4991cad94ad290f9115e426e4472507e38eee663d4d962e5e899632810",
+            "matches": true
+          },
+          {
+            "index": 53,
+            "tag": "p",
+            "textSha256": "438aa6e7703b7290d09d40168bad9008aaf60ee44bc2856f545f49d4610de942",
+            "matches": true
+          },
+          {
+            "index": 54,
+            "tag": "p",
+            "textSha256": "7b539b85256a1a3055d59c5114731ab8ffdfc0209b2119e49031bf5e47eb6e94",
+            "matches": true
+          },
+          {
+            "index": 55,
+            "tag": "p",
+            "textSha256": "6debf81a8969fc848afce00f1dea8c8a402c76eb5a6c0dccc82bf9ad1a2619a2",
+            "matches": true
+          },
+          {
+            "index": 56,
+            "tag": "h5",
+            "textSha256": "2c73a0ec4fb34981cda7afcae1008a8df0d19cb41b90a1b50273be6041dff66a",
+            "matches": true
+          },
+          {
+            "index": 57,
+            "tag": "p",
+            "textSha256": "14ca574f44cac0082e332afbde63071f53d9e51f97f52f5d866ccb383dec926c",
+            "matches": true
+          },
+          {
+            "index": 58,
+            "tag": "p",
+            "textSha256": "72b520c3c2c385adda726cfe2230193847d7607ba4567d70c6fbe77559e17e3b",
+            "matches": true
+          },
+          {
+            "index": 59,
+            "tag": "p",
+            "textSha256": "62011a53e65a7715202e8cc78a2ad4e2cb283e6bb5195afdb88a00af13c35389",
+            "matches": true
+          },
+          {
+            "index": 60,
+            "tag": "h6",
+            "textSha256": "067e519750a28d45ed291c5f4f73812a3ae073bae7043eecab53f1c42f7e2866",
+            "matches": true
+          },
+          {
+            "index": 61,
+            "tag": "p",
+            "textSha256": "631bba57bd143bf1cedc26f986a659f26b0c30c8c7a73ac35ee670e92cec43d9",
+            "matches": true
+          },
+          {
+            "index": 62,
+            "tag": "table",
+            "textSha256": "86fc931eaf4b23c2c5eda54055997a8d3d51e9952264763ee626dbbf450f61d2",
+            "matches": true
+          },
+          {
+            "index": 63,
+            "tag": "p",
+            "textSha256": "c33bf5e0328c19d739306cf39c46d46a01bfc71af89b0788c7da8c64b0bcd432",
+            "matches": true
+          },
+          {
+            "index": 64,
+            "tag": "p",
+            "textSha256": "6e7ff9a2f6ba261f0fb3e96b179817f961ce8f47f4b265c6516362fefb355e3d",
+            "matches": true
+          },
+          {
+            "index": 65,
+            "tag": "h5",
+            "textSha256": "422f9b0e652aed152869e363f740afb4b5e0d3a0a104d64b3d9af71c12b5f0c7",
+            "matches": true
+          },
+          {
+            "index": 66,
+            "tag": "p",
+            "textSha256": "c88ce497528260bb0ca2c598b3a1f5b93ccf76c9ccdbc7ccf9490216fae0ffc9",
+            "matches": true
+          },
+          {
+            "index": 67,
+            "tag": "p",
+            "textSha256": "7ea6d2bf3b362d0edcfeb2268bea2791238d977188e98493710a7d77a1c05ea2",
+            "matches": true
+          },
+          {
+            "index": 68,
+            "tag": "p",
+            "textSha256": "4c04b90fc4b68356bc67f2e650ba97ed214f6791f2aaabe6efd9616b2400fb3e",
+            "matches": true
+          },
+          {
+            "index": 69,
+            "tag": "p",
+            "textSha256": "0539e98a466fa5595a949a9ae1424cdaa2fa6b2205dc79abd1f80151240a96fa",
+            "matches": true
+          },
+          {
+            "index": 70,
+            "tag": "p",
+            "textSha256": "c9919d4f49fac2bd61af5710f1fe75ad9152df5345bb76712fe9be0ae6a552f5",
+            "matches": true
+          },
+          {
+            "index": 71,
+            "tag": "table",
+            "textSha256": "de89d4b2a7590b26ab73f8d19d272529f439afe79b954c6c4583e807d25f9232",
+            "matches": true
+          },
+          {
+            "index": 72,
+            "tag": "p",
+            "textSha256": "898005230893400dd45a850fac8a9fc1a466b89f1f5f8c28735cad9576f5e188",
+            "matches": true
+          },
+          {
+            "index": 73,
+            "tag": "p",
+            "textSha256": "5a30ae8ec8821b65680a0149ef1d78d10487338ae2fc6ef51e41f96789e43406",
+            "matches": true
+          },
+          {
+            "index": 74,
+            "tag": "p",
+            "textSha256": "74e2ef8784347df8d518fe595c5f9807faeefe5526a5b98ff391fdede1c0f99d",
+            "matches": true
+          },
+          {
+            "index": 75,
+            "tag": "h5",
+            "textSha256": "403725989cad62609473d58940a79d9c8174dec8dc6ecf70579c3809de00d07b",
+            "matches": true
+          },
+          {
+            "index": 76,
+            "tag": "p",
+            "textSha256": "5fa8b95f0ef68b11ed5636af4d70f19aee2126765382221789fbde4ea2945632",
+            "matches": true
+          },
+          {
+            "index": 77,
+            "tag": "p",
+            "textSha256": "42b1262eca38a1c675631b093a5686e2ecf50b52216e1310de90cbea52f9f27b",
+            "matches": true
+          },
+          {
+            "index": 78,
+            "tag": "p",
+            "textSha256": "24e718a186626520120c8285925a03204ff461d45861232afca7608603c1d838",
+            "matches": true
+          },
+          {
+            "index": 79,
+            "tag": "p",
+            "textSha256": "9d716ce0e30aeae44a6fc1ca925c84d36a40fbaaf18f4ac56b55deb89e0c566a",
+            "matches": true
+          },
+          {
+            "index": 80,
+            "tag": "h5",
+            "textSha256": "cffcbb5c521b1532d18d72c67b41a03cdd3631fd90b8edc2aee0d69044b5702f",
+            "matches": true
+          },
+          {
+            "index": 81,
+            "tag": "p",
+            "textSha256": "50ee311cd81544f709fc950932bec61c35cd631331eae3c5f51537b2119a4d85",
+            "matches": true
+          },
+          {
+            "index": 82,
+            "tag": "p",
+            "textSha256": "4f277882375ea27ca6d8d3ff68c3389bf53d94edf17cc28402bbaafee459a4c4",
+            "matches": true
+          },
+          {
+            "index": 83,
+            "tag": "h5",
+            "textSha256": "987784fcc5615fdd4ff0615341c46048cffa4ec05a6b06ef6b0e7287a26ed65b",
+            "matches": true
+          },
+          {
+            "index": 84,
+            "tag": "p",
+            "textSha256": "be2d61c22c3b12bcdda33e9a1f59201c3667a0e6a9e0665bbed7cc0552972b50",
+            "matches": true
+          },
+          {
+            "index": 85,
+            "tag": "p",
+            "textSha256": "dfbd1c907a01e1e5478e6e86e3d14874fe361899606e7a0031771f657122411e",
+            "matches": true
+          },
+          {
+            "index": 86,
+            "tag": "h5",
+            "textSha256": "f36df77d3e7955cc97c840664b6b2be3ccc88b48a0eb522770704c7d67cc7161",
+            "matches": true
+          },
+          {
+            "index": 87,
+            "tag": "p",
+            "textSha256": "2d3f5b97502841acddb5ae3a5716d854222d86a93b2e13f94ecdd97a7774ced7",
+            "matches": true
+          },
+          {
+            "index": 88,
+            "tag": "p",
+            "textSha256": "4d3e7bd159d3630e4f9009d4e7f23a392da574685a7ee96f2407a8877eff2162",
+            "matches": true
+          },
+          {
+            "index": 89,
+            "tag": "p",
+            "textSha256": "b622c4786245feaee722407d2ce011bfc02110ffa137f667fd97a0259b61c067",
+            "matches": true
+          }
+        ],
+        "blockCountMatches": true,
+        "tablesMatch": true,
+        "tables": [
+          [
+            [
+              "Cookie",
+              "Purpose",
+              "Browser lifetime"
+            ],
+            [
+              "__Host-thermus-sign-in",
+              "Holds temporary sign-in state, a code verifier, return destination, and expiry time to complete sign-in securely.",
+              "Up to 10 minutes."
+            ],
+            [
+              "__Host-thermus-session",
+              "Holds the encrypted WorkOS session described in section 2, including profile data, access and refresh tokens, and security information.",
+              "30 days; this can renew when the session refreshes. WorkOS can end a session earlier."
+            ]
+          ],
+          [
+            [
+              "Hosted information",
+              "Retention and deletion handling"
+            ],
+            [
+              "Accounts, organizations, memberships, and client authorizations",
+              "Keep while needed for active access. Account, membership, and authorization deletion are separate actions. Membership removal alone does not delete the underlying user or unrelated organization access. Apply the operator-action target above to authorized deletion actions."
+            ],
+            [
+              "Initial acceptance and enrollment record",
+              "Keep while access is active. Access revocation alone retains the created organization, initial creator agreement metadata, and stable enrollment identifier so repeated signup cannot automatically restore access. Earlier personal-workspace records retain their original schema and purpose. Account deletion receives a separate review of each record and purpose; revocation does not justify indefinite retention. Limit any retained exception to needed evidence or identifiers, with a reason and review date. The record applies to the same WorkOS identity and environment while retained; it does not prevent all future accounts or establish a permanent ban. Deleting this enrollment record can permit a later fresh signup."
+            ],
+            [
+              "Exact documents, agreement wording, and operator records",
+              "Keep the exact versioned terms, notice, and agreement wording so initial and separately recorded agreements can be understood. Keep personal acceptance, recovery, privacy-request, and deletion evidence while needed for access, an applicable agreement, a dispute, security, or legal duties. Review need at closure and when a related issue ends. Delete personal information when no longer needed, subject to applicable obligations."
+            ],
+            [
+              "Invitations",
+              "Current invitation validity is 7 days. Expiry does not establish deletion of the invitation or delivery records. Cancel invitations no longer needed when closing access and request record deletion where available under the operator-action target above. WorkOS may retain separate operational, security, or legal records."
+            ],
+            [
+              "Service completion, organization-change, operational, and error logs",
+              "Render's current plan provides 7 days of accessible application log history. We keep this setting and avoid routine operator-log exports or extra operator-log stores. No Render log-stream destination is currently configured. Organization audit export is a separate stream. Specific security or legal evidence can be retained with a reason and review date. The history window does not establish physical erasure after 7 days or govern provider-managed security, compliance, or backup copies."
+            ],
+            [
+              "Audit destination settings",
+              "Keep while needed for the organization’s audit configuration. Disabling export stops export but does not itself delete the destination or saved credential. Thermus does not make a separate backup of these settings or provide a settings restore service. If settings or their encryption key are lost, an Admin may need to re-enter the destination and credential. Authorized deletion requests receive the operator-action review and target above."
+            ],
+            [
+              "Pending audit events and destination copies",
+              "Thermus holds pending events only in bounded process memory, with no durable queue, history, or replay. Events can expire or be dropped before delivery. Disabling or changing a destination does not recall copies already sent. The selected destination controls retention and deletion of received copies; contact its operator for those copies."
+            ],
+            [
+              "Provider backups, archives, security, and legal records",
+              "Providers retain residual copies under their applicable schedules and legal requirements. We use applicable provider deletion processes. Residual copies can remain after account or membership deletion; no fixed purge deadline for all provider copies is promised."
+            ]
+          ]
+        ],
+        "linksMatch": true,
+        "links": [
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "https://app.thermus.ai",
+            "href": "https://app.thermus.ai"
+          },
+          {
+            "text": "https://app.thermus.ai/mcp",
+            "href": "https://app.thermus.ai/mcp"
+          },
+          {
+            "text": "https://thermus.onrender.com",
+            "href": "https://thermus.onrender.com"
+          },
+          {
+            "text": "https://thermus.onrender.com/mcp",
+            "href": "https://thermus.onrender.com/mcp"
+          },
+          {
+            "text": "Netlify’s Privacy Statement",
+            "href": "https://www.netlify.com/privacy/"
+          },
+          {
+            "text": "Real User Monitoring documentation",
+            "href": "https://docs.netlify.com/manage/monitoring/real-user-monitoring/"
+          },
+          {
+            "text": "Cloudflare’s Privacy Policy",
+            "href": "https://www.cloudflare.com/privacypolicy/"
+          },
+          {
+            "text": "Web Analytics documentation",
+            "href": "https://developers.cloudflare.com/web-analytics/about/"
+          },
+          {
+            "text": "Render's Privacy Policy",
+            "href": "https://render.com/privacy"
+          },
+          {
+            "text": "WorkOS's Privacy Policy",
+            "href": "https://workos.com/legal/privacy"
+          },
+          {
+            "text": "Supabase’s Privacy Policy",
+            "href": "https://supabase.com/privacy"
+          },
+          {
+            "text": "Google's Privacy Policy",
+            "href": "https://policies.google.com/privacy"
+          },
+          {
+            "text": "complete guide",
+            "href": "https://thermus.ai/thermus.md"
+          },
+          {
+            "text": "Google's retention explanation",
+            "href": "https://policies.google.com/technologies/retention"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          }
+        ],
+        "headings": [
+          "Privacy Policy",
+          "1. Who we are and scope",
+          "2. Information we collect",
+          "Waitlist and communications",
+          "Website requests and analytics",
+          "Copied guides and topic requests",
+          "Hosted accounts, sign-in, and organizations",
+          "Signup, agreement, and operator records",
+          "Hosted page fetches and web searches",
+          "Hosted service logs and technical information",
+          "Organization audit export and destination settings",
+          "3. How we use information",
+          "4. Service providers and sharing",
+          "5. Cookies and tracking choices",
+          "Necessary hosted sign-in cookies",
+          "6. Retention and security",
+          "7. Your choices and rights",
+          "8. International visitors",
+          "9. Children",
+          "10. Changes and contact"
+        ]
+      },
+      {
+        "branch": "mobile",
+        "fullMarkupMatches": true,
+        "fullTextMatches": true,
+        "textSha256": "5127f427313a35f7038510fb68859e706156fc7b73a8a060590997c85000fd19",
+        "blocks": [
+          {
+            "index": 1,
+            "tag": "h4",
+            "textSha256": "506ff394621596dd88138642eddfc1e41833b3ae92d95e5c77c94327098abd9a",
+            "matches": true
+          },
+          {
+            "index": 2,
+            "tag": "p",
+            "textSha256": "39075afc9b3be40777af90d011f119a4f03602b37f8bdc83051fcf6ef08093fe",
+            "matches": true
+          },
+          {
+            "index": 3,
+            "tag": "p",
+            "textSha256": "248156cc2e16ee1819d84b7d34ba6c4ac4c645d6d43cebaf0d8688bf7080f643",
+            "matches": true
+          },
+          {
+            "index": 4,
+            "tag": "p",
+            "textSha256": "f759c62a868427e8b42b18816bd0934b06b0582d6030df09aaf0ccddf6fc12fe",
+            "matches": true
+          },
+          {
+            "index": 5,
+            "tag": "h5",
+            "textSha256": "87624072facd4e5af87dcdd9604bfb4883d5afea27e99b13f6b06822513ff80a",
+            "matches": true
+          },
+          {
+            "index": 6,
+            "tag": "p",
+            "textSha256": "c4b249dca60e01ec39e56b8d25476c60783defb8620c7680f6af82fb27708e21",
+            "matches": true
+          },
+          {
+            "index": 7,
+            "tag": "p",
+            "textSha256": "1fa3cf209e1acf437a963d620c9cd43038ff3743342576add0a57bf66bfb6680",
+            "matches": true
+          },
+          {
+            "index": 8,
+            "tag": "h5",
+            "textSha256": "4a9938c3eb00cc04bb0ecf54e4ca1f7f2ae89d2c46d180d28fc921909b72215e",
+            "matches": true
+          },
+          {
+            "index": 9,
+            "tag": "h6",
+            "textSha256": "be63c8fca1fcb857f5dab051df80bf92738926cbdf6436c44282b069ee831fc8",
+            "matches": true
+          },
+          {
+            "index": 10,
+            "tag": "p",
+            "textSha256": "3d872432168b30871a4f9bfe2548f179b39fcf14da62b9a5e3b0289469d27cf4",
+            "matches": true
+          },
+          {
+            "index": 11,
+            "tag": "p",
+            "textSha256": "aadfa57cd7ceb4736c798bbc354fb7d78f201fc1922bcd18c76079909663a377",
+            "matches": true
+          },
+          {
+            "index": 12,
+            "tag": "p",
+            "textSha256": "49ad70e0a7fe5822a9f983efe37f2d7de290197d857dcc84d9446da80cd605f3",
+            "matches": true
+          },
+          {
+            "index": 13,
+            "tag": "h6",
+            "textSha256": "0933d86a716ffba577ee035230492eb9632c4c0b516cd36965fb4b3af1ce022a",
+            "matches": true
+          },
+          {
+            "index": 14,
+            "tag": "p",
+            "textSha256": "66791b2bb47263f90f81a8d1081309bacd50e8ff1931d24bf0925d1c01a0b583",
+            "matches": true
+          },
+          {
+            "index": 15,
+            "tag": "h6",
+            "textSha256": "4b9e88b56396bcc11559f9c56d3e9666fb24543d0c01df5a7a15a61d7cfa8906",
+            "matches": true
+          },
+          {
+            "index": 16,
+            "tag": "p",
+            "textSha256": "6e8a7fe6a8cf10aeee64d36eb2a4f63aff90b4a7c126a86b45e74da6816bc157",
+            "matches": true
+          },
+          {
+            "index": 17,
+            "tag": "p",
+            "textSha256": "81ae98c379177626332166415ddafbe1c002fa0d3e66a52e2b6ae839ed057c27",
+            "matches": true
+          },
+          {
+            "index": 18,
+            "tag": "p",
+            "textSha256": "f06e82f34f43b8655f3f8414a6c8317450e9da7a6a3bce35b163d454fafd0366",
+            "matches": true
+          },
+          {
+            "index": 19,
+            "tag": "h6",
+            "textSha256": "4f17a7680f8d69ac130b9f75c84755cba313df8dc490fa30a64c60a4ba2bf71a",
+            "matches": true
+          },
+          {
+            "index": 20,
+            "tag": "p",
+            "textSha256": "16f1341191152ab87d1209834e1d802aa16631f5c1ebcf0b7f903fc4b0e3cf2d",
+            "matches": true
+          },
+          {
+            "index": 21,
+            "tag": "p",
+            "textSha256": "dc3bfdfcf53ce7c9f79764251ca95d70208b7fcab7cb19d610985f927dfd45ef",
+            "matches": true
+          },
+          {
+            "index": 22,
+            "tag": "p",
+            "textSha256": "410184300009daa2c955eede91a3a46ebaeafff782b8d82913da731690e2af9a",
+            "matches": true
+          },
+          {
+            "index": 23,
+            "tag": "p",
+            "textSha256": "6f3ef9e559e3f9fb495658b5a3c21582729f7343bd3ff855b0717c8c2de9d7c4",
+            "matches": true
+          },
+          {
+            "index": 24,
+            "tag": "h6",
+            "textSha256": "3933fd198a6012531169110729a9d48c4d080ce7829d745ae829f013f73828a5",
+            "matches": true
+          },
+          {
+            "index": 25,
+            "tag": "p",
+            "textSha256": "df731f2a8e516f5fbc402285482ebd9c40bc18f538995390fb7fc384026b4b2c",
+            "matches": true
+          },
+          {
+            "index": 26,
+            "tag": "p",
+            "textSha256": "df179a76a3cd6c37d7008af0fa8d05fd7d19d81e1645bfe613dd40d262d8220d",
+            "matches": true
+          },
+          {
+            "index": 27,
+            "tag": "p",
+            "textSha256": "adae8d59cef3a68efe49e30b0cbaf6ba846e5e57f120c0000d7bd90f57d5e33b",
+            "matches": true
+          },
+          {
+            "index": 28,
+            "tag": "h6",
+            "textSha256": "3281f9e3082935a983205bb352ad36528c0c352c2d948eb906e7910eed5db082",
+            "matches": true
+          },
+          {
+            "index": 29,
+            "tag": "p",
+            "textSha256": "52c87f89d4f1e53fb8d9b998a498de9513066dbed7ca5ff4f6d36b831ad90dc2",
+            "matches": true
+          },
+          {
+            "index": 30,
+            "tag": "p",
+            "textSha256": "4c6f3835e77c95ea1cc82e1f77c909d60ea4faeb9d514c1741573dee2ea2880a",
+            "matches": true
+          },
+          {
+            "index": 31,
+            "tag": "p",
+            "textSha256": "54efd75ada5e9bdb11f7d954cb38bc93832f53586ab1b7a428f5509670903d05",
+            "matches": true
+          },
+          {
+            "index": 32,
+            "tag": "p",
+            "textSha256": "d0e9e8ee5118c598effd72146c16fb196eb7919cef08e40514a82971bf1376e1",
+            "matches": true
+          },
+          {
+            "index": 33,
+            "tag": "h6",
+            "textSha256": "3755595e68bdf5f1169fe5b3f1c3b297eb80d90e730a67dea582a86e04a53265",
+            "matches": true
+          },
+          {
+            "index": 34,
+            "tag": "p",
+            "textSha256": "c5183106de86cf58c622adbb48cb8560741c18873a39db015f7a08abe07de32d",
+            "matches": true
+          },
+          {
+            "index": 35,
+            "tag": "p",
+            "textSha256": "d200aa3974a0db8f3835c517093531fdcbd962b5667acd0551fcb1e27159360f",
+            "matches": true
+          },
+          {
+            "index": 36,
+            "tag": "h6",
+            "textSha256": "d322412af937d76197ae454abe4a1ccca0c910d2b7ff9b273af9a47f783a6e33",
+            "matches": true
+          },
+          {
+            "index": 37,
+            "tag": "p",
+            "textSha256": "942a4311c9299bc16cc0d5ed8323f057eb1d26f722896af349bae1d43ad9f0ec",
+            "matches": true
+          },
+          {
+            "index": 38,
+            "tag": "p",
+            "textSha256": "0e5b458eb50d964c4b2663d0504dfac21706906ea6cc9489b3850834552d327c",
+            "matches": true
+          },
+          {
+            "index": 39,
+            "tag": "p",
+            "textSha256": "b9037b875659b86d8457f0e5569f8b56939507abf94382296bf264be1cf2c24d",
+            "matches": true
+          },
+          {
+            "index": 40,
+            "tag": "p",
+            "textSha256": "64674b6cb16fe4c1dc952a9e0cc521e9001a30496497255dc370f002c9d67ad3",
+            "matches": true
+          },
+          {
+            "index": 41,
+            "tag": "p",
+            "textSha256": "e6aa564f8d3f5dd700da1d2c669dffadeb677f5af29d68e01f4ba4b44b09add4",
+            "matches": true
+          },
+          {
+            "index": 42,
+            "tag": "h5",
+            "textSha256": "27b512250375a791c0df98a94668b6172ab1459508a4f9e85503e855b5d61471",
+            "matches": true
+          },
+          {
+            "index": 43,
+            "tag": "ul",
+            "textSha256": "c6b3bd4341e055240b037a94e8149418800b797c7dd8c486cf66a19233d4ac60",
+            "matches": true
+          },
+          {
+            "index": 44,
+            "tag": "p",
+            "textSha256": "407a436ab6e6cb47362a6ed10856352e702ff234dd26b5a2337731c3e602b34b",
+            "matches": true
+          },
+          {
+            "index": 45,
+            "tag": "p",
+            "textSha256": "67c5c79180f790626121f4867f2e2cbab56ffa97280bbed3b752a2a45f62cb44",
+            "matches": true
+          },
+          {
+            "index": 46,
+            "tag": "h5",
+            "textSha256": "d0999a6dce70cca416efb8ca38dfb61c3d744fbaa61db998535ae0c34def33cf",
+            "matches": true
+          },
+          {
+            "index": 47,
+            "tag": "p",
+            "textSha256": "8968412fbee0227337be57ab50daafb8d88882cf76422cf57e9b0650caf3c717",
+            "matches": true
+          },
+          {
+            "index": 48,
+            "tag": "ul",
+            "textSha256": "9bbaab883fe6bd71a1b16907a00bc9c2b36541f40b8cd0cbbaa15232cc02cb26",
+            "matches": true
+          },
+          {
+            "index": 49,
+            "tag": "p",
+            "textSha256": "1fcc529c29c9793b02ede739ce3fb697c9c3400870f94f55ca30d5ff5dc24122",
+            "matches": true
+          },
+          {
+            "index": 50,
+            "tag": "ul",
+            "textSha256": "442749bb68658646c7c220ffead6bffa2ad4664c61dd234afe73217a4b430067",
+            "matches": true
+          },
+          {
+            "index": 51,
+            "tag": "p",
+            "textSha256": "49a4b50d2d04bdc81ac64e8396b71d0f3ff83e4b91c584c84b689e9a38b55521",
+            "matches": true
+          },
+          {
+            "index": 52,
+            "tag": "ul",
+            "textSha256": "a20caf4991cad94ad290f9115e426e4472507e38eee663d4d962e5e899632810",
+            "matches": true
+          },
+          {
+            "index": 53,
+            "tag": "p",
+            "textSha256": "438aa6e7703b7290d09d40168bad9008aaf60ee44bc2856f545f49d4610de942",
+            "matches": true
+          },
+          {
+            "index": 54,
+            "tag": "p",
+            "textSha256": "7b539b85256a1a3055d59c5114731ab8ffdfc0209b2119e49031bf5e47eb6e94",
+            "matches": true
+          },
+          {
+            "index": 55,
+            "tag": "p",
+            "textSha256": "6debf81a8969fc848afce00f1dea8c8a402c76eb5a6c0dccc82bf9ad1a2619a2",
+            "matches": true
+          },
+          {
+            "index": 56,
+            "tag": "h5",
+            "textSha256": "2c73a0ec4fb34981cda7afcae1008a8df0d19cb41b90a1b50273be6041dff66a",
+            "matches": true
+          },
+          {
+            "index": 57,
+            "tag": "p",
+            "textSha256": "14ca574f44cac0082e332afbde63071f53d9e51f97f52f5d866ccb383dec926c",
+            "matches": true
+          },
+          {
+            "index": 58,
+            "tag": "p",
+            "textSha256": "72b520c3c2c385adda726cfe2230193847d7607ba4567d70c6fbe77559e17e3b",
+            "matches": true
+          },
+          {
+            "index": 59,
+            "tag": "p",
+            "textSha256": "62011a53e65a7715202e8cc78a2ad4e2cb283e6bb5195afdb88a00af13c35389",
+            "matches": true
+          },
+          {
+            "index": 60,
+            "tag": "h6",
+            "textSha256": "067e519750a28d45ed291c5f4f73812a3ae073bae7043eecab53f1c42f7e2866",
+            "matches": true
+          },
+          {
+            "index": 61,
+            "tag": "p",
+            "textSha256": "631bba57bd143bf1cedc26f986a659f26b0c30c8c7a73ac35ee670e92cec43d9",
+            "matches": true
+          },
+          {
+            "index": 62,
+            "tag": "table",
+            "textSha256": "86fc931eaf4b23c2c5eda54055997a8d3d51e9952264763ee626dbbf450f61d2",
+            "matches": true
+          },
+          {
+            "index": 63,
+            "tag": "p",
+            "textSha256": "c33bf5e0328c19d739306cf39c46d46a01bfc71af89b0788c7da8c64b0bcd432",
+            "matches": true
+          },
+          {
+            "index": 64,
+            "tag": "p",
+            "textSha256": "6e7ff9a2f6ba261f0fb3e96b179817f961ce8f47f4b265c6516362fefb355e3d",
+            "matches": true
+          },
+          {
+            "index": 65,
+            "tag": "h5",
+            "textSha256": "422f9b0e652aed152869e363f740afb4b5e0d3a0a104d64b3d9af71c12b5f0c7",
+            "matches": true
+          },
+          {
+            "index": 66,
+            "tag": "p",
+            "textSha256": "c88ce497528260bb0ca2c598b3a1f5b93ccf76c9ccdbc7ccf9490216fae0ffc9",
+            "matches": true
+          },
+          {
+            "index": 67,
+            "tag": "p",
+            "textSha256": "7ea6d2bf3b362d0edcfeb2268bea2791238d977188e98493710a7d77a1c05ea2",
+            "matches": true
+          },
+          {
+            "index": 68,
+            "tag": "p",
+            "textSha256": "4c04b90fc4b68356bc67f2e650ba97ed214f6791f2aaabe6efd9616b2400fb3e",
+            "matches": true
+          },
+          {
+            "index": 69,
+            "tag": "p",
+            "textSha256": "0539e98a466fa5595a949a9ae1424cdaa2fa6b2205dc79abd1f80151240a96fa",
+            "matches": true
+          },
+          {
+            "index": 70,
+            "tag": "p",
+            "textSha256": "c9919d4f49fac2bd61af5710f1fe75ad9152df5345bb76712fe9be0ae6a552f5",
+            "matches": true
+          },
+          {
+            "index": 71,
+            "tag": "table",
+            "textSha256": "de89d4b2a7590b26ab73f8d19d272529f439afe79b954c6c4583e807d25f9232",
+            "matches": true
+          },
+          {
+            "index": 72,
+            "tag": "p",
+            "textSha256": "898005230893400dd45a850fac8a9fc1a466b89f1f5f8c28735cad9576f5e188",
+            "matches": true
+          },
+          {
+            "index": 73,
+            "tag": "p",
+            "textSha256": "5a30ae8ec8821b65680a0149ef1d78d10487338ae2fc6ef51e41f96789e43406",
+            "matches": true
+          },
+          {
+            "index": 74,
+            "tag": "p",
+            "textSha256": "74e2ef8784347df8d518fe595c5f9807faeefe5526a5b98ff391fdede1c0f99d",
+            "matches": true
+          },
+          {
+            "index": 75,
+            "tag": "h5",
+            "textSha256": "403725989cad62609473d58940a79d9c8174dec8dc6ecf70579c3809de00d07b",
+            "matches": true
+          },
+          {
+            "index": 76,
+            "tag": "p",
+            "textSha256": "5fa8b95f0ef68b11ed5636af4d70f19aee2126765382221789fbde4ea2945632",
+            "matches": true
+          },
+          {
+            "index": 77,
+            "tag": "p",
+            "textSha256": "42b1262eca38a1c675631b093a5686e2ecf50b52216e1310de90cbea52f9f27b",
+            "matches": true
+          },
+          {
+            "index": 78,
+            "tag": "p",
+            "textSha256": "24e718a186626520120c8285925a03204ff461d45861232afca7608603c1d838",
+            "matches": true
+          },
+          {
+            "index": 79,
+            "tag": "p",
+            "textSha256": "9d716ce0e30aeae44a6fc1ca925c84d36a40fbaaf18f4ac56b55deb89e0c566a",
+            "matches": true
+          },
+          {
+            "index": 80,
+            "tag": "h5",
+            "textSha256": "cffcbb5c521b1532d18d72c67b41a03cdd3631fd90b8edc2aee0d69044b5702f",
+            "matches": true
+          },
+          {
+            "index": 81,
+            "tag": "p",
+            "textSha256": "50ee311cd81544f709fc950932bec61c35cd631331eae3c5f51537b2119a4d85",
+            "matches": true
+          },
+          {
+            "index": 82,
+            "tag": "p",
+            "textSha256": "4f277882375ea27ca6d8d3ff68c3389bf53d94edf17cc28402bbaafee459a4c4",
+            "matches": true
+          },
+          {
+            "index": 83,
+            "tag": "h5",
+            "textSha256": "987784fcc5615fdd4ff0615341c46048cffa4ec05a6b06ef6b0e7287a26ed65b",
+            "matches": true
+          },
+          {
+            "index": 84,
+            "tag": "p",
+            "textSha256": "be2d61c22c3b12bcdda33e9a1f59201c3667a0e6a9e0665bbed7cc0552972b50",
+            "matches": true
+          },
+          {
+            "index": 85,
+            "tag": "p",
+            "textSha256": "dfbd1c907a01e1e5478e6e86e3d14874fe361899606e7a0031771f657122411e",
+            "matches": true
+          },
+          {
+            "index": 86,
+            "tag": "h5",
+            "textSha256": "f36df77d3e7955cc97c840664b6b2be3ccc88b48a0eb522770704c7d67cc7161",
+            "matches": true
+          },
+          {
+            "index": 87,
+            "tag": "p",
+            "textSha256": "2d3f5b97502841acddb5ae3a5716d854222d86a93b2e13f94ecdd97a7774ced7",
+            "matches": true
+          },
+          {
+            "index": 88,
+            "tag": "p",
+            "textSha256": "4d3e7bd159d3630e4f9009d4e7f23a392da574685a7ee96f2407a8877eff2162",
+            "matches": true
+          },
+          {
+            "index": 89,
+            "tag": "p",
+            "textSha256": "b622c4786245feaee722407d2ce011bfc02110ffa137f667fd97a0259b61c067",
+            "matches": true
+          }
+        ],
+        "blockCountMatches": true,
+        "tablesMatch": true,
+        "tables": [
+          [
+            [
+              "Cookie",
+              "Purpose",
+              "Browser lifetime"
+            ],
+            [
+              "__Host-thermus-sign-in",
+              "Holds temporary sign-in state, a code verifier, return destination, and expiry time to complete sign-in securely.",
+              "Up to 10 minutes."
+            ],
+            [
+              "__Host-thermus-session",
+              "Holds the encrypted WorkOS session described in section 2, including profile data, access and refresh tokens, and security information.",
+              "30 days; this can renew when the session refreshes. WorkOS can end a session earlier."
+            ]
+          ],
+          [
+            [
+              "Hosted information",
+              "Retention and deletion handling"
+            ],
+            [
+              "Accounts, organizations, memberships, and client authorizations",
+              "Keep while needed for active access. Account, membership, and authorization deletion are separate actions. Membership removal alone does not delete the underlying user or unrelated organization access. Apply the operator-action target above to authorized deletion actions."
+            ],
+            [
+              "Initial acceptance and enrollment record",
+              "Keep while access is active. Access revocation alone retains the created organization, initial creator agreement metadata, and stable enrollment identifier so repeated signup cannot automatically restore access. Earlier personal-workspace records retain their original schema and purpose. Account deletion receives a separate review of each record and purpose; revocation does not justify indefinite retention. Limit any retained exception to needed evidence or identifiers, with a reason and review date. The record applies to the same WorkOS identity and environment while retained; it does not prevent all future accounts or establish a permanent ban. Deleting this enrollment record can permit a later fresh signup."
+            ],
+            [
+              "Exact documents, agreement wording, and operator records",
+              "Keep the exact versioned terms, notice, and agreement wording so initial and separately recorded agreements can be understood. Keep personal acceptance, recovery, privacy-request, and deletion evidence while needed for access, an applicable agreement, a dispute, security, or legal duties. Review need at closure and when a related issue ends. Delete personal information when no longer needed, subject to applicable obligations."
+            ],
+            [
+              "Invitations",
+              "Current invitation validity is 7 days. Expiry does not establish deletion of the invitation or delivery records. Cancel invitations no longer needed when closing access and request record deletion where available under the operator-action target above. WorkOS may retain separate operational, security, or legal records."
+            ],
+            [
+              "Service completion, organization-change, operational, and error logs",
+              "Render's current plan provides 7 days of accessible application log history. We keep this setting and avoid routine operator-log exports or extra operator-log stores. No Render log-stream destination is currently configured. Organization audit export is a separate stream. Specific security or legal evidence can be retained with a reason and review date. The history window does not establish physical erasure after 7 days or govern provider-managed security, compliance, or backup copies."
+            ],
+            [
+              "Audit destination settings",
+              "Keep while needed for the organization’s audit configuration. Disabling export stops export but does not itself delete the destination or saved credential. Thermus does not make a separate backup of these settings or provide a settings restore service. If settings or their encryption key are lost, an Admin may need to re-enter the destination and credential. Authorized deletion requests receive the operator-action review and target above."
+            ],
+            [
+              "Pending audit events and destination copies",
+              "Thermus holds pending events only in bounded process memory, with no durable queue, history, or replay. Events can expire or be dropped before delivery. Disabling or changing a destination does not recall copies already sent. The selected destination controls retention and deletion of received copies; contact its operator for those copies."
+            ],
+            [
+              "Provider backups, archives, security, and legal records",
+              "Providers retain residual copies under their applicable schedules and legal requirements. We use applicable provider deletion processes. Residual copies can remain after account or membership deletion; no fixed purge deadline for all provider copies is promised."
+            ]
+          ]
+        ],
+        "linksMatch": true,
+        "links": [
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "https://app.thermus.ai",
+            "href": "https://app.thermus.ai"
+          },
+          {
+            "text": "https://app.thermus.ai/mcp",
+            "href": "https://app.thermus.ai/mcp"
+          },
+          {
+            "text": "https://thermus.onrender.com",
+            "href": "https://thermus.onrender.com"
+          },
+          {
+            "text": "https://thermus.onrender.com/mcp",
+            "href": "https://thermus.onrender.com/mcp"
+          },
+          {
+            "text": "Netlify’s Privacy Statement",
+            "href": "https://www.netlify.com/privacy/"
+          },
+          {
+            "text": "Real User Monitoring documentation",
+            "href": "https://docs.netlify.com/manage/monitoring/real-user-monitoring/"
+          },
+          {
+            "text": "Cloudflare’s Privacy Policy",
+            "href": "https://www.cloudflare.com/privacypolicy/"
+          },
+          {
+            "text": "Web Analytics documentation",
+            "href": "https://developers.cloudflare.com/web-analytics/about/"
+          },
+          {
+            "text": "Render's Privacy Policy",
+            "href": "https://render.com/privacy"
+          },
+          {
+            "text": "WorkOS's Privacy Policy",
+            "href": "https://workos.com/legal/privacy"
+          },
+          {
+            "text": "Supabase’s Privacy Policy",
+            "href": "https://supabase.com/privacy"
+          },
+          {
+            "text": "Google's Privacy Policy",
+            "href": "https://policies.google.com/privacy"
+          },
+          {
+            "text": "complete guide",
+            "href": "https://thermus.ai/thermus.md"
+          },
+          {
+            "text": "Google's retention explanation",
+            "href": "https://policies.google.com/technologies/retention"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          },
+          {
+            "text": "legal@thermus.ai",
+            "href": "mailto:legal@thermus.ai"
+          }
+        ],
+        "headings": [
+          "Privacy Policy",
+          "1. Who we are and scope",
+          "2. Information we collect",
+          "Waitlist and communications",
+          "Website requests and analytics",
+          "Copied guides and topic requests",
+          "Hosted accounts, sign-in, and organizations",
+          "Signup, agreement, and operator records",
+          "Hosted page fetches and web searches",
+          "Hosted service logs and technical information",
+          "Organization audit export and destination settings",
+          "3. How we use information",
+          "4. Service providers and sharing",
+          "5. Cookies and tracking choices",
+          "Necessary hosted sign-in cookies",
+          "6. Retention and security",
+          "7. Your choices and rights",
+          "8. International visitors",
+          "9. Children",
+          "10. Changes and contact"
+        ]
+      }
+    ],
+    "desktopAndMobileTextMatch": true,
+    "fullResponsiveSectionMarkupMatches": true,
+    "mobileDetailsInitiallyClosed": true
+  },
+  "help": {
+    "capturedAt": "2026-10-25T01:39:33.284Z",
+    "url": "https://app.thermus.ai/logging",
+    "h1Matches": true,
+    "capturedParagraphCount": 13,
+    "canonicalParagraphCount": 12,
+    "comparedParagraphCount": 12,
+    "completeOrderedParagraphsMatch": true,
+    "paragraphs": [
+      {
+        "index": 1,
+        "canonicalText": "Save one destination for your organization's audit logs. Thermus system logs are internal.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 2,
+        "canonicalText": "Enabled export includes tool inputs and results or errors: search queries, requested URLs, fetched text, and reasons. It also includes administration metadata for supported actions.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 3,
+        "canonicalText": "Thermus redacts recognized credential fields and credential-bearing URL parameters. Event fields exclude sign-in forms, cookies, Authorization headers, and the destination token. Other free text can still contain secrets.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 4,
+        "canonicalText": "Input and result exports have size limits. Oversized exported results are truncated, with a marker and original and captured sizes in bytes. Your tool results stay complete.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 5,
+        "canonicalText": "Delivery is best effort. Logs can be lost during overload, outages, or restart, and retries can create duplicates. Thermus provides no audit history or replay. Disabling export cannot recall events already sent.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 6,
+        "canonicalText": "Send organization data only if you have authority to do so. Check destination access and retention. Read our Privacy Policy.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 7,
+        "canonicalText": "Settings have no backup. Lost settings may need to be entered again.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 8,
+        "canonicalText": "Connection: HTTPS · OTLP/HTTP JSON",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 9,
+        "canonicalText": "For direct Axiom export, use a Bearer token scoped to this dataset. Dataset names use 1–128 ASCII letters, digits, or hyphens. Leave this field blank otherwise.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 10,
+        "canonicalText": "Leave Token blank to keep a saved Bearer token only when the endpoint and authentication stay the same. A changed endpoint with Bearer needs a new token. None removes the saved token.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 11,
+        "canonicalText": "Test is optional and sends one synthetic event to the saved destination, even when export is disabled. Save edits before Test. Test does not save settings or enable export. Check your destination for receipt.",
+        "capturedTextMatches": true
+      },
+      {
+        "index": 12,
+        "canonicalText": "Test proves neither continued delivery nor durable storage. Test is not required to enable export.",
+        "capturedTextMatches": true
+      }
+    ],
+    "exclusions": [
+      "One exact Workspace administration layout eyebrow",
+      "Only the dynamic No token is saved. or A token is saved. prefix before unchanged token instructions"
+    ],
+    "privacyLinkMatches": true,
+    "helpTables": 0,
+    "versionEvidence": "Help has no rendered version label in supplied JSON; exact canonical hash plus complete ordered text establishes this help revision, not an observed UI version marker"
+  },
+  "limits": [
+    "Captured HTML contains both responsive document branches. Full rendered content is compared in each branch, but this is not a fresh desktop/mobile browser layout or interaction observation.",
+    "Mobile full notice is inside initially closed details; the complete text exists in the captured HTML. No live expansion or keyboard interaction was performed.",
+    "Hyperlink text and targets match the approved renderer. Destination availability and linked external content were not fetched.",
+    "Help JSON contains all captured paragraphs, h1 and the Privacy target but has no viewport, geometry or complete heading inventory. It cannot establish deployed mobile/full-page help layout.",
+    "The desktop production-destination-disabled.png screenshot was manually viewed: complete What export includes copy is readable; the image ends at the endpoint field and does not show lower form/Test help.",
+    "No Terms creator form, new production agreement or acceptance metadata was exercised. The existing-org approved scope remains separate.",
+    "No hidden form field, CSRF value, credential, cookie or token is extracted or emitted.",
+    "Network provenance and exact deployed commit are manager-supplied capture facts, not independently re-fetched by this offline verification. Privacy HTML itself has no response-header/deployment record in this input."
+  ],
+  "status": "passed content verification with stated presentation limits"
+}

@@ -1,0 +1,68 @@
+{
+  "observedAt": "2026-10-25T01:54:41.712Z",
+  "candidate": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "mergedMain": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "approval": "../approvals/owner-approval.json",
+  "render": {
+    "service": "srv-db8mnqg473hc739d529g",
+    "deployment": "dep-dbelpffb9u1s73a5l5bg",
+    "state": "live",
+    "liveAt": "2026-10-25T01:38:32.209272Z",
+    "restart": {
+      "event": "Service restarted by you",
+      "displayTime": "October 24, 2026 at 7:42 PM",
+      "runtimeInstance": "srv-db8mnqg473hc739d529g-5c7j6",
+      "startupAt": "2026-10-25T01:42:39Z",
+      "listeningAt": "2026-10-25T01:42:40Z",
+      "newDeployIdClaim": false
+    },
+    "autoDeploy": "off",
+    "branch": "main"
+  },
+  "destination": {
+    "saved": true,
+    "enabled": false,
+    "revision": "5a7a6fde-b3d5-4429-a35f-601df04c504c",
+    "endpoint": "https://us-east-1.aws.edge.axiom.co/v1/logs",
+    "dataset": "audit-log-test",
+    "auth": "bearer",
+    "encryptedCredentialPresent": true,
+    "blankPortalTokenField": true,
+    "persistedAfterRestart": true,
+    "credentialDecryptionAndDelivery": "not yet proved in deployed Test"
+  },
+  "token": {
+    "created": true,
+    "name": "Thermus Audit - audit-log-test",
+    "dataset": "audit-log-test",
+    "permission": "ingest only",
+    "expiration": null,
+    "readAccess": false,
+    "systemDatasetAccess": false,
+    "storedProtectedLocal": true,
+    "storedEncryptedThermus": true,
+    "secretPublished": false
+  },
+  "notices": {
+    "publicPublished": true,
+    "marketingMerge": "a53783560778cb0e568ca26838c7af226dc41dfc",
+    "netlifyDeployment": "6add5ca7404bebc124b25ca1",
+    "publicCompleteTextVerified": true,
+    "runtimePrivacyAndHelpCompleteTextVerified": true,
+    "existingOrganization": "Owner-authorized rollout disposition; earlier agreements preserved; no new signup acceptance claimed"
+  },
+  "manual": {
+    "actualPoolAcquisitionAndMcpProof": "passed with controlled local identity and tool operation, actual Supabase connection",
+    "managerReview": "Script, exact bounds, same application/store, no row writes, cleanup and provenance limits reviewed and accepted",
+    "browserTestAttempts": "No accepted result or new receipt observed. Subsequent actions timed out before dispatch; native browser control reported the Mac locked. No Test pass inferred.",
+    "pending": [
+      "Unlock Mac and finish saved Test/receipt",
+      "Enable and verify production MCP/Admin Audit receipts",
+      "Enable Render main auto-deploy",
+      "Public copy PR28 final browser layout check and publication"
+    ]
+  },
+  "backups": "Deferred to Slice 4 by user; absent in Slice 2",
+  "newInfrastructureCost": 0,
+  "releaseStatus": "Not yet complete; live deployment and approved notices are complete, rollout verification and auto-deploy remain."
+}

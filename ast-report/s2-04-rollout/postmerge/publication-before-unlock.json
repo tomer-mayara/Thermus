@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-25T01:54:41.856861+00:00",
+  "candidate": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+  "scope": "Post-merge publication, actual pool proof, and persisted disabled destination; rollout still pending Mac unlock",
+  "exactSecretValueScan": "passed; protected values omitted",
+  "files": [
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/reports-before-release.json",
+      "bytes": 35427,
+      "sha256": "5f20726fe3d9256848e285493b8454b582b2051e7a2c87d63fd6b2c0f1d03f9c"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/persistence-after-restart.json",
+      "bytes": 806,
+      "sha256": "4f6dce9077151271fe2d92cea5b42af03341b1fa09aceab9df25f9835e3543da"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge/progress-before-unlock.json",
+      "bytes": 2831,
+      "sha256": "cfac13dd49990e1547269ad9be73bb70af075223c5500507b734db4c379a6503"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/netlify-approved-publication.json",
+      "bytes": 303,
+      "sha256": "6d2d6c949c565ae8eb02ab2038441ebb284be28052bb486b05ef1196d82db18f"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/public-notices-verification.json",
+      "bytes": 1754,
+      "sha256": "ff6c46b4258688cbce513e443904015b99d40c045108a28415905864e0e8be89"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/deployed-notice-capture-verification.json",
+      "bytes": 58685,
+      "sha256": "f7e191be562f88cd7a747366ee9c47295ad347b1f9fdf19ea6a988e2f62ffbb6"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/real-pool-acquisition-proof.json",
+      "bytes": 3156,
+      "sha256": "94bf9ba51c2caa859b4c6be048d5960ab315c8cf8b6abbf8867dbfcbfccebfa7"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/real-pool-acquisition-proof.mjs",
+      "bytes": 10903,
+      "sha256": "df5f31f4c9b634525bea88994145457d568bca510681848282c9f3f8854a41de"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/real-pool-acquisition-preflight-node22.json",
+      "bytes": 1340,
+      "sha256": "e581edc63f6e9abdfd38c7e461eebdd778431818a07bf40e414681296daf7d22"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/real-pool-acquisition-preflight-inputs.json",
+      "bytes": 1384,
+      "sha256": "26e98c22a11cd6572c0fa3471d4bd42d994c6fb90d027b1252c6906d490bddcb"
+    },
+    {
+      "path": "ast-report/s2-04-rollout/postmerge-verification-checklist.md",
+      "bytes": 19402,
+      "sha256": "ae7fdf234f20fb606015b4d09b4625fe0adc83ac1714ab0c3f918ce0ba1e661e"
+    }
+  ]
+}
