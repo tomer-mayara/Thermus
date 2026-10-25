@@ -1,0 +1,3 @@
+src/interfaces/web/account/logging-form.ts: score 65.7, 16 decision paths, 1 function
+  score  paths  lines  name
+   67.4     16     20  loggingForm

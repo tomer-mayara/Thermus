@@ -1,0 +1,112 @@
+{
+  "sourceCandidate": "0a695c8b4fa2b7c2bb948529a5dcbc4557cbbb68",
+  "documentationCandidate": "da8eab8f6698e93ba784efce29ced24b6dbc7cd6",
+  "ordinary": {
+    "backend": 4759,
+    "portal": 49,
+    "failures": 0,
+    "skips": 0
+  },
+  "collector": {
+    "tests": 10,
+    "failures": 0,
+    "skips": 0
+  },
+  "selfHostedContainer": {
+    "tests": 11,
+    "failures": 0,
+    "skips": 0
+  },
+  "typecheck": "passed",
+  "portalBuild": "passed",
+  "publicDeclarations": {
+    "count": 48,
+    "changed": 0
+  },
+  "browser": {
+    "scope": "Real Chromium with production LoggingRoutes, form, layout, service and credential codec; trusted local Admin fixture, in-memory store, controlled Test sender. No live customer writes.",
+    "checks": [
+      "Keyboard switching preserves edits and only Axiom submits a required dataset. Hash CSP executes without unsafe-inline.",
+      "Unsaved type change refuses Test with no send. Custom Save removes dataset and retains existing endpoint-bound credential; saved Test succeeds.",
+      "Members keeps default script denial; no browser script errors. 1200, 390 and 320 pixel layouts have no horizontal overflow.",
+      "JavaScript disabled: Axiom and Custom both save through native forms. Legacy None row stays unchanged on refused Test and upgrades only on explicit Bearer Save."
+    ],
+    "screenshots": [
+      "axiom-1200.png",
+      "axiom-390.png",
+      "axiom-320.png",
+      "custom-320.png"
+    ],
+    "passed": true
+  },
+  "selectedGates": {
+    "hostedImage": "Passed; image build runs build:hosted with its required check stages and offline renderer gate, so no duplicate standalone build:hosted/check run.",
+    "postgres": "N/A: no private store, SQL runtime, configuration or lifetime change",
+    "hostedLive": "N/A: no authentication, WorkOS reads or organization mutation changes",
+    "standaloneRenderer": "N/A: no fetch/search/render/rules behavior change; image build still runs its required offline renderer gate"
+  },
+  "failures": [
+    {
+      "phase": "initial ordinary build",
+      "cause": "new heterogeneous test-case array had an inferred undefined property incompatible with string-record browser fields",
+      "resolution": "explicit string-record typing; focused11 and full4759+49 pass"
+    },
+    {
+      "phase": "metrics setup",
+      "cause": "fresh worktree had no pinned ast-metrics runtime; fallback build lacked Go on PATH",
+      "resolution": "copied the existing intact pinned installation and ran the installer integrity/version checks successfully"
+    }
+  ],
+  "limits": [
+    "Local browser uses trusted fixture Admin, in-memory settings and controlled Test sender; no live customer changes.",
+    "Legacy None rows need a Bearer token before any form Save, including disable, and before Test.",
+    "No new Terms/Privacy/agreement bytes or deployed destination configuration.",
+    "Embedded browser script behavior is covered by VM and real browser tests; it is not a separately measured TypeScript AST function."
+  ],
+  "candidate": "e77c075c3f8e37874dd89474e8a5f4f784f23e67",
+  "base": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "hostedImage": {
+    "platform": "linux/amd64",
+    "tests": 7,
+    "failures": 0,
+    "skips": 0,
+    "buildRef": "lt3walseb9407hn6qu80d5es2",
+    "manifest": "sha256:f307d9dcfce3270cf057a985126509fae5e3f48fde1348400395f44e655d44c9",
+    "nestedBuildHostedTests": [
+      3071,
+      29,
+      20,
+      1070,
+      119,
+      13
+    ]
+  },
+  "quality": {
+    "processExit": 1,
+    "processStages": {
+      "Delta": "reviewed goal miss",
+      "Review": "reviewed goal miss",
+      "CRAP": "passed",
+      "Architecture": "passed"
+    },
+    "standaloneCrapExit": 0,
+    "checkerTechnicalEligibility": "eligible",
+    "technicalBlockers": [],
+    "tier": "T1 Team review",
+    "humanApproval": "pending",
+    "unitCoverageTests": [
+      3071,
+      29
+    ],
+    "habitHooksExit": 0,
+    "habitFindings": 30,
+    "snooze": []
+  },
+  "remote": {
+    "head": "e77c075c3f8e37874dd89474e8a5f4f784f23e67",
+    "checks": [],
+    "statuses": [],
+    "note": "No remote CI checks are registered; this is not a remote CI pass. Local gates supply validation."
+  },
+  "completedAt": "2026-10-25T04:05:50.848Z"
+}

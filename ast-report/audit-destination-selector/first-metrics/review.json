@@ -1,0 +1,41 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "headSha": "da8eab8f6698e93ba784efce29ced24b6dbc7cd6",
+  "summary": {
+    "filesChanged": 16,
+    "filesAdded": 1,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 1,
+    "low": 0,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/unit/html/logging-form.test.ts",
+      "message": "Maintainability index: 54 -\u003e 46 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 54.430058960950475,
+      "after": 46.459672629362416
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/interfaces/web/account/logging-form.ts",
+      "line": 6,
+      "subject": "loggingForm",
+      "message": "Cyclomatic complexity: 13 -\u003e 16 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 13,
+      "after": 16
+    }
+  ],
+  "improvements": [],
+  "gate": "failed"
+}

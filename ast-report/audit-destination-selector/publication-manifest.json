@@ -1,0 +1,237 @@
+{
+  "candidate": "e77c075c3f8e37874dd89474e8a5f4f784f23e67",
+  "base": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "protectedValueScan": "passed",
+  "files": [
+    {
+      "path": "ast-report/audit-destination-selector/README.md",
+      "bytes": 3010,
+      "sha256": "f93d2a450bacfd2ead3e401526063aea35d09387934ce4645beb6484b478e285"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/api-surface.log",
+      "bytes": 132,
+      "sha256": "3b9787b95fd96a9b3f9c113391eaa5a2c3342e3c34d5bdacf48c9d2e883c044c"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/architecture-review.json",
+      "bytes": 1427,
+      "sha256": "0efec2d6022a4782f210857aea652877b3191d498eb27ad9e74ff1985a6b6383"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/axiom-1200.png",
+      "bytes": 113577,
+      "sha256": "b146d88196fe8806b100fb209341a8d06ca533b134daeb9216f225e16656aa7c"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/axiom-320.png",
+      "bytes": 101472,
+      "sha256": "48e46e243f81f0ea82c2c7a4661b6ffcb7b08d69689b98f4bcfc4e495ce9d1f0"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/axiom-390.png",
+      "bytes": 102283,
+      "sha256": "0427d107870d2de1ce8548e3a351d600f10e42f873071d122045d0f8c0b3af7f"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/browser-check.json",
+      "bytes": 922,
+      "sha256": "5d63f4be7f5f578d73131d25511794646bb1efa79673c50dbc3a3171dc440689"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/browser-check.log",
+      "bytes": 859,
+      "sha256": "af45a74bb2e3f5eac81e54edc93e124b3f4b7767536ee491a713b935832c3c6a"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/browser-check.mjs",
+      "bytes": 9666,
+      "sha256": "b10bb66d97a4891759d674d73da2c60534ce01639f95ea63a543d958526fc54e"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/build-user-portal.log",
+      "bytes": 536,
+      "sha256": "5ff167224da0781258e32d9d944f7d704f93657dfb72891224c9120635b8620c"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/check-final.json",
+      "bytes": 5244,
+      "sha256": "ae56c711713479290112b6b8195859c7b613de74f48cc4228969247acbcd0caa"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/check-preliminary.json",
+      "bytes": 4995,
+      "sha256": "819d14e973a55b45e5851264d265b9cb501f37c691fa0d95c075d85049ec1614"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/collector-gate.log",
+      "bytes": 3138,
+      "sha256": "8b8ef0747df1386c7b79d9902ddb2858b7ce763ee333ceb9975579929d9640d2"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/crap.log",
+      "bytes": 742,
+      "sha256": "70681c4af627518cd90f816cbd70d11922651c849dd79a1d938713bc43b78376"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/custom-320.png",
+      "bytes": 90416,
+      "sha256": "14120c871f67a67242775c3d9bd7f912e132a3940827259ec12cbc28b452e19f"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/first-metrics/process.json",
+      "bytes": 26239,
+      "sha256": "d5bc9c91ba42871434231e350a90a422d5dfaa57f9ca61c58ae08cf75ffe25ae"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/first-metrics/process.md",
+      "bytes": 25359,
+      "sha256": "9d86b4900ced13d6ba90e3136e6c6ed0729b4d841a225b05196992d3745d00c4"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/first-metrics/review.json",
+      "bytes": 1239,
+      "sha256": "bc601c2e252ab5e367b230cd8de2451120f4f9789cb147de22c157dd4eba904c"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/form-metrics.log",
+      "bytes": 149,
+      "sha256": "d6e2335b1c2f9ee840a5ee8ee168f332f56a4ea8c947a45c8d8ec4c7f6bc9e53"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/habit-hooks-final.log",
+      "bytes": 195,
+      "sha256": "283e4018e64fb02e9190e288685bffa8ba0f111f4e3c31c125b69d4e45f119ad"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/habit-hooks.log",
+      "bytes": 6150,
+      "sha256": "f725a458161ec46e74f6bb197f917692225429bd66cef59ce086f97afe56ef28"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/hosted-build.log",
+      "bytes": 665415,
+      "sha256": "0959a6c7b1b5a730f4db93f96094a6700afe4871f31594aae5781e38ec5b1635"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/hosted-image.log",
+      "bytes": 1625,
+      "sha256": "77547391aea06f5a9dd793fc800928c9a4e013974523d7ed0ed8d6a876e1c3be"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/implementation.md",
+      "bytes": 10250,
+      "sha256": "0c761cdef8ac744cf41b2e72703acd6ff37a319e30478f50e3f614d8b64790bb"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/metrics-install-reuse.log",
+      "bytes": 117,
+      "sha256": "a1ebc8447245e5384c7aa8ea49ab05329f90d6faf21f5299a5af9080c91d7a93"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/metrics-install.log",
+      "bytes": 60,
+      "sha256": "a319759342cb2400aa672042912033fc0e2652c63a22e370d38c9a06ca5ccdac"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/metrics-process-final.log",
+      "bytes": 25466,
+      "sha256": "2748470e8e6a960f78d0338acf12ab554c8d648f80795ab3d44b2e6859c0ec3b"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/metrics-process-first.log",
+      "bytes": 420211,
+      "sha256": "f006793a8340423df28c438af2a03cfa01377c625f84f8bdc54e276b6d1290a8"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/npm-test-initial-build-failure.log",
+      "bytes": 994,
+      "sha256": "2ecd21c821b2241797330462b8266d8cb0ff515a9bcd41a99fc7395295c123f8"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/npm-test.log",
+      "bytes": 707156,
+      "sha256": "7322d54a93ade72df6f8b21223d5f17789796861cffe62fb5423b7211df3caef"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/quality-notes.md",
+      "bytes": 7934,
+      "sha256": "61da95e8dce93625c2852c06e7d2eae695ef6cd1545d660b7a7d2b444c8ddc20"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/self-hosted-container.log",
+      "bytes": 4992,
+      "sha256": "d2c57d0dd50138c0f81c5eaf9196db5d09a2888d9e2f74f2c11a9dc4f8873718"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/snapshot-base.log",
+      "bytes": 79,
+      "sha256": "dbaae1ab390cea2d7cd73d68737f6647429dc71e3892a22d50fe0d5f1e1ea7a9"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/snapshot-head-final.log",
+      "bytes": 74,
+      "sha256": "f17774699d1bc3903bb7c9c2ff562e6be402ca0ed6ee5662e034ec3763b910c2"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/snapshot-head.log",
+      "bytes": 74,
+      "sha256": "f17774699d1bc3903bb7c9c2ff562e6be402ca0ed6ee5662e034ec3763b910c2"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/typecheck.log",
+      "bytes": 158,
+      "sha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/unit-capture-manifest.json",
+      "bytes": 34619,
+      "sha256": "92f7cb88bffa1a9806c2183be87391358aff4e9adaa7d89448cff8a082b63889"
+    },
+    {
+      "path": "ast-report/audit-destination-selector/validation-summary.json",
+      "bytes": 4231,
+      "sha256": "ecf79566f95a23fac81fffba2268d2c2aaac01727f13e51576f7d8c3f094c24c"
+    },
+    {
+      "path": "ast-report/process.md",
+      "bytes": 25356,
+      "sha256": "0ab1d65e9e4555c869360c37d8a5e883068e85f5e3fb7e7c9e349256d85574d0"
+    },
+    {
+      "path": "ast-report/process.json",
+      "bytes": 26236,
+      "sha256": "4224ed47906d53a574e6d830adc1d6f7dc407188c4498d6bb4f18986ed36d589"
+    },
+    {
+      "path": "ast-report/review.json",
+      "bytes": 1239,
+      "sha256": "b551956ae2fc4d0490f782219f494cd6d0b92d5441dfd8499a3a243e2f13585c"
+    },
+    {
+      "path": "ast-report/crap.json",
+      "bytes": 2224,
+      "sha256": "85edaa02a0b0ea1990063913405f0a548509dc27ce9a23f474f1e21abe961140"
+    },
+    {
+      "path": "ast-report/snapshot-base.json",
+      "bytes": 1018157,
+      "sha256": "2db0973d5f4227d09e0e1f2b8316baad380932c01df404634c9f592a9f7971c3"
+    },
+    {
+      "path": "ast-report/snapshot.json",
+      "bytes": 1018150,
+      "sha256": "4b832db889e446d2417e25b3106bd286ec9f438e3d0548de1168c4c7fef484eb"
+    },
+    {
+      "path": "ast-report/coverage.json",
+      "bytes": 855425,
+      "sha256": "bc8a844c42c5b5d89cf05320711abf78b2064e6896be81ade7f4d712a282c837"
+    },
+    {
+      "path": "ast-report/impact.json",
+      "bytes": 2423,
+      "sha256": "f1fa2be94244b73ede3dfee190a9b44c62bf190f0e3098ebbd75a734fa7ac64d"
+    }
+  ]
+}
