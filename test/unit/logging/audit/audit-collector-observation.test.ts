@@ -11,16 +11,21 @@ for (const change of ['revision', 'disabled', 'absent'] as const) {
     let now = 0;
     const outcome = pending<AuditSendOutcome>(); const native = pending<void>();
     const store = new SnapshotStoreSpy();
-    const { collector, sends } = collectorWith({ now: () => now }, { start: () => ({ outcome: outcome.promise, settled: native.promise }) });
+    const { collector, sends, reads } = collectorWith({ now: () => now }, { start: () => ({ outcome: outcome.promise, settled: native.promise }) });
     t.after(() => { collector.close(); outcome.resolve({ kind: 'cancelled' }); native.resolve(); });
     const snapshots = new AuditSnapshots(store, collector, { now: () => now, bounds: { freshMs: 100 } }); t.after(() => snapshots.close());
-    snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(settings(true, 'revision-a'));
-    snapshots.writeAuditEvent(eventFor()); await turn(); assert.equal(sends.length, 1);
-    now = 100; snapshots.writeAuditEvent(eventFor()); await immediateTurn();
+    const active = eventFor('tenant-a', 'old-active');
+    const queued = eventFor('tenant-a', 'old-queued');
+    const refresh = eventFor('tenant-a', 'refresh-trigger');
+    snapshots.writeAuditEvent(active); await immediateTurn(); await store.answer(settings(true, 'revision-a'));
+    snapshots.writeAuditEvent(queued); await turn(); assert.equal(sends.length, 1);
+    now = 100; snapshots.writeAuditEvent(refresh); await immediateTurn();
     await store.answer(change === 'absent' ? { status: 'absent' } : settings(change !== 'disabled', change === 'revision' ? 'revision-b' : 'revision-a'));
     assert.equal(sends[0]?.signal?.aborted, true);
     outcome.resolve({ kind: 'cancelled' }); native.resolve(); await turn();
-    assert.equal(sends.length, 1); assert.equal(store.reads.length, 2);
+    assert.deepEqual(sends.map(send => send.item), change === 'revision' ? [active, refresh] : [active]);
+    assert.deepEqual(reads.map(read => read.revision), change === 'revision' ? ['revision-a', 'revision-b'] : ['revision-a']);
+    assert.equal(store.reads.length, 2);
   });
 }
 
@@ -60,5 +65,5 @@ test('Given a downstream observation hook that throws, when valid metadata loads
     settingsObserved: () => { throw new Error('private-observer-cause'); },
   }); t.after(() => snapshots.close());
   snapshots.writeAuditEvent(eventFor()); await immediateTurn(); await store.answer(settings());
-  assert.equal(snapshots.writeAuditEvent(eventFor()), true); assert.equal(admissions, 1);
+  assert.equal(snapshots.writeAuditEvent(eventFor()), true); assert.equal(admissions, 2);
 });

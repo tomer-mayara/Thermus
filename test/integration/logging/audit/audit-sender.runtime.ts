@@ -169,14 +169,14 @@ test('Given an actual stalled TLS response, when its caller cancels, then the se
   assert.deepEqual(requests.map((request) => request.path), ['/hold', '/v1/logs']);
 });
 
-test('Given enabled saved Bearer settings and the production audit assembly, when bounded redacted tool capture is admitted, then the real Collector receives that event and one separate saved Test without event writes to settings', { timeout: 120_000 }, async t => {
+test('Given enabled saved Bearer settings and the production audit assembly, when the first bounded redacted tool capture occurs, then the real Collector receives that event and one separate saved Test without event writes to settings', { timeout: 120_000 }, async t => {
   const site = await openAuditSenderSite(t, 'collector');
   const result = await site.exportCapturedTool();
   assert.deepEqual(result.exported, { kind: 'accepted' });
   assert.equal(result.tested.status, 'tested');
   assert.deepEqual(result.tested.outcome, { kind: 'accepted' });
   assert.equal(result.saves, 1);
-  assert.equal(result.dispatchReads, 1);
+  assert.equal(result.dispatchReads, 2);
   assert.ok(result.productResultBytes > 65_536);
   const records = await site.collectorRecords(2);
   assert.equal(records.length, 2);
@@ -185,11 +185,13 @@ test('Given enabled saved Bearer settings and the production audit assembly, whe
   const attributes = Object.fromEntries(captured.attributes.map(attribute => [attribute.key, attribute.value]));
   assert.equal(attributes['organization.id'].stringValue, 'runtime-capture-tenant');
   assert.equal(attributes['operation.id'].stringValue, 'runtime-captured-operation');
+  assert.equal(attributes['input.query'].stringValue, 'runtime token="[REDACTED]"');
+  assert.equal(attributes['input.reason'].stringValue, 'api_key="[REDACTED]"');
   assert.equal(attributes['result.truncated'].boolValue, true);
   assert.equal(attributes['result.original_bytes'].doubleValue, result.productResultBytes);
   assert.ok((attributes['result.captured_bytes'].doubleValue ?? Infinity) <= 65_536);
   assert.match(attributes['result.text'].stringValue ?? '', /\[TRUNCATED\]$/);
-  assert.doesNotMatch(JSON.stringify(records), /private-query-token|private-reason-token|private-result-token|cold-trigger-content|cold-trigger-operation|audit-runtime-only-token|encryptedCredential/);
+  assert.doesNotMatch(JSON.stringify(records), /private-query-token|private-reason-token|private-result-token|audit-runtime-only-token|encryptedCredential/);
   assert.equal(records.filter(record => (record as { eventName?: string }).eventName === 'audit.destination.test').length, 1);
   t.diagnostic('Real production logging-storage factory, AuditLog, snapshots, queue, fresh destination authorization, shared sender, and Collector; settings storage is controlled.');
 });

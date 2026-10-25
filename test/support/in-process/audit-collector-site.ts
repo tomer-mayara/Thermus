@@ -22,7 +22,11 @@ export function composeAuditCollectorSite() {
   return {
     store, service, sent,
     close: () => { snapshots.close(); collector.close(); },
-    settle: () => new Promise<void>(resolve => setImmediate(resolve)),
+    settle: async () => {
+      // The first turn loads settings; the second starts the collector with its immediate sender.
+      await new Promise<void>(resolve => setImmediate(resolve));
+      await new Promise<void>(resolve => setImmediate(resolve));
+    },
     activity: (organizationId: string, text: string) => audit.toolCompleted({
       timestamp: '2026-10-24T12:00:00.000Z', organizationId, actor: { authority: 'trusted-provider', subject: 'admin' },
       operationId: `operation-${++operation}`, tool: 'search', input: { query: text, reason: 'collector acceptance' }, result: text, status: 'success', durationMs: 1,

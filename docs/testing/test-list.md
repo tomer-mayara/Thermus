@@ -1010,15 +1010,16 @@ controlled Collector proof nor a successful Test proves continued delivery or
 durable storage. Tool/admin capture uses a controlled sink in S2-03a; activity-driven
 settings snapshots and bounded dispatch are specified below.
 
-**Activity-driven audit settings snapshots — S2-03b candidate**
+**Activity-driven audit settings snapshots — S2-03b and first-event correction**
 
 The [snapshot record](../implementation/admin-s2-03b.md) gives fixed bounds and
 lifetime rules. The following source specifications use a controlled downstream
 sink; execution evidence belongs to the complete-candidate review.
 
-- `test/acceptance/logging/audit/activity-snapshots.test.ts` specifies cold enabled loading, remote Enable after cached disabled state, recovery on later activity, future-only capture, and no idle reads.
-- `test/acceptance/logging/audit/hosted-snapshot-composition.test.ts` specifies one shared snapshot between real hosted MCP and invitation routes, restart, remote Enable, unavailable reads, and two trusted tenants.
+- `test/acceptance/logging/audit/activity-snapshots.test.ts` specifies first-event input/result capture after startup and expiry, remote Enable after cached disabled state, recovery without replay of discarded content, and no idle reads.
+- `test/acceptance/logging/audit/hosted-snapshot-composition.test.ts` specifies one shared snapshot between real hosted MCP and invitation routes, first-event capture after restart, remote Enable, unavailable reads, and two trusted tenants.
 - `test/unit/logging/audit/audit-snapshots.test.ts` specifies load deduplication, freshness/backoff, byte/count/admission bounds, absolute deadlines, unresolved-read reservations, eviction, detached immutable tenant/revision binding, and close.
+- `test/unit/logging/audit/audit-snapshot-pending.test.ts` specifies provisional pending admission, FIFO and observed revision binding, immutable query/results, bounded content, shared deadlines, tenant isolation, downstream refusal, and permanent disposal on negative reads, timeout, or close.
 - `test/integration/auth/hosted-audit-snapshot-lifecycle.test.ts` specifies snapshot closure before hosted storage closure and exclusion of late read results.
 
 These checks do not prove queue admission, fresh-store dispatch authorization,

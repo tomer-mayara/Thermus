@@ -1,9 +1,9 @@
 # S2-03c bounded audit delivery
 
-This candidate is stacked over S2-03b in PR #243. It implements the bounded
+The original candidate was stacked over S2-03b in PR #243. It added the bounded
 customer dispatch in the [organization admin plan](../design/organization-admin-plan.md#s2-03c--bounded-queue-and-current-revision-dispatch).
-Complete-candidate results and review are recorded in the PR and
-[local review index](../../ast-report/s2-03c-final/README.md). Source specifications
+That candidate's results and review remain in
+[PR #244](https://github.com/tomer-mayara/Thermus/pull/244). Source specifications
 do not establish a gate pass or a production release.
 
 ## Capture and authority
@@ -11,10 +11,14 @@ do not establish a gate pass or a production release.
 Hosted storage composition creates one destination service, one `AuditCollector`,
 and one `OtlpAuditSender`. MCP and protected Admin capture share the existing
 `AuditLog` and activity snapshots. A fresh enabled snapshot supplies an immutable
-event and captured revision to the collector. Cold, disabled, and expired
-snapshots still drop the current event. Admission is synchronous and does not
-wait for SQL, DNS, or export. Without hosted storage, and in the local edition,
-capture retains its discard sink. An explicitly supplied audit sink takes precedence.
+event and captured revision to the collector. The
+[25 October snapshot correction](admin-s2-03b.md#capture-and-settings-authority)
+keeps bounded events during startup or freshness refresh, then binds them once to
+a successful enabled read. Fresh disabled state and disabled, failed, or late
+load results discard content. This supersedes the original warm-up drop rule.
+Capture admission is synchronous and does not wait for SQL, DNS, or export.
+Without hosted storage, and in the local edition, capture retains its discard
+sink. An explicitly supplied audit sink takes precedence.
 
 Before each attempt, `DestinationSettingsService.authorizeExport` reads exactly
 one full current saved version. It checks enabled state and the exact captured
@@ -24,7 +28,8 @@ retargeting it. Read failure starts no send. No SQL transaction spans network wo
 A later Save can race an authorized send; data already sent cannot be recalled.
 
 A successful, current, unexpired snapshot metadata load also reports its observed
-revision to the collector. Disabled or absent settings report no active revision.
+revision to the collector before forwarding its pending events. Disabled or
+absent settings report no active revision.
 The collector cancels existing work with a different revision, or all work on
 that no-active-revision observation. Failed loads report no observation. These
 notifications create no state for unknown tenants. They are scoped to activity
@@ -49,6 +54,11 @@ captured revision and event. Defaults are:
 | Fresh authorization read | 2.5 seconds, also limited by remaining age |
 | Authorization cycles | 3, including read failures and sender busy outcomes |
 | Retry delay | 250 ms exponential base, capped at 2 seconds, plus 0–25% jitter |
+
+The 30-second collector age starts at collector admission. The separate pending
+capture batch can retain an event for up to 2.5 seconds before that point; it has
+its own 32-event/2-MiB aggregate limits across two loads. Total content retention
+across pending capture and collector work can therefore reach 32.5 seconds.
 
 Tenant FIFO includes backoff; later work cannot bypass it. Only temporary read
 failure, sender busy, and typed transient send failure permit retry. Each retry

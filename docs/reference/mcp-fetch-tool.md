@@ -429,10 +429,16 @@ context, redacts recognized credentials, and bounds only the exported copy.
 Invalid arguments and unknown tools have no customer event. The client result
 stays complete; fetch withholding retains its existing empty-success projection.
 Hosted capture uses activity-driven enabled/revision snapshots when settings
-storage is available. Cold, disabled, or expired snapshots drop the current
-event; loads affect only future activity and never wait in the tool response.
-Hosted storage supplies bounded asynchronous delivery. Each attempt reads one
-current saved version and requires its enabled state and exact captured revision;
+storage is available. At startup or freshness expiry, bounded events wait in
+memory for one asynchronous settings read; the tool response does not wait.
+An enabled result binds those events once to the observed revision. A fresh
+disabled snapshot refuses capture, and disabled, absent, failed, invalid, or late
+read results discard pending content permanently. Shutdown also clears it.
+The read decides initial admission: an Enable concurrent with that read can be
+observed, but a later Enable cannot revive an already discarded event. See the
+[snapshot record](../implementation/admin-s2-03b.md) for count, byte, and deadline
+limits. Hosted storage supplies bounded asynchronous delivery. Each attempt
+reads one current saved version and requires its enabled state and exact captured revision;
 old work is dropped without retargeting. Queue pressure, expiry, and failures can
 lose events, and retries can duplicate them. Product responses do not wait for
 export. Capture does not prove client receipt or Collector storage. See the

@@ -1,7 +1,7 @@
 import type { AuditEvent, AuditEventSink } from './audit-log.ts';
 import type { DestinationSettingsStore } from './destination-settings-store.ts';
-import { boundedSnapshotText, detachedAuditEvent, snapshotBounds, snapshotFrom } from './audit-snapshot-state.ts';
-import type { AuditSnapshotBounds, SnapshotLoad, SnapshotResident } from './audit-snapshot-state.ts';
+import { boundedSnapshotText, clearPendingEvents, detachedAuditEvent, retainPendingEvent, snapshotBounds, snapshotFrom } from './audit-snapshot-state.ts';
+import type { AuditSnapshotBounds, Snapshot, SnapshotLoad, SnapshotResident } from './audit-snapshot-state.ts';
 
 export type { AuditSnapshotBounds } from './audit-snapshot-state.ts';
 
@@ -12,7 +12,7 @@ export interface RevisionBoundAuditSink {
 }
 export interface AuditSnapshotsOptions { readonly now?: () => number; readonly bounds?: Partial<AuditSnapshotBounds> }
 
-/** Activity loads metadata for future capture. A snapshot never authorizes a network send. */
+/** Capture never waits for settings. A snapshot never authorizes a network send. */
 export class AuditSnapshots implements AuditEventSink {
   private readonly residents = new Map<string, SnapshotResident>();
   private readonly loads = new Map<string, SnapshotLoad>();
@@ -37,7 +37,8 @@ export class AuditSnapshots implements AuditEventSink {
         return snapshot.enabled && this.downstream.admit(Object.freeze({ destinationRevision: snapshot.revision, event: detachedAuditEvent(event) })) !== false;
       }
       resident.snapshot = undefined;
-      this.loadLater(tenant, resident);
+      const load = this.loadLater(tenant, resident);
+      return load !== undefined && retainPendingEvent(load, event, this.bounds);
     } catch {
       // Store and capture failures cannot change completed product work or expose their causes.
     }
@@ -48,6 +49,7 @@ export class AuditSnapshots implements AuditEventSink {
     this.closed = true;
     for (const [tenant, load] of this.loads) {
       load.expired = true;
+      clearPendingEvents(load);
       load.resident.snapshot = undefined;
       clearTimeout(load.deadline);
       if (!load.started) this.finish(tenant, load);
@@ -80,16 +82,22 @@ export class AuditSnapshots implements AuditEventSink {
     return true;
   }
 
-  private loadLater(tenant: string, resident: SnapshotResident): void {
-    if (resident.retryAt > this.now() || this.loads.has(tenant) || this.loads.size >= this.bounds.active) return;
+  private loadLater(tenant: string, resident: SnapshotResident): SnapshotLoad | undefined {
+    const pending = this.loads.get(tenant);
+    if (pending !== undefined) {
+      if (this.now() >= pending.until) this.expire(tenant, pending);
+      return this.current(tenant, pending) ? pending : undefined;
+    }
+    if (resident.retryAt > this.now() || this.loads.size >= this.bounds.active) return;
     // Also charge the expired resident object if it is evicted before this read settles.
     const bytes = Buffer.byteLength(tenant) + 256;
     if (!this.makeRoom(bytes, resident)) return;
-    const load: SnapshotLoad = { resident, bytes, until: this.now() + this.bounds.loadMs, expired: false, started: false };
-    // Reserve scheduled work now; the callback closes over tenant metadata, never the event.
+    const load: SnapshotLoad = { resident, bytes, until: this.now() + this.bounds.loadMs, expired: false, started: false, pending: [], pendingBytes: 0 };
+    // Only the load owns pending content, so expiry can clear it before a read settles.
     this.loads.set(tenant, load); this.bytes += bytes;
     load.deadline = setTimeout(() => this.expire(tenant, load), this.bounds.loadMs);
     load.scheduled = setImmediate(() => { load.scheduled = undefined; void this.read(tenant, load); });
+    return load;
   }
 
   private async read(tenant: string, load: SnapshotLoad): Promise<void> {
@@ -106,11 +114,22 @@ export class AuditSnapshots implements AuditEventSink {
         load.resident.snapshot = snapshot; load.resident.retryAt = 0;
         try { this.downstream.settingsObserved?.(tenant, snapshot.enabled ? snapshot.revision : null); }
         catch { /* A downstream observation failure cannot invalidate a successful metadata load. */ }
+        this.flushPending(tenant, load, snapshot);
       }
     } catch {
       this.expire(tenant, load);
     } finally {
       this.finish(tenant, load);
+    }
+  }
+
+  private flushPending(tenant: string, load: SnapshotLoad, snapshot: Snapshot): void {
+    if (!snapshot.enabled) return;
+    // This read decides initial admission. Later rejection never replays this batch.
+    for (const event of load.pending) {
+      if (!this.current(tenant, load) || this.now() >= load.until) break;
+      try { this.downstream.admit(Object.freeze({ destinationRevision: snapshot.revision, event })); }
+      catch { /* One refused event must not prevent another event's admission or cleanup. */ }
     }
   }
 
@@ -124,10 +143,12 @@ export class AuditSnapshots implements AuditEventSink {
       load.resident.retryAt = this.now() + this.bounds.backoffMs;
     }
     load.expired = true;
+    clearPendingEvents(load);
     if (!load.started) this.finish(tenant, load);
   }
 
   private finish(tenant: string, load: SnapshotLoad): void {
+    clearPendingEvents(load);
     clearTimeout(load.deadline); clearImmediate(load.scheduled);
     if (this.loads.get(tenant) !== load) return;
     this.loads.delete(tenant); this.bytes -= load.bytes;
