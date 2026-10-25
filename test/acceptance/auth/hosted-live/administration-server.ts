@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { Invitation, OrganizationMembership } from '@workos-inc/node';
 import type { Page } from 'playwright';
-import { WorkOSOrganizations } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations, workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import type { ChangeRecord } from '../../../../src/accounts/organizations/change-records.ts';
 import { labelsOf, seatsIn } from '../../../support/dsl/hosted-administration.ts';
@@ -150,7 +150,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const { users, memberships, organizationC } = await run.administrationFixtures();
       const { page, pages } = await signInThroughPortal(run, users['c-admin-only']);
       const session = await sessionJson(page);
-      const directory = new WorkOSOrganizations({ authority: workosAuthority(settings.clientId), userManagement: workos.userManagement, authorization: workos.authorization });
+      const directory = new WorkOSOrganizations({ authority: workosAuthority(settings.clientId), memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
       const target = await directory.member(memberships.targetInC);
       assert.ok(target);
       const before = await membershipState(target.membershipId);

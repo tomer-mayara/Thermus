@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import type { OrganizationMembership } from '@workos-inc/node';
 import type { RoleGrant } from '../../../../src/accounts/identity/access-context.ts';
-import { WorkOSOrganizations } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations, workosMembershipReads } from '../../../../src/accounts/providers/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../../src/accounts/providers/workos/workos-settings.ts';
 import { BillingFree } from '../../../../src/accounts/billing/billing-free.ts';
 import { OrganizationAdministration } from '../../../../src/accounts/organizations/organization-administration.ts';
@@ -27,6 +27,7 @@ export function describeOperatorSetupProofs(run: LiveRun): void {
   // The application reads of the hosted edition, against the staging environment.
   const directory = new WorkOSOrganizations({
     authority: workosAuthority(settings.clientId),
+    memberships: workosMembershipReads(workos),
     userManagement: workos.userManagement,
     authorization: workos.authorization,
   });

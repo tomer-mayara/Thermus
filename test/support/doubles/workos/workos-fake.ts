@@ -73,6 +73,7 @@ export class WorkOSFake implements DirectoryView, InvitationView, SessionView {
   laterMembershipPageOutage: FakeAnswer | undefined;
   invitationOutage: FakeAnswer | undefined;
   refreshOutage: FakeAnswer | undefined;
+  readonly deletedMembershipIds = new Set<string>();
   #memberships: readonly FakeMembership[] = [];
   // The number of changes of the roles or the status of each membership, by index. The update times come from them.
   readonly #membershipChanges: number[] = [];

@@ -54,6 +54,7 @@ class WorkOSReadsDouble {
       if (this.answers.membershipFailure !== undefined) throw this.answers.membershipFailure;
       return { data: this.answers.memberships ?? [], listMetadata: { before: null, after: this.answers.after ?? null } };
     },
+    deleteOrganizationMembership: notCalled,
     getOrganizationMembership: notCalled,
     getUser: notCalled,
     listInvitations: notCalled,
@@ -78,7 +79,7 @@ class WorkOSReadsDouble {
 
 function grantsWith(answers: ReadAnswers) {
   const reads = new WorkOSReadsDouble(answers);
-  return { reads, grants: () => new WorkOSOrganizations({ authority, ...reads }).activeGrants(alice, acme) };
+  return { reads, grants: () => new WorkOSOrganizations({ authority, memberships: reads.userManagement, ...reads }).activeGrants(alice, acme) };
 }
 
 async function assertConfigurationError(read: Promise<unknown>, ...parts: RegExp[]): Promise<void> {
@@ -142,7 +143,7 @@ describe('WorkOSOrganizations active grants', () => {
 
   test('Given two reads of the same membership, when the grants are read, then each read asks WorkOS again, because no grant is kept', async () => {
     const reads = new WorkOSReadsDouble({ memberships: [activeMembership(['user'])] });
-    const organizations = new WorkOSOrganizations({ authority, ...reads });
+    const organizations = new WorkOSOrganizations({ authority, memberships: reads.userManagement, ...reads });
 
     await organizations.activeGrants(alice, acme);
     await organizations.activeGrants(alice, acme);
@@ -254,7 +255,7 @@ describe('WorkOSOrganizations active grants', () => {
 describe('WorkOSOrganizations current display name', () => {
   test('Given a current active membership, when its name is read, then only the exact subject and organization are queried without role catalogs', async () => {
     const reads = new WorkOSReadsDouble({ memberships: [activeMembership(['admin'], { organizationName: 'Acme Labs' })], roleFailure: new Error('Unrelated role configuration') });
-    const organizations = new WorkOSOrganizations({ authority, ...reads });
+    const organizations = new WorkOSOrganizations({ authority, memberships: reads.userManagement, ...reads });
     assert.equal(await organizations.activeOrganizationName({ authority, subject: alice }, acme), 'Acme Labs');
     assert.deepEqual(reads.membershipReads, [{ userId: alice, organizationId: acme, statuses: ['active'], limit: 10 }]);
     assert.deepEqual(reads.roleReads, []);
@@ -262,21 +263,21 @@ describe('WorkOSOrganizations current display name', () => {
 
   test('Given another identity authority, when a display name is requested, then WorkOS receives no subject', async () => {
     const reads = new WorkOSReadsDouble({ memberships: [activeMembership(['user'])] });
-    const organizations = new WorkOSOrganizations({ authority, ...reads });
+    const organizations = new WorkOSOrganizations({ authority, memberships: reads.userManagement, ...reads });
     assert.equal(await organizations.activeOrganizationName({ authority: 'other', subject: alice }, acme), undefined);
     assert.deepEqual(reads.membershipReads, []);
   });
 
   test('Given no active membership, when its name is requested, then no name is supplied', async () => {
     const reads = new WorkOSReadsDouble({ memberships: [] });
-    const organizations = new WorkOSOrganizations({ authority, ...reads });
+    const organizations = new WorkOSOrganizations({ authority, memberships: reads.userManagement, ...reads });
     assert.equal(await organizations.activeOrganizationName({ authority, subject: alice }, acme), undefined);
   });
 
   for (const changes of [{ userId: 'other_user' }, { organizationId: 'other_org' }, { status: 'inactive' as const }]) {
     test(`Given a membership with ${JSON.stringify(changes)}, when the display name is requested, then no mismatched name is supplied`, async () => {
       const reads = new WorkOSReadsDouble({ memberships: [activeMembership(['user'], changes)] });
-      const organizations = new WorkOSOrganizations({ authority, ...reads });
+      const organizations = new WorkOSOrganizations({ authority, memberships: reads.userManagement, ...reads });
       await assert.rejects(organizations.activeOrganizationName({ authority, subject: alice }, acme), /did not ask for/);
       assert.deepEqual(reads.roleReads, []);
     });

@@ -12,8 +12,9 @@ The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
 retains the rollout and release evidence. Ticket records describe their historical
 increments; earlier missing features and candidate holds are not the current
 internal rollout status. Historical gate passes do not verify this follow-up.
-The expanded Slice 2.5 tickets were reviewed on 24 October 2026; their
-implementation and tests remain planned.
+The expanded Slice 2.5 tickets were reviewed on 24 October 2026. S2.5-01a is
+implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251), with
+validation and review in progress; the remaining Slice 2.5 tickets are planned.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -2509,7 +2510,8 @@ unit tests double other Delamain packages at public interfaces; real package
 collaboration is integration; interface tests check narrow contracts. Reuse DSL,
 drivers, sites, and doubles in their existing homes. No new test framework.
 Check documents/configuration/runbooks manually or with relevant build/type checks.
-All tests and proof below are future work; this plan claims no execution.
+The specifications below describe the intended checks. A dated implementation
+record states which checks ran; a planned check is not evidence of a pass.
 
 **Common completion and recovery rule.** Admit one unresolved removal per org
 before dispatch. A bounded admission conflict returns busy without polling,
@@ -2543,6 +2545,18 @@ write restrictions remain a runbook constraint, not a global atomicity claim.
 
 #### S2.5-01a — Narrow provider deletion and current target facts
 
+**Implementation status — 25 October 2026.** The directory now preserves portable
+management evidence and includes it in revisions. Its exact-ID deletion returns
+`applied` after normal void completion, or `unsupported` only for a proven
+no-effect refusal. Other failures throw with an uncertain effect. A required
+raw membership reader uses the same SDK client before its serializer can default
+missing/null evidence to false. Each read still makes one request; existing
+client limits remain. Acceptance-first and focused checks pass, including the
+review correction. Agent review is complete; full validation and required human
+review remain in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
+The [implementation record](../implementation/admin-s2-5-01a.md) gives the
+observed red/green steps and evidence limits. No removal route or UI is added.
+
 **Acceptance specifications first.**
 
 ```gherkin
@@ -2571,11 +2585,12 @@ Scenario Outline: Distinguish confirmed deletion from uncertain effects
     | a lost response after possible dispatch | uncertain |
 ```
 
-**Current gap and characterization.** `OrganizationDirectory` has reads and
-invitation writes but no removal contract. `WorkOSOrganizationsOptions` excludes
-deletion. `memberOf()` drops `directoryManaged`; `revisionOf()` hashes update time,
-status, and raw role slugs but not management evidence. `grantsOfRoles()` already
-retains all slugs and rejects unknown roles; `MemberOverview` filters display roles.
+**Starting gap and characterization.** Before this ticket, `OrganizationDirectory`
+had reads and invitation writes but no removal contract.
+`WorkOSOrganizationsOptions` excluded deletion. `memberOf()` dropped
+`directoryManaged`; `revisionOf()` hashed update time, status, and raw role slugs
+but not management evidence. `grantsOfRoles()` already retained all slugs and
+rejected unknown roles; `MemberOverview` filtered display roles.
 Reuse these facts, not a duplicate raw-role field. Missing/malformed management
 evidence stays unknown/unsupported, never ordinary. Keep that field portable,
 without a WorkOS SDK type in the shared contract. All grants must be supported,

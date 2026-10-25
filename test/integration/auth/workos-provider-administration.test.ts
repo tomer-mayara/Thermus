@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { GenericServerException } from '@workos-inc/node';
 import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
-import { WorkOSOrganizations } from '../../../src/accounts/providers/workos/workos-organizations.ts';
+import { WorkOSOrganizations, workosMembershipReads } from '../../../src/accounts/providers/workos/workos-organizations.ts';
 import { workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { UnconfirmedChangeError, type ChangeOutcome, type ChangeRecord, type ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
 import {
@@ -79,7 +79,7 @@ async function openSite(t: TestContext) {
   world.organizationExternalIds = { [acme]: acmeExternalId };
   world.users = [sam, dan, cal, ada, bea, hal, eve, gus, pia];
   const { settings, workos, authkitKeySet } = world.connection();
-  const organizations = new WorkOSOrganizations({ authority, userManagement: workos.userManagement, authorization: workos.authorization });
+  const organizations = new WorkOSOrganizations({ authority, memberships: workosMembershipReads(workos), userManagement: workos.userManagement, authorization: workos.authorization });
   const provider = new WorkOSAuthProvider({ authority, authkitIssuer: settings.authkitIssuer, mcpResourceUrl: world.mcpResourceUrl, keySet: authkitKeySet, grants: organizations });
   const records: ChangeRecord[] = [];
   const billing = new BillingRecorder();
