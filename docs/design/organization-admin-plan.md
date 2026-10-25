@@ -20,8 +20,9 @@ passed local validation; its maintained PR comments record the rebased checks.
 Merge still requires the parent, resolution of S2.5-R1 in this PR, and independent
 architect approval. S2.5-01c adds checked Members removal and safe self-removal
 navigation in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254).
-Its recorded focused acceptance and browser checks cover the original candidate;
-complete candidate validation was in progress. S2.5-02 remains planned.
+Its recorded selected tests and build gates pass for the original candidate.
+The PR retains its historical final quality and review evidence. S2.5-02 remains
+planned.
 Ticket records describe their historical increments; their earlier missing
 features are not the status of the combined candidate. Merged does not mean
 released, and passing controlled tests does not complete owner gates.
@@ -2843,8 +2844,8 @@ Scenario: Preserve account scope and rejoin only by invitation
   Then access returns only with the new invited role
 ```
 
-**Current gap and characterization.** Members and `AdministrationRoutes` expose
-invitation forms only. Rows already have revisions. Existing current-access checks,
+**Historical gap and characterization.** Before this ticket, Members and
+`AdministrationRoutes` exposed invitation forms only. Rows already have revisions. Existing current-access checks,
 seat counting, and identity-only selector remain passing characterization; add
 removal-triggered journeys rather than new access/count/selection mechanisms.
 Provider refresh is scoped to its selected organization: membership/account/factor

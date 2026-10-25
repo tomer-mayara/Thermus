@@ -21,7 +21,7 @@ describe('HostedAccountRoutes combined Members page', () => {
       assert.match(body, /Active product members: 1/);
       assert.match(body, /ann@example\.com: active\. Roles: User, Admin\./);
       assert.match(body, /dora@example\.com: active\. Roles: none\./);
-      assert.doesNotMatch(body, /ivy@example\.com|old@example\.com|Change role|Remove member|Security|<script/);
+      assert.doesNotMatch(body, /ivy@example\.com|old@example\.com|Change role|Security|<script/);
       assert.deepEqual(organizations.administrationCalls.map(({ operation, actor, request }) => [operation, actor, request]), [
         ['memberOverview', { user: ann }, 'org-a'], ['invitationOverview', { user: ann }, 'org-a'],
       ]);

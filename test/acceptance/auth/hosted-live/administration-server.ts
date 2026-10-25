@@ -146,7 +146,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
   }
 
   describe('Hosted live gate (AUTH-08W): retired grant route', () => {
-    test('Given a password-signed-in Admin and a valid current grant form, when it opens administration and product access and posts to the retired grant route, then the reads succeed and the post gets 404 with no member controls, provider change, or grant record', signInOptions, async () => {
+    test('Given a password-signed-in Admin and a valid current grant form, when it opens administration and product access and posts to the retired grant route, then the reads succeed and the post gets 404 with no grant controls, provider change, or grant record', signInOptions, async () => {
       const { users, memberships, organizationC } = await run.administrationFixtures();
       const { page, pages } = await signInThroughPortal(run, users['c-admin-only']);
       const session = await sessionJson(page);
@@ -169,7 +169,14 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       assert.ok(labelsOf(members.forms).includes('Invite'));
       assert.match(members.body, /type="radio" name="role" value="admin"/);
       assert.equal(answer.status, 404, answer.body);
-      assert.ok(members.forms.every(({ action }) => action.includes('/invitations/')));
+      const allowedActions = new Set(['/invitations/send', '/invitations/resend', '/invitations/revoke', '/members/remove']);
+      assert.ok(members.forms.every(({ action }) => allowedActions.has(action)));
+      for (const form of members.forms.filter(({ action }) => action === '/members/remove')) {
+        assert.deepEqual(Object.keys(form.fields).sort(), ['csrf_token', 'membership_id', 'organization_id', 'revision']);
+        assert.ok(form.fields.csrf_token === String(session.csrfToken), 'The removal form must use the current CSRF token.');
+        assert.equal(form.fields.organization_id, organizationC.id);
+        assert.ok(form.fields.membership_id && form.fields.revision);
+      }
       assert.deepEqual(await membershipState(target.membershipId), before);
       assert.deepEqual(await changeRecordsOf(users['c-admin-only']), []);
       await page.context().close();

@@ -1,6 +1,6 @@
 # S2.5-01c — Members removal
 
-Status: implemented; complete candidate checks are in progress. This change stacks on
+Status: implemented; selected tests and build gates pass. This change stacks on
 [S2.5-01b, PR #253](https://github.com/tomer-mayara/Thermus/pull/253).
 
 ## Scope
@@ -44,6 +44,17 @@ Implement each part through focused red, green, and refactor steps. Record the
 complete candidate checks and review evidence before Ready. The focused run passes
 168 tests, including 29 acceptance cases and the dedicated Chromium case. The
 manager inspected the narrow confirmation with loaded production logo/fonts.
+
+The complete candidate passes 4,997 backend and 49 portal tests, typecheck,
+and the portal build. Dedicated gates pass: 22 PostgreSQL, 10 Collector,
+11 self-hosted container, seven Linux AMD64 hosted image, and 28 WorkOS staging
+cases. The hosted image includes the offline hosted build. The PR keeps the
+final quality reports, source provenance, and failure/retry history in its
+Validation and Quality review comments.
+
+These checks use disposable local infrastructure and the existing staging
+profile. The account/factor preservation and removal journeys use controlled
+provider fixtures; they do not replace S2.5-02's scoped live removal proof.
 
 The separate browser command checks keyboard open, Cancel, and confirmation at
 390 × 844 pixels:
