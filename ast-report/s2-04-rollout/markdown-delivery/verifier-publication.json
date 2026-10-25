@@ -1,0 +1,21 @@
+{
+  "id": "6add7c13c11756b0e132e1f9",
+  "state": "ready",
+  "context": "production",
+  "branch": "main",
+  "commit_ref": "654eebabb6465967edf8d4b0388708e6421f0691",
+  "published_at": "2026-10-25T03:48:54.178Z",
+  "site_id": "9753c4f4-c917-400e-9cd7-f638f81743a8",
+  "candidate": "1e1c73ade29f8dce1e0a61ea062f598216bad6bf",
+  "pull_request": "https://github.com/tomer-mayara/Thermus-Marketing/pull/29",
+  "render": {
+    "id": "srv-db8mnqg473hc739d529g",
+    "branch": "main",
+    "autoDeploy": "yes",
+    "autoDeployTrigger": "commit"
+  },
+  "readback": {
+    "pr248_maintained_comments": true,
+    "pr28_body": true
+  }
+}

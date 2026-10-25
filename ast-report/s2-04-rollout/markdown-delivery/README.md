@@ -11,6 +11,14 @@ The verified Marketing deployment is `6add6e411d03bbad9772d021`, from main
 adds verifier and documentation fixes only. Its candidate is
 `1e1c73ade29f8dce1e0a61ea062f598216bad6bf`.
 
+PR #29 merged as `654eebabb6465967edf8d4b0388708e6421f0691`. Netlify published
+that exact commit in production deployment `6add7c13c11756b0e132e1f9` at
+2026-10-25 03:48:54 UTC (24 October in Denver). Both guide bodies still match
+after publication. Thermus `/healthz` returns 200 with `ok`, and Render still
+uses auto-deploy `yes`, trigger `commit`, branch `main`. An earlier exploratory
+check used the wrong `/health` route and got 401; it is recorded separately
+from the correct health check.
+
 ## Findings
 
 | Check | Result |
@@ -59,6 +67,8 @@ script tests or production metrics.
 - [HTML redirect diagnostic](redirect-diagnostic.json)
 - [Implementation review and retry history](review.json)
 - [Manager and independent review](manager-review.json)
+- [Verifier publication and Render setting readback](verifier-publication.json)
+- [Post-publication content and health check](postmerge-content-check.json)
 
 These results supersede only the direct-Markdown limitation in the prior
 [rollout record](../postmerge/README.md). That record and its earlier observations

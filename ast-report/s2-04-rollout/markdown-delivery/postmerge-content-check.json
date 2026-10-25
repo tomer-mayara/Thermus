@@ -1,0 +1,31 @@
+{
+  "at": "2026-10-25T03:50:41.338278+00:00",
+  "checks": [
+    {
+      "url": "https://thermus.ai/thermus.md",
+      "status": 200,
+      "bytes": 45826,
+      "content_type": "text/markdown; charset=utf-8",
+      "sha256": "b25203887297381fc239e3f0ed69f043247098ee6c46c07a02efd1a0f1798340",
+      "matches_source": true
+    },
+    {
+      "url": "https://thermus.ai/guide/audit-logs.md",
+      "status": 200,
+      "bytes": 5149,
+      "content_type": "text/markdown; charset=utf-8",
+      "sha256": "173081e9e6c1c79fa979349b8be5533474981bdb3b7fc5e727de6b5854130011",
+      "matches_source": true
+    }
+  ],
+  "render_health": {
+    "url": "https://app.thermus.ai/healthz",
+    "status": 200,
+    "body": "ok\n"
+  },
+  "prior_probe": {
+    "url": "https://app.thermus.ai/health",
+    "status": 401,
+    "disposition": "Wrong route for this check. Source and existing rollout record identify /healthz; corrected check passes."
+  }
+}
