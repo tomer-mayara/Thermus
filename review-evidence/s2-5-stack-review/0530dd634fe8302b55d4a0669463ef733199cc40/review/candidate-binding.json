@@ -1,0 +1,23 @@
+{
+  "candidate": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "previousReviewedHead": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "parent": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "main": "9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546",
+  "changedSincePriorReview": [
+    "docs/design/organization-admin-plan.md",
+    "docs/implementation/admin-s1-staging-release-verification.md",
+    "docs/implementation/admin-s2-5-02.md",
+    "docs/implementation/admin-s2-5-stack-review.md"
+  ],
+  "productionTestConfigImpactApiRegistryLegalBytesUnchanged": true,
+  "habitFindingsIdentical": true,
+  "habitCount": 464,
+  "habitSnoozeEmpty": true,
+  "inheritedEvidence": "https://github.com/tomer-mayara/Thermus/tree/339b5716dab08f2195c2d88330a7707b776fca52/review-evidence/s2-5-02/806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "openP2": "S2.5-R1, unused per-member display reads exhaust removal deadline; repair not implemented",
+  "mergeStatus": "blocked",
+  "draftPullRequests": [
+    253,
+    255
+  ]
+}

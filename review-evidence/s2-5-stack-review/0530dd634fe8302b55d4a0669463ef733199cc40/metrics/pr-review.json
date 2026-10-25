@@ -1,0 +1,167 @@
+{
+  "tier": "T1",
+  "tierName": "T1 Team review",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "mergeBase": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates."
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s1-staging-release-verification.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-02-removal-runbook.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-02.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-stack-review.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s4-recovery.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/hosted-organization-setup.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/agreement.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/audit-help.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/members-help.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/fixtures/member-removal-integrated-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-removal.live.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/hosted-live/live-run.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/hosted-live/local-https-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/hosted-live/removal-fixtures.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 0,
+    "productionLimit": 400,
+    "total": 3014,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 5,
+    "removed": 0,
+    "skippedOrTodo": []
+  },
+  "mi": [],
+  "crap": [],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: goal miss",
+    "Architecture: passed",
+    "5 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "49 public modules, 0 snapshots changed",
+    "size.total_lines_note_above: 3014 lines without generated files, above the limit of 1500"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+}

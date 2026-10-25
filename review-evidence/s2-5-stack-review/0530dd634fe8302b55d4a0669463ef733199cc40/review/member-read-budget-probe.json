@@ -1,0 +1,16 @@
+{
+  "reviewedSHA": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "actualSHA": "806ccc573c6ae09c411a47a755d6dd9316343f8f",
+  "command": "node --import tsx .cache/s25-review/member-read-budget-probe.mjs",
+  "clockUnit": "milliseconds",
+  "clockModel": "Advance performance.now and mocked setTimeout by 300 ms per successful getUser; all other calls are immediate.",
+  "activeMembers": 100,
+  "simulatedLatencyPerUserMs": 300,
+  "elapsedMonotonicMs": 30000,
+  "userEnrichmentReads": 100,
+  "deletes": 0,
+  "first": "unknown",
+  "second": "busy",
+  "operationOutcome": null,
+  "assertionsPassed": true
+}

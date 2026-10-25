@@ -1,0 +1,27 @@
+{
+  "changedDocuments": [
+    {
+      "path": "docs/design/organization-admin-plan.md",
+      "sha256": "77a5c134b7fa0412b103b63f95925454aa5cad55450672f31ea462d89bc39115",
+      "fencesBalanced": true
+    },
+    {
+      "path": "docs/implementation/admin-s2-5-02.md",
+      "sha256": "e5cca9f81df170b36c086283b3a036097be5c55a25cab663e486ff7a87335548",
+      "fencesBalanced": true
+    },
+    {
+      "path": "docs/implementation/admin-s2-5-stack-review.md",
+      "sha256": "8f4d90b6e7dda36fe4cdbaebb5907e8755cc5786303a13792e65a38002d34aff",
+      "fencesBalanced": true
+    },
+    {
+      "path": "docs/implementation/admin-s1-staging-release-verification.md",
+      "sha256": "74404babfcf53821a095069963160d3f1c5098010b86bc00ae3e50fcb59b9742",
+      "fencesBalanced": true
+    }
+  ],
+  "failures": [],
+  "legalManifestUnchanged": true,
+  "sourceChanges": []
+}
