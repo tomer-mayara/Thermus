@@ -10,14 +10,14 @@ const empty = { revision: null, endpoint: '', auth: 'none' as const, enabled: fa
 function fixture() {
   const writes: unknown[] = [];
   const routes = new LoggingRoutes({ publicBaseUrl: 'https://example.test/nested/', organizationsPage: '/nested/organizations', service: { read: async () => ({ status: 'absent', settings: empty }), save: async (...args) => { writes.push(args); return { status: 'saved', settings: { ...empty, revision: '1' } }; } } });
-  const request = (fields: Record<string, string> = {}, origin = 'https://example.test') => new Request('https://example.test/nested/logging/save', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ csrf_token: 'csrf', organization_id: 'trusted:a', expected_revision: '', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', ...fields }) });
+  const request = (fields: Record<string, string> = {}, origin = 'https://example.test') => new Request('https://example.test/nested/logging/save', { method: 'POST', headers: { Origin: origin }, body: new URLSearchParams({ csrf_token: 'csrf', organization_id: 'trusted:a', expected_revision: '', endpoint: 'https://collector.example/v1/logs', destination: 'custom', auth: 'bearer', token: '', ...fields }) });
   return { routes, writes, request };
 }
 
 test('Given an Axiom dataset field, when Save runs, then it reaches the service with the protected settings', async () => {
   const { routes, writes, request } = fixture();
-  assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ axiom_dataset: 'audit-log-test' }), session, context)).status, 303);
-  assert.deepEqual(writes, [['trusted:a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: false, axiomDataset: 'audit-log-test' }]]);
+  assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ destination: 'axiom', axiom_dataset: 'audit-log-test' }), session, context)).status, 303);
+  assert.deepEqual(writes, [['trusted:a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: '', enabled: false, axiomDataset: 'audit-log-test' }]]);
 });
 
 test('Given the Axiom dataset form, when a browser applies its input pattern, then valid dataset names pass and invalid names fail', async () => {
@@ -39,30 +39,22 @@ test('Given a password Admin, when Audit logs is read, then the disabled native 
   assert.match(html, /Audit log destination/);
   assert.equal(response.status, 200); assert.match(html, /name="token"/); assert.match(html, /name="expected_revision"/); assert.doesNotMatch(html, /name="enabled"[^>]*checked/);
 });
-test('Given an Admin reading Audit logs, when the page renders, then named export help precedes the settings form', async () => {
+test('Given an Admin reading Audit logs, when the page renders, then the short privacy notice precedes settings', async () => {
   const { routes } = fixture();
-  const handler = routes.handlerFor('/nested/logging');
-  assert.ok(handler);
-  const response = await handler(new Request('https://example.test/nested/logging'), session, context);
+  const response = await routes.handlerFor('/nested/logging')!(new Request('https://example.test/nested/logging'), session, context);
   const html = await response.text();
-  assert.match(html, /<aside aria-labelledby="export-help-heading"><h3 id="export-help-heading">What export includes<\/h3>/);
-  assert.ok(html.indexOf('export-help-heading') < html.indexOf('<form'));
-  assert.match(html, /Input and result exports have size limits/);
-  assert.match(html, /free text can still contain secrets/);
-  assert.match(html, /retries can create duplicates/);
-  assert.match(html, /Event fields exclude sign-in forms/);
-  assert.match(html, /no audit history or replay/);
-  assert.match(html, /Disabling export cannot recall/);
-  assert.match(html, /authority to do so/);
+  assert.match(html, /<aside class="destination-notice" role="note" aria-label="Organization data">/);
+  assert.ok(html.indexOf('destination-notice" role=') < html.indexOf('<form'));
+  assert.match(html, /Send organization data only if you have authority to do so/);
+  assert.match(html, /Check destination access and retention/);
   assert.match(html, /href="https:\/\/thermus.ai\/privacy\/"/);
-  assert.match(html, /Settings have no backup/);
-  assert.match(html, /Bearer token scoped to this dataset/);
-  assert.match(html, /Check your destination for receipt/);
+  assert.doesNotMatch(html, /What export includes|Settings have no backup|None removes the saved token/);
+  assert.match(html, /Save edits before Test/);
 });
 test('Given a valid form, when Save runs, then only the trusted tenant and settings reach the service', async () => {
   const { routes, writes, request } = fixture();
   assert.equal((await routes.handlerFor('/nested/logging/save')!(request({ enabled: 'on' }), session, context)).status, 303);
-  assert.deepEqual(writes, [['trusted:a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true }]]);
+  assert.deepEqual(writes, [['trusted:a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: '', enabled: true }]]);
 });
 test('Given a forged, stale or extra-field form, when Save runs, then there is no write', async () => {
   for (const fields of [{ csrf_token: 'wrong' }, { organization_id: 'b' }, { extra: 'x' }] as Record<string, string>[]) {
@@ -97,7 +89,7 @@ test('Given a hostile saved endpoint, when Audit logs renders, then values are e
   const routes = new LoggingRoutes({ publicBaseUrl: 'https://example.test/', organizationsPage: '/organizations', service: { read: async () => ({ status: 'found', settings: { ...empty, revision: 'r1', endpoint: '\"><script>bad</script>', auth: 'bearer', tokenPresent: true } }), save: async () => ({ status: 'unavailable' }) } });
   const response = await routes.handlerFor('/logging')!(new Request('https://example.test/logging'), session, context);
   const html = await response.text();
-  assert.doesNotMatch(html, /<script>/); assert.match(html, /&lt;script&gt;/); assert.match(html, /A token is saved/); assert.match(html, /name="token"[^>]*value=""/); assert.match(response.headers.get('Content-Security-Policy')!, /form-action 'self'/);
+  assert.doesNotMatch(html, /<script>bad/); assert.match(html, /&lt;script&gt;/); assert.match(html, /A token is saved/); assert.match(html, /name="token"[^>]*value=""/); assert.match(response.headers.get('Content-Security-Policy')!, /form-action 'self'/);
 });
 test('Given an invalid origin, oversized body or duplicate field, when Save arrives, then the service gets no write', async () => {
   const { routes, request, writes } = fixture();

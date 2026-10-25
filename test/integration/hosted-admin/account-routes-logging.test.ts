@@ -34,14 +34,14 @@ test('Given password Admin access, when Test runs through account routes, then t
   const store = new DestinationSettingsFake();
   const sent: unknown[] = [];
   const service = new DestinationSettingsService(store, Buffer.alloc(32, 8), { send: async (destination, event) => { sent.push({ destination, event }); return { kind: 'accepted' }; } });
-  await service.save('tenant-org-a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: false });
+  await service.save('tenant-org-a', { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: 'saved-token', enabled: false });
   const saved = await service.read('tenant-org-a'); assert.equal(saved.status, 'found');
   if (saved.status !== 'found') return;
   const revision = saved.settings.revision; assert.ok(revision);
   const { routes, failures, resolver } = serveAdministration({}, { session: { mfaCompleted: false }, routes: { logging: service } });
   const response = await routes.handle(accountRequest('/logging/test', 'session=ann', {
     method: 'POST', headers: { Origin: 'https://thermus.example', 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: revision, endpoint: saved.settings.endpoint, auth: 'none', token: '' }),
+    body: new URLSearchParams({ csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: revision, endpoint: saved.settings.endpoint, destination: 'custom', auth: 'bearer', token: '' }),
   }));
   assert.equal(response.status, 200);
   assert.equal(resolver.calls.length, 1);
@@ -74,7 +74,7 @@ test('Given a secret-bearing Test failure, when account routes answer, then cook
   } } });
   const response = await routes.handle(accountRequest('/logging/test', 'session=ann', {
     method: 'POST', headers: { Origin: 'https://thermus.example', 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '' }),
+    body: new URLSearchParams({ csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: 'https://collector.example/v1/logs', destination: 'custom', auth: 'bearer', token: '' }),
   }));
   assert.equal(response.status, 503);
   assert.match(response.headers.get('Set-Cookie') ?? '', /session=refreshed/);

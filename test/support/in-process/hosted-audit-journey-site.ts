@@ -56,6 +56,8 @@ export async function runHostedAuditJourney(t: TestContext, destination: { endpo
   const session = await browser.open('session', { Accept: 'application/json' });
   const accessBefore = await browser.open('portal/access');
   const form = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
+  assert.equal(form.fields.destination, 'custom');
+  assert.equal(form.fields.auth, 'bearer');
   const saved = await browser.submit({ ...form, fields: { ...form.fields, ...destination, auth: 'bearer' } });
   const disabled = await storage.service.read(tenant);
   await setImmediate();

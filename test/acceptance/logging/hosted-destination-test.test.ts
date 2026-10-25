@@ -11,7 +11,7 @@ test('Given a current Admin and an Axiom destination, when the Admin saves its d
   const { browser } = await signInThroughServer(site, admin, organizationId);
   const initial = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
   const axiomEndpoint = 'https://us-east-1.aws.edge.axiom.co/v1/logs';
-  const visible = { endpoint: axiomEndpoint, auth: 'bearer', token: '', axiom_dataset: 'audit-log-test' };
+  const visible = { endpoint: axiomEndpoint, destination: 'axiom', auth: 'bearer', token: '', axiom_dataset: 'audit-log-test' };
   const saved = await browser.submit({ ...initial, fields: { ...initial.fields, ...visible, token: secret } });
   assert.equal(saved.status, 303);
   const page = await browser.follow(saved);
@@ -34,29 +34,40 @@ test('Given a current Admin and an Axiom destination, when the Admin saves its d
 
 for (const config of [hostedRootConfig, hostedConfig]) {
   for (const auth of ['none', 'bearer'] as const) {
-    test(`Given a current Admin and a saved disabled ${auth} destination at ${new URL(config.publicBaseUrl).pathname}, when Test saved destination is selected, then one synthetic event uses saved auth without Save or Enable`, async (t) => {
+    test(`Given a current Admin and a saved disabled ${auth} destination at ${new URL(config.publicBaseUrl).pathname}, when Bearer settings are saved before Test if needed, then one synthetic event uses the saved token without Enable`, async (t) => {
       const { calls, service, tenantId, store, site } = await serveDestinationTestSite(t, { config, auth });
       const { browser } = await signInThroughServer(site, admin, organizationId);
-      const page = await browser.open('logging');
+      let page = await browser.open('logging');
+      if (auth === 'none') {
+        assert.match(page.body, /Save a Bearer token before Test/);
+        const oldTest = formLabelled(formsIn(page.body), 'Test saved destination');
+        const legacy = await service.read(tenantId);
+        assert.equal((await browser.submit({ ...oldTest, fields: { ...oldTest.fields, endpoint, token: '' } })).status, 409);
+        assert.deepEqual(await service.read(tenantId), legacy);
+        assert.equal(calls.length, 0);
+        const save = formLabelled(formsIn(page.body), 'Save');
+        const upgraded = await browser.submit({ ...save, fields: { ...save.fields, endpoint, token: secret } });
+        assert.equal(upgraded.status, 303);
+        page = await browser.follow(upgraded);
+      }
       const selected = formLabelled(formsIn(page.body), 'Test saved destination');
       const form: PageForm = { ...selected, fields: { ...selected.fields, endpoint, token: '' } };
       assert.match(form.action, /\/logging\/test$/);
       assert.equal(form.fields.organization_id, tenantId);
       assert.match(page.body, /formnovalidate/);
-      assert.match(page.body, /Test is optional/);
-      assert.match(page.body, /Test proves neither continued delivery nor durable storage/);
-      assert.match(page.body, /Test is not required to enable export/);
+      assert.match(page.body, /Test sends one synthetic event to the saved destination/);
+      assert.match(page.body, /Save edits before Test/);
       const before = await service.read(tenantId);
       const answer = await browser.submit(form);
       assert.equal(answer.status, 200);
       assert.match(answer.body, /Destination accepted the Test event/);
       assert.equal(calls.length, 1);
-      assert.deepEqual(calls[0]?.destination, { endpoint, auth: auth === 'none' ? { type: 'none' } : { type: 'bearer', token: secret } });
+      assert.deepEqual(calls[0]?.destination, { endpoint, auth: { type: 'bearer', token: secret } });
       assert.equal(calls[0]?.event.eventName, 'audit.destination.test');
       assert.equal(calls[0]?.event.organizationId, tenantId);
       assert.equal(calls[0]?.event.actor.subject, admin.id);
       assert.deepEqual(await service.read(tenantId), before);
-      assert.equal(store.writes, 1);
+      assert.equal(store.writes, auth === 'none' ? 2 : 1);
       assert.equal(answer.headers.get('Cache-Control'), 'no-store');
       assert.ok(!answer.body.includes(secret));
       assert.ok(!site.log.lines.join('\n').includes(secret));
@@ -65,7 +76,7 @@ for (const config of [hostedRootConfig, hostedConfig]) {
   }
 }
 
-for (const edits of [{ endpoint: 'https://edited.example/v1/logs' }, { endpoint: '' }, { token: secret }, { enabled: 'on' }, { auth: 'bearer' }, { axiom_dataset: 'unsaved-dataset' }] as Record<string, string>[]) {
+for (const edits of [{ endpoint: 'https://edited.example/v1/logs' }, { endpoint: '' }, { token: secret }, { enabled: 'on' }, { auth: 'none' }, { destination: 'axiom', axiom_dataset: 'unsaved-dataset' }] as Record<string, string>[]) {
   test(`Given unsaved ${Object.keys(edits).join(', ')} edits, when Test is selected, then the browser asks to Save and sends nothing`, async (t) => {
     const { calls, service, tenantId, store, site } = await serveDestinationTestSite(t);
     const { browser } = await signInThroughServer(site, admin, organizationId);
@@ -74,8 +85,8 @@ for (const edits of [{ endpoint: 'https://edited.example/v1/logs' }, { endpoint:
     const form: PageForm = { ...selected, fields: { ...selected.fields, endpoint, token: '' } };
     const before = await service.read(tenantId);
     const answer = await browser.submit({ ...form, fields: { ...form.fields, ...edits } });
-    assert.equal(answer.status, 409);
-    assert.match(answer.body, /Save your edits before Test/);
+    assert.equal(answer.status, edits.auth === 'none' ? 400 : 409);
+    if (edits.auth !== 'none') assert.match(answer.body, /Save your edits before Test/);
     assert.equal(calls.length, 0);
     assert.deepEqual(await service.read(tenantId), before);
     assert.equal(store.writes, 1);

@@ -37,7 +37,7 @@ test('Given trusted tenant A, when Audit logs Save or Test names B, then each re
     audit: new AuditLog({ writeAuditEvent: event => { events.push(event); } }),
     logging: { read: async () => { throw new Error('must not read'); }, save: async () => { throw new Error('must not save'); }, test: async () => { throw new Error('must not test'); } },
   } });
-  const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-b', expected_revision: '', endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '' };
+  const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-b', expected_revision: '', endpoint: 'https://collector.example/v1/logs', destination: 'custom', auth: 'bearer', token: '' };
   for (const action of ['save', 'test']) assert.equal((await routes.handle(changePost(`/logging/${action}`, fields))).status, 409);
   assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome, event.organizationId]), [['save', 'stale', 'tenant-org-a'], ['test', 'stale', 'tenant-org-a']]);
 });
@@ -81,7 +81,7 @@ test('Given saved Audit logs settings, when Save and Test complete and settings 
     audit: new AuditLog({ writeAuditEvent: event => { events.push(event); } }),
     logging: { read: async () => ({ status: 'found', settings }), save: async () => ({ status: 'saved', settings }), test: async () => ({ status: 'tested', revision: 'r1', outcome: { kind: 'accepted' } }) },
   } });
-  const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: settings.endpoint, auth: 'none', token: '' };
+  const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: settings.endpoint, destination: 'custom', auth: 'bearer', token: '' };
   assert.equal((await routes.handle(changePost('/logging/save', fields))).status, 303);
   assert.equal((await routes.handle(changePost('/logging/test', fields))).status, 200);
   assert.equal((await routes.handle(accountRequest('/logging', 'session=ann'))).status, 200);
@@ -100,7 +100,7 @@ test('Given a throwing capture API, when an invitation or Audit logs action comp
     logging: { read: async () => ({ status: 'found', settings }), save: async () => { saves++; return { status: 'saved', settings }; }, test: async () => { tests++; return { status: 'tested', revision: 'r1', outcome: { kind: 'accepted' } }; } },
   } });
   const invitation = await routes.handle(changePost(validChanges.send.path, validChanges.send.fields));
-  const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: settings.endpoint, auth: 'none', token: '' };
+  const fields = { csrf_token: 'csrf-token-of-user-ann', organization_id: 'tenant-org-a', expected_revision: 'r1', endpoint: settings.endpoint, destination: 'custom', auth: 'bearer', token: '' };
   const saved = await routes.handle(changePost('/logging/save', fields));
   const tested = await routes.handle(changePost('/logging/test', fields));
   assert.deepEqual([invitation.status, saved.status, tested.status], [303, 303, 200]);

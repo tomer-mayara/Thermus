@@ -60,6 +60,8 @@ for (const submission of submissions) {
   assert.match(page.body, /name="token"[^>]*value=""/);
   assert.doesNotMatch(page.body, /name="enabled" checked/);
   const form = formLabelled(formsIn(page.body), 'Test saved destination');
+  assert.equal(form.fields.destination, submission.axiomDataset ? 'axiom' : 'custom');
+  assert.equal(form.fields.auth, 'bearer');
   const endpoint = /name="endpoint"[^>]*value="([^"]*)"/.exec(page.body)?.[1];
   assert.ok(endpoint);
   assert.equal(endpoint, submission.endpoint);

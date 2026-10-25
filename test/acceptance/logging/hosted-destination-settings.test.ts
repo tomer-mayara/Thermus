@@ -27,34 +27,21 @@ test('Given a password-authenticated current Admin, when the Admin opens Audit l
   assert.match(members.body, /href="[^"]*logging"[^>]*>Audit logs/);
 });
 
-test('Given an Admin who can enable export, when Audit logs opens, then help explains the content and delivery limits before Save', async (t) => {
+test('Given an Admin choosing an audit destination, when Audit logs opens, then a Bearer-only destination selector and a short privacy notice guide Save', async (t) => {
   const { browser } = await loggingSite(t);
   const page = await browser.open('logging');
   assert.equal(page.status, 200);
-  assert.match(page.body, /What export includes/);
-  assert.match(page.body, /tool inputs and results or errors/);
-  assert.match(page.body, /search queries, requested URLs, fetched text, and reasons/);
-  assert.match(page.body, /administration metadata/);
-  assert.match(page.body, /recognized credential fields and credential-bearing URL parameters/);
-  assert.match(page.body, /free text can still contain secrets/);
-  assert.match(page.body, /Oversized exported results are truncated/);
-  assert.match(page.body, /original and captured sizes in bytes/);
-  assert.match(page.body, /tool results stay complete/);
-  assert.match(page.body, /Logs can be lost/);
-  assert.match(page.body, /retries can create duplicates/);
-  assert.match(page.body, /Event fields exclude sign-in forms, cookies, Authorization headers, and the destination token/);
-  assert.match(page.body, /no audit history or replay/);
-  assert.match(page.body, /Disabling export cannot recall events already sent/);
-  assert.match(page.body, /Send organization data only if you have authority to do so/);
-  assert.match(page.body, /Check destination access and retention/);
-  assert.match(page.body, /href="https:\/\/thermus.ai\/privacy\/"/);
-  assert.match(page.body, /Settings have no backup/);
-  assert.match(page.body, /Lost settings may need to be entered again/);
-  assert.match(page.body, /Bearer token scoped to this dataset/);
-  assert.match(page.body, /Leave this field blank otherwise/);
-  assert.match(page.body, /Check your destination for receipt/);
-  assert.match(page.body, /Test is optional and sends one synthetic event/);
-  assert.match(page.body, /Test proves neither continued delivery nor durable storage/);
+  assert.match(page.body, /<legend>Destination<\/legend>/);
+  assert.match(page.body, /name="destination" value="axiom"/);
+  assert.match(page.body, /name="destination" value="custom"/);
+  assert.match(page.body, /<aside[^>]*role="note"[^>]*><p>Send organization data only if you have authority to do so\. Check destination access and retention\. Read our <a href="https:\/\/thermus.ai\/privacy\/">Privacy Policy<\/a>\.<\/p><\/aside>/);
+  assert.doesNotMatch(page.body, /What export includes|Settings have no backup|name="auth" value="none"|Axiom dataset \(optional\)/);
+  const form = formLabelled(formsIn(page.body), 'Save');
+  const saved = await browser.submit({ ...form, fields: { ...form.fields, ...destination, destination: 'axiom', axiom_dataset: 'audit-log-test', token: secret } });
+  assert.equal(saved.status, 303);
+  const reread = await browser.follow(saved);
+  assert.match(reread.body, /name="destination" value="axiom"[^>]*checked/);
+  assert.ok(!reread.body.includes(secret));
 });
 
 for (const role of ['user', 'revoked-admin'] as const) {
@@ -111,7 +98,7 @@ for (const config of [hostedRootConfig, hostedConfig]) {
     const { site, browser, store, service, tenantId } = await loggingSite(t, config);
     const form = await saveForm(browser);
     assert.equal(form.fields.expected_revision, '');
-    assert.equal(form.fields.auth, 'none');
+    assert.equal(form.fields.auth, 'bearer');
     const saved = await browser.submit({ ...form, fields: { ...form.fields, ...destination, token: secret } });
     assert.equal(saved.status, 303);
     assert.equal(saved.location?.pathname, `${new URL(config.publicBaseUrl).pathname.replace(/\/$/, '')}/logging`);
@@ -143,10 +130,10 @@ test('Given a saved destination and two forms, when a tenant is forged or an old
   const saved = await browser.submit({ ...old, fields: { ...old.fields, ...destination, token: secret } });
   assert.equal(saved.status, 303);
   const current = await service.read(tenantId);
-  const stale = await browser.submit({ ...old, fields: { ...old.fields, endpoint: 'https://other.example/v1/logs', auth: 'none', token: '' } });
+  const stale = await browser.submit({ ...old, fields: { ...old.fields, endpoint: 'https://other.example/v1/logs', auth: 'bearer', token: '' } });
   assert.equal(stale.status, 409);
   const form = await saveForm(browser);
-  const forged = await browser.submit({ ...form, fields: { ...form.fields, organization_id: `workos:${site.world.settings.clientId}:${otherOrganization}`, endpoint: 'https://other.example/v1/logs', auth: 'none', token: '' } });
+  const forged = await browser.submit({ ...form, fields: { ...form.fields, organization_id: `workos:${site.world.settings.clientId}:${otherOrganization}`, endpoint: 'https://other.example/v1/logs', auth: 'bearer', token: '' } });
   assert.equal(forged.status, 409);
   assert.deepEqual(await service.read(tenantId), current);
   const { browser: other } = await signInThroughServer(site, admin, otherOrganization);
@@ -188,4 +175,48 @@ test('Given a committed Save whose answer is lost, when the browser receives an 
   assert.notEqual(reloaded.fields.expected_revision, '');
   const resumed = await browser.submit({ ...reloaded, fields: { ...reloaded.fields, ...destination, token: '' } });
   assert.equal(resumed.status, 303);
+});
+
+test('Given a saved Axiom destination, when a browser without scripts selects Custom and clears its dataset, then the same endpoint retains the write-only token and an endpoint change needs a new token', async (t) => {
+  const { browser, service, store, tenantId } = await loggingSite(t);
+  const initial = await saveForm(browser);
+  const saved = await browser.submit({ ...initial, fields: { ...initial.fields, ...destination, destination: 'axiom', axiom_dataset: 'audit-log-test', token: secret } });
+  assert.equal(saved.status, 303);
+  const current = await saveForm(browser);
+  const custom = await browser.submit({ ...current, fields: { ...current.fields, ...destination, destination: 'custom', axiom_dataset: '', token: '' } });
+  assert.equal(custom.status, 303);
+  const reread = await service.read(tenantId);
+  assert.ok(reread.status === 'found');
+  assert.equal(reread.settings.axiomDataset, undefined);
+  assert.equal(reread.settings.auth, 'bearer');
+  assert.equal(reread.settings.tokenPresent, true);
+  const page = await browser.open('logging');
+  assert.match(page.body, /name="destination" value="custom"[^>]*checked/);
+  assert.ok(!page.body.includes(secret));
+  const form = formLabelled(formsIn(page.body), 'Save');
+  for (const endpoint of ['https://changed.example/v1/logs', 'http://collector.example/v1/logs', '']) {
+    const refused = await browser.submit({ ...form, fields: { ...form.fields, ...destination, endpoint, token: '' } });
+    assert.equal(refused.status, 400);
+    assert.deepEqual(await service.read(tenantId), reread);
+  }
+  assert.equal(store.writes, 2);
+});
+
+test('Given a protected destination form, when Save or Test submits a forged destination, dataset, or None authentication, then no settings or event is written', async (t) => {
+  const { browser, service, store, tenantId } = await loggingSite(t);
+  const form = await saveForm(browser);
+  const forgedFields: readonly Readonly<Record<string, string>>[] = [
+    { destination: '' }, { destination: 'unknown' },
+    { destination: 'axiom' }, { destination: 'axiom', axiom_dataset: 'invalid_dataset' },
+    { destination: 'custom', axiom_dataset: 'audit-log-test' }, { auth: 'none' },
+  ];
+  for (const changed of forgedFields) {
+    for (const action of [form.action, form.action.replace(/\/save$/, '/test')]) {
+      const result = await browser.submit({ ...form, action, fields: { ...form.fields, ...destination, token: secret, ...changed } });
+      assert.equal(result.status, 400);
+      assert.ok(!result.body.includes(secret));
+    }
+  }
+  assert.equal(store.writes, 0);
+  assert.equal((await service.read(tenantId)).status, 'absent');
 });
