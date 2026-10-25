@@ -19,8 +19,9 @@ The saved format stays the same: a nonempty dataset selects Axiom on read; no
 dataset selects Custom. No migration is needed. A saved Bearer token stays hidden
 and can be retained with blank input only for the same endpoint. A changed
 endpoint needs a new token. Existing None-auth settings remain readable and
-unchanged until an Admin saves a Bearer token. They must be updated before using
-Test through the new form. The underlying service and sender retain None support.
+unchanged until an Admin saves a Bearer token. Every form Save, including turning
+export off, needs that upgrade. They must also be updated before using Test
+through the new form. The underlying service and sender retain None support.
 
 ## Original PR #248 implementation record
 

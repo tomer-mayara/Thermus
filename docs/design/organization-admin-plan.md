@@ -324,7 +324,8 @@ The warning links to the Privacy Policy. The page has no long export explanation
 or authentication toggle. The privacy, capture, delivery, and backup rules below
 still apply. The selector does not need a new database column: a saved dataset
 identifies Axiom; its absence identifies Custom. Existing unauthenticated settings
-remain readable, but a new Save through this form requires a Bearer token.
+remain readable, but any Save through this form, including disabling export,
+requires a Bearer token.
 
 ### Narrow screens — Slice 1
 
