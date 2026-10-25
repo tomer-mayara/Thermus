@@ -1,16 +1,34 @@
 # S2-02b saved Audit destination Test
 
-## Planned follow-up: Save and Test
+## Current follow-up: Save and Test
 
-The Admin action will be named **Test**. It will save the current form first,
-then test that confirmed saved revision. A failed or uncertain Save must stop
-the Test. The Audit settings page will show the result in its normal layout,
-without a separate plain notice page. The export switch will be saved as shown.
-Test will remain optional and will send one synthetic event even when export
-is off. Admin, tenant, Origin, CSRF, revision, and credential checks still apply.
+The Admin action is named **Test**. It saves the current form first, including
+the export switch, then tests that confirmed saved revision. A failed, stale,
+or uncertain Save stops the Test. The Audit settings page shows the result in
+its normal layout, without a separate plain notice page. Test stays optional
+and sends one synthetic event even when export is off. Admin, tenant, Origin,
+CSRF, revision, and credential checks still apply.
 
-The implementation starts with a failing acceptance case, then focused tests
-for save-before-test ordering, failure handling, and safe result display.
+The web route calls the existing settings service. Only a `saved` or `unchanged`
+result permits Test. The returned public settings and revision select the Test;
+the route clears the submitted token from the Test input. Cancellation after
+Save stops the send, but it cannot undo a write that has already committed.
+A failed Test does not roll back Save. Each completed phase records its own
+administration outcome; the synthetic Test event remains separate.
+
+An uncertain Save keeps the existing recovery rule: show a styled notice with
+a GET link to current settings, no immediate write form and no automatic retry.
+The service's Test operation still checks the full saved version before sending
+and confirms its revision afterward. It does not save or enable anything itself.
+
+The implementation starts with a failing acceptance case, then focused tests for
+save-before-test ordering, no send after failed Save, cancellation, and safe result
+display. PR #250 records complete validation and current-candidate review.
+
+## Original PR #241 implementation record
+
+The sections below preserve the original saved-only browser flow and its checks.
+The follow-up above replaces that browser flow; its service-level Test rules stay.
 
 [Draft PR #241](https://github.com/tomer-mayara/Thermus/pull/241) adds an optional
 Test action for a current Admin. It is stacked over PR #240 and includes the

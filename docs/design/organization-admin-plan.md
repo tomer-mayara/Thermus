@@ -315,9 +315,8 @@ Bearer token [                                                  ]
 Saved token: Set · Leave blank to keep it for the same endpoint.
 A changed endpoint requires a new token.
 [ Off ] Enable export
-[Save]
-[Test saved destination — optional]
-Save changes before Test. Test sends one synthetic event; check receipt.
+[Save]  [Test — optional]
+Test saves these settings, then sends one synthetic event. Check receipt.
 ```
 
 The warning links to the Privacy Policy. The page has no long export explanation
@@ -696,15 +695,15 @@ Customer sink failure cannot change tool results or fail/replay completed admin
 actions. Isolate it from throwing post-write `ChangeRecorder.record()` calls made
 by `ChangeRecording.keep()` and from tool execution; capture/enqueue remains bounded.
 Exclude sender responses, retries, and settings-read diagnostics from customer
-capture. An Audit logs action may record one administration event; the labelled
-synthetic Test record is separate. Export work must not capture itself.
+capture. The Test button records the Save and Test phases separately; the labelled
+synthetic Test record is separate from both. Export work must not capture itself.
 
 **Settings and Test.** The destination panel fills the shared page content width,
 up to 1,200 pixels. Keep Save and gray secondary Test beside each other at their
 natural widths, with a gap. Wrap the action row when it cannot fit. Keep the
 Members layout unchanged. Show Enable export as an On/Off switch with a stable
 label. It keeps the native checkbox value and works with a pointer or keyboard,
-also without scripts. Changing the switch takes effect only after Save. Choose
+also without scripts. Save or Test saves the switch as shown. Choose
 Axiom or Custom. Use one public HTTPS OTLP logs endpoint and one write-only
 Bearer token field. Axiom requires its dataset;
 Custom omits it. A dataset uses 1–128 ASCII letters,
@@ -726,14 +725,20 @@ settings/revision before another write. A timed-out Save may commit after that
 read; subsequent writes still require atomic expected-revision checks. Never
 automatically replay the Save.
 
-Optional Test uses the saved version, works disabled, sends a labelled synthetic
-event, and never saves/enables. Save unsaved input first. Freshly check the saved
-version before send and read its revision again after settlement, before producing
-the response.
+Optional Test first saves the current form, including the export switch. Only a
+confirmed saved or unchanged result permits the Test. A failed, stale, or uncertain
+Save sends no Test event. Use the returned saved version and an empty token field
+for the existing saved-destination Test operation. It works disabled and sends
+one labelled synthetic event. Freshly check that saved version before send and
+read its revision again after settlement, before producing the response.
 A mismatch or failed post-read suppresses the result; no browser polling is needed.
-Keep no history/dashboard/version controls. Show the submitted saved-version result;
-Test proves neither continued delivery nor durable storage and is never a
-prerequisite to enable.
+Keep no history/dashboard/version controls. Show the result inside the normal
+Audit settings layout. State that settings were saved when the send fails; a
+failed Test does not roll back Save. An uncertain Save keeps a styled recovery
+notice with only a GET saved-state link and no write form. No automatic retry.
+The server returns the result to the POST; a deliberate browser resubmission may
+send another Test event. Test proves neither continued delivery nor durable
+storage and is never a prerequisite to enable.
 
 **Egress and revisions.** At actual connection, enforce public HTTPS/IP, allow
 Collector paths, reject userinfo/fragments/all queries, and follow zero redirects.
@@ -1642,7 +1647,7 @@ reference and adds no S2 prerequisite.
 | S2-01a | Merged Slice 1 identity/account implementation | Private settings store, bounded SQL runtime, and configuration. | Atomic tenant/revision contract and storage failure/lifecycle cases pass. |
 | S2-01b | S2-01a, S1-02, S1-04a | Current-Admin destination settings, encrypted credential, and Save UI. | Save, secret, authorization, and uncertain-result cases pass. |
 | S2-02a | Audit API foundation and existing runtime contracts | Narrow safe OTLP/HTTP JSON sender. | Actual-connection egress and bounded protocol outcomes pass. |
-| S2-02b | S2-01b, S2-02a | Optional Test of the saved destination. | Saved-revision, disabled Test, and late-result cases pass. |
+| S2-02b | S2-01b, S2-02a | Save the current form, then optionally Test that saved destination. | Save-before-Test, failed Save, saved-revision, disabled Test, and late-result cases pass. |
 | S2-03a | S2-01b | Safe customer events and operator-content removal. | Final public content and shipped admin events have correct isolation and byte bounds. |
 | S2-03b | S2-01a, S2-03a | Activity-driven settings snapshots. | Cold start, remote Enable, read recovery, and no idle reads pass. |
 | S2-03c | S2-02a, S2-02b, S2-03b | Bounded queue, current-revision dispatch, and retries. | Isolation, overload, outage, retry, and shutdown cases pass. |
@@ -1936,16 +1941,25 @@ now permits the narrow Axiom dataset routing header described above. It adds no
 universal receiver, arbitrary custom headers, client certificates, or alternate
 transport promise.
 
-#### S2-02b — Optional Test of the saved destination
+#### S2-02b — Save settings and optionally Test the saved destination
 
 **Acceptance specification first:**
 
 ```gherkin
-Scenario: Test a disabled saved destination
-  Given a current Admin and a saved disabled destination
-  When the Admin selects Test saved destination
-  Then one labelled synthetic event uses that saved version and its auth
-  And Test neither saves edits nor enables export
+Scenario: Save edits and Test a destination
+  Given a current Admin with valid edits to the destination and export switch
+  When the Admin selects Test
+  Then the form is saved before a Test event is sent
+  And one labelled synthetic event uses the confirmed saved version and its auth
+  And the result appears in the Audit settings page
+  And a disabled export switch stays disabled
+
+Scenario: Save cannot be confirmed
+  Given valid destination edits whose Save fails or has an uncertain outcome
+  When the Admin selects Test
+  Then no Test event is sent
+  And the Audit settings layout shows a safe error
+  And an uncertain Save offers a saved-state read link without a write form
 
 Scenario: Ignore an old Test result
   Given a Test in progress for a saved revision
@@ -1957,7 +1971,8 @@ Scenario: Ignore an old Test result
 is stacked over #240 and includes the settings dependency from #238, merged
 into this branch.
 The [implementation record](../implementation/admin-s2-02b.md) describes the
-saved-only Test, bounded lifetime, and result suppression. Its linked PR evidence
+original saved-only Test, bounded lifetime, and result suppression. PR #250 adds
+the save-before-test web flow above without changing that service operation. Its linked PR evidence
 records local checks and technical review; current merge requirements are listed
 above. This is not a release record. The steps below
 preserve the acceptance and implementation order. A successful Test is never
@@ -1969,19 +1984,21 @@ an Enable prerequisite.
    revision, and a labelled synthetic record. Green: one fresh read of a full saved version
    supplies revision, enabled state, endpoint, and credential for the pre-send decision.
    Recover the credential through the destination owner and call 02a once, allowing the
-   explicit disabled-state exception. Refactor so Test cannot call Save, change
-   Enable, or use unsaved form values.
+   explicit disabled-state exception. Keep the service Test operation separate from
+   Save; it must not use unsaved values or change the export switch.
 2. Red: concurrent/repeated tests exceed admission, or a read fails/changes revision before
    send. Green: bound Test work and use that single fresh saved-version read immediately
    before the attempt; stop on failed reads or mismatch. Do not load settings and then issue
    another pre-send read or mix versions. Reuse the sender's security, timeout, payload/response,
    and cancellation bounds. Keep Test one-shot; no nested retries. 03c later proves the shared
    aggregate delivery bounds.
-3. Red: web cases cover CSRF/origin refusal, unsaved input, each typed sender outcome, and
-   late result after a revision change. Green: show only the submitted current saved-version
-   result after a fresh post-settlement revision read; mismatch or failed post-read
-   suppresses it. Ask to Save unsaved edits first. Refactor without result
-   history, polling dashboard, or enable gate.
+3. Red: web cases cover CSRF/origin refusal, Save-before-Test, failed or uncertain
+   Save, cancellation after Save, each typed sender outcome, and a late result
+   after a revision change. Green: save the submitted form, then test only the
+   returned saved revision with a blank token input. A mismatch or failed post-read
+   suppresses the sender result. Show safe results within the Audit settings page;
+   distinguish a saved configuration from a failed Test and preserve uncertain-Save
+   recovery. Refactor without result history, polling dashboard, or enable gate.
 4. Run browser/settings/sender integration for None/Bearer and disabled Test. A controlled
    transport seam may reach a local Collector to verify protocol and synthetic labels; it
    does not prove production egress. Retain 02a's separate unchanged-guard address/TLS proof;
@@ -1993,9 +2010,10 @@ Audit logs page with S2-02a's public sender contract. Existing route/form cases 
 tests, a small Test contract where needed, and public browser acceptance under
 `test/acceptance/`; shared sites/drivers belong under `test/support`.
 
-**Done.** Saved-only, disabled, bounded, and late-result Test acceptance passes. UI text
-explains that Test proves neither continued delivery nor durable storage. Test changes no
-saved destination state.
+**Done for the original increment.** Saved-only, disabled, bounded, and late-result
+Test acceptance passed. The current follow-up adds Save-before-Test at the web
+boundary and inline results. Its complete validation is recorded in PR #250.
+Test remains optional and proves neither continued delivery nor durable storage.
 
 #### S2-03a — Customer capture and operator-content isolation
 

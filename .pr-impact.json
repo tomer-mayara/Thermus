@@ -6,7 +6,7 @@
     "contract": false,
     "deployment": false,
     "component": false,
-    "internalInterface": false,
+    "internalInterface": true,
     "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "The existing web owner replaces the long Audit explanation with the owner-requested authority/privacy warning and exposes Axiom or Custom selection. Its private form parser requires a valid dataset for Axiom, excludes a dataset for Custom, and permits only Bearer writes. The Audit panel fills the available page width, with Save and gray secondary Test actions beside each other. Enable export uses a native accessible on/off switch; its draft state is applied only by Save, with the same field and no new script. The page maps the choice to the existing optional dataset field; the settings service, store, sender, public declarations, components, edges, registry diagrams, containers and deployment stay unchanged. Existing None-auth rows remain readable and unchanged until an explicit Bearer Save; old rendered forms fail closed and require reload. A static hash-pinned script controls the dataset field only on Audit pages; Members retains script denial. Admin, origin, CSRF, revision, encrypted token retention and saved-Test rules remain in place. Registry prose and the active plan now state this UI behavior. This local credential-form and CSP change requires T1 Team review; it changes no separate supported portal/client protocol or external integration.",
+    "summary": "The protected web Test action now saves the submitted Audit settings, including the export switch, before it calls the existing saved-destination Test operation. Only a confirmed saved or unchanged result permits that Test, using the returned public settings and revision with a blank token input. Failed, stale or uncertain Saves send no Test event; a failed Test does not undo the saved settings. Cancellation after Save stops the send. The web owner shows fixed safe outcomes in the existing Audit layout and keeps uncertain-Save recovery limited to a GET link without a write form or automatic retry. This changes web-to-audit runtime collaboration and partial-success behavior, so internalInterface and sensitiveBehavior are true. Service declarations, source dependency edges, storage, sender security, actor/tenant authority, components, registry diagrams, containers and deployment stay unchanged. No new framework, dependency, session flash state or result history is added. Registry prose and active plan describe the new order; historical evidence and approved legal files remain unchanged.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,15 +27,14 @@
     "evidence": [
       "architecture/components.md",
       "docs/design/organization-admin-plan.md",
+      "docs/implementation/admin-s2-02b.md",
       "docs/implementation/admin-s2-04-direct-axiom.md",
-      "src/interfaces/web/account/logging-form.ts",
+      "src/interfaces/web/account/logging-routes.ts",
       "src/interfaces/web/account/logging-page.ts",
-      "src/interfaces/web/account/members-page-layout.ts",
-      "src/interfaces/web/account/members-style.ts",
-      "test/unit/html/logging-form.test.ts",
-      "test/unit/html/logging-page.test.ts",
-      "test/acceptance/logging/hosted-destination-settings.test.ts",
-      "test/acceptance/logging/hosted-destination-test.test.ts"
+      "src/interfaces/web/account/logging-test-page.ts",
+      "src/logs/audit/destination-settings-service.ts",
+      "test/unit/html/logging-test-routes.test.ts",
+      "test/acceptance/logging/hosted-save-and-test.test.ts"
     ]
   }
 }

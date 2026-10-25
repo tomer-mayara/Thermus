@@ -4,15 +4,17 @@
 
 The Admin chooses **Axiom** or **Custom**. Both choices use a full public HTTPS
 OTLP logs URL and a Bearer token. Axiom requires a dataset; Custom omits it.
-Switching the choice changes only the form until Save. Test still requires the
-saved values, and it does not save edits or enable export.
+Switching the choice changes only the form until Save or Test. Test saves the
+current form first, including the export switch, then tests the confirmed saved
+version. A failed or uncertain Save sends no Test. A failed Test does not undo
+Save. Results stay in the Audit settings layout.
 
 The destination panel fills the shared page content width, up to 1,200 pixels.
 Save and Test use their natural widths in one action row. Save stays orange;
 Test is gray. The row wraps when the controls cannot fit. Members keeps its
 existing layout. Enable export is an On/Off switch with a stable label. Pointer
 and Space change its native checkbox value, including without scripts. The
-change is saved only when the Admin selects Save.
+change is saved when the Admin selects Save or Test.
 
 The page keeps this warning, with a link to the Privacy Policy:
 
@@ -27,8 +29,8 @@ dataset selects Custom. No migration is needed. A saved Bearer token stays hidde
 and can be retained with blank input only for the same endpoint. A changed
 endpoint needs a new token. Existing None-auth settings remain readable and
 unchanged until an Admin saves a Bearer token. Every form Save, including turning
-export off, needs that upgrade. They must also be updated before using Test
-through the new form. The underlying service and sender retain None support.
+export off, needs that upgrade. Test also performs this Save before sending its
+event. The underlying service and sender retain None support.
 
 ## Original PR #248 implementation record
 

@@ -4,15 +4,15 @@ import type { AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 import { formsIn, formLabelled } from '../../../support/drivers/browser/hosted-browser.ts';
 import { serveAuditAdministrationSite as captureSite, auditAdministrationAdmin as admin } from '../../../support/in-process/audit-administration-site.ts';
 
-test('Given a current Admin and saved destination, when Test completes, then one action event is separate from its one synthetic test and contains no sender response', async t => {
+test('Given a current Admin and saved destination, when Test completes, then Save and Test action events are separate from the synthetic test and contains no sender response', async t => {
   const events: AuditEvent[] = [];
   const { browser, sent } = await captureSite(t, event => { events.push(event); });
   const form = formLabelled(formsIn((await browser.open('logging')).body), 'Save');
   await browser.submit({ ...form, fields: { ...form.fields, endpoint: 'https://collector.example/v1/logs', auth: 'bearer', token: 'audit-test-token' } });
-  const saved = formLabelled(formsIn((await browser.open('logging')).body), 'Test saved destination');
+  const saved = formLabelled(formsIn((await browser.open('logging')).body), 'Test');
   const response = await browser.submit({ ...saved, fields: { ...saved.fields, endpoint: 'https://collector.example/v1/logs', token: '' } });
   assert.equal(response.status, 200, response.body);
-  assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome]), [['save', 'saved'], ['test', 'tested']]);
+  assert.deepEqual(events.map(event => event.eventName === 'audit.destination.changed' && [event.action, event.outcome]), [['save', 'saved'], ['save', 'unchanged'], ['test', 'tested']]);
   assert.equal(sent.length, 1);
   assert.equal(sent[0]?.eventName, 'audit.destination.test');
   assert.doesNotMatch(JSON.stringify(events), /accepted|collector|revision/);

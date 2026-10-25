@@ -49,7 +49,7 @@ test('Given an Admin reading Audit logs, when the page renders, then the short p
   assert.match(html, /Check destination access and retention/);
   assert.match(html, /href="https:\/\/thermus.ai\/privacy\/"/);
   assert.doesNotMatch(html, /What export includes|Settings have no backup|None removes the saved token/);
-  assert.match(html, /Save edits before Test/);
+  assert.match(html, /Test saves these settings/);
 });
 test('Given a valid form, when Save runs, then only the trusted tenant and settings reach the service', async () => {
   const { routes, writes, request } = fixture();

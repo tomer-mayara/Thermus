@@ -61,7 +61,7 @@ export async function runHostedAuditJourney(t: TestContext, destination: { endpo
   const saved = await browser.submit({ ...form, fields: { ...form.fields, ...destination, auth: 'bearer' } });
   const disabled = await storage.service.read(tenant);
   await setImmediate();
-  const testForm = formLabelled(formsIn((await browser.open('logging')).body), 'Test saved destination');
+  const testForm = formLabelled(formsIn((await browser.open('logging')).body), 'Test');
   const tested = await browser.submit({ ...testForm, fields: { ...testForm.fields, endpoint: destination.endpoint, auth: 'bearer', token: '' } });
   const afterTest = await storage.service.read(tenant);
   const enableForm = formLabelled(formsIn((await browser.open('logging')).body), 'Save');

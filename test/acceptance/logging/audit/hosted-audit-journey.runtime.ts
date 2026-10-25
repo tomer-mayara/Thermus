@@ -40,7 +40,7 @@ test('S2-04 Given a current password-authenticated Admin and a reachable Collect
   assert.match(journey.tested.body, /Destination accepted the Test event/);
   assert.equal(journey.enabledSettings.settings.enabled, true);
   assert.notEqual(journey.enabledSettings.settings.revision, journey.disabled.settings.revision);
-  assert.equal(journey.settingsWrites, 3);
+  assert.equal(journey.settingsWrites, 4);
   assert.deepEqual(journey.cold.content, [{ type: 'text', text: journey.productText }]);
   assert.deepEqual(journey.product.content, [{ type: 'text', text: journey.productText }]);
   assert.ok(Buffer.byteLength(journey.productText) > 65_536);
