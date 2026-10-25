@@ -829,6 +829,13 @@ resources; add no per-tenant exporter pools.
 Follow [OTLP](https://opentelemetry.io/docs/specs/otlp/) and validate actual
 OTLP/HTTP JSON with None/Bearer: POST with `Content-Type: application/json`,
 lowerCamelCase fields, and decimal-string 64-bit timestamps. Acceptance requires
+both `timeUnixNano` and `observedTimeUnixNano` to use the captured event timestamp.
+Thermus creates these Audit events when it observes the completed tool or admin
+action, or creates the synthetic Test event. Convert that timestamp once; preserve
+it through queue delay and retries. Do not use send time. This follows the
+[OpenTelemetry application-event timestamp model](https://opentelemetry.io/docs/specs/otel/logs/data-model/#field-observedtimestamp)
+and prevents receivers from displaying an omitted observed timestamp as 1970.
+Protocol acceptance requires
 HTTP 200, matching JSON content type, and a valid OTLP JSON response; `{}` is valid
 under those conditions. Parse full acceptance, zero-rejection warning, and partial
 rejection. A malformed HTTP 200 success body cannot confirm acceptance: return a
@@ -1961,7 +1968,7 @@ production public-HTTPS egress.
    zero redirects and permit no connection-time DNS bypass. Refactor policy where every
    connection passes it. Website DNS preflight alone is insufficient.
 3. Red: protocol cases inspect POST, `application/json`, lowerCamelCase fields, decimal-string
-   64-bit timestamps, None/Bearer, and request/payload limits,
+   64-bit event and observed timestamps from the same captured time, None/Bearer, and request/payload limits,
    timeout/cancellation, response size/parse limits, and sanitized errors. Green: implement
    those bounds and isolate customer TLS/headers from system OTel environment defaults.
    Refactor with distinctive platform headers/tokens proving they never merge into a customer

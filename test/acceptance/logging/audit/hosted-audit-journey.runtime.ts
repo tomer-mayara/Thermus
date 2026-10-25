@@ -3,6 +3,8 @@ import { test } from 'node:test';
 import { openAuditSenderSite } from '../../../support/container/audit-sender-site.ts';
 
 interface CollectorRecord {
+  readonly timeUnixNano: string;
+  readonly observedTimeUnixNano: string;
   readonly eventName: string;
   readonly attributes: { key: string; value: { stringValue?: string; doubleValue?: number; boolValue?: boolean } }[];
 }
@@ -52,6 +54,8 @@ test('S2-04 Given a current password-authenticated Admin and a reachable Collect
   const records = await collector.collectorRecords(7) as unknown as CollectorRecord[];
   assert.equal(records.length, 7);
   for (const record of records) {
+    assert.match(record.timeUnixNano, /^[1-9]\d+$/);
+    assert.equal(record.observedTimeUnixNano, record.timeUnixNano);
     const attributes = attributesOf(record);
     assert.equal(attributes['organization.id'].stringValue, journey.tenant);
     assert.equal(attributes['actor.subject'].stringValue, journey.actor);

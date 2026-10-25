@@ -548,6 +548,9 @@ It sends one OTLP/HTTP JSON request to the configured Collector or compatible
 OTLP service. Direct Axiom adds only the validated saved `x-axiom-dataset` header
 to that same request; a blank dataset adds no such header. The endpoint remains
 the Admin-supplied full logs URL, with the same public-address and TLS rules.
+The encoder writes the captured Audit timestamp to both `timeUnixNano` and
+`observedTimeUnixNano` as decimal-string nanoseconds. Thermus observes these events
+at capture; queue delay and retries preserve that time instead of using send time.
 `send` retains its typed outcome contract;
 `start` also exposes physical settlement. Preparation is synchronous; native work
 holds a clearable encoded body/auth/dataset holder, not the original event or

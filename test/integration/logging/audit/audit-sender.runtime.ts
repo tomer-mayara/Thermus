@@ -67,16 +67,17 @@ test('Given an open-source Collector with None and Bearer receivers, when audit 
   const site = await openAuditSenderSite(t, 'collector');
   const outcomes = await site.send([
     { endpoint: site.endpoint, auth: { type: 'none' }, event: completion },
-    { endpoint: site.bearerEndpoint, auth: { type: 'bearer', token: site.token }, event: completion },
+    { endpoint: site.bearerEndpoint, auth: { type: 'bearer', token: site.token }, event: { ...completion, tool: 'getURLAsMarkdown', input: { url: 'https://example.com', reason: 'runtime reason' } } },
     { endpoint: site.bearerEndpoint, auth: { type: 'bearer', token: 'wrong-runtime-token' }, event: completion },
   ]);
   assert.deepEqual(outcomes.slice(0, 2), [{ kind: 'accepted' }, { kind: 'accepted' }]);
   assert.equal(outcomes[2].kind, 'permanent_failure');
   assert.equal('statusCode' in outcomes[2] && outcomes[2].statusCode, 401);
-  const exported = await site.collectorRecords(2);
+  const exported = await site.collectorRecords(2) as { timeUnixNano: string; observedTimeUnixNano: string }[];
   assert.equal(exported.length, 2);
   for (const record of exported) {
     assert.equal(record.timeUnixNano, '1792758896789000000');
+    assert.equal(record.observedTimeUnixNano, '1792758896789000000');
     assert.match(JSON.stringify(record), /runtime-org/);
     assert.match(JSON.stringify(record), /mcp\.tool\.completed/);
   }
