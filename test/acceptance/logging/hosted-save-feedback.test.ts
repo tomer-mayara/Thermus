@@ -46,7 +46,7 @@ test('Given saved token feedback and removed Admin access, when the page or Test
   const form = formLabelled(formsIn((await browser.open('logging')).body), 'Test');
   let reads = 0;
   const read = service.read.bind(service);
-  t.mock.method(service, 'read', async tenant => { reads++; return read(tenant); });
+  t.mock.method(service, 'read', async (tenant: string) => { reads++; return read(tenant); });
   site.world.memberships = [{ userId: admin.id, organizationId, roles: ['user'] }];
   const writes = store.writes;
   for (const answer of [await browser.open('logging'), await browser.submit({ ...form, fields: { ...form.fields, endpoint, token: '' } })]) {
