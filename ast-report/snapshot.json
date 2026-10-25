@@ -105,9 +105,9 @@
     }
   },
   "version": 1,
-  "commit": "17085397bb0ce9af62d69bffe6a314513f277f7f",
-  "date": "2026-10-24T22:15:03-06:00",
-  "title": "Widen Audit settings and group Save and Test actions",
+  "commit": "d7e86ab12e292bcc780d2dfb8526262cbed884ca",
+  "date": "2026-10-24T22:48:58-06:00",
+  "title": "Show export enablement as an accessible on-off switch",
   "global": {
     "modularity": 0.34,
     "crossShare": 0.31,
@@ -270,7 +270,7 @@
         "src/runtime/http/server.ts"
       ],
       "files": 70,
-      "loc": 5432,
+      "loc": 5442,
       "maintainability": 60.3,
       "paths": 1467,
       "references": {
@@ -11677,8 +11677,8 @@
             "owner": "",
             "name": "loggingPage",
             "start": 1208,
-            "end": 4421,
-            "body": "67322af73eca55919294fab18101308e2d1a106ad58350617dcc170f52017418",
+            "end": 4653,
+            "body": "6f3b70987d68d0cfd04be0536c21ebd74d2f5d5bfe2ca4201aadf8aca4374058",
             "signature": "356a0b3b05eeb7273af34a44eaec3a4e0384d27570a7003832c7785b1924599d"
           }
         },
@@ -11692,8 +11692,8 @@
             "kind": "FunctionDeclaration",
             "owner": "",
             "name": "loggingNotice",
-            "start": 4423,
-            "end": 4778,
+            "start": 4655,
+            "end": 5010,
             "body": "06bf65c238ec6fdc15858b436343304de7f34435d1b6a94a1eddab2b33bda5f3",
             "signature": "3e34de129847f0173f79112a435c584d50f44fddd702f960e1567ec3d8630ec1"
           }
@@ -11931,7 +11931,7 @@
       "path": "src/interfaces/web/account/members-style.ts",
       "community": "0",
       "paths": 0,
-      "loc": 60,
+      "loc": 70,
       "functions": [],
       "sourceEvidence": {
         "version": "typescript-tokens-v2",
@@ -29191,8 +29191,8 @@
   },
   "tool": "0.43.1-thermus.1",
   "provenance": {
-    "sourceFingerprint": "86b5dd607d321fb9b40c3cf02561b2869e74bd9a2e9997d0536503bcef878f45",
-    "inputsFingerprint": "e36a3be29141f873738372119075eabdfa178d5ea801a1d081f9ee66603083a1",
+    "sourceFingerprint": "bfe9c7885b18229bf8611f40702ea8c1cbedf08f94b9a791ca019a0e2349450b",
+    "inputsFingerprint": "8fc2fe0ffd6aa4f0668597a3d68fecc66c35cffc3cdacd403de96a96a2e8dc5e",
     "runtime": "node-24.20.0",
     "compiler": "typescript-7.0.2",
     "measurementVersion": "own-characters-1",

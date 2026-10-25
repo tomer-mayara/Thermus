@@ -314,7 +314,7 @@ Axiom dataset [ audit-log-test                                 ]
 Bearer token [                                                  ]
 Saved token: Set · Leave blank to keep it for the same endpoint.
 A changed endpoint requires a new token.
-[ ] Enable export
+[ Off ] Enable export
 [Save]
 [Test saved destination — optional]
 Save changes before Test. Test sends one synthetic event; check receipt.
@@ -702,8 +702,11 @@ synthetic Test record is separate. Export work must not capture itself.
 **Settings and Test.** The destination panel fills the shared page content width,
 up to 1,200 pixels. Keep Save and gray secondary Test beside each other at their
 natural widths, with a gap. Wrap the action row when it cannot fit. Keep the
-Members layout unchanged. Choose Axiom or Custom. Use one public HTTPS OTLP logs
-endpoint and one write-only Bearer token field. Axiom requires its dataset;
+Members layout unchanged. Show Enable export as an On/Off switch with a stable
+label. It keeps the native checkbox value and works with a pointer or keyboard,
+also without scripts. Changing the switch takes effect only after Save. Choose
+Axiom or Custom. Use one public HTTPS OTLP logs endpoint and one write-only
+Bearer token field. Axiom requires its dataset;
 Custom omits it. A dataset uses 1–128 ASCII letters,
 digits, or hyphens and supplies only `x-axiom-dataset`; no arbitrary header editor
 is added. Direct Axiom uses the full logs URL and Bearer token, not the web stream

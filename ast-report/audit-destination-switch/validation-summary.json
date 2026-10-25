@@ -1,0 +1,380 @@
+{
+  "candidate": "d7e86ab12e292bcc780d2dfb8526262cbed884ca",
+  "base": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "ordinary": {
+    "backend": 4759,
+    "portal": 49,
+    "failures": 0,
+    "skips": 0,
+    "exitCode": 0
+  },
+  "focused": {
+    "tests": 132,
+    "failures": 0,
+    "skips": 0,
+    "exitCode": 0
+  },
+  "typecheck": "passed",
+  "portalBuild": "passed",
+  "apiSurface": {
+    "snapshots": 48,
+    "changed": 0,
+    "exitCode": 0,
+    "limit": "Narrow emitter ignores 33 unrelated diagnostics in 2 outside-public files; full typecheck passed."
+  },
+  "habitHooks": {
+    "exitCode": 1,
+    "findings": 30,
+    "newFromSwitch": 0,
+    "snooze": [],
+    "disposition": "Retained reasons in quality-notes.md; no tool failure."
+  },
+  "quality": {
+    "processExitCode": 1,
+    "outcomes": {
+      "Delta": "goal miss",
+      "Review": "goal miss",
+      "CRAP": "passed",
+      "Architecture": "passed"
+    },
+    "crapExitCode": 0,
+    "technicalBlockers": 0,
+    "tier": "T1 Team review"
+  },
+  "coverage": {
+    "sourceFingerprint": "bfe9c7885b18229bf8611f40702ea8c1cbedf08f94b9a791ca019a0e2349450b",
+    "inputsFingerprint": "8fc2fe0ffd6aa4f0668597a3d68fecc66c35cffc3cdacd403de96a96a2e8dc5e",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit",
+    "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+    "captureId": "96abceaaf088e2d24a642966aa3f01f6afaa6890af0cb4913bf486d767f07891",
+    "comparisonIdentity": {
+      "sourceFingerprint": "bfe9c7885b18229bf8611f40702ea8c1cbedf08f94b9a791ca019a0e2349450b",
+      "inputsFingerprint": "8fc2fe0ffd6aa4f0668597a3d68fecc66c35cffc3cdacd403de96a96a2e8dc5e",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit"
+    },
+    "status": "verified",
+    "capturedCommit": "d7e86ab12e292bcc780d2dfb8526262cbed884ca",
+    "buildFingerprint": "90967d89af9ae94ee4017f8ed0ad2f84cae0298a1d1296ada32e522fd25f07a1",
+    "captureManifestFingerprint": "3893e89cb47e6ee376d728272b4d3643e6baeb12fe7b9d44284b3ca8bbd314df"
+  },
+  "browser": {
+    "phase": "green",
+    "scenario": "Given saved on/off export settings, when an Admin uses pointer, label, or Space to change the switch, then its visible and accessible state follows native checkbox values, sends no request until Save, and persists after Save with or without JavaScript.",
+    "scope": "Real Chromium, production LoggingRoutes/page/layout/service, local trusted Admin, in-memory store, controlled sender; no live writes.",
+    "failures": [],
+    "checks": [
+      {
+        "context": "JS initial Off",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "JS initial Off pointer",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "JS initial Off label",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "JS initial Off Space",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "JS initial Off saved/reloaded",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "JS initial On",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "JS initial On pointer",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "JS initial On label",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "JS initial On Space",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "JS initial On saved/reloaded",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial Off",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial Off pointer",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial Off label",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial Off Space",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial Off saved/reloaded",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial On",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial On pointer",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial On label",
+        "checked": true,
+        "visibleLabel": "Enable export\nOn",
+        "enabledValues": [
+          "on"
+        ],
+        "accessibility": "- switch \"Enable export\" [checked]\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial On Space",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      },
+      {
+        "context": "no-JS initial On saved/reloaded",
+        "checked": false,
+        "visibleLabel": "Enable export\nOff",
+        "enabledValues": [],
+        "accessibility": "- switch \"Enable export\"\n- text: Enable export"
+      }
+    ],
+    "screenshots": [
+      "green-focus-on.png",
+      "green-on-1440.png",
+      "green-on-390.png",
+      "green-on-320.png",
+      "green-focus-off.png",
+      "green-off-1440.png",
+      "green-off-390.png",
+      "green-off-320.png"
+    ],
+    "responsive": [
+      {
+        "viewport": 1440,
+        "switchLabelWidth": 184.5625,
+        "switchLabelHeight": 48,
+        "horizontalOverflow": false,
+        "panelWidth": 1200
+      },
+      {
+        "viewport": 390,
+        "switchLabelWidth": 184.5625,
+        "switchLabelHeight": 48,
+        "horizontalOverflow": false,
+        "panelWidth": 358
+      },
+      {
+        "viewport": 320,
+        "switchLabelWidth": 184.5625,
+        "switchLabelHeight": 48,
+        "horizontalOverflow": false,
+        "panelWidth": 288
+      },
+      {
+        "viewport": 1440,
+        "switchLabelWidth": 185.765625,
+        "switchLabelHeight": 48,
+        "horizontalOverflow": false,
+        "panelWidth": 1200
+      },
+      {
+        "viewport": 390,
+        "switchLabelWidth": 185.765625,
+        "switchLabelHeight": 48,
+        "horizontalOverflow": false,
+        "panelWidth": 358
+      },
+      {
+        "viewport": 320,
+        "switchLabelWidth": 185.765625,
+        "switchLabelHeight": 48,
+        "horizontalOverflow": false,
+        "panelWidth": 288
+      }
+    ],
+    "errors": [],
+    "passed": true
+  },
+  "independentReview": "No findings. Native form values, role/name/state, pointer/Space/focus, no-JS and Save persistence verified.",
+  "notSelected": {
+    "postgres": "Store/SQL/config/lifetime unchanged.",
+    "workosLive": "Authentication and WorkOS organization operations unchanged.",
+    "separateRendererSearchLive": "Pipeline unchanged; mandatory offline renderer runs in the hosted build."
+  },
+  "approval": "Independent owner/team approval of current candidate is pending.",
+  "containerGates": [
+    {
+      "name": "collector-gate",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "dist/test/integration/logging/audit/audit-sender.runtime.js",
+        "dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js"
+      ],
+      "environment": {},
+      "started": 1792904414.75782,
+      "status": "passed",
+      "exitCode": 0,
+      "ended": 1792904428.8837519
+    },
+    {
+      "name": "self-hosted-container",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/self-hosted-container.test.js"
+      ],
+      "environment": {
+        "THERMUS_CONTAINER_GATE": "1"
+      },
+      "started": 1792904428.884332,
+      "status": "passed",
+      "exitCode": 0,
+      "ended": 1792904540.017538
+    },
+    {
+      "name": "hosted-image",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/hosted-image.test.js"
+      ],
+      "environment": {},
+      "status": "passed",
+      "exitCode": 0,
+      "platform": "linux/amd64",
+      "durationMs": 911501.529333,
+      "buildId": "l3tgx2glvk91sx0rlmpaaeto0"
+    }
+  ],
+  "collector": {
+    "tests": 10,
+    "failures": 0,
+    "skips": 0
+  },
+  "selfHostedContainer": {
+    "tests": 11,
+    "failures": 0,
+    "skips": 0
+  },
+  "hostedImage": {
+    "tests": 7,
+    "failures": 0,
+    "skips": 0,
+    "platform": "linux/amd64",
+    "manifest": "sha256:a62532de864c8d6e5bf11623fc3c8b5bbe38e5570a3e2690a50355dcfbc6a902",
+    "buildId": "l3tgx2glvk91sx0rlmpaaeto0"
+  },
+  "hostedBuild": {
+    "testsByStage": [
+      3071,
+      29,
+      20,
+      1070,
+      119,
+      13
+    ],
+    "failures": 0,
+    "result": "passed inside image gate; no duplicate standalone hosted build"
+  },
+  "allSelectedTestGates": "passed"
+}

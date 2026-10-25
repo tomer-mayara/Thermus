@@ -1,0 +1,52 @@
+[
+  {
+    "name": "collector-gate",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "dist/test/integration/logging/audit/audit-sender.runtime.js",
+      "dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js"
+    ],
+    "environment": {},
+    "started": 1792904414.75782,
+    "status": "passed",
+    "exitCode": 0,
+    "ended": 1792904428.8837519
+  },
+  {
+    "name": "self-hosted-container",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "--test",
+      "dist/test/acceptance/auth/self-hosted-container.test.js"
+    ],
+    "environment": {
+      "THERMUS_CONTAINER_GATE": "1"
+    },
+    "started": 1792904428.884332,
+    "status": "passed",
+    "exitCode": 0,
+    "ended": 1792904540.017538
+  },
+  {
+    "name": "hosted-image",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "--test",
+      "dist/test/acceptance/auth/hosted-image.test.js"
+    ],
+    "environment": {},
+    "status": "passed",
+    "exitCode": 0,
+    "platform": "linux/amd64",
+    "durationMs": 911501.529333,
+    "buildId": "l3tgx2glvk91sx0rlmpaaeto0"
+  }
+]

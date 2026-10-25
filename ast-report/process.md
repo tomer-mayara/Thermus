@@ -63,7 +63,7 @@ Goals: CRAP < 30; new functions also CRAP ≤ 15.
 | File | Function | Change | Paths | Coverage | CRAP | To do |
 | --- | --- | --- | --- | --- | --- | --- |
 | src/interfaces/web/account/logging-form.ts | loggingForm | changed | 16 | 100% | 16.0 | ok; for 15: split |
-| src/interfaces/web/account/logging-page.ts | loggingPage | changed | 8 | 98.5% | 8.0 | ok |
+| src/interfaces/web/account/logging-page.ts | loggingPage | changed | 8 | 98.6% | 8.0 | ok |
 | src/interfaces/web/account/members-page-layout.ts | membersPageLayout | changed | 7 | 99.8% | 7.0 | ok |
 | src/interfaces/web/account/logging-page.ts | loggingNotice | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
 
@@ -229,7 +229,7 @@ Unmatched functions: 0 (anonymous, duplicate, or not in the coverage).
 
 Base functions without an estimated covered share: 125.
 
-Coverage: unit suite at 17085397.
+Coverage: unit suite at d7e86ab1.
 
 ## Trend of src/ on main
 

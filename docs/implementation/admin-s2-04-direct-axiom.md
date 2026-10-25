@@ -10,7 +10,9 @@ saved values, and it does not save edits or enable export.
 The destination panel fills the shared page content width, up to 1,200 pixels.
 Save and Test use their natural widths in one action row. Save stays orange;
 Test is gray. The row wraps when the controls cannot fit. Members keeps its
-existing layout.
+existing layout. Enable export is an On/Off switch with a stable label. Pointer
+and Space change its native checkbox value, including without scripts. The
+change is saved only when the Admin selects Save.
 
 The page keeps this warning, with a link to the Privacy Policy:
 

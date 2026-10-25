@@ -1,0 +1,151 @@
+{
+  "tier": "T1",
+  "tierName": "T1 Team review",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "d7e86ab12e292bcc780d2dfb8526262cbed884ca",
+  "mergeBase": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "The existing web owner replaces the long Audit explanation with the owner-requested authority/privacy warning and exposes Axiom or Custom selection. Its private form parser requires a valid dataset for Axiom, excludes a dataset for Custom, and permits only Bearer writes. The Audit panel fills the available page width, with Save and gray secondary Test actions beside each other. Enable export uses a native accessible on/off switch; its draft state is applied only by Save, with the same field and no new script. The page maps the choice to the existing optional dataset field; the settings service, store, sender, public declarations, components, edges, registry diagrams, containers and deployment stay unchanged. Existing None-auth rows remain readable and unchanged until an explicit Bearer Save; old rendered forms fail closed and require reload. A static hash-pinned script controls the dataset field only on Audit pages; Members retains script denial. Admin, origin, CSRF, revision, encrypted token retention and saved-Test rules remain in place. Registry prose and the active plan now state this UI behavior. This local credential-form and CSP change requires T1 Team review; it changes no separate supported portal/client protocol or external integration."
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-04-direct-axiom.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-24-a7411fd0.json"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-form.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-page-layout.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/administration-capture.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-test.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-audit.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-logging.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/hosted-audit-journey-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/logging-destination-test-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/processes/audit-destination-test-probe.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-form.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/logging-page.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-routes.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-test-routes.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 79,
+    "productionLimit": 400,
+    "total": 513,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 13,
+    "removed": 4,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/web/account/logging-form.ts: 69.54433099587992 to 65.70144033738252",
+    "changed: src/interfaces/web/account/logging-page.ts: 72.64884464306762 to 68.98139985980818",
+    "changed: src/interfaces/web/account/members-page-layout.ts: 83.0401390680943 to 81.00095501476565",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+  ],
+  "crap": [
+    "src/interfaces/web/account/logging-form.ts: loggingForm: 16.0",
+    "src/interfaces/web/account/logging-page.ts: loggingPage: 8.0",
+    "src/interfaces/web/account/members-page-layout.ts: membersPageLayout: 7.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "outside scopes.production: test/unit/html/logging-form.test.ts: Maintainability index: 54 -> 46 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "48 public modules, 0 snapshots changed"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+}

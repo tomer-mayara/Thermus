@@ -1,0 +1,22 @@
+{
+  "base": "a7411fd02aa6dd3300b334d4585f71469071b499",
+  "head": "d7e86ab12e292bcc780d2dfb8526262cbed884ca",
+  "previousCandidate": "17085397bb0ce9af62d69bffe6a314513f277f7f",
+  "beforeMermaidBlocks": 13,
+  "afterMermaidBlocks": 13,
+  "unchanged": true,
+  "viewsReviewed": [
+    "Context",
+    "Hosted containers",
+    "Hosted Audit settings/delivery components",
+    "System and Audit components",
+    "Runtime collaboration",
+    "Deployment"
+  ],
+  "contract": "No public declaration or cross-component callable contract change. The complete candidate has a paired local page/parser change and Audit-only static hash-pinned script; this follow-up changes CSS and a form wrapper only. No L3 comparison or L4 detail needed.",
+  "prose": "The registry still describes current Audit selection and unchanged service/store/sender behavior. The active plan and implementation note now describe width and secondary actions.",
+  "review": "Manager reviewed source diff, plan mock and 390px/focus screenshots. Independent reviewer found no issue in native input/label/Space, focus, name/role/checked state, JS/no-JS, persisted Save and style scope.",
+  "independentReviewer": "audit_selector_review: independent technical pass, no findings. Full PR remains T1; switch adds no architecture fact.",
+  "layout": "Current switch screenshots verify1440/390/320px without overflow and with the existing panel/action-row layout. The broader width and wrapping proof remains in the pinned prior layout evidence.",
+  "switch": "Native enabled checkbox with role=switch and decorative On/Off state. CSS alone reflects checked state. No request, write, script, input contract, parser, service or API change; Save still applies the draft."
+}

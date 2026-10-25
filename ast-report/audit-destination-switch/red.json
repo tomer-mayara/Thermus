@@ -1,0 +1,273 @@
+{
+  "phase": "red",
+  "scenario": "Given saved on/off export settings, when an Admin uses pointer, label, or Space to change the switch, then its visible and accessible state follows native checkbox values, sends no request until Save, and persists after Save with or without JavaScript.",
+  "scope": "Real Chromium, production LoggingRoutes/page/layout/service, local trusted Admin, in-memory store, controlled sender; no live writes.",
+  "failures": [
+    "JS initial Off: accessible role/name is not Enable export switch",
+    "JS initial Off: visible On/Off state is absent or wrong",
+    "JS initial Off pointer: accessible role/name is not Enable export switch",
+    "JS initial Off pointer: visible On/Off state is absent or wrong",
+    "JS initial Off label: accessible role/name is not Enable export switch",
+    "JS initial Off label: visible On/Off state is absent or wrong",
+    "JS initial Off Space: accessible role/name is not Enable export switch",
+    "JS initial Off Space: visible On/Off state is absent or wrong",
+    "JS initial Off: switch has no visible keyboard focus",
+    "JS initial Off saved/reloaded: accessible role/name is not Enable export switch",
+    "JS initial Off saved/reloaded: visible On/Off state is absent or wrong",
+    "1440px: overflow or undersized switch click target",
+    "390px: overflow or undersized switch click target",
+    "320px: overflow or undersized switch click target",
+    "JS initial On: accessible role/name is not Enable export switch",
+    "JS initial On: visible On/Off state is absent or wrong",
+    "JS initial On pointer: accessible role/name is not Enable export switch",
+    "JS initial On pointer: visible On/Off state is absent or wrong",
+    "JS initial On label: accessible role/name is not Enable export switch",
+    "JS initial On label: visible On/Off state is absent or wrong",
+    "JS initial On Space: accessible role/name is not Enable export switch",
+    "JS initial On Space: visible On/Off state is absent or wrong",
+    "JS initial On: switch has no visible keyboard focus",
+    "JS initial On saved/reloaded: accessible role/name is not Enable export switch",
+    "JS initial On saved/reloaded: visible On/Off state is absent or wrong",
+    "1440px: overflow or undersized switch click target",
+    "390px: overflow or undersized switch click target",
+    "320px: overflow or undersized switch click target",
+    "no-JS initial Off: accessible role/name is not Enable export switch",
+    "no-JS initial Off: visible On/Off state is absent or wrong",
+    "no-JS initial Off pointer: accessible role/name is not Enable export switch",
+    "no-JS initial Off pointer: visible On/Off state is absent or wrong",
+    "no-JS initial Off label: accessible role/name is not Enable export switch",
+    "no-JS initial Off label: visible On/Off state is absent or wrong",
+    "no-JS initial Off Space: accessible role/name is not Enable export switch",
+    "no-JS initial Off Space: visible On/Off state is absent or wrong",
+    "no-JS initial Off: switch has no visible keyboard focus",
+    "no-JS initial Off saved/reloaded: accessible role/name is not Enable export switch",
+    "no-JS initial Off saved/reloaded: visible On/Off state is absent or wrong",
+    "no-JS initial On: accessible role/name is not Enable export switch",
+    "no-JS initial On: visible On/Off state is absent or wrong",
+    "no-JS initial On pointer: accessible role/name is not Enable export switch",
+    "no-JS initial On pointer: visible On/Off state is absent or wrong",
+    "no-JS initial On label: accessible role/name is not Enable export switch",
+    "no-JS initial On label: visible On/Off state is absent or wrong",
+    "no-JS initial On Space: accessible role/name is not Enable export switch",
+    "no-JS initial On Space: visible On/Off state is absent or wrong",
+    "no-JS initial On: switch has no visible keyboard focus",
+    "no-JS initial On saved/reloaded: accessible role/name is not Enable export switch",
+    "no-JS initial On saved/reloaded: visible On/Off state is absent or wrong"
+  ],
+  "checks": [
+    {
+      "context": "JS initial Off",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "JS initial Off pointer",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "JS initial Off label",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "JS initial Off Space",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "JS initial Off saved/reloaded",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "JS initial On",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "JS initial On pointer",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "JS initial On label",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "JS initial On Space",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "JS initial On saved/reloaded",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial Off",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial Off pointer",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial Off label",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial Off Space",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial Off saved/reloaded",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial On",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial On pointer",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial On label",
+      "checked": true,
+      "visibleLabel": " Enable export",
+      "enabledValues": [
+        "on"
+      ],
+      "accessibility": "- checkbox \"Enable export\" [checked]\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial On Space",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    },
+    {
+      "context": "no-JS initial On saved/reloaded",
+      "checked": false,
+      "visibleLabel": " Enable export",
+      "enabledValues": [],
+      "accessibility": "- checkbox \"Enable export\"\n- text: Enable export"
+    }
+  ],
+  "screenshots": [
+    "red-on-1440.png",
+    "red-on-390.png",
+    "red-on-320.png",
+    "red-off-1440.png",
+    "red-off-390.png",
+    "red-off-320.png"
+  ],
+  "responsive": [
+    {
+      "viewport": 1440,
+      "switchLabelWidth": 1142,
+      "switchLabelHeight": 29.25,
+      "horizontalOverflow": false,
+      "panelWidth": 1200
+    },
+    {
+      "viewport": 390,
+      "switchLabelWidth": 316,
+      "switchLabelHeight": 29.25,
+      "horizontalOverflow": false,
+      "panelWidth": 358
+    },
+    {
+      "viewport": 320,
+      "switchLabelWidth": 246,
+      "switchLabelHeight": 29.25,
+      "horizontalOverflow": false,
+      "panelWidth": 288
+    },
+    {
+      "viewport": 1440,
+      "switchLabelWidth": 1142,
+      "switchLabelHeight": 29.25,
+      "horizontalOverflow": false,
+      "panelWidth": 1200
+    },
+    {
+      "viewport": 390,
+      "switchLabelWidth": 316,
+      "switchLabelHeight": 29.25,
+      "horizontalOverflow": false,
+      "panelWidth": 358
+    },
+    {
+      "viewport": 320,
+      "switchLabelWidth": 246,
+      "switchLabelHeight": 29.25,
+      "horizontalOverflow": false,
+      "panelWidth": 288
+    }
+  ],
+  "errors": [],
+  "passed": false
+}

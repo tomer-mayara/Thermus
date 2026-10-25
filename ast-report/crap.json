@@ -1,7 +1,7 @@
 {
   "version": 1,
   "base": "a7411fd02aa6dd3300b334d4585f71469071b499",
-  "head": "17085397bb0ce9af62d69bffe6a314513f277f7f",
+  "head": "d7e86ab12e292bcc780d2dfb8526262cbed884ca",
   "rows": [
     {
       "file": "src/interfaces/web/account/logging-form.ts",
@@ -17,9 +17,9 @@
       "function": "loggingPage",
       "change": "changed",
       "paths": 8,
-      "share": 0.985,
-      "crap": 8.000216,
-      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingPage\",\"start\":1208,\"end\":4421,\"body\":\"67322af73eca55919294fab18101308e2d1a106ad58350617dcc170f52017418\",\"signature\":\"356a0b3b05eeb7273af34a44eaec3a4e0384d27570a7003832c7785b1924599d\"}"
+      "share": 0.986,
+      "crap": 8.000175616,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingPage\",\"start\":1208,\"end\":4653,\"body\":\"6f3b70987d68d0cfd04be0536c21ebd74d2f5d5bfe2ca4201aadf8aca4374058\",\"signature\":\"356a0b3b05eeb7273af34a44eaec3a4e0384d27570a7003832c7785b1924599d\"}"
     },
     {
       "file": "src/interfaces/web/account/members-page-layout.ts",
@@ -37,7 +37,7 @@
       "paths": 1,
       "share": 1,
       "crap": 1,
-      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingNotice\",\"start\":4423,\"end\":4778,\"body\":\"06bf65c238ec6fdc15858b436343304de7f34435d1b6a94a1eddab2b33bda5f3\",\"signature\":\"3e34de129847f0173f79112a435c584d50f44fddd702f960e1567ec3d8630ec1\"}"
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"loggingNotice\",\"start\":4655,\"end\":5010,\"body\":\"06bf65c238ec6fdc15858b436343304de7f34435d1b6a94a1eddab2b33bda5f3\",\"signature\":\"3e34de129847f0173f79112a435c584d50f44fddd702f960e1567ec3d8630ec1\"}"
     }
   ]
 }
