@@ -7,7 +7,8 @@ The [Slice 2 review and remaining work](#slice-2-review-and-remaining-work)
 records the redaction correction, the single stack integration path, and merge checks.
 The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
 owns the separate activation requirements. PR #245 records the code integration;
-Slice 2 release remains separate.
+Slice 2 release remains separate. The expanded Slice 2.5 tickets were reviewed
+on 24 October 2026; their implementation and tests remain planned.
 Ticket records describe their historical increments; their earlier missing
 features are not the status of the combined candidate. Merged does not mean
 released, and passing controlled tests does not complete owner gates.
@@ -2403,10 +2404,439 @@ identity mirror, or membership-reduction coordinator.
 
 ### Slice 2.5 — Password-only membership removal
 
+S2.5-01 groups S2.5-01a/b/c. S2.5-02 is the release exit and remains the
+prerequisite for Slice 3. Development can follow the functional dependencies
+below; release requires actual Slice 2 release, not merely merged implementation.
+
 | ID | Depends on | Deliverable | Done |
 |---|---|---|---|
-| S2.5-01 | S2-04 | Ordinary/self-membership removal and durable per-org reduction intents in the same adequate store. | [Member-write rules](#authorization-and-member-writes) pass current/stale, concurrent last-Admin, crash/timeout/late-write/restart cases. Self-removal navigation works; other memberships/shared factor remain. No role/MFA work. |
-| S2.5-02 | S2.5-01 | Removal UI/docs/runbooks, verification, and release. | Provider/storage/UI/error checks pass; enabled export uses the existing safe sink. Members adds Remove only after Slice 2, independent of MFA feasibility. |
+| S2.5-01a | Existing S1-04a member/provider boundary | Narrow provider deletion and current management facts. | Adapter and revision contracts pass; no unchecked app removal path. |
+| S2.5-01b | S2.5-01a; S2-01a store; S2-03a safe recording contract | One removal owner with durable per-org serialization. | Authority, last-Admin, busy, bounded execution, uncertainty, and restart cases pass. |
+| S2.5-01c | S2.5-01b | Checked Members removal and self-removal navigation. | Password-only browser and current-access journeys pass through the coordinator. |
+| S2.5-02 | S2.5-01c; actual S2-04 release | Integrated verification, runbooks, and release. | Complete journey and provider/store/UI/recovery/release evidence pass. |
+
+**Review corrections.**
+
+- Separate functional dependencies from the Slice 2 release gate. Reuse its
+  store and safe recording contract; add no second store or coordinator.
+- Reuse all role slugs already retained in `OrganizationMember.grants`. Only
+  management evidence and its revision coverage are missing; filtered display
+  roles cannot prove safety. Unknown roles already fail provider mapping.
+- WorkOS deletion normally resolves with `void`; normal completion maps to
+  applied, not an uncertain missing result. Preserve existing retry/timeout configuration.
+- A competing request gets busy, not queued work. Specifications must submit
+  competing/repeated requests and act on recovery claims, with otherwise-valid
+  fixtures. Existing access checks and counts need characterization, not false red.
+- Current-status guidance reuses Members/access refresh or the identity-only
+  selector. Restore safety cannot depend on operation rows lost in a backup.
+  Keyboard/layout proof needs a browser and visual checks, not route tests alone.
+
+**Execution rule.** Acceptance specifications come first through public interfaces
+in a production-like composition. Each source ticket adds its executable case
+before new behavior and makes it green in the same candidate. Expected red below
+is planned, not observed. For each small step: focused failing test, minimum green,
+then refactor. Existing behavior gets passing characterization; do not manufacture
+red, carry failing ordinary tests across tickets, or hide them with skips. The
+integrated journey may already pass when its dependencies are ready.
+Follow repository test definitions and [test layout](../testing/test-code-layout.md):
+unit tests double other Delamain packages at public interfaces; real package
+collaboration is integration; interface tests check narrow contracts. Reuse DSL,
+drivers, sites, and doubles in their existing homes. No new test framework.
+Check documents/configuration/runbooks manually or with relevant build/type checks.
+All tests and proof below are future work; this plan claims no execution.
+
+**Common completion and recovery rule.** Admit one unresolved removal per org
+before dispatch. A bounded admission conflict returns busy without polling,
+queued work, automatic continuation/retry, or a lease. Recheck current facts after
+admission. Release SQL clients before HTTP. Preserve the existing per-call timeout;
+S2.5-01b chooses and tests a fixed total server budget for current reads/pages,
+storage, dispatch, and finalization, with no customer control. A timeout must not
+leave a pre-dispatch continuation able to send later. Timeout/abort alone does not
+prove a possibly live sender stopped, so it cannot justify releasing its hold.
+The coordinator owns admitted work, not the browser connection. Disconnect/cancel
+may leave its bounded work to finish; never clear intent in unconditional cleanup.
+If abandoned pre-dispatch work cannot be proved unable to resume, retain the hold.
+
+Unknown admission commits dispatch nothing. Possible provider effects stay held
+across restart; unchanged reads, elapsed time, lease expiry, or missing restored
+rows prove no settlement. Complete conditionally by org plus operation ID. A
+known own-no-send refusal or proven provider no-effect refusal may settle; arbitrary
+errors cannot. After an uncertain final commit, reread durable state before claiming
+completion. A positive late answer may settle only its same operation. Never replay
+unknown deletion, change a replacement membership, or restore a later grant.
+
+Status refresh is read-only current Members/access checking, not proof that a
+provider request settled. After self-removal, reuse authenticated identity-only
+selection/no-membership or reauthentication guidance without protected operation
+details. Add no status API, dashboard, background worker, or recovery framework.
+Scoped operator recovery needs independent settlement evidence and containment of
+old senders. Restore offline/scoped with reductions disabled through existing
+deployment/store access controls outside restored operation rows. Stop old
+write-capable senders; keep the hold until independent reconciliation. Operator/IdP
+write restrictions remain a runbook constraint, not a global atomicity claim.
+
+#### S2.5-01a — Narrow provider deletion and current target facts
+
+**Acceptance specifications first.**
+
+```gherkin
+Scenario: Delete only the intended ordinary membership
+  Given an ordinary active membership, another membership, a global account, and an existing personal factor
+  When the directory deletes the exact intended membership ID and WorkOS confirms completion
+  Then only that membership is deleted
+  And reads show the other membership, account, and factor remain
+
+Scenario: Preserve current management evidence and revisions
+  Given a target with all current role slugs and management evidence
+  When its management evidence changes and the directory rereads it
+  Then the portable facts retain that change and the revision changes
+  And the earlier revision no longer matches
+
+Scenario Outline: Distinguish confirmed deletion from uncertain effects
+  Given a controlled provider connection for the source adapter
+  When deletion receives <answer>
+  Then the adapter reports <outcome>
+  And the act sends at most one outbound DELETE request
+
+  Examples:
+    | answer | outcome |
+    | normal void completion | applied |
+    | a proven no-effect refusal | refused without effect |
+    | a lost response after possible dispatch | uncertain |
+```
+
+**Current gap and characterization.** `OrganizationDirectory` has reads and
+invitation writes but no removal contract. `WorkOSOrganizationsOptions` excludes
+deletion. `memberOf()` drops `directoryManaged`; `revisionOf()` hashes update time,
+status, and raw role slugs but not management evidence. `grantsOfRoles()` already
+retains all slugs and rejects unknown roles; `MemberOverview` filters display roles.
+Reuse these facts, not a duplicate raw-role field. Missing/malformed management
+evidence stays unknown/unsupported, never ordinary. Keep that field portable,
+without a WorkOS SDK type in the shared contract. All grants must be supported,
+including permissionless extra roles omitted from the display. Existing hosted composition sets
+`maxRetries: 0` and a 5000 ms timeout in
+`src/app/hosted-workos-application.ts`; characterize that configuration and extend
+its `test/integration/auth/workos-connection.test.ts` regression for deletion.
+
+The [pinned WorkOS 11 deletion method](https://github.com/workos/workos-node/blob/v11.0.0/src/user-management/user-management.ts#L1192-L1205)
+returns `Promise<void>` after DELETE succeeds. Map normal resolution to applied.
+The [provider contract](https://workos.com/docs/reference/authkit/organization-membership)
+defines permanent membership deletion and the specific directory-managed 422
+refusal. Recognize only proven no-effect answers; do not classify arbitrary status
+codes, timeouts, or lost responses as safe to retry. Use the existing client/SDK.
+
+**Small TDD steps.**
+
+1. Red (interface): specify missing portable management evidence and changed revision.
+   Green: preserve that evidence and include it in the revision. Characterize ordinary,
+   mixed/unsupported, unknown-role, foreign-ID, missing, and inactive reads; existing
+   passing mapping behavior stays green. Refactor without duplicating role facts.
+2. Red (unit): specify exact-ID deletion, resolved void, proven refusal, and uncertain
+   error outcomes at the adapter contract. Green: add only the narrow collaborator
+   and pinned SDK call; refactor without user/factor/role/grant writers.
+3. Integration regression: execute the source adapter through the production client
+   configuration and a controlled wire connection, lose a DELETE response, and count
+   outbound requests. This may already pass after step 2; keep that characterization
+   green. If the new path bypasses the existing limits, record that focused failure,
+   correct the binding, and refactor. One SDK spy invocation alone is insufficient;
+   claim no globally exactly-once effect or need for new retry configuration.
+
+**Homes.** `src/accounts/organizations/organization-directory.ts`,
+`src/accounts/providers/workos/workos-organizations.ts`, and existing hosted
+composition. Use `test/unit/auth-workos/`, applicable interface contracts, and
+`test/integration/auth/workos-connection.test.ts`; reuse WorkOS support homes.
+Test source adapter behavior, not third-party SDK behavior alone.
+
+**Done.** Narrow deletion and management/revision contracts pass. The collaborator
+has no unchecked browser/API path; S2.5-01b owns admission and safety decisions.
+Controlled wire proof is separate from S2.5-02's scoped live provider proof.
+
+#### S2.5-01b — One removal owner with durable per-org serialization
+
+**Acceptance specifications first.**
+
+```gherkin
+Scenario: Recheck authority and target after admission
+  Given a password-authenticated current Admin, valid organization and revision, and two active Admins without MFA proof
+  When the removal operation is durably admitted and a current authority or target fact changes
+  Then the coordinator rereads actor, organization, target, roles, management, revision, and complete Admin count
+  And it refuses the now-unsafe removal without provider deletion
+
+Scenario: Return busy during overlap and protect the last Admin afterward
+  Given two active Admins and the same Admin's valid other-removal and self-removal forms
+  When other-removal pauses after durable admission and self-removal is submitted through another instance
+  Then self-removal returns busy without another intent or provider delete
+  When a valid removal is submitted in another organization during the pause
+  Then that organization's operation can proceed independently
+  When other-removal settles and that still-active Admin submits a new current self-removal request
+  Then the last-Admin rule refuses deletion
+
+Scenario Outline: Refuse one unsafe dimension
+  Given an otherwise authorized current Admin, two active Admins, valid target and revision, and complete current reads
+  And only <unsafe state> differs
+  When removal is requested
+  Then no provider deletion occurs and a bounded refusal is returned
+
+  Examples:
+    | unsafe state |
+    | actor authority is no longer current |
+    | target belongs to another organization |
+    | target revision is stale |
+    | target is missing |
+    | target is inactive |
+    | target is pending |
+    | target has an unknown role |
+    | target has an unsupported extra role |
+    | target is directory-managed |
+    | target management evidence is unknown |
+    | a later active-member page fails |
+    | active-member pagination repeats without termination |
+
+Scenario: Count only current active Admin memberships
+  Given one active Admin without MFA proof, pending and inactive Admin records, and invitations
+  When that current Admin submits valid self-removal
+  Then removal is refused as last Admin
+
+Scenario: Retain uncertainty and refuse competing work after restart
+  Given committed intent for a controlled possible deletion of another member
+  And an Admin whose authority remains current after that deletion
+  When timeout, cancellation, shutdown, crash, or final-store failure leaves completion unknown and the app restarts
+  And a conflicting reduction is submitted
+  Then it returns busy without another intent or deletion
+  And resuming the old sender or delivering a late answer cannot complete a different operation
+
+Scenario: Settle only the same proven terminal operation
+  Given an unresolved removal and a possible old sender
+  When current status is refreshed with unchanged provider reads
+  Then the hold remains and no deletion is replayed
+  When independent evidence proves settlement and the old sender is contained
+  And scoped recovery completes the same organization and operation ID
+  Then a new legitimate request can seek admission
+  When a new distinct operation is admitted and the old completion arrives again
+  Then the new operation remains held
+  And no replacement membership is changed
+```
+
+**Current gap.** `OrganizationAdministration` rechecks actor memberships for
+invitation writes, but has no removal admission or last-Admin owner.
+`ChangeRecording` records outcomes, not durable admission. The Slice 2 SQL store
+and failure-safe recording are now implemented; reuse them. Durable removal
+admission and last-Admin protection remain new work.
+
+**Small TDD steps.** Apply the common completion/recovery rule throughout.
+
+1. Red (integration): specify initial authorization before admission, atomic contention
+   from separate SQL pools/connections, org isolation, busy response, and ambiguous
+   admission commit. Green: use one unresolved operation record per org in the Slice 2
+   store, with a unique constraint or equivalent short atomic operation. No SQL client
+   or transaction spans HTTP. Refactor the narrow store contract.
+2. Red (unit): specify post-admission actor/target/revision/management checks and the
+   last-Admin decision. Place a deciding active Admin on a later page; include failed
+   later pages and repeated cursors. Choose fixed numeric page/time/total operation
+   bounds and test their limits. Green: reuse pagination, count active Admins without
+   factor proof, and stop unsafe or over-budget work. Prove a cancelled pre-dispatch
+   continuation cannot send later. Refactor at one rule owner.
+3. Red (integration): control crash points before dispatch, during HTTP, and after
+   provider success before final commit; include cancellation/shutdown and late replies.
+   Green: commit intent before dispatch, preserve uncertainty, and conditionally settle
+   only the same org/operation. Test own-no-send and proven provider refusals, wrong/stale
+   completion, and durable reread after uncertain final commit. Refactor without replay,
+   lease takeover, or reclaim of a possibly live sender.
+4. Rerun the acceptance cases authored first through production-like public interfaces
+   with durable SQL: overlap, restart, and repeated requests. For any missing piece,
+   first add a focused failing unit or integration test, make the minimum source change,
+   and refactor before acceptance goes green. Verify busy, separate-org progress, new
+   admission after settlement, stale completion, and untouched replacement membership.
+5. Red (integration): specify unavailable storage and scoped safe-recording failures
+   after applied and unknown outcomes. Green: block removal during outage while current
+   product/MCP checks remain usable. Logging/export failure changes neither completion
+   nor hold and triggers no replay. Refactor using S2-03a's safe sink, then rerun all
+   acceptance cases for this ticket.
+
+**Homes.** Rules under `src/accounts/organizations/`; extend the Slice 2 store and
+composition. Use `test/unit/organizations/`, integration tests for real owner/store/
+provider collaboration, and `test/acceptance/auth/` for overlap/restart. Prove intent
+is visible before controlled dispatch, SQL clients are released before HTTP, and
+unknown records survive process restart. An in-memory fake cannot prove SQL durability.
+Restore controls and runbook drills belong to S2.5-02, not tests of backup scripts.
+
+**Done.** Named cases and bounded execution pass. One owner controls admission,
+last-Admin safety, and completion. Independent operator/IdP writes remain constrained
+by the runbook. No second store, queue, lease, recovery product, or replay mechanism.
+
+#### S2.5-01c — Checked Members removal and self-removal
+
+**Acceptance specifications first.**
+
+```gherkin
+Scenario: Confirm removal through Members
+  Given a current password-authenticated Admin, two active Admins, and an ordinary active User
+  When the Admin confirms Remove with valid method, origin, CSRF, and revision
+  Then the coordinator removes only that membership
+  And a current Members refresh counts each remaining active product membership once
+
+Scenario Outline: Refuse an invalid form
+  Given an otherwise valid authorized removal form and removable target
+  And only <invalid state> differs
+  When the form is submitted
+  Then no provider deletion occurs
+
+  Examples:
+    | invalid state |
+    | actor authority has changed |
+    | saved organization is stale |
+    | organization is forged |
+    | saved target is stale |
+    | target is forged |
+    | revision is stale |
+    | revision is forged |
+    | method is invalid |
+    | origin is invalid |
+    | CSRF token is invalid |
+
+Scenario: Cancel or refuse last-Admin removal
+  Given a current password-authenticated Admin and valid last-Admin self-removal form without MFA proof
+  When the Admin opens confirmation and selects Cancel
+  Then no intent or provider deletion is written
+  When the Admin submits that valid removal form
+  Then the page explains that another Admin must join first and links to invitations
+
+Scenario: Refresh and resubmit an unknown result without replay
+  Given a current Admin and its pending removal with a lost provider answer
+  When the still-authorized Admin submits the same POST again
+  Then it returns busy without a new intent or deletion
+  When current Members is refreshed
+  Then it shows current facts without claiming the uncertain operation settled
+
+Scenario Outline: Leave the selected organization safely
+  Given a current Admin, another active Admin, and <remaining access>
+  When the Admin removes its own membership and follows the resulting guidance
+  Then current removed-organization portal and MCP requests are refused
+  And <navigation> is usable without protected removal details or resubmission
+
+  Examples:
+    | remaining access | navigation |
+    | another eligible membership | identity-only workspace selection |
+    | no membership and eligible signup | no-membership invitation and signup guidance |
+    | no membership and a retained creator record | existing saved-start/support recovery |
+    | provider requires reauthentication | sign-in and current selection/no-membership guidance |
+
+Scenario: Preserve account scope and rejoin only by invitation
+  Given a target with two memberships, a global account, and an existing personal factor
+  When an authorized Admin removes its ordinary membership through Members
+  And the target tries old credentials for that organization
+  Then that access is refused and reads show its other membership, account, and factor remain
+  When a fresh invitation is sent and accepted through the existing path
+  Then access returns only with the new invited role
+```
+
+**Current gap and characterization.** Members and `AdministrationRoutes` expose
+invitation forms only. Rows already have revisions. Existing current-access checks,
+seat counting, and identity-only selector remain passing characterization; add
+removal-triggered journeys rather than new access/count/selection mechanisms.
+Provider refresh is scoped to its selected organization: membership/account/factor
+preservation does not promise every unrelated existing session survives deletion.
+
+**Small TDD steps.**
+
+1. Red (integration): specify Remove visibility, confirmation fields, checked POST,
+   invalid forms, unsupported targets, Cancel, and last-Admin guidance. Green: render/
+   parse one native form and call only the coordinator. Refactor existing page patterns.
+2. Red (integration): specify applied/refused/busy/unknown POST outcomes, actual repeated
+   POST, and read-only refresh. Keep confirmed POST completion separate from a subsequent
+   failed Members GET: a read failure must not invite another deletion. Green: keep these
+   outcomes distinct using existing responses, without flash/operation-status storage.
+   Refactor safely and rerun the already-authored acceptance cases.
+3. Red (integration): specify route/session collaboration for each self-removal branch
+   and unknown self-removal after Admin access is gone. Green: use existing identity-only
+   selector, eligibility, or reauthentication guidance. Refactor and rerun acceptance
+   without protected operation details or a new recovery UI.
+4. Red (integration): specify removal-result collaboration with existing access reads,
+   count views, and invitation routing; use unit tests for any new local decision.
+   Green: connect these paths and preserve seeded objects. Refactor, then rerun the
+   already-authored portal/MCP denial, count, scope, and fresh-invitation acceptance.
+5. Author browser acceptance first for keyboard open/cancel/confirm at a fixed narrow
+   viewport. Before each rendering change, add a focused failing rendering/route test,
+   make it pass, and refactor. Then verify real keyboard focus, labels, native controls,
+   and visual layout in the browser; route integration alone proves no geometry.
+
+**Homes.** `src/interfaces/web/account/administration-routes.ts`, Members pages,
+existing session/selection recovery, and the organization coordinator. Use
+`test/integration/hosted-admin/`, `test/acceptance/auth/`, and existing browser/MCP
+DSL, drivers, and sites. Use the existing UI mock as the reference.
+
+**Done.** Remove works under password authentication through one coordinator.
+Current access/counts and every self-removal exit pass; unknown results offer safe
+refresh/navigation. No role/MFA control, status API, or unsafe grant writer returns.
+
+#### S2.5-02 — Integrated verification, runbooks, and release
+
+**Acceptance specifications first.**
+
+```gherkin
+Scenario: Complete the password-only removal journey
+  Given a Slice 2 composition with two active Admins and an ordinary active User
+  And the removing Admin and User each have another active eligible membership and their own existing personal factor
+  When the Admin removes the User and itself through Members
+  Then one active Admin remains and current member counts are correct
+  And actual portal and MCP requests for both removed memberships are refused
+  And self-removal reaches usable selection after reauthentication if required
+  And reads show both accounts, other memberships, and existing factors remain
+
+Scenario: Keep removal independent of export and MFA
+  Given password-only access, two active Admins, and a removable User
+  When checked removal completes while enabled export fails
+  Then deletion stays confirmed without replay or an MFA/paid-feature requirement
+
+Scenario: Refuse removal during storage outage
+  Given a current authorized Admin, a removable User, and unavailable Slice 2 storage
+  When the Admin submits removal and makes ordinary product and MCP requests
+  Then removal is blocked without deletion and current authorized product/MCP access works
+```
+
+**Current gap.** Existing read/invitation/current-access cases do not establish this
+complete removal journey. Add the integrated case when leaf dependencies are ready;
+it may already pass. Missing source behavior gets its own focused red → green →
+refactor step. Keep controlled fault proof separate from scoped live provider proof;
+a live test cannot prove absence of every arbitrary late effect.
+
+**Verification and release steps.**
+
+1. Run the integrated composition and applicable repository test/release gates on the
+   complete candidate. Collect controlled SQL admission/commit-fault, process restart,
+   overlap, deadline/late-answer, safe-sink/export failure, error, and UI/access evidence.
+   Record actual results separately from this plan; doubles alone prove no durable SQL
+   or provider guarantee.
+2. Perform scoped live provider proof of exact membership deletion, supported-management
+   facts/refusals, account/other-membership/factor preservation, fresh-invitation rejoin,
+   and self-removal session behavior. Seeded factor sentinels prove controlled adapter
+   scope only. Observe a live existing factor only if already available within confirmed
+   free scope; otherwise record that evidence limit. Global-account and other-membership
+   preservation still require live proof. Add no enrollment or MFA API/entitlement
+   dependency. Retain existing $0/capacity checks; MFA feasibility stays outside release.
+3. Drill the common recovery rule in a disposable SQL environment: take a test snapshot
+   before an intent, then allow a controlled possible deletion after that snapshot.
+   Stop old write-capable senders, disable reductions outside restored rows, restore
+   offline/scoped, and attempt removal to verify the hold. Reconcile with independent
+   evidence before enabling reductions; check replacement memberships/later grants
+   remain untouched. Retain manual/control evidence, not tests of backup scripts or
+   prose. This drill adds no production backup prerequisite to Slice 2.5; production
+   settings backup and restore remain in Slice 4.
+4. Update user help/runbooks for fresh-invitation rejoin, last-Admin refusal, honest
+   unknown/refresh outcomes, no blind retry, operator/IdP restrictions, sender containment,
+   and restore holds. Review architecture/component registry impact, required quality
+   evidence, review tier, and applicable approvals under repository policy. Release only
+   after actual S2-04 release and all applicable gates pass.
+
+**Homes.** Existing acceptance/hosted-live cases, storage/provider integration tests,
+and established support sites/drivers. Update this plan, user/operator help, and
+release/runbook evidence in their existing homes; no documentation tests.
+
+**Done.** S2.5-01a/b/c and the integrated journey are green; actual provider/store/UI,
+controlled uncertainty, scoped restore, safe recording, $0, and release evidence are
+complete. S2.5-02 remains Slice 3's exit prerequisite. Scope is ordinary active User/
+Admin membership deletion only, with no global-user deletion, role/MFA feature, new
+store/service/framework, paid feature, or revived unsafe grant writer.
 
 ### Slice 3 — Role changes and MFA branches
 
