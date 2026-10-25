@@ -1,4 +1,5 @@
 import { invitationsOf, membersOf } from './directory-reads.ts';
+import { removalSupported } from './membership-removal-checks.ts';
 import type {
   AssignableRole,
   InvitationIdentityPolicy,
@@ -17,6 +18,8 @@ interface MemberEntry {
   // The roles of the grants that give an application permission.
   readonly roles: readonly string[];
   readonly revision: string;
+  // A supported target at read time, not authority to remove it later.
+  readonly removable: boolean;
 }
 
 export interface MemberOverview {
@@ -82,7 +85,7 @@ function holdsUserSeat(member: OrganizationMember): boolean {
 function memberEntry(member: OrganizationMember): MemberEntry {
   const { membershipId, subject, email, status, revision } = member;
   const roles = [...new Set(member.grants.filter((grant) => grant.permissions.length > 0).map((grant) => grant.role))];
-  return Object.freeze({ membershipId, subject, email, status, roles: Object.freeze(roles), revision });
+  return Object.freeze({ membershipId, subject, email, status, roles: Object.freeze(roles), revision, removable: removalSupported(member) });
 }
 
 // The entry copies only the fields of the contract, so that an invitation token of the provider stays out.

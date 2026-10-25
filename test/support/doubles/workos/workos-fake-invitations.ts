@@ -1,6 +1,6 @@
 import type { FakeAnswer, RecordedRequest, WorkOSFakeApi } from './workos-fake-api.ts';
 import type { FakeInvitation, FakeMembership, FakeUser } from './workos-fake.ts';
-import { changeMembership, currentStatus, effectiveRoles, indexOfUser, isKnownRole, matches, queryOf } from './workos-fake-directory.ts';
+import { changeMembership, currentStatus, effectiveRoles, membershipIdAt, isKnownRole, matches, queryOf } from './workos-fake-directory.ts';
 import { invitationJson, listAnswer, notFound, refusal, type ShownInvitation } from './workos-fake-wire.ts';
 
 // What the invitation routes read and change in the fake.
@@ -9,6 +9,7 @@ export interface InvitationView {
   invitations: readonly FakeInvitation[];
   users: readonly FakeUser[];
   memberships: readonly FakeMembership[];
+  readonly deletedMembershipIds: ReadonlySet<string>;
   readonly invitationPageSize: number;
   readonly invitationOutage: FakeAnswer | undefined;
   nextNumber(): number;
@@ -142,7 +143,7 @@ export class WorkOSFakeInvitations {
   // address gets a new unverified user, and a user without a membership there gets a new membership.
   private putMembershipOf(invitation: FakeInvitation, grant: Pick<FakeMembership, 'roles' | 'status'>): void {
     const user = this.userWithAddress(invitation.email) ?? this.addInvitedUser(invitation.email);
-    const index = indexOfUser(this.#view.memberships, user.id, invitation.organizationId);
+    const index = this.indexOfAddress(invitation);
     if (index === -1) this.#view.memberships = [...this.#view.memberships, { userId: user.id, organizationId: invitation.organizationId, ...grant }];
     else changeMembership(this.#view, index, grant);
   }
@@ -167,7 +168,8 @@ export class WorkOSFakeInvitations {
 
   private indexOfAddress(invitation: FakeInvitation): number {
     const user = this.userWithAddress(invitation.email);
-    return user === undefined ? -1 : indexOfUser(this.#view.memberships, user.id, invitation.organizationId);
+    return user === undefined ? -1 : this.#view.memberships.findIndex((membership, index) =>
+      membership.userId === user.id && membership.organizationId === invitation.organizationId && !this.#view.deletedMembershipIds.has(membershipIdAt(index)));
   }
 
   private invitationWithId(invitationId: string): FakeInvitation | undefined {

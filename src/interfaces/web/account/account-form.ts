@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import type {
   InvitationChangeRequest,
   InvitationSendRequest,
+  MemberRemovalRequest,
 } from '../../../accounts/organizations/organization-administration.ts';
 import type { NoticeName } from './account-pages.ts';
 
@@ -75,6 +76,13 @@ export function invitationChangeIn(form: URLSearchParams, csrfToken: string): In
   if (typeof fields === 'string') return fields;
   if (!FIELD_VALUE.test(fields.organization_id) || !FIELD_VALUE.test(fields.invitation_id)) return 'invalidRequest';
   return { organizationId: fields.organization_id, invitationId: fields.invitation_id };
+}
+
+export function memberRemovalIn(form: URLSearchParams, csrfToken: string): MemberRemovalRequest | FormRefusal {
+  const fields = formFields(form, csrfToken, ['organization_id', 'membership_id', 'revision']);
+  if (typeof fields === 'string') return fields;
+  if (![fields.organization_id, fields.membership_id, fields.revision].every(value => FIELD_VALUE.test(value))) return 'invalidRequest';
+  return { organizationId: fields.organization_id, membershipId: fields.membership_id, revision: fields.revision };
 }
 
 // Reads an HTML form body of at most 16 KiB and stops at the limit, so that a large body causes no more work.

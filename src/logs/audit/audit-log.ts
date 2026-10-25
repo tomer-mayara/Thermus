@@ -32,8 +32,8 @@ export interface AuditResult {
 }
 
 export interface AdministrationChange extends AuditContext {
-  readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation';
-  readonly target: { readonly email: string } | { readonly invitationId: string };
+  readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation' | 'remove-member';
+  readonly target: { readonly email: string } | { readonly invitationId: string } | { readonly membershipId: string };
   readonly role?: 'admin' | 'user';
   readonly outcome: ChangeOutcome;
 }

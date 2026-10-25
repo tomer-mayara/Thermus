@@ -2,7 +2,7 @@ import type { AdministrationChange, AuditContext, AuditEvent, DestinationChange,
 import { AUDIT_CAPTURE_LIMITS, auditActorName, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
 
 const toolStatuses = new Set(['success', 'access_denied', 'fetch_failed', 'processing_failed', 'cancelled', 'busy', 'search_failed', 'withheld']);
-const changeOutcomes = new Set(['applied', 'unchanged', 'denied', 'stale', 'not-pending', 'address-in-use', 'unsupported', 'failed', 'unknown']);
+const changeOutcomes = new Set(['applied', 'unchanged', 'denied', 'stale', 'not-pending', 'address-in-use', 'unsupported', 'failed', 'unknown', 'last-admin', 'busy', 'unavailable']);
 const destinationOutcomes = new Set(['saved', 'unchanged', 'invalid', 'conflict', 'unavailable', 'unconfirmed', 'tested', 'unsaved', 'cancelled', 'busy', 'denied', 'stale']);
 
 function metadata(value: unknown): value is string {
@@ -65,11 +65,23 @@ export function projectAdministrationChange(change: AdministrationChange): Audit
   const action = change.action;
   const role = change.role;
   const outcome = change.outcome;
-  const target = 'email' in change.target ? { email: change.target.email } : { invitationId: change.target.invitationId };
-  if (context === undefined || !['invite', 'resend-invitation', 'revoke-invitation'].includes(action) || !changeOutcomes.has(outcome)) return undefined;
+  const target = administrationTarget(change);
+  if (context === undefined || target === undefined || !changeOutcomes.has(outcome)) return undefined;
   if (role !== undefined && role !== 'admin' && role !== 'user') return undefined;
-  if (!metadata('email' in target ? target.email : target.invitationId)) return undefined;
   return { ...context, eventName: 'organization.changed', action, target, ...(role === undefined ? {} : { role }), outcome };
+}
+
+function administrationTarget(change: AdministrationChange): AdministrationChange['target'] | undefined {
+  if (change.action === 'remove-member') {
+    return 'membershipId' in change.target && metadata(change.target.membershipId) ? { membershipId: change.target.membershipId } : undefined;
+  }
+  if (change.action === 'invite') {
+    return 'email' in change.target && metadata(change.target.email) ? { email: change.target.email } : undefined;
+  }
+  if (change.action === 'resend-invitation' || change.action === 'revoke-invitation') {
+    return 'invitationId' in change.target && metadata(change.target.invitationId) ? { invitationId: change.target.invitationId } : undefined;
+  }
+  return undefined;
 }
 
 export function projectDestinationChange(change: DestinationChange): AuditEvent | undefined {

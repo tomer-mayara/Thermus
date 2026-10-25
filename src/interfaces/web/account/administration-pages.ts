@@ -11,7 +11,7 @@ export interface MembersPageForm {
   readonly invitations: InvitationOverview;
   readonly subject: string;
   readonly csrfToken: string;
-  readonly actions: { readonly send: string; readonly resend: string; readonly revoke: string };
+  readonly actions: { readonly send: string; readonly resend: string; readonly revoke: string; readonly remove: string };
   readonly navigation: { readonly product: string; readonly members: string; readonly organizations: string; readonly logging?: string };
 }
 
@@ -20,10 +20,10 @@ const ROLE_LABELS: ReadonlyMap<string, string> = new Map([['user', 'User'], ['ad
 export function membersPage(form: MembersPageForm): Response {
   const members = form.members.members.filter(({ status }) => status === 'active');
   const invitations = form.invitations.invitations.filter(({ state }) => state === 'pending');
-  const memberRows = members.map((member) => `<li class="member-row"><p>${escapeHtml(member.email)}: active. Roles: ${rolesText(member.roles)}.</p>${member.subject === form.subject ? '<span class="you-label">You</span>' : ''}</li>`);
+  const memberRows = members.map((member) => `<li class="member-row"><div class="member-identity"><p>${escapeHtml(member.email)}: active. Roles: ${rolesText(member.roles)}.</p>${member.subject === form.subject ? '<span class="you-label">You</span>' : ''}</div>${member.removable ? removalForm(form, member) : ''}</li>`);
   const content = `<div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1><p>${escapeHtml(form.members.organizationName)}</p></div>
 <section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to ${escapeHtml(form.members.organizationName)}</h2>
-<p>User gives product and MCP access. Admin includes product and MCP access and can invite Users and Admins.</p>
+<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>
 ${sendForm(form).join('\n')}
 <p class="policy-note">${identityPolicyText(form.invitations.identityPolicy)}</p></section>
 <div class="member-lists"><section class="members-card" aria-labelledby="active-heading"><h2 id="active-heading">Active members</h2>
@@ -33,6 +33,18 @@ ${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">
 ${invitations.length === 0 ? '<p class="list-note">No pending invitations.</p>' : `<ul class="invitation-list">${invitations.map((invitation) => invitationRow(form, invitation)).join('\n')}</ul>`}
 </section></div>`;
   return membersPageLayout(form.navigation, content);
+}
+
+function removalForm(form: MembersPageForm, member: MemberOverview['members'][number]): string {
+  const label = `Remove ${member.email}`;
+  const content = [
+    hiddenField('csrf_token', form.csrfToken),
+    hiddenField('organization_id', form.members.organizationId),
+    hiddenField('membership_id', member.membershipId),
+    hiddenField('revision', member.revision),
+    `<p>Remove ${escapeHtml(member.email)} from ${escapeHtml(form.members.organizationName)}? This removes access to this workspace. The account and access to other workspaces remain.</p>`,
+  ];
+  return `<details class="member-removal"><summary>${escapeHtml(label)}</summary><div class="removal-confirmation">${postForm(form.actions.remove, content, label).join('\n')}<a href="${escapeHtml(form.navigation.members)}">Cancel</a></div></details>`;
 }
 
 function sendForm(form: MembersPageForm): string[] {

@@ -39,6 +39,7 @@ describe('HostedAccountRoutes combined Members page', () => {
 
       assert.deepEqual(formsIn(body), [
         { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user' }, label: 'Invite' },
+        { action: '/members/remove', fields: { csrf_token: annToken, organization_id: 'org-a', membership_id: 'membership-ann', revision: 'r7' }, label: 'Remove ann@example.com' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Resend the invitation to new@example.com' },
         { action: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Revoke the invitation to new@example.com' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-2' }, label: 'Resend the invitation to boss@example.com' },
@@ -68,7 +69,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitations: [] } });
     const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
     assert.match(body, /No pending invitations/);
-    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite']);
+    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite', 'Remove ann@example.com']);
   });
 
   test('Given another member with the same email, when Members opens, then only the trusted subject gets the You label', async () => {
@@ -88,14 +89,14 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.match(ownRow, /You/);
   });
 
-  test('Given hostile provider text and long values, when Members opens, then values are escaped and no member write control is added', async () => {
+  test('Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form', async () => {
     const hostile = '"><script>alert(1)</script>';
     const [member] = acmeMembers.members;
     const [invitation] = acmeInvitations.invitations;
     assert.ok(member, 'The fixture has a member to copy.');
     assert.ok(invitation, 'The fixture has an invitation to copy.');
     const { routes } = serveAdministration({
-      members: { ...acmeMembers, organizationName: `Acme ${hostile}`, members: [{ ...member, email: `<b>person</b>${hostile}@example.com`, roles: [`custom-${hostile}`, 'toString'] }] },
+      members: { ...acmeMembers, organizationName: `Acme ${hostile}`, members: [{ ...member, email: `<b>person</b>${hostile}@example.com`, roles: [`custom-${hostile}`, 'toString'], removable: false }] },
       invitations: { ...acmeInvitations, invitations: [{ ...invitation, invitationId: hostile, email: `<i>new</i>${hostile}@example.com` }] },
     });
     const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
@@ -104,7 +105,8 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.match(body, /Invite to Acme &quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h2>/);
     assert.equal(formsIn(body)[0]?.fields.organization_id, 'org-a');
     assert.deepEqual(formsIn(body).at(-1)?.fields.invitation_id, hostile);
-    assert.doesNotMatch(body, /Remove member|Change role/);
+    assert.equal(formsIn(body).filter(form => form.action.endsWith('/members/remove')).length, 0);
+    assert.doesNotMatch(body, /Change role/);
   });
 
   test('Given a session without MFA, when Members opens, then current Admin access is sufficient', async () => {
@@ -159,7 +161,7 @@ describe('HostedAccountRoutes combined Members page', () => {
   test('Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path', async () => {
     const { routes } = serveAdministration(current, { routes: { publicBaseUrl: 'https://thermus.example/team' } });
     const body = await (await routes.handle(accountRequest('/team/members', 'session=ann'))).text();
-    assert.deepEqual([...new Set(formsIn(body).map(({ action }) => action))], ['/team/invitations/send', '/team/invitations/resend', '/team/invitations/revoke']);
+    assert.deepEqual([...new Set(formsIn(body).map(({ action }) => action))], ['/team/invitations/send', '/team/members/remove', '/team/invitations/resend', '/team/invitations/revoke']);
     assert.match(body, /href="\/team\/">Product \/ Connect<\/a>/);
     assert.match(body, /href="\/team\/members" aria-current="page">Members<\/a>/);
     assert.match(body, /href="\/team\/logging" >Audit logs<\/a>/);

@@ -39,7 +39,8 @@ function eventAttributes(event: AuditEvent): Attribute[] {
     return [stringAttribute('action', event.action), stringAttribute('outcome', event.outcome)];
   }
   if (event.eventName !== 'organization.changed') throw new Error();
-  const target = 'email' in event.target ? stringAttribute('target.email', event.target.email) : stringAttribute('target.invitation_id', event.target.invitationId);
+  const target = 'email' in event.target ? stringAttribute('target.email', event.target.email)
+    : 'invitationId' in event.target ? stringAttribute('target.invitation_id', event.target.invitationId) : stringAttribute('target.membership_id', event.target.membershipId);
   return [stringAttribute('action', event.action), target, stringAttribute('outcome', event.outcome), ...(event.role === undefined ? [] : [stringAttribute('role', event.role)])];
 }
 

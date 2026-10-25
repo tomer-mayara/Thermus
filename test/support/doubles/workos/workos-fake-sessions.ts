@@ -2,6 +2,7 @@ import { nowInSeconds, type SigningKey } from './jwt-signing-key.ts';
 import { fakeClientId, type FakeAnswer, type RecordedRequest, type WorkOSFakeApi } from './workos-fake-api.ts';
 import type { FakeMembership, FakeUser } from './workos-fake.ts';
 import { invalidGrant, organizationMembershipNotFound, userJson } from './workos-fake-wire.ts';
+import { membershipIdAt } from './workos-fake-directory.ts';
 
 // What the codes, the refreshes, and the tokens read of the fake.
 export interface SessionView {
@@ -10,6 +11,7 @@ export interface SessionView {
   readonly authkitKey: SigningKey;
   readonly mcpResourceUrl: string;
   readonly memberships: readonly FakeMembership[];
+  readonly deletedMembershipIds: ReadonlySet<string>;
   readonly authenticationMethod: string;
   readonly refreshOutage: FakeAnswer | undefined;
   nextNumber(): number;
@@ -90,7 +92,7 @@ export class WorkOSFakeSessions {
   }
 
   private hasActiveMembership(user: FakeUser, organizationId: string): boolean {
-    return this.#view.memberships.some((m) => m.userId === user.id && m.organizationId === organizationId && (m.status ?? 'active') === 'active');
+    return this.#view.memberships.some((m, index) => m.userId === user.id && m.organizationId === organizationId && (m.status ?? 'active') === 'active' && !this.#view.deletedMembershipIds.has(membershipIdAt(index)));
   }
 
   private async sessionAnswer(session: FakeSession): Promise<FakeAnswer> {

@@ -3,6 +3,7 @@ import type { BillingState } from '../../../../src/accounts/billing/billing.ts';
 import type { OrganizationService } from '../../../../src/interfaces/web/account/account-routes.ts';
 import type { InvitationOverview, MemberOverview } from '../../../../src/accounts/organizations/administration-overviews.ts';
 import type { ChangeResult } from '../../../../src/accounts/organizations/change-records.ts';
+import type { MemberRemovalRequest, RemovalResult } from '../../../../src/accounts/organizations/removal-operation-store.ts';
 import type {
   Actor,
   AdministrationRefusal,
@@ -22,13 +23,14 @@ export interface AdministrationSetup {
   readonly members?: MemberOverview | AdministrationRefusal | Error;
   readonly invitations?: InvitationOverview | AdministrationRefusal | Error;
   readonly change?: ChangeResult | Error;
+  readonly removal?: RemovalResult | Error;
   readonly billing?: BillingState | AdministrationRefusal | Error;
 }
 
 export interface AdministrationCall {
   readonly operation: string;
   readonly actor: Actor;
-  readonly request: string | InvitationSendRequest | InvitationChangeRequest;
+  readonly request: string | InvitationSendRequest | InvitationChangeRequest | MemberRemovalRequest;
 }
 
 export class OrganizationAdministrationDouble implements OrganizationService {
@@ -71,6 +73,10 @@ export class OrganizationAdministrationDouble implements OrganizationService {
 
   async revokeInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult> {
     return this.answer({ operation: 'revokeInvitation', actor, request }, this.administration.change ?? 'applied');
+  }
+
+  async removeMember(actor: Actor, request: MemberRemovalRequest): Promise<RemovalResult> {
+    return this.answer({ operation: 'removeMember', actor, request }, this.administration.removal ?? 'applied');
   }
 
   async billingState(actor: Actor, organizationId: string): Promise<BillingState | AdministrationRefusal> {

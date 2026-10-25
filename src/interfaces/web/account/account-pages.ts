@@ -1,5 +1,6 @@
 import { escapeHtml } from '../html-escape.ts';
 import { htmlDocument, NOTICE_HEADERS } from '../page-html.ts';
+import type { RemovalResult } from '../../../accounts/organizations/removal-operation-store.ts';
 
 export { organizationSelectionPage } from './organization-selection-page.ts';
 
@@ -79,6 +80,27 @@ export function unconfirmedInvitationPage(membersPage: string): Response {
       'A pending invitation does not confirm email delivery.',
     ],
   }, [`<p><a href="${escapeHtml(membersPage)}">Check status</a></p>`]);
+}
+
+const REMOVAL_NOTICES: Readonly<Record<RemovalResult, Notice>> = {
+  applied: { status: 200, title: 'Member removed', paragraphs: ['The membership was removed. Open Members to read the current list, or choose another workspace.'] },
+  denied: NOTICES.changeDenied,
+  stale: NOTICES.changeStale,
+  unsupported: NOTICES.changeUnsupported,
+  'last-admin': { status: 409, title: 'Keep an Admin', paragraphs: ['Another Admin must join before this Admin can be removed. A pending invitation does not count. Nothing changed.'] },
+  busy: { status: 409, title: 'Removal pending', paragraphs: ['A removal is still pending for this organization. No further removal was started. Contact Thermus support if it remains pending.', 'Members shows current access only. It does not confirm the pending operation.'] },
+  unavailable: { status: 503, title: 'Removal unavailable', paragraphs: ['The membership could not be removed safely now. Nothing changed. Open Members to read the current list.'] },
+  unknown: { status: 503, title: 'Removal not confirmed', paragraphs: ['The removal is not confirmed. It may have taken effect. Do not submit another removal. Contact Thermus support.', 'Members shows current access only. It does not confirm this operation.'] },
+};
+
+// Keep the write result separate from the next read, including after self-removal.
+export function removalResultPage(result: RemovalResult, paths: { readonly members: string; readonly organizations: string; readonly invitations: string; readonly login: string }): Response {
+  return noticeResponse(REMOVAL_NOTICES[result], [
+    ...(result === 'last-admin' ? [`<p><a href="${escapeHtml(paths.invitations)}">Invite another Admin</a></p>`] : []),
+    `<p><a href="${escapeHtml(paths.members)}">Read current Members</a></p>`,
+    `<p><a href="${escapeHtml(paths.organizations)}">Choose a workspace or check access</a></p>`,
+    `<p>If your session ended, <a href="${escapeHtml(paths.login)}">sign in again</a>.</p>`,
+  ]);
 }
 
 export function noOrganizationPage(signupUrl?: string): Response {
