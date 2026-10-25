@@ -76,7 +76,7 @@ export function createFetchToolServer(context: RequestContext, dependencies: {
       if (dependencies.audit !== undefined && validated !== undefined && projected !== undefined && status !== 'invalid_arguments' && status !== 'unknown_tool') {
         captureCompletion(dependencies.audit, {
           ...validated, timestamp: new Date().toISOString(), organizationId: context.tenantId,
-          actor: { authority: context.user.authority, subject: context.user.subject },
+          actor: { authority: context.user.authority, subject: context.user.subject, ...(context.user.name === undefined ? {} : { name: context.user.name }) },
           operationId, status, durationMs,
           result: projected.content.filter((entry) => entry.type === 'text').map((entry) => entry.text).join(''),
         });

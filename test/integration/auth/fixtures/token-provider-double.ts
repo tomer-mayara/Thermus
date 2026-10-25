@@ -12,6 +12,7 @@ export const localSettings: BetterAuthProviderSettings = {
 };
 
 export interface StoredAccount {
+  readonly name?: string;
   readonly id: string;
   readonly banned: boolean | null;
 }

@@ -4,7 +4,7 @@ import { serveAuditActorNameSite } from '../../../support/in-process/audit-actor
 
 for (const tool of ['search', 'getURLAsMarkdown'] as const) {
   test(`Given an authorized WorkOS user with a trusted profile, when ${tool} completes with forged client names, then customer OTLP contains the profile name and original WorkOS ID`, async t => {
-    const { records, user, call } = await serveAuditActorNameSite(t);
+    const { site, records, user, call } = await serveAuditActorNameSite(t);
     const result = await call(tool);
     assert.deepEqual(result.content, [{ type: 'text', text: tool === 'search' ? 'public search' : 'public page' }]);
     assert.equal(records.length, 1);
@@ -12,6 +12,7 @@ for (const tool of ['search', 'getURLAsMarkdown'] as const) {
     assert.equal(records[0]['actor.authority'].stringValue, 'workos:client_test');
     assert.equal(records[0]['actor.name']?.stringValue, 'Zoë Example');
     assert.doesNotMatch(JSON.stringify(records), /forged|private-email/);
+    assert.doesNotMatch(site.log.lines.join('\n'), /Zoë Example|forged (token|header|metadata) name/);
   });
 }
 

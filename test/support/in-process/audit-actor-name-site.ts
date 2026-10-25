@@ -1,3 +1,4 @@
+import { CLIENT_CAPABILITIES_META_KEY, PROTOCOL_VERSION_META_KEY } from '@modelcontextprotocol/server';
 import type { TestContext } from 'node:test';
 import { AuditLog } from '../../../src/logs/audit/audit-log.ts';
 import { encodeAuditEvent } from '../../../src/logs/audit/otlp-audit-encoding.ts';
@@ -28,7 +29,7 @@ export async function serveAuditActorNameSite(t: TestContext) {
     call: (tool: 'search' | 'getURLAsMarkdown') => site.transport(mcpRequest({
       url: hostedConfig.mcpResourceUrl, method: 'tools/call', token,
       headers: { 'X-User-Name': 'forged header name' },
-      params: { name: tool, arguments: tool === 'search' ? { query: 'query', reason: 'reason' } : { url: 'https://example.com/', reason: 'reason' }, _meta: { name: 'forged metadata name' } },
+      params: { name: tool, arguments: tool === 'search' ? { query: 'query', reason: 'reason' } : { url: 'https://example.com/', reason: 'reason' }, _meta: { [CLIENT_CAPABILITIES_META_KEY]: {}, [PROTOCOL_VERSION_META_KEY]: '2026-07-28', name: 'forged metadata name' } },
     })).then(rpcResult),
   };
 }

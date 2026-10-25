@@ -1,6 +1,8 @@
 export interface AuthenticatedUser {
   readonly authority: string;
   readonly subject: string;
+  /** Display metadata only; never an authority or authorization input. */
+  readonly name?: string;
   readonly selectedOrganizationId?: string;
 }
 
@@ -74,9 +76,16 @@ function permissionsOfEveryGrant(grants: readonly RoleGrant[]): string[] {
 }
 
 function copyUser(user: AuthenticatedUser): AuthenticatedUser {
+  const name = displayNameOf(user.name);
   return Object.freeze({
     authority: user.authority,
     subject: user.subject,
+    ...(name === undefined ? {} : { name }),
     ...(user.selectedOrganizationId === undefined ? {} : { selectedOrganizationId: user.selectedOrganizationId }),
   });
+}
+
+function displayNameOf(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value.isWellFormed() || /\p{Cc}/u.test(value) || Buffer.byteLength(value) > 1_024) return undefined;
+  return value.trim() || undefined;
 }

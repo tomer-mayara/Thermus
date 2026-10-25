@@ -151,3 +151,11 @@ describe('Request context records', () => {
     });
   }
 });
+
+for (const name of ['Zoë O’Neil — 李', 'é'.repeat(512)]) {
+  test('Given a trusted display name, when a request context is copied, then its frozen user keeps that optional name', () => {
+    const context = createRequestContext({ user: Object.assign({}, member, { name }), tenantId: 'tenant', grants: [] });
+    assert.equal((context.user as typeof member & { name?: string }).name, name);
+    assert.ok(Object.isFrozen(context.user));
+  });
+}

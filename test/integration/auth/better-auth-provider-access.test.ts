@@ -6,7 +6,7 @@ import { installationId, localSettings, TokenProviderDouble } from './fixtures/t
 const authority = `better-auth:${installationId}`;
 const tenantId = `local:${installationId}`;
 
-function resolverWith(...accounts: { id: string; banned: boolean | null }[]) {
+function resolverWith(...accounts: { id: string; name?: string; banned: boolean | null }[]) {
   const provider = new TokenProviderDouble();
   for (const account of accounts) provider.accounts.set(account.id, account);
   return { provider, resolver: new BetterAuthProvider(provider.auth, localSettings) };
@@ -81,3 +81,13 @@ describe('BetterAuthProvider access resolution', () => {
     await assert.rejects(resolver.resolve({ authority, subject: 'user-1' }), (error) => error === failure);
   });
 });
+
+for (const name of [' Zoë O’Neil — 李 ', '', ' ', '\ud800', 'bad\nname', 'é'.repeat(513)]) {
+  test('Given an enabled local profile and an untrusted caller name, when access is resolved, then only valid display data from the existing profile read survives', async () => {
+    const { provider, resolver } = resolverWith({ id: 'user-1', banned: false, name });
+    const decision = await resolver.resolve(Object.assign({ authority, subject: 'user-1' }, { name: 'forged' }));
+    assert.ok(decision.allowed);
+    assert.deepEqual(decision.context.user, { authority, subject: 'user-1', ...(name.startsWith(' Zoë') ? { name: name.trim() } : {}) });
+    assert.deepEqual(provider.calls, ['findUserById user-1']);
+  });
+}

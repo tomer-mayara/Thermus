@@ -7,7 +7,7 @@ export interface AuditContext {
   /** Explicit time of the outcome, in ISO 8601 UTC. */
   readonly timestamp: string;
   readonly organizationId: string;
-  readonly actor: { readonly authority: string; readonly subject: string };
+  readonly actor: { readonly authority: string; readonly subject: string; readonly name?: string };
 }
 
 interface ToolOutcome extends AuditContext {

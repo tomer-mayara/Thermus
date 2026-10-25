@@ -80,11 +80,12 @@ export class BetterAuthProvider implements IdentityVerifier, AccessResolver {
   async resolve(user: AuthenticatedUser): Promise<AccessDecision> {
     if (user.authority !== this.authority) return ACCOUNT_INACTIVE;
     const { internalAdapter } = await this.auth.$context;
-    if (!isEnabled(await internalAdapter.findUserById(user.subject))) return ACCOUNT_INACTIVE;
+    const profile = await internalAdapter.findUserById(user.subject);
+    if (!isEnabled(profile)) return ACCOUNT_INACTIVE;
     return {
       allowed: true,
       context: createRequestContext({
-        user: { authority: this.authority, subject: user.subject },
+        user: { authority: this.authority, subject: user.subject, ...(profile?.name === undefined ? {} : { name: profile.name }) },
         tenantId: this.tenantId,
         grants: [LOCAL_USER_GRANT],
       }),

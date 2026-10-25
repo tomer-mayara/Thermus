@@ -1,3 +1,4 @@
+import { auditActorName } from './audit-content.ts';
 import type { AuditEvent } from './audit-log.ts';
 import { AUDIT_SEND_LIMITS, AuditSendFailure } from './audit-send.ts';
 
@@ -45,7 +46,8 @@ function eventAttributes(event: AuditEvent): Attribute[] {
 /** OTLP translation copies named fields; extra caller fields never become audit content. */
 export function encodeAuditEvent(event: AuditEvent): Buffer {
   try {
-    const attributes = [stringAttribute('organization.id', event.organizationId), stringAttribute('actor.authority', event.actor.authority), stringAttribute('actor.subject', event.actor.subject), ...eventAttributes(event)];
+    const name = auditActorName(event.actor.name);
+    const attributes = [stringAttribute('organization.id', event.organizationId), stringAttribute('actor.authority', event.actor.authority), stringAttribute('actor.subject', event.actor.subject), ...(name === undefined ? [] : [stringAttribute('actor.name', name)]), ...eventAttributes(event)];
     const record = { timeUnixNano: timestampNanos(event.timestamp), severityNumber: 9, severityText: 'INFO', eventName: event.eventName, body: { stringValue: event.eventName }, attributes };
     const body = Buffer.from(JSON.stringify({ resourceLogs: [{ resource: { attributes: [stringAttribute('service.name', 'thermus.audit')] }, scopeLogs: [{ scope: { name: 'thermus.audit' }, logRecords: [record] }] }] }));
     if (body.length > AUDIT_SEND_LIMITS.requestBytes) throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'request_too_large' });
