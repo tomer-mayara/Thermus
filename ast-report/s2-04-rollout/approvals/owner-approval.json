@@ -1,0 +1,29 @@
+{
+  "observedAt": "2026-10-25T01:33:16.013825+00:00",
+  "source": "Direct human answers in the current Codex conversation",
+  "questionCall": "call_c7989245552e4718a936a6beba9eb53a",
+  "feature": {
+    "pr": 248,
+    "head": "85206b1c22dab78e8379d7a10e2f2b9ac31af9c6",
+    "answer": "Architect approved — merge and deploy",
+    "scope": "Merge and deploy the current T2 candidate for the existing internal Thermus AI rollout. Accept the documented alternate-address invitation and revoke/accept race limitations; mailbox, password reset and consumer-address checks remain deferred."
+  },
+  "notices": {
+    "marketingPr": 27,
+    "marketingHead": "1cd32b128698b95f624f0fed15ca3c58d95a62d0",
+    "bundle": "s204-organization-audit-proposal-2026-10-24-v3",
+    "manifestSha256": "9ff7e5f5fa48bad17dcf5cde7248aa226700e2b10f3eb9da26a1de42c6f90075",
+    "answer": "Approve package and internal-org disposition",
+    "effectiveDate": "2026-10-24",
+    "scope": "Complete identified Terms, Privacy and Audit help bytes, versions and hashes; public website and hosted runtime publication; documented content export to Axiom audit-log-test and no Slice 2 settings backups. Record owner rollout authorization as the existing internal Thermus AI organization notice disposition, preserve previous agreements and do not claim new signup acceptance."
+  },
+  "credential": {
+    "answer": "Create and store the scoped token",
+    "name": "Thermus Audit - audit-log-test",
+    "axiomOrganization": "thermus-ai-spao",
+    "permissions": "Ingest only into audit-log-test; no read or System dataset access",
+    "expiration": "None",
+    "storage": "Encrypted Thermus destination settings and protected local configuration"
+  },
+  "limits": "Approval does not prove publication, deployment, export delivery, restart persistence or auto-deploy activation. The proposed date is 24 October in the owner America/Denver timezone; actual publication must be recorded."
+}
