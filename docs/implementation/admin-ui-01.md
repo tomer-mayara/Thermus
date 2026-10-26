@@ -33,6 +33,12 @@ values, keyboard navigation, enlarged text and expanded help. The skip-link
 check found that the fragment target did not receive focus. Main content now
 accepts programmatic focus without entering the ordinary tab order.
 
+Independent review found an Audit tablet width regression. A new browser case
+failed at 800px because the panel was 650px wide instead of 752px. Removing the
+new width limit restored 752px at 800px and 812px at 860px. Browser operation
+drivers keep the acceptance journey short and use explicit visibility/window
+guards. They retain all of the original behavior checks.
+
 Existing behavior uses passing characterization. No failure was manufactured
 for an unchanged form, access rule or provider behavior. Full red/green logs,
 screenshots, check results and quality reports will be linked from the PR's
