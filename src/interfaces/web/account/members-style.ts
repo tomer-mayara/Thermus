@@ -86,6 +86,6 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
 .invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}
 .site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}
-@media(max-width:860px){.members-layout.logging-layout{max-width:650px;padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}
+@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}
 @media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
 `;
