@@ -1,3 +1,4 @@
+import { parseHTML } from 'linkedom';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
@@ -22,7 +23,9 @@ test('Given current member data, when Members opens, then member details remain 
   const body = await response.text();
 
   assert.equal(response.status, 200);
-  assert.match(body, /ann@example\.com: active\. Roles: User, Admin\./);
+  const row = parseHTML(body).document.querySelector('.member-list > li');
+  assert.equal(row?.querySelector('.member-email')?.textContent, 'ann@example.com');
+  assert.equal(row?.querySelector('.member-role dd')?.textContent, 'User, Admin');
   const forms = formsIn(body);
   assert.ok(forms.every(({ action }) => action.startsWith('/invitations/') || action === '/members/remove'));
   assert.equal(forms.filter(({ action }) => action === '/members/remove').length, 1);

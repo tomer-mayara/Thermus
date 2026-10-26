@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { Page } from 'playwright';
 
 export async function adminShellMeasurements(page: Page, options: { readonly javaScriptEnabled: boolean; readonly width: number }) {
-  const title = await page.getByRole('heading', { name: 'Members', exact: true }).evaluate(element => {
+  const title = await page.getByRole('heading', { name: /^Members · \d+$/ }).evaluate(element => {
     const view = element.ownerDocument.defaultView;
     if (view === null) throw new Error('The Members title has no browser window');
     const style = view.getComputedStyle(element);
