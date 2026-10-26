@@ -4,9 +4,9 @@ import type { AuthenticatedUser } from '../identity/access-context.ts';
 // directory sent no invitation, because the address belongs to a member or has a pending invitation.
 export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-pending' | 'address-in-use' | 'unsupported';
 
-// A record also keeps the outcome of a change that failed: 'failed' before the directory change started, so that
-// nothing changed, and 'unknown' during the directory change, so that its effect is not known.
-export type ChangeOutcome = ChangeResult | 'failed' | 'unknown';
+// 'failed' means no directory write started. 'unknown' means completion is unconfirmed;
+// removal can also have an uncertain admission or final receipt, without a known provider effect.
+export type ChangeOutcome = ChangeResult | 'failed' | 'unknown' | 'last-admin' | 'busy' | 'unavailable';
 
 // The provider write started, but its result is not confirmed. A caller can offer a current read, not a blind retry.
 export class UnconfirmedChangeError extends Error {
@@ -26,7 +26,7 @@ export interface ChangeRecord {
   readonly organizationId: string;
   readonly target: ChangeTarget;
   // 'invite', 'resend-invitation', 'revoke-invitation', or the action of a grant change as requested: 'grant',
-  // 'revoke'. The opt-in sign-in policy uses 'automatic-enrollment' for a new User membership.
+  // 'revoke'. Removal uses 'remove-member'. The opt-in sign-in policy uses 'automatic-enrollment' for a new User membership.
   readonly action: string;
   readonly role?: string;
   readonly outcome: ChangeOutcome;
@@ -63,7 +63,7 @@ export class ChangeRecording {
   async run(entry: ChangeEntry, check: () => Promise<ChangeResult | DirectoryChange>): Promise<ChangeResult> {
     const checked = await this.recordingFailure(entry, 'failed', check);
     const outcome = typeof checked === 'string' ? checked : await this.recordingFailure(entry, 'unknown', checked);
-    this.keep(entry, outcome);
+    this.record(entry, outcome);
     return outcome;
   }
 
@@ -71,13 +71,13 @@ export class ChangeRecording {
     try {
       return await work();
     } catch (cause) {
-      this.keep(entry, outcome);
+      this.record(entry, outcome);
       throw outcome === 'unknown' ? new UnconfirmedChangeError(cause) : cause;
     }
   }
 
   // The record holds only these fields, so that no credential of the session or of an invitation reaches it.
-  private keep(entry: ChangeEntry, outcome: ChangeOutcome): void {
+  record(entry: ChangeEntry, outcome: ChangeOutcome): void {
     const { actor, organizationId, target, action, role } = entry;
     try {
       this.records.record(Object.freeze({

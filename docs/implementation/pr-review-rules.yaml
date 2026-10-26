@@ -193,6 +193,7 @@ public_surface:
       - src/accounts/organizations/customer-roles.ts
       - src/accounts/organizations/organization-administration.ts
       - src/accounts/organizations/organization-directory.ts
+      - src/accounts/organizations/removal-operation-store.ts
       - src/accounts/organizations/signup-activation.ts
     page-fetch:
       - src/pipelines/page-fetch/fetch-failure.ts

@@ -11,6 +11,7 @@ import { MCPServer, type FailureReporter } from '../interfaces/mcp/mcp-server.ts
 import type { ChangeRecorder } from '../accounts/organizations/change-records.ts';
 import { OrganizationAdministration } from '../accounts/organizations/organization-administration.ts';
 import type { OrganizationDirectory } from '../accounts/organizations/organization-directory.ts';
+import type { RemovalOperationStore } from '../accounts/organizations/removal-operation-store.ts';
 
 // The settings that only the server reads, such as AD_RULES_FILE and the WorkOS settings. The local commands share
 // DeploymentConfig.
@@ -150,12 +151,13 @@ export function discardAuditLog(): AuditLog {
   return new AuditLog({ writeAuditEvent: () => {} });
 }
 
-export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging'] }): Application {
+export function composeHostedApplication(config: RouteConfig, parts: HostedProviderParts, account: HostedAccountParts, loggingStorage?: { close(): Promise<void>; readonly service?: HostedAccountRoutesOptions['logging']; readonly removalStore?: RemovalOperationStore }): Application {
+  const administration = new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing, removalStore: loggingStorage?.removalStore });
   const routes = new HostedAccountRoutes({
     publicBaseUrl: config.publicBaseUrl,
     session: parts.session,
     accessResolver: parts.accessResolver,
-    organizations: new OrganizationAdministration({ directory: parts.organizations, records: account.changeRecords, billing: account.billing }),
+    organizations: administration,
     reportFailure: account.reportFailure,
     operation: account.operation,
     signupUrl: account.signupUrl,
@@ -170,7 +172,10 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     return handle(new Request(request, { signal }));
   }, { close: () => {
     shutdown.abort(new DOMException('The hosted application is shutting down', 'AbortError'));
-    const closing = [(async () => parts.mcp.close())(), (async () => loggingStorage?.close())()];
+    const closing = [(async () => parts.mcp.close())(), (async () => {
+      // Stop new removal work before the shared SQL runtime closes.
+      try { await administration.close(); } finally { await loggingStorage?.close(); }
+    })()];
     return Promise.allSettled(closing).then((results) => {
       const failures = results.filter((result) => result.status === 'rejected').map((result) => result.reason);
       if (failures.length > 0) throw new AggregateError(failures, 'Hosted application cleanup failed.');

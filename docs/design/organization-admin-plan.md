@@ -13,8 +13,12 @@ retains the rollout and release evidence. Ticket records describe their historic
 increments; earlier missing features and candidate holds are not the current
 internal rollout status. Historical gate passes do not verify this follow-up.
 The expanded Slice 2.5 tickets were reviewed on 24 October 2026. S2.5-01a is
-implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251), with
-validation and review in progress; the remaining Slice 2.5 tickets are planned.
+implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
+S2.5-01b adds durable removal coordination in stacked
+[PR #253](https://github.com/tomer-mayara/Thermus/pull/253). Its original candidate
+passed local validation; its maintained PR comments record the rebased checks.
+Merge still requires the parent, resolution of S2.5-R1 in this PR, and independent
+architect approval. S2.5-01c and S2.5-02 remain planned.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -89,7 +93,7 @@ Keep permission checks, origin/CSRF protection, escaping, and non-cacheable resp
 | Web/account | Native forms, browser sessions, selected organization, safe responses, and Slice 3 browser MFA proof. |
 | Destination settings | Slice 2 tenant settings, revisions, and encrypted credential references. |
 | System logs | Internal engineering diagnostics in `src/logs/system/`; no customer access. |
-| Audit logs/app lifecycle | Customer audit events, destination settings in `src/logs/audit/`, and bounded OTLP delivery and shutdown. |
+| Audit logs/app lifecycle | Customer audit events, destination settings, the shared private SQL adapter for removal intent in `src/logs/audit/`, and bounded OTLP delivery and shutdown. |
 
 Reuse [identity/access](../../src/accounts/identity/access-context.ts),
 [BrowserSession](../../src/accounts/identity/browser-session.ts), and
@@ -2517,8 +2521,13 @@ record states which checks ran; a planned check is not evidence of a pass.
 before dispatch. A bounded admission conflict returns busy without polling,
 queued work, automatic continuation/retry, or a lease. Recheck current facts after
 admission. Release SQL clients before HTTP. Preserve the existing per-call timeout;
-S2.5-01b chooses and tests a fixed total server budget for current reads/pages,
-storage, dispatch, and finalization, with no customer control. A timeout must not
+S2.5-01b sets a 30-second total server budget from initial authority read through
+storage, current reads/pages, dispatch, and finalization. Active-member reads
+stop at 10 pages; provider calls retain their existing five-second timeout.
+The owner passes a stop signal to directory reads. WorkOS checks it around each
+remote read, so expiry or shutdown prevents the next read substep. An existing
+request can still finish within its per-call bound. These limits have no customer
+control. A timeout must not
 leave a pre-dispatch continuation able to send later. Timeout/abort alone does not
 prove a possibly live sender stopped, so it cannot justify releasing its hold.
 The coordinator owns admitted work, not the browser connection. Disconnect/cancel
@@ -2530,7 +2539,10 @@ across restart; unchanged reads, elapsed time, lease expiry, or missing restored
 rows prove no settlement. Complete conditionally by org plus operation ID. A
 known own-no-send refusal or proven provider no-effect refusal may settle; arbitrary
 errors cannot. After an uncertain final commit, reread durable state before claiming
-completion. A positive late answer may settle only its same operation. Never replay
+completion. S2.5-01b ignores provider answers after its deadline or shutdown and
+starts no further work. A terminal SQL write already in flight can still complete
+its same operation after the caller receives unknown; this write starts only
+after a known no-send refusal or a proven provider result. Never replay
 unknown deletion, change a replacement membership, or restore a later grant.
 
 Status refresh is read-only current Members/access checking, not proof that a
@@ -2634,6 +2646,14 @@ Controlled wire proof is separate from S2.5-02's scoped live provider proof.
 
 #### S2.5-01b — One removal owner with durable per-org serialization
 
+**Implementation status — 25 October 2026.** [PR #253](https://github.com/tomer-mayara/Thermus/pull/253)
+adds `OrganizationAdministration.removeMember` and closes its bounded work before
+the shared SQL runtime. The existing private store now implements
+`RemovalOperationStore`: one pending row per organization, conditional settlement,
+and a retained terminal receipt. No route can invoke removal yet. The
+[implementation record](../implementation/admin-s2-5-01b.md) records observed
+red/green steps, numeric limits, SQL and process-crash proof, and release limits.
+
 **Acceptance specifications first.**
 
 ```gherkin
@@ -2698,11 +2718,10 @@ Scenario: Settle only the same proven terminal operation
   And no replacement membership is changed
 ```
 
-**Current gap.** `OrganizationAdministration` rechecks actor memberships for
-invitation writes, but has no removal admission or last-Admin owner.
-`ChangeRecording` records outcomes, not durable admission. The Slice 2 SQL store
-and failure-safe recording are now implemented; reuse them. Durable removal
-admission and last-Admin protection remain new work.
+**Starting gap.** Before this ticket, `OrganizationAdministration` rechecked
+actor memberships for invitation writes but had no removal admission or
+last-Admin owner. `ChangeRecording` recorded outcomes, not durable admission.
+This ticket reuses the Slice 2 SQL runtime and failure-safe recording.
 
 **Small TDD steps.** Apply the common completion/recovery rule throughout.
 
@@ -2728,11 +2747,13 @@ admission and last-Admin protection remain new work.
    first add a focused failing unit or integration test, make the minimum source change,
    and refactor before acceptance goes green. Verify busy, separate-org progress, new
    admission after settlement, stale completion, and untouched replacement membership.
-5. Red (integration): specify unavailable storage and scoped safe-recording failures
+5. Red (integration): specify unavailable storage and safe `ChangeRecorder` failures
    after applied and unknown outcomes. Green: block removal during outage while current
-   product/MCP checks remain usable. Logging/export failure changes neither completion
+   product/MCP checks remain usable. A recording failure changes neither completion
    nor hold and triggers no replay. Refactor using S2-03a's safe sink, then rerun all
-   acceptance cases for this ticket.
+   acceptance cases for this ticket. Customer export capture belongs to S2.5-01c's
+   checked browser boundary: only that boundary has the trusted tenant. Do not
+   export a denied request under its untrusted requested organization ID.
 
 **Homes.** Rules under `src/accounts/organizations/`; extend the Slice 2 store and
 composition. Use `test/unit/organizations/`, integration tests for real owner/store/
@@ -2836,6 +2857,10 @@ preservation does not promise every unrelated existing session survives deletion
    count views, and invitation routing; use unit tests for any new local decision.
    Green: connect these paths and preserve seeded objects. Refactor, then rerun the
    already-authored portal/MCP denial, count, scope, and fresh-invitation acceptance.
+   Add removal metadata to customer Audit capture at this checked boundary. Cover
+   applied and unknown outcomes with a failing export sink, and a forged organization
+   request that must not export to that organization's Collector. Export failure
+   must change neither the result nor the durable hold and must trigger no replay.
 5. Author browser acceptance first for keyboard open/cancel/confirm at a fixed narrow
    viewport. Before each rendering change, add a focused failing rendering/route test,
    make it pass, and refactor. Then verify real keyboard focus, labels, native controls,

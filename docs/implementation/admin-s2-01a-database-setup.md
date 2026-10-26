@@ -61,6 +61,27 @@ identity and must never be given to a browser or customer.
 
 ## Provision server secrets
 
+### Add membership-removal storage before Slice 2.5 activation
+
+S2.5-01b adds a separate private table on the same runtime and pool. Its
+[migration](../../sql/migrations/20261025082850_membership_removal_operations.sql)
+has not been applied by that implementation ticket. The owner must check that
+the table name is unused, then apply this additive migration once after the
+existing settings migrations. Do not repeat initial setup or change working
+credentials. Inspect the new table's effective grants and forced RLS: the server
+role may SELECT, INSERT, and UPDATE; PUBLIC and Supabase API roles must have no
+access; the server must have no DELETE or DDL.
+
+No new secret, API key, paid resource, or pool is required. Existing storage
+configuration remains required even when customer export is off. A missing
+table or storage outage stops removal while current product/MCP access remains
+usable. Preserve pending operations and receipts during rollback. S2.5-02 must
+verify actual deployment, capacity, safe recovery and restore controls before
+removal activation. The [implementation record](admin-s2-5-01b.md) describes the
+row contract and local proof; it does not establish live migration status.
+
+### Initial credentials and configuration
+
 Use a secure owner session to assign a new independent password to
 `thermus_logging` and enable LOGIN. Use the database client's protected password
 prompt or the existing secret-management process. Do not place the password in

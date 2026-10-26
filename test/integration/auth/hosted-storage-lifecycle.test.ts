@@ -6,7 +6,7 @@ import { BrowserSessionDouble } from '../../support/doubles/auth/browser-session
 import { MembershipDirectoryDouble } from '../../support/doubles/organizations/membership-directory-double.ts';
 import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
 
-test('Given held hosted MCP cleanup and a listener drain, when shutdown starts twice, then storage cleanup starts at once and runs once', async () => {
+test('Given held hosted MCP cleanup and a listener drain, when shutdown starts twice, then storage cleanup starts without waiting for either and runs once', async () => {
   const directory = new MembershipDirectoryDouble('hosted-provider-double', []);
   const work = Promise.withResolvers<void>();
   const listener = Promise.withResolvers<void>();
@@ -20,6 +20,8 @@ test('Given held hosted MCP cleanup and a listener drain, when shutdown starts t
   assert.equal(await (await application.handle(new Request(hostedConfig.mcpResourceUrl))).text(), 'MCP remains available');
   const closing = application.close(listener.promise);
   assert.equal(application.close(), closing);
+  // The removal owner closes before SQL; held MCP and listener work must not delay either.
+  await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(storageCloses, 1);
   work.resolve();
   listener.resolve();
