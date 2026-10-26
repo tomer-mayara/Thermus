@@ -1,0 +1,28 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/pr-review/check.ts",
+    "--base",
+    "origin/main",
+    "--repo",
+    "tomer-mayara/Thermus",
+    "--impact",
+    "ast-report/impact.json",
+    "--base-snapshot",
+    "ast-report/snapshot-base.json",
+    "--head-snapshot",
+    "ast-report/snapshot.json",
+    "--crap",
+    "ast-report/crap.json",
+    "--process",
+    "ast-report/process.json",
+    "--review",
+    "ast-report/review.json",
+    "--json"
+  ],
+  "head": "d292e549b724b506758696cdcb2d2960de874578",
+  "exitCode": 0,
+  "seconds": 2.49
+}

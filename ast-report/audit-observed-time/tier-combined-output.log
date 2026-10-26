@@ -1,0 +1,93 @@
+pr-review-check: ignored 33 compiler errors in 2 files that public_surface does not list
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "d292e549b724b506758696cdcb2d2960de874578",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "Audit OTLP output now writes observedTimeUnixNano from the same captured timestamp as timeUnixNano. Each timestamp remains an exact decimal-string nanosecond value and stays fixed across queue delay and retries. Existing event capture, identity, content, tenant routing, validation, sender outcomes, System logs, and deployment are unchanged. No TypeScript callable contract, component, dependency, or public module changes. Registry prose documents the wire field; all registry Mermaid views remain unchanged."
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-25-581f30cf.json"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/otlp-audit-encoding.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/logging/audit/audit-sender.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/logging/audit/otlp-audit-encoding.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 3,
+    "productionLimit": 400,
+    "total": 68,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 1,
+    "removed": 0,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/logs/audit/otlp-audit-encoding.ts: 53.87515480541661 to 53.45070666566668"
+  ],
+  "crap": [
+    "src/logs/audit/otlp-audit-encoding.ts: encodeAuditEvent: 5.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)"
+  ],
+  "informational": [
+    "48 public modules, 0 snapshots changed",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

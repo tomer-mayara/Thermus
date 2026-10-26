@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": true,
+    "deployment": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "crossCutting": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "Audit OTLP output now writes observedTimeUnixNano from the same captured timestamp as timeUnixNano. Each timestamp remains an exact decimal-string nanosecond value and stays fixed across queue delay and retries. Existing event capture, identity, content, tenant routing, validation, sender outcomes, System logs, and deployment are unchanged. No TypeScript callable contract, component, dependency, or public module changes. Registry prose documents the wire field; all registry Mermaid views remain unchanged.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "C4 containers: local edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: local authentication in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Runtime view",
+      "Deployment view"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "docs/design/organization-admin-plan.md",
+      "src/logs/audit/otlp-audit-encoding.ts",
+      "src/logs/audit/audit-event-projection.ts",
+      "src/logs/audit/audit-collector.ts",
+      "src/interfaces/mcp/fetch-tool-server.ts",
+      "src/interfaces/web/account/administration-routes.ts",
+      "src/interfaces/web/account/logging-routes.ts",
+      "src/logs/audit/destination-settings-service.ts",
+      "test/unit/logging/audit/otlp-audit-encoding.test.ts",
+      "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+    ]
+  },
+  "base": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "head": "d292e549b724b506758696cdcb2d2960de874578"
+}

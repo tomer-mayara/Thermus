@@ -1,0 +1,61 @@
+{
+  "candidate": "8a13ba7b3f6b49c6f02377fd51f12fc18b8dc2ae",
+  "base": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "tests": [
+    {
+      "phase": "acceptance red",
+      "command": "npm run build && node --test dist/test/acceptance/logging/audit/hosted-audit-journey.runtime.js",
+      "log": "acceptance-red.log",
+      "tests": 1,
+      "passed": 0,
+      "failed": 1,
+      "reason": "observedTimeUnixNano missing"
+    },
+    {
+      "phase": "unit red",
+      "command": "npm run build && node --test dist/test/unit/logging/audit/otlp-audit-encoding.test.js",
+      "log": "unit-red.log",
+      "tests": 29,
+      "passed": 24,
+      "failed": 5,
+      "reason": "new observation timestamp assertions fail"
+    },
+    {
+      "phase": "unit green",
+      "command": "npm run build && node --test dist/test/unit/logging/audit/otlp-audit-encoding.test.js",
+      "log": "unit-green.log",
+      "tests": 29,
+      "passed": 29,
+      "failed": 0
+    },
+    {
+      "phase": "Collector green",
+      "command": "npm run test:logging:collector",
+      "log": "collector-green.log",
+      "tests": 10,
+      "passed": 10,
+      "failed": 0
+    }
+  ],
+  "sourceSelection": [
+    "npm test",
+    "npm run typecheck",
+    "npm run build:user-portal",
+    "npm run test:container",
+    "npm run build:hosted",
+    "npm run test:container:hosted",
+    "npm run test:logging:collector"
+  ],
+  "notApplicable": {
+    "hosted-live": "No hosted authentication, WorkOS membership read or mutation changes.",
+    "logging-postgres": "No store, SQL runtime, or configuration/lifetime changes.",
+    "standalone-renderer-and-search-live": "No tool composition, renderer, pipeline, or rules-loading changes. The required hosted build still includes its existing renderer gate.",
+    "production-Axiom-smoke": "User requested a PR, not a merge or release. This candidate is not deployed."
+  },
+  "githubChecksAtDraft": {
+    "head": "8a13ba7b3f6b49c6f02377fd51f12fc18b8dc2ae",
+    "checks": [],
+    "statuses": []
+  },
+  "note": "Focused red/green logs were recorded before the commit; tracked source and test bytes match the committed candidate except that red runs precede the encoder fix. Subsequent complete-candidate gate logs pin their actual HEAD."
+}

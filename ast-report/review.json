@@ -1,0 +1,18 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "headSha": "d292e549b724b506758696cdcb2d2960de874578",
+  "summary": {
+    "filesChanged": 4,
+    "filesAdded": 0,
+    "filesDeleted": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "improvements": 0
+  },
+  "regressions": [],
+  "improvements": [],
+  "gate": "passed"
+}

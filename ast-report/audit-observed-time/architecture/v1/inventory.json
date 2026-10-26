@@ -1,0 +1,30 @@
+{
+  "base": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "head": "8a13ba7b3f6b49c6f02377fd51f12fc18b8dc2ae",
+  "registryMermaidBlocks": 13,
+  "allBlocksIdentical": true,
+  "registryHeadings": [
+    "Component registry",
+    "Context",
+    "arc42 building-block view",
+    "C4 containers: hosted edition",
+    "C4 containers: local edition",
+    "Containers and source owners",
+    "Selected C4 components: tool processing in the Node server",
+    "Selected C4 components: hosted authentication in the Node server",
+    "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "Selected C4 components: system and audit logs in the Node server",
+    "Selected C4 components: local authentication in the Node server",
+    "Runtime view",
+    "Collaboration overview",
+    "Scenario: MCP page fetch and renderer cancellation",
+    "Scenario: hosted default sign-in landing",
+    "Scenario: hosted member read",
+    "Deployment view",
+    "Ownership",
+    "Behavior and resource ownership",
+    "Design choices and current soft spots"
+  ],
+  "finalCandidate": "d292e549b724b506758696cdcb2d2960de874578",
+  "onlySubsequentChange": "Generated immutable baseline metric record; no source/test/document-contract/diagram changes."
+}

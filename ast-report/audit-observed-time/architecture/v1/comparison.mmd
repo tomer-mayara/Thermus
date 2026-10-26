@@ -1,0 +1,12 @@
+flowchart TB
+  subgraph server["Container: Thermus Node server"]
+    mcp["mcp · TypeScript<br/>Capture completed tool action"]
+    web["web · TypeScript<br/>Capture Admin action / Test"]
+    audit["audit-logs · TypeScript<br/>Project, queue, authorize, send<br/>Changed: populate observed timestamp"]
+    mcp -->|tool outcome and capture time| audit
+    web -->|action metadata / saved Test| audit
+  end
+  destination["External: customer Audit destination<br/>Collector or compatible OTLP service / Axiom"]
+  audit -->|existing OTLP HTTP JSON over HTTPS| destination
+  classDef changed fill:#fff3cd,stroke:#a66a00,color:#171717
+  class audit changed

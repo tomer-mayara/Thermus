@@ -1,0 +1,154 @@
+✔ Given a tool audit event with injected system fields, when encoded, then only named audit metadata reaches OTLP (9.893791ms)
+✔ Given an administration change, when encoded, then the allowed target and role are present (0.293084ms)
+✔ Given invalid audit time not a time, when encoded, then the event is refused (0.200167ms)
+✔ Given invalid audit time 2026-02-31T12:00:00Z, when encoded, then the event is refused (0.091792ms)
+✔ Given invalid audit time 2026-10-23, when encoded, then the event is refused (0.070334ms)
+✔ Given invalid audit time 1960-01-01T00:00:00Z, when encoded, then the event is refused (0.065083ms)
+✔ Given invalid audit time 9999-01-01T00:00:00Z, when encoded, then the event is refused (0.069042ms)
+✔ Given an oversized audit field, when encoded, then no oversized request can be produced (0.173208ms)
+✔ Given escaping expands a bounded field beyond request bytes, when encoded, then the request is refused (0.492083ms)
+✔ Given invalid event discriminant, when encoded, then the event is refused (0.121458ms)
+✔ Given invalid duration, when encoded, then the event is refused (0.085958ms)
+✔ Given a destination Test record with injected diagnostics, when encoded, then OTLP explicitly labels synthetic work and copies only Test fields (0.181542ms)
+✔ Given captured input and result, when encoded, then OTLP retains public content and result size metadata (2.083292ms)
+✔ Given destination save metadata with injected settings, when encoded, then OTLP has only the action and outcome (0.336584ms)
+✔ Given destination test metadata with injected settings, when encoded, then OTLP has only the action and outcome (0.135708ms)
+✔ Given a roleless invitation revoke, when projected and encoded, then OTLP keeps only the named invitation metadata (0.233792ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.75275ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.428792ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.118875ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.057208ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.053042ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.052875ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.047417ms)
+✔ Given optional actor display metadata, when OTLP encodes a direct event, then valid bounded names are named attributes and invalid names leave the identity intact (0.053625ms)
+✖ Given a captured mcp.tool.completed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.945042ms)
+✖ Given a captured mcp.tool.completed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.209708ms)
+✖ Given a captured audit.destination.test event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.104666ms)
+✖ Given a captured audit.destination.changed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.081625ms)
+✖ Given a captured organization.changed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.084834ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 24
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.671292
+
+✖ failing tests:
+
+test at test/unit/logging/audit/otlp-audit-encoding.test.ts:110:3
+✖ Given a captured mcp.tool.completed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.945042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '1792756800123456789'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/audit/otlp-audit-encoding.test.ts:115:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '1792756800123456789',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/audit/otlp-audit-encoding.test.ts:110:3
+✖ Given a captured mcp.tool.completed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.209708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '1792756800123456789'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/audit/otlp-audit-encoding.test.ts:115:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '1792756800123456789',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/audit/otlp-audit-encoding.test.ts:110:3
+✖ Given a captured audit.destination.test event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.104666ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '1792756800123456789'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/audit/otlp-audit-encoding.test.ts:115:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '1792756800123456789',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/audit/otlp-audit-encoding.test.ts:110:3
+✖ Given a captured audit.destination.changed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.081625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '1792756800123456789'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/audit/otlp-audit-encoding.test.ts:115:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '1792756800123456789',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/unit/logging/audit/otlp-audit-encoding.test.ts:110:3
+✖ Given a captured organization.changed event, when encoded again for delivery, then event and observation times retain the capture nanoseconds (0.084834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - '1792756800123456789'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/5c73/Thermus/test/unit/logging/audit/otlp-audit-encoding.test.ts:115:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: '1792756800123456789',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

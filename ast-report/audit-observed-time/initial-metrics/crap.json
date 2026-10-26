@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "base": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "head": "8a13ba7b3f6b49c6f02377fd51f12fc18b8dc2ae",
+  "rows": [
+    {
+      "file": "src/logs/audit/otlp-audit-encoding.ts",
+      "function": "eventAttributes",
+      "change": "unchanged",
+      "paths": 15,
+      "share": 1,
+      "crap": 15,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"eventAttributes\",\"start\":1237,\"end\":3209,\"body\":\"cd501d17dbcc2682778802b2bd05ab08a91d5df5e3763f06db12be3ab0225ce6\",\"signature\":\"da6917115948647c4769316aa26d0dad8d638baaa3a5e6f8f07dc47e62a13aa2\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-encoding.ts",
+      "function": "encodeAuditEvent",
+      "change": "changed",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"encodeAuditEvent\",\"start\":3304,\"end\":4534,\"body\":\"6c0d3f6662e527d7c19ec324e8d3e63afd73702b07b9bde033f7f418ecefc91f\",\"signature\":\"c39f9c13227a069fe96245a6aa5cc0c154a147f994d26be090f3c8578539c30d\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-encoding.ts",
+      "function": "timestampNanos",
+      "change": "unchanged",
+      "paths": 5,
+      "share": 1,
+      "crap": 5,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"timestampNanos\",\"start\":681,\"end\":1235,\"body\":\"a20943fe009458443cb2d6428901b376c654a60947c0b5fa5349b4147f760009\",\"signature\":\"fb8937d33e6e87ac88dd79c4ac1a405b323500e7c4cbb15640b1438da6c4660c\"}"
+    },
+    {
+      "file": "src/logs/audit/otlp-audit-encoding.ts",
+      "function": "stringAttribute",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 0.782,
+      "crap": 3.093242088,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"stringAttribute\",\"start\":293,\"end\":679,\"body\":\"399eb31550e33bf38977f29db3dd404223adaf50c63bd3195d11d4318aadb982\",\"signature\":\"0a4d4493a970ef6d72a8985b161e6fbcc919f4f8b5c82be66830895c53de33e0\"}"
+    }
+  ]
+}

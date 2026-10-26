@@ -1,0 +1,15 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-crap.ts",
+    "--base",
+    "origin/main",
+    "--json",
+    "ast-report/crap.json"
+  ],
+  "head": "d292e549b724b506758696cdcb2d2960de874578",
+  "exitCode": 0,
+  "seconds": 5.289
+}

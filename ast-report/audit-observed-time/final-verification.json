@@ -1,0 +1,12 @@
+{
+  "head": "d292e549b724b506758696cdcb2d2960de874578",
+  "testedHead": "8a13ba7b3f6b49c6f02377fd51f12fc18b8dc2ae",
+  "base": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "pullRequest": "https://github.com/tomer-mayara/Thermus/pull/258",
+  "githubChecks": [],
+  "githubStatuses": [],
+  "requiredGates": "passed",
+  "localChecker": "eligible",
+  "overallMergeStatus": "blocked: current-candidate architect approval pending",
+  "deployed": false
+}
