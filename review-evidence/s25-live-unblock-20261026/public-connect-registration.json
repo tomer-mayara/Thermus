@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-10-26 13:33:12 UTC",
+  "environment": "environment_01M4VDKATD5PXZT4H01EHCMR2A",
+  "publicClientId": "client_01M561HD70DB58BEKMSF8GCAQN",
+  "isFirstParty": true,
+  "type": "OAuth",
+  "clientConfidentiality": "Public",
+  "callbacks": [
+    {
+      "uri": "http://127.0.0.1:46481/callback",
+      "default": true
+    }
+  ],
+  "source": "WorkOS connector read-only application query; no settings changed."
+}

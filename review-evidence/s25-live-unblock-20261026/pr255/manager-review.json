@@ -1,0 +1,89 @@
+{
+  "reviewedAt": "2026-10-26T13:49:12.112380+00:00",
+  "reviewer": "manager agent",
+  "head": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualMergeBase": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mainAtExecution": "e61da534d428169936e80f2bdaebe081c902aee0",
+  "result": "Required live validation accepted; PR255 eligible with its accepted existing offline/quality evidence and user-confirmed approval.",
+  "gates": {
+    "hosted-live": {
+      "exit": 0,
+      "summary": {
+        "tests": 29,
+        "suites": 8,
+        "pass": 29,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "started": "2026-10-26T13:32:08.119556+00:00",
+      "ended": "2026-10-26T13:43:00.907640+00:00",
+      "guardActiveWorkers": [
+        "hosted-removal.live.js",
+        "hosted.live.js"
+      ],
+      "deleteDenied": 0,
+      "cleanup": {
+        "journaledRootResources": 48,
+        "resourceKinds": {
+          "organization": 10,
+          "user": 35,
+          "application": 3
+        },
+        "deleteCallthroughs": 48,
+        "deleteComplete": 48,
+        "deleteFailed": 0,
+        "unknownIdsOutsideProof": true,
+        "exactGetReadbacks": 48,
+        "readbackStatusCounts": {
+          "404": 48
+        },
+        "allJournaledRootsAbsent": true
+      },
+      "rawLogSha256": "007f6f5ffa3e8ebe2a6899e299b213f4b1df52843724b9590c1387e57af0cb01"
+    },
+    "public-connect": {
+      "exit": 0,
+      "summary": {
+        "tests": 2,
+        "suites": 0,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "started": "2026-10-26T13:44:14.374759+00:00",
+      "ended": "2026-10-26T13:44:47.280386+00:00",
+      "guardActiveWorkers": [
+        "fetch-public-connect.live.js",
+        "fetch-public-script.live.js"
+      ],
+      "deleteDenied": 0,
+      "cleanup": {
+        "journaledRootResources": 5,
+        "resourceKinds": {
+          "organization": 3,
+          "user": 2
+        },
+        "deleteCallthroughs": 5,
+        "deleteComplete": 5,
+        "deleteFailed": 0,
+        "unknownIdsOutsideProof": true,
+        "exactGetReadbacks": 5,
+        "readbackStatusCounts": {
+          "404": 5
+        },
+        "allJournaledRootsAbsent": true
+      },
+      "rawLogSha256": "b8071c8a63512abef88122938f8b11dfc3a15f931f86c7744505f68e9ffac835"
+    }
+  },
+  "sourceAndTestInputsUnchanged": true,
+  "trackedHashesIndependentlyRechecked": 1474,
+  "sdkHashesIndependentlyRechecked": 5,
+  "scope": "Full commands, no patterns, assertion/deadline/retry changes or compiled instrumentation. External cleanup guard rejected zero deletes.",
+  "history": "Original prior failed gates and diagnostic remain linked from the maintained PR comments. The new passes establish current results, not a cause for earlier failures.",
+  "parserCorrection": "Original TAP-only parser artifact retained. Manager independently read the spec \u2139 totals from each original stream. No gate rerun or original output rewrite."
+}

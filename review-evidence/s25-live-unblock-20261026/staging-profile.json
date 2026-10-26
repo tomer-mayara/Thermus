@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-10-26 13:28:19 UTC",
+  "environment": "environment_01M4VDKATD5PXZT4H01EHCMR2A",
+  "clientMatches": true,
+  "initiateLoginUri": "https://localhost:46443/login",
+  "callbacks": [
+    {
+      "uri": "https://localhost:46443/callback",
+      "default": true
+    }
+  ],
+  "signOut": [
+    {
+      "uri": "https://localhost:46443/",
+      "default": true
+    }
+  ],
+  "password": true,
+  "mfa": "Off",
+  "magicAuth": false,
+  "google": false,
+  "passkeys": false,
+  "sso": false,
+  "source": "WorkOS connector read-only application/settings queries; no settings changed."
+}

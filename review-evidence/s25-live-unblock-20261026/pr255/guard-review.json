@@ -1,0 +1,60 @@
+{
+  "approvedGuardCode": "../guard/review.md",
+  "hashes": {
+    "ownership-guard.mjs": "625645ba65673975b89b8b4821116115cd643fb3662751eed93d0a79a8eabc70",
+    "manual-selfcheck.mjs": "d9a2feef620878d6b8e64c664c26b8ad4037fd3128899c4f11c29c89ab44abfe",
+    "preload.mjs": "604db4659af1b843ffd046bb9fa37f31102b721bb7e871aa64ac0c59cdbfacaf",
+    "sdk-identity-receipt.mjs": "771fec699e7c75bc51b5e4c1cb502215eefbb90430c6ca1b05c469c39307c062",
+    "worker-probe.mjs": "5b86812557e3d1a73ebf5bd92ce3f828657f4329f9b6c071fb2e2b4c619480a0"
+  },
+  "commands": {
+    "hosted-live": {
+      "workers": [
+        "hosted-removal.live.js",
+        "hosted.live.js"
+      ],
+      "deleteDenied": 0,
+      "cleanup": {
+        "journaledRootResources": 48,
+        "resourceKinds": {
+          "organization": 10,
+          "user": 35,
+          "application": 3
+        },
+        "deleteCallthroughs": 48,
+        "deleteComplete": 48,
+        "deleteFailed": 0,
+        "unknownIdsOutsideProof": true,
+        "exactGetReadbacks": 48,
+        "readbackStatusCounts": {
+          "404": 48
+        },
+        "allJournaledRootsAbsent": true
+      }
+    },
+    "public-connect": {
+      "workers": [
+        "fetch-public-connect.live.js",
+        "fetch-public-script.live.js"
+      ],
+      "deleteDenied": 0,
+      "cleanup": {
+        "journaledRootResources": 5,
+        "resourceKinds": {
+          "organization": 3,
+          "user": 2
+        },
+        "deleteCallthroughs": 5,
+        "deleteComplete": 5,
+        "deleteFailed": 0,
+        "unknownIdsOutsideProof": true,
+        "exactGetReadbacks": 5,
+        "readbackStatusCounts": {
+          "404": 5
+        },
+        "allJournaledRootsAbsent": true
+      }
+    }
+  },
+  "limits": "Guard covers SDK root-resource deletion. Raw consent revocation remains exact owned fixture code. Unknown lost-response IDs remain outside exact-ID absence proof."
+}

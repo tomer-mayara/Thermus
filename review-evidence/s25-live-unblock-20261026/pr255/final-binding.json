@@ -1,0 +1,44 @@
+{
+  "recordedAt": "2026-10-26T13:46:06.675713+00:00",
+  "head": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "compiledOutputFingerprintAtFinalHandback": "1f1fec107f2f537d2f766714c5eddb8b1d8f6a679cf37399bcab5ad84d4c58cf",
+  "compiledOutputProvenance": "After full hosted package and fresh public backend/portal builds; no compiled instrumentation.",
+  "draftSha256": "6654d83f60e56244a5665e0bd6d1ddf8fda94d5c556e13ad8cefd04f4b49be10",
+  "portsFree": true,
+  "defaultDockerContext": "colima",
+  "ownedTaskContainers": [],
+  "trackedTreeClean": true,
+  "userDraftPreserved": true,
+  "trackedFileCount": 1474,
+  "compiledFileCount": 1590,
+  "privateFinalBindingSha256": "d5c13567e5e2ac822ce799286c716a235b429100419bd5d9a76a154e5c65c1f7",
+  "publicBuildPrerequisites": [
+    {
+      "name": "backend",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "started": "2026-10-26T13:44:00.228105+00:00",
+      "ended": "2026-10-26T13:44:01.970336+00:00",
+      "exit": 0,
+      "logSha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a"
+    },
+    {
+      "name": "portal",
+      "command": [
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "started": "2026-10-26T13:44:01.970803+00:00",
+      "ended": "2026-10-26T13:44:02.704144+00:00",
+      "exit": 0,
+      "logSha256": "335218d16ee7d6a1673787ae6b8d6fc0ef140e9ed05334e9d5acf2b35e746145"
+    }
+  ],
+  "actualMergeBase": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mainAtExecution": "e61da534d428169936e80f2bdaebe081c902aee0",
+  "managerReview": "manager-review.json"
+}

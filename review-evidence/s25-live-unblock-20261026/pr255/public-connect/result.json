@@ -1,0 +1,86 @@
+{
+  "head": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "currentMain": "e61da534d428169936e80f2bdaebe081c902aee0",
+  "started": "2026-10-26T13:44:14.374759+00:00",
+  "ended": "2026-10-26T13:44:47.280386+00:00",
+  "command": [
+    "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+    "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+    "--test",
+    "--test-concurrency=1",
+    "dist/test/acceptance/auth/fetch-public-connect.live.js",
+    "dist/test/acceptance/auth/fetch-public-script.live.js"
+  ],
+  "exit": 0,
+  "rawSummary": {
+    "tests": 2,
+    "suites": 0,
+    "pass": 2,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "caseOutcomes": [
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a Staging first-party Public Connect client and an owned user, when browser PKCE reaches the real loopback callback and refreshes, then the MCP backend accepts its resource-bound workspace grant",
+      "durationMs": 7901.467709
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a first-party Public Staging client, when the actual fetch script logs in, reuses and refreshes its grant, then real rendered fetch works and logout removes only local credentials",
+      "durationMs": 23463.814375
+    }
+  ],
+  "guardActiveWorkers": [
+    "fetch-public-connect.live.js",
+    "fetch-public-script.live.js"
+  ],
+  "guardCounts": {
+    "guard-active": 2,
+    "created": 5,
+    "delete-started": 5,
+    "delete-complete": 5
+  },
+  "guardHash": {
+    "ownership-guard.mjs": "625645ba65673975b89b8b4821116115cd643fb3662751eed93d0a79a8eabc70",
+    "manual-selfcheck.mjs": "d9a2feef620878d6b8e64c664c26b8ad4037fd3128899c4f11c29c89ab44abfe",
+    "preload.mjs": "604db4659af1b843ffd046bb9fa37f31102b721bb7e871aa64ac0c59cdbfacaf",
+    "sdk-identity-receipt.mjs": "771fec699e7c75bc51b5e4c1cb502215eefbb90430c6ca1b05c469c39307c062",
+    "worker-probe.mjs": "5b86812557e3d1a73ebf5bd92ce3f828657f4329f9b6c071fb2e2b4c619480a0"
+  },
+  "buildInputFingerprint": "a31d51af25f1807a8883274ba4a5fcd653240e48d4b754b9ebf0adfe4ef8d4e8",
+  "trackedInputsUnchanged": true,
+  "launcherSha256": "c67c8a9dec4968095c359aa979f4aeec5648c26429dae70eb3a16d17de0e9a88",
+  "rendererSha256": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d",
+  "sdkInputFingerprint": "7236925e88cdd19ec06bc100adf142747e0c51e84ed7b303dc41e0f8d53e919f",
+  "cleanup": {
+    "journaledRootResources": 5,
+    "resourceKinds": {
+      "organization": 3,
+      "user": 2
+    },
+    "deleteCallthroughs": 5,
+    "deleteComplete": 5,
+    "deleteFailed": 0,
+    "unknownIdsOutsideProof": true,
+    "exactGetReadbacks": 5,
+    "readbackStatusCounts": {
+      "404": 5
+    },
+    "allJournaledRootsAbsent": true
+  },
+  "rawLogSha256": "b8071c8a63512abef88122938f8b11dfc3a15f931f86c7744505f68e9ffac835",
+  "privateOwnershipJournalSha256": "52d7c879604e6f9a7dc49eb420823540d7ab68e39e4cabbf434f2884d4c7c0b5",
+  "privateStartSha256": "edfb2d9be2a8cb36bd180d2de066ae961fd5c856db18393555bd1651bf0dc56a",
+  "originalRunnerResultSha256": "7d3ba6414866f1f6fce5a83d87a770cf497945ecd7969e4f3a81ad2ac298df86",
+  "acceptedGatePass": true,
+  "projection": "Only original static test/suite status/title/duration lines and aggregate summary retained. All other stream lines, provider content, resource IDs, actor addresses and runtime diagnostics omitted. Private originals retained at mode0600.",
+  "parserNote": "Original live runner parsed only TAP # summary lines. This independent receipt also reads Node spec \u2139 summary lines. It changes no command, outcome or original artifact.",
+  "privateAbsenceSha256": "96f6f2065766882e9d96481d4b009e25c3d77512eb2a1b6ed6691ac53ddbe3c6"
+}
