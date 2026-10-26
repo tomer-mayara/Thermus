@@ -89,7 +89,11 @@ test('Given enabled customer export and queue authorization blocked by PostgreSQ
   world.memberships = [{ userId: user.id, organizationId: organization, roles: ['admin'] }];
   const tenant = `workos:${world.settings.clientId}:${organization}`;
   const sender = new OtlpAuditSender();
-  const starts = t.mock.method(sender, 'start');
+  const warmExport = Promise.withResolvers<void>();
+  const starts = t.mock.method(sender, 'start', () => {
+    warmExport.resolve();
+    return { outcome: Promise.resolve({ kind: 'accepted' as const }), settled: Promise.resolve() };
+  });
   const storage = composeLoggingStorage({ store, close: () => runtime.close() }, Buffer.alloc(32, 7), sender);
   const saved = await storage.service.save(tenant, { expectedRevision: null, endpoint: 'https://collector.example/v1/logs', auth: 'none', token: '', enabled: true });
   assert.equal(saved.status, 'saved');
@@ -109,8 +113,12 @@ test('Given enabled customer export and queue authorization blocked by PostgreSQ
   const url = 'https://source.example/private-export-storage';
   const text = 'The complete private article remains available while customer export settings are blocked.';
   RendererProcessDouble.install(t).serve(url, { finalUrl: url, html: `<html><body><main><p>${text}</p></main></body></html>` });
-  let readStarted = Promise.withResolvers<void>();
-  let readSettled = Promise.withResolvers<void>();
+  await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason: 'Warm customer settings for later activity' } });
+  await warmExport.promise;
+  await new Promise<void>(resolve => setImmediate(resolve));
+  assert.equal(starts.mock.calls.length, 1, 'Cold capture exports its retained event after settings load.');
+  const readStarted = Promise.withResolvers<void>();
+  const readSettled = Promise.withResolvers<void>();
   let lastRead: Awaited<ReturnType<typeof store.read>> | undefined;
   const read = store.read.bind(store);
   t.mock.method(store, 'read', async (id: string) => {
@@ -118,12 +126,6 @@ test('Given enabled customer export and queue authorization blocked by PostgreSQ
     try { lastRead = await read(id); return lastRead; }
     finally { readSettled.resolve(); }
   });
-  await client.callTool({ name: 'getURLAsMarkdown', arguments: { url, reason: 'Warm customer settings for later activity' } });
-  await readSettled.promise;
-  await new Promise<void>(resolve => setImmediate(resolve));
-  assert.equal(starts.mock.calls.length, 0, 'Cold capture only loads settings; it sends no old content.');
-  readStarted = Promise.withResolvers<void>();
-  readSettled = Promise.withResolvers<void>();
   const holding = holder.run(async session => {
     await session.query('BEGIN');
     await session.query('LOCK TABLE thermus_admin.logging_destination_settings IN ACCESS EXCLUSIVE MODE');
@@ -141,7 +143,7 @@ test('Given enabled customer export and queue authorization blocked by PostgreSQ
   assert.equal(world.invitations.filter(invitation => invitation.email === 'during-export-sql@example.com').length, 1);
   assert.equal(settingsFinished, false, 'Product and Admin results complete while the queue attempt authorization still waits for SQL.');
   assert.equal(await (await application.handle(new Request('https://thermus.example/healthz'))).text(), 'ok\n');
-  assert.equal(starts.mock.calls.length, 0, 'A blocked authorization cannot start Collector network work.');
+  assert.equal(starts.mock.calls.length, 1, 'A blocked authorization cannot start Collector network work.');
   const closing = performance.now();
   await application.close();
   assert.ok(performance.now() - closing < 10_000);

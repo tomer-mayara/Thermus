@@ -147,3 +147,34 @@ checks on this second rebase. The maintained PR comments must bind fresh check
 results and review evidence to the final candidate and this merge base. The
 rebase adds no removal action or live deletion proof. Independent human architect
 approval of the current candidate remains required.
+
+## Merge preparation on 26 October 2026
+
+The user directly reported architect approval of the entire original Slice 2.5
+stack and requested review, rebasing, conflict resolution and merge to main.
+The original heads are #251 `f03a7b73`, #253 `790fa3e1`, #254 `22715457`,
+#255 `0530dd63` and #257 `076e661d`. This records the human statement in this
+chat. It does not identify the architect or claim a GitHub review submission.
+
+For #251, reconciliation covers the unchanged production source, public
+declarations and registry, plus a test fixture correction. The PostgreSQL
+storage-failure case expected cold Audit capture to load settings without
+exporting its retained event. Current source retains that event. The fixture
+now waits for the controlled warm export before blocking SQL and checks that
+blocked authorization starts no additional export. It keeps the product/Admin
+completion, safe shutdown and blocked-authorization assertions. No production
+behavior, deadline or gate is changed.
+
+The prior PostgreSQL failure at head
+`f03a7b73b2c27dc26477d5378a3356f28744a367`, also reproduced on main, remains
+failed historical evidence. The [immutable prior evidence](https://github.com/tomer-mayara/Thermus/tree/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367)
+retains that result and the earlier passing checks. The manager must bind the
+final full candidate SHA and base SHA to the refreshed checks, architecture
+equivalence review and approval scope in the maintained PR records. This note
+claims no current-candidate pass, Ready status or merge.
+
+The approval reconciliation covers the reported original stack scope and this
+fixture correction; it supplies no approval for new production behavior.
+Release, deployment, production data changes and notice publication are not
+authorized by the merge request. Keep the separate release gates and required
+deployment preflight in force.

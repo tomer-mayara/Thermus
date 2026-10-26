@@ -34,6 +34,7 @@
       "docs/design/organization-admin-plan.md",
       "docs/implementation/admin-s2-5-01a.md",
       "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
       "test/integration/auth/workos-connection.test.ts",
       "test/unit/auth-workos/workos-membership-reads.test.ts",
       "test/unit/auth-workos/workos-organizations-deletion.test.ts",
