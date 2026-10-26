@@ -3,37 +3,51 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
+    "contract": true,
     "deployment": false,
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
-    "sensitiveBehavior": true,
+    "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "Treat only the pinned WorkOS OAuth 400 organization_membership_not_found error during automatic expired-session refresh as the existing local signed-out result. Clear the Thermus cookie so a new sign-in can recover current identity and explicitly choose a retained workspace. Other errors and refresh refusal results keep their existing handling. Retryable outages and unrecognized thrown errors retain the cookie; existing terminal refusals still clear it. Explicit workspace-switch refusal still retains its session. No fail-open, automatic workspace choice, role/MFA/CSRF/acceptance change, provider write, removal receipt/replay change, storage/deployment change, new component, component edge, public module or declaration change. All 15 registry Mermaid views remain byte-identical; registry prose records the known terminal branch in the existing WorkOS owner. This restores the existing sign-in-required contract for a known provider refusal and changes sensitive session recovery within the approved architecture guarantees. Current-head independent human approval remains required.",
+    "modelUpdated": false,
+    "summary": "The hosted edition reads OPERATION_CAPACITY at startup, a whole number from 1 to 100 with default 10, and its one shared OperationCapacity lets that many fetch or search calls run at the same time in one process; the next call keeps the existing Server busy result, busy completion record, and audit capture, and an invalid value stops startup before listening with a FATAL line that names the setting and the rule but not the value. This changes the documented hosted capacity contract of both MCP tools from one call to the configured number; the self-hosted edition still has no capacity wrapper. No component, component edge, public module, declaration snapshot, or Mermaid view changes: the new config reader is imported by app only, and registry prose and the config ownership entry record it.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
+      "Selected C4 components: tool processing in the Node server",
       "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted membership removal in the Node server",
       "Collaboration overview",
+      "Scenario: MCP page fetch and renderer cancellation",
       "Scenario: hosted member read",
       "Deployment view",
-      "Behavior and resource ownership"
+      "Ownership",
+      "Behavior and resource ownership",
+      "Design choices and current soft spots"
     ],
     "evidence": [
-      "src/accounts/providers/workos/workos-browser-session.ts",
-      "src/accounts/providers/workos/workos-session-client.ts",
-      "test/acceptance/auth/hosted-member-session-recovery.test.ts",
-      "test/unit/auth-workos/workos-browser-session-refresh.test.ts",
-      "test/integration/auth/workos-browser-session.test.ts",
+      "src/app/operation-capacity.ts",
+      "src/app/fetch-tool.ts",
+      "src/runtime/config/operation-capacity-config.ts",
+      "test/acceptance/mcp/hosted-capacity-setting.test.ts",
+      "test/acceptance/auth/hosted-startup.test.ts",
+      "test/acceptance/mcp/hosted-search-capacity.test.ts",
+      "test/acceptance/mcp/hosted-fetch-tool.test.ts",
+      "test/integration/tool-operations.test.ts",
+      "test/unit/app/operation-capacity.test.ts",
+      "test/unit/config/operation-capacity-config.test.ts",
+      ".env.example",
+      "README.md",
       "architecture/components.md",
-      "docs/implementation/admin-s2-5-stale-session-recovery.md"
+      "docs/reference/mcp-fetch-tool.md",
+      "docs/reference/mcp-search-tool.md",
+      "docs/design/authentication-design.md",
+      "docs/testing/test-list.md"
     ]
   }
 }

@@ -183,7 +183,8 @@ and [HtmlTransformation](../src/pipelines/html-processing/html-to-markdown-pipel
 are distinct protocols, not a generic pipeline engine. `ProcessHtmlStep`
 implements the execution-owned incoming role; callers need not import its
 concrete class. Each operation has fresh execution and HTML context. Hosted
-composition wraps fetch and search in one application-wide capacity slot.
+composition wraps fetch and search in one application-wide capacity of
+`OPERATION_CAPACITY` calls, default 10.
 
 ### Selected C4 components: hosted authentication in the Node server
 
@@ -800,10 +801,11 @@ does not duplicate it.
 ### Scenario: MCP page fetch and renderer cancellation
 
 Scope: one authenticated MCP fetch in either server edition. The hosted server
-adds a shared capacity slot after authentication and access resolution. Role
+adds a shared capacity check after authentication and access resolution: each
+call holds one of the `OPERATION_CAPACITY` slots, default 10. Role
 participants can be implemented by either selected provider. The incoming HTML
-work runs only when rendering succeeds. Cancellation holds the hosted slot
-until renderer completion and cleanup settle.
+work runs only when rendering succeeds. Cancellation holds the hosted slot of
+the call until renderer completion and cleanup settle.
 
 ```mermaid
 %%{init: {"sequence": {"wrap": true, "actorMargin": 20, "width": 140}}}%%
@@ -1188,7 +1190,7 @@ surface and the narrower file-context restrictions.
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
 | `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. The shared pg adapter also stores removal intent and terminal receipts. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, pg adapter and SQL runtime; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
-| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
+| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and the hosted operation capacity, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader and the operation-capacity reader. |
 
 ## Behavior and resource ownership
 
@@ -1196,8 +1198,11 @@ The [tool composition](../src/app/fetch-tool.ts) shares one fetcher, ad cleaner,
 sanitizer, outgoing observer, step-record sink, and renderer-report closures
 between fetch and search. Each operation gets fresh execution/HTML context.
 Markdown converters are separate instances. Hosted fetch and search share one
-[capacity slot](../src/app/operation-capacity.ts); a concurrent operation gets a
-busy error. This slot has application scope, not tenant scope or cluster scope.
+[operation capacity](../src/app/operation-capacity.ts) of
+`OPERATION_CAPACITY` calls, default 10, that the
+[config reader](../src/runtime/config/operation-capacity-config.ts) checks at
+startup. A call above that limit gets a busy error. This capacity has
+application scope, not tenant scope or cluster scope.
 
 Fetch runs ads → sanitizer → Markdown. Search runs ads → sanitizer → Brave
 projection → search-preserving Markdown. The full search page is cleaned before
@@ -1319,9 +1324,10 @@ The following limits affect architectural decisions today:
   use a supplied Response-returning handler. A provider change must preserve each browser
   contract, cookie, Origin/CSRF, and return-path protection; a common provider
   interface alone does not cover this work.
-- The application-wide hosted capacity slot bounds this process only. It rejects
-  overlap instead of queuing work and does not coordinate multiple instances.
-  A deployment change must account for that actual scope.
+- The application-wide hosted capacity bounds this process only, to
+  `OPERATION_CAPACITY` calls. It rejects a call above that limit instead of
+  queuing work and does not coordinate multiple instances. A deployment change
+  must account for that actual scope.
 
 These statements identify source behavior and its effects. They do not assign
 quality scores or claim that an unmeasured component needs a rewrite.
