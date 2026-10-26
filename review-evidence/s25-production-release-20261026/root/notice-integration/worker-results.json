@@ -1,0 +1,179 @@
+{
+  "completed_at_utc": "2026-10-26T16:16:02.128100+00:00",
+  "base_head": "9f07c04bba0813358274212b21316165dc3e308b",
+  "status": "Implementation complete; uncommitted. Manager review and complete-candidate gates pending.",
+  "scope": "Approved exact runtime/signup bundle and complete native expandable Audit/Members help. No production data/provider/deployment action.",
+  "node": "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node (v24.20.0)",
+  "files": [
+    "src/accounts/providers/workos/workos-organization-removal-documents.ts",
+    "src/interfaces/web/account/administration-help-documents.ts",
+    "src/app/hosted-workos-application.ts",
+    "src/interfaces/web/account/administration-pages.ts",
+    "src/interfaces/web/account/logging-page.ts",
+    "src/interfaces/web/account/members-style.ts",
+    "Dockerfile.hosted.dockerignore",
+    "architecture/components.md",
+    "test/unit/auth-workos/workos-organization-removal-documents.test.ts",
+    "test/unit/html/administration-help-documents.test.ts",
+    "test/unit/html/logging-page.test.ts",
+    "test/unit/html/logging-routes.test.ts",
+    "test/acceptance/auth/hosted-image.test.ts",
+    "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+    "test/acceptance/auth/hosted-members.test.ts",
+    "test/acceptance/auth/hosted-workos-signup.test.ts",
+    "test/acceptance/logging/hosted-destination-settings.test.ts",
+    "test/support/drivers/browser/member-removal-browser.ts"
+  ],
+  "runs": [
+    {
+      "log": "acceptance-red.log",
+      "exit_code": 1,
+      "counts": {
+        "tests": 43,
+        "pass": 40,
+        "fail": 3,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "Expected BDD red: old runtime Privacy and absent two full help regions.",
+      "sha256": "50bba7ba9a7391a6454afa63e70c7673e7503640441806a0fd1560b3a2f0afae"
+    },
+    {
+      "log": "unit-red.log",
+      "exit_code": 1,
+      "counts": {
+        "tests": 7,
+        "pass": 4,
+        "fail": 3,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "Expected focused red: absent new frozen modules and unavailable-settings help.",
+      "sha256": "7a77a3deb1c791da98f2e666268e04e3e84f0d463bb9b0443e7725852aff7fee"
+    },
+    {
+      "log": "unit-green.log",
+      "exit_code": 0,
+      "counts": {
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "New immutable data and page contracts pass.",
+      "sha256": "1799fdb2d8541faa8823bf77f4763eaba821ed98f45ada73c06d31c8b2d0eb8a"
+    },
+    {
+      "log": "acceptance-green.log",
+      "exit_code": 0,
+      "counts": {
+        "tests": 43,
+        "pass": 43,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "All new public acceptance requirements pass.",
+      "sha256": "71b1580dbb42ef552b6230b0af274fb1eeeb130d413270198aaa01bcab6f0b93"
+    },
+    {
+      "log": "legacy-html-assertions.log",
+      "exit_code": 1,
+      "counts": {
+        "tests": 12,
+        "pass": 10,
+        "fail": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "Two retained route assertions conflict with approved public help: whole-body absence and generic secret/credential words.",
+      "sha256": "75939eb4ec6f1c0d3bc050823c348d45060a3eea8ae3aaecb965bba5ade08348"
+    },
+    {
+      "log": "legacy-html-green.log",
+      "exit_code": 0,
+      "counts": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "Form-scoped short-copy contract and unique private cause sentinels pass.",
+      "sha256": "f7abd4a111f2d65442b6f9c22b6747fdb44c5911c486ad90eebc4fe34195c46f"
+    },
+    {
+      "log": "final-focused.log",
+      "exit_code": 0,
+      "counts": {
+        "tests": 155,
+        "pass": 155,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "Final source/data/page/production-signup/legacy-agreement focused regression.",
+      "sha256": "e5d89c86a419b65931d4b7d3f05999f74640fdfabefe30a2273672940b2b6f3b"
+    },
+    {
+      "log": "final-browser.log",
+      "exit_code": 0,
+      "counts": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "reason": "Final 390px keyboard help and removal; Audit native help without JS at 390/1280px.",
+      "sha256": "9a23c61a52ae8c0f24f01cd0782e9014edc32b161ef0f430c464f5590423a418"
+    }
+  ],
+  "builds": [
+    "acceptance-red-build.log",
+    "acceptance-green-build.log",
+    "focused-final-build.log",
+    "legacy-html-retry-build.log",
+    "final-build.log",
+    "portal-build.log"
+  ],
+  "build_results": "All listed backend builds and portal build exit 0. Portal build includes portal typecheck.",
+  "input_fingerprints": "implementation-inputs.json",
+  "final_inputs_unchanged": true,
+  "canonical_documents": "All five exact document hashes and manifest SHA 7528832b4e2baf055d4be35ec2d12fe3d00a9681d0a7684dc5f246e830c4071e preserved. Earlier three frozen source bundles unchanged.",
+  "architecture": {
+    "components_and_edges": "Existing workos and web owners; app selects immutable data through existing pattern. No new component or component edge.",
+    "registry_mermaid_blocks_unchanged": 15,
+    "public_declarations": "No listed public module export/type change. No regeneration selected for this part. Manager checks complete candidate.",
+    "L4": "No production callable contract changed; data selection and help presentation only."
+  },
+  "tier": "Expected minimum T1 Team review due deploy/build input and declared sensitive notice/acceptance scope. Complete-candidate checker decides final tier and eligibility.",
+  "screenshots": [
+    "browser/members-help-narrow.png",
+    "browser/members-remove-narrow.png",
+    "browser/audit-help-390.png",
+    "browser/audit-help-1280.png"
+  ],
+  "visual_review": "Inspected narrow Members/Audit and desktop Audit: complete readable text, visible native keyboard focus, no clipping; 75ch cap improves desktop reading. Final browser assertions prove viewport overflow absent.",
+  "deferred": [
+    "Full npm test, full typecheck and complete-candidate habit-hooks/metrics/architecture/tier checks are manager-owned and not started by this worker.",
+    "Self-hosted container, hosted offline/image Linux AMD64 and hosted live gates remain manager-owned.",
+    "Changed hosted-image test not executed locally by this worker because its nested image build runs the broad hosted suite; recorded deferred under manager instruction.",
+    "No claim of deployed presentation, new agreement record, public publication, removal migration or release proof."
+  ],
+  "retained_findings": [
+    "Frozen document module is intentionally long: one complete approved immutable byte bundle, with exact-byte tests; do not split or trim legal bytes to satisfy a size suggestion.",
+    "Two fixed page-owned safe Markdown render calls retain two copies under DRY3; no general shared rendering API was introduced.",
+    "Safety/authority, store, sender and result semantics stay unchanged. Full source gates must confirm complete candidate."
+  ],
+  "no_commit_push_pr_or_impact_edit": true
+}

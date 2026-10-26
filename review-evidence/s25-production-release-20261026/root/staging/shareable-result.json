@@ -1,0 +1,296 @@
+{
+  "head": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "actualParent": "9f07c04bba0813358274212b21316165dc3e308b",
+  "currentMain": "9f07c04bba0813358274212b21316165dc3e308b",
+  "started": "2026-10-26T16:50:03.475282+00:00",
+  "ended": "2026-10-26T17:01:25.845229+00:00",
+  "command": [
+    "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+    "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "npm",
+    "run",
+    "test:hosted-live"
+  ],
+  "exit": 0,
+  "rawSummary": {
+    "tests": 29,
+    "suites": 8,
+    "pass": 29,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "caseOutcomes": [
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with two Admins and a User, when Members refuses unsafe requests, removes the User and the acting Admin, then exact memberships disappear, portal and MCP access stop, other access and both accounts remain, selection works, the last Admin is protected, and a fresh invitation restores only its new role",
+      "durationMs": 112306.016125
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a verified identity without a membership, when the operator grants Admin, then WorkOS has exactly the role admin with product and administration permissions, and a second grant changes nothing",
+      "durationMs": 2317.259417
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an identity with User in two organizations, when the operator grants and then revokes Admin in one organization, then User stays at each step, and the identity and the other membership do not change",
+      "durationMs": 2499.135333
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a membership whose only grant is Admin, when the operator revokes it, then the membership stays active with only the default role, which gives no application permission: the organization service lists no organization for the identity, and the identity stays",
+      "durationMs": 1681.911208
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an Admin that also has User, when the operator replaces it with another verified identity, then the new identity gets Admin first, so that the organization keeps an Admin at each step, and the old identity loses only Admin and keeps User",
+      "durationMs": 2483.500292
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an Admin whose membership is inactive, when the operator recovers access, then the grant for the inactive membership stops without a create or a reactivation, and another verified identity gets Admin",
+      "durationMs": 1209.2305
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live proofs (AUTH-07W): external operator setup and recovery with the pinned SDK",
+      "durationMs": 12894.040125
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given memberships of D in the statuses active, inactive, and pending, when the directory reads them in pages of two, then each status filter gives exactly the memberships of a direct WorkOS read with that filter, and the product member count counts each active User or Admin once; the default role, pending, and inactive count zero",
+      "durationMs": 7811.17575
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an identity without a membership in D, when the directory invites it as Admin, sends again to its address and to an active member, resends, revokes, and then resends and revokes again, then the send gives a pending Admin invitation and a pending membership with only admin; both other sends are address-in-use without a second invitation; the resend and the revoke are applied; the revoked invitation is listed only as revoked and its membership stays pending without access; the last two changes are not-pending; and no result holds the token or the link of the invitation",
+      "durationMs": 3317.989917
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live proofs (AUTH-08W): member reads, product member count, and invitations of the directory against WorkOS",
+      "durationMs": 11129.621375
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given users without an authorized active organization in WorkOS \u2014 only an inactive membership, or only the default role \u2014, when each signs in and opens the organization page, then each gets the invitation and operator guidance without a form, and the billing page and the protected portal request refuse each of them",
+      "durationMs": 13050.389375
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a member with User and Admin in A, User in B, and an inactive membership in the operator organization, when it opens the organization page and selects B for the portal, then only A and B are offered with their WorkOS names, the 303 sets a new session cookie, and the session and the portal are in B",
+      "durationMs": 7248.401417
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given the same member in B, when it posts a selection of an organization without its membership, of its inactive membership, from another origin, or with another form token, then each gets 403 and no switch: the session stays in B",
+      "durationMs": 1184.311625
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an operator-created Admin, when it signs in with a password, then its organization is offered and billing and product access work while the retired grant route is unavailable; after operator revocation the same session loses its organization access",
+      "durationMs": 9463.472666
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live gate (AUTH-07W): organization onboarding and selection at https://localhost:46443/ with WorkOS",
+      "durationMs": 30947.408625
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a password-signed-in Admin and a valid current grant form, when it opens administration and product access and posts to the retired grant route, then the reads succeed and the post gets 404 with no grant controls, provider change, or grant record",
+      "durationMs": 9002.70325
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live gate (AUTH-08W): retired grant route",
+      "durationMs": 9003.021
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link",
+      "durationMs": 26455.879708
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a User in C and a pending invitation, when the User opens administration and submits valid send, resend, and revoke forms, then each request is refused without a form and WorkOS memberships and invitations stay unchanged",
+      "durationMs": 31632.271208
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given the pending User invitation and the pending Admin invitation of C, when each invitee opens its invitation link and completes password sign-in without MFA, then WorkOS gives only the invited role and both can open the product; only Admin opens administration, the earlier User grant does not return, both invitations are accepted, the product member count matches WorkOS, and no page or log holds an invitation token or link",
+      "durationMs": 19782.855833
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live gate (AUTH-08W): invitations of organization C at https://localhost:46443/ with WorkOS and AuthKit",
+      "durationMs": 77880.543958
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a member with User and Admin in organization A, when the member signs in with a password and chooses A, then no MFA is demanded, the sealed cookie is HttpOnly, Secure, and SameSite=Lax, the session has no MFA evidence, and the portal shows current product access in A",
+      "durationMs": 6865.824208
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a signed-in user without an active membership, when the portal and the organization page open, then the portal shows no product access, the protected portal request gives 403, and the organization page gives the onboarding guidance",
+      "durationMs": 4034.568917
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an Admin-only member and a default-role member of organization A, when each signs in, then Admin has product access and the default role is refused",
+      "durationMs": 12066.293916
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given the Connect grant of a User in organization A, when its MCP client calls the MCP endpoint, then the call succeeds; without a token the answer is 401 with a Bearer challenge that names the protected-resource metadata, which names the AuthKit issuer",
+      "durationMs": 5959.262875
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a browser access token and an M2M token, when each is sent to the MCP endpoint, then each gets 401 and no MCP work",
+      "durationMs": 3992.758084
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a member with Admin only in organization A and User in organization B, when the browser session is in A and the MCP grant is in B, then each opens in its own organization; deactivating the A membership closes portal access while MCP in B still works",
+      "durationMs": 12036.676709
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an Admin-only member of organization A with a Connect grant, when its MCP client calls the MCP endpoint, then it succeeds because Admin includes product access",
+      "durationMs": 5778.552
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an external sign-in, when a browser opens the AuthKit domain directly, then AuthKit sends it to the Initiate login URI /login of the server, which starts the sign-in, and the user ends signed in on the portal",
+      "durationMs": 4735.27875
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given the signed-in portal, when the member clicks Sign Out, then the server clears the session cookie and sends the browser to the WorkOS logout URL, WorkOS ends the session, and the browser lands on the Sign-out URI, which shows the signed-out portal",
+      "durationMs": 6056.092791
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a signed-in session, an ended session, and an MCP grant whose consent was revoked, when their 300-second access tokens expire, then the session refreshes with a new cookie and the same form token, the ended session gives 401 with a cleared cookie, and the revoked grant works until its token expires and then gives 401",
+      "durationMs": 310864.757333
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live gate (AUTH-06): the hosted server at https://localhost:46443/ with WorkOS",
+      "durationMs": 372392.281
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given the selection session in B after its access token expired, when it posts a refused selection, then the 403 carries the refreshed session cookie, the form token stays the same, and the session stays in B",
+      "durationMs": 690.49475
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live gate (AUTH-07W): a selection after the access token of the session expired",
+      "durationMs": 690.815375
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given a verified new Staging user without memberships, when the user names Acme Labs and accepts the unchecked test authority agreement, then the saved record has ten exact fields, access is Admin, and a real MCP client fetches a public page with a token for that organization",
+      "durationMs": 17965.794584
+    },
+    {
+      "outcome": "passed",
+      "kind": "case",
+      "title": "Given an activated user with a second User workspace, when the browser selects B while an MCP token stays in A, then revoking A denies that same token and repeat activation cannot restore A, while browser B and a fresh B token still work",
+      "durationMs": 18063.700625
+    },
+    {
+      "outcome": "passed",
+      "kind": "suite",
+      "title": "Hosted live gate: organization creation and native MCP handoff",
+      "durationMs": 36780.035375
+    }
+  ],
+  "guardActiveWorkers": [
+    "hosted-removal.live.js",
+    "hosted.live.js"
+  ],
+  "guardCounts": {
+    "guard-active": 2,
+    "created": 48,
+    "delete-started": 48,
+    "delete-complete": 48,
+    "personal-adopted": 4
+  },
+  "guardHash": {
+    "ownership-guard.mjs": "625645ba65673975b89b8b4821116115cd643fb3662751eed93d0a79a8eabc70",
+    "manual-selfcheck.mjs": "d9a2feef620878d6b8e64c664c26b8ad4037fd3128899c4f11c29c89ab44abfe",
+    "preload.mjs": "604db4659af1b843ffd046bb9fa37f31102b721bb7e871aa64ac0c59cdbfacaf",
+    "sdk-identity-receipt.mjs": "771fec699e7c75bc51b5e4c1cb502215eefbb90430c6ca1b05c469c39307c062",
+    "worker-probe.mjs": "5b86812557e3d1a73ebf5bd92ce3f828657f4329f9b6c071fb2e2b4c619480a0"
+  },
+  "buildInputFingerprint": "9eaa2af060c0853159eb357b92617e29ccfe100c7ca9aafe60d1b21bca90e06e",
+  "trackedInputsUnchanged": true,
+  "launcherSha256": "c67c8a9dec4968095c359aa979f4aeec5648c26429dae70eb3a16d17de0e9a88",
+  "rendererSha256": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d",
+  "sdkInputFingerprint": "7236925e88cdd19ec06bc100adf142747e0c51e84ed7b303dc41e0f8d53e919f",
+  "cleanup": {
+    "journaledRootResources": 48,
+    "resourceKinds": {
+      "organization": 10,
+      "user": 35,
+      "application": 3
+    },
+    "deleteCallthroughs": 48,
+    "deleteComplete": 48,
+    "deleteFailed": 0,
+    "unknownIdsOutsideProof": true,
+    "exactGetReadbacks": 48,
+    "readbackStatusCounts": {
+      "404": 48
+    },
+    "allJournaledRootsAbsent": true
+  },
+  "rawLogSha256": "1bab595210e528242f5ac2ea8876c42cdf9d4c141136ec5e0c388bf98a2abe03",
+  "privateOwnershipJournalSha256": "a22fbc92a5bfecbe996d2bb51ca1e74e695029a39f88858d823c015a9cc0da06",
+  "privateStartSha256": "11fbcede314a7227dd10c395e5407cfc4d8d527880618ce0ba2429692caa9cf4",
+  "originalRunnerResultSha256": "7b42b7aa05d2689c09e0f7833c1bb88bd1f96c2ce9640eef175525a3e9092a3d",
+  "acceptedGatePass": true,
+  "projection": "Only original static test/suite status/title/duration lines and aggregate summary retained. All other stream lines, provider content, resource IDs, actor addresses and runtime diagnostics omitted. Private originals retained at mode0600.",
+  "parserNote": "Summary supports TAP and Node spec reporters.",
+  "privateAbsenceSha256": "8bcf9868bd162560cd443940cdcbda836fe31bf42a45ed82e5375d956034b983"
+}

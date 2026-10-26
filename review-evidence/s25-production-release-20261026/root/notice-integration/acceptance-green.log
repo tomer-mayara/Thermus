@@ -1,0 +1,59 @@
+▶ Members through the hosted HTTP server
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (36.813666ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (19.079292ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (5.296959ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.694333ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.858542ms)
+✔ Members through the hosted HTTP server (69.783875ms)
+▶ Hosted self-service signup is closed by default
+  ✔ Given no signup setting, when a visitor opens signup, then the page says activation is closed and offers Sign in and Contact (142.216625ms)
+  ✔ Given closed signup and a signed-in identity without membership, when an earlier agreement form is posted, then activation stays closed and no membership is created (90.603042ms)
+✔ Hosted self-service signup is closed by default (233.461708ms)
+▶ Hosted self-service signup with a test legal bundle
+  ✔ S1-03a Given an eligible verified person, when creation opens, then the organization name is editable and the one authority agreement is unchecked (55.716708ms)
+  ✔ S1-03a Given an eligible verified creator, Acme Labs, and the accepted authority agreement, when creation completes, then the first Admin is sent to the guide route with matching named organization context (129.974791ms)
+  ✔ Given signup is enabled without approved documents, when the application starts, then startup fails (39.831834ms)
+  ✔ Given a visitor, when signup opens, then the full notice appears before sign in (41.273875ms)
+  ✔ Given a signed-in user deleted from WorkOS, when signup receives GET, then it offers fresh sign-in without activation writes (90.707792ms)
+  ✔ Given a signed-in user deleted from WorkOS, when signup receives POST, then it offers fresh sign-in without activation writes (92.500125ms)
+  ✔ Given a signed-out visitor posts an old signup form, when signup answers, then the full notice and a usable Sign in link appear without writes (106.029042ms)
+  ✔ Given a deleted user follows signup Sign in, when a fresh user returns and accepts the agreement, then one new organization receives Admin access (128.543667ms)
+  ✔ Given a current-user provider outage, when signup receives GET, then it reports unavailability without activation writes (57.487958ms)
+  ✔ Given a current-user provider outage, when signup receives POST, then it reports unavailability without activation writes (84.201166ms)
+  ✔ Given current User access, when signup opens, then Continue uses the selector and returns to the portal without another agreement or provider write (198.419875ms)
+  ✔ Given a verified user with no access, when the agreement is accepted again after activation and revocation, then one Admin grant is created and stays revoked (141.757916ms)
+  ✔ Given a signed-in user, when acceptance is missing or the origin is foreign, then no provider write occurs (69.687833ms)
+  ✔ Given a session for a user whose current email is unverified, when signup is submitted, then activation is refused (80.165667ms)
+  ✔ Given existing Admin-only access, when signup opens, then Continue preserves existing access without agreement, organization creation, or a new User membership (44.2435ms)
+  ✔ Given a signup form opened before Admin access was granted, when the old form is submitted, then existing access is used without another organization or grant (73.004708ms)
+  ✔ Given a revoked created organization and current access elsewhere, when signup opens, then it requires support and lets other access continue without a new agreement or repair (77.069834ms)
+  ✔ Given the signup-record lookup fails, when signup opens, then the page reports unavailability instead of offering a new agreement (62.71175ms)
+✔ Hosted self-service signup with a test legal bundle (1574.390167ms)
+▶ S2.5 production signup documents
+  ✔ Given production signup is off by default, when GET, HEAD, or an old form arrives, then it stays closed without policy bytes or provider reads (367.440667ms)
+  ✔ S2.5 Given the approved membership-removal bundle in the hosted candidate and an eligible creator, when signup opens and its one agreement is accepted, then exact Terms and Privacy are served and the first Admin retains their legal versions and hashes (275.598333ms)
+✔ S2.5 production signup documents (643.432042ms)
+✔ Given the earlier personal bundle, when an explicit composition enables organization creation, then startup still refuses it before provider access (115.484458ms)
+✔ Given the approved terms with corrupt bytes, when signup is composed, then it fails before any provider read or write (16.935833ms)
+✔ Given the approved terms with corrupt hash, when signup is composed, then it fails before any provider read or write (54.133791ms)
+✔ Given the approved notice with corrupt bytes, when signup is composed, then it fails before any provider read or write (47.324875ms)
+✔ Given the approved notice with corrupt hash, when signup is composed, then it fails before any provider read or write (79.446417ms)
+✔ Given a password-authenticated current Admin, when the Admin opens Audit logs, then a protected Save form is available (150.506208ms)
+✔ Given an Admin choosing an audit destination, when Audit logs opens, then a Bearer-only destination selector, short privacy notice and complete expandable help guide Save (156.574958ms)
+✔ Given user access, when a browser opens Audit logs or submits its Save operation, then current Admin access is required (54.516708ms)
+✔ Given revoked-admin access, when a browser opens Audit logs or submits its Save operation, then current Admin access is required (114.736792ms)
+✔ Given a password-authenticated Admin at /, when endpoint, Bearer token, and Enable are saved together, then reread shows one saved version without the token (114.004542ms)
+✔ Given a password-authenticated Admin at /team/, when endpoint, Bearer token, and Enable are saved together, then reread shows one saved version without the token (112.654666ms)
+✔ Given a saved destination and two forms, when a tenant is forged or an old revision is submitted, then neither can replace the saved destination (151.822917ms)
+✔ Given a protected Save form, when the origin or CSRF value is forged, then the destination stays absent (114.629208ms)
+✔ Given a committed Save whose answer is lost, when the browser receives an unconfirmed outcome, then it offers a saved-state read and the old form conflicts (79.541583ms)
+✔ Given a saved Axiom destination, when a browser without scripts selects Custom and clears its dataset, then the same endpoint retains the write-only token and an endpoint change needs a new token (132.613083ms)
+✔ Given a protected destination form, when Save or Test submits a forged destination, dataset, or None authentication, then no settings or event is written (170.02425ms)
+ℹ tests 43
+ℹ suites 4
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5175.512625

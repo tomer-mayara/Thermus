@@ -1,0 +1,82 @@
+{
+  "head": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "scope": "Completed code-head checks plus exact final two-document bridge; final-head quality refresh complete",
+  "counts": {
+    "ordinary.log": {
+      "tests": [
+        5122,
+        49
+      ],
+      "failures": [
+        0,
+        0
+      ]
+    },
+    "native-container.log": {
+      "tests": [
+        11
+      ],
+      "failures": [
+        0
+      ]
+    },
+    "hosted-container.log": {
+      "tests": [
+        7
+      ],
+      "failures": [
+        0
+      ]
+    },
+    "docker-build-74059-hosted-container-1793032633570-89127.log": {
+      "tests": [
+        3299,
+        29,
+        20,
+        1155,
+        119,
+        13
+      ],
+      "failures": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "hosted_fresh_group_provenance": {
+      "step": "#24 [checked-build 5/5] RUN --network=none npm run build:hosted",
+      "step_cached": false,
+      "step_done": true,
+      "groups": [
+        3299,
+        29,
+        20,
+        1155,
+        119,
+        13
+      ],
+      "other_cached_build_steps_exist": true
+    }
+  },
+  "live_gate": {
+    "code_head": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+    "tests": 29,
+    "pass": 29,
+    "fail": 0,
+    "exact_gets": 48,
+    "exact_404": 48,
+    "delete_started": 48,
+    "delete_complete": 48,
+    "delete_denied": 0,
+    "delete_failed": 0,
+    "private_originals_published": false
+  },
+  "habit_gate": "Final hook exits1 with the same47 individually retained findings; final log SHA256994e76ce0a5d31082659e3ff3526cb6d194659f8dc9ad919057c0dc91cd953f2; initial missing hook dependency directory failure retained; empty snooze; not a zero-finding pass",
+  "final_head": "2c7b8763025660d3fe3902af7a8433d2741fcb82",
+  "final_head_bridge": "final-head-bridge.json",
+  "final_quality": "quality/final-head/final-review.md"
+}

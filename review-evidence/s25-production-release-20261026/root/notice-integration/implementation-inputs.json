@@ -1,0 +1,28 @@
+{
+  "base_head": "9f07c04bba0813358274212b21316165dc3e308b",
+  "scope": "Uncommitted worker source/test/build/registry inputs; not a complete-candidate test certificate.",
+  "sha256": {
+    "src/accounts/providers/workos/workos-organization-removal-documents.ts": "529a1e4528f90ebf8f2a48d1b24eca8a3ecb804bf216ec015788b872cfacded3",
+    "src/interfaces/web/account/administration-help-documents.ts": "07b2859f50581f24db4e716967ae6c1a46a782ec7420ab1958f503a693413aa2",
+    "src/app/hosted-workos-application.ts": "49c2685b839aa65c0b1dc0f96bd031a359ff57225236279b9a73cfc559df0850",
+    "src/interfaces/web/account/administration-pages.ts": "9b329d59423ae25a848bd67c339ce5af80db65d87d899c5890c8d1ae90f3ea99",
+    "src/interfaces/web/account/logging-page.ts": "43a61556be8c1b98f33efab6cb75055fb2d0308e221d9b41ecd50c1f748c2622",
+    "src/interfaces/web/account/members-style.ts": "8d2ccf347a5ae5c22f891effac4edf1c009f028a0dc7a3da25b1ffd0a0887a1d",
+    "Dockerfile.hosted.dockerignore": "27b9ce47817d3491f0ba242bd3cacb64e2d483274dd58a143c5d0a5df58d4154",
+    "architecture/components.md": "8000403685221cb4b69a0c087bb61f57b2c487f923c580185c251bb32865995f",
+    "test/unit/auth-workos/workos-organization-removal-documents.test.ts": "115e73d1c305692d88e4eb321b2b32ceaa90e66f1ff9db76f50249f166e292d5",
+    "test/unit/html/administration-help-documents.test.ts": "d6285d067dcf046567073701bd557e4a77fe3ea771a788dc64be767cedb58ea7",
+    "test/unit/html/logging-page.test.ts": "d1ced1078c11121cf9ef1ecaf8435e0884c925dd78740f378d1787b2e40a02c7",
+    "test/unit/html/logging-routes.test.ts": "1794f15e9add00ff6245662780e2f9e0a1a9c76d1aa250efb15839fdd610561e",
+    "test/acceptance/auth/hosted-image.test.ts": "c6d1fea80f16c3a30c6743b6bf00fa23078efe3e24fc804f88c55ece0173d3e2",
+    "test/acceptance/auth/hosted-member-removal-browser.runtime.ts": "750cc4da62143df4f80aa3e0f848bb06dddd7ad69e4384e5af9f488de51af68c",
+    "test/acceptance/auth/hosted-members.test.ts": "03a497ce16a843259362b57da9ccec231f581a654f0d0b1fdf8049f9824a626a",
+    "test/acceptance/auth/hosted-workos-signup.test.ts": "811d6aadf51dad8b753f018f348449144bb85ef0f5a77e3dee844816cf83ada7",
+    "test/acceptance/logging/hosted-destination-settings.test.ts": "44d4782015b39bcead1e5e1d3d6dc7729d5e30eb6f7893baaab07c2ed4bf61cf",
+    "test/support/drivers/browser/member-removal-browser.ts": "cc7c2e187f0ad99f7853d0e91aec289586b5f09567c76f43ef12459bc1892b5b"
+  },
+  "registry_mermaid_blocks_unchanged": 15,
+  "canonical_manifest_sha256": "7528832b4e2baf055d4be35ec2d12fe3d00a9681d0a7684dc5f246e830c4071e",
+  "all_five_canonical_hashes_match": true,
+  "historical_source_modules_unchanged": true
+}

@@ -1,0 +1,12 @@
+{
+  "head": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "identity": {
+    "sourceFingerprint": "7e9dec809fa5556314f9ecae79b439d346cb57ba6ff714dce233cdbcae222b33",
+    "inputsFingerprint": "58b63e1b76eec026c5c2266df617c7b8e1c018c4fd522318dfa685e672491f41",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "node": "v24.20.0"
+}

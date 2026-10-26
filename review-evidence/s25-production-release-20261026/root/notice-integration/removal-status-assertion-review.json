@@ -1,0 +1,35 @@
+{
+  "base_head": "7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba",
+  "changed_files": [
+    "test/acceptance/auth/hosted-member-removal.test.ts"
+  ],
+  "red_evidence": "Manager full npm test at 7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba: 5122 tests, 5121 pass, one failing obsolete whole-page confirmation assertion. This worker did not rerun the full suite.",
+  "change": "Keep whole-response removed-target email absence. Require the identified full help region, remove only that region in the parsed test DOM, require remaining main heading Members, and forbid affirmative confirmation or Member removed in remaining current-page content. Busy/unknown/no-replay/store and single DELETE assertions are unchanged.",
+  "build": {
+    "log": "removal-status-assertion-build.log",
+    "exit_code": 0
+  },
+  "focused": {
+    "log": "removal-status-assertion-focused.log",
+    "exit_code": 0,
+    "counts": {
+      "tests": 28,
+      "pass": 28,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "files": [
+      "test/acceptance/auth/hosted-member-removal.test.ts",
+      "test/acceptance/auth/hosted-member-self-removal.test.ts",
+      "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "test/acceptance/auth/hosted-members.test.ts"
+    ]
+  },
+  "manual_diff": "Only one test changed; no source or approved packet changes. git diff --check passed.",
+  "test_file_sha256": "f5f1341536587b85648dee8d64032d649353490eea08216651e06e0987aa281b",
+  "canonical_manifest_preserved": "7528832b4e2baf055d4be35ec2d12fe3d00a9681d0a7684dc5f246e830c4071e",
+  "five_document_hashes_preserved": true,
+  "no_commit_or_cloud_action": true
+}

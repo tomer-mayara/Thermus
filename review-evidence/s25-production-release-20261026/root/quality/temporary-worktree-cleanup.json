@@ -1,0 +1,10 @@
+{
+  "path": "/var/folders/66/37f836wx4fd_wgnbb4b824f40000gn/T/thermus-s25-quality-8leTzg",
+  "head": "7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba",
+  "removed": true,
+  "evidenceRetained": [
+    "review.json",
+    "review.md",
+    "clean-static-review.log"
+  ]
+}

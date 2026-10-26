@@ -1,0 +1,309 @@
+{
+  "coupling": {
+    "afferent": 1,
+    "efferent": 26,
+    "instability": 0.9629629629629629
+  },
+  "cyclomatic_complexity": 25,
+  "functions": [
+    {
+      "cyclomatic_complexity": 3,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 52.23264125001385,
+        "maintainability_index_without_comments": 52.23264125001385
+      },
+      "name": "openWorkOSApplication",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 4573,
+        "start": 2944
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.2379803008409526,
+        "halstead_difficulty": 9.818181818181818,
+        "halstead_effort": 7009.60158840624,
+        "halstead_volume": 713.9409025228578,
+        "lloc": 18,
+        "loc": 20
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 89.52267462886361,
+        "maintainability_index_without_comments": 89.52267462886361
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 4365,
+        "start": 4337
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.01,
+        "halstead_difficulty": 2.5,
+        "halstead_effort": 75,
+        "halstead_volume": 30,
+        "lloc": 1,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 62.17010939087148,
+        "maintainability_index_without_comments": 62.17010939087148
+      },
+      "name": "openWorkOSConnection",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 5779,
+        "start": 4810
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.12385490775967187,
+        "halstead_difficulty": 5.25,
+        "halstead_effort": 1950.7147972148318,
+        "halstead_volume": 371.5647232790156,
+        "lloc": 8,
+        "loc": 16
+      }
+    },
+    {
+      "cyclomatic_complexity": 8,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 50.5615585350367,
+        "maintainability_index_without_comments": 50.5615585350367
+      },
+      "name": "composeWorkOSApplication",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 7619,
+        "start": 5788
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.3949004157980856,
+        "halstead_difficulty": 12.058823529411764,
+        "halstead_effort": 14286.103277401333,
+        "halstead_volume": 1184.7012473942568,
+        "lloc": 17,
+        "loc": 30
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 0,
+        "maintainability_index_without_comments": 0
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 6194,
+        "start": 6183
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.037333333333333336,
+        "halstead_difficulty": 3.5,
+        "halstead_effort": 392,
+        "halstead_volume": 112,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 0,
+        "maintainability_index_without_comments": 0
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 6250,
+        "start": 6222
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.037333333333333336,
+        "halstead_difficulty": 3.5,
+        "halstead_effort": 392,
+        "halstead_volume": 112,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 87.95778492016159,
+        "maintainability_index_without_comments": 87.95778492016159
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 6874,
+        "start": 6822
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.016729825003365395,
+        "halstead_difficulty": 3.5,
+        "halstead_effort": 175.66316253533665,
+        "halstead_volume": 50.18947501009619,
+        "lloc": 1,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 0,
+        "maintainability_index_without_comments": 0
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 7494,
+        "start": 7396
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.02421602133046108,
+        "halstead_difficulty": 2.5714285714285716,
+        "halstead_effort": 186.80930740641406,
+        "halstead_volume": 72.64806399138324,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 3,
+      "maintainability": {
+        "comment_weight": 15.394967026865586,
+        "maintainability_index": 62.53881419854803,
+        "maintainability_index_without_comments": 47.143847171682445
+      },
+      "name": "workosProviderParts",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 11545,
+        "start": 7621
+      },
+      "volume": {
+        "cloc": 2,
+        "halstead_bugs": 0.6788850795275313,
+        "halstead_difficulty": 11.96951219512195,
+        "halstead_effort": 24377.769715473365,
+        "halstead_volume": 2036.655238582594,
+        "lloc": 22,
+        "loc": 49
+      }
+    },
+    {
+      "cyclomatic_complexity": 1,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 0,
+        "maintainability_index_without_comments": 0
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 11182,
+        "start": 11148
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.007486279792153611,
+        "halstead_difficulty": 2.6666666666666665,
+        "halstead_effort": 59.89023833722889,
+        "halstead_volume": 22.458839376460833,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 2,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 0,
+        "maintainability_index_without_comments": 0
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 11304,
+        "start": 11229
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.013736341672916687,
+        "halstead_difficulty": 3.75,
+        "halstead_effort": 154.53384382031274,
+        "halstead_volume": 41.20902501875006,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 2,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 0,
+        "maintainability_index_without_comments": 0
+      },
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 11454,
+        "start": 11318
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.025903078026987644,
+        "halstead_difficulty": 3.857142857142857,
+        "halstead_effort": 299.73561716942845,
+        "halstead_volume": 77.70923408096293,
+        "lloc": 0,
+        "loc": 1
+      }
+    }
+  ],
+  "language": "TypeScript",
+  "lines_of_code": {
+    "comment_lines": 13,
+    "lines_of_code": 176,
+    "logical_lines": 66
+  },
+  "maintainability": {
+    "comment_weight": 20.435386336035013,
+    "maintainability_index": 56.150536356453514,
+    "maintainability_index_without_comments": 35.7151500204185
+  },
+  "path": ".cache/rebase251/publish/review-evidence/s2-5-01a-rebase/07d0d0387aed511674b9b5c73aeec8169a33422b/candidate/src/app/hosted-workos-application.ts",
+  "risk_score": 0,
+  "source_sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+  "volume": {
+    "cloc": 13,
+    "halstead_bugs": 0.35890517598156035,
+    "halstead_difficulty": 9.774129385678883,
+    "halstead_effort": 11906.047344623941,
+    "halstead_volume": 1076.715527944681,
+    "lloc": 66,
+    "loc": 176
+  }
+}

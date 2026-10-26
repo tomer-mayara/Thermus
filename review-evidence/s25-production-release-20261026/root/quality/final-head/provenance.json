@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "head": "2c7b8763025660d3fe3902af7a8433d2741fcb82",
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "priorSourceCandidate": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "sourceAndInputsUnchanged": true,
+  "changedDocuments": [
+    "docs/implementation/admin-s2-5-production-release.md",
+    "docs/metrics/2026-10-26-9f07c04b.json"
+  ],
+  "rawDiff": "2 files changed, 904 insertions(+), 5 deletions(-)",
+  "coverage": {
+    "capturedCommit": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+    "reportSha256": "8e54b9ae0e3d67b0f54e3f312400a02c4c6db4d5981ce78440aeee606513a476",
+    "provenance": {
+      "sourceFingerprint": "7e9dec809fa5556314f9ecae79b439d346cb57ba6ff714dce233cdbcae222b33",
+      "inputsFingerprint": "58b63e1b76eec026c5c2266df617c7b8e1c018c4fd522318dfa685e672491f41",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit",
+      "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+      "captureId": "8302d66aedd3c6557df2af00a1d1c4f0f8d32c706c297d25b39f3039bf836d17",
+      "comparisonIdentity": {
+        "sourceFingerprint": "7e9dec809fa5556314f9ecae79b439d346cb57ba6ff714dce233cdbcae222b33",
+        "inputsFingerprint": "58b63e1b76eec026c5c2266df617c7b8e1c018c4fd522318dfa685e672491f41",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+      "buildFingerprint": "ae61c1496b8edb9a4727cf2a2e8144f760bd6622923b358a885c534a4501961d",
+      "captureManifestFingerprint": "d9f76551a36c5bdd7c695b6aacb7a0352bdec20a78c62f8bd5727fca8f0ddd3e"
+    },
+    "reusedWithoutModification": true,
+    "rawCaptureDirectory": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-release-20261026/quality/candidate-618c29a9/ast-report/coverage-captures",
+    "buildsRepeated": false,
+    "suitesRepeated": false
+  },
+  "habit": {
+    "exit": 1,
+    "total": 47,
+    "counts": {
+      "high-complexity": 4,
+      "non-null-assertion": 21,
+      "too-many-parameters": 1,
+      "non-essential-comment": 18,
+      "oversized-file": 3
+    },
+    "logSha256": "994e76ce0a5d31082659e3ff3526cb6d194659f8dc9ad919057c0dc91cd953f2",
+    "exactlyMatchesReviewed618Log": true,
+    "dispositionFile": "../habit-hooks-review-618c29a9.json",
+    "dispositionSha256": "f3b0774825088149a1c16dd1fac5807b1628b85c5c38d37dce17df3bbceb496c",
+    "requiredFixes": [],
+    "snooze": [],
+    "initialFailure": "Missing isolated hook dependency link; retained log; existing dependencies linked without install before valid rerun"
+  },
+  "generatedRecord": {
+    "path": "docs/metrics/2026-10-26-9f07c04b.json",
+    "sha256": "d48943c55323c4a4f8f36fd11ea541917989db81a0d7eccc1d5be97f22440bdb",
+    "unchanged": true
+  },
+  "mermaidBlocks": 15,
+  "publicModules": 49,
+  "changedDeclarations": 0
+}

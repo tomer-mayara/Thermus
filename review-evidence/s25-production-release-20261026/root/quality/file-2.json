@@ -1,0 +1,96 @@
+{
+  "coupling": {
+    "afferent": 2,
+    "efferent": 6,
+    "instability": 0.75
+  },
+  "cyclomatic_complexity": 15,
+  "functions": [
+    {
+      "cyclomatic_complexity": 1,
+      "name": "",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 777,
+        "start": 692
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_difficulty": 0,
+        "halstead_effort": 0,
+        "halstead_volume": 0,
+        "lloc": 0,
+        "loc": 1
+      }
+    },
+    {
+      "cyclomatic_complexity": 5,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 70.88426336578846,
+        "maintainability_index_without_comments": 70.88426336578846
+      },
+      "name": "loggingPage",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 4543,
+        "start": 3147
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.12549075008417504,
+        "halstead_difficulty": 6.666666666666667,
+        "halstead_effort": 2509.8150016835007,
+        "halstead_volume": 376.4722502525251,
+        "lloc": 3,
+        "loc": 10
+      }
+    },
+    {
+      "cyclomatic_complexity": 9,
+      "maintainability": {
+        "comment_weight": 0,
+        "maintainability_index": 80.99476607959326,
+        "maintainability_index_without_comments": 80.99476607959326
+      },
+      "name": "destinationForm",
+      "source_range": {
+        "coordinates": "utf8-bytes",
+        "end": 7441,
+        "start": 4545
+      },
+      "volume": {
+        "cloc": 0,
+        "halstead_bugs": 0.11594417971414693,
+        "halstead_difficulty": 6.666666666666667,
+        "halstead_effort": 2318.8835942829387,
+        "halstead_volume": 347.8325391424408,
+        "lloc": 1,
+        "loc": 19
+      }
+    }
+  ],
+  "language": "TypeScript",
+  "lines_of_code": {
+    "comment_lines": 0,
+    "lines_of_code": 92,
+    "logical_lines": 6
+  },
+  "maintainability": {
+    "comment_weight": 0,
+    "maintainability_index": 64.32349510217846,
+    "maintainability_index_without_comments": 64.32349510217846
+  },
+  "path": "src/interfaces/web/account/logging-page.ts",
+  "risk_score": 0,
+  "source_sha256": "43a61556be8c1b98f33efab6cb75055fb2d0308e221d9b41ecd50c1f748c2622",
+  "volume": {
+    "cloc": 0,
+    "halstead_bugs": 0.08047830993277398,
+    "halstead_difficulty": 4.444444444444445,
+    "halstead_effort": 1609.5661986554799,
+    "halstead_volume": 241.43492979832195,
+    "lloc": 6,
+    "loc": 92
+  }
+}

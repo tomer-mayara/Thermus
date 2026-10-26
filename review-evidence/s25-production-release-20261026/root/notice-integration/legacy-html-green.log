@@ -1,0 +1,20 @@
+✔ Given an Axiom dataset field, when Save runs, then it reaches the service with the protected settings (17.58275ms)
+✔ Given the Axiom dataset form, when a browser applies its input pattern, then valid dataset names pass and invalid names fail (0.667875ms)
+✔ Given a password Admin, when Audit logs is read, then the disabled native form has no stored token (0.509708ms)
+✔ Given an Admin reading Audit logs, when the page renders, then the short privacy notice precedes settings (5.182458ms)
+✔ Given a valid form, when Save runs, then only the trusted tenant and settings reach the service (0.680917ms)
+✔ Given a forged, stale or extra-field form, when Save runs, then there is no write (1.000459ms)
+✔ Given removed Admin permission, when Audit logs is read or saved, then no settings are returned or changed (0.248541ms)
+✔ Given an unconfirmed or throwing Save, when the browser gets its answer, then it can only read saved state (0.862125ms)
+✔ Given an unavailable or throwing read, when Audit logs opens, then its safe page contains no cause or settings (0.528791ms)
+✔ Given a hostile saved endpoint, when Audit logs renders, then values are escaped and the saved token stays write-only (0.323542ms)
+✔ Given an invalid origin, oversized body or duplicate field, when Save arrives, then the service gets no write (1.562959ms)
+✔ Given an aborted request, when its valid form finishes reading, then no Save starts (2.772583ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 221.038958

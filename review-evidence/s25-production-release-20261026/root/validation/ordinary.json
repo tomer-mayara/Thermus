@@ -1,0 +1,28 @@
+{
+  "head": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "name": "ordinary",
+  "command": [
+    "npm",
+    "test"
+  ],
+  "started": "2026-10-26T16:28:52.846902+00:00",
+  "ended": "2026-10-26T16:35:16.350114+00:00",
+  "exit": 0,
+  "summaries": [
+    "\u2139 tests 5122",
+    "\u2139 pass 5122",
+    "\u2139 fail 0",
+    "\u2139 skipped 0",
+    "\u2139 todo 0",
+    "\u2139 tests 49",
+    "\u2139 pass 49",
+    "\u2139 fail 0",
+    "\u2139 skipped 0",
+    "\u2139 todo 0"
+  ],
+  "log_sha256": "de18b6ffef2349d3206e535bcaa172d9110ed2d59b1ca108c144df8e28e758c9",
+  "input_fingerprint": "773d1b0a9e7176ee4828fb613fbd1dd6ff1bf52dc52024c2e3dc2533886dae8c",
+  "inputs_unchanged": true,
+  "docker_context": "colima-thermus-s25-merge"
+}

@@ -1,0 +1,82 @@
+node:internal/modules/esm/resolve:272
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/tomermayara/.codex/worktrees/c617/Thermus/src/accounts/providers/workos/workos-organization-removal-documents.ts' imported from /Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/auth-workos/workos-organization-removal-documents.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    at moduleResolve (node:internal/modules/esm/resolve:879:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:11092)
+    at resolveDirectorySync (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:12398)
+    at resolveTsPathsSync (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:13605)
+    at resolve (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:16832) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/tomermayara/.codex/worktrees/c617/Thermus/src/accounts/providers/workos/workos-organization-removal-documents.ts'
+}
+
+Node.js v24.20.0
+✖ test/unit/auth-workos/workos-organization-removal-documents.test.ts (204.346625ms)
+node:internal/modules/esm/resolve:272
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/tomermayara/.codex/worktrees/c617/Thermus/src/interfaces/web/account/administration-help-documents.ts' imported from /Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/html/administration-help-documents.test.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:272:11)
+    at moduleResolve (node:internal/modules/esm/resolve:879:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at resolveBaseSync (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:11092)
+    at resolveDirectorySync (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:12398)
+    at resolveTsPathsSync (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:13605)
+    at resolve (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/tsx@4.23.15/node_modules/tsx/dist/register-nyXW-TH3.mjs:2:16832) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///Users/tomermayara/.codex/worktrees/c617/Thermus/src/interfaces/web/account/administration-help-documents.ts'
+}
+
+Node.js v24.20.0
+✖ test/unit/html/administration-help-documents.test.ts (109.774709ms)
+✔ Given saved destination settings, when the page opens, then only a nonempty dataset selects Axiom and the token stays blank (22.292ms)
+✔ Given editable destination settings, when the user switches Axiom and Custom, then only Axiom submits a required dataset and all edits survive (3.864958ms)
+✔ Given the destination script, when the page sets CSP, then only its hash permits execution and Members keeps scripts blocked (1.526ms)
+✔ Given a browser without scripts, when the destination form opens, then the dataset remains editable with Custom instructions (1.415625ms)
+✖ Given unavailable settings, when Audit logs renders, then full native help remains outside any form without adding a script (5.71775ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 4
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 766.588875
+
+✖ failing tests:
+
+test at test/unit/auth-workos/workos-organization-removal-documents.test.ts:1:1
+✖ test/unit/auth-workos/workos-organization-removal-documents.test.ts (204.346625ms)
+  'test failed'
+
+test at test/unit/html/administration-help-documents.test.ts:1:1
+✖ test/unit/html/administration-help-documents.test.ts (109.774709ms)
+  'test failed'
+
+test at test/unit/html/logging-page.test.ts:1:4056
+✖ Given unavailable settings, when Audit logs renders, then full native help remains outside any form without adding a script (5.71775ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(help)
+  
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/c617/Thermus/test/unit/html/logging-page.test.ts:71:10)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

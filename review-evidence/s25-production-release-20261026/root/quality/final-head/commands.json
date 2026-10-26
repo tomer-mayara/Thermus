@@ -1,0 +1,78 @@
+[
+  {
+    "script": "script/code-quality/ast-metrics-snapshot.ts",
+    "args": [
+      "--base",
+      "origin/main",
+      "--out",
+      "ast-report/snapshot-base.json"
+    ],
+    "exit": 0,
+    "start": "2026-10-26T17:06:30.389Z",
+    "end": "2026-10-26T17:06:34.115Z",
+    "head": "2c7b8763025660d3fe3902af7a8433d2741fcb82"
+  },
+  {
+    "script": "script/code-quality/ast-metrics-snapshot.ts",
+    "args": [
+      "--out",
+      "ast-report/snapshot.json"
+    ],
+    "exit": 0,
+    "start": "2026-10-26T17:06:34.143Z",
+    "end": "2026-10-26T17:06:36.322Z",
+    "head": "2c7b8763025660d3fe3902af7a8433d2741fcb82"
+  },
+  {
+    "script": "script/code-quality/ast-metrics-process.ts",
+    "args": [
+      "--base",
+      "origin/main",
+      "--json",
+      "ast-report/process.json"
+    ],
+    "exit": 1,
+    "start": "2026-10-26T17:06:36.348Z",
+    "end": "2026-10-26T17:06:54.636Z",
+    "head": "2c7b8763025660d3fe3902af7a8433d2741fcb82"
+  },
+  {
+    "script": "script/code-quality/ast-metrics-crap.ts",
+    "args": [
+      "--base",
+      "origin/main",
+      "--json",
+      "ast-report/crap.json"
+    ],
+    "exit": 0,
+    "start": "2026-10-26T17:06:54.663Z",
+    "end": "2026-10-26T17:06:59.123Z",
+    "head": "2c7b8763025660d3fe3902af7a8433d2741fcb82"
+  },
+  {
+    "script": "script/pr-review/check.ts",
+    "args": [
+      "--base",
+      "origin/main",
+      "--repo",
+      "tomer-mayara/Thermus",
+      "--impact",
+      "ast-report/impact.json",
+      "--base-snapshot",
+      "ast-report/snapshot-base.json",
+      "--head-snapshot",
+      "ast-report/snapshot.json",
+      "--crap",
+      "ast-report/crap.json",
+      "--process",
+      "ast-report/process.json",
+      "--review",
+      "ast-report/review.json",
+      "--json"
+    ],
+    "exit": 0,
+    "start": "2026-10-26T17:06:59.176Z",
+    "end": "2026-10-26T17:07:01.705Z",
+    "head": "2c7b8763025660d3fe3902af7a8433d2741fcb82"
+  }
+]

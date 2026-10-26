@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": true,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "Select the owner-approved 26 October organization removal document bundle through existing hosted composition. Render complete frozen Audit and Members help in closed native details inside their existing cards. Preserve historical bundles, prior acceptance records, invitation/sign-in flows, roles, current authorization, removal coordination, provider calls, SQL, export behavior and deployment topology. The exact approved notice and help content changes; no callable contract, component set, cross-component edge, public module membership or declaration changes. All 15 registry Mermaid views remain byte-identical; prose names the selected bundle and web-owned help. Docker build inputs add only canonical files used by exact-byte source contracts. The policy flag declares the approved notice/acceptance scope; Docker context and existing security/read paths may independently require team review. Approval is recorded separately without modifying the approved manifest.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted member read",
+      "Deployment view",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "src/app/hosted-workos-application.ts",
+      "src/accounts/providers/workos/workos-organization-removal-documents.ts",
+      "src/interfaces/web/account/administration-help-documents.ts",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/logging-page.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/acceptance/logging/hosted-destination-settings.test.ts",
+      "Dockerfile.hosted.dockerignore",
+      "docs/legal/organization-removal-2026-10-26-proposal-v1/owner-approval.json",
+      "docs/implementation/admin-s2-5-production-release.md"
+    ]
+  },
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "head": "618c29a94a80c94a9e0396ed07a8b727c10febde"
+}

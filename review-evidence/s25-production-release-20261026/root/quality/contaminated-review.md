@@ -1,0 +1,85 @@
+## AST Metrics review
+
+Thermus review policy: new-function warnings require >10 paths; high starts at 25. Approved layer rules use CR-13 resolved imports.
+
+Regressions: 23 high, 170 medium, 9 low. Improvements: 0. Gate: failed.
+
+### Regressions
+
+- **high**: New function with cyclomatic complexity 40 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:73`, rule `new-complex-function`, `strict_checks`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 29 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/publish.py:30`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 40 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:73`, rule `new-complex-function`, `strict_checks`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 29 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/publish.py:30`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 41 (threshold: 10) (`.cache/pr253-rebase-f03a7b73/publication/prepare.py:61`, rule `new-complex-function`, `strict_checks`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 34 (threshold: 10) (`.cache/pr253-rebase-f03a7b73/publication/publish.py:31`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 44 (threshold: 10) (`.cache/pr253-rebase-f03a7b73/publication/stage/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/tooling/inspect-hosted-builds.py:28`, rule `new-complex-function`, `inspect`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 25 (threshold: 10) (`.cache/pr253-rebase-f03a7b73/publication/update-text.py:22`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 35 (threshold: 10) (`.cache/pr253-rebase-f03a7b73/quality/bind-habit.py:13`, rule `new-complex-function`, `comment`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 44 (threshold: 10) (`.cache/pr253-rebase-f03a7b73/validation/inspect-hosted-builds.py:28`, rule `new-complex-function`, `inspect`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 60 (threshold: 10) (`.cache/rebase251/prepare-review-evidence.py:45`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: Maintainability too low: got 57 (min: 85) (`.cache/rebase251/publish/review-evidence/s2-5-01a-rebase/07d0d0387aed511674b9b5c73aeec8169a33422b/candidate/src/accounts/providers/workos/workos-organizations.ts:103`, rule `new-violation:maintainability`)
+- **high**: New function with cyclomatic complexity 60 (threshold: 10) (`.cache/rebase251/publish/review-evidence/s2-5-01a-rebase/07d0d0387aed511674b9b5c73aeec8169a33422b/tooling/prepare-review-evidence.py:45`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 43 (threshold: 10) (`.cache/s25-merge-20261026/publication-tools/history/publish-evidence-471fe8ec-before-blocked-binding.py:42`, rule `new-complex-function`, `read_package`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 27 (threshold: 10) (`.cache/s25-merge-20261026/publication-tools/history/publish-evidence-471fe8ec-before-blocked-binding.py:110`, rule `new-complex-function`, `validate_authorization`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 43 (threshold: 10) (`.cache/s25-merge-20261026/publication-tools/history/publish-evidence-913e67be-before-origin-scope.py:42`, rule `new-complex-function`, `read_package`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 27 (threshold: 10) (`.cache/s25-merge-20261026/publication-tools/history/publish-evidence-913e67be-before-origin-scope.py:110`, rule `new-complex-function`, `validate_authorization`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 44 (threshold: 10) (`.cache/s25-merge-20261026/publication-tools/publish-evidence.py:42`, rule `new-complex-function`, `read_package`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 27 (threshold: 10) (`.cache/s25-merge-20261026/publication-tools/publish-evidence.py:113`, rule `new-complex-function`, `validate_authorization`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: New function with cyclomatic complexity 39 (threshold: 10) (`.cache/s25-r1/prepare-review-evidence.py:32`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: Maintainability too low: got 54 (min: 85) (`.cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/candidate/src/accounts/providers/workos/workos-organizations.ts:104`, rule `new-violation:maintainability`)
+- **high**: New function with cyclomatic complexity 39 (threshold: 10) (`.cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/prepare-review-evidence.py:32`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **high**: Maintainability index: 40 -&gt; 33 (below 85 is hard to maintain) (`test/acceptance/auth/hosted-member-removal-browser.runtime.ts`, rule `maintainability-regression`)
+  Refactor long or deeply nested functions and reduce responsibilities in this file
+- **medium**: Cyclomatic complexity too high: got 112 (max: 40) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py`, rule `new-violation:cyclomatic_complexity`)
+- **medium**: LLOC too high in method blocked\_draft\_check(): got 28 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:42`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method strict\_checks(): got 59 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:73`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method native\_assets(): got 32 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:136`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method collect(): got 36 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:172`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method main(): got 39 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:212`, rule `new-violation:lloc_by_method`)
+- **medium**: Too many Lines of code (255 &gt; 150) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py`, rule `new-violation:max_loc`)
+- **medium**: LOC too high in method strict\_checks(): got 60 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:73`, rule `new-violation:max_loc_by_method`)
+- **medium**: LOC too high in method native\_assets(): got 34 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:136`, rule `new-violation:max_loc_by_method`)
+- **medium**: LOC too high in method collect(): got 38 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:172`, rule `new-violation:max_loc_by_method`)
+- **medium**: LOC too high in method main(): got 40 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:212`, rule `new-violation:max_loc_by_method`)
+- **medium**: New function with cyclomatic complexity 21 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:42`, rule `new-complex-function`, `blocked_draft_check`)
+  Extract smaller, well-named functions to reduce decision points
+- **medium**: New function with cyclomatic complexity 16 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:172`, rule `new-complex-function`, `collect`)
+  Extract smaller, well-named functions to reduce decision points
+- **medium**: New function with cyclomatic complexity 12 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:212`, rule `new-complex-function`, `main`)
+  Extract smaller, well-named functions to reduce decision points
+- **medium**: New function with cyclomatic complexity 13 (threshold: 10) (`.cache/pr251-rebase-8c6d204e/publication/prepare.py:136`, rule `new-complex-function`, `native_assets`)
+  Extract smaller, well-named functions to reduce decision points
+- **medium**: LLOC too high in method main(): got 55 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/publish.py:30`, rule `new-violation:lloc_by_method`)
+- **medium**: LOC too high in method main(): got 58 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/publish.py:30`, rule `new-violation:max_loc_by_method`)
+- **medium**: Cyclomatic complexity too high: got 112 (max: 40) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py`, rule `new-violation:cyclomatic_complexity`)
+- **medium**: LLOC too high in method blocked\_draft\_check(): got 28 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:42`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method strict\_checks(): got 59 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:73`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method native\_assets(): got 32 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:136`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method collect(): got 36 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:172`, rule `new-violation:lloc_by_method`)
+- **medium**: LLOC too high in method main(): got 39 (max: 20) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:212`, rule `new-violation:lloc_by_method`)
+- **medium**: Too many Lines of code (255 &gt; 150) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py`, rule `new-violation:max_loc`)
+- **medium**: LOC too high in method strict\_checks(): got 60 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:73`, rule `new-violation:max_loc_by_method`)
+- **medium**: LOC too high in method native\_assets(): got 34 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:136`, rule `new-violation:max_loc_by_method`)
+- **medium**: LOC too high in method collect(): got 38 (max: 30) (`.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/tooling/publication/prepare.py:172`, rule `new-violation:max_loc_by_method`)
+
+152 more regression(s); the JSON report retains all findings.

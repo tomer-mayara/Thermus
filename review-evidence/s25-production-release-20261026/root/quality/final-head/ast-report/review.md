@@ -1,0 +1,23 @@
+## AST Metrics found blocking regressions
+
+1 new critical issue(s), 3 other regression(s)
+
+### Summary
+
+- ➖ **Complexity: -**
+- ⚠️  **Ease of maintenance: -6**
+- ➖ **Outgoing dependencies: -**
+- ⚠️  **Probability of bugs: +0.26**
+
+### Regressions
+
+- **test/acceptance/auth/hosted-member-removal-browser.runtime.ts** (`test/acceptance/auth/hosted-member-removal-browser.runtime.ts`, high)
+  Maintainability index: 40 -> 33 (below 85 is hard to maintain)
+  Suggested action: Refactor long or deeply nested functions and reduce responsibilities in this file
+- **src/accounts/providers/workos/workos-organization-removal-documents.ts** (`src/accounts/providers/workos/workos-organization-removal-documents.ts`, medium)
+  Too many Lines of code (351 > 150)
+- **src/interfaces/web/account/administration-pages.ts** (`src/interfaces/web/account/administration-pages.ts`, low)
+  Efferent coupling too high: got 11 (max: 10)
+- **test/acceptance/auth/hosted-members.test.ts** (`test/acceptance/auth/hosted-members.test.ts`, low)
+  Estimated bugs (Halstead): 1.04 -> 1.30
+  Suggested action: This estimate grows with code volume and complexity; consider simplifying or splitting this file

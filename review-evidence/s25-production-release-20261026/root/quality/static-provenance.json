@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "head": "7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba",
+  "node": "v24.20.0",
+  "tool": "0.43.1-thermus.1",
+  "sourceFingerprint": "7e9dec809fa5556314f9ecae79b439d346cb57ba6ff714dce233cdbcae222b33",
+  "inputsFingerprint": "830cbdbebb704482b289b1225e80bb6cee2ec9bfa7d75a0457bde564d23fbc44",
+  "changes": [
+    {
+      "path": "src/accounts/providers/workos/workos-organization-removal-documents.ts",
+      "baseMI": null,
+      "headMI": null,
+      "baseFunctions": null,
+      "headFunctions": 0,
+      "sha256": "529a1e4528f90ebf8f2a48d1b24eca8a3ecb804bf216ec015788b872cfacded3"
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "baseMI": 56.150536356453514,
+      "headMI": 56.150536356453514,
+      "baseFunctions": 12,
+      "headFunctions": 12,
+      "sha256": "49c2685b839aa65c0b1dc0f96bd031a359ff57225236279b9a73cfc559df0850"
+    },
+    {
+      "path": "src/interfaces/web/account/administration-help-documents.ts",
+      "baseMI": null,
+      "headMI": null,
+      "baseFunctions": null,
+      "headFunctions": 0,
+      "sha256": "07b2859f50581f24db4e716967ae6c1a46a782ec7420ab1958f503a693413aa2"
+    },
+    {
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "baseMI": 61.87704640311736,
+      "headMI": 61.31208823309486,
+      "baseFunctions": 14,
+      "headFunctions": 15,
+      "sha256": "9b329d59423ae25a848bd67c339ce5af80db65d87d899c5890c8d1ae90f3ea99"
+    },
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "baseMI": 64.98701865414792,
+      "headMI": 64.32349510217846,
+      "baseFunctions": 2,
+      "headFunctions": 3,
+      "sha256": "43a61556be8c1b98f33efab6cb75055fb2d0308e221d9b41ecd50c1f748c2622"
+    },
+    {
+      "path": "src/interfaces/web/account/members-style.ts",
+      "baseMI": null,
+      "headMI": null,
+      "baseFunctions": 0,
+      "headFunctions": 0,
+      "sha256": "8d2ccf347a5ae5c22f891effac4edf1c009f028a0dc7a3da25b1ffd0a0887a1d"
+    }
+  ],
+  "mermaidInventory": [
+    "Context",
+    "C4 containers: hosted edition",
+    "C4 containers: local edition",
+    "Selected C4 components: tool processing in the Node server",
+    "Selected C4 components: hosted authentication in the Node server",
+    "Selected C4 components: hosted membership removal in the Node server",
+    "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "Selected C4 components: system and audit logs in the Node server",
+    "Selected C4 components: local authentication in the Node server",
+    "Collaboration overview",
+    "Scenario: MCP page fetch and renderer cancellation",
+    "Scenario: hosted default sign-in landing",
+    "Scenario: hosted member read",
+    "Self-hosted Compose",
+    "Recorded hosted Render target"
+  ],
+  "commands": [
+    {
+      "command": "PATH=/Users/tomermayara/.nvm/versions/node/v24.20.0/bin:$PATH pnpm exec node script/code-quality/ast-metrics-snapshot.ts --base origin/main --out .cache/s25-release-20261026/quality/snapshot-base.json",
+      "exit": 0
+    },
+    {
+      "command": "PATH=/Users/tomermayara/.nvm/versions/node/v24.20.0/bin:$PATH pnpm exec node script/code-quality/ast-metrics-snapshot.ts --out .cache/s25-release-20261026/quality/snapshot.json",
+      "exit": 0
+    }
+  ],
+  "review": {
+    "firstRun": "Working checkout native review included ignored .cache tooling and historical snapshots. Retained as contaminated-review.{json,md}. Not accepted as candidate findings.",
+    "cleanRun": "Original unchanged runReview wrapper with root set to clean detached worktree of the exact candidate. Full raw wrapper output retained as review.{json,md}. Exit1 reports retained high test maintainability finding; not a tool failure."
+  }
+}

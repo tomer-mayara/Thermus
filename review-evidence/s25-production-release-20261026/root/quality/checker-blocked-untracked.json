@@ -1,0 +1,236 @@
+{
+  "tier": "T1",
+  "tierName": "T1 Team review",
+  "eligibility": "blocked",
+  "blockers": [
+    {
+      "blocking": true,
+      "key": "public_surface.snapshots.unverified",
+      "fact": "the working tree differs from HEAD, so the snapshots of HEAD cannot be regenerated; commit first"
+    }
+  ],
+  "candidate": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "mergeBase": "9f07c04bba0813358274212b21316165dc3e308b",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "blocking": true,
+      "key": "public_surface.snapshots.unverified",
+      "fact": "the working tree differs from HEAD, so the snapshots of HEAD cannot be regenerated; commit first"
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.deploy_and_data",
+      "fact": "Dockerfile.hosted.dockerignore"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "Select the owner-approved 26 October organization removal document bundle through existing hosted composition. Render complete frozen Audit and Members help in closed native details inside their existing cards. Preserve historical bundles, prior acceptance records, invitation/sign-in flows, roles, current authorization, removal coordination, provider calls, SQL, export behavior and deployment topology. The exact approved notice and help content changes; no callable contract, component set, cross-component edge, public module membership or declaration changes. All 15 registry Mermaid views remain byte-identical; prose names the selected bundle and web-owned help. Docker build inputs add only canonical files used by exact-byte source contracts. The policy flag declares the approved notice/acceptance scope; Docker context and existing security/read paths may independently require team review. Approval is recorded separately without modifying the approved manifest."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.deploy_and_data",
+      "question": "What changes in the image, the runtime, or the stored data, and how is it rolled back? Record the recovery step."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "Dockerfile.hosted.dockerignore"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-5-02-removal-runbook.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-5-02.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-production-release.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/agreement.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/approval-brief.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/audit-help.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/changes.patch"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/current-published-changes.patch"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/data-flow-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/members-help.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/owner-approval.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/privacy.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/successor-changes.patch"
+    },
+    {
+      "status": "A",
+      "path": "docs/legal/organization-removal-2026-10-26-proposal-v1/terms.md"
+    },
+    {
+      "status": "A",
+      "path": "src/accounts/providers/workos/workos-organization-removal-documents.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/app/hosted-workos-application.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/interfaces/web/account/administration-help-documents.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-pages.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/logging-page.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-image.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-member-removal.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-members.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-workos-signup.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/drivers/browser/member-removal-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/auth-workos/workos-organization-removal-documents.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/html/administration-help-documents.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-page.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/html/logging-routes.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 463,
+    "productionLimit": 400,
+    "total": 2161,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 8,
+    "removed": 3,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "not applicable: src/accounts/providers/workos/workos-organization-removal-documents.ts: no raw MI in the head snapshot",
+    "changed: src/app/hosted-workos-application.ts: 56.150536356453514 to 56.150536356453514",
+    "not applicable: src/interfaces/web/account/administration-help-documents.ts: no raw MI in the head snapshot",
+    "changed: src/interfaces/web/account/administration-pages.ts: 61.87704640311736 to 61.31208823309486",
+    "changed: src/interfaces/web/account/logging-page.ts: 64.98701865414792 to 64.32349510217846",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+  ],
+  "crap": [
+    "src/app/hosted-workos-application.ts: openWorkOSApplication: 12.0",
+    "src/interfaces/web/account/administration-pages.ts: membersPage: 12.0",
+    "src/interfaces/web/account/logging-page.ts: loggingPage: 5.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 2.0",
+    "src/interfaces/web/account/administration-pages.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/logging-page.ts: (anonymous): 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "outside scopes.production: test/acceptance/auth/hosted-member-removal-browser.runtime.ts: Maintainability index: 40 -> 33 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "49 public modules, 0 snapshots changed",
+    "size.production_lines_note_above: 463 production lines, above the limit of 400",
+    "size.total_lines_note_above: 2161 lines without generated files, above the limit of 1500"
+  ],
+  "notes": [
+    "Uncommitted changes are not part of the candidate: the check reads the commit HEAD only.",
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+}

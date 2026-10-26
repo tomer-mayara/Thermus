@@ -1,0 +1,477 @@
+{
+  "candidate": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "reviewed_at_utc": "2026-10-26T16:54:58.067889+00:00",
+  "hook_log": "../validation/habit-hooks.log",
+  "hook_exit": 1,
+  "counts": {
+    "high-complexity": 4,
+    "non-null-assertion": 21,
+    "too-many-parameters": 1,
+    "non-essential-comment": 18,
+    "oversized-file": 3
+  },
+  "total": 47,
+  "retained": 47,
+  "required_fixes": [],
+  "snooze": [],
+  "unchanged_whole_flagged_production_functions": [
+    "composeWorkOSApplication",
+    "destinationForm"
+  ],
+  "all_flagged_non_null_assertions_inherited": true,
+  "approved_literal_review": [
+    {
+      "document": "terms.md",
+      "evaluated_source_matches_canonical": true,
+      "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048"
+    },
+    {
+      "document": "privacy.md",
+      "evaluated_source_matches_canonical": true,
+      "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c"
+    },
+    {
+      "document": "agreement.txt",
+      "evaluated_source_matches_canonical": true,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a"
+    },
+    {
+      "document": "audit-help.md",
+      "evaluated_source_matches_canonical": true,
+      "sha256": "91c500488861110b50b01aea8cda7ba60cf5a7990e5a398a9124742b77588391"
+    },
+    {
+      "document": "members-help.md",
+      "evaluated_source_matches_canonical": true,
+      "sha256": "853d344d0f861fd3a53ed05b846909108d56d39d6105a7fa4fcc626e0d1aa9ca"
+    }
+  ],
+  "registry_mermaid_blocks_unchanged": 15,
+  "scope": "Read-only final candidate review. No source/test/packet change, build, test, commit or cloud action. This disposition is not an independent human approval.",
+  "findings": [
+    {
+      "category": "high-complexity",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 97,
+      "disposition": "retain",
+      "base_line": 97,
+      "location": "src/app/hosted-workos-application.ts:97",
+      "reason": "composeWorkOSApplication owns one composition lifetime: optional snapshots, explicit override precedence, shared audit/tool wiring and close ownership. Its body is byte-identical to the base; this candidate changes only the selected immutable document input in openWorkOSApplication. Splitting lifetime/override wiring solely for this score would obscure the resource owner without improving this notice integration."
+    },
+    {
+      "category": "high-complexity",
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "line": 74,
+      "disposition": "retain",
+      "base_line": 68,
+      "location": "src/interfaces/web/account/logging-page.ts:74",
+      "reason": "destinationForm owns the single atomic settings form. Its conditionals reflect the saved destination, optional dataset/revision, token presence/legacy-auth guidance, enabled switch and Save feedback in one accessible HTML contract. The whole function is byte-identical to base; new help is outside the form. Extraction solely for the counter would separate interdependent labels, inputs and saved-state rules."
+    },
+    {
+      "category": "high-complexity",
+      "path": "test/acceptance/auth/hosted-member-removal.test.ts",
+      "line": 27,
+      "disposition": "retain",
+      "base_line": 26,
+      "location": "test/acceptance/auth/hosted-member-removal.test.ts:27",
+      "reason": "The parameterized invalid-form specification varies exactly one authority, tenant, target, revision, method, Origin or CSRF condition per independent fresh site. Each variant has the same observable no-DELETE/no-applied result. The flagged scenario body is unchanged; the separate uncertain-result assertion was repaired elsewhere. Its visible case table is easier to review than helpers that hide which security boundary each mutation exercises."
+    },
+    {
+      "category": "high-complexity",
+      "path": "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "line": 457,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "test/acceptance/auth/hosted-workos-signup.test.ts:457",
+      "reason": "This is one complete real-production signup journey: public Privacy, eligible creator Terms/Privacy, unchecked agreement, stale-form refusal, successful first Admin and exact saved legal versions/hashes. The increment adds a second historical stale-bundle case in a simple loop and updates canonical expectations. Keeping presentation and recorded acceptance in one visible scenario proves they correspond; splitting checks into opaque helpers would weaken review of that correspondence. No production decision logic is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 30,
+      "disposition": "retain",
+      "base_line": 30,
+      "location": "test/unit/html/logging-page.test.ts:30",
+      "reason": "Unchanged test-local DOM selectors immediately query the fixed rendered destination form whose shape is this scenario subject. Each selected node is immediately used for value/method operations, so missing markup throws and fails the test rather than silently passing. No nullable production state, cross-object lifecycle or new assertion is introduced; the candidate adds a separate guarded help scenario with assert.ok."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 31,
+      "disposition": "retain",
+      "base_line": 31,
+      "location": "test/unit/html/logging-page.test.ts:31",
+      "reason": "Unchanged test-local DOM selectors immediately query the fixed rendered destination form whose shape is this scenario subject. Each selected node is immediately used for value/method operations, so missing markup throws and fails the test rather than silently passing. No nullable production state, cross-object lifecycle or new assertion is introduced; the candidate adds a separate guarded help scenario with assert.ok."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 32,
+      "disposition": "retain",
+      "base_line": 32,
+      "location": "test/unit/html/logging-page.test.ts:32",
+      "reason": "Unchanged test-local DOM selectors immediately query the fixed rendered destination form whose shape is this scenario subject. Each selected node is immediately used for value/method operations, so missing markup throws and fails the test rather than silently passing. No nullable production state, cross-object lifecycle or new assertion is introduced; the candidate adds a separate guarded help scenario with assert.ok."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 33,
+      "disposition": "retain",
+      "base_line": 33,
+      "location": "test/unit/html/logging-page.test.ts:33",
+      "reason": "Unchanged test-local DOM selectors immediately query the fixed rendered destination form whose shape is this scenario subject. Each selected node is immediately used for value/method operations, so missing markup throws and fails the test rather than silently passing. No nullable production state, cross-object lifecycle or new assertion is introduced; the candidate adds a separate guarded help scenario with assert.ok."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 35,
+      "disposition": "retain",
+      "base_line": 35,
+      "location": "test/unit/html/logging-page.test.ts:35",
+      "reason": "Unchanged test-local DOM selectors immediately query the fixed rendered destination form whose shape is this scenario subject. Each selected node is immediately used for value/method operations, so missing markup throws and fails the test rather than silently passing. No nullable production state, cross-object lifecycle or new assertion is introduced; the candidate adds a separate guarded help scenario with assert.ok."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 36,
+      "disposition": "retain",
+      "base_line": 36,
+      "location": "test/unit/html/logging-page.test.ts:36",
+      "reason": "Unchanged test-local DOM selectors immediately query the fixed rendered destination form whose shape is this scenario subject. Each selected node is immediately used for value/method operations, so missing markup throws and fails the test rather than silently passing. No nullable production state, cross-object lifecycle or new assertion is introduced; the candidate adds a separate guarded help scenario with assert.ok."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 54,
+      "disposition": "retain",
+      "base_line": 54,
+      "location": "test/unit/html/logging-page.test.ts:54",
+      "reason": "Unchanged test-local CSP reads immediately enter includes/assert.doesNotMatch. A missing header fails the test (property access or assertion input validation). The layout deterministically owns that header. This candidate changes only the embedded style content and adds an explicit help test; no production nullable access is hidden."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-page.test.ts",
+      "line": 57,
+      "disposition": "retain",
+      "base_line": 57,
+      "location": "test/unit/html/logging-page.test.ts:57",
+      "reason": "Unchanged test-local CSP reads immediately enter includes/assert.doesNotMatch. A missing header fails the test (property access or assertion input validation). The layout deterministically owns that header. This candidate changes only the embedded style content and adds an explicit help test; no production nullable access is hidden."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 20,
+      "disposition": "retain",
+      "base_line": 19,
+      "location": "test/unit/html/logging-routes.test.ts:20",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 26,
+      "disposition": "retain",
+      "base_line": 25,
+      "location": "test/unit/html/logging-routes.test.ts:26",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 36,
+      "disposition": "retain",
+      "base_line": 35,
+      "location": "test/unit/html/logging-routes.test.ts:36",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 45,
+      "disposition": "retain",
+      "base_line": 44,
+      "location": "test/unit/html/logging-routes.test.ts:45",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 60,
+      "disposition": "retain",
+      "base_line": 56,
+      "location": "test/unit/html/logging-routes.test.ts:60",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 66,
+      "disposition": "retain",
+      "base_line": 62,
+      "location": "test/unit/html/logging-routes.test.ts:66",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 71,
+      "disposition": "retain",
+      "base_line": 67,
+      "location": "test/unit/html/logging-routes.test.ts:71",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 77,
+      "disposition": "retain",
+      "base_line": 73,
+      "location": "test/unit/html/logging-routes.test.ts:77",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 85,
+      "disposition": "retain",
+      "base_line": 81,
+      "location": "test/unit/html/logging-routes.test.ts:85",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 94,
+      "disposition": "retain",
+      "base_line": 90,
+      "location": "test/unit/html/logging-routes.test.ts:94",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 96,
+      "disposition": "retain",
+      "base_line": 92,
+      "location": "test/unit/html/logging-routes.test.ts:96",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 100,
+      "disposition": "retain",
+      "base_line": 96,
+      "location": "test/unit/html/logging-routes.test.ts:100",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "non-null-assertion",
+      "path": "test/unit/html/logging-routes.test.ts",
+      "line": 116,
+      "disposition": "retain",
+      "base_line": 112,
+      "location": "test/unit/html/logging-routes.test.ts:116",
+      "reason": "Unchanged unit-test route lookup uses a literal supported path on a freshly constructed LoggingRoutes fixture. A missing handler fails the invocation/test rather than supplying a passing result. These calls test routing, trust, Save, failure and abort outcomes directly; adding a route-owner abstraction or guard to each call adds no new behavior evidence. No production non-null assertion is introduced."
+    },
+    {
+      "category": "too-many-parameters",
+      "path": "test/support/drivers/browser/member-removal-browser.ts",
+      "line": 5,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "test/support/drivers/browser/member-removal-browser.ts:5",
+      "reason": "The test protocol driver receives four distinct roles: TestContext cleanup owner, isolated HTTP transport, authenticated cookie string, and one optional Playwright JavaScript capability. The new fourth argument selects a native-help/no-JavaScript proof; the default preserves the existing removal browser. The values do not form a repeated business entity or travel together through other APIs. A new bag for transport/auth/test lifetime would hide the separate seams. Both callers and cleanup/routing were reviewed; no production API changed."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 28,
+      "disposition": "retain",
+      "base_line": 28,
+      "location": "src/app/hosted-workos-application.ts:28",
+      "reason": "Retain the environment and transport-seam boundary: one SDK/settings/key-set connection belongs to one WorkOS environment, while tests may replace transport. This prevents treating a fake seam as production identity configuration."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 29,
+      "disposition": "retain",
+      "base_line": 29,
+      "location": "src/app/hosted-workos-application.ts:29",
+      "reason": "Retain the environment and transport-seam boundary: one SDK/settings/key-set connection belongs to one WorkOS environment, while tests may replace transport. This prevents treating a fake seam as production identity configuration."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 36,
+      "disposition": "retain",
+      "base_line": 36,
+      "location": "src/app/hosted-workos-application.ts:36",
+      "reason": "Retain the distinction between shared production tool operations and a development request-scoped server override. The types alone do not state lifetime, and confusing these can share request state."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 37,
+      "disposition": "retain",
+      "base_line": 37,
+      "location": "src/app/hosted-workos-application.ts:37",
+      "reason": "Retain the distinction between shared production tool operations and a development request-scoped server override. The types alone do not state lifetime, and confusing these can share request state."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 41,
+      "disposition": "retain",
+      "base_line": 41,
+      "location": "src/app/hosted-workos-application.ts:41",
+      "reason": "Retain explicit override precedence for development audit/tool seams; the optional fields alone do not explain which composition input wins."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 44,
+      "disposition": "retain",
+      "base_line": 44,
+      "location": "src/app/hosted-workos-application.ts:44",
+      "reason": "Retain the development-only dispatch-sink substitution scope. It explains why this injection seam exists and prevents reading it as a production delivery guarantee."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 48,
+      "disposition": "retain",
+      "base_line": 48,
+      "location": "src/app/hosted-workos-application.ts:48",
+      "reason": "Retain the authority boundary that production omits Google onboarding and a slice must select an enrollment organization explicitly. It explains why no implicit default organization is supplied."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 50,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "src/app/hosted-workos-application.ts:50",
+      "reason": "Retain the updated selected-bundle provenance: explicit development composition can provide documents, while production chooses the approved removal bundle at startup. This is a legal version/authority boundary, not a new acceptance mechanism."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 54,
+      "disposition": "retain",
+      "base_line": 54,
+      "location": "src/app/hosted-workos-application.ts:54",
+      "reason": "Retain the request-lifetime reason for zero SDK retries and the short timeout. It explains the fixed network budget and prevents accidental retries inside a browser/MCP operation."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 78,
+      "disposition": "retain",
+      "base_line": 78,
+      "location": "src/app/hosted-workos-application.ts:78",
+      "reason": "Retain fail-closed startup and lazy remote key-set behavior: invalid settings do not fall back to local/anonymous access, and constructing the connection does not itself fetch keys. These timing/security limits are not conveyed by the return type."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 79,
+      "disposition": "retain",
+      "base_line": 79,
+      "location": "src/app/hosted-workos-application.ts:79",
+      "reason": "Retain fail-closed startup and lazy remote key-set behavior: invalid settings do not fall back to local/anonymous access, and constructing the connection does not itself fetch keys. These timing/security limits are not conveyed by the return type."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 140,
+      "disposition": "retain",
+      "base_line": 140,
+      "location": "src/app/hosted-workos-application.ts:140",
+      "reason": "Retain the single directory owner shared by access resolution and organization/member/invitation routes. It explains why those collaborators use the same current-grant source rather than independent mirrors."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 141,
+      "disposition": "retain",
+      "base_line": 141,
+      "location": "src/app/hosted-workos-application.ts:141",
+      "reason": "Retain the single directory owner shared by access resolution and organization/member/invitation routes. It explains why those collaborators use the same current-grant source rather than independent mirrors."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-image.test.ts",
+      "line": 21,
+      "disposition": "retain",
+      "base_line": 21,
+      "location": "test/acceptance/auth/hosted-image.test.ts:21",
+      "reason": "Retain executable-gate prerequisites and scope: Docker/Linux AMD64 are required and placeholder image checks must not be mistaken for use of live identity credentials. Ordinary test selection excludes this dedicated gate."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "line": 541,
+      "disposition": "retain",
+      "base_line": 539,
+      "location": "test/acceptance/auth/hosted-workos-signup.test.ts:541",
+      "reason": "Retain why the fake starts before application composition: a deliberately rejected document bundle must still provide a transport observer proving no provider request. It explains the test seam/order needed for the fail-before-network claim."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organization-removal-documents.ts",
+      "line": 3,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "src/accounts/providers/workos/workos-organization-removal-documents.ts:3",
+      "reason": "Retain exact approval/history provenance for the intentionally duplicated immutable bundle. A future maintainer must add a successor rather than edit earlier approved bytes; this is not a description of a branch or algorithm."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/interfaces/web/account/administration-help-documents.ts",
+      "line": 1,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "src/interfaces/web/account/administration-help-documents.ts:1",
+      "reason": "Retain the immutable-bytes versus rendered-presentation boundary. Heading levels may change in HTML, while approved Markdown bytes/version/hash must stay exact; the comment prevents normalizing the source data during rendering work."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "line": 25,
+      "disposition": "retain",
+      "base_line": 19,
+      "location": "src/interfaces/web/account/administration-pages.ts:25",
+      "reason": "Retain the full-read invariant: current members and invitations must both be complete before Members renders. Partial reads could otherwise present misleading current access/counts; the new static help does not relax that rule."
+    },
+    {
+      "category": "oversized-file",
+      "path": "src/accounts/providers/workos/workos-organization-removal-documents.ts",
+      "line": null,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "src/accounts/providers/workos/workos-organization-removal-documents.ts",
+      "reason": "The 351-line file is one complete approved immutable Terms/Privacy/agreement bundle with no local functions or branching owner. Startup validation and byte contracts bind it as one versioned approval unit. Splitting literals mechanically or loading legal Markdown at runtime would add drift/packaging seams; trimming text would change approved bytes."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "line": null,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "test/acceptance/auth/hosted-workos-signup.test.ts",
+      "reason": "The 549-line suite groups independent scenarios for one hosted signup HTTP surface: closed/default behavior, creator eligibility/authority, full documents, agreement/recovery and fail-before-provider guarantees. Existing shared site/driver layers already own transport. The added stale-bundle loop and canonical changes belong to the same acceptance contract; a mechanical size split adds no clearer responsibility or behavior proof."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/acceptance/logging/hosted-destination-settings.test.ts",
+      "line": null,
+      "disposition": "retain",
+      "base_line": null,
+      "location": "test/acceptance/logging/hosted-destination-settings.test.ts",
+      "reason": "The 241-line suite keeps one Admin settings HTTP contract together: readable protected form/help, atomic Save, current tenant/revision, write-only credential retention, forged-input refusal and uncertain-save handling. Each case creates its own site. The complete-help check remains visibly tied to unchanged controls and no-write-on-read; a size-only split would disperse that review surface."
+    }
+  ]
+}

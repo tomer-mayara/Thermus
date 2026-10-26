@@ -1,0 +1,172 @@
+habit-sensors: sensor 'eslint' failed: files=$(printf '%s\n' ${files} | grep -E '\.(tsx?|jsx?|[cm]js)$' || true)
+if [ -z "$files" ]; then echo '[]'; exit 0; fi
+set -o pipefail
+complaint=$(mktemp)
+trap 'rm -f "$complaint"' EXIT
+report=$(eslint -f json --no-warn-ignored ${args} $files 2>"$complaint")
+status=$?
+if [ "$status" -gt 1 ] && grep -qF "couldn't find an eslint.config" "$complaint"; then
+  report=$(eslint -f json --no-warn-ignored --config ${dir}/../eslint.config.mjs ${args} $files 2>"$complaint")
+  status=$?
+fi
+if [ "$status" -gt 1 ] || [ -z "$report" ]; then cat "$complaint" >&2; exit 2; fi
+printf '%s' "$report" | jq '[.[] | .filePath as $file | .messages[]
+| select(.ruleId != null or .fatal) | {
+  smell: (if .fatal then "parse-error" else ({
+    "max-lines-per-function": "oversized-function",
+    "max-params": "too-many-parameters",
+    "@typescript-eslint/max-params": "too-many-parameters",
+    "complexity": "high-complexity",
+    "max-depth": "deep-nesting",
+    "max-lines": "oversized-file",
+    "no-unused-vars": "unused-variable",
+    "@typescript-eslint/no-unused-vars": "unused-variable",
+    "eqeqeq": "loose-equality",
+    "no-var": "var-declaration",
+    "prefer-const": "non-const-binding",
+    "no-duplicate-imports": "duplicate-import",
+    "no-warning-comments": "warning-comment",
+    "@typescript-eslint/no-explicit-any": "explicit-any",
+    "@typescript-eslint/no-non-null-assertion": "non-null-assertion",
+    "@typescript-eslint/no-inferrable-types": "redundant-type-annotation"
+  }[.ruleId] // .ruleId) end),
+  file: $file, line: .line, column: .column, message: .message,
+  source: ("eslint:" + (.ruleId // "fatal"))
+}]
+| group_by(.smell)
+| map({
+    smell: .[0].smell,
+    details: {},
+    issues: map({
+      key: .file,
+      details: {file: .file, line: .line, column: .column, message: .message, source: .source}
+    })
+  })'
+
+Oops! Something went wrong! :(
+
+ESLint: 10.10.0
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@typescript-eslint/eslint-plugin' imported from /Users/tomermayara/.codex/worktrees/s25-release-quality/Thermus/.habit-hooks/eslint.config.mjs
+Did you mean to import "@typescript-eslint/eslint-plugin/dist/index.js"?
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:784:25)
+    at moduleResolve (node:internal/modules/esm/resolve:873:18)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    at #resolve (node:internal/modules/esm/loader:687:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)
+── non-essential-comment (18 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+src/app/hosted-workos-application.ts:28
+src/app/hosted-workos-application.ts:29
+src/app/hosted-workos-application.ts:36
+src/app/hosted-workos-application.ts:37
+src/app/hosted-workos-application.ts:41
+src/app/hosted-workos-application.ts:44
+src/app/hosted-workos-application.ts:48
+src/app/hosted-workos-application.ts:50
+src/app/hosted-workos-application.ts:54
+src/app/hosted-workos-application.ts:78
+src/app/hosted-workos-application.ts:79
+src/app/hosted-workos-application.ts:140
+src/app/hosted-workos-application.ts:141
+test/acceptance/auth/hosted-image.test.ts:21
+test/acceptance/auth/hosted-workos-signup.test.ts:541
+src/accounts/providers/workos/workos-organization-removal-documents.ts:3
+src/interfaces/web/account/administration-help-documents.ts:1
+src/interfaces/web/account/administration-pages.ts:25
+
+── oversized-file (3 issues) ──
+
+Files over 200 lines accumulate unrelated concerns. The smell is poor cohesion — a file that asks the reader to hold too many ideas at once — not the raw line count.
+
+First identify the seams: which exports, types, or helper clusters actually belong together? A long file usually splits cleanly along one of: a data type and its operations, a feature pipeline, or one concern per file.
+
+Avoid mechanical splits. Carving the file at line 200 into `foo-1.ts` and `foo-2.ts`, or moving every private helper into a `utils.ts`, satisfies the threshold without making anything clearer — the cohesion problem just hops to a new place.
+
+If the file's structure resists splitting, that is itself the signal: responsibilities are tangled. Look for a missing abstraction (a class, a small module with a focused interface) that would let related pieces move together as a unit.
+
+A concrete technique: write a one-sentence description of what each emerging seam *would* be responsible for. If you cannot, you have not found the seam yet — do not split.
+
+src/accounts/providers/workos/workos-organization-removal-documents.ts
+test/acceptance/auth/hosted-workos-signup.test.ts
+test/acceptance/logging/hosted-destination-settings.test.ts
+
+── incomplete-run (1 issue) ──
+
+⚠️ Habit Hooks: this run did not complete — a tool broke, so a clean result cannot be trusted.
+
+habit-sensors: sensor 'eslint' failed: files=$(printf '%s\n' ${files} | grep -E '\.(tsx?|jsx?|[cm]js)$' || true)
+if [ -z "$files" ]; then echo '[]'; exit 0; fi
+set -o pipefail
+complaint=$(mktemp)
+trap 'rm -f "$complaint"' EXIT
+report=$(eslint -f json --no-warn-ignored ${args} $files 2>"$complaint")
+status=$?
+if [ "$status" -gt 1 ] && grep -qF "couldn't find an eslint.config" "$complaint"; then
+  report=$(eslint -f json --no-warn-ignored --config ${dir}/../eslint.config.mjs ${args} $files 2>"$complaint")
+  status=$?
+fi
+if [ "$status" -gt 1 ] || [ -z "$report" ]; then cat "$complaint" >&2; exit 2; fi
+printf '%s' "$report" | jq '[.[] | .filePath as $file | .messages[]
+| select(.ruleId != null or .fatal) | {
+  smell: (if .fatal then "parse-error" else ({
+    "max-lines-per-function": "oversized-function",
+    "max-params": "too-many-parameters",
+    "@typescript-eslint/max-params": "too-many-parameters",
+    "complexity": "high-complexity",
+    "max-depth": "deep-nesting",
+    "max-lines": "oversized-file",
+    "no-unused-vars": "unused-variable",
+    "@typescript-eslint/no-unused-vars": "unused-variable",
+    "eqeqeq": "loose-equality",
+    "no-var": "var-declaration",
+    "prefer-const": "non-const-binding",
+    "no-duplicate-imports": "duplicate-import",
+    "no-warning-comments": "warning-comment",
+    "@typescript-eslint/no-explicit-any": "explicit-any",
+    "@typescript-eslint/no-non-null-assertion": "non-null-assertion",
+    "@typescript-eslint/no-inferrable-types": "redundant-type-annotation"
+  }[.ruleId] // .ruleId) end),
+  file: $file, line: .line, column: .column, message: .message,
+  source: ("eslint:" + (.ruleId // "fatal"))
+}]
+| group_by(.smell)
+| map({
+    smell: .[0].smell,
+    details: {},
+    issues: map({
+      key: .file,
+      details: {file: .file, line: .line, column: .column, message: .message, source: .source}
+    })
+  })'
+
+Oops! Something went wrong! :(
+
+ESLint: 10.10.0
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@typescript-eslint/eslint-plugin' imported from /Users/tomermayara/.codex/worktrees/s25-release-quality/Thermus/.habit-hooks/eslint.config.mjs
+Did you mean to import "@typescript-eslint/eslint-plugin/dist/index.js"?
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:784:25)
+    at moduleResolve (node:internal/modules/esm/resolve:873:18)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    at #resolve (node:internal/modules/esm/loader:687:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)
+Fix the broken tool and re-run; do not treat this change as checked.

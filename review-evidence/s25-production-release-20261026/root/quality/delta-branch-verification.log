@@ -1,0 +1,19 @@
+  56.2  src/app/hosted-workos-application.ts  below 85
+  61.3  src/interfaces/web/account/administration-pages.ts  below 85
+  64.3  src/interfaces/web/account/logging-page.ts  below 85
+  10.6  test/acceptance/auth/hosted-workos-signup.test.ts  no goal
+  27.2  test/acceptance/logging/hosted-destination-settings.test.ts  no goal
+  33.3  test/acceptance/auth/hosted-member-removal.test.ts  no goal
+  33.4  test/acceptance/auth/hosted-member-removal-browser.runtime.ts  no goal
+  33.5  test/acceptance/auth/hosted-members.test.ts  no goal
+  34.2  test/acceptance/auth/hosted-image.test.ts  no goal
+  35.7  test/unit/html/logging-routes.test.ts  no goal
+  42.7  test/unit/html/logging-page.test.ts  no goal
+  52.8  test/support/drivers/browser/member-removal-browser.ts  no goal
+  58.3  test/unit/auth-workos/workos-organization-removal-documents.test.ts  no goal
+  63.1  test/unit/html/administration-help-documents.test.ts  no goal
+  not measured  src/accounts/providers/workos/workos-organization-removal-documents.ts
+  not measured  src/interfaces/web/account/administration-help-documents.ts
+  not measured  src/interfaces/web/account/members-style.ts
+Result: 3 of 3 production files below 85. Goal: 85 or more for each production file. 11 other files without a goal. 3 files not measured.
+Comparison with origin/main: ast-report/compare.html

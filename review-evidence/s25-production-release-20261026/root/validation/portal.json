@@ -1,0 +1,18 @@
+{
+  "head": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "name": "portal",
+  "command": [
+    "npm",
+    "run",
+    "build:user-portal"
+  ],
+  "started": "2026-10-26T16:35:18.668337+00:00",
+  "ended": "2026-10-26T16:35:19.712104+00:00",
+  "exit": 0,
+  "summaries": [],
+  "log_sha256": "0da118c2434188577cbd25051a6cab132e07743facc57a96f0a1dda7aca21f0a",
+  "input_fingerprint": "773d1b0a9e7176ee4828fb613fbd1dd6ff1bf52dc52024c2e3dc2533886dae8c",
+  "inputs_unchanged": true,
+  "docker_context": "colima-thermus-s25-merge"
+}

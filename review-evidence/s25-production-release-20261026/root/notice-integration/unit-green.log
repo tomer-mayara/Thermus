@@ -1,0 +1,19 @@
+✔ Given the approved removal terms, when the runtime bundle loads, then its exact frozen bytes, version and hash are retained (3.933292ms)
+✔ Given the approved removal notice, when the runtime bundle loads, then its exact frozen bytes, version and hash are retained (1.651625ms)
+✔ Given the approved removal agreement, when the runtime bundle loads, then its exact frozen bytes, version and hash are retained (1.816167ms)
+✔ Given the approved removal documents, when the runtime bundle loads, then its frozen purpose and version authorize organization creation only (0.14575ms)
+✔ Given the approved audit-help.md, when account help loads, then its frozen exact bytes, version and hash remain together (4.571417ms)
+✔ Given the approved members-help.md, when account help loads, then its frozen exact bytes, version and hash remain together (1.538542ms)
+✔ Given saved destination settings, when the page opens, then only a nonempty dataset selects Axiom and the token stays blank (21.823ms)
+✔ Given editable destination settings, when the user switches Axiom and Custom, then only Axiom submits a required dataset and all edits survive (4.167208ms)
+✔ Given the destination script, when the page sets CSP, then only its hash permits execution and Members keeps scripts blocked (1.225042ms)
+✔ Given a browser without scripts, when the destination form opens, then the dataset remains editable with Custom instructions (0.975208ms)
+✔ Given unavailable settings, when Audit logs renders, then full native help remains outside any form without adding a script (0.807917ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 952.619792

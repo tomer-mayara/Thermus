@@ -1,0 +1,1227 @@
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ Given piped input with two lines in one chunk, when lines are read, then each read gives the next line and a read after the end gives undefined (4.075208ms)
+✔ Given piped lines with CRLF endings, when they are read, then the reads give the lines without the endings (0.473375ms)
+✔ Given piped text without a line ending, when the input ends, then the read gives the text as the last line (0.272375ms)
+✔ Given piped input, when two lines are read, then the prompts stream gets each prompt and a line break but no line text (0.247417ms)
+✔ Given piped input that ends without a line, when two lines are read, then each read gives undefined after its prompt and a line break (0.257291ms)
+✔ Given terminal input that ends without a line, when two lines are read, then each read gives undefined after its prompt and a line break (1.166958ms)
+✔ Given a terminal, when a password is typed, then the read gives it, raw mode is on only during the read, and no stream gets the text (1.424916ms)
+✔ Given a terminal, when two lines are read one after the other, then each read gives its line and raw mode is off between the reads (0.325375ms)
+✔ Given a terminal, when Ctrl-C is pressed on an empty line, then the read gives undefined and raw mode is off (0.176458ms)
+✔ Given a terminal, when Ctrl-C is pressed after typed text, then the read gives undefined and raw mode is off (0.094834ms)
+✔ Given a terminal, when Ctrl-D is pressed on an empty line, then the read gives undefined and raw mode is off (0.081292ms)
+✔ Given a terminal that fails during a read, when the read waits, then it rejects with the input error and raw mode is off (0.652084ms)
+✔ Given piped input that fails during a read, when the read waits, then it rejects with the input error after the prompt and a line break (0.229709ms)
+✔ Given piped input and no read, when the reader is closed two times, then the input has no data listener and does not flow (0.182541ms)
+✔ Given terminal input and no read, when the reader is closed two times, then the input has no data listener and does not flow (0.075292ms)
+✔ Given piped input that stays open, when the reader is closed after a read, then the input has no data listener and the next read gives undefined (0.380416ms)
+✔ Given an execution context, when the hosted operation runs, then the same object and ID reach its collaborator (0.660875ms)
+✔ Given an occupied slot and a cancelled caller, when the caller supplies an execution context, then cancellation wins over busy without starting work (0.924875ms)
+✔ Given an active shared fetch with success, when a second call arrives before settlement, then it is refused without queuing and capacity returns only after settlement (0.170542ms)
+✔ Given an active shared fetch with failure, when a second call arrives before settlement, then it is refused without queuing and capacity returns only after settlement (0.127208ms)
+✔ Given an active shared fetch with cancelled, when a second call arrives before settlement, then it is refused without queuing and capacity returns only after settlement (0.087625ms)
+✔ Given shared fetch and search capacity with fetch first and success, when another call arrives during cleanup, then it is busy until cleanup settles (0.265166ms)
+✔ Given shared fetch and search capacity with fetch first and failure, when another call arrives during cleanup, then it is busy until cleanup settles (0.174625ms)
+✔ Given shared fetch and search capacity with fetch first and abort, when another call arrives during cleanup, then it is busy until cleanup settles (0.152209ms)
+✔ Given shared fetch and search capacity with search first and success, when another call arrives during cleanup, then it is busy until cleanup settles (0.134083ms)
+✔ Given shared fetch and search capacity with search first and failure, when another call arrives during cleanup, then it is busy until cleanup settles (0.097ms)
+✔ Given shared fetch and search capacity with search first and abort, when another call arrives during cleanup, then it is busy until cleanup settles (0.104292ms)
+✔ Given separate capacity owners, when one is busy, then the other can run (0.753209ms)
+✔ Given a synchronous throw, when the operation fails, then capacity is available again (0.17675ms)
+✔ Given active MCP work and a listener that is draining, when concurrent close calls start, then work closes before drain and providers wait for both (3.32325ms)
+✔ Given a drained listener and active MCP cleanup, when the application closes, then providers wait for that cleanup (0.553792ms)
+✔ Given cleanup failures in MCP, listener, and providers, when close is called repeatedly, then every resource closes once and every failure remains visible (0.9695ms)
+✔ Given a token-verification report with an error cause, when the application gives it to the operator, then the log gets one error line with the failed step and the cause (1.40125ms)
+✔ Given an access-resolution report with an error cause, when the application gives it to the operator, then the log gets one error line with the failed step and the cause (0.067167ms)
+✔ Given a report with a cause that is not an error, when the application gives it to the operator, then the log gets one error line with the failed step and the cause (0.046583ms)
+✔ Given an account failure report, when the application gives it to the operator, then the log gets one error line with the path and the cause, also for a cause that is not an error (0.091ms)
+✔ Given privileged change records, when the hosted application keeps them, then the operator log gets one info line for each with the record as JSON, also for a value with a line break (0.158042ms)
+✔ Given a local installation under a URL path, when /team/mcp is requested, then its owner receives the complete request (23.726083ms)
+✔ Given a local installation under a URL path, when /.well-known/oauth-protected-resource is requested, then its owner receives the complete request (0.336125ms)
+✔ Given a local installation under a URL path, when /.well-known/oauth-protected-resource/team/mcp is requested, then its owner receives the complete request (0.198292ms)
+✔ Given a local installation under a URL path, when /.well-known/oauth-authorization-server/team/api/auth is requested, then its owner receives the complete request (0.190416ms)
+✔ Given a local installation under a URL path, when /team/api/auth/.well-known/openid-configuration is requested, then its owner receives the complete request (0.20525ms)
+✔ Given a local installation under a URL path, when /team/api/auth/oauth2/authorize is requested, then its owner receives the complete request (0.178541ms)
+✔ Given a local installation under a URL path, when /team/api/auth/oauth2/token is requested, then its owner receives the complete request (0.19075ms)
+✔ Given a local installation under a URL path, when /team/sign-in is requested, then its owner receives the complete request (3.042625ms)
+✔ Given a local installation under a URL path, when /team/consent is requested, then its owner receives the complete request (0.443209ms)
+✔ Given a local installation under a URL path, when /team/authorization-error is requested, then its owner receives the complete request (0.271125ms)
+✔ Given a local installation, when private, hosted organization, or unknown paths are requested, then each returns 404 without calling a route owner (0.765125ms)
+✔ Given a hosted installation under a URL path, when /team/mcp is requested, then the mcp handler receives the complete request (0.362208ms)
+✔ Given a hosted installation under a URL path, when /.well-known/oauth-protected-resource is requested, then the mcp handler receives the complete request (0.127958ms)
+✔ Given a hosted installation under a URL path, when /.well-known/oauth-protected-resource/team/mcp is requested, then the mcp handler receives the complete request (0.122ms)
+✔ Given a hosted installation under a URL path, when /team/ is requested, then the account handler receives the complete request (0.102167ms)
+✔ Given a hosted installation under a URL path, when /team/account is requested, then the account handler receives the complete request (0.122333ms)
+✔ Given a hosted installation under a URL path, when /team/auth/sign-in is requested, then the account handler receives the complete request (0.080667ms)
+✔ Given a hosted installation under a URL path, when /team/organizations/select is requested, then the account handler receives the complete request (0.082416ms)
+✔ Given a hosted installation under a URL path, when /team/billing/seats is requested, then the account handler receives the complete request (0.104125ms)
+✔ Given a hosted installation under a URL path, when /team/mcp/extra is requested, then the account handler receives the complete request (0.095583ms)
+✔ Given a hosted installation under a URL path, when /team/api/auth/oauth2/token is requested, then the account handler receives the complete request (0.251791ms)
+✔ Given a hosted installation under a URL path, when paths outside that path are requested, then each returns 404 without calling a handler (0.509458ms)
+✔ Given hosted browser routes of the provider, when their paths are requested, then they answer before the account routes, and every other path keeps its owner (0.405333ms)
+✔ Given a hosted MCP resource, when any HTTP method carries a refused Origin, then no route owner receives the request (3.5785ms)
+✔ Given a hosted MCP resource, when Origin is absent or equals the serialized public origin, then each method reaches MCP with the complete request (0.505167ms)
+✔ Given a hosted MCP resource, when repeated Origin headers name the public origin, then the combined header is refused before MCP (0.193584ms)
+✔ Given a public URL with a port and a base path, when the request URL or forwarded headers name another origin, then only the configured public origin is accepted (0.179834ms)
+✔ Given a hosted installation, when a foreign Origin requests metadata, account paths, or an MCP child path, then their existing owners receive the complete request (0.377166ms)
+✔ Given a local installation, when MCP carries a foreign Origin, then local routing still delegates the complete request to MCP (0.104041ms)
+✔ Given free resources, when the runtime opens, then it locks the data directory, opens the installation, starts the provider with the installation identity, and reports the local tenant (1.65325ms)
+✔ Given a data directory that another process uses, when the runtime opens, then the lock error reaches the caller and no installation or provider starts (0.387833ms)
+✔ Given an installation that fails closed, when the runtime opens, then it releases the lock, starts no provider, and the installation error reaches the caller (0.122ms)
+✔ Given a provider that fails to start, when the runtime opens, then it closes the installation, then releases the lock, and the provider error reaches the caller (0.1685ms)
+✔ Given a provider failure and an installation that fails to close, when the runtime opens, then it still releases the lock and the caller gets both errors (0.18275ms)
+✔ Given an open runtime, when it closes two times, also at the same time, then it closes the installation and then releases the lock one time (0.114083ms)
+✔ Given an open runtime whose installation fails to close, when it closes, then it still releases the lock and the close error reaches the caller (0.109ms)
+✔ Given a stored resource-server client for the MCP resource of the runtime, when the runtime gives its resource-server client, then it gives the client ID and secret (0.106625ms)
+✔ Given no stored resource-server client, or one for another MCP resource, when the runtime gives its resource-server client, then it gives none (0.103292ms)
+✔ Given a resource-server client for another MCP resource, when the runtime records a client, then the installation replaces it with the client for the MCP resource of the runtime, and the runtime gives that client (0.120584ms)
+✔ Given a resource-server client that the installation cannot read, when the runtime opens, then it opens, and only the resource-server client gives the installation error (0.120333ms)
+✔ Given a locked data directory, when the same process locks it again, then it fails with DataDirectoryInUseError until the first lock is released (7.303458ms)
+✔ Given a released lock, when it is released again, then nothing happens (1.032708ms)
+✔ Given a data directory that another process locks, when this process locks it, then it fails until that process ends, also without a release (129.17525ms)
+✔ Given a data directory that another process locks, when this process locks it, then it fails at once and does not wait for the holder (106.408709ms)
+✔ Given a fresh data directory in each round, when several processes lock it at the same time, then exactly one gets the lock and each other process gets DataDirectoryInUseError (278.809959ms)
+✔ Given a free data directory, when it is locked and released, then the directory holds only the lock file (4.74575ms)
+✔ Given a missing data directory or a file in its place, when the process locks it, then it fails with DataDirectoryUnavailableError and creates nothing (2.463125ms)
+✔ Given an open runtime, when administration opens and closes repeatedly, then it exposes only the role and close, and retains the runtime close promise and outcome (1.657208ms)
+✔ Given a runtime that cannot hand off its provider, when administration opens, then it closes the runtime before rejecting and preserves a cleanup failure too (0.238583ms)
+✔ Given a runtime opening failure with a cleanup failure, when administration opens, then both original failures reach the caller (0.107833ms)
+2026-10-26T16:26:10.466Z WARN [Better Auth]: Field scopes in table oauthClient has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.473Z WARN [Better Auth]: Field clientCredentialsScopes in table oauthClient has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.473Z WARN [Better Auth]: Field contacts in table oauthClient has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.473Z WARN [Better Auth]: Field redirectUris in table oauthClient has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.473Z WARN [Better Auth]: Field postLogoutRedirectUris in table oauthClient has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.473Z WARN [Better Auth]: Field grantTypes in table oauthClient has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field responseTypes in table oauthClient has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field allowedScopes in table oauthResource has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field resources in table oauthRefreshToken has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field requestedUserInfoClaims in table oauthRefreshToken has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field scopes in table oauthRefreshToken has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field resources in table oauthAccessToken has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field requestedUserInfoClaims in table oauthAccessToken has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field scopes in table oauthAccessToken has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field resources in table oauthConsent has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field requestedUserInfoClaims in table oauthConsent has a different type in the database. Expected string[] but got TEXT.
+2026-10-26T16:26:10.474Z WARN [Better Auth]: Field scopes in table oauthConsent has a different type in the database. Expected string[] but got TEXT.
+✔ Given the pinned provider configuration and an empty SQLite database, when Better Auth compiles its migrations, then the shipped 0001 migration has the same SQL (18.192458ms)
+✔ Given an empty database with the shipped migrations, when Better Auth plans migrations and checks its schema, then nothing is missing (70.942167ms)
+✔ Given the shipped installation migration, when identities and accounts are added, then it keeps one installation identity and does not limit accounts (257.075666ms)
+✔ Given a signed consent request, when the user opens the page, then a bundled form offers allow and deny with the signed query (16.29225ms)
+✔ Given a consent form, when the user chooses yes, then the provider gets the choice and the browser gets its redirect (4.22625ms)
+✔ Given a consent form, when the user chooses no, then the provider gets the choice and the browser gets its redirect (0.504084ms)
+✔ Given an authorization error with hostile text, when the page opens, then only an escaped bounded error code appears (0.427708ms)
+✔ Given an unsupported method, when a page receives it, then it returns 405 and calls no provider (0.22ms)
+✔ Given a provider failure, when the sign-in form is posted, then the page returns a safe failure without the cause (0.649708ms)
+✔ Given a browser that leaves while the form body stalls, when it cancels, then the page cancels the body and calls no provider (0.833ms)
+✔ Given no current client, when the consent page opens, then it shows no form and refuses the request (0.364917ms)
+✔ Given no current session, when the consent page opens, then it shows no form and refuses the request (0.3255ms)
+✔ Given an authorization query over 16 KiB, when the user opens a page, then the page refuses it and calls no provider (0.18175ms)
+✔ Given two choices in a consent form, when it is posted, then the page refuses the ambiguous input without a provider call (0.169792ms)
+✔ Given a consent navigation with a cookie and no origin, when the page reads signed public client data, then that lookup has no cookie and the session read keeps it (0.462709ms)
+▶ Form post content type
+  ✔ Given a sign-in post with no content type, when it comes, then the page answers 415 and calls no provider route (16.706125ms)
+  ✔ Given a sign-in post with a JSON content type, when it comes, then the page answers 415 and calls no provider route (0.400584ms)
+  ✔ Given a sign-in post with a text content type, when it comes, then the page answers 415 and calls no provider route (0.940792ms)
+  ✔ Given a sign-in post with a multipart content type, when it comes, then the page answers 415 and calls no provider route (0.295083ms)
+  ✔ Given the form content type in capital letters and with a charset, when a sign-in post comes, then the page accepts it (2.547709ms)
+✔ Form post content type (21.649041ms)
+▶ Form post size
+  ✔ Given a form body of exactly 16 KiB, when it is posted, then the page sends its fields to the provider (1.722625ms)
+  ✔ Given a form body one byte over 16 KiB, when it is posted, then the page answers 413 and calls no provider route (0.680166ms)
+  ✔ Given a Content-Length over 16 KiB, when the form post comes, then the page answers 413 without reading the body (0.464875ms)
+  ✔ Given a streamed form body without Content-Length that does not end, when it passes 16 KiB, then the page answers 413, stops reading, and cancels the body (0.527792ms)
+✔ Form post size (3.514792ms)
+▶ Form post fields
+  ✔ Given a sign-in post with no email, when it comes, then the page answers 400 and calls no provider route (0.260583ms)
+  ✔ Given a sign-in post with an empty password, when it comes, then the page answers 400 and calls no provider route (0.16925ms)
+  ✔ Given a sign-in post with no oauth_query, when it comes, then the page answers 400 and calls no provider route (0.150417ms)
+  ✔ Given a sign-in post with an oauth_query without sig, when it comes, then the page answers 400 and calls no provider route (0.184917ms)
+✔ Form post fields (0.841125ms)
+▶ Provider requests
+  ✔ Given a browser post with forwarding, authorization, and other headers, when the page calls the provider, then only the allowed browser headers and the JSON headers reach the provider (0.526625ms)
+  ✔ Given a browser that goes away while the page waits for the provider, when its request is aborted, then the provider request is aborted too (3.321916ms)
+✔ Provider requests (3.915167ms)
+▶ Sign-in page
+  ✔ Given a signed authorization query, when the browser opens the sign-in page, then it gets a post form with the email and password fields and the exact query in the hidden field, and no provider route is called (24.041167ms)
+  ✔ Given a sign-in URL without sig, when the browser opens it, then the page answers 400, asks the user to start from the MCP client, and calls no provider route (0.4095ms)
+  ✔ Given a sign-in URL without client_id, when the browser opens it, then the page answers 400, asks the user to start from the MCP client, and calls no provider route (0.2765ms)
+  ✔ Given a sign-in URL with an empty sig, when the browser opens it, then the page answers 400, asks the user to start from the MCP client, and calls no provider route (0.514875ms)
+  ✔ Given a sign-in URL without a query, when the browser opens it, then the page answers 400, asks the user to start from the MCP client, and calls no provider route (0.509875ms)
+✔ Sign-in page (27.947959ms)
+▶ Sign-in form post
+  ✔ Given correct credentials, when the browser posts the sign-in form, then the page sends them as JSON to the provider email sign-in and sends the browser on with 303, each session cookie, and no-store (5.884875ms)
+  ✔ Given a wrong password and hostile text in the email and query fields, when the provider answers 401, then the page shows the form again with the message, the escaped email, and the escaped query, but not the password, the provider text, or a cookie (0.777542ms)
+  ✔ Given a disabled account, when the provider answers 403 BANNED_USER, then the page says that the account is disabled and shows no form (0.515584ms)
+  ✔ Given a sign-in post that the provider refuses with 403 INVALID_ORIGIN, when the answer comes, then the page says that the sign-in request was refused and shows no provider code (0.501167ms)
+  ✔ Given a sign-in post that the provider refuses with 403 MISSING_OR_NULL_ORIGIN, when the answer comes, then the page says that the sign-in request was refused and shows no provider code (0.411959ms)
+  ✔ Given a sign-in post that the provider refuses with 403 CROSS_SITE_NAVIGATION_LOGIN_BLOCKED, when the answer comes, then the page says that the sign-in request was refused and shows no provider code (0.436ms)
+  ✔ Given too many sign-ins from one client address, when the provider answers 429 with X-Retry-After 7, then the page answers 429 with Retry-After 7 and asks the user to wait (0.515125ms)
+  ✔ Given a provider 429 with X-Retry-After missing, when the answer comes, then the page answers 429 with Retry-After 10 (1.696875ms)
+  ✔ Given a provider 429 with X-Retry-After 0, when the answer comes, then the page answers 429 with Retry-After 10 (0.825083ms)
+  ✔ Given a provider 429 with X-Retry-After -3, when the answer comes, then the page answers 429 with Retry-After 10 (0.347291ms)
+  ✔ Given a provider 429 with X-Retry-After 2.5, when the answer comes, then the page answers 429 with Retry-After 10 (0.328042ms)
+  ✔ Given a provider 429 with X-Retry-After 07, when the answer comes, then the page answers 429 with Retry-After 10 (0.272875ms)
+  ✔ Given a provider 429 with X-Retry-After soon, when the answer comes, then the page answers 429 with Retry-After 10 (0.252209ms)
+  ✔ Given a changed oauth_query, when the provider answers 400 invalid_signature, then the page says that the sign-in request is not valid or has expired (0.494333ms)
+  ✔ Given a 500 from the provider, when the sign-in completes, then the page answers 500 and asks the user to try again later (0.728166ms)
+  ✔ Given a 404 from the provider, when the sign-in completes, then the page answers 500 and asks the user to try again later (0.429458ms)
+  ✔ Given a 200 without a redirect from the provider, when the sign-in completes, then the page answers 500 and asks the user to try again later (0.374792ms)
+  ✔ Given a 200 with a URL that is not text from the provider, when the sign-in completes, then the page answers 500 and asks the user to try again later (0.353584ms)
+  ✔ Given a 200 that is not JSON from the provider, when the sign-in completes, then the page answers 500 and asks the user to try again later (0.957708ms)
+  ✔ Given a 302 from the provider, when the sign-in completes, then the page answers 500 and asks the user to try again later (0.39175ms)
+✔ Sign-in form post (17.090708ms)
+▶ Local page paths
+  ✔ Given the public base URL http://localhost:8080/, when the page paths are made, then they are /sign-in, /consent, and /authorization-error (0.891542ms)
+  ✔ Given a public base URL with the path /thermus/, when the page paths are made, then each page is under that path (0.091333ms)
+  ✔ Given the pages, when they are asked about pathnames, then they handle only the three page paths (0.185125ms)
+✔ Local page paths (1.990791ms)
+✔ Given an empty data directory, when the installation opens, then it creates one installation identity, a generated secret, and the migrated database, with owner-only files (20.6835ms)
+✔ Given an initialized data directory, when the installation opens again, then it keeps the same identity and secret (16.072458ms)
+✔ Given two fresh data directories, when each installation opens, then each gets its own identity and secret (26.171667ms)
+✔ Given an open installation, when it closes two times, then its database is closed and the second close does nothing (10.319542ms)
+✔ Given retained data with a deleted identity row, when the installation opens, then it fails closed, asks for a restore, and changes no data (14.728542ms)
+✔ Given retained data with a dropped identity table, when the installation opens, then it fails closed, asks for a restore, and changes no data (13.028584ms)
+✔ Given retained data with an identity that is not a UUID, when the installation opens, then it fails closed, asks for a restore, and changes no data (14.598584ms)
+✔ Given a database with provider tables but no Thermus schema, when the installation opens, then it fails closed and adds no identity (1.734167ms)
+✔ Given retained data without its secret file, when the installation opens, then it fails closed and writes no new secret (12.080834ms)
+✔ Given retained data with the secret file content "", when the installation opens, then it fails closed without the secret in the message (12.916833ms)
+✔ Given retained data with the secret file content "short\n", when the installation opens, then it fails closed without the secret in the message (13.302791ms)
+✔ Given retained data with the secret file content "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \n", when the installation opens, then it fails closed without the secret in the message (12.957042ms)
+✔ Given retained data with the secret file content "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n", when the installation opens, then it fails closed without the secret in the message (13.078125ms)
+✔ Given a database from another schema version, when the installation opens, then it fails closed and names both versions (13.880834ms)
+✔ Given a secret file and an empty database from an interrupted first start, when the installation opens, then it initializes a new identity and keeps that secret (3.219667ms)
+✔ Given an open installation, when it writes the resource-server client, then it reads the same client back from an owner-only file that has only that client, and no temporary file stays (22.870667ms)
+✔ Given a stored resource-server client, when the installation writes another client, then the other client replaces it, also after the installation opens again (30.018ms)
+✔ Given a temporary file from an interrupted write, when the installation writes the resource-server client, then the write completes and no temporary file stays (20.554208ms)
+✔ Given a data directory without a resource-server client file, when the installation reads the client, then it gets none and writes no file (16.727666ms)
+✔ Given a resource-server client file with no content, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (17.08875ms)
+✔ Given a resource-server client file with content that is not complete JSON, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (13.562708ms)
+✔ Given a resource-server client file with a JSON value that is not an object, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (12.712125ms)
+✔ Given a resource-server client file with a null JSON value, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (14.657958ms)
+✔ Given a resource-server client file with no client ID, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (10.747416ms)
+✔ Given a resource-server client file with an empty client ID, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (13.305625ms)
+✔ Given a resource-server client file with a client secret that is not a string, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (12.925875ms)
+✔ Given a resource-server client file with an empty client secret, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (12.386167ms)
+✔ Given a resource-server client file with no resource, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (10.970791ms)
+✔ Given a resource-server client file with a resource that is not a URL, when the installation reads the client, then it fails with a message that asks for a restore or a new registration, without the secret, and keeps the file (11.584625ms)
+✔ Given initialized data with a resource-server client file that is not valid, when the installation opens, then it opens with its identity and only the read of the client fails (12.397875ms)
+✔ Given the local provider settings, when the provider options are built, then they use the installation secret, turn telemetry off, and keep the origin check on (7.357291ms)
+✔ Given BETTER_AUTH_SECRETS with a value in the process environment, when the provider options are built, then they throw ProviderEnvironmentError that names the variable but not its value (0.903208ms)
+✔ Given BETTER_AUTH_TRUSTED_ORIGINS with a value in the process environment, when the provider options are built, then they throw ProviderEnvironmentError that names the variable but not its value (0.149ms)
+✔ Given BETTER_AUTH_TELEMETRY with a value in the process environment, when the provider options are built, then they throw ProviderEnvironmentError that names the variable but not its value (0.145416ms)
+✔ Given empty values of those variables, NODE_ENV=test, TEST=1, and a telemetry endpoint without BETTER_AUTH_TELEMETRY, when the provider options are built, then no error stops startup (1.785916ms)
+✔ Given local provider settings, when options are built, then only private introspection has its shared request limit disabled (1.472875ms)
+✔ Given a public base URL with a path, when provider options are built, then authorization errors use the bundled local page (1.596541ms)
+✔ Given local consent pages, when provider options are built, then the provider permits client metadata lookup from a signed authorization query without a browser session (2.233833ms)
+
+Interrupted while running:
+
+⚠ dist/test/unit/auth-better-auth/local-provider-options.test.js (dist/test/unit/auth-better-auth/local-provider-options.test.js:1:1)
+✖ dist/test/unit/auth-better-auth/local-provider-options.test.js (608.91275ms)
+✖ dist/test/unit/auth-better-auth/local-user-administration-clients.test.js
+✖ dist/test/unit/auth-better-auth/local-user-administration-revocation.test.js
+✖ dist/test/unit/auth-better-auth/local-user-administration.test.js
+✖ dist/test/unit/auth-workos/session-cookies.test.js
+✖ dist/test/unit/auth-workos/workos-approved-organization-documents.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-end.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-mfa.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-refresh.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-sign-in.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session.test.js
+✖ dist/test/unit/auth-workos/workos-membership-reads.test.js
+✖ dist/test/unit/auth-workos/workos-organization-audit-documents.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-deletion.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-invitations.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-member-facts.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-members.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-memberships.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-read-lifetime.test.js
+✖ dist/test/unit/auth-workos/workos-organizations.test.js
+✖ dist/test/unit/auth-workos/workos-settings.test.js
+✖ dist/test/unit/auth-workos/workos-sign-in-onboarding.test.js
+✖ dist/test/unit/auth-workos/workos-signup-documents.test.js
+✖ dist/test/unit/auth/access-context.test.js
+✖ dist/test/unit/billing/billing-free.test.js
+✖ dist/test/unit/config/ad-rules-file.test.js
+✖ dist/test/unit/config/deployment-config.test.js
+✖ dist/test/unit/config/listen-address.test.js
+✖ dist/test/unit/config/logging-storage-config.test.js
+✖ dist/test/unit/execution/execution-context.test.js
+✖ dist/test/unit/execution/observe-request-step.test.js
+✖ dist/test/unit/execution/step-record.test.js
+✖ dist/test/unit/hosted-portal/hosted-portal.test.js
+✖ dist/test/unit/hosted-renderer-startup.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules-deployment.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-work-counters.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-construction.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-depth.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-document-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-line-whitespace.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-recovery.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-source-ranges.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/source-range-parser.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-code-formatting.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-fragment-content.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-input-shapes.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-landing-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-noscript-fragments.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-search-links.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/markdown-counters.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/noscript-examples.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/prepared-html-document.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/ad-sanitizer-pipeline.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-depth.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-pipeline.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-sanitized-content.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/known-html-pipeline.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/redirect-metadata.test.js
+✖ dist/test/unit/html-cleaner-pipeline/process-html-step.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/decoded-control-boundary.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/deferred-html-controls.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/encoded-invisible-controls.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/raw-inline-emoji-joiners.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/composed-transform.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-class-token-budget.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-cleared-style-findings.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-source-tokens.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-visibility.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-hidden-passes.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-html-tree.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-opacity-animation.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-candidates.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-cost.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-flags.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-matching.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-stylesheet.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility-provenance.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visible-controls.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/deferred-font-size.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/font-size-mode.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/matrix-visibility.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/preserve-3d.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/small-text-policy.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/source-html-document.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-context.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-planes.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-control-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-correctness-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-css-integration.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-headers.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-overflow.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-display-context.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-edge-on-projections.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-element-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-exact-transform-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-final-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-flat-affine.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-font-root-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-matrix-precision.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-native-control-transforms.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-planar-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-rank-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-removal-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-review-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-scale-scalar-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-source-ranges.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-stylesheet-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-transform-math-validation.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-translation-uncertainty.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-unknown-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visible-descendants.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-document.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-passes.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-removal-session.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-tree.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-text.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/known-html-sanitizer.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-counters.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-markers.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-templates.test.js
+✖ dist/test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.js
+✖ dist/test/unit/html/html-escape.test.js
+✖ dist/test/unit/html/logging-feedback-script.test.js
+✖ dist/test/unit/html/logging-form.test.js
+✖ dist/test/unit/html/logging-page.test.js
+✖ dist/test/unit/html/logging-routes.test.js
+✖ dist/test/unit/html/logging-test-routes.test.js
+✖ dist/test/unit/http/request-cancellation.test.js
+✖ dist/test/unit/http/server-close-request-body.test.js
+✖ dist/test/unit/http/server-close.test.js
+✖ dist/test/unit/http/server-lifecycle.test.js
+✖ dist/test/unit/http/server-requests.test.js
+✖ dist/test/unit/http/server-responses.test.js
+✖ dist/test/unit/logging/audit/audit-capture.test.js
+✖ dist/test/unit/logging/audit/audit-collector-observation.test.js
+✖ dist/test/unit/logging/audit/audit-collector.test.js
+✖ dist/test/unit/logging/audit/audit-https-connection.test.js
+✖ dist/test/unit/logging/audit/audit-log.test.js
+✖ dist/test/unit/logging/audit/audit-removal.test.js
+✖ dist/test/unit/logging/audit/audit-snapshot-pending.test.js
+✖ dist/test/unit/logging/audit/audit-snapshots.test.js
+✖ dist/test/unit/logging/audit/bounded-sql-runtime.test.js
+✖ dist/test/unit/logging/audit/destination-test.test.js
+✖ dist/test/unit/logging/audit/export-authorization.test.js
+✖ dist/test/unit/logging/audit/otlp-audit-encoding.test.js
+✖ dist/test/unit/logging/audit/otlp-audit-request.test.js
+✖ dist/test/unit/logging/audit/otlp-audit-response.test.js
+✖ dist/test/unit/logging/audit/otlp-audit-sender.test.js
+✖ dist/test/unit/logging/audit/pg-destination-settings-store.test.js
+✖ dist/test/unit/logging/audit/pg-removal-operation-store.test.js
+✖ dist/test/unit/logging/audit/public-audit-destination.test.js
+✖ dist/test/unit/logging/destination-credential-codec.test.js
+✖ dist/test/unit/logging/destination-settings-service.test.js
+✖ dist/test/unit/logging/system/console-logger.test.js
+✖ dist/test/unit/logging/system/otel-logger.test.js
+✖ dist/test/unit/logging/system/system-logger.test.js
+✖ dist/test/unit/mcp/discovery.test.js
+✖ dist/test/unit/mcp/get-url-as-markdown.test.js
+✖ dist/test/unit/mcp/lifetime.test.js
+✖ dist/test/unit/mcp/protected-resource-endpoint.test.js
+✖ dist/test/unit/mcp/request-context-binding.test.js
+✖ dist/test/unit/mcp/request-lifetime-isolation.test.js
+✖ dist/test/unit/mcp/search.test.js
+✖ dist/test/unit/mcp/tool-completion-record.test.js
+✖ dist/test/unit/organizations/change-records.test.js
+✖ dist/test/unit/organizations/membership-removal-lifetime.test.js
+✖ dist/test/unit/organizations/membership-removal-outcomes.test.js
+✖ dist/test/unit/organizations/membership-removal-rules.test.js
+✖ dist/test/unit/organizations/organization-administration-billing.test.js
+✖ dist/test/unit/organizations/organization-administration-changes.test.js
+✖ dist/test/unit/organizations/organization-administration-invitation-overview.test.js
+✖ dist/test/unit/organizations/organization-administration-invitations.test.js
+✖ dist/test/unit/organizations/organization-administration-members.test.js
+✖ dist/test/unit/organizations/organization-administration.test.js
+✖ dist/test/unit/page-fetch/fetch-failure.test.js
+✖ dist/test/unit/search-engine/search-engine-brave-http.test.js
+✖ dist/test/unit/search-pipeline/search-cancellation.test.js
+✖ dist/test/unit/search-pipeline/search-failure.test.js
+✖ dist/test/unit/search-pipeline/search-query.test.js
+✖ dist/test/unit/stop-signal.test.js
+✖ dist/test/unit/test-support/hosted-config.test.js
+✖ dist/test/unit/test-support/workos-site.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-cancellation.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-concurrent-calls.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-diagnostics.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-dns-wait.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-http-errors.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-launch-errors.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-lightpanda-deadline.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-lightpanda.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-network.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher-runtime.test.js
+✖ dist/test/unit/website-fetcher/website-fetcher.test.js
+ℹ tests 382
+ℹ suites 7
+ℹ pass 183
+ℹ fail 0
+ℹ cancelled 199
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5094.317541
+
+✖ failing tests:
+
+test at dist/test/unit/auth-better-auth/local-provider-options.test.js:1:1
+✖ dist/test/unit/auth-better-auth/local-provider-options.test.js (608.91275ms)
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-better-auth/local-user-administration-clients.test.js:1:1
+✖ dist/test/unit/auth-better-auth/local-user-administration-clients.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-better-auth/local-user-administration-revocation.test.js:1:1
+✖ dist/test/unit/auth-better-auth/local-user-administration-revocation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-better-auth/local-user-administration.test.js:1:1
+✖ dist/test/unit/auth-better-auth/local-user-administration.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/session-cookies.test.js:1:1
+✖ dist/test/unit/auth-workos/session-cookies.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-approved-organization-documents.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-approved-organization-documents.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-browser-session-end.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-browser-session-end.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-browser-session-mfa.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-browser-session-mfa.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-browser-session-refresh.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-browser-session-refresh.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-browser-session-sign-in.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-browser-session-sign-in.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-browser-session.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-browser-session.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-membership-reads.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-membership-reads.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organization-audit-documents.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organization-audit-documents.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organizations-deletion.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organizations-deletion.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organizations-invitations.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organizations-invitations.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organizations-member-facts.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organizations-member-facts.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organizations-members.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organizations-members.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organizations-memberships.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organizations-memberships.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organizations-read-lifetime.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organizations-read-lifetime.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-organizations.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-organizations.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-settings.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-settings.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-sign-in-onboarding.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-sign-in-onboarding.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth-workos/workos-signup-documents.test.js:1:1
+✖ dist/test/unit/auth-workos/workos-signup-documents.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/auth/access-context.test.js:1:1
+✖ dist/test/unit/auth/access-context.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/billing/billing-free.test.js:1:1
+✖ dist/test/unit/billing/billing-free.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/config/ad-rules-file.test.js:1:1
+✖ dist/test/unit/config/ad-rules-file.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/config/deployment-config.test.js:1:1
+✖ dist/test/unit/config/deployment-config.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/config/listen-address.test.js:1:1
+✖ dist/test/unit/config/listen-address.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/config/logging-storage-config.test.js:1:1
+✖ dist/test/unit/config/logging-storage-config.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/execution/execution-context.test.js:1:1
+✖ dist/test/unit/execution/execution-context.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/execution/observe-request-step.test.js:1:1
+✖ dist/test/unit/execution/observe-request-step.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/execution/step-record.test.js:1:1
+✖ dist/test/unit/execution/step-record.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/hosted-portal/hosted-portal.test.js:1:1
+✖ dist/test/unit/hosted-portal/hosted-portal.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/hosted-renderer-startup.test.js:1:1
+✖ dist/test/unit/hosted-renderer-startup.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules-deployment.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules-deployment.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-work-counters.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-work-counters.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-construction.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-construction.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-depth.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-depth.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-document-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-document-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-line-whitespace.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-line-whitespace.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-recovery.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-recovery.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-source-ranges.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-source-ranges.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/ad-cleaner/source-range-parser.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/source-range-parser.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-code-formatting.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-code-formatting.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-fragment-content.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-fragment-content.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-input-shapes.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-input-shapes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-landing-regressions.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-landing-regressions.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-noscript-fragments.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-noscript-fragments.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-regressions.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-regressions.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-search-links.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-search-links.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/markdown-counters.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/markdown-counters.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/noscript-examples.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/noscript-examples.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/html-to-markdown/prepared-html-document.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/prepared-html-document.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/pipeline/ad-sanitizer-pipeline.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/ad-sanitizer-pipeline.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-depth.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-depth.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-pipeline.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-pipeline.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-sanitized-content.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-sanitized-content.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/pipeline/known-html-pipeline.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/known-html-pipeline.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/pipeline/redirect-metadata.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/redirect-metadata.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/process-html-step.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/process-html-step.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/decoded-control-boundary.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/decoded-control-boundary.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/deferred-html-controls.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/deferred-html-controls.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/encoded-invisible-controls.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/encoded-invisible-controls.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/raw-inline-emoji-joiners.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/raw-inline-emoji-joiners.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/composed-transform.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/composed-transform.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-class-token-budget.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-class-token-budget.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-cleared-style-findings.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-cleared-style-findings.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-source-tokens.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-source-tokens.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-visibility.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-visibility.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-hidden-passes.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-hidden-passes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-html-tree.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-html-tree.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-opacity-animation.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-opacity-animation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-candidates.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-candidates.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-cost.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-cost.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-flags.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-flags.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-matching.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-matching.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-stylesheet.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-stylesheet.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility-provenance.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility-provenance.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visible-controls.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visible-controls.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/deferred-font-size.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/deferred-font-size.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/font-size-mode.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/font-size-mode.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/matrix-visibility.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/matrix-visibility.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/preserve-3d.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/preserve-3d.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/small-text-policy.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/small-text-policy.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/source-html-document.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/source-html-document.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-context.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-context.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-planes.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-planes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-control-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-control-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-correctness-regressions.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-correctness-regressions.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-css-integration.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-css-integration.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-headers.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-headers.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-overflow.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-overflow.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-display-context.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-display-context.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-edge-on-projections.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-edge-on-projections.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-element-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-element-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-exact-transform-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-exact-transform-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-final-regressions.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-final-regressions.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-flat-affine.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-flat-affine.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-font-root-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-font-root-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-matrix-precision.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-matrix-precision.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-native-control-transforms.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-native-control-transforms.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-planar-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-planar-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-rank-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-rank-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-removal-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-removal-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-review-regressions.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-review-regressions.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-scale-scalar-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-scale-scalar-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-source-ranges.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-source-ranges.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-stylesheet-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-stylesheet-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-transform-math-validation.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-transform-math-validation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-translation-uncertainty.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-translation-uncertainty.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-unknown-boundaries.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-unknown-boundaries.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visible-descendants.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visible-descendants.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-document.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-document.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-passes.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-passes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-removal-session.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-removal-session.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-tree.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-html-tree.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-text.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/hidden-text.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/known-html-sanitizer.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/known-html-sanitizer.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-counters.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-counters.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-markers.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-markers.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-templates.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/hidden-html/sanitizer-templates.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.js:1:1
+✖ dist/test/unit/html-cleaner-pipeline/search-results/brave-http-result-cleanup.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html/html-escape.test.js:1:1
+✖ dist/test/unit/html/html-escape.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html/logging-feedback-script.test.js:1:1
+✖ dist/test/unit/html/logging-feedback-script.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html/logging-form.test.js:1:1
+✖ dist/test/unit/html/logging-form.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html/logging-page.test.js:1:1
+✖ dist/test/unit/html/logging-page.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html/logging-routes.test.js:1:1
+✖ dist/test/unit/html/logging-routes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/html/logging-test-routes.test.js:1:1
+✖ dist/test/unit/html/logging-test-routes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/http/request-cancellation.test.js:1:1
+✖ dist/test/unit/http/request-cancellation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/http/server-close-request-body.test.js:1:1
+✖ dist/test/unit/http/server-close-request-body.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/http/server-close.test.js:1:1
+✖ dist/test/unit/http/server-close.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/http/server-lifecycle.test.js:1:1
+✖ dist/test/unit/http/server-lifecycle.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/http/server-requests.test.js:1:1
+✖ dist/test/unit/http/server-requests.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/http/server-responses.test.js:1:1
+✖ dist/test/unit/http/server-responses.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-capture.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-capture.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-collector-observation.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-collector-observation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-collector.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-collector.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-https-connection.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-https-connection.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-log.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-log.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-removal.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-removal.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-snapshot-pending.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-snapshot-pending.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/audit-snapshots.test.js:1:1
+✖ dist/test/unit/logging/audit/audit-snapshots.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/bounded-sql-runtime.test.js:1:1
+✖ dist/test/unit/logging/audit/bounded-sql-runtime.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/destination-test.test.js:1:1
+✖ dist/test/unit/logging/audit/destination-test.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/export-authorization.test.js:1:1
+✖ dist/test/unit/logging/audit/export-authorization.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/otlp-audit-encoding.test.js:1:1
+✖ dist/test/unit/logging/audit/otlp-audit-encoding.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/otlp-audit-request.test.js:1:1
+✖ dist/test/unit/logging/audit/otlp-audit-request.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/otlp-audit-response.test.js:1:1
+✖ dist/test/unit/logging/audit/otlp-audit-response.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/otlp-audit-sender.test.js:1:1
+✖ dist/test/unit/logging/audit/otlp-audit-sender.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/pg-destination-settings-store.test.js:1:1
+✖ dist/test/unit/logging/audit/pg-destination-settings-store.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/pg-removal-operation-store.test.js:1:1
+✖ dist/test/unit/logging/audit/pg-removal-operation-store.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/audit/public-audit-destination.test.js:1:1
+✖ dist/test/unit/logging/audit/public-audit-destination.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/destination-credential-codec.test.js:1:1
+✖ dist/test/unit/logging/destination-credential-codec.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/destination-settings-service.test.js:1:1
+✖ dist/test/unit/logging/destination-settings-service.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/system/console-logger.test.js:1:1
+✖ dist/test/unit/logging/system/console-logger.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/system/otel-logger.test.js:1:1
+✖ dist/test/unit/logging/system/otel-logger.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/logging/system/system-logger.test.js:1:1
+✖ dist/test/unit/logging/system/system-logger.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/discovery.test.js:1:1
+✖ dist/test/unit/mcp/discovery.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/get-url-as-markdown.test.js:1:1
+✖ dist/test/unit/mcp/get-url-as-markdown.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/lifetime.test.js:1:1
+✖ dist/test/unit/mcp/lifetime.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/protected-resource-endpoint.test.js:1:1
+✖ dist/test/unit/mcp/protected-resource-endpoint.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/request-context-binding.test.js:1:1
+✖ dist/test/unit/mcp/request-context-binding.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/request-lifetime-isolation.test.js:1:1
+✖ dist/test/unit/mcp/request-lifetime-isolation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/search.test.js:1:1
+✖ dist/test/unit/mcp/search.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/mcp/tool-completion-record.test.js:1:1
+✖ dist/test/unit/mcp/tool-completion-record.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/change-records.test.js:1:1
+✖ dist/test/unit/organizations/change-records.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/membership-removal-lifetime.test.js:1:1
+✖ dist/test/unit/organizations/membership-removal-lifetime.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/membership-removal-outcomes.test.js:1:1
+✖ dist/test/unit/organizations/membership-removal-outcomes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/membership-removal-rules.test.js:1:1
+✖ dist/test/unit/organizations/membership-removal-rules.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/organization-administration-billing.test.js:1:1
+✖ dist/test/unit/organizations/organization-administration-billing.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/organization-administration-changes.test.js:1:1
+✖ dist/test/unit/organizations/organization-administration-changes.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/organization-administration-invitation-overview.test.js:1:1
+✖ dist/test/unit/organizations/organization-administration-invitation-overview.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/organization-administration-invitations.test.js:1:1
+✖ dist/test/unit/organizations/organization-administration-invitations.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/organization-administration-members.test.js:1:1
+✖ dist/test/unit/organizations/organization-administration-members.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/organizations/organization-administration.test.js:1:1
+✖ dist/test/unit/organizations/organization-administration.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/page-fetch/fetch-failure.test.js:1:1
+✖ dist/test/unit/page-fetch/fetch-failure.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/search-engine/search-engine-brave-http.test.js:1:1
+✖ dist/test/unit/search-engine/search-engine-brave-http.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/search-pipeline/search-cancellation.test.js:1:1
+✖ dist/test/unit/search-pipeline/search-cancellation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/search-pipeline/search-failure.test.js:1:1
+✖ dist/test/unit/search-pipeline/search-failure.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/search-pipeline/search-query.test.js:1:1
+✖ dist/test/unit/search-pipeline/search-query.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/stop-signal.test.js:1:1
+✖ dist/test/unit/stop-signal.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/test-support/hosted-config.test.js:1:1
+✖ dist/test/unit/test-support/hosted-config.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/test-support/workos-site.test.js:1:1
+✖ dist/test/unit/test-support/workos-site.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-cancellation.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-cancellation.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-concurrent-calls.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-concurrent-calls.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-diagnostics.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-diagnostics.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-dns-wait.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-dns-wait.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-http-errors.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-http-errors.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-launch-errors.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-launch-errors.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-lightpanda-deadline.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-lightpanda-deadline.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-lightpanda.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-lightpanda.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-network.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-network.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher-runtime.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher-runtime.test.js
+  'Promise resolution is still pending but the event loop has already resolved'
+
+test at dist/test/unit/website-fetcher/website-fetcher.test.js:1:1
+✖ dist/test/unit/website-fetcher/website-fetcher.test.js
+  'Promise resolution is still pending but the event loop has already resolved'

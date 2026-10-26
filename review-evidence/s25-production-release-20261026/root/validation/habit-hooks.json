@@ -1,0 +1,18 @@
+{
+  "head": "618c29a94a80c94a9e0396ed07a8b727c10febde",
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "name": "habit-hooks",
+  "command": [
+    "habit-hooks",
+    "--branch",
+    "origin/main"
+  ],
+  "started": "2026-10-26T16:48:24.971108+00:00",
+  "ended": "2026-10-26T16:48:27.172491+00:00",
+  "exit": 1,
+  "summaries": [],
+  "log_sha256": "994e76ce0a5d31082659e3ff3526cb6d194659f8dc9ad919057c0dc91cd953f2",
+  "input_fingerprint": "773d1b0a9e7176ee4828fb613fbd1dd6ff1bf52dc52024c2e3dc2533886dae8c",
+  "inputs_unchanged": true,
+  "docker_context": "colima-thermus-s25-merge"
+}

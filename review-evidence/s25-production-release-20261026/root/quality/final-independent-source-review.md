@@ -1,0 +1,7 @@
+# Final candidate source review
+
+Candidate `618c29a94a80c94a9e0396ed07a8b727c10febde`; merge base `9f07c04bba0813358274212b21316165dc3e308b`. The production source is byte-identical to reviewed `7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba`. Earlier independent exact-byte/help/architecture checks retain that source scope.
+
+Reviewed the sole follow-up diff in `test/acceptance/auth/hosted-member-removal.test.ts` (SHA-256 `f5f1341536587b85648dee8d64032d649353490eea08216651e06e0987aa281b`). The prior whole-page absence assertion matched conditional language in approved static help. The final test still checks that the removed target is absent from the whole current page. It removes only the identified help region from the parsed page before checking that the operation-status content says neither removal confirmed nor member removed. It also requires the Members heading and keeps the held operation, one admission and one provider DELETE checks. This preserves the no-replay requirement and distinguishes notice language from an operation result. No production change was needed.
+
+No actionable source correctness, security or design issue remains in this reviewed scope. The old acceptance failure and its corrected scope must remain in Validation. This agent review does not provide required independent human approval, complete test results, publication proof or deployed release authority. Complete quality results are retained separately for the final candidate.
