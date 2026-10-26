@@ -1,0 +1,101 @@
+{
+  "tier": "T1",
+  "tierName": "T1 Team review",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931",
+  "mergeBase": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "Treat only the pinned WorkOS OAuth 400 organization_membership_not_found error during automatic expired-session refresh as the existing local signed-out result. Clear the Thermus cookie so a new sign-in can recover current identity and explicitly choose a retained workspace. Other errors and refresh refusal results keep their existing handling. Retryable outages and unrecognized thrown errors retain the cookie; existing terminal refusals still clear it. Explicit workspace-switch refusal still retains its session. No fail-open, automatic workspace choice, role/MFA/CSRF/acceptance change, provider write, removal receipt/replay change, storage/deployment change, new component, component edge, public module or declaration change. All 15 registry Mermaid views remain byte-identical; registry prose records the known terminal branch in the existing WorkOS owner. This restores the existing sign-in-required contract for a known provider refusal and changes sensitive session recovery within the approved architecture guarantees. Current-head independent human approval remains required."
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-stale-session-recovery.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-26-c9da79e6.json"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/providers/workos/workos-browser-session.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/providers/workos/workos-session-client.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-member-session-recovery.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-browser-session.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/auth-workos/workos-browser-session-refresh.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 18,
+    "productionLimit": 400,
+    "total": 224,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 4,
+    "removed": 0,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/accounts/providers/workos/workos-browser-session.ts: 63.318390983225896 to 62.61674815304988",
+    "changed: src/accounts/providers/workos/workos-session-client.ts: 93.59133909207186 to 91.17979469451737"
+  ],
+  "crap": [
+    "src/accounts/providers/workos/workos-browser-session.ts: workos-browser-session\\WorkOSBrowserSession.refreshed: 4.0",
+    "src/accounts/providers/workos/workos-session-client.ts: fieldOf: 3.0",
+    "src/accounts/providers/workos/workos-session-client.ts: isMissingOrganizationMembership: 3.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/accounts/providers/workos/workos-browser-session.ts",
+    "src/accounts/providers/workos/workos-browser-session.ts (imports changed src/accounts/providers/workos/workos-session-client.ts)"
+  ],
+  "informational": [
+    "49 public modules, 0 snapshots changed",
+    "public module touched, declarations unchanged: src/accounts/providers/workos/workos-browser-session.ts",
+    "public module touched, declarations unchanged: src/accounts/providers/workos/workos-browser-session.ts (imports changed src/accounts/providers/workos/workos-session-client.ts)"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+}

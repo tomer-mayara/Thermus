@@ -1,0 +1,65 @@
+✔ Given an Admin with another eligible membership, when the Admin removes itself and follows workspace guidance, then old organization browser and MCP access are refused and the other workspace can be selected (411.1615ms)
+✔ Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation and eligible signup are usable without restoring access (184.39775ms)
+✔ Given a creator Admin with a retained start record and another Admin, when the creator removes itself, then signup offers saved-start support without making or restoring a membership (154.750208ms)
+✔ Given a provider that requires reauthentication after self-removal, when the Admin uses sign-in guidance, then the new identity-only selection offers current no-membership guidance without protected removal details (132.560166ms)
+✔ Given an unknown self-removal that took effect, when old POST and Members are refused, then identity-only guidance remains usable and the pending operation is not settled or replayed (117.879834ms)
+✔ Given a removed membership and an expired selected-workspace session, when the User opens session, then sign-in is required and a new sign-in can select only retained access without replaying removal (420.850792ms)
+✔ Given a removed membership and an expired selected-workspace session, when the User opens organizations, then sign-in is required and a new sign-in can select only retained access without replaying removal (185.603625ms)
+▶ Hosted WorkOS edition: browser sign-in, the portal session, and current access
+  ✔ Given the hosted WorkOS edition, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, no MFA evidence, and a form token (245.3725ms)
+  ✔ Given a callback with another state, without the sign-in cookie, with an AuthKit error, or with a refused code, when it arrives, then the server answers 400, makes no session, and clears the sign-in cookie (91.978209ms)
+  ✔ Given a User of organization A, an Admin, a default-role member, and a user without a membership, when each opens the protected portal request, then the User and Admin get product access, and only from a current grant read (152.846709ms)
+  ✔ Given a signed-in user without an active membership, when the organization page opens, then it gives the onboarding guidance, and each tenant page stays refused (55.037417ms)
+  ✔ Given a session whose access token expired, when the next request arrives, then the server refreshes it with WorkOS, sends one new session cookie, and keeps the form token (72.386334ms)
+  ✔ Given an expired session that WorkOS ended, when the next request arrives, then the server answers 401 and clears the cookie; when the refresh service fails instead, then the answer is 500, the cookie stays, and the session works again after the outage (81.295042ms)
+  ✔ Given the signed-in portal, when the user posts the sign-out form with the form token from the site, then the server clears the session cookie and sends the browser to the WorkOS logout URL of the session; another origin or another token changes nothing (89.621ms)
+✔ Hosted WorkOS edition: browser sign-in, the portal session, and current access (789.434792ms)
+▶ Hosted WorkOS edition: Connect tokens at the MCP endpoint
+  ✔ Given Connect tokens, when the MCP endpoint gets them, then a User or Admin of the organization of the token is served; the default role, a missing organization, and an inactive membership get 403, and no MCP work runs for them (138.684334ms)
+  ✔ Given a browser token, an M2M-shaped token, an expired token, a token for another resource, and no token, when each reaches the MCP endpoint, then each gets 401 with a Bearer challenge that names the protected-resource metadata (36.344375ms)
+  ✔ Given the protected-resource metadata of the MCP resource, when a client reads it, then it names the MCP resource and the AuthKit issuer as its only authorization server (53.5785ms)
+  ✔ Given a member with Admin in A and User in B, when the browser session is in A and the MCP token is in B, then each credential keeps its own organization, also after access in A is removed (75.479916ms)
+  ✔ Given a membership read or key-set outage, when a request with a valid credential arrives, then the server answers 500 without protected work and reports the failure to the operator, without a token in the report (67.920041ms)
+  ✔ Given the hosted composition with a buildServer that gives a test-only tool, when a Connect token of a User lists the tools, then the list has that tool; given the composition without a buildServer, then the endpoint has no tool list and answers that the method is not found (145.202291ms)
+✔ Hosted WorkOS edition: Connect tokens at the MCP endpoint (517.540625ms)
+▶ Hosted WorkOS edition: the connection to WorkOS
+  ✔ Given the WorkOS settings of an environment, when the connection opens, then it gives those settings and writes one operator line that names the client and the AuthKit issuer; given no WorkOS settings, then it rejects and writes no line (1.043625ms)
+✔ Hosted WorkOS edition: the connection to WorkOS (1.145625ms)
+▶ WorkOSBrowserSession with the pinned WorkOS SDK: organization switch and logout
+  ✔ Given a signed-in session, when it selects another organization, then the SDK refreshes with that organization ID, and the new cookie authenticates in that organization with the same CSRF token (86.622625ms)
+  ✔ Given an organization without a membership of the user, when the session selects it and WorkOS answers 400 organization_membership_not_found, then the switch is refused without a cookie change, and the session still authenticates (74.05ms)
+  ✔ Given a session cookie whose access token expired, when the session ends, then the logout URL names the sid from the seal without a request to WorkOS, and the session cookie is cleared (63.072417ms)
+✔ WorkOSBrowserSession with the pinned WorkOS SDK: organization switch and logout (224.760375ms)
+▶ WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session checks, and refresh
+  ✔ Given a password sign-in that AuthKit completed, when the callback brings the code and the state, then the SDK exchanges the code with the verifier of the AuthKit URL for a sealed session, and the new session cookie authenticates as the WorkOS user without MFA evidence (101.857584ms)
+  ✔ Given a session cookie with a valid access token, when the session authenticates, then the SDK checks the token against the browser key set, and no refresh and no cookie change follow (53.866459ms)
+  ✔ Given a session cookie whose access token expired, when the session authenticates, then the SDK refreshes it through POST /user_management/authenticate with the stored refresh token in the organization of the session, and the one new cookie keeps the CSRF token and authenticates without another refresh (50.376792ms)
+  ✔ Given an expired session that WorkOS ended, when the refresh gets 400 invalid_grant, then the session is signed out with the cleared cookie (41.269875ms)
+  ✔ Given an expired session in an organization whose membership was removed, when the pinned SDK refresh receives 400 organization_membership_not_found, then the local session clears its cookie and requires sign-in (49.976292ms)
+  ✔ Given a browser key set that answers 500 or a WorkOS API that refuses the connection, when the session authenticates, then the check rejects without a refresh, so the cookie stays, and the same cookie authenticates after the outage (108.835792ms)
+✔ WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session checks, and refresh (407.237917ms)
+▶ WorkOSBrowserSession: the refresh of a session check
+  ✔ Given an access token that does not verify (invalid_jwt), when the session authenticates, then one refresh in the organization of the session decides, and the signed-in result has one new session cookie with the new seal, the same CSRF token, and no MFA evidence (2.776583ms)
+  ✔ Given an access token signed with a key that the cached key set does not have yet, when the session authenticates, then the SDK error ERR_JWKS_NO_MATCHING_KEY leads to one refresh, and the session is signed in with the new seal (0.383334ms)
+  ✔ Given a refresh that WorkOS refuses for good (invalid_grant, mfa_enrollment, sso_required, or invalid_session_cookie), when the session authenticates, then it is signed out with the cleared cookie (0.473166ms)
+  ✔ Given a refresh that fails for a time (server_error, rate_limit_exceeded, timeout, or network_error), when the session authenticates, then it rejects with an outage error that names the reason and keeps the cause, so a recoverable session is not erased (2.288042ms)
+  ✔ Given an expired session whose selected membership was removed, when WorkOS throws OAuth 400 organization_membership_not_found, then the session signs out with a cleared cookie and no further refresh (0.253291ms)
+  ✔ Given a different OAuth status, code, or error shape, when automatic refresh throws, then the error still rejects and the session cookie is retained (0.603125ms)
+  ✔ Given a refresh that the SDK throws (UnauthorizedException, an OAuth error, or a 5xx answer that is not JSON) or that gives no seal, when the session authenticates, then it rejects, so the cookie stays (0.383708ms)
+✔ WorkOSBrowserSession: the refresh of a session check (7.869709ms)
+▶ WorkOSBrowserSession: the organization switch
+  ✔ Given a signed-in session, when it selects another organization and WorkOS refreshes into it, then the switch sends one session cookie with the new seal, the same CSRF token, and no MFA evidence (0.529417ms)
+  ✔ Given a session that refreshed during its check, when it selects an organization, then the switch refreshes the newest seal, because WorkOS can rotate the refresh token (0.410459ms)
+  ✔ Given WorkOS refuses the organization with a 4xx OAuth error, such as 400 organization_membership_not_found, when the session selects it, then the switch is refused without a cookie change, so the session stays (0.438542ms)
+  ✔ Given WorkOS refreshes into another organization than the one selected, when the session selects it, then the switch is refused but keeps the new seal, because the refresh token can rotate (0.223291ms)
+  ✔ Given WorkOS ended the session, when the session selects an organization, then the switch signs out with the cleared cookie (0.125458ms)
+  ✔ Given a refresh outage, a 401 of the API key, or a server error, when the session selects an organization, then the switch rejects, so no cookie changes (0.302667ms)
+✔ WorkOSBrowserSession: the organization switch (2.248125ms)
+ℹ tests 43
+ℹ suites 7
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1576.556792

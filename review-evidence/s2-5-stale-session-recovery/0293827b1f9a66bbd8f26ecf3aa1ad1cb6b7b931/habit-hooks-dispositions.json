@@ -1,0 +1,240 @@
+{
+  "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+  "result": 0,
+  "snoozeEmpty": true,
+  "advisories": [
+    {
+      "path": "test/integration/auth/workos-browser-session.test.ts",
+      "line": 22,
+      "comment": "// The real browser session with the pinned WorkOS SDK, pointed at a local fake of the WorkOS API. These tests show",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Keeps the integration evidence limit explicit: real pinned SDK against a local fake is not live WorkOS service proof."
+    },
+    {
+      "path": "test/integration/auth/workos-browser-session.test.ts",
+      "line": 23,
+      "comment": "// the collaboration with the SDK, not the behavior of the WorkOS service.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Keeps the integration evidence limit explicit: real pinned SDK against a local fake is not live WorkOS service proof."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 15,
+      "comment": "// From workosAuthority(), so that browser sessions and Connect tokens map their users into the same authority.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 17,
+      "comment": "// Milliseconds since the Unix epoch.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 25,
+      "comment": "// The hosted browser session of WorkOS AuthKit. The session cookie holds the sealed WorkOS session together with the",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 26,
+      "comment": "// CSRF token, because the WorkOS seal changes at each refresh.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 47,
+      "comment": "// Discard the old inferred bit before a read, refresh, or organization switch can use or keep it.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 66,
+      "comment": "// For the logout route after its CSRF check. The logout URL ends the session at WorkOS.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 75,
+      "comment": "// Without a check or a refresh of the WorkOS session, so that the logout route causes no WorkOS call before its checks.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 80,
+      "comment": "// The SDK cannot tell an expired access token from one that is not valid, and a token can come from a key that the",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 81,
+      "comment": "// cached key set does not have yet. Only this server makes a seal, so a refresh decides these cases. A damaged seal",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 82,
+      "comment": "// ends the session. Each other failure, such as a key-set outage, throws, so that the cookie stays.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 95,
+      "comment": "// The refresh stays in the organization of the session.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 101,
+      "comment": "// A new sign-in can recover other access after the selected membership is removed.",
+      "inherited": false,
+      "disposition": "retained",
+      "reason": "Explains why a new sign-in is the recovery after membership loss, rather than an automatic workspace change; this is the security/lifecycle reason for the narrow catch."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 110,
+      "comment": "// The switch keeps the new seal also when WorkOS gives another organization, because the refresh token can rotate.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 119,
+      "comment": "// WorkOS refuses an organization without a membership of the user. The session stays usable.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 146,
+      "comment": "// Only a terminal refusal ends the session. A retryable failure is an outage: it throws, so that the cookie stays.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 156,
+      "comment": "// Only this server makes a seal, so its access token needs no new check, and an expired token still names its",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-browser-session.ts",
+      "line": 157,
+      "comment": "// session. The SDK gives an empty record for a seal that does not open.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "Retains the existing session authority, time-unit, seal/cookie lifetime, token-rotation, MFA, CSRF, or outage invariant at its owner; unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 3,
+      "comment": "// The facts of a WorkOS session check, refresh, or code exchange that the browser session reads.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 16,
+      "comment": "// Trusted facts from the code exchange, never from callback parameters or a decoded token.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 26,
+      "comment": "// The CookieSession of the SDK.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 37,
+      "comment": "// The part of the pinned WorkOS SDK client that the browser session calls.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 58,
+      "comment": "// The SDK inlines its own copy of jose, so the error classes of the jose package do not match its errors. Thus the",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 59,
+      "comment": "// failures are told apart by their name, code, and status.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 64,
+      "comment": "// The cached key set does not have the key of the token yet.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 69,
+      "comment": "// The SDK throws these errors for a seal whose HMAC part is not base64url or whose expiration part is not a number. Such",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 70,
+      "comment": "// a seal can never open, so it means no session, not a server error.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-session-client.ts",
+      "line": 75,
+      "comment": "// WorkOS refuses a code or an organization switch with a 4xx OAuth error. It is no outage.",
+      "inherited": true,
+      "disposition": "retained",
+      "reason": "States the external SDK contract, trusted facts, or known SDK error-shape limitation; these boundary reasons are unchanged by this PR."
+    }
+  ]
+}

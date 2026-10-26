@@ -1,0 +1,28 @@
+{
+  "reviewedAt": "2026-10-26T18:46:09.000357+00:00",
+  "head": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931",
+  "testedSourceHead": "c8b12419a812534d93343eb24248d70de7cf828e",
+  "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "sourceTestPackageImageInputsIdentical": true,
+  "documentationOnlyChanges": [
+    "docs/implementation/admin-s2-5-stale-session-recovery.md",
+    "docs/metrics/2026-10-26-c9da79e6.json"
+  ],
+  "sourceReview": "Exact SDK OAuth 400 membership error at automatic refresh returns existing signed-out result; other errors and explicit switching preserve behavior. No authorization bypass or removal replay.",
+  "bddRed": {
+    "tests": 2,
+    "failed": 2,
+    "reason": "500 instead of401"
+  },
+  "tddRed": {
+    "tests": 19,
+    "failed": 2,
+    "reason": "exact SDK membership exception"
+  },
+  "focusedGreen": 43,
+  "reviewTier": "T1 Team review",
+  "architectureFacts": [],
+  "ownerInstruction": "Finish the session-recovery fix, merge and deploy it, and complete live verification and cleanup so we can close out Slice 2.5.",
+  "ownerInstructionSource": "Direct human message in this chat while source head c8b12419 was the current candidate. The final head changes only validation text and an immutable generated metric record. No submitted GitHub review is claimed.",
+  "managerDecision": "Source and final documentation signed off. Merge awaits final-head evidence refresh and Ready publication; deployment and actual expired-session recovery proof are subsequent requirements."
+}

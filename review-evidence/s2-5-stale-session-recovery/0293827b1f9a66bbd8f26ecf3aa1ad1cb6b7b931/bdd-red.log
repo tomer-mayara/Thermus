@@ -1,0 +1,48 @@
+✖ Given a removed membership and an expired selected-workspace session, when the User opens session, then sign-in is required and a new sign-in can select only retained access without replaying removal (352.860541ms)
+✖ Given a removed membership and an expired selected-workspace session, when the User opens organizations, then sign-in is required and a new sign-in can select only retained access without replaying removal (130.708625ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 695.877042
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-session-recovery.test.js:8:5
+✖ Given a removed membership and an expired selected-workspace session, when the User opens session, then sign-in is required and a new sign-in can select only retained access without replaying removal (352.860541ms)
+  AssertionError [ERR_ASSERTION]: {"error":"unavailable"}
+  
+  500 !== 401
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/test/acceptance/auth/hosted-member-session-recovery.test.js:19:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 401,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-session-recovery.test.js:8:5
+✖ Given a removed membership and an expired selected-workspace session, when the User opens organizations, then sign-in is required and a new sign-in can select only retained access without replaying removal (130.708625ms)
+  AssertionError [ERR_ASSERTION]: Internal Server Error
+  
+  500 !== 401
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/test/acceptance/auth/hosted-member-session-recovery.test.js:19:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 401,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

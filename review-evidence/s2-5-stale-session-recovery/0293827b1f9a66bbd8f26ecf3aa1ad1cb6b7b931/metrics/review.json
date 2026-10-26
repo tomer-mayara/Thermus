@@ -1,0 +1,39 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "headSha": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931",
+  "summary": {
+    "filesChanged": 4,
+    "filesAdded": 1,
+    "filesDeleted": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/auth/workos-browser-session.test.ts",
+      "message": "Estimated bugs (Halstead): 1.28 -\u003e 1.42",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 1.2847582025620967,
+      "after": 1.422165496953765
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/unit/auth-workos/workos-browser-session-refresh.test.ts",
+      "message": "Estimated bugs (Halstead): 0.71 -\u003e 0.87",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 0.7134822526051102,
+      "after": 0.8710182158543806
+    }
+  ],
+  "improvements": [],
+  "gate": "passed"
+}

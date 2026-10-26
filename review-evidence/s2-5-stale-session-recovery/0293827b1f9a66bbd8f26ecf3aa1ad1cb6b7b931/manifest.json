@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "candidate": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931",
+  "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2941,
+      "sha256": "b67649bba61950c16d0d1a89719b19a9ad184b7d937df4ebf9c6b6d15a7aae01"
+    },
+    {
+      "path": "api-surface.log",
+      "bytes": 132,
+      "sha256": "200f9cc6ec11155d6b135f8f2b03843af4bb1d4d739db86235689978505e35f3"
+    },
+    {
+      "path": "authorization.json",
+      "bytes": 1058,
+      "sha256": "292c9b35fac59f7be811b68c31ecee1151574236266fc035c5f9dc55a2462a88"
+    },
+    {
+      "path": "bdd-red.log",
+      "bytes": 2457,
+      "sha256": "8491e4f7d60c057e2be0cfbe826ebdd9facf495abadd553d6403bb0ec1cbabfb"
+    },
+    {
+      "path": "checker.json",
+      "bytes": 4327,
+      "sha256": "2508c8a6eea1a859204e3159cf44c7d5c124a8b6e56bf179ceb0fdb69142d139"
+    },
+    {
+      "path": "habit-hooks-dispositions.json",
+      "bytes": 12850,
+      "sha256": "f338e8d614bb3ed905cbb943a6abf424cb4674d57bd3ad9b9b79a6d3cead5e31"
+    },
+    {
+      "path": "independent-review.md",
+      "bytes": 3966,
+      "sha256": "b4cb880f72d1e3efe15411a48f60ef70ad0ab675ccdf0921ba1c51f561430062"
+    },
+    {
+      "path": "manager-review.json",
+      "bytes": 1515,
+      "sha256": "6a582828fffebfc5de391b9b49df76500613be444621c1477fc619b12711a33d"
+    },
+    {
+      "path": "metrics/coverage.json",
+      "bytes": 916115,
+      "sha256": "41eec4dfc2e43bee24dac64c94b99ba6fd8220a468d9bda69d722f3a4624f8bb"
+    },
+    {
+      "path": "metrics/crap.json",
+      "bytes": 14651,
+      "sha256": "e393b3f48a3db4fcb92cd30f7d9a1c5e71833293b3d1767550ed25773c718f48"
+    },
+    {
+      "path": "metrics/impact.json",
+      "bytes": 2417,
+      "sha256": "0a74f3dbac2a04c3a40d70dfeb7b62ec236943106fc3054968da4d5ca3c425aa"
+    },
+    {
+      "path": "metrics/process.json",
+      "bytes": 28584,
+      "sha256": "dd5782112450074f6da594e6c0f1bc903be6d3ee46c577ecc4ada9f3d1119507"
+    },
+    {
+      "path": "metrics/process.md",
+      "bytes": 27703,
+      "sha256": "e889c01022b621bc6e408ea8707d3275ba50f86f1d2e39ac6930cabee939ad28"
+    },
+    {
+      "path": "metrics/review.json",
+      "bytes": 1251,
+      "sha256": "2242908a106b2402f6394b001bb52d43eddf23aaae9615005326f1d6161c6918"
+    },
+    {
+      "path": "metrics/review.md",
+      "bytes": 822,
+      "sha256": "7a8b8b3e2ba7ed0a068bb8fc87e0cd2676bae366b3d9e5700b0b60a9a282c685"
+    },
+    {
+      "path": "metrics/snapshot-base.json",
+      "bytes": 1081800,
+      "sha256": "a6a9a7ec72fbb02c2d4438dd75842855a23a21da66ba0c409aa0943c0972c447"
+    },
+    {
+      "path": "metrics/snapshot.json",
+      "bytes": 1082381,
+      "sha256": "1d263939833f32c71c0c0679e099709389484b0185950c3d729c73e89a3d9010"
+    },
+    {
+      "path": "precommit-green.log",
+      "bytes": 11001,
+      "sha256": "ae80094e3dd35f842021070e90079c685e6d52386b457dcdaad635e0701e009b"
+    },
+    {
+      "path": "quality-summary-source.md",
+      "bytes": 7452,
+      "sha256": "58b4356fe45b5a1743a616efd33bfa48acf797dc2990ce05ec70adae107bd7e2"
+    },
+    {
+      "path": "tdd-red.log",
+      "bytes": 8843,
+      "sha256": "93a6c6eeb08591a2bba831cbcd8515c2f77489e3333328076dbba1ae552d8952"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 7736,
+      "sha256": "35237d3b2d62c8fbaf54a2dbac4df49562cec23e24dfb96377228ad7ee087835"
+    }
+  ]
+}

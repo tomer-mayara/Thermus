@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "Direct owner authorization in the current chat, reported by the manager",
+  "quote": "Finish the session-recovery fix, merge and deploy it, and complete live verification and cleanup so we can close out Slice 2.5.",
+  "sourceHeadAtInstruction": "c8b12419a812534d93343eb24248d70de7cf828e",
+  "scope": "Finish this narrow session-recovery fix, merge and deploy, verify and clean up; manager owns merge/deploy.",
+  "managerSourceReview": "Manager reviewed source, tests and registry at c8b12419 and requested no changes.",
+  "githubReviewClaimed": false,
+  "earlier2cApprovalReused": false,
+  "finalHeadAndSourceEquivalence": {
+    "head": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931",
+    "sourceHead": "c8b12419a812534d93343eb24248d70de7cf828e",
+    "identicalInputs": true,
+    "onlyChangedDocuments": [
+      "docs/implementation/admin-s2-5-stale-session-recovery.md",
+      "docs/metrics/2026-10-26-c9da79e6.json"
+    ],
+    "managerReview": "manager-review.json"
+  },
+  "finalHead": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931"
+}

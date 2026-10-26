@@ -1,0 +1,243 @@
+{
+  "head": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931",
+  "testedSourceHead": "c8b12419a812534d93343eb24248d70de7cf828e",
+  "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "sourceTestPackageImageInputsIdentical": true,
+  "docsOnlyDiff": [
+    "docs/implementation/admin-s2-5-stale-session-recovery.md",
+    "docs/metrics/2026-10-26-c9da79e6.json"
+  ],
+  "gates": [
+    {
+      "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+      "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+      "name": "ordinary",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "started": "2026-10-26T18:07:34.293Z",
+      "ended": "2026-10-26T18:13:16.934Z",
+      "exit": 0,
+      "inputFingerprint": "d92cbfa20c9a1d4edfe0806ceea19485f9581e8bd664a0b1b652115a9965d7d0",
+      "inputsUnchanged": true,
+      "logSha256": "05327057948447b5dd747b6df25208d7249efbfd489e7fca6632fedd1cb26768",
+      "summaries": [
+        "ℹ tests 5127",
+        "ℹ pass 5127",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ tests 49",
+        "ℹ pass 49",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0"
+      ]
+    },
+    {
+      "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+      "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-26T18:13:17.140Z",
+      "ended": "2026-10-26T18:13:18.853Z",
+      "exit": 0,
+      "inputFingerprint": "d92cbfa20c9a1d4edfe0806ceea19485f9581e8bd664a0b1b652115a9965d7d0",
+      "inputsUnchanged": true,
+      "logSha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+      "summaries": []
+    },
+    {
+      "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+      "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+      "name": "portal",
+      "command": [
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "started": "2026-10-26T18:13:18.928Z",
+      "ended": "2026-10-26T18:13:19.698Z",
+      "exit": 0,
+      "inputFingerprint": "d92cbfa20c9a1d4edfe0806ceea19485f9581e8bd664a0b1b652115a9965d7d0",
+      "inputsUnchanged": true,
+      "logSha256": "e199c7f55b88a0e29a9eda1a9cc934be7255ffc2df735274cc2cd7797e983cd3",
+      "summaries": []
+    },
+    {
+      "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+      "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+      "name": "native-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-26T18:13:19.770Z",
+      "ended": "2026-10-26T18:14:54.642Z",
+      "exit": 1,
+      "inputFingerprint": "d92cbfa20c9a1d4edfe0806ceea19485f9581e8bd664a0b1b652115a9965d7d0",
+      "inputsUnchanged": true,
+      "logSha256": "3e93dfdf9448005323284fee603a1cd1db4aee71472c9c7d2b5c8fa76231ec4b",
+      "summaries": [
+        "ℹ tests 11",
+        "ℹ pass 9",
+        "ℹ fail 2",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0"
+      ]
+    },
+    {
+      "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+      "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+      "name": "native-container-retry",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-26T18:17:31.790Z",
+      "ended": "2026-10-26T18:18:57.647Z",
+      "exit": 0,
+      "childUmask": "022 for readable test fixtures; evidence descriptors explicit0600",
+      "inputFingerprint": "d92cbfa20c9a1d4edfe0806ceea19485f9581e8bd664a0b1b652115a9965d7d0",
+      "inputsUnchanged": true,
+      "summaries": [
+        "ℹ tests 11",
+        "ℹ pass 11",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0"
+      ],
+      "logSha256": "6d1bd3e47a1305d01cc6be368200d453eb74a11170e52d1637a677ab0f4f9ce1"
+    },
+    {
+      "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+      "base": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+      "name": "hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-26T18:18:57.852Z",
+      "ended": "2026-10-26T18:29:24.805Z",
+      "exit": 0,
+      "childUmask": "022 for readable test fixtures; evidence descriptors explicit0600",
+      "inputFingerprint": "d92cbfa20c9a1d4edfe0806ceea19485f9581e8bd664a0b1b652115a9965d7d0",
+      "inputsUnchanged": true,
+      "summaries": [
+        "ℹ tests 7",
+        "ℹ pass 7",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0"
+      ],
+      "logSha256": "5cdd26e0f1deb787cceec132823a9781cfd3595883aef6b517275c75ba3ed7ff"
+    }
+  ],
+  "hostedBuild": {
+    "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+    "platform": "linux/amd64",
+    "groups": [
+      3301,
+      29,
+      20,
+      1156,
+      119,
+      13
+    ],
+    "failures": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "complete": true,
+    "freshBuildStep": 24,
+    "network": "none for hosted offline checks"
+  },
+  "staging": {
+    "head": "c8b12419a812534d93343eb24248d70de7cf828e",
+    "exit": 0,
+    "summary": {
+      "tests": 29,
+      "pass": 29,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "expectedGuardedWorkers": [
+      "hosted-removal.live.js",
+      "hosted.live.js"
+    ],
+    "guardCounts": {
+      "created": 48,
+      "delete-complete": 48,
+      "delete-started": 48,
+      "guard-active": 2,
+      "personal-adopted": 4
+    },
+    "inputsUnchanged": true,
+    "logSha256": "387bc176b963fab0061c1ee73a97830213d8b244bcb8756bf7d04726bfe032af",
+    "journalSha256": "dbfa15445025bed961e5009a0c76d06b66f43096602f5faf8296e6f736bd7985",
+    "cleanup": {
+      "exactOwnedRoots": 48,
+      "exactGets": 48,
+      "statusCounts": {
+        "404": 48
+      },
+      "inputsStable": true,
+      "scope": "One GET per unique completed-journal owned root; no lists, mutations or retries. Resource identifiers remain private."
+    }
+  },
+  "coverage": {
+    "capturedCommit": "c8b12419a812534d93343eb24248d70de7cf828e",
+    "provenance": {
+      "sourceFingerprint": "cf4a46d84e144cc72f7b785875282fdee37f043a3fffff135f3757532ebc56a1",
+      "inputsFingerprint": "620d4928d26adec443409d38a8db0c2ea87239b8b1a7d61427cb3d86cec2fb73",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit",
+      "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+      "captureId": "9a606053372ad2d1ee88ad4a468f36a74a13daeaac1b91c66fe558ff17e5e907",
+      "comparisonIdentity": {
+        "sourceFingerprint": "cf4a46d84e144cc72f7b785875282fdee37f043a3fffff135f3757532ebc56a1",
+        "inputsFingerprint": "620d4928d26adec443409d38a8db0c2ea87239b8b1a7d61427cb3d86cec2fb73",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "c8b12419a812534d93343eb24248d70de7cf828e",
+      "buildFingerprint": "97c440a7f8732d1ee33ccc3bc9f1a560ffe8aff64e3a4b7243b7f6207d66c811",
+      "captureManifestFingerprint": "343de0bcb83cdf772719b9136f6a13ef080bf1c3fa63cac9ed12bfb38ad488bc"
+    },
+    "reusedForFinalHead": true
+  },
+  "environment": {
+    "profile": "thermus-s25-merge",
+    "startedForThisTask": true,
+    "stoppedAfterGates": true,
+    "defaultContextBefore": "colima",
+    "defaultContextAfter": "colima",
+    "runningTaskContainersBeforeStop": 0,
+    "livePortsListeningBeforeStop": 0,
+    "rootProductionCheckoutUntouched": true
+  }
+}

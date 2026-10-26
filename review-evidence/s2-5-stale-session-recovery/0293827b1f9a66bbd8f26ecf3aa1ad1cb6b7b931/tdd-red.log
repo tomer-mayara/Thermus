@@ -1,0 +1,74 @@
+▶ WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session checks, and refresh
+  ✔ Given a password sign-in that AuthKit completed, when the callback brings the code and the state, then the SDK exchanges the code with the verifier of the AuthKit URL for a sealed session, and the new session cookie authenticates as the WorkOS user without MFA evidence (69.925625ms)
+  ✔ Given a session cookie with a valid access token, when the session authenticates, then the SDK checks the token against the browser key set, and no refresh and no cookie change follow (43.880875ms)
+  ✔ Given a session cookie whose access token expired, when the session authenticates, then the SDK refreshes it through POST /user_management/authenticate with the stored refresh token in the organization of the session, and the one new cookie keeps the CSRF token and authenticates without another refresh (71.911375ms)
+  ✔ Given an expired session that WorkOS ended, when the refresh gets 400 invalid_grant, then the session is signed out with the cleared cookie (70.608167ms)
+  ✖ Given an expired session in an organization whose membership was removed, when the pinned SDK refresh receives 400 organization_membership_not_found, then the local session clears its cookie and requires sign-in (34.198083ms)
+  ✔ Given a browser key set that answers 500 or a WorkOS API that refuses the connection, when the session authenticates, then the check rejects without a refresh, so the cookie stays, and the same cookie authenticates after the outage (21.262792ms)
+✖ WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session checks, and refresh (312.834208ms)
+▶ WorkOSBrowserSession: the refresh of a session check
+  ✔ Given an access token that does not verify (invalid_jwt), when the session authenticates, then one refresh in the organization of the session decides, and the signed-in result has one new session cookie with the new seal, the same CSRF token, and no MFA evidence (2.448584ms)
+  ✔ Given an access token signed with a key that the cached key set does not have yet, when the session authenticates, then the SDK error ERR_JWKS_NO_MATCHING_KEY leads to one refresh, and the session is signed in with the new seal (0.37475ms)
+  ✔ Given a refresh that WorkOS refuses for good (invalid_grant, mfa_enrollment, sso_required, or invalid_session_cookie), when the session authenticates, then it is signed out with the cleared cookie (0.493541ms)
+  ✔ Given a refresh that fails for a time (server_error, rate_limit_exceeded, timeout, or network_error), when the session authenticates, then it rejects with an outage error that names the reason and keeps the cause, so a recoverable session is not erased (1.3745ms)
+  ✖ Given an expired session whose selected membership was removed, when WorkOS throws OAuth 400 organization_membership_not_found, then the session signs out with a cleared cookie and no further refresh (0.284ms)
+  ✔ Given a different OAuth status, code, or error shape, when automatic refresh throws, then the error still rejects and the session cookie is retained (0.628584ms)
+  ✔ Given a refresh that the SDK throws (UnauthorizedException, an OAuth error, or a 5xx answer that is not JSON) or that gives no seal, when the session authenticates, then it rejects, so the cookie stays (0.38375ms)
+✖ WorkOSBrowserSession: the refresh of a session check (6.701584ms)
+▶ WorkOSBrowserSession: the organization switch
+  ✔ Given a signed-in session, when it selects another organization and WorkOS refreshes into it, then the switch sends one session cookie with the new seal, the same CSRF token, and no MFA evidence (0.340666ms)
+  ✔ Given a session that refreshed during its check, when it selects an organization, then the switch refreshes the newest seal, because WorkOS can rotate the refresh token (0.252ms)
+  ✔ Given WorkOS refuses the organization with a 4xx OAuth error, such as 400 organization_membership_not_found, when the session selects it, then the switch is refused without a cookie change, so the session stays (0.339417ms)
+  ✔ Given WorkOS refreshes into another organization than the one selected, when the session selects it, then the switch is refused but keeps the new seal, because the refresh token can rotate (0.191041ms)
+  ✔ Given WorkOS ended the session, when the session selects an organization, then the switch signs out with the cleared cookie (0.106792ms)
+  ✔ Given a refresh outage, a 401 of the API key, or a server error, when the session selects an organization, then the switch rejects, so no cookie changes (0.267875ms)
+✔ WorkOSBrowserSession: the organization switch (1.715125ms)
+ℹ tests 19
+ℹ suites 3
+ℹ pass 17
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 400.704875
+
+✖ failing tests:
+
+test at dist/test/integration/auth/workos-browser-session.test.js:63:5
+✖ Given an expired session in an organization whose membership was removed, when the pinned SDK refresh receives 400 organization_membership_not_found, then the local session clears its cookie and requires sign-in (34.198083ms)
+  OauthException: Error: organization_membership_not_found
+  Error Description: The user is not a member of the organization.
+      at WorkOSNode.handleHttpError (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9563:47)
+      at WorkOSNode.post (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9416:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async UserManagement.authenticateWithRefreshToken (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:6259:20)
+      at async CookieSession.refresh (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:5943:35)
+      at async WorkOSBrowserSession.refreshed (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/src/accounts/providers/workos/workos-browser-session.js:79:25)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/test/integration/auth/workos-browser-session.test.js:67:26)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    status: 400,
+    requestID: '',
+    error: 'organization_membership_not_found',
+    errorDescription: 'The user is not a member of the organization.',
+    rawData: { error: 'organization_membership_not_found', error_description: 'The user is not a member of the organization.' }
+  }
+
+test at dist/test/unit/auth-workos/workos-browser-session-refresh.test.js:47:5
+✖ Given an expired session whose selected membership was removed, when WorkOS throws OAuth 400 organization_membership_not_found, then the session signs out with a cleared cookie and no further refresh (0.284ms)
+  OauthException: Error: organization_membership_not_found
+  Error Description: WorkOS refused: organization_membership_not_found
+      at oauthError (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/test/unit/auth-workos/fixtures/workos-session-client-double.js:111:12)
+      at client.refresh (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/test/unit/auth-workos/workos-browser-session-refresh.test.js:50:32)
+      at Object.refresh (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/test/unit/auth-workos/fixtures/workos-session-client-double.js:38:36)
+      at WorkOSBrowserSession.refreshed (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/src/accounts/providers/workos/workos-browser-session.js:79:65)
+      at WorkOSBrowserSession.authenticate (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/src/accounts/providers/workos/workos-browser-session.js:33:25)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/s25-stale-session-recovery/Thermus/dist/test/unit/auth-workos/workos-browser-session-refresh.test.js:51:26)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    status: 400,
+    requestID: 'request-1',
+    error: 'organization_membership_not_found',
+    errorDescription: 'WorkOS refused: organization_membership_not_found',
+    rawData: { error: 'organization_membership_not_found' }
+  }
