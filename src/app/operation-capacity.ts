@@ -3,7 +3,6 @@ import type { ExecutionContext } from '../pipelines/execution/execution-context.
 
 type Operation<Result> = (input: string, context: RequestContext, execution: ExecutionContext) => Promise<Result>;
 
-// One owner counts the calls of each operation that it wraps. A call above the limit is busy: there is no queue.
 export class OperationCapacity {
   private active = 0;
 

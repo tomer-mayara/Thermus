@@ -38,7 +38,7 @@
       "test/acceptance/auth/hosted-startup.test.ts",
       "test/acceptance/mcp/hosted-search-capacity.test.ts",
       "test/acceptance/mcp/hosted-fetch-tool.test.ts",
-      "test/integration/tool-operations.test.ts",
+      "test/integration/hosted-tool-operations.test.ts",
       "test/unit/app/operation-capacity.test.ts",
       "test/unit/config/operation-capacity-config.test.ts",
       ".env.example",

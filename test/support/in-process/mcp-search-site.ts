@@ -10,18 +10,24 @@ import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { completionRecordsIn, stepRecordsIn } from '../drivers/operator-log.ts';
 
-// The settings add to the trusted ad rules file, for example OPERATION_CAPACITY of the hosted edition.
-export async function openSearchSite(t: TestContext, era: McpProtocolEra, edition: 'hosted' | 'self-hosted', settings: Readonly<Record<string, string>> = {}) {
+export async function openSearchSite(t: TestContext, era: McpProtocolEra, edition: 'hosted' | 'self-hosted') {
+  return openSearchSiteFor(t, era, { DEPLOYMENT: edition });
+}
+
+// The settings are a server environment: DEPLOYMENT selects the edition, as for the real server, and a hosted test
+// can add OPERATION_CAPACITY. The site adds the trusted ad rules file.
+export async function openSearchSiteFor(t: TestContext, era: McpProtocolEra, settings: Readonly<Record<string, string>>) {
+  const hosted = settings.DEPLOYMENT === 'hosted';
   const records: string[] = [];
   const logger = { info: (record: string) => { records.push(record); }, error: (record: string) => { records.push(record); } };
-  const operations = (edition === 'hosted' ? createHostedToolOperations : createToolOperations)({ AD_RULES_FILE: trustedAdRulesFile, ...settings }, logger);
+  const operations = (hosted ? createHostedToolOperations : createToolOperations)({ AD_RULES_FILE: trustedAdRulesFile, ...settings }, logger);
   const resource = new URL('https://thermus.example/mcp');
   const provider = new NoAuthProvider(resource);
   const server = new MCPServer({
     auth: { verifier: provider, accessResolver: provider, expectedResource: resource, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' },
     buildServer: fetchToolServers(operations, logger), reportFailure: () => {},
   });
-  const handle = edition === 'hosted' ? routeHostedRequests({ publicBaseUrl: 'https://thermus.example/', mcpResourceUrl: resource.href, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' }, { mcp: (request) => server.fetch(request), account: async () => new Response('Not Found', { status: 404 }) }) : (request: Request) => server.fetch(request);
+  const handle = hosted ? routeHostedRequests({ publicBaseUrl: 'https://thermus.example/', mcpResourceUrl: resource.href, resourceMetadataUrl: 'https://thermus.example/.well-known/oauth-protected-resource/mcp' }, { mcp: (request) => server.fetch(request), account: async () => new Response('Not Found', { status: 404 }) }) : (request: Request) => server.fetch(request);
   const listener = await startHttpServer(handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: resource.href });
   t.after(async () => { const draining = listener.close(); await server.close(); await draining; });
   const url = new URL('mcp', listener.url);
