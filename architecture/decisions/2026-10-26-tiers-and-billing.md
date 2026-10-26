@@ -45,7 +45,7 @@ takes `?tier=free`, and only an upgrade gives `team`. The tier rules of
 | Portal | `plan: 'free'`, `memberLimit: 5`. | `plan: 'team'`. |
 
 The application cannot refuse an acceptance, so a pending invitation reserves
-its seat at send time. Rejected: a check at acceptance, which is not possible.
+its seat at send time.
 
 The billing answers of 26 October 2026:
 
@@ -57,8 +57,8 @@ The billing answers of 26 October 2026:
   Thermus sets.
 - **Price settings (D-4).** The amount is set later in Stripe; the code reads
   only the price ID. USD, no trial, and Stripe Tax on, with address and tax ID
-  collection. The price on `thermus.ai` must match the Stripe price before
-  signup opens.
+  collection. The price on `thermus.ai` must match the Stripe price before any
+  customer reaches Checkout (SO-14).
 - **Stripe (D-13).** Stripe Checkout starts the subscription, with required
   acceptance of the paid terms. Card data never reaches Thermus. The Stripe
   Customer Portal gives the payment method, invoices, and cancellation at the

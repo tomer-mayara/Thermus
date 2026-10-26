@@ -67,7 +67,6 @@ Each item gives the choice, the reason, and the alternative that lost.
    organization. It keeps the public `PUBLIC_BASE_URL`, so the token audience
    does not change.
    - Why: one artifact to check and deploy.
-   - Rejected: a second image for tenants.
 4. **No credential in a tenant (D-14).** A tenant holds no WorkOS, database,
    Stripe, or Render credential. The control plane signs an access context
    with an Ed25519 private key. The context holds the organization, the user,
@@ -103,7 +102,6 @@ Each item gives the choice, the reason, and the alternative that lost.
    next call resumes it. Team tenants are never suspended.
    - Why: signup needs only a verified email. The caps keep live free tenants
      at about 175 USD a month or less.
-   - Rejected: no cap and no suspension.
 8. **State in Supabase PostgreSQL, and free plans for now (D-8, D-9).** The
    `tenants`, `subscriptions`, and `billing_events` tables go into the existing
    `thermus_admin` schema, with a new role for the control plane. Supabase
@@ -115,7 +113,6 @@ Each item gives the choice, the reason, and the alternative that lost.
    gateway on. While it is off, the control plane serves the tools, as today.
    - Why: the rollout can go step by step, and a rollback turns the gateway
      off with one setting.
-   - Rejected: a cutover in one deploy.
 
 The owners of plan section 4.5 are the target, with the new owners `tenants`,
 `render`, `sql`, and `stripe`. Each code ticket makes its owners and edges final
