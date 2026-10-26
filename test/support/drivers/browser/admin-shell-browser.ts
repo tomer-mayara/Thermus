@@ -16,9 +16,9 @@ export class AdminShellBrowser {
   async inspectMembers(organizationName: string): Promise<void> {
     await this.page.locator('html').evaluate(element => element.ownerDocument.fonts.ready);
     await this.screenshot(`members-layout-${this.suffix}.png`);
-    const skip = this.page.getByRole('link', { name: 'Skip to content', exact: true });
+    const skipLink = this.page.getByRole('link', { name: 'Skip to content', exact: true });
     await this.page.keyboard.press('Tab');
-    assert.equal(await skip.evaluate(element => element.matches(':focus')), true);
+    assert.equal(await skipLink.evaluate(element => element.matches(':focus')), true);
     const measurements = await adminShellMeasurements(this.page, this.options);
     assert.ok(Math.abs(measurements.main.width - measurements.list.width) <= 1, 'The member list must use the full available content width');
     assert.equal(measurements.title.size, '32px', 'The shared page title must stay at 32px');
@@ -31,7 +31,7 @@ export class AdminShellBrowser {
     assert.equal(await banner.getByText(organizationName, { exact: true }).isVisible(), true);
     assert.equal(await banner.getByRole('link', { name: 'Switch workspace', exact: true }).evaluate(element => element.parentElement?.textContent), `${organizationName}Switch workspace`);
     await this.checkReflow('Long workspace and member values must fit');
-    const bounds = await skip.boundingBox();
+    const bounds = await skipLink.boundingBox();
     assert.ok(bounds, 'The focused skip link must be visible');
     assert.ok(bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= this.options.width);
     await this.page.keyboard.press('Enter');

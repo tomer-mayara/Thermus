@@ -57,7 +57,7 @@ maintained Validation and Quality review comments.
 | Focused Members and Audit route/rendering checks | 82 passed. |
 | Other consumers of the changed test site | 25 passed; no SQL, Collector or hosted-live consumer. |
 | Self-hosted container | 11 passed with outbound access denied. |
-| Hosted offline build and Linux AMD64 image | Build/runtime totals and full logs are in the pinned Validation record above. The image runs the hosted build with outbound access denied. |
+| Hosted offline build and Linux AMD64 image | 7 image checks passed. The image's offline build passed 3,301 unit, 49 portal, 1,157 integration, 119 acceptance and 13 renderer checks. |
 | Verified unit coverage for metrics | 3,301 emitted tests and 29 portal unit tests passed. |
 | Habit-hooks | Passed; two comments retained because they explain read failure atomicity and CSP hash ownership. No snooze or suppression. |
 
@@ -66,6 +66,13 @@ It is not a pass. The complete repeat on the corrected source passed. The PR
 evidence retains this history and the expected BDD/TDD failures. Hosted-live,
 PostgreSQL, Collector and production release checks are not selected: this
 increment changes no provider behavior, storage, transport or deployment.
+
+The review checker then mistook a browser helper variable named `skip` for a
+skipped test. The variable is now `skipLink`; no test is skipped and no rule is
+suppressed. The affected browser group and typecheck passed again. The ordinary and
+image results still cover the unchanged production code and their unchanged
+test consumers. Unit coverage is collected again to match the updated global
+test-input fingerprint.
 
 The change remains inside the existing Web component. The component registry's
 hosted authentication, member-read, removal and Audit settings views remain
