@@ -1,0 +1,25 @@
+Initial acceptance red: npm run build && node --test dist/test/acceptance/auth/hosted-members.test.js
+node --test --test-name-pattern='Given labelled member rows' dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js [red: missing labels]
+node --test --test-name-pattern='Given complete member facts|Given another member with the same email' dist/test/integration/hosted-admin/account-routes-administration-pages.test.js [red: missing counts/self names]
+npm run build && node --test --test-name-pattern='Given closed member actions' dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js [red: danger styling on trigger]
+npm run build && node --test dist/test/acceptance/auth/hosted-members.test.js dist/test/integration/hosted-admin/account-routes-administration-pages.test.js [first green attempt; migrations pending]
+npm run build && node --test --test-name-pattern="Given seven active members" dist/test/acceptance/auth/hosted-members.test.js [red: approved page-heading count clarified by manager]
+npm run build && node --test dist/test/acceptance/auth/hosted-members.test.js dist/test/integration/hosted-admin/account-routes-administration-pages.test.js [green after count/name/row consumer migrations]
+THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui02/implementation/screenshots node --test --test-name-pattern="Given labelled member rows|Given closed member actions" dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js [3/3 green]
+npm run build && THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui02/implementation/screenshots node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js [full browser gate after fresh self/other JS-off cases]
+npm run build && node --test --test-name-pattern="Given an expanded removal at widths" dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js [red: cramped confirmation at 481px]
+npm run build && node --test --test-name-pattern="Given an expanded removal at widths" dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js [green: stack member facts through860px]
+habit-hooks --branch origin/codex/ui-01-refined-tabs [initial: 4 complexity,3 non-null,15 comments,4 size; fixed all new enforced findings]
+habit-hooks --branch origin/codex/ui-01-refined-tabs [second: inherited complexity1,params1,comments15,size4; no new enforced findings]
+npm run typecheck [focused final]
+npm run build:user-portal [real-assets final]
+npm run build [focused final]
+Final first attempt: typecheck/build TS2304 HTMLElement in browser test; removed unnecessary type reference. Selected ordinary123:120 passed,3 stale workos expectedlabels/count failed; migrated actor-specific expected labels and duplicate-row DOM check.
+npm run typecheck && npm run build:user-portal && npm run build [final retry]
+Final ordinary selection (123/123 passed):
+node --test --test-concurrency=1 dist/test/acceptance/auth/hosted-members.test.js dist/test/acceptance/auth/hosted-invitations.test.js dist/test/acceptance/auth/hosted-workos-administration.test.js dist/test/acceptance/auth/hosted-member-removal.test.js dist/test/acceptance/auth/hosted-member-self-removal.test.js dist/test/acceptance/auth/hosted-member-session-recovery.test.js dist/test/acceptance/auth/hosted-seats.test.js dist/test/acceptance/billing/hosted-billing.test.js dist/test/integration/hosted-admin/account-routes-administration-pages.test.js dist/test/integration/hosted-admin/account-routes-removal.test.js dist/test/integration/hosted-admin/account-routes-grant-retirement.test.js dist/test/integration/auth/hosted-administration.test.js dist/test/unit/html/logging-page.test.js dist/test/unit/html/logging-routes.test.js dist/test/unit/html/administration-help-documents.test.js
+Final browser selection (19/19 passed):
+THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui02/implementation/screenshots node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js
+Final habit-hooks:
+habit-hooks --branch origin/codex/ui-01-refined-tabs
+Selected live gate deferred to manager: test/acceptance/auth/hosted-removal.live.ts changed self/other final-confirm selector. No SQL/Collector helper changed; removal DSL unchanged. New memberActionStyle only consumed by browser runtime gate; helper has no own tests.

@@ -1,0 +1,49 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/codex/ui-01-refined-tabs",
+  "baseSha": "a017020ebe2448f5de6cc7d9cbb0700367fc80b1",
+  "headSha": "e8f097dacad194fd3d540dee2fd79b52563e50c2",
+  "summary": {
+    "filesChanged": 13,
+    "filesAdded": 2,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 2,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "message": "Maintainability index: 28 -\u003e 15 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 28.1507108226631,
+      "after": 14.556953520710799
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/acceptance/auth/hosted-members.test.ts",
+      "message": "Estimated bugs (Halstead): 1.80 -\u003e 2.44",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 1.803554963077646,
+      "after": 2.4422441606391
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "message": "Estimated bugs (Halstead): 2.83 -\u003e 3.35",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 2.834427639536826,
+      "after": 3.354351025356592
+    }
+  ],
+  "improvements": [],
+  "gate": "failed"
+}

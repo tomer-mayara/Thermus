@@ -1,0 +1,5 @@
+
+> thermus@0.0.0 typecheck
+> tsc --noEmit && npm run typecheck:user-portal
+
+test/acceptance/auth/hosted-member-removal-browser.runtime.ts(73,48): error TS2304: Cannot find name 'HTMLElement'.

@@ -1,0 +1,14 @@
+{
+  "thermus.hosted-image-gate=5b4e1030cce9": {
+    "containers": [],
+    "images": []
+  },
+  "thermus.hosted-image-gate=e755e089de58": {
+    "containers": [],
+    "images": []
+  },
+  "thermus.ui02-image-probe=1": {
+    "containers": [],
+    "images": []
+  }
+}

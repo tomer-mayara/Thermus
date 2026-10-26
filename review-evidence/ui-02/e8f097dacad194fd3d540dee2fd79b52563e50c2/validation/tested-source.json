@@ -1,0 +1,10 @@
+{
+  "source_candidate": "d742e14410a4e8ed0ccc9986a29d174936ffcf4b",
+  "precommit_inputs_verified": 860,
+  "changed_inputs": [],
+  "staging_tests_passed": 29,
+  "staging_tests_failed": 0,
+  "precommit_head": "c61a8e97a495b621e20eff48be2432a26f635880",
+  "working_tree_clean_at_live_start": false,
+  "note": "All tested source/test/build input bytes are now in the source candidate. Live proof is staging evidence, not production release proof."
+}

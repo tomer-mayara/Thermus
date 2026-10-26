@@ -1,0 +1,131 @@
+{
+  "pull_request": {
+    "url": "https://github.com/tomer-mayara/Thermus/pull/264",
+    "number": 264,
+    "state": "open",
+    "merged": false,
+    "mergeable": true,
+    "draft": true,
+    "body": "## Description\n\nUI-02 aligns Member, Role and Action facts and replaces prominent removal triggers with quiet native Remove and Leave disclosures. The active-row heading remains distinct from the existing product-access count, and current removal safeguards and recovery stay intact.\n\nStacked on [UI-01, PR #263](https://github.com/tomer-mayara/Thermus/pull/263), branch `codex/ui-01-refined-tabs`, at `a017020ebe2448f5de6cc7d9cbb0700367fc80b1`.\n\n## Review\n\nDraft — implementation and complete-candidate evidence are in progress. Final tier, architecture facts, validation and required approval will be recorded before Ready. Merge status: blocked while implementation and validation are pending. No merge or deployment is part of this request.",
+    "title": "Align member rows and add quiet Remove and Leave actions (UI-02)",
+    "base": "codex/ui-01-refined-tabs",
+    "base_sha": "a017020ebe2448f5de6cc7d9cbb0700367fc80b1",
+    "head": "codex/ui-02-member-rows",
+    "head_sha": "c61a8e97a495b621e20eff48be2432a26f635880",
+    "head_repo_id": 1410584924,
+    "head_repo_full_name": "tomer-mayara/Thermus",
+    "merge_commit_sha": "543ee4aec8aead365919ef54cb734410ce0fc46b",
+    "user": {
+      "login": "tomer-mayara",
+      "name": "tomer-mayara",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+      "id": 48661201
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": "@@ -15,7 +15,7 @@\n   },\n   \"architecture\": {\n     \"modelUpdated\": false,\n-    \"summary\": \"UI-01 changes presentation inside the existing Web owner: pass the existing trusted MemberOverview organizationName to private layout chrome, escape it, label ordinary page links, use a 32px shared title and full-width Members, and focus main after the skip link. Audit keeps its form, script, Save/Test, context and current lookups. Style/script CSP hashes still derive actual bytes; admission, session, permissions, mutations, recovery, seat counts and approved help remain unchanged. No new production component, import edge, public module/declaration, provider call, store, deployment boundary or dependency. All registry drawings remain unchanged because the existing member-read and Web responsibility descriptions still apply. The test-gate document updates the browser group inventory; commands, selection, required checks and decision authority do not change.\",\n+    \"summary\": \"UI-02 refines member rows and native removal disclosures inside the existing Web owner. It uses the complete existing overview for the active-row heading and retains activeUserSeats as a separate product-access count. Trusted subject identity selects You and Leave; existing removable decisions and checked removal POSTs remain authoritative. Preserve hidden fields, current access, last-Admin/stale/busy/unknown outcomes, self-removal recovery, account and other-workspace access, and approved help bytes. No new production component, import edge, public declaration, provider read, store, dependency, deployment or security guarantee. Registry views remain accurate; the browser inventory changes only to describe the implemented cases.\",\n     \"views\": [\n       \"Context\",\n       \"C4 containers: hosted edition\",\n@@ -28,14 +28,13 @@\n       \"Deployment view\"\n     ],\n     \"evidence\": [\n-      \"src/interfaces/web/account/members-page-layout.ts\",\n-      \"src/interfaces/web/account/members-style.ts\",\n       \"src/interfaces/web/account/administration-pages.ts\",\n+      \"src/interfaces/web/account/members-style.ts\",\n+      \"src/interfaces/web/account/account-pages.ts\",\n       \"test/acceptance/auth/hosted-members.test.ts\",\n       \"test/acceptance/auth/hosted-member-removal-browser.runtime.ts\",\n       \"test/integration/hosted-admin/account-routes-administration-pages.test.ts\",\n-      \"test/support/in-process/hosted-member-removal-site.ts\",\n-      \"docs/implementation/admin-ui-01.md\",\n+      \"docs/implementation/admin-ui-02.md\",\n       \"docs/implementation/test-gate-policy.md\",\n       \"architecture/components.md\"\n     ]\n@@ -0,0 +1,34 @@\n+# UI-02 — Member rows and quiet removal\n+\n+Scope: [UI-02](../design/organization-admin-plan.md#ui-02--member-rows-and-quiet-removal)\n+of the Refined tabs plan. This work is stacked on\n+[UI-01, PR #263](https://github.com/tomer-mayara/Thermus/pull/263), at\n+`a017020ebe2448f5de6cc7d9cbb0700367fc80b1`.\n+Implementation and validation are in progress. This record claims no merge or\n+deployment.\n+\n+## Required behavior\n+\n+Show labelled Member, Role and Action facts in aligned rows. The heading counts\n+the complete active member rows. Retain the separate product-access count.\n+Keep absent and unknown roles visible and read-only.\n+\n+Use the trusted subject for You and Leave. Other removable members get Remove.\n+Use native disclosures and quiet initial actions. Only the final removal or\n+leave confirmation is red. Preserve names, consequences, Cancel, protected form\n+fields, server safeguards, recovery outcomes and the exact approved help.\n+\n+UI-03 invitation disclosure and UI-04 pending-invitation changes remain separate\n+work. This increment needs no new provider read, permission rule or script.\n+\n+## BDD, TDD and validation\n+\n+Run the new row-count, labelled-facts and self-action acceptance checks before\n+source changes. Use focused integration and browser red/green steps for trusted\n+identity, escaping, row geometry and action emphasis. Retain passing\n+characterization of unchanged refusal, recovery and account-preservation rules.\n+\n+The complete candidate needs the ordinary suite, typecheck, portal build,\n+Members browser, self-hosted container, hosted offline build and Linux AMD64\n+image gates. Trace changed test helpers to all consuming groups. Root review\n+owns complete-candidate quality, architecture assessment and PR evidence.",
+    "comments": [
+      {
+        "url": "https://github.com/tomer-mayara/Thermus/pull/264#issuecomment-6427827431",
+        "body": "## Validation\n\nDraft candidate: `c61a8e97a495b621e20eff48be2432a26f635880`. Stack parent/UI-01: `a017020ebe2448f5de6cc7d9cbb0700367fc80b1`. Complete-candidate validation is compared with main `57c99e2b892acea52bfc3a53aee61b5ae442bf46`; tier and architecture impact will be classified against the actual parent.\n\nImplementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.",
+        "user": {
+          "login": "tomer-mayara",
+          "name": "tomer-mayara",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+          "id": 48661201
+        },
+        "id": 6427827431,
+        "pull_request_review_id": null,
+        "in_reply_to_id": null,
+        "created_at": "2026-10-26T21:31:30Z",
+        "updated_at": "2026-10-26T21:31:30Z",
+        "review": null,
+        "side": null,
+        "line": null,
+        "start_line": null,
+        "path": null,
+        "body_html": "<h2 dir=\"auto\">Validation</h2>\n<p dir=\"auto\">Draft candidate: <code class=\"notranslate\">c61a8e97a495b621e20eff48be2432a26f635880</code>. Stack parent/UI-01: <code class=\"notranslate\">a017020ebe2448f5de6cc7d9cbb0700367fc80b1</code>. Complete-candidate validation is compared with main <code class=\"notranslate\">57c99e2b892acea52bfc3a53aee61b5ae442bf46</code>; tier and architecture impact will be classified against the actual parent.</p>\n<p dir=\"auto\">Implementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.</p>"
+      },
+      {
+        "url": "https://github.com/tomer-mayara/Thermus/pull/264#issuecomment-6427827759",
+        "body": "## Quality review\n\nDraft candidate: `c61a8e97a495b621e20eff48be2432a26f635880`. Stack parent/UI-01: `a017020ebe2448f5de6cc7d9cbb0700367fc80b1`. Complete-candidate validation is compared with main `57c99e2b892acea52bfc3a53aee61b5ae442bf46`; tier and architecture impact will be classified against the actual parent.\n\nImplementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.",
+        "user": {
+          "login": "tomer-mayara",
+          "name": "tomer-mayara",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+          "id": 48661201
+        },
+        "id": 6427827759,
+        "pull_request_review_id": null,
+        "in_reply_to_id": null,
+        "created_at": "2026-10-26T21:31:31Z",
+        "updated_at": "2026-10-26T21:31:31Z",
+        "review": null,
+        "side": null,
+        "line": null,
+        "start_line": null,
+        "path": null,
+        "body_html": "<h2 dir=\"auto\">Quality review</h2>\n<p dir=\"auto\">Draft candidate: <code class=\"notranslate\">c61a8e97a495b621e20eff48be2432a26f635880</code>. Stack parent/UI-01: <code class=\"notranslate\">a017020ebe2448f5de6cc7d9cbb0700367fc80b1</code>. Complete-candidate validation is compared with main <code class=\"notranslate\">57c99e2b892acea52bfc3a53aee61b5ae442bf46</code>; tier and architecture impact will be classified against the actual parent.</p>\n<p dir=\"auto\">Implementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.</p>"
+      }
+    ],
+    "created_at": "2026-10-26T21:31:14Z",
+    "updated_at": "2026-10-26T21:31:31Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 1,
+    "changed_files": 2,
+    "additions": 38,
+    "deletions": 5,
+    "display_url": "https://github.com/tomer-mayara/Thermus/pull/264",
+    "display_title": "Align member rows and add quiet Remove and Leave actions (UI-02)"
+  },
+  "comments": [
+    {
+      "url": "https://github.com/tomer-mayara/Thermus/pull/264#issuecomment-6427827431",
+      "body": "## Validation\n\nDraft candidate: `c61a8e97a495b621e20eff48be2432a26f635880`. Stack parent/UI-01: `a017020ebe2448f5de6cc7d9cbb0700367fc80b1`. Complete-candidate validation is compared with main `57c99e2b892acea52bfc3a53aee61b5ae442bf46`; tier and architecture impact will be classified against the actual parent.\n\nImplementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.",
+      "user": {
+        "login": "tomer-mayara",
+        "name": "tomer-mayara",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+        "id": 48661201
+      },
+      "id": 6427827431,
+      "pull_request_review_id": null,
+      "in_reply_to_id": null,
+      "created_at": null,
+      "updated_at": null,
+      "review": null,
+      "side": null,
+      "line": null,
+      "start_line": null,
+      "path": null,
+      "body_html": "<h2 dir=\"auto\">Validation</h2>\n<p dir=\"auto\">Draft candidate: <code class=\"notranslate\">c61a8e97a495b621e20eff48be2432a26f635880</code>. Stack parent/UI-01: <code class=\"notranslate\">a017020ebe2448f5de6cc7d9cbb0700367fc80b1</code>. Complete-candidate validation is compared with main <code class=\"notranslate\">57c99e2b892acea52bfc3a53aee61b5ae442bf46</code>; tier and architecture impact will be classified against the actual parent.</p>\n<p dir=\"auto\">Implementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.</p>"
+    },
+    {
+      "url": "https://github.com/tomer-mayara/Thermus/pull/264#issuecomment-6427827759",
+      "body": "## Quality review\n\nDraft candidate: `c61a8e97a495b621e20eff48be2432a26f635880`. Stack parent/UI-01: `a017020ebe2448f5de6cc7d9cbb0700367fc80b1`. Complete-candidate validation is compared with main `57c99e2b892acea52bfc3a53aee61b5ae442bf46`; tier and architecture impact will be classified against the actual parent.\n\nImplementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.",
+      "user": {
+        "login": "tomer-mayara",
+        "name": "tomer-mayara",
+        "email": null,
+        "avatar_url": "https://avatars.githubusercontent.com/u/48661201?v=4",
+        "id": 48661201
+      },
+      "id": 6427827759,
+      "pull_request_review_id": null,
+      "in_reply_to_id": null,
+      "created_at": null,
+      "updated_at": null,
+      "review": null,
+      "side": null,
+      "line": null,
+      "start_line": null,
+      "path": null,
+      "body_html": "<h2 dir=\"auto\">Quality review</h2>\n<p dir=\"auto\">Draft candidate: <code class=\"notranslate\">c61a8e97a495b621e20eff48be2432a26f635880</code>. Stack parent/UI-01: <code class=\"notranslate\">a017020ebe2448f5de6cc7d9cbb0700367fc80b1</code>. Complete-candidate validation is compared with main <code class=\"notranslate\">57c99e2b892acea52bfc3a53aee61b5ae442bf46</code>; tier and architecture impact will be classified against the actual parent.</p>\n<p dir=\"auto\">Implementation, red/green evidence and final checks are in progress. This comment will be maintained for the final candidate. No human approval, merge or deployment is claimed.</p>"
+    }
+  ]
+}

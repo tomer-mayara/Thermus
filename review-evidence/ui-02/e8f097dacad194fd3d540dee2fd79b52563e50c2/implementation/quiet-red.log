@@ -1,0 +1,36 @@
+✖ Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill (732.775208ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1240.23225
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:16:1
+✖ Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill (732.775208ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   background: 'rgb(64, 40, 44)',
+  +   border: 'rgb(198, 110, 118)',
+  +   color: 'rgb(255, 205, 210)'
+  -   background: 'rgba(0, 0, 0, 0)',
+  -   border: 'rgba(0, 0, 0, 0)',
+  -   color: 'rgb(180, 186, 192)'
+    }
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:26:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { color: 'rgb(255, 205, 210)', background: 'rgb(64, 40, 44)', border: 'rgb(198, 110, 118)' },
+    expected: { color: 'rgb(180, 186, 192)', background: 'rgba(0, 0, 0, 0)', border: 'rgba(0, 0, 0, 0)' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,40 @@
+▶ Members through the hosted HTTP server
+  ✔ Given seven active members and six product members, when the Admin opens Members, then labelled read-only facts keep both counts and trusted self actions distinct (28.577667ms)
+  ✔ Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (10.184125ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (8.743625ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (16.271542ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (4.276041ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.638792ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (5.561417ms)
+✔ Members through the hosted HTTP server (78.150167ms)
+▶ HostedAccountRoutes combined Members page
+  ✔ Given complete member facts with absent and unknown roles, when Members opens, then active rows have labelled facts, their own count, and only supported removal controls (11.532833ms)
+  ✔ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (4.645292ms)
+  ✔ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (4.428ms)
+  ✔ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (2.087083ms)
+  ✔ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (1.324ms)
+  ✔ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.950334ms)
+  ✔ Given an unknown identity policy, when Members opens, then it makes no strict address promise (0.50775ms)
+  ✔ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.412417ms)
+  ✔ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (1.402792ms)
+  ✔ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (1.576625ms)
+  ✔ Given a session without MFA, when Members opens, then current Admin access is sufficient (0.442792ms)
+  ✔ Given current Admin access, when GET opens the old Invitations URL, then it redirects to Members with no history page (0.266792ms)
+  ✔ Given current Admin access, when HEAD opens the old Invitations URL, then it redirects to Members with no history page (0.129166ms)
+  ✔ Given a service that denies the actor, when either page opens, then current service authorization refuses it (0.582792ms)
+  ✔ Given a failed members read, when Members opens, then no partial page or invitation form is returned (0.290875ms)
+  ✔ Given a failed invitations read, when Members opens, then no partial page or invitation form is returned (0.218958ms)
+  ✔ Given a POST request to a page, when it arrives, then no read or write runs (0.372209ms)
+  ✔ Given a PUT request to a page, when it arrives, then no read or write runs (0.295625ms)
+  ✔ Given a DELETE request to a page, when it arrives, then no read or write runs (0.282583ms)
+  ✔ Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path (0.465458ms)
+  ✔ Given a denied resolver or no selected organization, when either page opens, then the service is not asked (0.455667ms)
+✔ HostedAccountRoutes combined Members page (34.075958ms)
+ℹ tests 28
+ℹ suites 2
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 375.61625

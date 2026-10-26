@@ -1,0 +1,11 @@
+✔ Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill (692.6115ms)
+✔ Given labelled member rows at 320px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (612.609333ms)
+✔ Given labelled member rows at 1280px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (535.290708ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2256.750125

@@ -1,0 +1,14 @@
+{
+  "candidate": "e8f097dacad194fd3d540dee2fd79b52563e50c2",
+  "source_candidate": "d742e14410a4e8ed0ccc9986a29d174936ffcf4b",
+  "parent": "a017020ebe2448f5de6cc7d9cbb0700367fc80b1",
+  "main_merge_base": "57c99e2b892acea52bfc3a53aee61b5ae442bf46",
+  "main_observed": "c42aa8237b06e46df5f8d3914af6f4151f729e1a",
+  "later_changes": [
+    "docs/implementation/admin-ui-02.md"
+  ],
+  "tested_inputs_verified": 860,
+  "changed_tested_inputs": [],
+  "working_tree_clean": true,
+  "note": "Source, tests and build inputs match the precommit browser/live checks and the source candidate that ran complete validation. The final delta only records actual validation results. Main advanced with decision records and a plan note; this child stays on its requested unchanged UI-01 parent."
+}

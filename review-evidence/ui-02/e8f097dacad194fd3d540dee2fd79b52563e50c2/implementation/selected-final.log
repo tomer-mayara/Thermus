@@ -1,0 +1,233 @@
+▶ Hosted invitations through the public routes, with session and directory doubles
+  ✔ Given two Admins, when each sends a native invitation, then each can invite either role, unsupported roles are refused, and accepted Admin access includes product access (46.955708ms)
+  ✔ Given pending, accepted, revoked, and expired invitations, when an Admin resends and revokes them, then only pending invitations appear and only pending invitations of its organization change, and no invitation token reaches a page or a record (9.486709ms)
+  ✔ Given a directory that enforces the invited address and then one that accepts by its own rules, when Members opens, then the page claims a strict address match only for the first (2.591541ms)
+  ✔ Given an inactive membership with User and Admin and a pending membership with User, when an Admin invites the first address as User, another Admin invites the second as Admin, and each person accepts, then each membership becomes active with only the role of its invitation, so that no invitation restores a grant outside the authority of its sender (7.4675ms)
+  ✔ Given a pending User invitation, when an Admin sends the same address as User again, also in another letter case, then nothing is sent and the browser returns to Members; after another Admin revokes the invitation, a new send is a new invitation (7.16075ms)
+  ✔ Given an Admin without completed MFA, when it opens Members and sends either invitation role, then password access permits both and records each applied change (3.509042ms)
+✔ Hosted invitations through the public routes, with session and directory doubles (77.982333ms)
+✔ Given a password-authenticated Admin, two active Admins, and an ordinary User, when the Admin confirms Remove through Members, then only that membership is removed and the current count is two (192.822375ms)
+✔ Given a valid removable target and only actor authority changed, when the removal form is submitted, then no provider deletion occurs (90.177542ms)
+✔ Given a valid removable target and only saved organization stale, when the removal form is submitted, then no provider deletion occurs (113.525583ms)
+✔ Given a valid removable target and only organization forged, when the removal form is submitted, then no provider deletion occurs (114.725542ms)
+✔ Given a valid removable target and only saved target stale, when the removal form is submitted, then no provider deletion occurs (134.950333ms)
+✔ Given a valid removable target and only target forged, when the removal form is submitted, then no provider deletion occurs (118.488083ms)
+✔ Given a valid removable target and only revision stale, when the removal form is submitted, then no provider deletion occurs (127.088375ms)
+✔ Given a valid removable target and only revision forged, when the removal form is submitted, then no provider deletion occurs (108.393083ms)
+✔ Given a valid removable target and only method invalid, when the removal form is submitted, then no provider deletion occurs (117.746667ms)
+✔ Given a valid removable target and only origin invalid, when the removal form is submitted, then no provider deletion occurs (96.537375ms)
+✔ Given a valid removable target and only CSRF invalid, when the removal form is submitted, then no provider deletion occurs (136.685667ms)
+✔ Given a password-only last Admin and a valid self-removal form, when Remove is confirmed, then the page asks for another Admin and links to invitations without deleting the membership (113.704875ms)
+✔ Given an uncertain removal that deleted its target, when the Admin repeats the same POST and refreshes Members, then the POST is busy, current facts are shown, and no deletion is replayed (154.142542ms)
+✔ Given a confirmed removal followed by failed Members reads, when the Admin refreshes, then completion remains separate from the read failure and no deletion is replayed (145.36225ms)
+✔ Given an Admin with another eligible membership, when the Admin removes itself and follows workspace guidance, then old organization browser and MCP access are refused and the other workspace can be selected (312.585959ms)
+✔ Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation and eligible signup are usable without restoring access (140.869292ms)
+✔ Given a creator Admin with a retained start record and another Admin, when the creator removes itself, then signup offers saved-start support without making or restoring a membership (172.192166ms)
+✔ Given a provider that requires reauthentication after self-removal, when the Admin uses sign-in guidance, then the new identity-only selection offers current no-membership guidance without protected removal details (139.322125ms)
+✔ Given an unknown self-removal that took effect, when old POST and Members are refused, then identity-only guidance remains usable and the pending operation is not settled or replayed (147.363167ms)
+✔ Given a removed membership and an expired selected-workspace session, when the User opens session, then sign-in is required and a new sign-in can select only retained access without replaying removal (330.09225ms)
+✔ Given a removed membership and an expired selected-workspace session, when the User opens organizations, then sign-in is required and a new sign-in can select only retained access without replaying removal (205.241958ms)
+▶ Members through the hosted HTTP server
+  ✔ Given seven active members and six product members, when the Admin opens Members, then labelled read-only facts keep both counts and trusted self actions distinct (28.292ms)
+  ✔ Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (10.303ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (9.934833ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (15.720916ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (8.322292ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.44875ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.297583ms)
+✔ Members through the hosted HTTP server (80.258917ms)
+▶ The hosted active product member count through the public routes, with session and directory doubles
+  ✔ Given members on several pages with repeated page boundaries, when Admin-only and combined User/Admin members open the members page, then each active product member counts once, including Admin-only members, while default-role, pending, and inactive memberships and pending invitations do not count (30.898083ms)
+  ✔ Given a member page or an invitation page that fails to load, when Members opens, then each gives the failure page without a partial number or list, and the operator gets the path and the cause (4.128ms)
+✔ The hosted active product member count through the public routes, with session and directory doubles (35.604042ms)
+▶ Hosted WorkOS edition: current grants and revocation at the next request
+  ✔ Given Ada and Hal with User and Admin, each with a browser session and an MCP token for Acme, when the provider removes Admin from Ada and User from Hal, then Ada loses administration but keeps product access, and Hal keeps product and administration access with Admin alone (300.334708ms)
+  ✔ Given Bea with only User in Acme and User in Globex, when the provider removes its last grant in Acme, then WorkOS keeps the membership with only the default role: Bea is refused in Acme at the next request and has no seat there, keeps its identity and Globex, and no default role restores access (163.954333ms)
+✔ Hosted WorkOS edition: current grants and revocation at the next request (465.005125ms)
+▶ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets
+  ✔ Given Dan signed in as Admin and then changed to User in WorkOS, when Dan opens administration pages or sends an invitation with the existing form token, then current membership checks deny each request before reading members or invitations or making changes (90.889959ms)
+✔ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets (91.021458ms)
+▶ Hosted WorkOS edition: organization invitations
+  ✖ Given Dan with Admin alone, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link (217.7655ms)
+  ✔ Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, Members no longer shows the accepted invitation, and the active product members count Eve (165.421875ms)
+  ✖ Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers both roles and changes for the pending Admin invitation, the new Admin invitation succeeds, and the expired resend is refused (133.282708ms)
+✖ Hosted WorkOS edition: organization invitations (516.8535ms)
+▶ Hosted WorkOS edition: the active product member count from every WorkOS page
+  ✖ Given WorkOS pages of two memberships that repeat one membership on the next page, when Dan opens the members page, then each active product membership counts once, including Admin-only and combined User/Admin memberships, and default-role, inactive, and pending memberships count zero (200.350417ms)
+  ✔ Given a WorkOS outage on a later page of the members, when Dan opens the members page, then it gives the 500 failure page with an operator report and no partial count (106.648333ms)
+✖ Hosted WorkOS edition: the active product member count from every WorkOS page (307.214625ms)
+▶ Hosted billing with BillingFree through the public routes, with session, directory, and billing doubles
+  ✔ Given Admin alone and Admin with User, each after password sign-in, when each opens the billing page of Acme, then each sees the free plan with no billed seat and no payment form, and billing reads only Acme (25.614208ms)
+  ✔ Given User alone, a default role, and a foreign organization request, when each opens the billing page, then each gets the access denial without a billing state, and billing reads nothing (4.741209ms)
+  ✔ Given Admin without completed MFA, when it opens billing, then it reads the current free state without a billing mutation (1.968584ms)
+  ✔ Given an Admin, when it posts a form to the billing page, then it gets 405 with the allowed methods, because the free plan has no billing change, and billing gets no call and nothing is recorded (3.484375ms)
+  ✔ Given overlapping member pages and pending invitations, when an Admin reads Members and billing, then each active product member counts once and the free billing state stays unchanged (3.464583ms)
+  ✔ Given a later member-page outage, when Members is read and then read after recovery, then no partial count is shown and the recovered page has the complete count (2.954792ms)
+✔ Hosted billing with BillingFree through the public routes, with session, directory, and billing doubles (43.037083ms)
+▶ Hosted invitation management with the real composition, routes, service, and MCPServer, and provider doubles
+  ✔ Given a directory change that fails after its effect, when an Admin sends an invitation after the provider refreshed the session, then the browser gets a safe unconfirmed notice with the refreshed cookie, a status read shows the pending invitation, and a fresh duplicate form sends nothing again (17.659417ms)
+  ✔ Given a directory that cannot make a change safely, when an Admin sends an invitation, then it gets 503 with the notice, nothing changes, and each record says unsupported (1.703666ms)
+  ✔ Given the change recorder of the hosted edition, when an Admin sends and resends an invitation, then the operator log gets one info line with each record, and no line holds the form token, the session cookie, or an invitation token (2.744708ms)
+  ✔ Given an outage of the member pages after the provider refreshed the session, when the members page opens, then it gets the failure page with the refreshed session cookie and no partial count, and the operator log gets one line (0.588834ms)
+  ✔ Given the production hosted application with the WorkOS provider, when the member and invitation pages and their changes arrive with the session cookie, form token, and values of the doubles, then each asks for a sign-in without a cookie or a form, and nothing is recorded (355.999375ms)
+✔ Hosted invitation management with the real composition, routes, service, and MCPServer, and provider doubles (379.553084ms)
+▶ HostedAccountRoutes combined Members page
+  ✔ Given complete member facts with absent and unknown roles, when Members opens, then active rows have labelled facts, their own count, and only supported removal controls (10.739208ms)
+  ✔ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (6.3635ms)
+  ✔ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (2.106459ms)
+  ✔ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.616917ms)
+  ✔ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (1.166709ms)
+  ✔ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.608792ms)
+  ✔ Given an unknown identity policy, when Members opens, then it makes no strict address promise (0.416167ms)
+  ✔ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.394875ms)
+  ✔ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (1.259917ms)
+  ✔ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (1.322917ms)
+  ✔ Given a session without MFA, when Members opens, then current Admin access is sufficient (0.5165ms)
+  ✔ Given current Admin access, when GET opens the old Invitations URL, then it redirects to Members with no history page (0.295375ms)
+  ✔ Given current Admin access, when HEAD opens the old Invitations URL, then it redirects to Members with no history page (0.132083ms)
+  ✔ Given a service that denies the actor, when either page opens, then current service authorization refuses it (0.562208ms)
+  ✔ Given a failed members read, when Members opens, then no partial page or invitation form is returned (0.284125ms)
+  ✔ Given a failed invitations read, when Members opens, then no partial page or invitation form is returned (0.21175ms)
+  ✔ Given a POST request to a page, when it arrives, then no read or write runs (0.370917ms)
+  ✔ Given a PUT request to a page, when it arrives, then no read or write runs (0.260042ms)
+  ✔ Given a DELETE request to a page, when it arrives, then no read or write runs (0.283166ms)
+  ✔ Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path (0.484375ms)
+  ✔ Given a denied resolver or no selected organization, when either page opens, then the service is not asked (0.429416ms)
+✔ HostedAccountRoutes combined Members page (30.820417ms)
+✔ Given a currently authorized session and a valid legacy grant form, when the retired path receives it, then no service write runs and the response is unavailable with session cookies (3.510667ms)
+✔ Given current member data, when Members opens, then member details remain visible without grant forms (7.081875ms)
+✔ Given an ordinary active member, when Members opens, then native confirmation carries only the selected membership and Cancel is a read (5.153583ms)
+✔ Given password-only Admin access, when a valid removal is confirmed, then only the coordinator runs and completion requires no Members read (2.539542ms)
+✔ Given a removal result of denied, when it is shown, then it remains distinct and provides read-only navigation (0.575333ms)
+✔ Given a removal result of stale, when it is shown, then it remains distinct and provides read-only navigation (0.978583ms)
+✔ Given a removal result of unsupported, when it is shown, then it remains distinct and provides read-only navigation (0.434667ms)
+✔ Given a removal result of last-admin, when it is shown, then it remains distinct and provides read-only navigation (0.364208ms)
+✔ Given a removal result of busy, when it is shown, then it remains distinct and provides read-only navigation (0.31425ms)
+✔ Given a removal result of unavailable, when it is shown, then it remains distinct and provides read-only navigation (0.28675ms)
+✔ Given a removal result of unknown, when it is shown, then it remains distinct and provides read-only navigation (0.396959ms)
+✔ Given GET at the removal endpoint, when it is handled, then no coordinator call runs (0.3105ms)
+✔ Given HEAD at the removal endpoint, when it is handled, then no coordinator call runs (0.179333ms)
+✔ Given PUT at the removal endpoint, when it is handled, then no coordinator call runs (0.147208ms)
+✔ Given DELETE at the removal endpoint, when it is handled, then no coordinator call runs (0.126416ms)
+✔ Given wrong origin, when a removal form is submitted, then it is refused before the coordinator (0.196875ms)
+✔ Given missing origin, when a removal form is submitted, then it is refused before the coordinator (0.196375ms)
+✔ Given wrong CSRF, when a removal form is submitted, then it is refused before the coordinator (0.281916ms)
+✔ Given changed organization, when a removal form is submitted, then it is refused before the coordinator (0.244625ms)
+✔ Given missing revision, when a removal form is submitted, then it is refused before the coordinator (0.19075ms)
+✔ Given extra field, when a removal form is submitted, then it is refused before the coordinator (0.164ms)
+✔ Given duplicate target, when a removal form is submitted, then it is refused before the coordinator (0.186208ms)
+✔ Given empty target, when a removal form is submitted, then it is refused before the coordinator (0.192041ms)
+✔ Given invalid revision, when a removal form is submitted, then it is refused before the coordinator (0.222541ms)
+✔ Given unsupported content type, when a removal form is submitted, then it is refused before the coordinator (0.165125ms)
+✔ Given a removal that throws without an outcome, when the route answers, then uncertainty has no replay form or provider details (0.301667ms)
+✔ Given no current access, when the old removal form is submitted, then only identity-level navigation remains (0.245708ms)
+✔ Given a public base path, when removal completes, then all navigation stays inside that base path (0.226125ms)
+✔ Given the approved audit-help.md, when account help loads, then its frozen exact bytes, version and hash remain together (3.655875ms)
+✔ Given the approved members-help.md, when account help loads, then its frozen exact bytes, version and hash remain together (0.6165ms)
+✔ Given saved destination settings, when the page opens, then only a nonempty dataset selects Axiom and the token stays blank (19.655ms)
+✔ Given editable destination settings, when the user switches Axiom and Custom, then only Axiom submits a required dataset and all edits survive (4.010542ms)
+✔ Given the destination script, when the page sets CSP, then only its hash permits execution and Members keeps scripts blocked (1.368375ms)
+✔ Given a browser without scripts, when the destination form opens, then the dataset remains editable with Custom instructions (0.860417ms)
+✔ Given unavailable settings, when Audit logs renders, then full native help remains outside any form without adding a script (0.739667ms)
+✔ Given an Axiom dataset field, when Save runs, then it reaches the service with the protected settings (15.928708ms)
+✔ Given the Axiom dataset form, when a browser applies its input pattern, then valid dataset names pass and invalid names fail (0.692041ms)
+✔ Given a password Admin, when Audit logs is read, then the disabled native form has no stored token (0.484333ms)
+✔ Given an Admin reading Audit logs, when the page renders, then the short privacy notice precedes settings (4.720459ms)
+✔ Given a valid form, when Save runs, then only the trusted tenant and settings reach the service (0.567167ms)
+✔ Given a forged, stale or extra-field form, when Save runs, then there is no write (0.962041ms)
+✔ Given removed Admin permission, when Audit logs is read or saved, then no settings are returned or changed (0.2285ms)
+✔ Given an unconfirmed or throwing Save, when the browser gets its answer, then it can only read saved state (1.242125ms)
+✔ Given an unavailable or throwing read, when Audit logs opens, then its safe page contains no cause or settings (0.523625ms)
+✔ Given a hostile saved endpoint, when Audit logs renders, then values are escaped and the saved token stays write-only (0.311834ms)
+✔ Given an invalid origin, oversized body or duplicate field, when Save arrives, then the service gets no write (1.446708ms)
+✔ Given an aborted request, when its valid form finishes reading, then no Save starts (1.81325ms)
+ℹ tests 123
+ℹ suites 10
+ℹ pass 120
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7697.942584
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-workos-administration.test.js:181:5
+✖ Given Dan with Admin alone, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link (217.7655ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      'Invite',
+  +   'Remove sam@example.com',
+      'Leave Acme',
+  -   'Remove dan@example.com',
+      'Remove cal@example.com',
+      'Remove ada@example.com',
+      'Remove bea@example.com',
+      'Remove hal@example.com'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-workos-administration.test.js:201:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Invite', 'Remove sam@example.com', 'Leave Acme', 'Remove cal@example.com', 'Remove ada@example.com', 'Remove bea@example.com', 'Remove hal@example.com' ],
+    expected: [ 'Invite', 'Leave Acme', 'Remove dan@example.com', 'Remove cal@example.com', 'Remove ada@example.com', 'Remove bea@example.com', 'Remove hal@example.com' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workos-administration.test.js:253:5
+✖ Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers both roles and changes for the pending Admin invitation, the new Admin invitation succeeds, and the expired resend is refused (133.282708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      'Invite',
+  +   'Remove sam@example.com',
+  +   'Remove dan@example.com',
+      'Leave Acme',
+  -   'Remove dan@example.com',
+  -   'Remove cal@example.com',
+      'Remove ada@example.com',
+      'Remove bea@example.com',
+      'Remove hal@example.com',
+      'Resend the invitation to boss@example.com',
+      'Revoke the invitation to boss@example.com'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-workos-administration.test.js:266:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Invite', 'Remove sam@example.com', 'Remove dan@example.com', 'Leave Acme', 'Remove ada@example.com', 'Remove bea@example.com', 'Remove hal@example.com', 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com' ],
+    expected: [ 'Invite', 'Leave Acme', 'Remove dan@example.com', 'Remove cal@example.com', 'Remove ada@example.com', 'Remove bea@example.com', 'Remove hal@example.com', 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-workos-administration.test.js:276:5
+✖ Given WorkOS pages of two memberships that repeat one membership on the next page, when Dan opens the members page, then each active product membership counts once, including Admin-only and combined User/Admin memberships, and default-role, inactive, and pending memberships count zero (200.350417ms)
+  AssertionError [ERR_ASSERTION]: A repeated membership is listed more than once.
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-workos-administration.test.js:291:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

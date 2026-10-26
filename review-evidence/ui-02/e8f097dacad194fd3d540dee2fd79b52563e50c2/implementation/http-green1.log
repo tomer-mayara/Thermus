@@ -1,0 +1,512 @@
+▶ Members through the hosted HTTP server
+  ✖ Given seven active members and six product members, when the Admin opens Members, then labelled read-only facts keep both counts and trusted self actions distinct (27.752208ms)
+  ✔ Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (15.1415ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (10.60075ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (14.654208ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (4.288333ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.463792ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.893375ms)
+✖ Members through the hosted HTTP server (80.762584ms)
+▶ HostedAccountRoutes combined Members page
+  ✔ Given complete member facts with absent and unknown roles, when Members opens, then active rows have labelled facts, their own count, and only supported removal controls (11.618625ms)
+  ✔ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (3.3625ms)
+  ✖ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.479792ms)
+  ✖ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.171875ms)
+  ✖ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (3.515292ms)
+  ✖ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.943583ms)
+  ✔ Given an unknown identity policy, when Members opens, then it makes no strict address promise (0.491ms)
+  ✖ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.500125ms)
+  ✔ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (2.880458ms)
+  ✖ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (1.644791ms)
+  ✔ Given a session without MFA, when Members opens, then current Admin access is sufficient (0.399875ms)
+  ✔ Given current Admin access, when GET opens the old Invitations URL, then it redirects to Members with no history page (0.272791ms)
+  ✔ Given current Admin access, when HEAD opens the old Invitations URL, then it redirects to Members with no history page (0.153375ms)
+  ✔ Given a service that denies the actor, when either page opens, then current service authorization refuses it (0.606625ms)
+  ✔ Given a failed members read, when Members opens, then no partial page or invitation form is returned (0.313708ms)
+  ✔ Given a failed invitations read, when Members opens, then no partial page or invitation form is returned (0.227791ms)
+  ✔ Given a POST request to a page, when it arrives, then no read or write runs (0.42025ms)
+  ✔ Given a PUT request to a page, when it arrives, then no read or write runs (0.318917ms)
+  ✔ Given a DELETE request to a page, when it arrives, then no read or write runs (0.3275ms)
+  ✔ Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path (0.515584ms)
+  ✔ Given a denied resolver or no selected organization, when either page opens, then the service is not asked (0.444166ms)
+✖ HostedAccountRoutes combined Members page (32.850667ms)
+ℹ tests 28
+ℹ suites 2
+ℹ pass 21
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 372.902083
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-members.test.js:10:5
+✖ Given seven active members and six product members, when the Admin opens Members, then labelled read-only facts keep both counts and trusted self actions distinct (27.752208ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'none' !== 'member'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-members.test.js:33:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'none',
+    expected: 'member',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:39:9
+✖ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.479792ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /ann@example\.com: active\. Roles: User, Admin\./. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Members · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n' +
+    '@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n' +
+    '@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n' +
+    '*{box-sizing:border-box}\n' +
+    'html{color-scheme:dark}\n' +
+    'body{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\n' +
+    'a{color:inherit;text-underline-offset:.2em}\n' +
+    ':focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n' +
+    '.skip-link:focus{transform:none}\n' +
+    '.site-header{border-bottom:1px solid #2C2D34}\n' +
+    '.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n' +
+    '.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}\n' +
+    '.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n' +
+    '.brand img{display:block;width:166px;height:auto}\n' +
+    '.workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}\n' +
+    '.workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}\n' +
+    '.workspace-context>a{flex-shrink:0}\n' +
+    'nav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}\n' +
+    'nav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\n' +
+    'nav a{border-bottom:2px solid transparent}\n' +
+    'nav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}\n' +
+    'nav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}\n' +
+    '.members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n' +
+    '.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}\n' +
+    '.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n' +
+    '.introduction{grid-area:intro}\n' +
+    '.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\n' +
+    'h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\n' +
+    'h1{font-size:32px}h2{font-size:26px}\n' +
+    '.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n' +
+    '.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n' +
+    '.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\n' +
+    'p,li,form{overflow-wrap:anywhere;min-width:0}\n' +
+    '.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n' +
+    '.invite-card form{display:grid;gap:12px}\n' +
+    'label,legend{font-size:15px}\n' +
+    'input[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\n' +
+    '.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}\n' +
+    'fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\n' +
+    'legend{padding:0;margin-bottom:6px}\n' +
+    '.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\n' +
+    'input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\n' +
+    'button{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\n' +
+    'button:hover{border-color:#F3F2EE;background:#2C2D34}\n' +
+    '.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n' +
+    '.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n' +
+    '.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n' +
+    '.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n' +
+    '.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n' +
+    '.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n' +
+    '.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n' +
+    '.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n' +
+    '.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.logging-switch-on{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-off{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-on{display:inline}\n' +
+    '.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}\n' +
+    '.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n' +
+    '.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n' +
+    '.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n' +
+    '.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n' +
+    '.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n' +
+    '.administration-help{margin-top:24px;border-top:1px solid #43454E;padding-top:12px}\n' +
+    '.administration-help>summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 0;cursor:pointer;font-size:15px}\n' +
+    '.administration-help-content{max-width:75ch;font-size:15px;color:#B4BAC0;overflow-wrap:anywhere}\n' +
+    '.administration-help-content h3,.administration-help-content h4,.administration-help-content h5{color:#F3F2EE;line-height:1.3;margin:24px 0 12px}\n' +
+    '.administration-help-content h3{font-size:22px}.administration-help-content h4{font-size:19px}.administration-help-content h5{font-size:17px}\n' +
+    '.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n' +
+    '.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n' +
+    '.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n' +
+    '.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n' +
+    '.member-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.45fr) minmax(0,1fr);gap:24px;margin:0}\n' +
+    '.member-facts>div{min-width:0}\n' +
+    '.member-facts dt{margin:0 0 8px;font-size:13px;color:#B4BAC0}\n' +
+    '.member-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}\n' +
+    '.member-identity dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 12px}\n' +
+    '.member-email{min-width:0;overflow-wrap:anywhere}\n' +
+    '.member-row p,.invitation-list p{margin:0}\n' +
+    '.member-removal summary{width:fit-content;max-width:100%;min-width:48px;min-height:48px;padding:12px 0;border:1px solid transparent;border-radius:6px;color:#B4BAC0;background:transparent;font-size:15px;cursor:pointer}\n' +
+    '.member-removal summary:hover{color:#F3F2EE;text-decoration:underline}\n' +
+    '.removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}\n' +
+    '.removal-confirmation form{display:grid;gap:16px}\n' +
+    '.removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n' +
+    '.removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}\n' +
+    '.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n' +
+    '.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n' +
+    '.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n' +
+    '.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n' +
+    '.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n' +
+    '@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}\n' +
+    '@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n' +
+    '</style></head>\n' +
+    '<body><a class="skip-link" href="#main-content">Skip to content</a>\n' +
+    '<header class="site-header"><div class="header-content"><a class="brand" href="/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n' +
+    '<div class="workspace-context"><span class="workspace-name">Acme</span><a href="/organizations">Switch workspace</a></div>\n' +
+    '<nav aria-label="Workspace"><a href="/">Connect</a><a href="/members" aria-current="page">Members</a><a href="/logging" >Audit logs</a></nav></div></header>\n' +
+    '<main id="main-content" tabindex="-1" class="members-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>\n' +
+    '<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to Acme</h2>\n' +
+    '<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>\n' +
+    '<form method="post" action="/invitations/send">\n' +
+    '<input type='... 6926 more characters
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:47:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Members · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n*{box-sizing:border-box}\nhtml{color-scheme:dark}\nbody{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\na{color:inherit;text-underline-offset:.2em}\n:focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n.skip-link:focus{transform:none}\n.site-header{border-bottom:1px solid #2C2D34}\n.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}\n.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n.brand img{display:block;width:166px;height:auto}\n.workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}\n.workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}\n.workspace-context>a{flex-shrink:0}\nnav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}\nnav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\nnav a{border-bottom:2px solid transparent}\nnav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}\nnav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}\n.members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}\n.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n.introduction{grid-area:intro}\n.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\nh1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\nh1{font-size:32px}h2{font-size:26px}\n.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\np,li,form{overflow-wrap:anywhere;min-width:0}\n.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n.invite-card form{display:grid;gap:12px}\nlabel,legend{font-size:15px}\ninput[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\n.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}\nfieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\nlegend{padding:0;margin-bottom:6px}\n.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\ninput[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\nbutton{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\nbutton:hover{border-color:#F3F2EE;background:#2C2D34}\n.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n.logging-switch-on{display:none}\n.logging-switch input:checked~.logging-switch-off{display:none}\n.logging-switch input:checked~.logging-switch-on{display:inline}\n.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}\n.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n.administration-help{margin-top:24px;border-top:1px solid #43454E;padding-top:12px}\n.administration-help>summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 0;cursor:pointer;font-size:15px}\n.administration-help-content{max-width:75ch;font-size:15px;color:#B4BAC0;overflow-wrap:anywhere}\n.administration-help-content h3,.administration-help-content h4,.administration-help-content h5{color:#F3F2EE;line-height:1.3;margin:24px 0 12px}\n.administration-help-content h3{font-size:22px}.administration-help-content h4{font-size:19px}.administration-help-content h5{font-size:17px}\n.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n.member-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.45fr) minmax(0,1fr);gap:24px;margin:0}\n.member-facts>div{min-width:0}\n.member-facts dt{margin:0 0 8px;font-size:13px;color:#B4BAC0}\n.member-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}\n.member-identity dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 12px}\n.member-email{min-width:0;overflow-wrap:anywhere}\n.member-row p,.invitation-list p{margin:0}\n.member-removal summary{width:fit-content;max-width:100%;min-width:48px;min-height:48px;padding:12px 0;border:1px solid transparent;border-radius:6px;color:#B4BAC0;background:transparent;font-size:15px;cursor:pointer}\n.member-removal summary:hover{color:#F3F2EE;text-decoration:underline}\n.removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}\n.removal-confirmation form{display:grid;gap:16px}\n.removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n.removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}\n.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}\n@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n</style></head>\n<body><a class="skip-link" href="#main-content">Skip to content</a>\n<header class="site-header"><div class="header-content"><a class="brand" href="/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n<div class="workspace-context"><span class="workspace-name">Acme</span><a href="/organizations">Switch workspace</a></div>\n<nav aria-label="Workspace"><a href="/">Connect</a><a href="/members" aria-current="page">Members</a><a href="/logging" >Audit logs</a></nav></div></header>\n<main id="main-content" tabindex="-1" class="members-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>\n<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to Acme</h2>\n<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>\n<form method="post" action="/invitations/send">\n<input type='... 6926 more characters,
+    expected: /ann@example\.com: active\. Roles: User, Admin\./,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:39:9
+✖ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.171875ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /ann@example\.com: active\. Roles: User, Admin\./. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Members · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n' +
+    '@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n' +
+    '@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n' +
+    '*{box-sizing:border-box}\n' +
+    'html{color-scheme:dark}\n' +
+    'body{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\n' +
+    'a{color:inherit;text-underline-offset:.2em}\n' +
+    ':focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n' +
+    '.skip-link:focus{transform:none}\n' +
+    '.site-header{border-bottom:1px solid #2C2D34}\n' +
+    '.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n' +
+    '.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}\n' +
+    '.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n' +
+    '.brand img{display:block;width:166px;height:auto}\n' +
+    '.workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}\n' +
+    '.workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}\n' +
+    '.workspace-context>a{flex-shrink:0}\n' +
+    'nav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}\n' +
+    'nav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\n' +
+    'nav a{border-bottom:2px solid transparent}\n' +
+    'nav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}\n' +
+    'nav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}\n' +
+    '.members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n' +
+    '.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}\n' +
+    '.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n' +
+    '.introduction{grid-area:intro}\n' +
+    '.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\n' +
+    'h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\n' +
+    'h1{font-size:32px}h2{font-size:26px}\n' +
+    '.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n' +
+    '.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n' +
+    '.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\n' +
+    'p,li,form{overflow-wrap:anywhere;min-width:0}\n' +
+    '.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n' +
+    '.invite-card form{display:grid;gap:12px}\n' +
+    'label,legend{font-size:15px}\n' +
+    'input[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\n' +
+    '.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}\n' +
+    'fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\n' +
+    'legend{padding:0;margin-bottom:6px}\n' +
+    '.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\n' +
+    'input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\n' +
+    'button{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\n' +
+    'button:hover{border-color:#F3F2EE;background:#2C2D34}\n' +
+    '.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n' +
+    '.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n' +
+    '.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n' +
+    '.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n' +
+    '.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n' +
+    '.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n' +
+    '.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n' +
+    '.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n' +
+    '.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.logging-switch-on{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-off{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-on{display:inline}\n' +
+    '.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}\n' +
+    '.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n' +
+    '.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n' +
+    '.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n' +
+    '.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n' +
+    '.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n' +
+    '.administration-help{margin-top:24px;border-top:1px solid #43454E;padding-top:12px}\n' +
+    '.administration-help>summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 0;cursor:pointer;font-size:15px}\n' +
+    '.administration-help-content{max-width:75ch;font-size:15px;color:#B4BAC0;overflow-wrap:anywhere}\n' +
+    '.administration-help-content h3,.administration-help-content h4,.administration-help-content h5{color:#F3F2EE;line-height:1.3;margin:24px 0 12px}\n' +
+    '.administration-help-content h3{font-size:22px}.administration-help-content h4{font-size:19px}.administration-help-content h5{font-size:17px}\n' +
+    '.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n' +
+    '.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n' +
+    '.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n' +
+    '.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n' +
+    '.member-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.45fr) minmax(0,1fr);gap:24px;margin:0}\n' +
+    '.member-facts>div{min-width:0}\n' +
+    '.member-facts dt{margin:0 0 8px;font-size:13px;color:#B4BAC0}\n' +
+    '.member-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}\n' +
+    '.member-identity dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 12px}\n' +
+    '.member-email{min-width:0;overflow-wrap:anywhere}\n' +
+    '.member-row p,.invitation-list p{margin:0}\n' +
+    '.member-removal summary{width:fit-content;max-width:100%;min-width:48px;min-height:48px;padding:12px 0;border:1px solid transparent;border-radius:6px;color:#B4BAC0;background:transparent;font-size:15px;cursor:pointer}\n' +
+    '.member-removal summary:hover{color:#F3F2EE;text-decoration:underline}\n' +
+    '.removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}\n' +
+    '.removal-confirmation form{display:grid;gap:16px}\n' +
+    '.removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n' +
+    '.removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}\n' +
+    '.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n' +
+    '.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n' +
+    '.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n' +
+    '.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n' +
+    '.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n' +
+    '@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}\n' +
+    '@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n' +
+    '</style></head>\n' +
+    '<body><a class="skip-link" href="#main-content">Skip to content</a>\n' +
+    '<header class="site-header"><div class="header-content"><a class="brand" href="/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n' +
+    '<div class="workspace-context"><span class="workspace-name">Acme</span><a href="/organizations">Switch workspace</a></div>\n' +
+    '<nav aria-label="Workspace"><a href="/">Connect</a><a href="/members" aria-current="page">Members</a><a href="/logging" >Audit logs</a></nav></div></header>\n' +
+    '<main id="main-content" tabindex="-1" class="members-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>\n' +
+    '<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to Acme</h2>\n' +
+    '<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>\n' +
+    '<form method="post" action="/invitations/send">\n' +
+    '<input type='... 6926 more characters
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:47:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Members · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n*{box-sizing:border-box}\nhtml{color-scheme:dark}\nbody{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\na{color:inherit;text-underline-offset:.2em}\n:focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n.skip-link:focus{transform:none}\n.site-header{border-bottom:1px solid #2C2D34}\n.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}\n.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n.brand img{display:block;width:166px;height:auto}\n.workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}\n.workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}\n.workspace-context>a{flex-shrink:0}\nnav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}\nnav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\nnav a{border-bottom:2px solid transparent}\nnav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}\nnav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}\n.members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}\n.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n.introduction{grid-area:intro}\n.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\nh1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\nh1{font-size:32px}h2{font-size:26px}\n.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\np,li,form{overflow-wrap:anywhere;min-width:0}\n.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n.invite-card form{display:grid;gap:12px}\nlabel,legend{font-size:15px}\ninput[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\n.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}\nfieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\nlegend{padding:0;margin-bottom:6px}\n.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\ninput[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\nbutton{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\nbutton:hover{border-color:#F3F2EE;background:#2C2D34}\n.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n.logging-switch-on{display:none}\n.logging-switch input:checked~.logging-switch-off{display:none}\n.logging-switch input:checked~.logging-switch-on{display:inline}\n.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}\n.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n.administration-help{margin-top:24px;border-top:1px solid #43454E;padding-top:12px}\n.administration-help>summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 0;cursor:pointer;font-size:15px}\n.administration-help-content{max-width:75ch;font-size:15px;color:#B4BAC0;overflow-wrap:anywhere}\n.administration-help-content h3,.administration-help-content h4,.administration-help-content h5{color:#F3F2EE;line-height:1.3;margin:24px 0 12px}\n.administration-help-content h3{font-size:22px}.administration-help-content h4{font-size:19px}.administration-help-content h5{font-size:17px}\n.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n.member-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.45fr) minmax(0,1fr);gap:24px;margin:0}\n.member-facts>div{min-width:0}\n.member-facts dt{margin:0 0 8px;font-size:13px;color:#B4BAC0}\n.member-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}\n.member-identity dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 12px}\n.member-email{min-width:0;overflow-wrap:anywhere}\n.member-row p,.invitation-list p{margin:0}\n.member-removal summary{width:fit-content;max-width:100%;min-width:48px;min-height:48px;padding:12px 0;border:1px solid transparent;border-radius:6px;color:#B4BAC0;background:transparent;font-size:15px;cursor:pointer}\n.member-removal summary:hover{color:#F3F2EE;text-decoration:underline}\n.removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}\n.removal-confirmation form{display:grid;gap:16px}\n.removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n.removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}\n.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}\n@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n</style></head>\n<body><a class="skip-link" href="#main-content">Skip to content</a>\n<header class="site-header"><div class="header-content"><a class="brand" href="/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n<div class="workspace-context"><span class="workspace-name">Acme</span><a href="/organizations">Switch workspace</a></div>\n<nav aria-label="Workspace"><a href="/">Connect</a><a href="/members" aria-current="page">Members</a><a href="/logging" >Audit logs</a></nav></div></header>\n<main id="main-content" tabindex="-1" class="members-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>\n<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to Acme</h2>\n<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>\n<form method="post" action="/invitations/send">\n<input type='... 6926 more characters,
+    expected: /ann@example\.com: active\. Roles: User, Admin\./,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:60:9
+✖ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (3.515292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      {
+        action: '/invitations/send',
+        fields: {
+          csrf_token: 'csrf-token-of-user-ann',
+  ...
+        },
+  +     label: 'Leave Acme'
+  -     label: 'Remove ann@example.com'
+      },
+      {
+        action: '/invitations/resend',
+        fields: {
+          csrf_token: 'csrf-token-of-user-ann',
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:63:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { action: '/invitations/send', fields: [Object], label: 'Invite' }, { action: '/members/remove', fields: [Object], label: 'Leave Acme' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to new@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to new@example.com' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to boss@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to boss@example.com' } ],
+    expected: [ { action: '/invitations/send', fields: [Object], label: 'Invite' }, { action: '/members/remove', fields: [Object], label: 'Remove ann@example.com' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to new@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to new@example.com' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to boss@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to boss@example.com' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:60:9
+✖ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.943583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      {
+        action: '/invitations/send',
+        fields: {
+          csrf_token: 'csrf-token-of-user-ann',
+  ...
+        },
+  +     label: 'Leave Acme'
+  -     label: 'Remove ann@example.com'
+      },
+      {
+        action: '/invitations/resend',
+        fields: {
+          csrf_token: 'csrf-token-of-user-ann',
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:63:20)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { action: '/invitations/send', fields: [Object], label: 'Invite' }, { action: '/members/remove', fields: [Object], label: 'Leave Acme' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to new@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to new@example.com' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to boss@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to boss@example.com' } ],
+    expected: [ { action: '/invitations/send', fields: [Object], label: 'Invite' }, { action: '/members/remove', fields: [Object], label: 'Remove ann@example.com' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to new@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to new@example.com' }, { action: '/invitations/resend', fields: [Object], label: 'Resend the invitation to boss@example.com' }, { action: '/invitations/revoke', fields: [Object], label: 'Revoke the invitation to boss@example.com' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:89:5
+✖ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.500125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      'Invite',
+  +   'Leave Acme'
+  -   'Remove ann@example.com'
+    ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:93:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Invite', 'Leave Acme' ],
+    expected: [ 'Invite', 'Remove ann@example.com' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:114:5
+✖ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (1.644791ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /Roles: custom-&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;, toString\./. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Members · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n' +
+    '@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n' +
+    '@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n' +
+    '*{box-sizing:border-box}\n' +
+    'html{color-scheme:dark}\n' +
+    'body{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\n' +
+    'a{color:inherit;text-underline-offset:.2em}\n' +
+    ':focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n' +
+    '.skip-link:focus{transform:none}\n' +
+    '.site-header{border-bottom:1px solid #2C2D34}\n' +
+    '.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n' +
+    '.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}\n' +
+    '.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n' +
+    '.brand img{display:block;width:166px;height:auto}\n' +
+    '.workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}\n' +
+    '.workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}\n' +
+    '.workspace-context>a{flex-shrink:0}\n' +
+    'nav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}\n' +
+    'nav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\n' +
+    'nav a{border-bottom:2px solid transparent}\n' +
+    'nav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}\n' +
+    'nav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}\n' +
+    '.members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n' +
+    '.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}\n' +
+    '.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n' +
+    '.introduction{grid-area:intro}\n' +
+    '.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\n' +
+    'h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\n' +
+    'h1{font-size:32px}h2{font-size:26px}\n' +
+    '.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n' +
+    '.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n' +
+    '.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\n' +
+    'p,li,form{overflow-wrap:anywhere;min-width:0}\n' +
+    '.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n' +
+    '.invite-card form{display:grid;gap:12px}\n' +
+    'label,legend{font-size:15px}\n' +
+    'input[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\n' +
+    '.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}\n' +
+    'fieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\n' +
+    'legend{padding:0;margin-bottom:6px}\n' +
+    '.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\n' +
+    'input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\n' +
+    'button{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\n' +
+    'button:hover{border-color:#F3F2EE;background:#2C2D34}\n' +
+    '.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n' +
+    '.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n' +
+    '.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n' +
+    '.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n' +
+    '.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n' +
+    '.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n' +
+    '.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n' +
+    '.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n' +
+    '.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n' +
+    '.logging-switch-on{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-off{display:none}\n' +
+    '.logging-switch input:checked~.logging-switch-on{display:inline}\n' +
+    '.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}\n' +
+    '.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n' +
+    '.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n' +
+    '.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n' +
+    '.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n' +
+    '.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n' +
+    '.administration-help{margin-top:24px;border-top:1px solid #43454E;padding-top:12px}\n' +
+    '.administration-help>summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 0;cursor:pointer;font-size:15px}\n' +
+    '.administration-help-content{max-width:75ch;font-size:15px;color:#B4BAC0;overflow-wrap:anywhere}\n' +
+    '.administration-help-content h3,.administration-help-content h4,.administration-help-content h5{color:#F3F2EE;line-height:1.3;margin:24px 0 12px}\n' +
+    '.administration-help-content h3{font-size:22px}.administration-help-content h4{font-size:19px}.administration-help-content h5{font-size:17px}\n' +
+    '.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n' +
+    '.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n' +
+    '.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n' +
+    '.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n' +
+    '.member-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.45fr) minmax(0,1fr);gap:24px;margin:0}\n' +
+    '.member-facts>div{min-width:0}\n' +
+    '.member-facts dt{margin:0 0 8px;font-size:13px;color:#B4BAC0}\n' +
+    '.member-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}\n' +
+    '.member-identity dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 12px}\n' +
+    '.member-email{min-width:0;overflow-wrap:anywhere}\n' +
+    '.member-row p,.invitation-list p{margin:0}\n' +
+    '.member-removal summary{width:fit-content;max-width:100%;min-width:48px;min-height:48px;padding:12px 0;border:1px solid transparent;border-radius:6px;color:#B4BAC0;background:transparent;font-size:15px;cursor:pointer}\n' +
+    '.member-removal summary:hover{color:#F3F2EE;text-decoration:underline}\n' +
+    '.removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}\n' +
+    '.removal-confirmation form{display:grid;gap:16px}\n' +
+    '.removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n' +
+    '.removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}\n' +
+    '.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n' +
+    '.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n' +
+    '.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n' +
+    '.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n' +
+    '.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n' +
+    '.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n' +
+    '@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}\n' +
+    '@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n' +
+    '</style></head>\n' +
+    '<body><a class="skip-link" href="#main-content">Skip to content</a>\n' +
+    '<header class="site-header"><div class="header-content"><a class="brand" href="/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n' +
+    '<div class="workspace-context"><span class="workspace-name">Acme &quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;</span><a href="/organizations">Switch workspace</a></div>\n' +
+    '<nav aria-label="Workspace"><a href="/">Connect</a><a href="/members" aria-current="page">Members</a><a href="/logging" >Audit logs</a></nav></div></header>\n' +
+    '<main id="main-content" tabindex="-1" class="members-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>\n' +
+    '<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to Acme &quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;</h2>\n' +
+    '<p>User gives product and MCP access. Admin includes product and MCP access and can inv'... 5628 more characters
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:126:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Members · Thermus</title><link rel="icon" href="/assets/thermus-favicon.svg" type="image/svg+xml"><style>\n@font-face{font-family:"IBM Plex Sans";src:url("/assets/plex-sans-latin.woff2") format("woff2");font-style:normal;font-weight:100 700;font-display:swap}\n@font-face{font-family:"IBM Plex Serif";src:url("/assets/plex-serif-500-latin.woff2") format("woff2");font-style:normal;font-weight:500;font-display:swap}\n*{box-sizing:border-box}\nhtml{color-scheme:dark}\nbody{margin:0;min-height:100svh;display:grid;grid-template-rows:auto 1fr auto;background:#17181D;color:#F3F2EE;font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}\na{color:inherit;text-underline-offset:.2em}\n:focus-visible{outline:3px solid #F3F2EE;outline-offset:5px}\n.skip-link{position:absolute;left:20px;top:12px;z-index:2;padding:12px 20px;background:#F3F2EE;color:#17181D;transform:translateY(-160%)}\n.skip-link:focus{transform:none}\n.site-header{border-bottom:1px solid #2C2D34}\n.header-content,.members-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}\n.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}\n.brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}\n.brand img{display:block;width:166px;height:auto}\n.workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}\n.workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}\n.workspace-context>a{flex-shrink:0}\nnav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}\nnav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}\nnav a{border-bottom:2px solid transparent}\nnav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}\nnav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}\n.members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}\n.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}\n.members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}\n.introduction{grid-area:intro}\n.eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}\nh1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}\nh1{font-size:32px}h2{font-size:26px}\n.introduction>p:last-child{color:#B4BAC0;margin-bottom:0}\n.invite-card,.members-card{min-width:0;padding:28px;background:#212228;border:1px solid #43454E;border-radius:12px}\n.invite-card{grid-area:invite}.member-lists{grid-area:lists;display:grid;gap:24px;min-width:0}\np,li,form{overflow-wrap:anywhere;min-width:0}\n.invite-card>p,.list-note{font-size:15px;color:#B4BAC0}\n.invite-card form{display:grid;gap:12px}\nlabel,legend{font-size:15px}\ninput[type=email],input[type=url],input[type=password],input[type=text]{min-width:0;width:100%;min-height:48px;padding:12px;border:1px solid #7B7E88;border-radius:6px;background:#17181D;color:#F3F2EE;font:inherit}\n.logging-layout #logging-token::placeholder{color:#B4BAC0;opacity:1}\nfieldset{display:flex;flex-wrap:wrap;gap:12px;border:0;padding:0;margin:4px 0 8px}\nlegend{padding:0;margin-bottom:6px}\n.role-option{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding-right:20px;cursor:pointer}\ninput[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:#E8552A}\nbutton{min-height:48px;max-width:100%;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font:600 15px/1.4 "IBM Plex Sans",system-ui,sans-serif;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\nbutton:hover{border-color:#F3F2EE;background:#2C2D34}\n.invite-card button{background:#E8552A;border-color:#E8552A;color:#17181D}\n.invite-card button:hover{background:#F06B45;border-color:#F06B45}\n.logging-switch{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:48px;width:fit-content;cursor:pointer}\n.logging-switch input{position:absolute;left:0;width:48px;height:28px;margin:0;opacity:0;cursor:pointer}\n.logging-switch-track{pointer-events:none;position:relative;flex-shrink:0;width:48px;height:28px;border:1px solid #7B7E88;border-radius:14px;background:#43454E}\n.logging-switch-track::before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#F3F2EE}\n.logging-switch input:checked+.logging-switch-track{background:#E8552A;border-color:#E8552A}\n.logging-switch input:checked+.logging-switch-track::before{transform:translateX(20px);background:#17181D}\n.logging-switch input:focus-visible+.logging-switch-track{outline:3px solid #F3F2EE;outline-offset:5px}\n.logging-switch-on{display:none}\n.logging-switch input:checked~.logging-switch-off{display:none}\n.logging-switch input:checked~.logging-switch-on{display:inline}\n.logging-save-status{min-height:1.55em;margin:0;font-size:15px;color:#B4BAC0}\n.logging-actions{display:flex;flex-wrap:wrap;gap:12px}\n.logging-actions .secondary-action{background:#43454E;border-color:#7B7E88;color:#F3F2EE}\n.logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}\n.logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}\n.destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}\n.administration-help{margin-top:24px;border-top:1px solid #43454E;padding-top:12px}\n.administration-help>summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 0;cursor:pointer;font-size:15px}\n.administration-help-content{max-width:75ch;font-size:15px;color:#B4BAC0;overflow-wrap:anywhere}\n.administration-help-content h3,.administration-help-content h4,.administration-help-content h5{color:#F3F2EE;line-height:1.3;margin:24px 0 12px}\n.administration-help-content h3{font-size:22px}.administration-help-content h4{font-size:19px}.administration-help-content h5{font-size:17px}\n.policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}\n.member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}\n.member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}\n.member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}\n.member-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.45fr) minmax(0,1fr);gap:24px;margin:0}\n.member-facts>div{min-width:0}\n.member-facts dt{margin:0 0 8px;font-size:13px;color:#B4BAC0}\n.member-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}\n.member-identity dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 12px}\n.member-email{min-width:0;overflow-wrap:anywhere}\n.member-row p,.invitation-list p{margin:0}\n.member-removal summary{width:fit-content;max-width:100%;min-width:48px;min-height:48px;padding:12px 0;border:1px solid transparent;border-radius:6px;color:#B4BAC0;background:transparent;font-size:15px;cursor:pointer}\n.member-removal summary:hover{color:#F3F2EE;text-decoration:underline}\n.removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}\n.removal-confirmation form{display:grid;gap:16px}\n.removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n.removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}\n.you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}\n.expiry{font-size:13px;color:#B4BAC0;padding-top:8px}\n.invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}\n.invitation-actions form{flex:1 1 180px}.invitation-actions button{width:100%;font-size:13px}\n.invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}\n.invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}\n.site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}\n@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}\n@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}\n</style></head>\n<body><a class="skip-link" href="#main-content">Skip to content</a>\n<header class="site-header"><div class="header-content"><a class="brand" href="/" aria-label="Thermus home"><img src="/assets/thermus-logo.svg" alt="thermus" width="166" height="40"></a>\n<div class="workspace-context"><span class="workspace-name">Acme &quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;</span><a href="/organizations">Switch workspace</a></div>\n<nav aria-label="Workspace"><a href="/">Connect</a><a href="/members" aria-current="page">Members</a><a href="/logging" >Audit logs</a></nav></div></header>\n<main id="main-content" tabindex="-1" class="members-layout"><div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>\n<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to Acme &quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;</h2>\n<p>User gives product and MCP access. Admin includes product and MCP access and can inv'... 5628 more characters,
+    expected: /Roles: custom-&quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;, toString\./,
+    operator: 'match',
+    diff: 'simple'
+  }

@@ -1,0 +1,55 @@
+▶ HostedAccountRoutes combined Members page
+  ✖ Given complete member facts with absent and unknown roles, when Members opens, then active rows have labelled facts, their own count, and only supported removal controls (10.311875ms)
+  ✖ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (4.746792ms)
+✖ HostedAccountRoutes combined Members page (16.020583ms)
+ℹ tests 2
+ℹ suites 1
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 188.762583
+
+✖ failing tests:
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:10:5
+✖ Given complete member facts with absent and unknown roles, when Members opens, then active rows have labelled facts, their own count, and only supported removal controls (10.311875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Active members'
+  - 'Active members (3)'
+                   ^
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:16:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Active members',
+    expected: 'Active members (3)',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:95:5
+✖ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (4.746792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + null
+  - 'Remove ann@example.com from Acme'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:110:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 'Remove ann@example.com from Acme',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

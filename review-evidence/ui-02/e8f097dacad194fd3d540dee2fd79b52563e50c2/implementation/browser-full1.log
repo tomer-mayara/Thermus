@@ -1,0 +1,28 @@
+✔ Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill (694.141292ms)
+✔ Given labelled member rows at 320px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (586.218125ms)
+✔ Given labelled member rows at 1280px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (502.149041ms)
+✔ Given a fresh other Remove confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write (458.563625ms)
+✔ Given a fresh other Remove confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write (505.985417ms)
+✔ Given a fresh other Remove confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links (492.512834ms)
+✔ Given a fresh other Remove confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links (485.089417ms)
+✔ Given a fresh self Leave confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write (506.962584ms)
+✔ Given a fresh self Leave confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write (504.656458ms)
+✔ Given a fresh self Leave confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links (537.088625ms)
+✔ Given a fresh self Leave confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links (589.699084ms)
+✔ Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (884.784ms)
+✔ Given Audit logs without JavaScript, when an Admin opens full help by keyboard at narrow and desktop widths, then all approved text and links are readable without overflow or a write (648.743542ms)
+Audit tablet geometry {"width":800,"navigation":{"x":24,"y":76,"width":752,"height":48},"main":{"x":24,"y":125,"width":752,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":752,"height":1206.1875}}
+Audit tablet geometry {"width":860,"navigation":{"x":24,"y":76,"width":812,"height":48},"main":{"x":24,"y":125,"width":812,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":812,"height":1206.1875}}
+✔ Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width (475.656625ms)
+✔ Given built Members with JavaScript off at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1335.030291ms)
+✔ Given built Members with JavaScript off at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1450.011ms)
+✔ Given built Members with JavaScript on at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1380.117542ms)
+✔ Given built Members with JavaScript on at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1416.043791ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13922.880209

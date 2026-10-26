@@ -1,0 +1,58 @@
+✖ Given labelled member rows at 320px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (985.49225ms)
+✖ Given labelled member rows at 1280px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (336.249125ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1716.753583
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:17:5
+✖ Given labelled member rows at 320px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (985.49225ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'Member',
+  -   'Role',
+  -   'Action'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:27:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'Member', 'Role', 'Action' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:17:5
+✖ Given labelled member rows at 1280px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red (336.249125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'Member',
+  -   'Role',
+  -   'Action'
+  - ]
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:27:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'Member', 'Role', 'Action' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
