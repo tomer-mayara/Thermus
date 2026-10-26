@@ -1,10 +1,10 @@
 {
   "version": 1,
   "classification": {
-    "container": true,
+    "container": false,
     "external": false,
     "contract": false,
-    "deployment": true,
+    "deployment": false,
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documentation only. Two decision records under architecture/decisions/ decide the per-tenant container design and the free and team tiers of the self on-boarding plan (PR #259), from the owner answers D-1 to D-15 of 26 October 2026. The container record: one public origin with the MCP gateway inside MCPServer, Render private tenant services without credentials, an Ed25519-signed access context with an audit relay, one GHCR image with two roles, a tenant on first need, and the instance and capacity of each tier. The tiers record: free with at most 5 members, team priced for each active member through the WorkOS Seat Sync meter and Stripe, and subscription state in the existing Supabase PostgreSQL project. The container and deployment flags name the topology and deployment that these records decide; later tickets of the plan implement them. This candidate changes no source, registry view, declaration, or deployment. The organization administration plan gains one dated sentence: its free-only rule no longer applies to the tenant containers and the paid tier.",
+    "summary": "CI tooling only: a manual GitHub Actions workflow builds Dockerfile.hosted once on a native AMD64 runner, runs the hosted image gate against that image through the new test setting THERMUS_HOSTED_GATE_IMAGE, and pushes the tested image to GHCR by commit; the missing-portal case of the gate mounts its empty anonymous volume without readonly, which the Docker Engine 28.0.4 of the runner refuses. No source, runtime, registry view, declaration, or deployment changes; the Slice 1 evidence record, the gate policy, and the README describe the workflow and its runs.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,10 +27,11 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "architecture/decisions/2026-10-26-per-tenant-containers.md",
-      "architecture/decisions/2026-10-26-tiers-and-billing.md",
-      "docs/implementation/self-onboarding-plan.md",
-      "docs/design/organization-admin-plan.md"
+      ".github/workflows/hosted-image.yml",
+      "test/support/container/hosted-image-gate.ts",
+      "docs/implementation/self-onboarding-s1.md",
+      "docs/implementation/test-gate-policy.md",
+      "README.md"
     ]
   }
 }

@@ -75,6 +75,7 @@ jobs:
           docker push "$IMAGE:$GITHUB_SHA"
           echo "seconds=$SECONDS" >> "$GITHUB_OUTPUT"
       # The tested image ID is the pushed digest with the containerd image store, and the config digest without it.
+      # The table goes to the job summary and to the log, so gh run view --log shows it too.
       - name: Record the digest, the build time, and the compressed size
         env:
           BUILD_SECONDS: ${{ steps.build.outputs.seconds }}
@@ -110,4 +111,4 @@ jobs:
             echo "| Push time | $PUSH_SECONDS s |"
             echo "| Tested image ID | \`$tested\` |"
             echo "| Config digest | \`$config\` |"
-          } >> "$GITHUB_STEP_SUMMARY"
+          } | tee -a "$GITHUB_STEP_SUMMARY"

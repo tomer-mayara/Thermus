@@ -555,6 +555,12 @@ The [RHD-03 record](rhd-03.md) tracks the case details and results.
 The gate allows 60 minutes for its build and image cases. This allowance
 does not change production readiness or shutdown limits.
 
+The workflow `.github/workflows/hosted-image.yml` runs this gate on a native
+AMD64 GitHub runner by manual dispatch and then pushes the tested image to GHCR
+([evidence](self-onboarding-s1.md#so-01b-hosted-image-on-a-native-amd64-runner)).
+It builds `Dockerfile.hosted` once with Buildx and names that image in
+`THERMUS_HOSTED_GATE_IMAGE`, so the gate tests it and builds no image of its own.
+
 A successful build alone does not pass the runtime gate. A pass of the
 self-hosted container gate, host renderer gate, or ARM64 image does not prove
 this Linux AMD64 image. A pass does not prove real WorkOS behavior or a
