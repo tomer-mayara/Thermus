@@ -1,0 +1,113 @@
+name: Hosted image
+
+# Manual dispatch only. SO-02 of the self on-boarding plan makes this workflow the release path.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: hosted-image-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/tomer-mayara/thermus-hosted
+
+jobs:
+  hosted-image:
+    name: Build, gate, and push the hosted image
+    runs-on: ubuntu-latest
+    # The hosted image gate allows 60 minutes for its build and image cases.
+    timeout-minutes: 120
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # Without the submodule: Dockerfile.hosted.dockerignore keeps tools/ out of the build context.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Install the pnpm of packageManager
+        run: npm install --global "$(node -p "require('./package.json').packageManager.split('+')[0]")"
+      - run: pnpm install --frozen-lockfile
+      - name: Describe the runner
+        run: |
+          echo "CPUs: $(nproc)"
+          free --mebi
+          df --human-readable /
+          docker version --format 'Docker Engine {{.Server.Version}} on {{.Server.Os}}/{{.Server.Arch}}'
+          docker info --format 'Storage: {{.Driver}} {{.DriverStatus}}'
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # The image build runs npm run build:hosted without network access. A failed check stops the build, so no image
+      # exists for the later steps.
+      - name: Build Dockerfile.hosted for linux/amd64
+        id: build
+        timeout-minutes: 60
+        run: |
+          SECONDS=0
+          docker buildx build --platform linux/amd64 --file Dockerfile.hosted --provenance=false --load \
+            --progress=plain --tag "$IMAGE:$GITHUB_SHA" .
+          echo "seconds=$SECONDS" >> "$GITHUB_OUTPUT"
+      # The gate tests the image of the build step instead of building its own, so the pushed image is the tested image.
+      - name: Run the hosted image gate
+        id: gate
+        timeout-minutes: 30
+        env:
+          THERMUS_HOSTED_GATE_IMAGE: ${{ env.IMAGE }}:${{ github.sha }}
+        run: |
+          SECONDS=0
+          npm run test:container:hosted
+          echo "seconds=$SECONDS" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push the tested image
+        id: push
+        timeout-minutes: 15
+        run: |
+          SECONDS=0
+          docker push "$IMAGE:$GITHUB_SHA"
+          echo "seconds=$SECONDS" >> "$GITHUB_OUTPUT"
+      # The tested image ID is the pushed digest with the containerd image store, and the config digest without it.
+      - name: Record the digest, the build time, and the compressed size
+        env:
+          BUILD_SECONDS: ${{ steps.build.outputs.seconds }}
+          GATE_SECONDS: ${{ steps.gate.outputs.seconds }}
+          PUSH_SECONDS: ${{ steps.push.outputs.seconds }}
+        run: |
+          reference="$IMAGE:$GITHUB_SHA"
+          digest=$(docker buildx imagetools inspect "$reference" --format '{{json .Manifest}}' | jq -r .digest)
+          manifest_digest=$digest
+          manifest=$(docker buildx imagetools inspect "$IMAGE@$digest" --raw)
+          if jq -e .manifests <<<"$manifest" >/dev/null; then
+            manifest_digest=$(jq -r '[.manifests[] | select(.platform.os == "linux" and .platform.architecture == "amd64")][0].digest' <<<"$manifest")
+            manifest=$(docker buildx imagetools inspect "$IMAGE@$manifest_digest" --raw)
+          fi
+          config=$(jq -r .config.digest <<<"$manifest")
+          layers=$(jq '.layers | length' <<<"$manifest")
+          bytes=$(jq '[.layers[].size] | add' <<<"$manifest")
+          tested=$(docker image inspect --format '{{.Id}}' "$reference")
+          case "$tested" in
+            "$digest" | "$manifest_digest" | "$config") ;;
+            *) echo "::error::The pushed image $digest does not match the tested image $tested"; exit 1 ;;
+          esac
+          {
+            echo "### Hosted image"
+            echo
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Pull by digest | \`$IMAGE@$digest\` |"
+            echo "| Tag | \`$reference\` |"
+            echo "| Compressed size | $bytes bytes ($(awk -v b="$bytes" 'BEGIN { printf "%.1f", b / 1048576 }') MiB), $layers layers, linux/amd64 |"
+            echo "| Build time | $BUILD_SECONDS s, Buildx build of \`Dockerfile.hosted\` with its offline checks |"
+            echo "| Gate time | $GATE_SECONDS s, \`npm run test:container:hosted\` against the built image |"
+            echo "| Push time | $PUSH_SECONDS s |"
+            echo "| Tested image ID | \`$tested\` |"
+            echo "| Config digest | \`$config\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
