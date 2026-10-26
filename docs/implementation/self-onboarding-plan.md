@@ -3,7 +3,7 @@
 Date: 26 October 2026. Status: revision 4. The owner answered the decisions
 D-1 to D-14 on 26 October 2026. Section 5 records the answers, and the rest of
 the plan follows them. The plan is based on `main` after the Slice 2.5
-member-removal merges of the same day. This plan changes no code, no Render setting, no WorkOS
+member-removal merges of the same day, PRs #251 to #257. This plan changes no code, no Render setting, no WorkOS
 setting, and no legal text.
 
 ## 1. Goal
@@ -75,7 +75,7 @@ Section 9 keeps the per-tenant hostname design as a later option.
 | Signup | `GET /signup` shows the notice, the sign-in, then a form with the organization name and one agreement. `POST /signup` creates the WorkOS organization with external ID `thermus-signup:<hash>` and a ten-field acceptance record in its metadata, creates the first Admin membership, selects the organization, and opens the portal. Eligibility needs a verified email only. Local admission: 8 concurrent POSTs and 3 attempts for each subject in a minute. | [workos-signup-routes.ts](../../src/interfaces/web/auth/workos/workos-signup-routes.ts), [workos-signup.ts](../../src/accounts/providers/workos/workos-signup.ts) |
 | Switch and bundle | `SELF_SERVE_SIGNUP_ENABLED` is read at startup. `true` needs a document bundle with purpose `organization-creation`. Production selects the v3 organization Audit bundle, `s204-organization-audit-proposal-2026-10-24-v3`. Its repository README still calls it an unapproved review candidate, while PR #248 records a notice approval. Confirm the approval status before signup opens. | [workos-signup-settings.ts](../../src/accounts/providers/workos/workos-signup-settings.ts), [bundle](../../src/accounts/providers/workos/workos-organization-audit-documents.ts), [v3 README](../legal/organization-audit-2026-10-24-proposal-v3/README.md) |
 | Roles | `user` gives `product:access`. `admin` gives product access, `user-grants:manage`, `admin-grants:manage`, and `billing:manage`. Other roles give nothing. | [hosted-role-mapping.ts](../../src/accounts/providers/workos/hosted-role-mapping.ts) |
-| Members | The members page counts active memberships with product access, Admin alone included. Invitations are native WorkOS invitations. Acceptance happens in AuthKit, outside the application. Since the Slice 2.5 merges of 26 October 2026 (PRs #251, #253, and #254), an Admin can remove an ordinary member on the Members page through a removal coordinator with a durable per-organization operation record in PostgreSQL. PRs #255 and #257 complete its verification and release controls. No code changes a role. | [administration-overviews.ts](../../src/accounts/organizations/administration-overviews.ts), [organization-directory.ts](../../src/accounts/organizations/organization-directory.ts), [removal-operation-store.ts](../../src/accounts/organizations/removal-operation-store.ts) |
+| Members | The members page counts active memberships with product access, Admin alone included. Invitations are native WorkOS invitations. Acceptance happens in AuthKit, outside the application. Since the Slice 2.5 merges of 26 October 2026 (PRs #251, #253, and #254), an Admin can remove an ordinary member on the Members page through a removal coordinator with a durable per-organization operation record in PostgreSQL. Its verification, release controls, and safety-scan repair merged in PRs #255 and #257 on the same day; the [S2.5-02 ledger](admin-s2-5-02.md) says that the removal release is still pending. No code changes a role. | [administration-overviews.ts](../../src/accounts/organizations/administration-overviews.ts), [organization-directory.ts](../../src/accounts/organizations/organization-directory.ts), [removal-operation-store.ts](../../src/accounts/organizations/removal-operation-store.ts) |
 | Billing | `Billing` has `stateOf()` and `updateSeats()`. `BillingFree` is the only implementation. `BillingState.plan` is the literal `'free'`. The billing page needs `billing:manage` and has no form. The portal JSON gives `plan: 'free'`, and the browser code refuses any other value. | [billing.ts](../../src/accounts/billing/billing.ts), [billing-page.ts](../../src/interfaces/web/account/billing-page.ts), [portal-access.ts](../../src/interfaces/web/account/portal-access.ts), [portal.ts](../../src/interfaces/user-portal/portal.ts) |
 | Access | `verifyAccessToken()` checks the issuer, the audience `https://app.thermus.ai/mcp`, and the Connect claims, and takes the organization from `org_id`. It checks no membership. `resolve()` then reads the current membership from WorkOS. A token without `org_id` gets a `403` denial. The tenant ID is `authority:organizationId`. | [workos-auth-provider.ts](../../src/accounts/providers/workos/workos-auth-provider.ts), [mcp-server.ts](../../src/interfaces/mcp/mcp-server.ts) |
 | MCP server | The SDK handler serves each HTTP request with a fresh server instance and keeps no session between requests. GET and DELETE get `405`. A tool call can stream its answer as SSE inside that one request. The bearer challenge and the access check are private steps of `MCPServer`; `ProtectedResourceEndpoint` wraps it for the metadata. | [mcp-server.ts](../../src/interfaces/mcp/mcp-server.ts), [protected-resource-endpoint.ts](../../src/interfaces/mcp/protected-resource-endpoint.ts) |
@@ -152,10 +152,13 @@ Render API facts that the plan uses, from the Render documentation:
   to `https://app.thermus.ai/signup`. The header **Sign in** link goes to the
   app. The [free subscription guide](../free-subscription-guide.md) says that
   the link opens signup; that sentence is stale.
-- The [release verification](admin-s1-staging-release-verification.md) keeps
-  open holds: the failed alternate-address join, the native generic error
-  after a concurrent revoke, and the deferred mailbox checks. The owner
-  decides their disposition before signup opens.
+- The [release verification](admin-s1-staging-release-verification.md) of
+  23 October is now a historical record. It keeps the native-flow holds, the
+  failed alternate-address join and the native generic error after a
+  concurrent revoke, and the deferred mailbox checks. Current holds live in
+  the [S2-04 ledger](admin-s2-04.md) and, for removal, in the
+  [S2.5-02 ledger](admin-s2-5-02.md). The owner decides their disposition
+  before signup opens.
 
 ### 3.5 Delivery process
 
@@ -669,7 +672,7 @@ consider a smaller instance for it. Size S. Depends on SO-14.
 | PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A runbook resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |
 | Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-15. |
-| Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal merged on 26 October 2026; its verification and release controls are still open in PRs #255 and #257. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
+| Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal and its verification merged on 26 October 2026 (PRs #251 to #257); the removal release itself is still pending in the S2.5-02 ledger. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
 | Billed count | WorkOS counts every active membership, also a membership with only the default role, which gives no product access. | Default-role memberships do not exist in normal use; the fleet summary reports one. |
 | Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01. Keep old digests for rollback. Prune GHCR under its quota. |
 | Legal | Paid fees are outside the approved Terms. The runtime bundle status needs confirmation. The published price must match Stripe. | SO-10 before any customer reaches Checkout. |
