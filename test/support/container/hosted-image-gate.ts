@@ -60,7 +60,7 @@ export class HostedImageGate {
   }
 
   rejectedMissingPortal(signal: AbortSignal): Promise<{ code: number; logs: string }> {
-    return this.startupFailure({}, ['--mount', 'type=volume,dst=/app/src/interfaces/user-portal/dist,volume-nocopy,readonly'], signal);
+    return this.startupFailure({}, ['--mount', 'type=volume,dst=/app/src/interfaces/user-portal/dist,volume-nocopy'], signal);
   }
 
   private async createAndStart(environment: Readonly<Record<string, string>>, options: readonly string[], signal: AbortSignal): Promise<string> {
