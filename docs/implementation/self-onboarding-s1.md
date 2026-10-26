@@ -227,9 +227,10 @@ update the credential in Render, and then delete the old token on GitHub.
 
 ## SO-01d: gateway proxy and private network
 
-Date: 26 October 2026. Branch `self-ob-s1-so-01d-gateway-proxy-probe-012463`,
-on the SO-01b branch at `6fcfe3fb`. Part one is a local probe. Part two needs
-the private service of SO-01c.
+Date: 26 October 2026. Part one is a local probe, in pull request
+[#269](https://github.com/tomer-mayara/Thermus/pull/269), branch
+`self-ob-s1-so-01d-gateway-proxy-probe-012463`. Part two needs the private
+service of SO-01c.
 
 ### Part one: what the probe models
 
@@ -287,8 +288,10 @@ checks).
 
 ### Part one: measured times
 
-Run 1 of 5, on 26 October 2026, on the owner's Mac (Darwin 27.0.0) at commit
-`506e88ed`. The table and the conclusions are as the script printed them. The
+Run 1 of 5, on 26 October 2026, on the owner's Mac (Darwin 27.0.0), with the
+probe source of pull request #269; the later commits of that pull request
+change only the record and the declaration. The table and the conclusions are
+as the script printed them. The
 script printed this line first: "Node v24.20.0, @modelcontextprotocol/server
 2.3.1, @modelcontextprotocol/client 2.3.1, protocol 2026-07-28. Times are
 milliseconds after the start of each call, on one clock; a "+" time is after
