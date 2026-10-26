@@ -24,14 +24,14 @@ describe('Hosted invitation management with the real composition, routes, servic
   test('Given a directory change that fails after its effect, when an Admin sends an invitation after the provider refreshed the session, then the browser gets a safe unconfirmed notice with the refreshed cookie, a status read shows the pending invitation, and a fresh duplicate form sends nothing again', async (t) => {
     const site = open(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const invitation = formLabelled((await shownPage(eve, 'members')).forms, 'Invite');
+    const invitation = formLabelled((await shownPage(eve, 'members')).forms, 'Send invitation');
     const form = { ...invitation, fields: { ...invitation.fields, email: 'new@example.com' } };
     site.directory.queue('sendInvitation', { error: new Error('directory change timed out'), afterChange: true });
 
     site.sessions.expireAccessToken(eve.cookieHeader);
     const failed = await eve.submit(form);
     const page = await shownPage(eve, 'members');
-    const retry = await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new@example.com' } });
+    const retry = await submitOnPage(eve, 'members', { label: 'Send invitation', filled: { email: 'new@example.com' } });
 
     assert.deepEqual([failed.status, failed.cookies.length], [503, 1]);
     assert.match(failed.body, /The invitation change is not confirmed/);
@@ -52,7 +52,7 @@ describe('Hosted invitation management with the real composition, routes, servic
     site.directory.queue('sendInvitation', { result: 'unsupported' });
 
     const answers = [
-      await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new@example.com' } }),
+      await submitOnPage(eve, 'members', { label: 'Send invitation', filled: { email: 'new@example.com' } }),
     ];
 
     for (const answer of answers) {
@@ -70,7 +70,7 @@ describe('Hosted invitation management with the real composition, routes, servic
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
     const token = formsIn((await eve.open('members')).body)[0]?.fields.csrf_token ?? '';
 
-    await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new@example.com' } });
+    await submitOnPage(eve, 'members', { label: 'Send invitation', filled: { email: 'new@example.com' } });
 
     await submitOnPage(eve, 'members', 'Resend the invitation to new@example.com');
 

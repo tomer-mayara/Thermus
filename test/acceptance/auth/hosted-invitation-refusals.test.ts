@@ -7,7 +7,7 @@ import { userOf } from '../../support/fixtures/hosted-members.ts';
 test('Given an Admin and a current invitation form, when role, origin, CSRF, or selected organization is forged, then native invitation writes are refused and refreshed session cookies remain usable', async (t) => {
   const site = await serveAdministrationSite(t);
   const browser = site.browserOf(userOf('user-eve', 'org-a'));
-  const form = formLabelled((await shownPage(browser, 'members')).forms, 'Invite');
+  const form = formLabelled((await shownPage(browser, 'members')).forms, 'Send invitation');
   const fields = { ...form.fields, email: 'new@example.com' };
   const attempts = [
     { fields: { ...fields, role: 'super-admin' }, status: 403 },

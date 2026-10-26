@@ -93,7 +93,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.match(answer.body, /new@example\.com: User invitation, pending\./);
     assert.match(answer.body, /Expires <time datetime="[^"]+">/);
     assert.doesNotMatch(answer.body, /old@example\.com|other@example\.com|ivy@example\.com|pia@example\.com/);
-    assert.deepEqual(forms.filter(({ fields }) => fields.membership_id === undefined).map(({ label }) => label), ['Invite', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
+    assert.deepEqual(forms.filter(({ fields }) => fields.membership_id === undefined).map(({ label }) => label), ['Send invitation', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
     assert.equal(forms.filter(({ fields }) => fields.membership_id !== undefined).length, 6);
     assert.equal(forms[0]?.fields.role, 'user');
     assert.doesNotMatch(answer.body, /Change role|Security|MFA|<script/);
@@ -105,8 +105,8 @@ describe('Members through the hosted HTTP server', () => {
     const admin = site.browserOf(userOf('user-eve', 'org-a'));
     const before = site.directory.membershipIn('user-eve', 'org-a');
 
-    const sentUser = await submitOnPage(admin, 'members', { label: 'Invite', filled: { email: 'new.user@example.com' } });
-    const sentAdmin = await submitOnPage(admin, 'members', { label: 'Invite', filled: { email: 'new.admin@example.com', role: 'admin' } });
+    const sentUser = await submitOnPage(admin, 'members', { label: 'Send invitation', filled: { email: 'new.user@example.com' } });
+    const sentAdmin = await submitOnPage(admin, 'members', { label: 'Send invitation', filled: { email: 'new.admin@example.com', role: 'admin' } });
     const resent = await submitOnPage(admin, 'members', 'Resend the invitation to new.user@example.com');
     const revoked = await submitOnPage(admin, 'members', 'Revoke the invitation to new.user@example.com');
     const after = await admin.open('members');
