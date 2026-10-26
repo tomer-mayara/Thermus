@@ -1,3 +1,4 @@
+import { parseHTML } from 'linkedom';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { LoggingRoutes } from '../../../src/interfaces/web/account/logging-routes.ts';
@@ -48,7 +49,10 @@ test('Given an Admin reading Audit logs, when the page renders, then the short p
   assert.match(html, /Send organization data only if you have authority to do so/);
   assert.match(html, /Check destination access and retention/);
   assert.match(html, /href="https:\/\/thermus.ai\/privacy\/"/);
-  assert.doesNotMatch(html, /What export includes|Settings have no backup|None removes the saved token/);
+  const document = parseHTML(html).document;
+  assert.doesNotMatch(document.querySelector('form')?.textContent ?? '', /What export includes|Settings have no backup/);
+  assert.equal(document.querySelector('details[data-help="audit"]')?.hasAttribute('open'), false);
+  assert.doesNotMatch(html, /None removes the saved token/);
   assert.match(html, /Test saves these settings/);
 });
 test('Given a valid form, when Save runs, then only the trusted tenant and settings reach the service', async () => {
@@ -76,13 +80,13 @@ test('Given an unconfirmed or throwing Save, when the browser gets its answer, t
   }
 });
 test('Given an unavailable or throwing read, when Audit logs opens, then its safe page contains no cause or settings', async () => {
-  for (const read of [async () => ({ status: 'unavailable' as const }), async () => { throw new Error('https://secret:credential@bad.example'); }]) {
+  for (const read of [async () => ({ status: 'unavailable' as const }), async () => { throw new Error('https://private-read-user:private-read-password@private-read-host.example'); }]) {
     const routes = new LoggingRoutes({ publicBaseUrl: 'https://example.test/', organizationsPage: '/organizations', service: { read, save: async () => ({ status: 'unavailable' }) } });
     const response = await routes.handlerFor('/logging')!(new Request('https://example.test/logging'), session, context);
     const html = await response.text();
     assert.match(html, /Audit logs unavailable/);
     assert.match(html, /Audit logs settings are unavailable/);
-    assert.equal(response.status, 503); assert.doesNotMatch(html, /secret|credential|bad.example|<form/);
+    assert.equal(response.status, 503); assert.doesNotMatch(html, /private-read-user|private-read-password|private-read-host\.example|<form/);
   }
 });
 test('Given a hostile saved endpoint, when Audit logs renders, then values are escaped and the saved token stays write-only', async () => {

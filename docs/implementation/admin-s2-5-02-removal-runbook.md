@@ -1,5 +1,15 @@
 # S2.5-02 ordinary membership removal runbook
 
+**Current checkpoint, 26 October 2026:** see
+[production release status](admin-s2-5-production-release.md). The stack is
+merged and deployment work is authorized. Earlier S2-04 release and Audit v3
+approval/publication are complete. The new
+[26 October notice package](../legal/organization-removal-2026-10-26-proposal-v1/README.md)
+has owner approval, and the removal migration is applied. Runtime/help integration
+and final release checks are in progress. The dated preparation status below is
+history. The safety and
+recovery procedures remain in force.
+
 Status: prepared procedure, 25 October 2026. This document grants no production
 write, release, legal approval, or recovery authority. The [S2.5-02 record](admin-s2-5-02.md)
 tracks actual evidence and holds. Release requires the actual [S2-04 release](admin-s2-04.md),

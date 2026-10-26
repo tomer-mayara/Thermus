@@ -1,0 +1,113 @@
+{
+  "status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+  "prepared_on": "2026-10-26",
+  "bundle_version": "s2502-organization-removal-proposal-2026-10-26-v1",
+  "purpose": "organization-creation",
+  "proposed_effective_date": "2026-10-26",
+  "publication_date": null,
+  "approval": null,
+  "date_condition": "Proposed publication and opening on 26 October 2026. If later, prepare a new dated successor, versions and hashes, and obtain exact-byte approval before publication.",
+  "hash_status": "Review hashes identify complete bytes. They do not prove approval, publication, deployment or presentation.",
+  "provenance": {
+    "immediate_source_bundle": "docs/legal/organization-removal-2026-10-25-proposal-v1",
+    "immediate_source_manifest_sha256": "04656d2305ca2eb2aad3099e8736305fa3add27d5fe255d8ee302d8ae9352e05",
+    "immediate_source_bundle_status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+    "immediate_source_document_hashes": {
+      "terms.md": "c040e1c9d87d86f092b81c5badb7322f35412964e3e61d800efdb5613c9d3501",
+      "privacy.md": "bd47c4b0b60b566eae5b95ffac73d37a1df454e663ef0fc954b3fcb0f75906bb",
+      "agreement.txt": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "audit-help.md": "1d8bf0636b9d7ffa0eb059f4238d3ed330b326478cfedeb64f8b9097efd0b953",
+      "members-help.md": "96826a14dd150495d784a446bd52bd4b9ea4b5dc467ff0593faff57e09621fb3"
+    },
+    "approved_comparison_bundle": "docs/legal/organization-signup-2026-10-23",
+    "approved_comparison_manifest_sha256": "71ad7ced1d7be1e0b00aba4516e3408dd07893d19675c011ba017e8a9c54cf12",
+    "approval_record": "docs/implementation/organization-signup-approval-2026-10-23.md",
+    "source_commit": "9f07c04bba0813358274212b21316165dc3e308b",
+    "source_tree": "777542744c4cedf71e32c0cb38d88771df128f5f",
+    "encoding": "UTF-8",
+    "line_endings": "LF",
+    "final_newline": true,
+    "runtime_selected_bundle": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+    "runtime_switch": "Not included. A separately reviewed source change must select the approved successor without overwriting frozen modules.",
+    "help_scope": "Complete proposed Markdown. Current UI does not load these files. Proposed placement is expandable Audit help on /logging and expandable Members removal help on Members, with all text readable without JavaScript.",
+    "source_files_sha256": {
+      "src/app/hosted-workos-application.ts": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+      "src/accounts/providers/workos/workos-auth-provider.ts": "7c0314b9b56611ea0e57d70c4e3c5384c799f84c2135057f876e035b9f8fb889",
+      "src/accounts/providers/workos/workos-organizations.ts": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "src/accounts/identity/access-context.ts": "5c717112f0b24ace35a54dbbdb604fa9c8c52b5855fdec2041f40a93591996b0",
+      "src/accounts/organizations/membership-removal.ts": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+      "src/accounts/organizations/membership-removal-checks.ts": "22697d95d43749739820ffd59dbf04d7c1acdf3abd748d5367455d756235154f",
+      "src/accounts/organizations/membership-removal-lifetime.ts": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+      "src/accounts/organizations/removal-operation-store.ts": "e86c5e5f0b921ca99eb77862dca6aea4c23f6cf826d6f463f497c2987b8f78c4",
+      "src/interfaces/web/account/administration-pages.ts": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+      "src/interfaces/web/account/administration-routes.ts": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+      "src/interfaces/web/account/account-pages.ts": "909cde13ceccd4d91f393ccd17e331f8dc59fc1b3c4675bc65a4f602b752d87c",
+      "src/interfaces/web/account/logging-page.ts": "89c14d74147178f8448d38cf0ffa708c313e7f54fb198b766174b1334b1ffc00",
+      "src/interfaces/web/account/logging-form.ts": "7a236011320e8a6e4bf5450af9e92cbd8cd16aa61e30d289d011c010a826001d",
+      "src/interfaces/web/account/logging-routes.ts": "b7751ea7964e6cd217c1bbf7821fd423e222eff878dc2664ed9220d27a0aae88",
+      "src/interfaces/web/account/logging-test-page.ts": "5a57a20dde037d0bc956cc825c9a661ac8bd12dadeb3222e13a842c0ebd53e83",
+      "src/interfaces/mcp/fetch-tool-server.ts": "0e4cc46bf97d344dcfb4b722448cb195b8d0dbfa3ff89a2e23b05ff5581a0f52",
+      "src/logs/audit/audit-content.ts": "a17526e8c0680028d9c6b553d9643681633ba91f08fb05b26b6584dddbf6ef4e",
+      "src/logs/audit/audit-event-projection.ts": "de80bad3a72c44f26cac5e9c067613fdfbfa2224cdb25dd9576df95b0d2692db",
+      "src/logs/audit/otlp-audit-encoding.ts": "76ddb5936f9e0128822a7ea94eea683f1da5635391333ca4e7f8c2fd96849a6b",
+      "src/logs/audit/destination-settings-service.ts": "572bee5dc48c067f8d8d6d1b1eb53ffc37c671a2f47af43061d6b6479cce84ee",
+      "src/logs/audit/pg-destination-settings-store.ts": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+      "sql/migrations/20261025082850_membership_removal_operations.sql": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55"
+    }
+  },
+  "documents": [
+    {
+      "file": "terms.md",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 20941,
+      "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "changed_from_immediate_source": true
+    },
+    {
+      "file": "privacy.md",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 38594,
+      "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "changed_from_immediate_source": true
+    },
+    {
+      "file": "agreement.txt",
+      "version": "hosted-agreement-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 378,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "changed_from_immediate_source": false
+    },
+    {
+      "file": "audit-help.md",
+      "version": "hosted-audit-help-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 2961,
+      "sha256": "91c500488861110b50b01aea8cda7ba60cf5a7990e5a398a9124742b77588391",
+      "changed_from_immediate_source": true
+    },
+    {
+      "file": "members-help.md",
+      "version": "hosted-members-help-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 2414,
+      "sha256": "853d344d0f861fd3a53ed05b846909108d56d39d6105a7fa4fcc626e0d1aa9ca",
+      "changed_from_immediate_source": true
+    }
+  ],
+  "publication_scope": {
+    "terms": "Complete Terms at thermus.ai/terms/ and hosted signup presentation, including direct URL redirects.",
+    "privacy": "Complete Privacy Policy at thermus.ai/privacy/ and hosted signup presentation, including direct URL redirects.",
+    "agreement": "Preserve exact checkbox wording and approved version. Record successor Terms/Privacy and bundle identifiers only for a new explicit organization-creation agreement.",
+    "audit_help": "Complete approved copy in an expandable region on /logging. Preserve current form controls and result notices.",
+    "members_help": "Complete approved copy in an expandable region on Members. Preserve current confirmation and result guidance.",
+    "existing_organizations": "Proposed: apply the new notices to existing organizations through the current public policy links and approved in-app help. Preserve historical acceptance records. Add no automatic, fabricated or repeated acceptance. Posting, sign-in, invitation acceptance and use are not new agreement evidence. This does not represent an existing organization as having accepted updated Terms."
+  },
+  "owner_decisions_proposed": [
+    "Approve all five complete document bytes, versions and hashes in this manifest, with effective date 26 October 2026.",
+    "Approve publication at existing Terms/Privacy destinations and runtime signup presentation and new-record version/hash recording.",
+    "Approve the stated existing-organization notice handling while preserving historic agreements and recording no fabricated or repeated acceptance.",
+    "Approve full expandable Audit help on /logging and Members removal help on Members, readable without JavaScript.",
+    "Confirm current provider and selected-destination facts, recipient access/retention/onward sharing, removal-record retention review and existing no-backup scope."
+  ],
+  "decision_status": "All decisions in this package are proposed and unapproved until the owner answers. No new consent or renewed agreement is inferred.",
+  "release_condition": "Exact-byte approval, reviewed runtime/help integration, public publication and readback, complete applicable checks and independent code review, production storage/capacity and scoped deployed proof remain separate release gates.",
+  "scope": "Ordinary active supported User/Admin membership deletion and current optional audit export only. No role editor, global-user or factor deletion, new MFA enrollment, SSO, Directory Sync, WorkOS Audit Logs, new service or paid resource. Existing Slice 2 no-backup scope is retained."
+}

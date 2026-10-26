@@ -63,3 +63,17 @@ test('Given a browser without scripts, when the destination form opens, then the
   assert.equal(document.querySelector('input[name="axiom_dataset"]')?.hasAttribute('disabled'), false);
   assert.match(document.querySelector('noscript')?.textContent ?? '', /For Custom, clear the Axiom dataset/);
 });
+
+test('Given unavailable settings, when Audit logs renders, then full native help remains outside any form without adding a script', async () => {
+  const response = loggingPage({ navigation, tenantId: 'tenant:a', csrfToken: 'csrf', action: '/logging/save', testAction: '/logging/test' });
+  const { document } = parseHTML(await response.text());
+  const help = document.querySelector('details[data-help="audit"]');
+  assert.ok(help);
+  assert.equal(help.hasAttribute('open'), false);
+  assert.equal(help.closest('form'), null);
+  assert.match(help.textContent ?? '', /A pending Save can finish after that read/);
+  assert.match(help.textContent ?? '', /synthetic Test events can include the actor’s display name/);
+  assert.equal(help.querySelectorAll('script, form, input').length, 0);
+  assert.equal(document.querySelectorAll('script').length, 1);
+  assert.equal(document.querySelectorAll('form').length, 0);
+});

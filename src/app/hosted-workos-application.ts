@@ -47,7 +47,7 @@ export interface WorkOSApplicationParts {
   readonly buildServer?: RequestServerBuilder;
   // Omitted by production. A slice must select its enrollment organization explicitly.
   readonly onboarding?: GoogleOnboardingSettings;
-  // Explicit composition supplies its own documents. Production selects the organization Audit bundle at startup.
+  // Explicit composition supplies its own documents. Production selects the approved organization removal bundle at startup.
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
 }
 
@@ -56,8 +56,8 @@ const WORKOS_REQUEST_TIMEOUT_MS = 5_000;
 
 export async function openWorkOSApplication(config: RouteConfig, logger: SystemLog, environment: Environment): Promise<Application> {
   const { loadSelfServeSignupEnabled } = await import('../accounts/providers/workos/workos-signup-settings.ts');
-  const { organizationAuditDocuments } = await import('../accounts/providers/workos/workos-organization-audit-documents.ts');
-  const signup = { enabled: loadSelfServeSignupEnabled(environment), documents: organizationAuditDocuments };
+  const { organizationRemovalDocuments } = await import('../accounts/providers/workos/workos-organization-removal-documents.ts');
+  const signup = { enabled: loadSelfServeSignupEnabled(environment), documents: organizationRemovalDocuments };
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createHostedToolOperations } = await import('./fetch-tool.ts');
   const operations = createHostedToolOperations(environment, logger);

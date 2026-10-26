@@ -1,7 +1,7 @@
 import { parseHTML } from 'linkedom';
 import { micromark } from 'micromark';
 import { gfm, gfmHtml } from 'micromark-extension-gfm';
-import { organizationAuditDocuments } from '../../../src/accounts/providers/workos/workos-organization-audit-documents.ts';
+import { organizationRemovalDocuments } from '../../../src/accounts/providers/workos/workos-organization-removal-documents.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { HostedImageGate } from '../../support/container/hosted-image-gate.ts';
@@ -55,15 +55,15 @@ test('Given a clean hosted build without live secrets, when checks pass, then th
     assert.equal((await server.stop()).code, 0);
   });
 
-  await t.test('Given the organization Audit bundle in the prepared image, when signup is enabled, then startup succeeds and the exact notice is readable before sign-in', { timeout: 45_000 }, async (step) => {
+  await t.test('Given the approved organization removal bundle in the image, when signup is enabled, then startup succeeds and the exact notice is readable before sign-in', { timeout: 45_000 }, async (step) => {
     const server = await gate.server({ SELF_SERVE_SIGNUP_ENABLED: 'true' }, false, step.signal);
     await server.started();
     const answer = await fetch(new URL('/signup', server.url), { signal: step.signal });
     assert.equal(answer.status, 200);
     const document = parseHTML(await answer.text()).document;
-    const expected = parseHTML(`<div id=expected>${micromark(organizationAuditDocuments.notice.text, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
+    const expected = parseHTML(`<div id=expected>${micromark(organizationRemovalDocuments.notice.text, { extensions: [gfm()], htmlExtensions: [gfmHtml()] })}</div>`).document.querySelector('#expected')?.textContent;
     assert.equal(document.querySelector('#privacy-notice .document-reader')?.textContent, expected);
-    assert.equal(document.querySelector('#privacy-notice')?.getAttribute('data-document-version'), organizationAuditDocuments.notice.version);
+    assert.equal(document.querySelector('#privacy-notice')?.getAttribute('data-document-version'), organizationRemovalDocuments.notice.version);
     assert.equal(document.querySelectorAll('form').length, 0);
     assert.equal((await server.stop()).code, 0);
   });
