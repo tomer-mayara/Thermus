@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "prepared_at": "2026-10-26T18:37:06.102335+00:00",
+  "source": "Actual Axiom query and three JSON events visibly read by the manager; private query URL and raw displayed JSON retained locally",
+  "manager_reviewed_actual_query": true,
+  "query_url_published": false,
+  "raw_events_published": false,
+  "events": [
+    {
+      "fixture_role": "user",
+      "event_name": "organization.changed",
+      "action": "remove-member",
+      "outcome": "applied",
+      "observed_at": "2026-10-26T17:50:47.077Z",
+      "tenant_actor_membership_exact_match": true,
+      "raw_visible_json_matches_reviewed_receipt": true,
+      "no_secret_fields": true,
+      "durable_operation_outcome": "applied"
+    },
+    {
+      "fixture_role": "self-admin",
+      "event_name": "organization.changed",
+      "action": "remove-member",
+      "outcome": "applied",
+      "observed_at": "2026-10-26T17:52:34.107Z",
+      "tenant_actor_membership_exact_match": true,
+      "raw_visible_json_matches_reviewed_receipt": true,
+      "no_secret_fields": true,
+      "durable_operation_outcome": "applied"
+    },
+    {
+      "fixture_role": "last-admin",
+      "event_name": "organization.changed",
+      "action": "remove-member",
+      "outcome": "last-admin",
+      "observed_at": "2026-10-26T18:00:30.975Z",
+      "tenant_actor_membership_exact_match": true,
+      "raw_visible_json_matches_reviewed_receipt": true,
+      "no_secret_fields": true,
+      "durable_operation_outcome": "no-effect"
+    }
+  ],
+  "fixture_configuration_source": "Product Pg API configured and disabled the owned fixture destination. No new UI setup/Save/Test evidence is claimed; earlier real Audit UI Save/Test proof remains separate.",
+  "limits": "Audit supports the durable outcome; missing Audit is not proof of no effect. Stable actor and tenant/membership values were matched privately, then omitted from this projection."
+}

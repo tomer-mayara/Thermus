@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "run_alias": "c9-core-canary-1",
+  "source_files": [
+    {
+      "basename": "summary.json",
+      "bytes": 288,
+      "sha256": "76a0e444d8a2034536eb480076ad5d77c075550d46aaac2f8e9101c926524642",
+      "published_raw": false
+    },
+    {
+      "basename": "control.json",
+      "bytes": 1078,
+      "sha256": "0a1d915ab38bb85cf81564f3ae2bcf78e5bbf6582ac6107cc4025a47b3a0ee83",
+      "published_raw": false
+    },
+    {
+      "basename": "receipts.private.json",
+      "bytes": 2049,
+      "sha256": "2f66d82a39e569c08fac837bc177d15c3f13d4d0fcaafe7e3bd5ead4c6b09571",
+      "published_raw": false
+    },
+    {
+      "basename": "fixture-audit-api-evidence.json",
+      "bytes": 1335,
+      "sha256": "fa8881261da52bc2628cc1c9c449873425c777fbf466bd5e743f584e2eb1dad5",
+      "published_raw": false
+    },
+    {
+      "basename": "cleanup-context-evidence.json",
+      "bytes": 193,
+      "sha256": "1f0e6aaf3af8d453369e0d3b5f84c4e12bfdc9af824e2b319f0d59c3caed216f",
+      "published_raw": false
+    },
+    {
+      "basename": "access-browser-evidence.json",
+      "bytes": 433,
+      "sha256": "2d39fa4db9746732ab24ad938981e9a64c3ec5a3f1077783218986203c753567",
+      "published_raw": false
+    },
+    {
+      "basename": "user-browser-evidence.json",
+      "bytes": 429,
+      "sha256": "dc89afc66d1e6a30745222b947f6b0bc99f356b3ba7b4987dcf8d2b4e21508fa",
+      "published_raw": false
+    },
+    {
+      "basename": "self-browser-evidence.json",
+      "bytes": 429,
+      "sha256": "926dd7425ab5968dcf0e6d8161808f389da09ef5f1067b6027234e039bccf996",
+      "published_raw": false
+    },
+    {
+      "basename": "last-admin-browser-evidence.json",
+      "bytes": 430,
+      "sha256": "6fc013c58148708b02401f5995e53cc59e16fbc2bbd5cf6be47c89a628342c42",
+      "published_raw": false
+    },
+    {
+      "basename": "u-target-probe.json",
+      "bytes": 237,
+      "sha256": "2cf68246ddb32a77e78ee82e027e73f5d23902237ed712f5ea54c500d37fea20",
+      "published_raw": false
+    },
+    {
+      "basename": "u-retained-probe.json",
+      "bytes": 165,
+      "sha256": "54699e584fa331d1047f77cdacf238b7712e3dee7b894f25e292f3c42903607b",
+      "published_raw": false
+    },
+    {
+      "basename": "a-target-probe.json",
+      "bytes": 237,
+      "sha256": "4afc148c222f604e1480a99d751b1b2dbbbe59e61090f1a2d52cdb5d47ac7edd",
+      "published_raw": false
+    },
+    {
+      "basename": "a-retained-probe.json",
+      "bytes": 165,
+      "sha256": "6f8bca7af852f7a78fd9d8ae16a9db2d715ddba61b52667b43cfd862f338cc5d",
+      "published_raw": false
+    },
+    {
+      "basename": "audit-receipts.private.json",
+      "bytes": 1589,
+      "sha256": "9a13de6bb1e7e503e5c4ff36fa65717e0813b7bf5c0f31c164c5193005a55586",
+      "published_raw": false
+    },
+    {
+      "basename": "audit-raw-visible.private.json",
+      "bytes": 2280,
+      "sha256": "93bf26ebdf5833c6b8a099a888f6f645fce31116d63ef361caf5e636cea58d18",
+      "published_raw": false
+    },
+    {
+      "basename": "state.private.json",
+      "bytes": 11942,
+      "sha256": "48d98b444d82410919c6a43a86b09bd29acca57c4b79d7b458d710ea3fa208df",
+      "published_raw": false
+    },
+    {
+      "basename": "journal.private.jsonl",
+      "bytes": 7535,
+      "sha256": "2cd26baf54c65fd5b3bc29a6f39bad4e339af6362822b19f64ad05089f3ab6bf",
+      "published_raw": false
+    }
+  ],
+  "helper_readme_sha256": "505e77438bb5bcf9a2f1d436d4c3c25cf88769d855e5c06a3e6996afc613b453",
+  "forbidden_files_read": false,
+  "not_read": [
+    "render-production-workos-key.private.json",
+    ".env"
+  ],
+  "actual_source_distinctions": "Manager browser observations, genuine OAuth probes, exact provider/SQL readbacks, actual Axiom visible JSON and guarded cleanup are identified separately; private values omitted."
+}

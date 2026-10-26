@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "state": "Manager reviewed and authorized evidence publication; recovery open; overall release incomplete",
+  "parent_evidence": "a95a2d89941e024c1300bc6e8092df57005b3410",
+  "deployed_commit": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "release_complete": false,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4367,
+      "sha256": "57f615b2bc7030bbe9c073c99a7d855219182a8c34c296ec5273055812fc6f8a"
+    },
+    {
+      "path": "audit-receipts.json",
+      "bytes": 1905,
+      "sha256": "1f2547f0b16cc0de2f6b2b72d151d2e72d18d4ee69572233b1615cd71c9f1367"
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 1856,
+      "sha256": "e073c9f5dbdfbc4eba334356444c673d65a903161b1936102a77f39b23951880"
+    },
+    {
+      "path": "live-core-canary.json",
+      "bytes": 2993,
+      "sha256": "601dea180daf8e2235d0d0c30c7e3c106855915f0b7e7e6a25d326abf3b5666a"
+    },
+    {
+      "path": "recovery-defect.json",
+      "bytes": 990,
+      "sha256": "76a0098a64079b0de7f4dcd12c297a222ecc55991e6548f327b2bc3d05f41642"
+    },
+    {
+      "path": "secret-scan.json",
+      "bytes": 1003,
+      "sha256": "d43cd5769a02e9c18cbd3c6cc73a18f9b63b41d6949d5b892bf0b1d83558a64d"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 3757,
+      "sha256": "fe0fb19465664f037ea331ce8f17cdc77d84ccbaaf65cc335e60db2112e32cc6"
+    }
+  ],
+  "manager_review": "Facts confirmed against actual manager observations before publication",
+  "destination_prefix": "review-evidence/s25-production-release-20261026/root/production-core-canary"
+}

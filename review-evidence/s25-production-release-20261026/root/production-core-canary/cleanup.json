@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "prepared_at": "2026-10-26T18:37:06.102335+00:00",
+  "source_run_phase": "complete",
+  "source_run_result_label": "stage-complete",
+  "source_run_complete_is_release_complete": false,
+  "created_fixture_counts": {
+    "organizations": 2,
+    "users": 3,
+    "memberships": 5
+  },
+  "owned_organization_and_user_records_marked_deleted": 5,
+  "all_owned_provider_deletes_confirmed": true,
+  "scope": "Only the two exact owned organizations, three exact owned users and their five original memberships; two Target memberships were removed through UI before final provider fixture cleanup. This is not a claim of five direct membership DELETE calls.",
+  "fixture_contexts_closed": true,
+  "unknown_operation": false,
+  "fixture_generated_password_and_token_cleanup": "Helper cleanup completed; post-cleanup user state contains no password fields. No credential or token material is included.",
+  "fixture_audit_disable": {
+    "source": "Existing product Pg settings API with exact revision CAS, not new UI Save/Test proof",
+    "setup_and_disable_verified": true,
+    "other_settings_and_ciphertext_unchanged": true,
+    "retained_settings_absent": true
+  },
+  "owner_settings_cleanup": {
+    "source": "Manager owner-only exact tenant/revision/disabled-row CAS deletion, followed by guarded helper cleanup-readback",
+    "fixture_settings_absent_after_readback": true,
+    "runtime_delete_privilege_added": false
+  },
+  "operation_record": {
+    "final_last_admin_no_effect_row_retained": true,
+    "exact_captured_last_admin_receipt_matched_after_cleanup": true,
+    "row_deleted": false
+  },
+  "history": {
+    "earlier_stage_stopped_records": 4,
+    "final_cleanup_ledger_records": 1,
+    "private_journal_retained": true
+  },
+  "overall_release_complete": false,
+  "pending": "PR261 recovery fix and deployed recovery verification"
+}

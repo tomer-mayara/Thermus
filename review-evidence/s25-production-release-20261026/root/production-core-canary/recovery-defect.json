@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "deployed_commit": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "status": "open",
+  "recovery_fix_pr": 261,
+  "trigger": "The removed User portal session reached expiry after successful live removal denial checks",
+  "observed_routes": [
+    {
+      "path": "/session",
+      "status": 500
+    },
+    {
+      "path": "/organizations",
+      "status": 500
+    }
+  ],
+  "source": "Manager actual live browser observation in the production handoff; the private access recovery note also records500 and fresh sign-in recovery",
+  "workaround_observed": "Fresh sign-in reached the retained organization",
+  "core_protection_distinction": "Exact provider membership absence and same-unexpired-token MCP403 passed for both removed actors. These do not verify post-expiry portal recovery.",
+  "release_complete": false,
+  "required_next": "Implement and review PR261, deploy the fix, and verify actual post-expiry recovery without losing the existing core-removal evidence."
+}

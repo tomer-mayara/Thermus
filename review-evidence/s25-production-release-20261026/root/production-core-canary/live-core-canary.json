@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "prepared_at": "2026-10-26T18:37:06.102335+00:00",
+  "scope": "Real production owned-fixture core membership-removal canary, followed by exact cleanup",
+  "deployed_commit": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "approved_source_head": "2c7b8763025660d3fe3902af7a8433d2741fcb82",
+  "source_trees_identical": true,
+  "deployment_live_since": "2026-10-26T17:39:22.748353Z",
+  "deployment_source": "Manager verified exact-commit Render live handoff; provider deployment ID kept private",
+  "fixture_counts": {
+    "organizations": 2,
+    "users": 3,
+    "memberships": 5
+  },
+  "actual_browser_members_posts": [
+    {
+      "fixture_role": "user",
+      "actual_response_status": 200,
+      "confirm_posts": 1,
+      "cancel_verified_without_post": true,
+      "repeat_removal_form_absent": true
+    },
+    {
+      "fixture_role": "self-admin",
+      "actual_response_status": 200,
+      "confirm_posts": 1,
+      "cancel_verified_without_post": true,
+      "repeat_removal_form_absent": true
+    },
+    {
+      "fixture_role": "last-admin",
+      "actual_response_status": 409,
+      "confirm_posts": 1,
+      "cancel_verified_without_post": "Not claimed for the last-Admin case",
+      "repeat_removal_form_absent": "Safeguard keeps the membership and usable Admin"
+    }
+  ],
+  "mcp_checks": [
+    {
+      "fixture_role": "user",
+      "same_target_token_before_status": 200,
+      "same_target_token_after_status": 403,
+      "target_token_still_valid": true,
+      "elapsed_seconds": 51.764,
+      "new_retained_token_status": 200,
+      "scope": "Actual server/discover with genuine OAuth tokens; no token value is published"
+    },
+    {
+      "fixture_role": "self-admin",
+      "same_target_token_before_status": 200,
+      "same_target_token_after_status": 403,
+      "target_token_still_valid": true,
+      "elapsed_seconds": 64.124,
+      "new_retained_token_status": 200,
+      "scope": "Actual server/discover with genuine OAuth tokens; no token value is published"
+    }
+  ],
+  "provider_verification": {
+    "applied_target_memberships_returned_exact404": true,
+    "removed_user_accounts_and_retained_memberships_preserved_before_cleanup": true,
+    "last_admin_membership_retained_and_usable": true,
+    "source": "Guarded verify-user/verify-self durable receipts, exact provider readbacks and manager browser observations"
+  },
+  "real_ui": {
+    "narrow_viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "narrow_layout_verified": true,
+    "cancel_for_user_and_self_made_no_removal_post": true,
+    "actor_workspace_rechecked_before_each_write": true,
+    "source": "Manager cua_repl browser observations and explicit browser result records; no direct browser driver or manufactured session"
+  },
+  "core_removal_protection": "passed",
+  "overall_release_complete": false,
+  "blocking_issue": 261,
+  "limit": "Post-expiry portal recovery failed with500; the core denial checks do not make recovery correct or the release complete."
+}
