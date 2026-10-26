@@ -1,0 +1,4 @@
+src/interfaces/web/account/administration-pages.ts: OK
+src/interfaces/web/account/account-pages.ts: OK
+src/interfaces/web/account/members-style.ts: OK
+test/acceptance/auth/hosted-live/administration-server.ts: OK

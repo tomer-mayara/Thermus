@@ -1,0 +1,14 @@
+✔ Given Members at 481px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (822.754667ms)
+✔ Given Members at 600px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (546.108ms)
+✔ Given Members at 860px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (549.884875ms)
+✔ Given Members at 1280px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (550.122167ms)
+✔ Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (687.074834ms)
+✔ Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (603.829292ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4172.506667

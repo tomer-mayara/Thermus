@@ -1,0 +1,68 @@
+✖ Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1486.010709ms)
+✖ Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1096.289458ms)
+✖ Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1077.388375ms)
+✖ Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1091.949375ms)
+✖ Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (474.072125ms)
+✖ Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (499.486166ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6217.681333
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:27:9
+✖ Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1486.010709ms)
+  page.waitForNavigation: net::ERR_NAME_NOT_RESOLVED
+  =========================== logs ===========================
+  waiting for navigation until "load"
+  ============================================================
+      at InvitationBrowser.sendInvitation (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/drivers/browser/invitation-browser.js:112:23)
+      at async TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:44:17)
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:27:9
+✖ Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1096.289458ms)
+  page.waitForNavigation: net::ERR_NAME_NOT_RESOLVED
+  =========================== logs ===========================
+  waiting for navigation until "load"
+  ============================================================
+      at InvitationBrowser.sendInvitation (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/drivers/browser/invitation-browser.js:112:23)
+      at async TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:44:17)
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:27:9
+✖ Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1077.388375ms)
+  page.waitForNavigation: net::ERR_NAME_NOT_RESOLVED
+  =========================== logs ===========================
+  waiting for navigation until "load"
+  ============================================================
+      at InvitationBrowser.sendInvitation (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/drivers/browser/invitation-browser.js:112:23)
+      at async TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:44:17)
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:27:9
+✖ Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1091.949375ms)
+  page.waitForNavigation: net::ERR_NAME_NOT_RESOLVED
+  =========================== logs ===========================
+  waiting for navigation until "load"
+  ============================================================
+      at InvitationBrowser.sendInvitation (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/drivers/browser/invitation-browser.js:112:23)
+      at async TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:44:17)
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:53:5
+✖ Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (474.072125ms)
+  page.waitForNavigation: net::ERR_NAME_NOT_RESOLVED
+  =========================== logs ===========================
+  waiting for navigation until "load"
+  ============================================================
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:69:33)
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:53:5
+✖ Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (499.486166ms)
+  page.waitForNavigation: net::ERR_NAME_NOT_RESOLVED
+  =========================== logs ===========================
+  waiting for navigation until "load"
+  ============================================================
+      at TestContext.<anonymous> (/Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:69:33)

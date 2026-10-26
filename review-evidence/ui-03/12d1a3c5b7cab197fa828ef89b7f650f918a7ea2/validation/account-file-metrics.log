@@ -1,0 +1,10 @@
+src/interfaces/web/account/account-pages.ts: score 72.8, 10 decision paths, 8 functions
+  score  paths  lines  name
+   77.5      1      4  noticeResponse
+   78.1      2     11  noOrganizationPage
+   81.2      1      4  accessDeniedPage
+   84.3      2      8  removalResultPage
+   86.9      1      1  (anonymous)
+   87.1      1     10  unconfirmedInvitationPage
+   88.0      1      3  noticePage
+   88.8      1      3  seeOther

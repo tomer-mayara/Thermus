@@ -1,0 +1,15 @@
+{
+  "command": "pnpm",
+  "args": [
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-coverage.ts",
+    "--suite",
+    "integration"
+  ],
+  "started": "2026-10-26T23:36:33.632Z",
+  "ended": "2026-10-26T23:37:07.625Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui03/validation/coverage.log"
+}

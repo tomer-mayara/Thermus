@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "test:logging:collector"
+  ],
+  "started": "2026-10-26T23:02:37.339Z",
+  "ended": "2026-10-26T23:02:52.515Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui03/validation/collector.log"
+}

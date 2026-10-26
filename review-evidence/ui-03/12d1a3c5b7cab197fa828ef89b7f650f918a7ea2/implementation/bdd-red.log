@@ -1,0 +1,28 @@
+✖ Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden (845.641583ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1319.321583
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:16:1
+✖ Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden (845.641583ms)
+  AssertionError [ERR_ASSERTION]: Members must offer a native Invite member disclosure
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:20:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

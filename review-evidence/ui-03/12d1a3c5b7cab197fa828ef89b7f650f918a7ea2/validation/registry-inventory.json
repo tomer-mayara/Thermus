@@ -1,0 +1,23 @@
+{
+  "parent": "a017020ebe2448f5de6cc7d9cbb0700367fc80b1",
+  "registry_bytes_unchanged": true,
+  "view_count": 15,
+  "views": [
+    "Context",
+    "C4 containers: hosted edition",
+    "C4 containers: local edition",
+    "Selected C4 components: tool processing in the Node server",
+    "Selected C4 components: hosted authentication in the Node server",
+    "Selected C4 components: hosted membership removal in the Node server",
+    "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+    "Selected C4 components: system and audit logs in the Node server",
+    "Selected C4 components: local authentication in the Node server",
+    "Collaboration overview",
+    "Scenario: MCP page fetch and renderer cancellation",
+    "Scenario: hosted default sign-in landing",
+    "Scenario: hosted member read",
+    "Self-hosted Compose",
+    "Recorded hosted Render target"
+  ],
+  "note": "Read-only comparison. Reconfirm against committed final candidate before publication."
+}

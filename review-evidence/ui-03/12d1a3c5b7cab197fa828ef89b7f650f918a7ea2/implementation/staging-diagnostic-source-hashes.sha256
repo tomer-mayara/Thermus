@@ -1,0 +1,4 @@
+65ae788a542c42cd1b26e5a07dd92499bac247e23bae7ee9dad8f01f96ea9b8b  src/interfaces/web/account/administration-pages.ts
+5987f579e7f529860798af4dd6d38cdea79549776ef313b1a6184a456fe17f50  src/interfaces/web/account/account-pages.ts
+5cdfc10018df38a7725be7997463e21dc60b5a9b8ea3320a265682bba355f4ac  src/interfaces/web/account/members-style.ts
+3b80a89267a47441a6229a3412fbdd3bdae346992a008d090109d2d6e91bdab1  test/acceptance/auth/hosted-live/administration-server.ts

@@ -1,0 +1,76 @@
+▶ Hosted live gate (AUTH-08W): invitations of organization C at https://localhost:46443/ with WorkOS and AuthKit
+  ✖ Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link (1011.142208ms)
+  ✖ Given a User in C and a pending invitation, when the User opens administration and submits valid send, resend, and revoke forms, then each request is refused without a form and WorkOS memberships and invitations stay unchanged (2.865458ms)
+  ✖ Given the pending User invitation and the pending Admin invitation of C, when each invitee opens its invitation link and completes password sign-in without MFA, then WorkOS gives only the invited role and both can open the product; only Admin opens administration, the earlier User grant does not return, both invitations are accepted, the product member count matches WorkOS, and no page or log holds an invitation token or link (0.438709ms)
+✖ Hosted live gate (AUTH-08W): invitations of organization C at https://localhost:46443/ with WorkOS and AuthKit (4001.249792ms)
+ℹ Hosted live password profile: provider MFA must be disabled.
+ℹ tests 3
+ℹ suites 1
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13435.789709
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-live/administration-server.js:140:9
+✖ Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, Members shows only pending invitations with current actions, each change has its record, and no page or log line holds an invitation token or link (1011.142208ms)
+  RateLimitExceededException: Sandbox environment email quota reached for invitation emails.
+      at WorkOSNode.handleHttpError (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9560:12)
+      at WorkOSNode.post (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9416:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async UserManagement.sendInvitation (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:6733:20)
+      at async invitedMembership (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/administration-fixtures.js:11:5)
+      at async Promise.allSettled (index 5)
+      at async settled (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/staging-fixtures.js:6:21)
+      at async createAdministrationFixtures (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/administration-fixtures.js:57:17)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-live/administration-server.js:141:59)
+      at async Test.run (node:internal/test_runner/test:1404:7) {
+    status: 429,
+    rawData: {},
+    requestID: '8477b401-c63c-48ec-a234-d3b5d6ce6759',
+    code: undefined,
+    retryAfter: null
+  }
+
+test at dist/test/acceptance/auth/hosted-live/administration-server.js:187:9
+✖ Given a User in C and a pending invitation, when the User opens administration and submits valid send, resend, and revoke forms, then each request is refused without a form and WorkOS memberships and invitations stay unchanged (2.865458ms)
+  RateLimitExceededException: Sandbox environment email quota reached for invitation emails.
+      at WorkOSNode.handleHttpError (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9560:12)
+      at WorkOSNode.post (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9416:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async UserManagement.sendInvitation (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:6733:20)
+      at async invitedMembership (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/administration-fixtures.js:11:5)
+      at async Promise.allSettled (index 5)
+      at async settled (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/staging-fixtures.js:6:21)
+      at async createAdministrationFixtures (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/administration-fixtures.js:57:17)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-live/administration-server.js:141:59)
+      at async Test.run (node:internal/test_runner/test:1404:7) {
+    status: 429,
+    rawData: {},
+    requestID: '8477b401-c63c-48ec-a234-d3b5d6ce6759',
+    code: undefined,
+    retryAfter: null
+  }
+
+test at dist/test/acceptance/auth/hosted-live/administration-server.js:207:9
+✖ Given the pending User invitation and the pending Admin invitation of C, when each invitee opens its invitation link and completes password sign-in without MFA, then WorkOS gives only the invited role and both can open the product; only Admin opens administration, the earlier User grant does not return, both invitations are accepted, the product member count matches WorkOS, and no page or log holds an invitation token or link (0.438709ms)
+  RateLimitExceededException: Sandbox environment email quota reached for invitation emails.
+      at WorkOSNode.handleHttpError (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9560:12)
+      at WorkOSNode.post (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:9416:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async UserManagement.sendInvitation (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/node_modules/.pnpm/@workos-inc+node@11.0.0/node_modules/@workos-inc/node/lib/factory-BbGPjwhL.mjs:6733:20)
+      at async invitedMembership (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/administration-fixtures.js:11:5)
+      at async Promise.allSettled (index 5)
+      at async settled (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/staging-fixtures.js:6:21)
+      at async createAdministrationFixtures (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/support/hosted-live/administration-fixtures.js:57:17)
+      at async TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-live/administration-server.js:141:59)
+      at async Test.run (node:internal/test_runner/test:1404:7) {
+    status: 429,
+    rawData: {},
+    requestID: '8477b401-c63c-48ec-a234-d3b5d6ce6759',
+    code: undefined,
+    retryAfter: null
+  }

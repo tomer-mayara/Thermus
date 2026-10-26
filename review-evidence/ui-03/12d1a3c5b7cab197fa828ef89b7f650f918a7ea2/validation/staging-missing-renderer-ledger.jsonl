@@ -1,0 +1,35 @@
+{"at":"2026-10-26T23:04:34.856Z","runId":"s25-02-mvpv67lu-94204d","event":"proof-started","candidate":"2330b7157546a55859db1334d3e50c3333f22626","workingTreeClean":false,"clientId":"client_01M4VDKB7C7T2GV2NWPS84HADP","proof":"hosted-removal.live","profile":"existing password-only staging","factorEvidence":"No live factor observation. No factor was already available on these fresh identities. No MFA API was called; controlled sentinel coverage is separate."}
+{"at":"2026-10-26T23:04:35.296Z","runId":"s25-02-mvpv67lu-94204d","event":"resource-created","kind":"organization","id":"org_01M5X7AR3GFS366E7044F1513A"}
+{"at":"2026-10-26T23:04:35.577Z","runId":"s25-02-mvpv67lu-94204d","event":"resource-created","kind":"organization","id":"org_01M5X7ARD2Y73NHRB7YR2EMZ9E"}
+{"at":"2026-10-26T23:04:35.753Z","runId":"s25-02-mvpv67lu-94204d","event":"resource-created","kind":"organization","id":"org_01M5X7ARJABJEPDDZFH02Y7B9A"}
+{"at":"2026-10-26T23:04:36.020Z","runId":"s25-02-mvpv67lu-94204d","event":"resource-created","kind":"user","id":"user_01M5X7ARTE0VCDA18A81ZR170W"}
+{"at":"2026-10-26T23:04:36.239Z","runId":"s25-02-mvpv67lu-94204d","event":"resource-created","kind":"user","id":"user_01M5X7AS21G2K6C5Q337DD7XST"}
+{"at":"2026-10-26T23:04:36.472Z","runId":"s25-02-mvpv67lu-94204d","event":"resource-created","kind":"user","id":"user_01M5X7AS941T7DQKZHR8XCM7JS"}
+{"at":"2026-10-26T23:04:36.663Z","runId":"s25-02-mvpv67lu-94204d","event":"membership-created","id":"om_01M5X7ASEBD4QR0QPM3R7NF43X","userId":"user_01M5X7ARTE0VCDA18A81ZR170W","organizationId":"org_01M5X7AR3GFS366E7044F1513A","role":"admin"}
+{"at":"2026-10-26T23:04:36.855Z","runId":"s25-02-mvpv67lu-94204d","event":"membership-created","id":"om_01M5X7ASMHHCREX05QFKJ6WZ6B","userId":"user_01M5X7AS21G2K6C5Q337DD7XST","organizationId":"org_01M5X7AR3GFS366E7044F1513A","role":"admin"}
+{"at":"2026-10-26T23:04:37.036Z","runId":"s25-02-mvpv67lu-94204d","event":"membership-created","id":"om_01M5X7AST63PGR6VDTGDAJMX6A","userId":"user_01M5X7AS941T7DQKZHR8XCM7JS","organizationId":"org_01M5X7AR3GFS366E7044F1513A","role":"user"}
+{"at":"2026-10-26T23:04:37.201Z","runId":"s25-02-mvpv67lu-94204d","event":"membership-created","id":"om_01M5X7ASZM71MTVG1R18F25XQ0","userId":"user_01M5X7ARTE0VCDA18A81ZR170W","organizationId":"org_01M5X7ARD2Y73NHRB7YR2EMZ9E","role":"user"}
+{"at":"2026-10-26T23:04:37.383Z","runId":"s25-02-mvpv67lu-94204d","event":"membership-created","id":"om_01M5X7AT53YMBKGXH62S0WMTZ2","userId":"user_01M5X7AS941T7DQKZHR8XCM7JS","organizationId":"org_01M5X7ARD2Y73NHRB7YR2EMZ9E","role":"user"}
+{"at":"2026-10-26T23:04:37.543Z","runId":"s25-02-mvpv67lu-94204d","event":"resource-created","kind":"application","id":"connect_app_01M5X7ATANST5E3WDFDQBM6REP"}
+{"at":"2026-10-26T23:04:38.007Z","runId":"s25-02-mvpv67lu-94204d","event":"password-profile-confirmed","passwordAuthEnabled":true,"mfaEnabled":false,"mfaRequired":false}
+{"at":"2026-10-26T23:04:38.650Z","runId":"s25-02-mvpv67lu-94204d","event":"management-observed","membershipId":"om_01M5X7ASEBD4QR0QPM3R7NF43X","directoryManaged":false,"adapterManagement":"ordinary"}
+{"at":"2026-10-26T23:04:39.143Z","runId":"s25-02-mvpv67lu-94204d","event":"management-observed","membershipId":"om_01M5X7ASMHHCREX05QFKJ6WZ6B","directoryManaged":false,"adapterManagement":"ordinary"}
+{"at":"2026-10-26T23:04:39.603Z","runId":"s25-02-mvpv67lu-94204d","event":"management-observed","membershipId":"om_01M5X7AST63PGR6VDTGDAJMX6A","directoryManaged":false,"adapterManagement":"ordinary"}
+{"at":"2026-10-26T23:04:40.141Z","runId":"s25-02-mvpv67lu-94204d","event":"management-observed","membershipId":"om_01M5X7ASZM71MTVG1R18F25XQ0","directoryManaged":false,"adapterManagement":"ordinary"}
+{"at":"2026-10-26T23:04:40.629Z","runId":"s25-02-mvpv67lu-94204d","event":"management-observed","membershipId":"om_01M5X7AT53YMBKGXH62S0WMTZ2","directoryManaged":false,"adapterManagement":"ordinary"}
+{"at":"2026-10-26T23:04:40.630Z","runId":"s25-02-mvpv67lu-94204d","event":"management-limit","reason":"External and unknown management refusal are controlled-only proofs. This run creates no directory or SSO resource and changes no such setting."}
+{"at":"2026-10-26T23:04:41.215Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-started","resources":[{"kind":"organization","id":"org_01M5X7AR3GFS366E7044F1513A"},{"kind":"organization","id":"org_01M5X7ARD2Y73NHRB7YR2EMZ9E"},{"kind":"organization","id":"org_01M5X7ARJABJEPDDZFH02Y7B9A"},{"kind":"user","id":"user_01M5X7ARTE0VCDA18A81ZR170W"},{"kind":"user","id":"user_01M5X7AS21G2K6C5Q337DD7XST"},{"kind":"user","id":"user_01M5X7AS941T7DQKZHR8XCM7JS"},{"kind":"application","id":"connect_app_01M5X7ATANST5E3WDFDQBM6REP"}]}
+{"at":"2026-10-26T23:04:42.888Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verification-limit","scope":"exact owned organization IDs only","readLimitMs":10000,"readDelayMs":250,"maximumJitterMs":50,"deleteRetries":0}
+{"at":"2026-10-26T23:04:44.185Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"organization","id":"org_01M5X7AR3GFS366E7044F1513A","status":404,"reads":4,"readLimitMs":10000}
+{"at":"2026-10-26T23:04:44.319Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"organization","id":"org_01M5X7ARD2Y73NHRB7YR2EMZ9E","status":404,"reads":1,"readLimitMs":10000}
+{"at":"2026-10-26T23:04:44.423Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"organization","id":"org_01M5X7ARJABJEPDDZFH02Y7B9A","status":404,"reads":1,"readLimitMs":10000}
+{"at":"2026-10-26T23:04:44.525Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"user","id":"user_01M5X7ARTE0VCDA18A81ZR170W","status":404}
+{"at":"2026-10-26T23:04:44.629Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"user","id":"user_01M5X7AS21G2K6C5Q337DD7XST","status":404}
+{"at":"2026-10-26T23:04:44.726Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"user","id":"user_01M5X7AS941T7DQKZHR8XCM7JS","status":404}
+{"at":"2026-10-26T23:04:44.851Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"application","id":"connect_app_01M5X7ATANST5E3WDFDQBM6REP","status":404}
+{"at":"2026-10-26T23:04:44.957Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"membership","id":"om_01M5X7ASEBD4QR0QPM3R7NF43X","status":404}
+{"at":"2026-10-26T23:04:45.066Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"membership","id":"om_01M5X7ASMHHCREX05QFKJ6WZ6B","status":404}
+{"at":"2026-10-26T23:04:45.173Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"membership","id":"om_01M5X7AST63PGR6VDTGDAJMX6A","status":404}
+{"at":"2026-10-26T23:04:45.289Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"membership","id":"om_01M5X7ASZM71MTVG1R18F25XQ0","status":404}
+{"at":"2026-10-26T23:04:45.395Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-verified","kind":"membership","id":"om_01M5X7AT53YMBKGXH62S0WMTZ2","status":404}
+{"at":"2026-10-26T23:04:45.396Z","runId":"s25-02-mvpv67lu-94204d","event":"cleanup-complete","failures":[]}

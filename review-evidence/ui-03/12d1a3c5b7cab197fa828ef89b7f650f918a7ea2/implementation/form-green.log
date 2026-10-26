@@ -1,0 +1,15 @@
+▶ HostedAccountRoutes combined Members page
+  ✔ Given an invitable role, when Members opens, then one closed native disclosure beside Members contains the protected Send invitation form before the list (9.643041ms)
+  ✔ Given a public base path, when Members opens, then invitation Cancel is an ordinary Members GET link (2.577292ms)
+  ✔ Given no invitable roles, when Members opens, then no invitation trigger or send form is offered (1.233167ms)
+  ✔ Given only user is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (4.470292ms)
+  ✔ Given only admin is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (1.656292ms)
+✔ HostedAccountRoutes combined Members page (20.572208ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 209.792

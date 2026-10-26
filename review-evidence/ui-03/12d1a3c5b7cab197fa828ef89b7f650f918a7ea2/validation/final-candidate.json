@@ -1,0 +1,10 @@
+{
+  "head": "12d1a3c5b7cab197fa828ef89b7f650f918a7ea2",
+  "parent": "a017020ebe2448f5de6cc7d9cbb0700367fc80b1",
+  "main": "c42aa8237b06e46df5f8d3914af6f4151f729e1a",
+  "mergeBaseWithMain": "57c99e2b892acea52bfc3a53aee61b5ae442bf46",
+  "testedInputs": 921,
+  "sourceInputManifest": "precommit-inputs-diagnostic.json",
+  "inputsUnchanged": true,
+  "stoppingPoint": "Draft: required WorkOS staging gate blocked by invitation email quota; no merge or deploy"
+}

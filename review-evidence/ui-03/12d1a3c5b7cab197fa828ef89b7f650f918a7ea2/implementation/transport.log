@@ -1,0 +1,12 @@
+✔ Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1514.123541ms)
+✔ Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1054.087792ms)
+✔ Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1048.426458ms)
+✔ Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard, cancels a typed draft, rejects an invalid email and sends each role from fresh forms, then the form stays native and each protected write sends once (1170.164292ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5203.1325

@@ -1,0 +1,14 @@
+{
+  "command": "node",
+  "args": [
+    ".cache/ui03/with-workos-staging.cjs",
+    "npm",
+    "run",
+    "test:hosted-live"
+  ],
+  "started": "2026-10-26T23:04:29.710Z",
+  "ended": "2026-10-26T23:05:42.465Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui03/validation/hosted-live.log"
+}

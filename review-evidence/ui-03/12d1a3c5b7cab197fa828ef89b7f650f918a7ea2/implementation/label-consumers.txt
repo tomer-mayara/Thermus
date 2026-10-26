@@ -1,0 +1,16 @@
+test/integration/auth/hosted-administration.test.ts
+test/integration/hosted-admin/account-routes-administration-pages.test.ts
+test/acceptance/auth/hosted-workos-administration.test.ts
+test/acceptance/auth/hosted-members.test.ts
+test/acceptance/auth/hosted-member-removal-scope.test.ts
+test/acceptance/auth/hosted-invitation-refusals.test.ts
+test/acceptance/auth/hosted-workos-role-access.test.ts
+test/acceptance/auth/hosted-admin-journey.test.ts
+test/acceptance/auth/hosted-invitations.test.ts
+test/acceptance/auth/hosted-membership-access.test.ts
+test/acceptance/auth/hosted-live/administration-server.ts
+test/acceptance/logging/audit/hosted-storage-failure.runtime.ts
+test/acceptance/logging/audit/administration-capture.test.ts
+test/support/in-process/hosted-audit-snapshot-site.ts
+test/support/in-process/hosted-audit-journey-site.ts
+test/support/drivers/browser/admin-shell-browser.ts

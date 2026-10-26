@@ -1,0 +1,45 @@
+✖ Given the last-Admin refusal, when recovery is shown, then the existing invitation link explains the ordinary Members task and waits for acceptance (5.73825ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.324042
+
+✖ failing tests:
+
+test at dist/test/integration/hosted-admin/account-routes-removal.test.js:20:1
+✖ Given the last-Admin refusal, when recovery is shown, then the existing invitation link explains the ordinary Members task and waits for acceptance (5.73825ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /On Members, open Invite member, select Admin, and wait for acceptance\./. Input:
+  
+  '<!doctype html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Keep an Admin</title>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<main>\n' +
+    '<h1>Keep an Admin</h1>\n' +
+    '<p>Another Admin must join before this Admin can be removed. A pending invitation does not count. Nothing changed.</p>\n' +
+    '<p><a href="/invitations">Invite another Admin</a></p>\n' +
+    '<p><a href="/members">Read current Members</a></p>\n' +
+    '<p><a href="/organizations">Choose a workspace or check access</a></p>\n' +
+    '<p>If your session ended, <a href="/login?return_to=%2Forganizations">sign in again</a>.</p>\n' +
+    '</main>\n' +
+    '</body>\n' +
+    '</html>\n'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-removal.test.js:24:12)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Keep an Admin</title>\n</head>\n<body>\n<main>\n<h1>Keep an Admin</h1>\n<p>Another Admin must join before this Admin can be removed. A pending invitation does not count. Nothing changed.</p>\n<p><a href="/invitations">Invite another Admin</a></p>\n<p><a href="/members">Read current Members</a></p>\n<p><a href="/organizations">Choose a workspace or check access</a></p>\n<p>If your session ended, <a href="/login?return_to=%2Forganizations">sign in again</a>.</p>\n</main>\n</body>\n</html>\n',
+    expected: /On Members, open Invite member, select Admin, and wait for acceptance\./,
+    operator: 'match',
+    diff: 'simple'
+  }

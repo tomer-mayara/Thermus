@@ -1,0 +1,48 @@
+✔ Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden (759.300083ms)
+✔ Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (727.153666ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (504.996458ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (547.356166ms)
+✔ Given a fresh invitation form with JavaScript off at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (488.148625ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (466.050542ms)
+✔ Given a fresh invitation form with JavaScript off at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (626.8195ms)
+✔ Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (773.153875ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (540.85525ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (464.4365ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (497.420375ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (532.39675ms)
+✔ Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (584.075375ms)
+✔ Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (588.493334ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (510.705416ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (421.516584ms)
+✔ Given a fresh invitation form with JavaScript on at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (473.024791ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (558.424208ms)
+✔ Given a fresh invitation form with JavaScript on at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (497.713958ms)
+✔ Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write (687.871625ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request (415.287083ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write (423.850792ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry (463.309167ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form (585.382833ms)
+✔ Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form (546.487833ms)
+✔ Given Members at 481px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (548.166416ms)
+✔ Given Members at 600px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (500.535625ms)
+✔ Given Members at 860px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (633.0535ms)
+✔ Given Members at 1280px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap (499.553625ms)
+✔ Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (669.379875ms)
+✔ Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task (652.705333ms)
+✔ Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership (944.907167ms)
+✔ Given Audit logs without JavaScript, when an Admin opens full help by keyboard at narrow and desktop widths, then all approved text and links are readable without overflow or a write (682.982ms)
+Audit tablet geometry {"width":800,"navigation":{"x":24,"y":76,"width":752,"height":48},"main":{"x":24,"y":125,"width":752,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":752,"height":1206.1875}}
+Audit tablet geometry {"width":860,"navigation":{"x":24,"y":76,"width":812,"height":48},"main":{"x":24,"y":125,"width":812,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":812,"height":1206.1875}}
+✔ Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width (466.443291ms)
+✔ Given built Members with JavaScript off at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1258.302458ms)
+✔ Given built Members with JavaScript off at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1325.162042ms)
+✔ Given built Members with JavaScript on at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1364.67425ms)
+✔ Given built Members with JavaScript on at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable (1257.717708ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25015.743125

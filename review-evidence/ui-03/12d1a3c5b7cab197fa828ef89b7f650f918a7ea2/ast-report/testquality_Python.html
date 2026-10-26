@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<title>
+AST Metrics - Test Quality
+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+rel="stylesheet">
+<style>
+:root {
+--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+--font-mono: 'JetBrains Mono', monospace;
+}
+/* Quiet text is slate 500 (#64748b) on the white cards and on the
+slate 50 page wash, and slate 600 (#475569) on tinted pills and
+segmented tracks. Those are the lightest greys that still clear
+the 4.5:1 contrast ratio the report is asserted against. */
+body {
+font-family: var(--font-sans);
+background-color: #f8fafc;
+/* Slate 50 */
+color: #0f172a;
+/* Slate 900 */
+}
+.font-mono {
+font-family: var(--font-mono);
+}
+/* Page canvas: a very light wash so white cards still read as raised */
+.report-canvas {
+background:
+radial-gradient(1200px 500px at 12% -8%, #eef4ff 0%, rgba(238, 244, 255, 0) 60%),
+radial-gradient(900px 420px at 92% 4%, #f4f1ff 0%, rgba(244, 241, 255, 0) 55%),
+#f6f8fb;
+min-height: 100vh;
+}
+.card-graph {
+height: 135px;
+}
+/* Sortable tables. Only the headers enhanced by the sorting script
+(see the end of the body) become interactive. */
+.sortable th {
+cursor: default;
+}
+.sortable th.sort-header {
+cursor: pointer;
+}
+.sortable th .sort-btn {
+display: inline-flex;
+align-items: center;
+gap: 0.25rem;
+font: inherit;
+color: inherit;
+letter-spacing: inherit;
+text-transform: inherit;
+text-align: inherit;
+background: none;
+border: 0;
+padding: 0;
+cursor: pointer;
+}
+.sortable th .sort-btn:focus-visible {
+outline: 2px solid #93c5fd;
+/* Blue 300 */
+outline-offset: 2px;
+border-radius: 2px;
+}
+/* Direction indicator: idle (both ways), then ascending / descending */
+.sortable th .sort-arrow::after {
+content: '\2195';
+font-size: 0.85em;
+line-height: 1;
+opacity: 0.3;
+}
+.sortable th[aria-sort="ascending"] .sort-arrow::after {
+content: '\2191';
+opacity: 0.8;
+}
+.sortable th[aria-sort="descending"] .sort-arrow::after {
+content: '\2193';
+opacity: 0.8;
+}
+.progress {
+height: 10px;
+background-color: #e4e4e4;
+border-radius: 20px;
+overflow: hidden;
+}
+[x-cloak] {
+display: none !important;
+}
+/* Animations */
+@keyframes fadeInUp {
+from {
+opacity: 0;
+transform: translateY(10px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+.animate-fade-in-up {
+animation: fadeInUp 0.5s ease-out forwards;
+}
+.stagger-1 {
+animation-delay: 0.1s;
+}
+.stagger-2 {
+animation-delay: 0.2s;
+}
+.stagger-3 {
+animation-delay: 0.3s;
+}
+.stagger-4 {
+animation-delay: 0.4s;
+}
+.stagger-5 {
+animation-delay: 0.5s;
+}
+/* Clean Google Labs style tooltip */
+.graph-tooltip {
+position: fixed;
+pointer-events: none;
+z-index: 50;
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(4px);
+color: #1e293b;
+font-size: 12px;
+line-height: 1.5;
+padding: 8px 12px;
+border-radius: 8px;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+border: 1px solid #e2e8f0;
+transform: translate(-50%, calc(-100% - 12px));
+opacity: 0;
+transition: opacity 150ms ease, transform 150ms ease;
+white-space: normal;
+max-width: 280px;
+}
+.graph-tooltip.visible {
+opacity: 1;
+transform: translate(-50%, calc(-100% - 8px));
+}
+/* Navigation sidebar - hidden on mobile, overlay when toggled */
+@media (max-width: 1023px) {
+.nav-sidebar {
+position: fixed;
+left: 0;
+top: 0;
+z-index: 40;
+width: 260px;
+transform: translateX(-100%);
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+box-shadow: none;
+}
+.nav-sidebar.nav-open {
+display: flex;
+transform: translateX(0);
+box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+}
+}
+/* File explorer sidebar */
+.file-sidebar {
+position: fixed;
+right: 0;
+top: 0;
+height: 100vh;
+z-index: 40;
+background: white;
+border-left: 1px solid #e2e8f0;
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+transform: translateX(100%);
+display: flex;
+flex-direction: column;
+}
+.file-sidebar.translate-x-0 { transform: translateX(0); }
+.file-sidebar.translate-x-full { transform: translateX(100%); }
+@media (min-width: 1024px) { .file-sidebar { width: 320px; } }
+@media (max-width: 1023px) { .file-sidebar { width: 85vw; max-width: 360px; } }
+/* ------------------------------------------------------------------
+Shared report components.
+Every page is built from the same few pieces, in this order:
+1. .page-hero      the verdict: what this page found, in words
+2. .kpi-strip      the two to four numbers that back the verdict
+3. .soft-card      one card per idea, with .card-title/.card-sub
+4. .stat-tile      a single metric, with its meter and its target
+5. .insight        a one-sentence diagnosis, colored by severity
+Severity is always expressed with the same three words in class
+names and data attributes: good, warn, bad.
+------------------------------------------------------------------ */
+/* 1. Page hero: verdict sentence + supporting numbers */
+.page-hero {
+background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 45%, #ecfdf5 100%);
+border: 1px solid #e2e8f0;
+border-radius: 24px;
+padding: 2rem;
+}
+@media (min-width: 768px) {
+.page-hero { padding: 2.5rem; }
+}
+.page-kicker {
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.14em;
+text-transform: uppercase;
+color: #64748b;
+}
+.verdict-title {
+font-size: 1.875rem;
+line-height: 1.15;
+font-weight: 700;
+letter-spacing: -0.02em;
+color: #0f172a;
+}
+@media (min-width: 768px) {
+.verdict-title { font-size: 2.25rem; }
+}
+/* Second half of the verdict, deliberately quieter than the first */
+.verdict-muted { color: #64748b; }
+.verdict-lead {
+font-size: 0.9375rem;
+line-height: 1.65;
+color: #475569;
+max-width: 60ch;
+}
+.verdict-lead strong {
+font-weight: 600;
+color: #0f172a;
+}
+/* 2. KPI strip: big numbers, quiet labels, thin separators */
+.kpi-strip {
+display: flex;
+flex-wrap: wrap;
+gap: 2rem;
+}
+.kpi-value {
+font-size: 1.875rem;
+font-weight: 700;
+letter-spacing: -0.03em;
+line-height: 1.1;
+color: #0f172a;
+font-family: var(--font-mono);
+}
+.kpi-label {
+font-size: 11px;
+color: #64748b;
+margin-top: 0.25rem;
+line-height: 1.4;
+}
+.kpi-strip--divided > * + * {
+padding-left: 2rem;
+border-left: 1px solid #e2e8f0;
+}
+/* 3. Soft card: calmer than .dashboard-card, no hover lift */
+.soft-card {
+background: white;
+border: 1px solid #e2e8f0;
+border-radius: 20px;
+padding: 1.5rem;
+}
+.card-title {
+font-size: 1.0625rem;
+font-weight: 600;
+letter-spacing: -0.01em;
+color: #0f172a;
+}
+/* Every card says what it shows, in plain words */
+.card-sub {
+font-size: 0.8125rem;
+color: #64748b;
+margin-top: 0.125rem;
+}
+/* 4. Stat tile: one metric, its meter, its target */
+.stat-tile {
+background: white;
+border: 1px solid #e2e8f0;
+border-radius: 16px;
+padding: 1.125rem 1.25rem;
+}
+.stat-tile-label {
+font-size: 0.8125rem;
+color: #64748b;
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 0.5rem;
+}
+.stat-tile-value {
+font-size: 1.75rem;
+font-weight: 700;
+letter-spacing: -0.03em;
+line-height: 1.15;
+color: #0f172a;
+margin-top: 0.375rem;
+font-family: var(--font-mono);
+}
+.stat-tile-target {
+font-size: 11px;
+color: #64748b;
+margin-top: 0.5rem;
+}
+/* Meter: shared by stat tiles, verdict rows and list rows */
+.meter {
+height: 6px;
+border-radius: 999px;
+background: #e8ecf1;
+overflow: hidden;
+margin-top: 0.625rem;
+}
+.meter-fill {
+height: 100%;
+border-radius: 999px;
+transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Severity colors, one source of truth */
+.dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; display: inline-block; }
+.sev-good { background-color: #22c55e; }
+.sev-warn { background-color: #f59e0b; }
+.sev-bad { background-color: #ef4444; }
+.sev-none { background-color: #cbd5e1; }
+.text-good { color: #15803d; }
+.text-warn { color: #b45309; }
+.text-bad { color: #b91c1c; }
+.text-none { color: #64748b; }
+/* Level pill: "High risk", "Isolated", ... */
+.level-pill {
+display: inline-flex;
+align-items: center;
+gap: 0.5rem;
+font-size: 0.75rem;
+font-weight: 600;
+padding: 0.375rem 0.875rem;
+border-radius: 999px;
+background: white;
+border: 1px solid #e2e8f0;
+color: #334155;
+}
+.level-pill--good { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.level-pill--warn { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+.level-pill--bad { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+/* 5. Insight: a single sentence of diagnosis */
+.insight {
+display: flex;
+gap: 0.75rem;
+align-items: flex-start;
+font-size: 0.875rem;
+line-height: 1.6;
+padding: 0.875rem 1.125rem;
+border-radius: 14px;
+border: 1px solid #e2e8f0;
+background: #f8fafc;
+color: #334155;
+}
+.insight strong { font-weight: 600; color: #0f172a; }
+.insight--good { background: #f0fdf4; border-color: #bbf7d0; }
+.insight--warn { background: #fffbeb; border-color: #fde68a; }
+.insight--bad { background: #fef2f2; border-color: #fecaca; }
+.insight .dot { margin-top: 0.45rem; }
+/* List rows: name on the left, value on the right */
+.data-row {
+display: flex;
+align-items: center;
+gap: 0.875rem;
+padding: 0.75rem 0;
+border-bottom: 1px solid #f1f5f9;
+}
+.data-row:last-child { border-bottom: 0; }
+.row-name {
+font-size: 0.875rem;
+font-weight: 500;
+color: #0f172a;
+min-width: 0;
+}
+.row-meta {
+font-size: 0.75rem;
+color: #64748b;
+margin-top: 0.125rem;
+}
+.row-value {
+font-family: var(--font-mono);
+font-size: 0.875rem;
+font-weight: 600;
+color: #0f172a;
+text-align: right;
+flex-shrink: 0;
+}
+/* Code identifiers, wherever they appear in prose */
+.ident {
+font-family: var(--font-mono);
+font-size: 0.875em;
+background: rgba(148, 163, 184, 0.16);
+padding: 0.1em 0.4em;
+border-radius: 5px;
+}
+/* Summary rows on the dashboard: each one links to the screen where
+that metric can be acted on. */
+.summary-row {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+padding: 0.875rem 0.75rem;
+margin: 0 -0.75rem;
+border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+border-radius: 10px;
+transition: background 0.15s ease;
+}
+.summary-row:last-child { border-bottom: 0; }
+.summary-row:hover { background: rgba(255, 255, 255, 0.55); }
+.summary-row-label {
+display: flex;
+align-items: center;
+gap: 0.375rem;
+min-width: 0;
+font-size: 1rem;
+font-weight: 500;
+color: #0f172a;
+}
+.summary-row-arrow {
+width: 0.875rem;
+height: 0.875rem;
+flex-shrink: 0;
+color: #64748b;
+opacity: 0;
+transform: translateX(-3px);
+transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.summary-row:hover .summary-row-arrow,
+.summary-row-label:focus-visible .summary-row-arrow {
+opacity: 1;
+transform: translateX(0);
+}
+/* ---- Navigation ------------------------------------------------- */
+.nav-link, .nav-group-btn {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+width: 100%;
+padding: 0.5rem 0.75rem;
+border-radius: 10px;
+font-size: 0.875rem;
+font-weight: 500;
+color: #475569;
+text-align: left;
+background: none;
+border: 0;
+cursor: pointer;
+transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-link + .nav-link, .nav-group, .nav-link + .nav-group { margin-top: 0.125rem; }
+.nav-link:hover, .nav-group-btn:hover { background: #f1f5f9; color: #0f172a; }
+.nav-link--active {
+background: #eff6ff;
+color: #1d4ed8;
+font-weight: 600;
+}
+.nav-link--active:hover { background: #eff6ff; color: #1d4ed8; }
+.nav-link--quiet { color: #64748b; }
+.nav-icon { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }
+.nav-chevron {
+width: 0.875rem;
+height: 0.875rem;
+margin-left: auto;
+flex-shrink: 0;
+color: #cbd5e1;
+transition: transform 0.2s ease;
+}
+/* The groups are native <details>, so the menu paints in its final
+state without waiting for any script (no jump on load). */
+.nav-group > summary { list-style: none; }
+.nav-group > summary::-webkit-details-marker { display: none; }
+.nav-group[open] > summary .nav-chevron { transform: rotate(90deg); }
+.nav-sublist {
+margin: 0.125rem 0 0.25rem 0;
+padding-left: 2.1rem;
+display: flex;
+flex-direction: column;
+}
+.nav-sublink {
+padding: 0.375rem 0.75rem;
+border-radius: 8px;
+font-size: 0.8125rem;
+color: #64748b;
+transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-sublink:hover { background: #f1f5f9; color: #0f172a; }
+/* A small badge after the entries that ask for more from the reader */
+.nav-sublink:has(.nav-badge) { white-space: nowrap; }
+/* The sidebar keeps a fixed width: a seventh of a wide screen is too
+much, a seventh of a laptop too little for the longest entries. */
+@media (min-width: 1024px) {
+body div.lg\:grid.lg\:grid-cols-7 { grid-template-columns: 14rem repeat(6, minmax(0, 1fr)) !important; }
+}
+.nav-badge {
+display: inline-block; vertical-align: super; margin-left: 0.2rem;
+font-size: 0.4375rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1;
+color: #7c3aed; background: #f5f3ff; border-radius: 999px; padding: 0.15rem 0.3rem;
+}
+.nav-sublink--active .nav-badge { color: #6d28d9; background: #ede9fe; }
+.nav-sublink--active {
+color: #1d4ed8;
+font-weight: 600;
+background: #eff6ff;
+}
+.nav-sublink--active:hover { background: #eff6ff; color: #1d4ed8; }
+/* Contributor chip: initials, overlaid by a Gravatar when one exists.
+Chips overlap slightly, like a stack of faces. */
+.contributor-chip {
+position: relative;
+width: 34px;
+height: 34px;
+border-radius: 999px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+font-size: 11px;
+font-weight: 600;
+color: white;
+flex-shrink: 0;
+overflow: hidden;
+border: 2px solid white;
+box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+.contributor-chip + .contributor-chip { margin-left: -10px; }
+.contributor-chip-img {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+/* Segmented control, used for language tabs and small view switches */
+.seg {
+display: inline-flex;
+align-items: center;
+gap: 2px;
+padding: 3px;
+background: rgba(226, 232, 240, 0.7);
+border-radius: 999px;
+}
+.seg-item {
+font-size: 0.8125rem;
+font-weight: 500;
+color: #475569;
+padding: 0.375rem 0.875rem;
+border-radius: 999px;
+white-space: nowrap;
+transition: background 0.15s ease, color 0.15s ease;
+}
+.seg-item:hover { color: #0f172a; background: rgba(255, 255, 255, 0.6); }
+.seg-item--active {
+background: white;
+color: #0f172a;
+font-weight: 600;
+box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+.seg-item--active:hover { background: white; }
+/* Section heading between two groups of cards */
+.section-title {
+font-size: 0.75rem;
+font-weight: 600;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: #64748b;
+}
+/* One-line description of each section, shown beside the sidebar entry
+on hover and on focus. Positioned by script because the sidebar
+scrolls and would clip a CSS bubble. */
+.nav-tip {
+position: fixed; z-index: 70; pointer-events: none;
+background: #1e293b; color: #f8fafc; font-size: 11px; line-height: 1.5;
+padding: 6px 10px; border-radius: 8px; max-width: 260px;
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+opacity: 0; transition: opacity 0.12s ease;
+}
+.nav-tip.is-on { opacity: 1; }
+.nav-tip::before {
+content: ''; position: absolute; right: 100%; top: 50%; transform: translateY(-50%);
+border: 5px solid transparent; border-right-color: #1e293b;
+}
+/* Shared accessible CSS tooltips: any element with data-tip="..." shows a
+small dark bubble on hover and on keyboard focus. */
+[data-tip] { position: relative; cursor: help; }
+[data-tip]::after {
+content: attr(data-tip);
+position: absolute;
+bottom: calc(100% + 8px);
+left: 50%;
+transform: translateX(-50%) translateY(4px);
+background: #1e293b;
+color: #f8fafc;
+font-size: 11px;
+font-weight: 400;
+line-height: 1.5;
+text-transform: none;
+letter-spacing: 0;
+text-align: left;
+padding: 8px 10px;
+border-radius: 8px;
+width: max-content;
+max-width: 260px;
+white-space: normal;
+opacity: 0;
+visibility: hidden;
+transition: opacity 0.15s ease, transform 0.15s ease;
+z-index: 60;
+pointer-events: none;
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+}
+[data-tip]::before {
+content: '';
+position: absolute;
+bottom: calc(100% + 3px);
+left: 50%;
+transform: translateX(-50%);
+border: 5px solid transparent;
+border-top-color: #1e293b;
+opacity: 0;
+visibility: hidden;
+transition: opacity 0.15s ease;
+z-index: 60;
+pointer-events: none;
+}
+[data-tip]:hover::after, [data-tip]:focus-visible::after,
+[data-tip]:hover::before, [data-tip]:focus-visible::before {
+opacity: 1;
+visibility: visible;
+transform: translateX(-50%) translateY(0);
+}
+[data-tip]:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; border-radius: 4px; }
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+<!-- Mobile nav toggle -->
+<button id="nav-toggle" onclick="document.getElementById('nav-sidebar').classList.toggle('nav-open');document.getElementById('nav-backdrop').classList.toggle('hidden');"
+aria-label="Toggle navigation menu"
+class="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-white border border-slate-200 rounded-lg shadow flex items-center justify-center text-slate-600">
+<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+</svg>
+</button>
+<!-- Mobile nav backdrop -->
+<div id="nav-backdrop" class="hidden fixed inset-0 bg-black/30 z-30 lg:hidden"
+onclick="document.getElementById('nav-sidebar').classList.remove('nav-open');this.classList.add('hidden');"></div>
+<div class="lg:grid lg:grid-cols-7">
+<aside id="nav-sidebar"
+class="nav-sidebar hidden lg:flex self-start lg:sticky top-0 col-span-1 flex-col h-screen px-4 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l">
+<a href="https://github.com/ast-metrics/ast-metrics">
+<img src="images/logo-ast-metrics-small.png" alt="AST Metrics" class="h-auto mx-auto hover:opacity-70">
+</a>
+<div class="flex flex-col justify-between flex-1 mt-12">
+<!-- Navigation. Grouped by the question the reader is asking,
+rather than by the metric family. The group holding the
+current page opens itself. -->
+<nav aria-label="Report sections">
+<a href="index_Python.html"
+class="nav-link "
+data-nav-tip="The verdict and the scores at a glance. Start here."
+>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h12A2.25 2.25 0 0 1 20.25 6v3H3.75V6ZM3.75 12h7.5v8.25H6A2.25 2.25 0 0 1 3.75 18v-6ZM14.25 12h6v6A2.25 2.25 0 0 1 18 20.25h-3.75V12Z" />
+</svg>
+<span>Overview</span>
+</a>
+<!-- What the code is made of -->
+<details class="nav-group" data-nav-group="code" open>
+<summary class="nav-group-btn">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25M6.75 17.25 1.5 12l5.25-5.25M14.25 3.75l-4.5 16.5" />
+</svg>
+<span>The code</span>
+<svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+</summary>
+<div class="nav-sublist">
+<a href="explorer_Python.html" class="nav-sublink " data-nav-tip="Every file, with its size, complexity and risk."
+>Files</a>
+<a href="classes_Python.html" class="nav-sublink " data-nav-tip="Every class, with its metrics."
+>Classes</a>
+<a href="testquality_Python.html" class="nav-sublink nav-sublink--active" data-nav-tip="How isolated and how traceable the tests are."
+aria-current="page">Tests</a>
+<a href="metrics_Python.html" class="nav-sublink " data-nav-tip="Every metric with its definition. For the curious."
+>All metrics <span class="nav-badge">advanced</span></a>
+</div>
+</details>
+<!-- How the pieces fit together -->
+<details class="nav-group" data-nav-group="archi">
+<summary class="nav-group-btn">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+</svg>
+<span>Architecture</span>
+<svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+</summary>
+<div class="nav-sublist">
+<a href="dependencies_Python.html" class="nav-sublink " data-nav-tip="Who depends on whom, package by package."
+>Dependencies</a>
+<a href="communities_Python.html" class="nav-sublink " data-nav-tip="The modules the code forms on its own, where they leak, what to cut first. Advanced."
+>Natural groups <span class="nav-badge">advanced</span></a>
+<a href="classification_Python.html" class="nav-sublink " data-nav-tip="What each class does: controller, repository, value object."
+>Roles</a>
+</div>
+</details>
+<!-- What may bite -->
+<details class="nav-group" data-nav-group="health">
+<summary class="nav-group-btn">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+</svg>
+<span>Health</span>
+<svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+</summary>
+<div class="nav-sublist">
+<a href="linters_Python.html" class="nav-sublink " data-nav-tip="The rules the code breaks, and the ones it respects."
+>Rule violations</a>
+<a href="risks_Python.html" class="nav-sublink " data-nav-tip="The files where complexity meets churn: where a change is most likely to hurt."
+>Observations</a>
+</div>
+</details>
+<a href="busfactor_Python.html"
+class="nav-link "
+data-nav-tip="Who knows which part of the code, and what happens if they leave."
+>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+</svg>
+<span>Team</span>
+</a>
+<a href="compare_Python.html"
+class="nav-link "
+data-nav-tip="What changed since the previous analysis."
+>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+</svg>
+<span>Changes</span>
+</a>
+<a href="https://ast-metrics.dev/" class="nav-link nav-link--quiet">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+</svg>
+<span>Help</span>
+</a>
+</nav>
+<script>
+// Reopen the groups the reader left open, and remember any
+// change. Runs synchronously, right after the menu markup,
+// so the state is settled before the first paint.
+(function () {
+var state = {};
+try { state = JSON.parse(localStorage.getItem('ast-nav-open') || '{}'); } catch (e) { }
+document.querySelectorAll('details[data-nav-group]').forEach(function (group) {
+var key = group.getAttribute('data-nav-group');
+if (state[key]) group.open = true;
+group.addEventListener('toggle', function () {
+state[key] = group.open;
+try { localStorage.setItem('ast-nav-open', JSON.stringify(state)); } catch (e) { /* private mode */ }
+});
+});
+})();
+</script>
+</div>
+<!-- Project links -->
+<div class="flex items-center gap-2 px-4 pt-4 border-t border-gray-100">
+<a aria-label="Visit Github repository of AST Metrics"
+href="https://github.com/ast-metrics/ast-metrics/"
+class="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors">
+<svg viewBox="0 0 24 24" aria-hidden="true" class="h-5 w-5 fill-current">
+<path fill-rule="evenodd" clip-rule="evenodd"
+d="M12 2C6.477 2 2 6.463 2 11.97c0 4.404 2.865 8.14 6.839 9.458.5.092.682-.216.682-.48 0-.236-.008-.864-.013-1.695-2.782.602-3.369-1.337-3.369-1.337-.454-1.151-1.11-1.458-1.11-1.458-.908-.618.069-.606.069-.606 1.003.07 1.531 1.027 1.531 1.027.892 1.524 2.341 1.084 2.91.828.092-.643.35-1.083.636-1.332-2.22-.251-4.555-1.107-4.555-4.927 0-1.088.39-1.979 1.029-2.675-.103-.252-.446-1.266.098-2.638 0 0 .84-.268 2.75 1.022A9.607 9.607 0 0 1 12 6.82c.85.004 1.705.114 2.504.336 1.909-1.29 2.747-1.022 2.747-1.022.546 1.372.202 2.386.1 2.638.64.696 1.028 1.587 1.028 2.675 0 3.83-2.339 4.673-4.566 4.92.359.307.678.915.678 1.846 0 1.332-.012 2.407-.012 2.734 0 .267.18.577.688.48 3.97-1.32 6.833-5.054 6.833-9.458C22 6.463 17.522 2 12 2Z">
+</path>
+</svg>
+</a>
+<a aria-label="Sponsor AST Metrics on GitHub"
+href="https://github.com/sponsors/Halleck45"
+class="flex items-center gap-1.5 p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-pink-600 transition-colors">
+<svg viewBox="0 0 16 16" aria-hidden="true" class="h-5 w-5 fill-current">
+<path d="M4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.565 20.565 0 0 0 8 13.393a20.561 20.561 0 0 0 3.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.749.749 0 0 1-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5ZM8 14.25l-.345.666a.752.752 0 0 0 .69 0L8 14.25Zm-.008-12.306C6.936 1.257 5.775.75 4.25.75 2.104.75 0 2.535 0 5.5c0 2.909 2.067 5.283 3.885 6.85a21.994 21.994 0 0 0 3.65 2.52l.028.014.008.004.001.001c.276.135.579.135.856 0l.001-.001.008-.004.028-.014a15.005 15.005 0 0 0 .459-.246 21.99 21.99 0 0 0 3.192-2.274C13.933 10.783 16 8.409 16 5.5c0-2.965-2.104-4.75-4.25-4.75-1.525 0-2.686.507-3.742 1.194Z" />
+</svg>
+<span class="text-sm">Sponsor</span>
+</a>
+</div>
+</aside>
+<div id="nav-tip" class="nav-tip" role="tooltip" aria-hidden="true"></div>
+<script>
+(function () {
+var tip = document.getElementById('nav-tip');
+if (!tip) return;
+function show(el) {
+tip.textContent = el.getAttribute('data-nav-tip');
+var r = el.getBoundingClientRect();
+tip.style.left = (r.right + 10) + 'px';
+tip.style.top = r.top + 'px';
+tip.classList.add('is-on');
+// centre on the entry once the bubble has a height
+tip.style.top = (r.top + (r.height - tip.offsetHeight) / 2) + 'px';
+}
+function hide() { tip.classList.remove('is-on'); }
+document.querySelectorAll('[data-nav-tip]').forEach(function (el) {
+el.addEventListener('mouseenter', function () { show(el); });
+el.addEventListener('focus', function () { show(el); });
+el.addEventListener('mouseleave', hide);
+el.addEventListener('blur', hide);
+});
+})();
+</script>
+<main class="col-span-full lg:col-span-6">
+<div class="report-canvas py-8 px-6 md:px-8">
+<script src="data/data_Python.js"></script>
+<!-- Scope switcher: include with pageBase="classes". The available scopes are
+computed in Go (buildScopes in html_report_generator.go): the whole project,
+then one per language, then one per analyzed folder (only when several
+folders were given on the command line). The "All languages" view is always
+offered, so a single-language project still shows the distinction between
+the whole project and that language. -->
+<div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 mb-6">
+<div class="seg" role="tablist" aria-label="Filter by language">
+<a role="tab" href="testquality.html"
+class="seg-item "
+aria-selected="false">All languages
+<span class="text-slate-600 font-normal">1152</span></a><a role="tab" href="testquality_Python.html"
+class="seg-item seg-item--active"
+aria-selected="true" aria-current="page">Python
+<span class="text-slate-600 font-normal">6</span></a><a role="tab" href="testquality_TypeScript.html"
+class="seg-item "
+aria-selected="false">TypeScript
+<span class="text-slate-600 font-normal">1146</span></a>
+</div>
+</div>
+<!-- No test file at all: say so plainly -->
+<div class="page-hero animate-fade-in-up mt-8">
+<div class="flex flex-wrap items-start justify-between gap-8">
+<div class="min-w-0">
+<span class="level-pill mb-5">
+<span class="dot sev-none"></span> Nothing to measure
+</span>
+<h1 class="verdict-title">
+No test file detected.<br>
+<span class="verdict-muted">Nothing here can tell you whether this code works.</span>
+</h1>
+<p class="verdict-lead mt-4">
+AST Metrics scanned <strong>6
+files</strong> and recognised no test among them.
+Test files are identified from the usual naming conventions of each language, so a project that names
+them differently will show up empty here
+<span tabindex="0" data-tip="Files are treated as tests when their path or name follows the language's usual convention, such as _test.go, test_*.py or *Test.php." class="text-gray-300 text-xs">ⓘ</span>.
+</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- File explorer sidebar: a real nested tree, flattened into one list so Alpine
+can render any depth with a single loop. -->
+<div x-data="fileSidebar()" x-cloak
+@keydown.window="if ((e=$event).ctrlKey && e.key==='b') { e.preventDefault(); toggle(); }">
+<!-- Mobile backdrop -->
+<div x-show="open" x-transition:enter="transition-opacity ease-out duration-300"
+x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+x-transition:leave="transition-opacity ease-in duration-200"
+x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+@click="toggle()" class="fixed inset-0 bg-black/30 z-40 lg:hidden"></div>
+<!-- Sidebar panel -->
+<div :class="open ? 'translate-x-0' : 'translate-x-full'" class="file-sidebar" id="file-sidebar-panel">
+<!-- Header -->
+<div class="flex items-center justify-between px-5 pt-5 pb-3">
+<h2 class="card-title text-base">Files</h2>
+<button @click="toggle()" aria-label="Close the file explorer"
+class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-600 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+<!-- Search -->
+<div class="px-5 pb-3">
+<div class="relative">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2">
+<path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+</svg>
+<input type="search" x-model.debounce.200ms="query" aria-label="Search a file"
+placeholder="Search a file"
+class="w-full bg-slate-50 border border-slate-200 rounded-full pl-10 pr-3 py-2 text-sm
+placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500
+focus:border-transparent focus:bg-white transition-colors">
+</div>
+</div>
+<!-- Scope: everything, or only files carrying a risk -->
+<div class="px-5 pb-3">
+<div class="seg w-full" role="tablist" aria-label="Filter files">
+<button role="tab" class="seg-item flex-1 text-center" :class="onlyAtRisk ? '' : 'seg-item--active'"
+:aria-selected="onlyAtRisk ? 'false' : 'true'" @click="onlyAtRisk = false">All</button>
+<button role="tab" class="seg-item flex-1 text-center" :class="onlyAtRisk ? 'seg-item--active' : ''"
+:aria-selected="onlyAtRisk ? 'true' : 'false'" @click="onlyAtRisk = true">
+At risk <span class="text-slate-600 font-normal" x-text="atRiskCount"></span>
+</button>
+</div>
+</div>
+<!-- Tree -->
+<div class="overflow-y-auto flex-1 px-3 pb-4">
+<template x-for="n in visibleNodes" :key="n.id">
+<div>
+<!-- Folder -->
+<button x-show="n.type === 'dir'" @click="toggleDir(n)"
+:style="`padding-left: ${0.5 + n.depth * 0.75}rem`"
+:aria-expanded="n.expanded ? 'true' : 'false'"
+class="w-full flex items-center gap-1.5 pr-2 py-1.5 rounded-lg text-left
+text-slate-500 hover:bg-slate-50 transition-colors group">
+<svg :class="n.expanded ? 'rotate-90' : ''"
+class="w-3 h-3 shrink-0 text-slate-300 group-hover:text-slate-500 transition-transform"
+xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+<span class="dot shrink-0" :class="n.sev"></span>
+<span class="font-mono text-xs truncate" x-text="n.name" :title="n.path"></span>
+</button>
+<!-- File -->
+<button x-show="n.type === 'file'" @click="selectFile(n.file)"
+:data-sb-path="n.path"
+:style="`padding-left: ${1.5 + n.depth * 0.75}rem`"
+:aria-current="n.file && selectedPath === n.file.path ? 'true' : 'false'"
+class="w-full flex items-center gap-1.5 pr-3 py-1.5 rounded-full text-left transition-colors"
+:class="n.file && selectedPath === n.file.path
+? 'bg-slate-900 text-white'
+: 'text-slate-600 hover:bg-slate-50'">
+<span class="dot shrink-0" :class="n.sev"></span>
+<span class="font-mono text-xs truncate" x-text="n.name" :title="n.path"></span>
+<span x-show="n.file && n.file.isTest"
+class="shrink-0 px-1 py-px rounded text-[10px] font-medium leading-tight"
+:class="n.file && selectedPath === n.file.path ? 'bg-white/20 text-white' : 'bg-violet-50 text-violet-600'">test</span>
+</button>
+</div>
+</template>
+<p x-show="!visibleNodes.length" class="text-xs text-slate-500 text-center py-8">
+<span x-show="query">No file matches <span class="font-medium" x-text="query"></span>.</span>
+<span x-show="!query && onlyAtRisk">No file carries a risk.</span>
+</p>
+</div>
+<!-- Legend -->
+<div class="px-5 py-3 border-t border-slate-100 flex items-center gap-4 text-[11px] text-slate-500">
+<span class="flex items-center gap-1.5"><span class="dot sev-good"></span> clean</span>
+<span class="flex items-center gap-1.5"><span class="dot sev-warn"></span> some risks</span>
+<span class="flex items-center gap-1.5"><span class="dot sev-bad"></span> many risks</span>
+</div>
+</div>
+<!-- FAB toggle -->
+<button x-show="!open" x-transition @click="toggle()"
+class="fixed bottom-6 right-6 z-50 w-12 h-12 bg-slate-800 hover:bg-slate-900 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+title="Browse files (Ctrl+B)"
+aria-label="Browse files">
+<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+</svg>
+</button>
+</div>
+<script>
+function fileSidebar() {
+const isDesktop = window.innerWidth >= 1024;
+const stored = localStorage.getItem('ast-sidebar-open');
+const isExplorerPage = false;
+// The tree is the explorer's main navigation, so it is always open there.
+// Everywhere else it is a side tool: closed until asked for (FAB or Ctrl+B).
+const initialOpen = isExplorerPage ? true : (stored !== null ? stored === 'true' : false);
+return {
+open: initialOpen,
+query: '',
+onlyAtRisk: false,
+files: [],
+risksByPath: {},
+nodes: [],
+collapsed: {},
+selectedPath: '',
+isExplorerPage: isExplorerPage,
+init() {
+const d = window.__AST_DATA__ || {};
+this.files = d.files || [];
+this.risksByPath = d.risks || {};
+this.buildTree();
+if (this.open && isDesktop) this.pushMain(true);
+if (this.isExplorerPage) {
+window.addEventListener('explorer-file-selected', (e) => {
+if (e.detail && e.detail.path) {
+this.selectedPath = e.detail.path;
+this.revealPath(e.detail.path);
+}
+});
+// The explorer may have selected a deep-linked file before this
+// component was listening, so resolve ?file= here as well.
+this.selectFromQuery();
+}
+},
+toggle() {
+this.open = !this.open;
+localStorage.setItem('ast-sidebar-open', this.open);
+if (window.innerWidth >= 1024) this.pushMain(this.open);
+document.body.style.overflow = (this.open && window.innerWidth < 1024) ? 'hidden' : '';
+},
+pushMain(push) {
+const main = document.querySelector('main.col-span-full, main.col-span-6');
+if (main) {
+main.style.transition = 'margin-right 0.3s ease';
+main.style.marginRight = push ? '320px' : '0';
+}
+},
+// Resolve ?file=<hash|shortPath|path> the same way the explorer does
+selectFromQuery() {
+let param = null;
+try { param = new URLSearchParams(window.location.search).get('file'); } catch (e) { return; }
+if (!param) return;
+const f = this.files.find(x => (x.pathHash || '') === param)
+|| this.files.find(x => (x.shortPath || '') === param)
+|| this.files.find(x => (x.path || '') === param);
+if (!f) return;
+this.selectedPath = f.path;
+this.revealPath(f.path);
+},
+// Risks are keyed by path hash, like everywhere else in the report data
+risksFor(f) { return this.risksByPath[f.pathHash] || []; },
+severityOf(count) {
+if (count >= 3) return 'sev-bad';
+if (count >= 1) return 'sev-warn';
+return 'sev-good';
+},
+get atRiskCount() {
+return this.files.filter(f => this.risksFor(f).length > 0).length;
+},
+// Build a nested tree, then flatten it into an ordered list of nodes that
+// carry their own depth. One Alpine loop can then render any depth.
+buildTree() {
+const root = { children: new Map(), files: [] };
+for (const f of this.files) {
+const parts = (f.shortPath || f.path || '').split('/').filter(Boolean);
+const fileName = parts.pop();
+let node = root;
+for (const part of parts) {
+if (!node.children.has(part)) node.children.set(part, { children: new Map(), files: [] });
+node = node.children.get(part);
+}
+node.files.push({ name: fileName, file: f });
+}
+const out = [];
+let seq = 0;
+const walk = (node, depth, prefix) => {
+for (const [name, child] of [...node.children.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+const path = prefix ? prefix + '/' + name : name;
+// A folder inherits the worst severity of what it contains
+const worst = this.worstSeverityIn(child);
+out.push({ id: 'd' + (seq++), type: 'dir', name, path, depth, sev: worst });
+walk(child, depth + 1, path);
+}
+for (const entry of node.files.sort((a, b) => a.name.localeCompare(b.name))) {
+const count = this.risksFor(entry.file).length;
+out.push({
+id: 'f' + (seq++), type: 'file', name: entry.name,
+path: entry.file.shortPath || entry.file.path,
+depth, file: entry.file, sev: this.severityOf(count),
+});
+}
+};
+walk(root, 0, '');
+this.nodes = out;
+},
+worstSeverityIn(node) {
+let max = 0;
+const visit = (n) => {
+for (const entry of n.files) max = Math.max(max, this.risksFor(entry.file).length);
+for (const child of n.children.values()) visit(child);
+};
+visit(node);
+return this.severityOf(max);
+},
+// Visibility is derived: a node shows when no ancestor is collapsed. A
+// search or the "at risk" filter hides non-matching files and any folder
+// left empty by the filter.
+get visibleNodes() {
+const q = this.query.trim().toLowerCase();
+const keep = new Set();
+if (q || this.onlyAtRisk) {
+for (const n of this.nodes) {
+if (n.type !== 'file') continue;
+if (q && !(n.path || '').toLowerCase().includes(q)) continue;
+if (this.onlyAtRisk && this.risksFor(n.file).length === 0) continue;
+keep.add(n.path);
+const parts = (n.path || '').split('/');
+for (let i = 1; i < parts.length; i++) keep.add(parts.slice(0, i).join('/'));
+}
+}
+const out = [];
+for (const n of this.nodes) {
+if ((q || this.onlyAtRisk) && !keep.has(n.path)) continue;
+// While filtering, everything matching stays expanded
+const collapsedAncestor = (q || this.onlyAtRisk) ? false : this.hasCollapsedAncestor(n.path);
+if (collapsedAncestor) continue;
+out.push(n.type === 'dir'
+? { ...n, expanded: (q || this.onlyAtRisk) ? true : !this.collapsed[n.path] }
+: n);
+}
+return out;
+},
+hasCollapsedAncestor(path) {
+const parts = (path || '').split('/');
+for (let i = 1; i < parts.length; i++) {
+if (this.collapsed[parts.slice(0, i).join('/')]) return true;
+}
+return false;
+},
+toggleDir(n) {
+this.collapsed = { ...this.collapsed, [n.path]: !this.collapsed[n.path] };
+},
+// Make sure a deep-linked file is neither hidden inside a collapsed
+// folder nor off-screen in a long tree
+revealPath(fullPath) {
+const f = this.files.find(x => x.path === fullPath);
+const rel = (f && (f.shortPath || f.path)) || fullPath;
+const parts = rel.split('/');
+const next = { ...this.collapsed };
+for (let i = 1; i < parts.length; i++) delete next[parts.slice(0, i).join('/')];
+this.collapsed = next;
+this.$nextTick(() => {
+const el = document.querySelector(`[data-sb-path="${CSS.escape(rel)}"]`);
+if (el) el.scrollIntoView({ block: 'center' });
+});
+},
+selectFile(f) {
+this.selectedPath = f.path;
+if (this.isExplorerPage) {
+this.$dispatch('sidebar-select-file', { path: f.path, pathHash: f.pathHash || f.shortPath || f.path });
+} else {
+window.location.href = 'explorer_Python.html?file=' + encodeURIComponent(f.pathHash || f.shortPath || f.path);
+}
+},
+};
+}
+</script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@7.3.3/dist/pixi.min.js" defer></script>
+<!-- Generic table sorting: makes every <table class="sortable"> header clickable. No dependency. -->
+<script type="text/javascript">
+(function () {
+'use strict';
+// Number at the beginning of a cell: "12", "-3.5", "1 234", "1.2 K", "45%"
+var LEADING_NUMBER = /^([+-]?\d[\d\s,.]*)\s*([kmgt])?\s*%?/i;
+var SCALES = { k: 1e3, m: 1e6, g: 1e9, t: 1e12 };
+var EMPTY_VALUES = ['', '-', '--', 'n/a', 'na'];
+function cellText(row, index) {
+var cell = row.cells[index];
+if (!cell) {
+return '';
+}
+// Non breaking spaces are common in formatted numbers
+return (cell.textContent || '').replace(/ /g, ' ').trim();
+}
+// Returns a number, or null when the cell holds no numeric value.
+function parseNumber(text) {
+if (EMPTY_VALUES.indexOf(text.toLowerCase()) !== -1) {
+return null;
+}
+var match = text.match(LEADING_NUMBER);
+if (!match) {
+return null;
+}
+var digits = match[1].replace(/\s/g, '');
+if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(digits)) {
+digits = digits.replace(/,/g, ''); // "1,234" : thousand separator
+} else {
+digits = digits.replace(',', '.'); // "1,2" : decimal comma
+}
+var value = parseFloat(digits);
+if (isNaN(value)) {
+return null;
+}
+return value * (SCALES[(match[2] || '').toLowerCase()] || 1);
+}
+// Rows spanning several columns (empty states, notices) are never sorted.
+function isSortableRow(row) {
+for (var i = 0; i < row.cells.length; i++) {
+if (row.cells[i].colSpan > 1) {
+return false;
+}
+}
+return true;
+}
+function sortableRows(table) {
+var body = table.tBodies[0];
+if (!body) {
+return [];
+}
+// body.rows only contains real <tr>, so Alpine <template> blocks are ignored
+return Array.prototype.filter.call(body.rows, isSortableRow);
+}
+// Headers of the last row of the <thead>.
+function headerCells(table) {
+var head = table.tHead;
+if (!head || !head.rows.length) {
+return [];
+}
+var row = head.rows[head.rows.length - 1];
+return Array.prototype.filter.call(row.cells, function (cell) {
+return cell.tagName === 'TH';
+});
+}
+// Auto detection: numeric when most of the filled cells parse as numbers.
+function isNumericColumn(rows, index) {
+var numeric = 0;
+var filled = 0;
+for (var i = 0; i < rows.length; i++) {
+var text = cellText(rows[i], index);
+if (!text) {
+continue;
+}
+filled++;
+if (parseNumber(text) !== null) {
+numeric++;
+}
+}
+return filled > 0 && (numeric / filled) >= 0.6;
+}
+function reorder(table, state) {
+var body = table.tBodies[0];
+if (!body) {
+return;
+}
+var factor = state.direction === 'descending' ? -1 : 1;
+var allRows = Array.prototype.slice.call(body.rows);
+var items = allRows.filter(isSortableRow).map(function (row, position) {
+var text = cellText(row, state.index);
+return {
+row: row,
+position: position,
+text: text,
+value: state.numeric ? parseNumber(text) : null
+};
+});
+items.sort(function (a, b) {
+if (state.numeric) {
+// Cells without value always land at the bottom
+if (a.value === null || b.value === null) {
+if (a.value === b.value) {
+return a.position - b.position;
+}
+return a.value === null ? 1 : -1;
+}
+if (a.value !== b.value) {
+return (a.value - b.value) * factor;
+}
+} else {
+if (!a.text || !b.text) {
+if (a.text === b.text) {
+return a.position - b.position;
+}
+return a.text ? -1 : 1;
+}
+var comparison = a.text.localeCompare(b.text, undefined, { numeric: true, sensitivity: 'base' });
+if (comparison !== 0) {
+return comparison * factor;
+}
+}
+return a.position - b.position; // stable for ties
+});
+// Re-inject the sorted rows, keeping the non sortable rows at their own index
+var fragment = document.createDocumentFragment();
+var cursor = 0;
+allRows.forEach(function (row) {
+fragment.appendChild(isSortableRow(row) ? items[cursor++].row : row);
+});
+body.appendChild(fragment);
+}
+// Applies the sort without letting our own DOM moves wake up the observer.
+function applySort(table, state) {
+var observer = table.astSortObserver;
+if (observer) {
+observer.disconnect();
+}
+reorder(table, state);
+if (observer) {
+observer.observe(table.tBodies[0], { childList: true, subtree: true, characterData: true });
+}
+}
+// Some tables are rendered client side (Alpine x-for in linters.html): rows appear or are
+// rewritten after a filter change, which would silently reset the order. We watch the tbody
+// and replay the current sort. Alpine keeps its own references to the rows, so moving them
+// around does not break its bookkeeping: it may reorder them on the next update, and we
+// simply sort again.
+function watchRerenders(table) {
+var body = table.tBodies[0];
+if (!body || typeof MutationObserver === 'undefined') {
+return;
+}
+var scheduled = false;
+var observer = new MutationObserver(function () {
+if (scheduled || !table.astSortState) {
+return;
+}
+scheduled = true;
+// setTimeout, not requestAnimationFrame: also runs in a hidden tab,
+// and after the current batch of framework updates
+window.setTimeout(function () {
+scheduled = false;
+if (table.astSortState) {
+applySort(table, table.astSortState);
+}
+}, 0);
+});
+table.astSortObserver = observer;
+observer.observe(body, { childList: true, subtree: true, characterData: true });
+}
+function setupTable(table) {
+var headers = headerCells(table);
+if (!headers.length || !table.tBodies[0]) {
+return;
+}
+watchRerenders(table);
+headers.forEach(function (header, index) {
+if (!(header.textContent || '').trim()) {
+return; // decorative column (icon only): nothing to sort on
+}
+header.classList.add('sort-header');
+header.setAttribute('aria-sort', 'none');
+// The existing content is moved into a button: native click, Enter and Space support,
+// while the <th> keeps its columnheader role and its aria-sort attribute.
+var button = document.createElement('button');
+button.type = 'button';
+button.className = 'sort-btn';
+button.setAttribute('tabindex', '0');
+while (header.firstChild) {
+button.appendChild(header.firstChild);
+}
+var arrow = document.createElement('span');
+arrow.className = 'sort-arrow';
+arrow.setAttribute('aria-hidden', 'true');
+button.appendChild(arrow);
+header.appendChild(button);
+button.addEventListener('click', function () {
+var previous = table.astSortState;
+var ascending = !(previous && previous.index === index && previous.direction === 'ascending');
+var method = header.getAttribute('data-sort-method');
+var numeric = method === 'number';
+if (!numeric && method !== 'text') {
+numeric = isNumericColumn(sortableRows(table), index);
+}
+headers.forEach(function (other) {
+if (other.hasAttribute('aria-sort')) {
+other.setAttribute('aria-sort', 'none');
+}
+});
+var direction = ascending ? 'ascending' : 'descending';
+header.setAttribute('aria-sort', direction);
+table.astSortState = { index: index, direction: direction, numeric: numeric };
+applySort(table, table.astSortState);
+});
+});
+}
+document.addEventListener('DOMContentLoaded', function () {
+Array.prototype.forEach.call(document.querySelectorAll('table.sortable'), setupTable);
+});
+})();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+var data = (window.__AST_DATA__ || {}).testQuality;
+if (!data) return;
+var histEl = document.getElementById('isolation-histogram');
+if (!histEl || !data.isolationHistogram || typeof d3 === 'undefined') return;
+var bins = data.isolationHistogram;
+var labels = ['0-19', '20-39', '40-59', '60-79', '80-100'];
+var colors = ['#ef4444', '#f59e0b', '#fbbf24', '#4ade80', '#22c55e'];
+var margin = {top: 10, right: 20, bottom: 34, left: 40};
+var width = histEl.clientWidth - margin.left - margin.right;
+var height = 200 - margin.top - margin.bottom;
+var svg = d3.select('#isolation-histogram')
+.append('svg')
+.attr('width', width + margin.left + margin.right)
+.attr('height', height + margin.top + margin.bottom)
+.append('g')
+.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+var x = d3.scaleBand()
+.domain(labels)
+.range([0, width])
+.padding(0.2);
+var y = d3.scaleLinear()
+.domain([0, d3.max(bins) || 1])
+.nice()
+.range([height, 0]);
+svg.append('g')
+.attr('transform', 'translate(0,' + height + ')')
+.call(d3.axisBottom(x))
+.selectAll('text')
+.style('font-size', '11px');
+svg.append('text')
+.attr('x', width / 2)
+.attr('y', height + 30)
+.attr('text-anchor', 'middle')
+.style('font-size', '10px')
+.style('fill', '#94a3b8')
+.text('isolation score');
+svg.append('g')
+.call(d3.axisLeft(y).ticks(5))
+.selectAll('text')
+.style('font-size', '11px');
+svg.selectAll('.bar')
+.data(bins)
+.join('rect')
+.attr('x', function(d, i) { return x(labels[i]); })
+.attr('y', function(d) { return y(d); })
+.attr('width', x.bandwidth())
+.attr('height', function(d) { return height - y(d); })
+.attr('fill', function(d, i) { return colors[i]; })
+.attr('rx', 4);
+svg.selectAll('.label')
+.data(bins)
+.join('text')
+.attr('x', function(d, i) { return x(labels[i]) + x.bandwidth() / 2; })
+.attr('y', function(d) { return y(d) - 4; })
+.attr('text-anchor', 'middle')
+.style('font-size', '11px')
+.style('font-weight', '600')
+.style('fill', '#334155')
+.text(function(d) { return d > 0 ? d : ''; });
+});
+</script>
+</body>
+</html>

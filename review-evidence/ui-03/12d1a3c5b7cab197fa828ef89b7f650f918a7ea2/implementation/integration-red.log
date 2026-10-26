@@ -1,0 +1,52 @@
+▶ HostedAccountRoutes combined Members page
+  ✖ Given an invitable role, when Members opens, then one closed native disclosure beside Members contains the protected Send invitation form before the list (9.30575ms)
+  ✖ Given a public base path, when Members opens, then invitation Cancel is an ordinary Members GET link (2.615042ms)
+  ✔ Given no invitable roles, when Members opens, then no invitation trigger or send form is offered (0.98125ms)
+  ✔ Given only user is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (2.399291ms)
+  ✔ Given only admin is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default (2.019959ms)
+✖ HostedAccountRoutes combined Members page (18.32475ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 3
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 244.190958
+
+✖ failing tests:
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:10:5
+✖ Given an invitable role, when Members opens, then one closed native disclosure beside Members contains the protected Send invitation form before the list (9.30575ms)
+  AssertionError [ERR_ASSERTION]: Members has an invitation disclosure
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:14:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:24:5
+✖ Given a public base path, when Members opens, then invitation Cancel is an ordinary Members GET link (2.615042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'Cancel'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:28:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'Cancel',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
