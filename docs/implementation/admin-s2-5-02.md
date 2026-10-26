@@ -1,17 +1,19 @@
 # S2.5-02 integrated verification and release controls
 
-Status: S2.5-R1 completes the source repair and selected behavioral checks in
-PR #257. Independent human architect review of the current candidate remains
-pending. PRs #253 and #255 are Draft again. The
-[stack review](admin-s2-5-stack-review.md) records the finding and focused checks;
-[S2.5-R1](../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration)
-is implemented on its repair branch; its [record](admin-s2-5-r1.md) gives the
-current behavioral gate results, red/green history, cleanup and limits. The PR
-Validation and Quality review records retain earlier candidate evidence and
-review status. Actual release remains pending. This is
-[PR #255](https://github.com/tomer-mayara/Thermus/pull/255), stacked on
-[S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254) at
-`2271545702a8f1ec28c6f7dd913fec7024ecadeb`. The ticket is not released or Done.
+Status on 26 October 2026: the [S2.5-R1 source repair](admin-s2-5-r1.md) is
+implemented in PR #257. The check results and Draft/review holds below retain
+their original candidate scope. The user directly reported architect approval
+of the entire original Slice 2.5 stack on 26 October. Current repaired-candidate
+pins, validation and approval reconciliation are in PR #257's
+[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
+[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871).
+The [stack review](admin-s2-5-stack-review.md) preserves the original finding;
+the [R1 record](admin-s2-5-r1.md) preserves its red/green history, earlier checks,
+cleanup and limits. Actual release remains pending. This records the original
+[PR #255](https://github.com/tomer-mayara/Thermus/pull/255) increment, whose
+original [S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254)
+parent was `2271545702a8f1ec28c6f7dd913fec7024ecadeb`.
+The ticket is not released or Done.
 The [plan](../design/organization-admin-plan.md#s25-02--integrated-verification-runbooks-and-release)
 retains the release exit. This document is the sole current Slice 2.5 release
 gate ledger. The actual Slice 1/S2-04 release and owner notice decisions remain

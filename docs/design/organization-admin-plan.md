@@ -22,10 +22,13 @@ provider, and controlled recovery evidence in PRs
 [stack review](../implementation/admin-s2-5-stack-review.md) found a P2 at its
 reviewed head: the safety scan reads unused display email for every member and
 can exhaust the operation budget.
-[S2.5-R1](#s25-r1--read-safety-facts-without-display-hydration) records the source
-repair and selected behavioral checks for the original PR #257 candidate.
-That record kept independent human architect review pending and returned
-PRs #253 and #255 to Draft. These are historical candidate results. The
+[S2.5-R1](#s25-r1--read-safety-facts-without-display-hydration) implements the
+source repair in PR #257. Its earlier checks, pending-review statements and
+Draft actions are historical candidate records. On 26 October 2026, the user
+directly reported architect approval of the entire original Slice 2.5 stack.
+Current candidate pins, validation and approval reconciliation are in PR #257's
+[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
+[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871). The
 [S2.5-02 ledger](../implementation/admin-s2-5-02.md) is the sole current Slice 2.5
 release gate ledger. Removal is not released, and S2.5-02 is not Done.
 

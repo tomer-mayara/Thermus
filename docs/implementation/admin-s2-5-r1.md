@@ -1,11 +1,14 @@
 # S2.5-R1 — Membership safety facts
 
-Status: the source repair and selected behavioral checks are complete.
-Independent human architect review of the current candidate remains pending.
-This increment is
-[PR #257](https://github.com/tomer-mayara/Thermus/pull/257), stacked on S2.5-02 at
-`0530dd634fe8302b55d4a0669463ef733199cc40`. This is branch implementation status,
-not a claim that the repair is on main or released.
+Status on 26 October 2026: the source repair is implemented in
+[PR #257](https://github.com/tomer-mayara/Thermus/pull/257). The checks and
+review holds below retain their original candidate scope. The user directly
+reported architect approval of the entire original Slice 2.5 stack on 26 October.
+Current candidate pins, validation and approval reconciliation are in the PR's
+[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
+[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871).
+The original S2.5-02 parent was `0530dd634fe8302b55d4a0669463ef733199cc40`.
+This implementation record claims no current gate pass, merge or release.
 
 ## Problem and result
 
