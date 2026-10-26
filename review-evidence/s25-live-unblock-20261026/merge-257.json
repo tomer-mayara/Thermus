@@ -1,0 +1,40 @@
+{
+  "verifiedAt": "2026-10-26T14:15:12.049063+00:00",
+  "pr": 257,
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "mergeCommit": "9f07c04bba0813358274212b21316165dc3e308b",
+  "tree": "777542744c4cedf71e32c0cb38d88771df128f5f",
+  "sameAsReviewedAndTestedTree": true,
+  "previousMain": "83281acfaff309ab07dd4636053b5593bc4976aa",
+  "allStackMergesInMain": [
+    {
+      "pr": 251,
+      "merge": "3d271bbae20b3d2ed91751fb77c10f6ead4bed99"
+    },
+    {
+      "pr": 253,
+      "merge": "0c9bfbda706397d4df8834f1d9d441a394f051ae"
+    },
+    {
+      "pr": 254,
+      "merge": "e61da534d428169936e80f2bdaebe081c902aee0"
+    },
+    {
+      "pr": 255,
+      "merge": "83281acfaff309ab07dd4636053b5593bc4976aa"
+    },
+    {
+      "pr": 257,
+      "merge": "9f07c04bba0813358274212b21316165dc3e308b"
+    }
+  ],
+  "trackedTreeClean": true,
+  "branch": "codex/s2-5-r1-removal-facts",
+  "userDraftPreserved": true,
+  "portsFree": true,
+  "defaultDockerContext": "colima",
+  "remoteUnchanged": true,
+  "noRebaseOrConflictResolutionNeeded": true,
+  "originalExecutionPinsRetained": true,
+  "localMainRefAtFinalRead": "e61da534d428169936e80f2bdaebe081c902aee0"
+}
