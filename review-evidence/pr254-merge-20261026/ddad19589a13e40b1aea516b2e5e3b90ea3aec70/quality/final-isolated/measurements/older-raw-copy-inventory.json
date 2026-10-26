@@ -1,0 +1,56 @@
+{
+  "scope": "Read-only inventory of earlier251/253 originals that already have complete hash-verified primary copies.",
+  "rows": [
+    {
+      "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+      "suite": "acceptance",
+      "captureId": "c5223319210834c5719c2fb817b548c4dde236b82ae79d5b82f561df82eba7ca",
+      "secondaryOriginal": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-acceptance-LJKg2E",
+      "logicalBytes": 735733444,
+      "allocatedBytes": 738148352,
+      "verifiedPrimaryCopy": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/coverage-captures/capture-acceptance-LJKg2E",
+      "primaryCopyManifest": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/manifest.json",
+      "captureManifestSha256": "f3431a3670c635538e43a3ac4ba7bad17a402456da9adeb1b315b88a696a4597",
+      "removeCondition": "Manager verifies primary manifest/raw hashes first. Worker has not removed anything. Current254 captures and active ast-report files are excluded."
+    },
+    {
+      "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+      "suite": "integration",
+      "captureId": "28b893ce8d01e543cdfded05901dbf99809ce3936a4dbabb6f2d1f07b3208849",
+      "secondaryOriginal": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-integration-F1Pu5Z",
+      "logicalBytes": 233754780,
+      "allocatedBytes": 234831872,
+      "verifiedPrimaryCopy": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/coverage-captures/capture-integration-F1Pu5Z",
+      "primaryCopyManifest": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/manifest.json",
+      "captureManifestSha256": "8f6f0118ec1e08f479ec3d3df4d79062e7fdfa3f56683ae2afd3da1416d6e4f2",
+      "removeCondition": "Manager verifies primary manifest/raw hashes first. Worker has not removed anything. Current254 captures and active ast-report files are excluded."
+    },
+    {
+      "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+      "suite": "unit",
+      "captureId": "29cda6b3bfc17d81d8d8be1ecd4d62fb23fefb48926d454e59eb1312a9eddf87",
+      "secondaryOriginal": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-unit-jNmzdx",
+      "logicalBytes": 227482609,
+      "allocatedBytes": 229228544,
+      "verifiedPrimaryCopy": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/quality/measure/final-isolated/ast-report/coverage-captures/capture-unit-jNmzdx",
+      "primaryCopyManifest": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/quality/measure/final-isolated/manifest.json",
+      "captureManifestSha256": "bee06cdc2f98853e884b17dbecb08bdb6707d67c7d6a5d46fd38b11d9bf1f2b6",
+      "removeCondition": "Manager verifies primary manifest/raw hashes first. Worker has not removed anything. Current254 captures and active ast-report files are excluded."
+    },
+    {
+      "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+      "suite": "unit",
+      "captureId": "b02c8e29d6810a062d24de9fa5812a489f02c9cc150e2677fbafa8e448d0c70a",
+      "secondaryOriginal": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-unit-XStpcu",
+      "logicalBytes": 230569780,
+      "allocatedBytes": 232370176,
+      "verifiedPrimaryCopy": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/coverage-captures/capture-unit-XStpcu",
+      "primaryCopyManifest": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/manifest.json",
+      "captureManifestSha256": "a20b6836769375f2d2982272646e4284d9770448256d9c04f010e7913f3db471",
+      "removeCondition": "Manager verifies primary manifest/raw hashes first. Worker has not removed anything. Current254 captures and active ast-report files are excluded."
+    }
+  ],
+  "totalLogicalBytes": 1427540613,
+  "totalAllocatedBytes": 1434578944,
+  "deleted": false
+}

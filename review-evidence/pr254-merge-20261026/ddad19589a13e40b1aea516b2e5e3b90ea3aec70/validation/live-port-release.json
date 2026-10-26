@@ -1,0 +1,24 @@
+{
+  "checked": "2026-10-26T08:24:53.013Z",
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "liveResult": {
+    "exit": 0,
+    "tests": 28,
+    "passed": 28,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "observations": [
+    {
+      "port": 46443,
+      "listeners": 0
+    },
+    {
+      "port": 46480,
+      "listeners": 0
+    }
+  ],
+  "method": "Read-only lsof after the actual hosted-live child exited 0; no listener stopped. Remaining primary gates publish dynamic ports or run inside container namespaces."
+}

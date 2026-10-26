@@ -1,0 +1,56 @@
+[
+  {
+    "name": "coverage-compatibility",
+    "command": [
+      "node",
+      "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/quality/check-coverage.mjs",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/coverage.json"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "started": "2026-10-26T07:56:44.093320+00:00",
+    "finished": "2026-10-26T07:56:44.252904+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/coverage-compatibility.log",
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/coverage-compatibility.json",
+    "stdoutSha256": "e43d98a385deb2e7a36c0b8a8e7dfac93b94a9e4b3bc6b8196973c9ed6c661fa"
+  },
+  {
+    "name": "pr-review",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/pr-review/check.ts",
+      "--base",
+      "b630a76275d5809a498ae63e1cbc322086f4194f",
+      "--repo",
+      "tomer-mayara/Thermus",
+      "--impact",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/impact.json",
+      "--base-snapshot",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/snapshot-base.json",
+      "--head-snapshot",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/snapshot.json",
+      "--crap",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/crap.json",
+      "--process",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/process.json",
+      "--review",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/review.json",
+      "--json"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "started": "2026-10-26T07:56:44.729298+00:00",
+    "finished": "2026-10-26T07:56:47.912841+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/pr-review.log",
+    "logSha256": "c44e39aa090816ab05975c9905c56e196cb961bbe2ca70ab012bfc16896bba1b",
+    "stdout": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/pr-review.json",
+    "stdoutSha256": "eb3b495b232f1471a656b5f5184b6e784c3fef86e7e1a2a9ede81ce6ef8d06d4"
+  }
+]

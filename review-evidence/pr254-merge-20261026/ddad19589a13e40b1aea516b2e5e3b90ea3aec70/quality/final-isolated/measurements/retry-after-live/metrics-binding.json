@@ -1,0 +1,40 @@
+{
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "mergeBase": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/selection.md",
+  "selectionSha256": "b35a63620816188ee686b9954f543186e97717dc7f3bc62846784950d0785d9e",
+  "identity": {
+    "sourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "inputsFingerprint": "9beb76cf0dfe141113349b07d0b578d7e45a6645b0bd2a8bd8f0d509dd57ea55",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T07:56:12.416597+00:00",
+  "outputs": {
+    "coverage-compatibility.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "metrics-commands.json": "81c7032c38fe0177b6c1a6c000386a2048b1d704c80f8e4896325ef9ed8b46aa",
+    "process.md": "3ef8d4de40392f538589f5abfb9747f93fc4987239a9e84db13d3dc0e47f2d0a",
+    "coverage-capture.log": "d363a6c5e8f7d0dc43684e6e52e1850f2bafa6acd0d6eba4c795f6fee632ab71",
+    "capture-binding.json": "ad472fc17cbd5519c7a348b5616788a45c6c809f3f7c0fca2c78277656f3c0d4",
+    "candidate-pin.json": "2ecde2b272b958683dcecce908440c3f028e705be4fb2063a9e525060b175d35",
+    "crap.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "snapshot-head.log": "b94d92b25732fc95406dda1176f19b798bef4692bcd34efe2eb908a959b9f981",
+    "snapshot-base.log": "4c4c4c33eef0552ca0d96e6e81f38c597d1a06f6770b7f854949829e46130a27",
+    "snapshot.json": "6ebbc3c95e311ecead3b6928feea6f1f4ea5c3c81a4e349d444414acff37a7f5",
+    "ports-after-capture.json": "709ccfd4a7e30f0253a9202daa5c6c96d42ac900e0618d456dacbbee5952b266",
+    "capture-commands.json": "3327b5469267e934106cb5595ec36f9d96832146b5592cd1fecf7d081ee5cf9f",
+    "crap.json": "d161fea2d5cd86b71f41067e35e17d413de64b5c4e955b7a4d9fc0b9f14618ff",
+    "snapshot-base.json": "5caa9336bc2a0b93ed373f2949af672a02d1d1eebdf7d93ccdae0d7fad075ae2",
+    "coverage-compatibility.json": "e43d98a385deb2e7a36c0b8a8e7dfac93b94a9e4b3bc6b8196973c9ed6c661fa",
+    "coverage.json": "368525a2f9420714348ac16d2ef915c1a324568bfb8bd9371875d23a5e98f27f",
+    "crap.md": "85ad0873eb166c84a4248e31943862633e3f98676537114c9523f16bbfcda6a5",
+    "process.json": "d6a84917922295c8f0d9323baa48e92f471d683ef91dec4850b1f3c6a579d3f0",
+    "review.md": "eaedbef6f237683d3a35f08d08a72e8992b5c6592c47afe80816fbaf044dc905",
+    "review.json": "98416063838ebe64d51ddeb2c159e69223dce4c255e4fe4977fb5cb6afb2c589",
+    "metrics-process.log": "cd3b854bc60c8ac2c203597e1824bdff9f6be434ae702b1975bb64a533458311"
+  }
+}

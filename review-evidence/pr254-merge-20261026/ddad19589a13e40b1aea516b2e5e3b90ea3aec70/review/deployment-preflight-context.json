@@ -1,0 +1,10 @@
+{
+  "recorded": "2026-10-26T07:57:08.235909+00:00",
+  "source": "Manager reports read_thread retrieval of user chat Slice 2 debug, 01a1711d-8ae9-7541-a887-07d5243e9c4b. This worker made no remote observation.",
+  "lastAuthorizedRollout": "Latest retrieved user-authorized rollout enabled Render auto-deploy on main; main8c6d204e was verified live on 26 October 2026.",
+  "lastServiceId": "srv-db8mnqg473hc739d529g",
+  "currentObservation": "None; Render workspace remains unselected and user workspace confirmation is pending.",
+  "notCurrentEvidence": "Do not treat the dated 24 October Off setting as the current control state.",
+  "required": "Keep deployment preflight blocked and verify actual workspace/target/controls and deployment holds before any source/evidence push that may deploy.",
+  "sourceOrEvidencePushAuthorizedByThisRecord": false
+}

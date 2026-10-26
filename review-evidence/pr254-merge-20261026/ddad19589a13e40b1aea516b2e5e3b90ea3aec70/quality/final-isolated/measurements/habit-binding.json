@@ -1,0 +1,25 @@
+{
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "mergeBase": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/selection.md",
+  "selectionSha256": "b35a63620816188ee686b9954f543186e97717dc7f3bc62846784950d0785d9e",
+  "identity": {
+    "sourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "inputsFingerprint": "9beb76cf0dfe141113349b07d0b578d7e45a6645b0bd2a8bd8f0d509dd57ea55",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T07:35:50.776686+00:00",
+  "outputs": {
+    "habit-commands.json": "85cd7164e3717f99eab7e2733cb12a7dc97cdf5c0adc0a4060bfb5d9ac0edd7e",
+    "habit-hooks.log": "df203052d94323222fce1afc2f8dd36f3c7a2b373d1f0b4a42e4d8fd83fee4e7",
+    "candidate-pin.json": "2ecde2b272b958683dcecce908440c3f028e705be4fb2063a9e525060b175d35",
+    "selection.md": "b35a63620816188ee686b9954f543186e97717dc7f3bc62846784950d0785d9e",
+    "install-command.json": "16a8af1f87055d93d624f70e7cc29e6bde647a337e84a521431850343455036e",
+    "install.log": "cdca8eae678132bae77d746a51f5c9560cb661955351dc16bd6cebf01c61dc90"
+  }
+}

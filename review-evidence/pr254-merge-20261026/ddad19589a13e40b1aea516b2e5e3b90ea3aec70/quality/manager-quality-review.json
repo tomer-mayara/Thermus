@@ -1,0 +1,26 @@
+{
+  "reviewedAt": "2026-10-26T08:09:18.942025+00:00",
+  "reviewer": "Codex manager /root",
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mergeBase": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "reviewed": true,
+  "scope": "Fresh actual-parent metrics, checker notes, retained findings and coverage failure/retry provenance; does not supply human approval or runtime gate results.",
+  "manifestSha256": "f1faf646b6dc8a5392f889869676fca1c44cc3493cf8f07425fb3a8140aca7c6",
+  "verifiedCopyFiles": 88,
+  "dispositionsAccepted": [
+    "All25 required functions17new8changed measured and pass; highestnew11.004348377/changed16. All139reportedrowsmapped; not wholeprojectcoverage.",
+    "Nine existing changed MI<85 retain owner-specific reasons, AuditLogabove85, CSSzeroexecutableMIexplicitN/A; nonew/widenedexception.",
+    "Four currentnativefindings0high2medium2low each reviewed; threeimprovements retained. No claimold findingsfixed by rebase.",
+    "CheckerT2 mechanicallyeligible/no blockers; threechangeddeclarations/twoeditedregistryviews; thirteen notes and two requiredpolicyquestions assessed.",
+    "Habit437locations/49files allperlocationdispositions,44fullblobmatches and fivefreshupstreamsemanticcontexts; snoozeempty.",
+    "Portcollision firstunion preserved; manager reliedon incompleteagentportanalysis. Sameunchangedinputs fullretryafterexplicitrelease succeeded. No skippedcases, portchangesor newreportfromfailedunion.",
+    "ExacttrendNo record:b630a762 is not on origin/main; CSS unresolved/globalgraphandhead-derivedbaseCRAPestimate limits remain.",
+    "Compactcopies only; successful/rawfailedunit originals retainedsecondary with identities/paths. No raw-byte-import claimfrommanifestonlyfolders."
+  ],
+  "remainingHolds": [
+    "Dedicatedproduct/browser/runtimegates still runningseparately.",
+    "Finalwhole-stack/R1integration and confirmed deploymenthold.",
+    "Independent qualifiedhumanarchitect identity/currentcandidateapprovalscope."
+  ]
+}

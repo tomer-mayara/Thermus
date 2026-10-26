@@ -1,0 +1,112 @@
+{
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "completeSelectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "failedCommandReceipt": [
+    {
+      "name": "coverage-capture",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "unit",
+        "--suite",
+        "integration",
+        "--suite",
+        "acceptance",
+        "--out",
+        "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/coverage.json"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+      "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+      "started": "2026-10-26T07:38:02.791825+00:00",
+      "finished": "2026-10-26T07:39:44.964777+00:00",
+      "exit": 1,
+      "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/coverage-capture.log",
+      "logSha256": "601cb74e092e1f660df9ac55a2df0dbef8f94d123c4b3a15f8c5137c3cc8a04b"
+    }
+  ],
+  "logSha256": "601cb74e092e1f660df9ac55a2df0dbef8f94d123c4b3a15f8c5137c3cc8a04b",
+  "failure": "Integration group:1149 total,1145pass,4fail. Each failure is listen EADDRINUSE127.0.0.1:46443 in the ordinary hosted-live-site proof.",
+  "missedDependency": "test/integration/auth/hosted-live-site.test.ts -> test/support/hosted-live/local-https-site.ts -> localOrigin from settings.ts -> front.listen({host,port:Number(new URL(localOrigin).port)}) at line107.",
+  "correction": "The prior port-selection-review.json is incomplete and superseded. Ordinary provider audience literals alone do not prove absence of fixed bindings. Backend and fake API use port0, but the shared TLS front still binds46443.",
+  "reportPublished": false,
+  "completedCurrentCaptureManifests": [
+    {
+      "manifest": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-unit-e8g3wp/capture-manifest.json",
+      "suite": "unit",
+      "captureId": "71761beda751883370be744b937e6597f44b92b51c76777befdb059d1b7bd9b9",
+      "sha256": "08b587477da8de09bacb68aacb2b46c0075452f4bcf7f56aa7719f76bcc0517c"
+    }
+  ],
+  "acceptance": "Not started; collector stops after the failed integration group.",
+  "sourceStatus": "",
+  "nextAction": "Wait for manager confirmation that primary live ports are free, then retry the supported combined collector in a new attempt directory. Do not stop primary live or bypass/skip the four cases.",
+  "managerReliance": "The manager conditioned capture authorization on the worker checking all selected helper bindings. The worker supplied an incomplete analysis and started the collector on that basis. The manager relied on that report; the manager did not direct skipping the fixed-port tests or changing their ports.",
+  "currentCoordination": "Manager reports primary WorkOS28/28passed and native container started, but has not yet confirmed the remaining gates release46443/46480. Worker waits for that explicit signal; no code/port/primary-process change.",
+  "retryAuthorization": "Manager relays validation-owner confirmation: no LISTEN on46443/46480 after successful #253 live cleanup. Native/hosted gates use dynamic127.0.0.1 host ports and offline image-build namespace. One combined retry authorized in secondary checkout with unchanged source/ports.",
+  "retryDirectory": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live",
+  "retryOutcome": {
+    "commandReceipt": [
+      {
+        "name": "coverage-capture",
+        "command": [
+          "pnpm",
+          "exec",
+          "node",
+          "script/code-quality/ast-metrics-coverage.ts",
+          "--suite",
+          "unit",
+          "--suite",
+          "integration",
+          "--suite",
+          "acceptance",
+          "--out",
+          "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/coverage.json"
+        ],
+        "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+        "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+        "started": "2026-10-26T07:47:41.655824+00:00",
+        "finished": "2026-10-26T07:53:51.683928+00:00",
+        "exit": 0,
+        "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/retry-after-live/coverage-capture.log",
+        "logSha256": "d363a6c5e8f7d0dc43684e6e52e1850f2bafa6acd0d6eba4c795f6fee632ab71"
+      }
+    ],
+    "verifiedCaptureCommit": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "verifiedStatus": "verified",
+    "sourceChangedForRetry": false,
+    "portSettingChangedForRetry": false,
+    "portsAfterCapture": {
+      "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+      "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "observedAt": "2026-10-26T07:54:56.354531+00:00",
+      "collector": "Complete combined retry exited0 and published verified report. No collector process remains.",
+      "ports": [
+        {
+          "port": 46443,
+          "exit": 1,
+          "stdout": "",
+          "stderr": "",
+          "noListener": true
+        },
+        {
+          "port": 46480,
+          "exit": 1,
+          "stdout": "",
+          "stderr": "",
+          "noListener": true
+        }
+      ],
+      "primaryCanStartOrdinaryAndLive": true
+    },
+    "metricsProcessHead": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "checkerExit": 0,
+    "trackedStatusAfterQuality": ""
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "earlierInventory": {
+    "path": ".cache/s25-merge-20261026/pr254/quality/final-isolated/measurements/habit-dispositions.json",
+    "sha256": "a7c5b7db27a32618cfedbe4f59fd75b7f6c1e193161ff53c23a9bd4d5996e0ae"
+  },
+  "earlierRaw": {
+    "path": ".cache/s25-merge-20261026/pr254/quality/final-isolated/measurements/habit-hooks.log",
+    "sha256": "df203052d94323222fce1afc2f8dd36f3c7a2b373d1f0b4a42e4d8fd83fee4e7"
+  },
+  "laterRaw": {
+    "path": ".cache/s25-merge-20261026/pr254/habit-hooks-1.log",
+    "sha256": "df203052d94323222fce1afc2f8dd36f3c7a2b373d1f0b4a42e4d8fd83fee4e7"
+  },
+  "laterCommand": {
+    "commandOutcome": {
+      "code": 1,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "df203052d94323222fce1afc2f8dd36f3c7a2b373d1f0b4a42e4d8fd83fee4e7",
+    "buildLogs": [],
+    "name": "habit-hooks",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "habit-hooks",
+    "args": [
+      "--branch",
+      "origin/main"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:36:40.345Z",
+    "finished": "2026-10-26T08:36:42.415Z",
+    "log": "habit-hooks-1.log",
+    "code": 1,
+    "signal": null
+  },
+  "managerReview": {
+    "path": ".cache/s25-merge-20261026/pr254/quality/manager-quality-review.json",
+    "sha256": "06caf2c813202ba8e9022e2e14725bb0afd081ed5dd547a12ea8a990eb950ee5",
+    "reviewed": true
+  },
+  "exactRawTextMatch": true,
+  "exactFindingAndReasonMatch": true,
+  "findingsChecked": 437,
+  "sourceHashesChecked": 49,
+  "counts": {
+    "high-complexity": 6,
+    "too-many-parameters": 5,
+    "non-essential-comment": 410,
+    "oversized-file": 16
+  },
+  "snooze": [],
+  "assessment": "All current raw text, finding keys/text and source owner hashes match the current candidate inventory already reviewed and accepted by the manager, including its fresh semantic contexts. Retain every individual reason and raw exit 1. No hook repeat or repository change is needed."
+}

@@ -1,0 +1,22 @@
+{
+  "reviewer": "Codex manager /root",
+  "reviewedAt": "2026-10-26T08:44:53.362277+00:00",
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "reviewed": true,
+  "scope": "Complete candidate validation, browser visual review and exact Habit bridge. No human approval or deployment/merge approval.",
+  "allSelectedProductCommandsPass": true,
+  "accepted": [
+    "Focused 411, browser 1, PostgreSQL 22, ordinary 5081+49, WorkOS 28, native 11, hosted 7 and Collector 10 pass; API/type/portal/diff pass.",
+    "Fresh hosted offline layer 24 ran six complete groups with no failures, cancellations, skips or todos; child and validator exit 0.",
+    "Reviewed the narrow browser screenshot and separate manager visual receipt.",
+    "Habit 437 findings and 49 owner hashes match accepted dispositions; snooze is empty.",
+    "Final tracked files match the candidate and no primary runner or owned gate container remained.",
+    "The separate first quality capture port failure and successful unchanged-input retry remain disclosed."
+  ],
+  "remainingHolds": [
+    "Remaining stack checks and R1 integration.",
+    "Confirmed deployment hold and human approval reconciliation."
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "successfulCaptures": [
+    {
+      "captureId": "31989371e9a57b1e082ce6e75102539ebba64dda1cc147d2293fbf9716e01048",
+      "suite": "integration",
+      "originalDirectory": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-integration-QOaAex",
+      "logicalBytes": 236421751,
+      "manifestCopy": "ast-report/coverage-captures/capture-integration-QOaAex/capture-manifest.json",
+      "manifestSha256": "8aa92d53563f1d4ccad05dd46c05e98435f2efcdf0df767c67fec68f634f0c4d",
+      "rawBytesCopied": false
+    },
+    {
+      "captureId": "99ddb3b67333916fb736d08b1bcb245360a27c7781d5abd4857c007b08b468a3",
+      "suite": "acceptance",
+      "originalDirectory": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-acceptance-EiKIUA",
+      "logicalBytes": 746025557,
+      "manifestCopy": "ast-report/coverage-captures/capture-acceptance-EiKIUA/capture-manifest.json",
+      "manifestSha256": "cb5bc7b2e722d65718daee21c3150716e00ca0563f9f28cbe2fd10e00bfeb37d",
+      "rawBytesCopied": false
+    },
+    {
+      "captureId": "87f4fab6d1f7c3705e6748ee225c17c3b857ae44a83dda534b4c2d1498d7a4aa",
+      "suite": "unit",
+      "originalDirectory": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-unit-XQOpvJ",
+      "logicalBytes": 231091158,
+      "manifestCopy": "ast-report/coverage-captures/capture-unit-XQOpvJ/capture-manifest.json",
+      "manifestSha256": "654d3083fdbba2d5137f10254c2383c3e5b5ed8c5a4578b8bf4fafd7a3db29cf",
+      "rawBytesCopied": false
+    }
+  ],
+  "historicalCompletedCaptures": [
+    {
+      "originalDirectory": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/ast-report/coverage-captures/capture-unit-e8g3wp",
+      "captureId": "71761beda751883370be744b937e6597f44b92b51c76777befdb059d1b7bd9b9",
+      "suite": "unit",
+      "role": "Completed part of rejected first combined attempt; not used in successful union.",
+      "manifestCopy": "failed-first-capture-manifests/capture-unit-e8g3wp/capture-manifest.json",
+      "logicalBytes": 231091653
+    }
+  ],
+  "meaning": "Original raw bytes remain in secondary checkout to avoid disk duplication. Copied manifest-only folders are not importable raw captures. Aggregate coverage and original provenance remain unchanged.",
+  "unpublishedDirectories": []
+}

@@ -1,0 +1,23 @@
+{
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "mergeBase": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr254-quality/measure/selection.md",
+  "selectionSha256": "b35a63620816188ee686b9954f543186e97717dc7f3bc62846784950d0785d9e",
+  "identity": {
+    "sourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "inputsFingerprint": "9beb76cf0dfe141113349b07d0b578d7e45a6645b0bd2a8bd8f0d509dd57ea55",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T07:53:52.077747+00:00",
+  "outputs": {
+    "coverage-capture.log": "d363a6c5e8f7d0dc43684e6e52e1850f2bafa6acd0d6eba4c795f6fee632ab71",
+    "candidate-pin.json": "2ecde2b272b958683dcecce908440c3f028e705be4fb2063a9e525060b175d35",
+    "capture-commands.json": "3327b5469267e934106cb5595ec36f9d96832146b5592cd1fecf7d081ee5cf9f",
+    "coverage.json": "368525a2f9420714348ac16d2ef915c1a324568bfb8bd9371875d23a5e98f27f"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "reviewed": "2026-10-26T08:10:48.049Z",
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+  "gateLog": "members-browser-1.log",
+  "actualChildCode": 0,
+  "tests": 1,
+  "passed": 1,
+  "screenshot": {
+    "path": ".cache/s25-merge-20261026/pr254/browser/members-remove-narrow.png",
+    "sha256": "b00c70386032d54365839eead1caed3a165e5cc5d9e2926d2314fa2c07562849",
+    "width": 390,
+    "height": 2060
+  },
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "visualReview": "Inspected the full narrow page at native width. Logo and branded fonts render. Invite and member panels fit. The selected User confirmation, full Remove label, focus outline and Cancel link remain inside the panel and readable. No horizontal clipping is visible.",
+  "executedAssertions": "The gate verifies loaded logo/fonts, keyboard open/cancel/confirm, no cancellation write, one chosen membership removal, no horizontal overflow and confirmation bounds inside the viewport.",
+  "scope": "Local Playwright routing to in-process application and provider doubles; no live credentials. Screenshot is captured before confirmation; the passing gate then verifies the removal outcome."
+}

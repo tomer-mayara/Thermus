@@ -1,0 +1,40 @@
+{
+  "checked": "2026-10-26T08:42:43.080Z",
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "currentOriginMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "trackedStatus": "",
+  "allTrackedFileHashesMatch": true,
+  "trackedFiles": 1458,
+  "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+  "primaryRunnerProcessCount": 0,
+  "ownLabelledContainers": [
+    {
+      "label": "thermus.container-gate=e37ac1df",
+      "containers": ""
+    },
+    {
+      "label": "thermus.hosted-image-gate=8c22b4fcdd14",
+      "containers": ""
+    }
+  ],
+  "ownAuditContainerCount": 0,
+  "sharedProfileRunningContainers": [],
+  "dockerProfileRetained": "colima-thermus-s25-merge",
+  "fixedPorts": "Primary released both after actual live exit 0; separate authorized secondary runtime jobs may now use them. No secondary process or resource was stopped.",
+  "hostedChildExit": 0,
+  "hostedValidatorExit": 0,
+  "habitRetainedFindings": 437,
+  "artifactHashes": {
+    "gate-ledger.json": "c0f53750240c0c40659ccc18cb054af814b867dee11860412747bb13fbd48c38",
+    "gated-inputs.json": "8542e29c6e2cf0ca90019f82df54939d9337f21634ecccd9acc69bd3a818e0a8",
+    "validation-draft.md": "f2d6a2d5c4d6e56847735a4545def54a28aa7cd5ac8136c9586528860a29f1a4",
+    "browser/members-remove-narrow.png": "b00c70386032d54365839eead1caed3a165e5cc5d9e2926d2314fa2c07562849",
+    "validation/browser-visual-review.json": "2eff397df3edd50b156f4f90d67f45b2d4c6395370e0c8df59813b1a6fb105a9",
+    "validation/hosted-offline-evidence.json": "c3a225ab51c6ce14be5d3576a3a0b10b1c6d1d1c81e70aa44aa16c814b103b36",
+    "validation/habit-run-bridge.json": "90b53bbc18ef24ec6e8c1201da93c84a49ec6a51bbb57309bf9eeb7ae37079fb",
+    "validation/live-port-release.json": "05d82d6831990b50d91db479c3955e697b9e335695d62e9ceee3785e99a4e045"
+  },
+  "scope": "PR 254 primary validation complete. Keep primary detached at this head and wait for manager coordination before any later launch."
+}

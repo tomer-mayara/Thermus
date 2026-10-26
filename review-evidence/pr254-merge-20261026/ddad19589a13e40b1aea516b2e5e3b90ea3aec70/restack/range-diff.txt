@@ -1,0 +1,93 @@
+1:  7a95c489 = 1:  eecb8e19 Record S2.5-01c implementation scope
+2:  69d0c9b0 ! 2:  a5ad94a0 Add checked Members removal and safe self-removal navigation
+    @@ docs/api-surface/src/logs/audit/audit-log.d.ts: export interface AuditResult {
+          readonly outcome: ChangeOutcome;
+     
+      ## docs/design/organization-admin-plan.md ##
+    -@@ docs/design/organization-admin-plan.md: on 24 October 2026. S2.5-01a is implemented in [PR #251](https://github.com/tome
+    - S2.5-01b adds durable removal coordination in stacked
+    - [PR #253](https://github.com/tomer-mayara/Thermus/pull/253), with validation and review
+    - complete locally. Merge still requires the parent and independent architect
+    --approval. S2.5-01c and S2.5-02 remain planned.
+    -+approval. S2.5-01c adds checked Members removal and safe self-removal navigation
+    -+in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254); focused
+    -+acceptance and browser checks pass, with complete candidate validation in progress.
+    -+S2.5-02 remains planned.
+    - Ticket records describe their historical increments; their earlier missing
+    - features are not the status of the combined candidate. Merged does not mean
+    - released, and passing controlled tests does not complete owner gates.
+    +@@ docs/design/organization-admin-plan.md: S2.5-01b adds durable removal coordination in stacked
+    + [PR #253](https://github.com/tomer-mayara/Thermus/pull/253). Its original candidate
+    + passed local validation; its maintained PR comments record the rebased checks.
+    + Merge still requires the parent, resolution of S2.5-R1 in this PR, and independent
+    +-architect approval. S2.5-01c and S2.5-02 remain planned.
+    ++architect approval. S2.5-01c adds checked Members removal and safe self-removal
+    ++navigation in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254).
+    ++Its recorded focused acceptance and browser checks cover the original candidate;
+    ++complete candidate validation was in progress. S2.5-02 remains planned.
+    ++Ticket records describe their historical increments; their earlier missing
+    ++features are not the status of the combined candidate. Merged does not mean
+    ++released, and passing controlled tests does not complete owner gates.
+    + This document authorizes no access change, provider action, account change,
+    + destination change, or cutover. Mock addresses are examples. Legal copy must use
+    + the exact approved documents and agreement.
+     @@ docs/design/organization-admin-plan.md: by the runbook. No second store, queue, lease, recovery product, or replay mecha
+      
+      #### S2.5-01c — Checked Members removal and self-removal
+    @@ src/interfaces/web/account/members-style.ts: button:hover{border-color:#F3F2EE;b
+     
+      ## src/logs/audit/audit-event-projection.ts ##
+     @@ src/logs/audit/audit-event-projection.ts: import type { AdministrationChange, AuditContext, AuditEvent, DestinationChange,
+    - import { AUDIT_CAPTURE_LIMITS, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
+    + import { AUDIT_CAPTURE_LIMITS, auditActorName, captureAuditResult, redactAuditText, redactAuditUrl } from './audit-content.ts';
+      
+      const toolStatuses = new Set(['success', 'access_denied', 'fetch_failed', 'processing_failed', 'cancelled', 'busy', 'search_failed', 'withheld']);
+     -const changeOutcomes = new Set(['applied', 'unchanged', 'denied', 'stale', 'not-pending', 'address-in-use', 'unsupported', 'failed', 'unknown']);
+3:  cd7ccf3a = 3:  538efcf7 Keep invitation and retired-grant checks alongside removal forms
+4:  22715457 ! 4:  ddad1958 Verify removal forms across staging and record complete test results
+    @@ Commit message
+         Verify removal forms across staging and record complete test results
+     
+      ## docs/design/organization-admin-plan.md ##
+    -@@ docs/design/organization-admin-plan.md: S2.5-01b adds durable removal coordination in stacked
+    - [PR #253](https://github.com/tomer-mayara/Thermus/pull/253), with validation and review
+    - complete locally. Merge still requires the parent and independent architect
+    - approval. S2.5-01c adds checked Members removal and safe self-removal navigation
+    --in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254); focused
+    --acceptance and browser checks pass, with complete candidate validation in progress.
+    -+in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254); selected
+    -+tests and build gates pass. The PR retains final quality and review evidence.
+    - S2.5-02 remains planned.
+    +@@ docs/design/organization-admin-plan.md: passed local validation; its maintained PR comments record the rebased checks.
+    + Merge still requires the parent, resolution of S2.5-R1 in this PR, and independent
+    + architect approval. S2.5-01c adds checked Members removal and safe self-removal
+    + navigation in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254).
+    +-Its recorded focused acceptance and browser checks cover the original candidate;
+    +-complete candidate validation was in progress. S2.5-02 remains planned.
+    ++Its recorded selected tests and build gates pass for the original candidate.
+    ++The PR retains its historical final quality and review evidence. S2.5-02 remains
+    ++planned.
+      Ticket records describe their historical increments; their earlier missing
+      features are not the status of the combined candidate. Merged does not mean
+    + released, and passing controlled tests does not complete owner gates.
+     @@ docs/design/organization-admin-plan.md: Scenario: Preserve account scope and rejoin only by invitation
+        Then access returns only with the new invited role
+      ```
+    @@ test/acceptance/auth/hosted-live/administration-server.ts: export function descr
+            assert.deepEqual(await changeRecordsOf(users['c-admin-only']), []);
+            await page.context().close();
+     
+    - ## test/acceptance/auth/hosted-workos-administration.test.ts ##
+    -@@ test/acceptance/auth/hosted-workos-administration.test.ts: function changesIn(site: WorkOSSite): WorkOSChange[] {
+    -     .map(({ method, path, body }) => ({ method, path: path.split('?')[0] ?? path, body }));
+    - }
+    - 
+    --// A single-role write on the authorization resource of Acme. WorkOS names that resource by the external ID of Acme,
+    --// not by its organization ID.
+    - function changeRecords(site: WorkOSSite): Readonly<Record<string, unknown>>[] {
+    -   const prefix = 'INFO Account change record: ';
+    -   return site.log.lines.filter((line) => line.startsWith(prefix)).map((line) => JSON.parse(line.slice(prefix.length)) as Readonly<Record<string, unknown>>);
+    -
+      ## test/integration/hosted-admin/account-routes-administration-pages.test.ts ##
+     @@ test/integration/hosted-admin/account-routes-administration-pages.test.ts: describe('HostedAccountRoutes combined Members page', () => {
+            assert.match(body, /Active product members: 1/);

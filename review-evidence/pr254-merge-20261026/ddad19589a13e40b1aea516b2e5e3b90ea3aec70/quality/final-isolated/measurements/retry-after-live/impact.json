@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": true,
+    "deployment": false,
+    "crossCutting": false,
+    "component": true,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
+    "dependencyRisk": false,
+    "policy": true,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted member read",
+      "Deployment view",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "src/interfaces/web/account/administration-routes.ts",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/account-form.ts",
+      "src/interfaces/web/account/account-pages.ts",
+      "src/accounts/organizations/administration-overviews.ts",
+      "src/accounts/organizations/membership-removal-checks.ts",
+      "src/logs/audit/audit-log.ts",
+      "src/logs/audit/audit-event-projection.ts",
+      "src/logs/audit/otlp-audit-encoding.ts",
+      "architecture/components.md",
+      "docs/implementation/admin-s2-5-01c.md",
+      "docs/implementation/test-gate-policy.md",
+      "test/acceptance/auth/hosted-member-removal.test.ts",
+      "test/acceptance/auth/hosted-member-self-removal.test.ts",
+      "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/integration/hosted-admin/account-routes-removal.test.ts",
+      "test/integration/hosted-admin/account-routes-removal-audit.test.ts"
+    ]
+  },
+  "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70"
+}

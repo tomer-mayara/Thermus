@@ -1,0 +1,8 @@
+{
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "dockerContext": "colima-thermus-s25-merge",
+  "reviewed": true,
+  "authorizedBy": "Manager after PR 253 final handback; primary detached checkout only; secondary owns the named feature branch."
+}

@@ -1,0 +1,32 @@
+{
+  "checked": "2026-10-26T08:04:37.440Z",
+  "runner": ".cache/s25-merge-20261026/pr253/validation/run-gates.mjs",
+  "runnerSha256": "102394ee7342407d48c40fc117f5ca072a2170f7abd6b53a983ea907b2ad5467",
+  "method": "Evaluate the exact corrected predicate body extracted from the current cache runner against the retained stream and transformed counterexamples. No repository test added or product gate rerun.",
+  "stream": {
+    "path": "docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+    "sha256": "387ebffc78f725f845827f95780a2706ac36dc36869142832181263ef5da54c6"
+  },
+  "outcomes": [
+    {
+      "name": "actual captured stream",
+      "expected": true,
+      "actual": true
+    },
+    {
+      "name": "cached marker added",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "offline RUN marker changed",
+      "expected": false,
+      "actual": false
+    },
+    {
+      "name": "one summary failed",
+      "expected": false,
+      "actual": false
+    }
+  ]
+}

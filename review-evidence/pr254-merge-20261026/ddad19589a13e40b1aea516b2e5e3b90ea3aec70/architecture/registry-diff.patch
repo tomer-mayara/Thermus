@@ -1,0 +1,97 @@
+diff --git a/architecture/components.md b/architecture/components.md
+index 366a459c..53020b95 100644
+--- a/architecture/components.md
++++ b/architecture/components.md
+@@ -257,19 +257,24 @@ operation and its lifetime. App supplies the existing SQL adapter through the
+ organizations-owned RemovalOperationStore role. Thick arrows show composition;
+ solid arrows show runtime calls. The adapter's source type dependency points
+ from audit-logs to organizations and is omitted from this runtime view.
+-PostgreSQL is an existing supporting Level 2 container. No browser route invokes
+-this operation yet; S2.5-01c adds that caller.
++PostgreSQL is an existing supporting Level 2 container. Web invokes the operation
++only after session, current-access, trusted-tenant, and native form checks.
++Customer capture uses the existing audit-logs owner and does not settle removal.
+ 
+ ```mermaid
+-%%{init: {"flowchart": {"wrappingWidth": 230, "nodeSpacing": 35, "rankSpacing": 45}}}%%
++%%{init: {"flowchart": {"wrappingWidth": 180, "nodeSpacing": 45, "rankSpacing": 40, "subGraphTitleMargin": {"top": 10, "bottom": 25}}}}%%
+ flowchart TB
+   subgraph removal_server["Container: Thermus Node server · hosted"]
++    removal_web["web · TypeScript<br/>Trusted access and removal form gates<br/>Fixed result; safe navigation"]
+     removal_app["app · TypeScript<br/>Supply directory and removal store<br/>Stop removal before SQL close"]
+     removal_org["organizations · TypeScript<br/>Current Admin and target checks<br/>Last-Admin rule; bounded removal"]
+-    removal_audit["audit-logs · TypeScript / pg<br/>Shared settings SQL runtime<br/>Atomic intent and terminal receipts"]
++    removal_audit["audit-logs · TypeScript / pg<br/>Shared SQL runtime; intent / receipts<br/>Best-effort customer capture"]
+     removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion"]
++    removal_app ==>|supplies account routes| removal_web
++    removal_web -->|checked removeMember call| removal_org
+     removal_app ==>|composition / lifetime| removal_org
+     removal_app ==>|store / pool ownership| removal_audit
++    removal_web -->|trusted-tenant result capture| removal_audit
+     removal_org -->|supplied RemovalOperationStore| removal_audit
+     removal_org -->|supplied OrganizationDirectory| removal_workos
+   end
+@@ -314,8 +319,30 @@ directory reads. WorkOS checks that signal around each remote read, so expiry
+ and close stop later read calls and pre-dispatch deletion. They do not cancel
+ an SDK request or roll back a SQL write already in flight. Late provider answers
+ cannot start completion; an already-started terminal write may still settle its
+-own row. Removal uses the existing safe internal change recorder; customer
+-removal capture is not wired.
++own row. Removal uses the existing safe internal change recorder.
++
++[Administration routes](../src/interfaces/web/account/administration-routes.ts)
++accept POST `/members/remove` only after current selected-organization access.
++They require the configured origin, valid CSRF token, and exact organization,
++membership, and revision fields. A mismatched organization does not call removal.
++The [member overview](../src/accounts/organizations/administration-overviews.ts)
++supplies a read-time `removable` hint for ordinary active User/Admin targets; it
++gives no authority to remove. Native confirmation names the target and carries its saved
++revision. Cancel is a GET and writes no intent. The coordinator still checks
++current authority, target support, revision, and last-Admin safety.
++
++The POST returns a fixed result without a follow-up Members read. Applied,
++refused, busy, unavailable, and unknown results remain distinct. Last-Admin
++guidance links to invitations on Members. Result pages offer read-only Members,
++identity-only workspace selection, and sign-in guidance without a removal form.
++Self-removal uses those existing selection, eligibility, and saved-start paths;
++it adds no session mutation or recovery store. Subsequent portal and MCP requests
++resolve current access. A refresh does not prove that an unknown operation settled.
++
++Web captures `remove-member`, membership ID, and the safe outcome through the
++existing AuditLog using the trusted tenant ID, never the submitted organization.
++Capture failure cannot change the result, complete an intent, or repeat deletion.
++The existing snapshot and collector rules still decide whether export occurs.
+ 
+ ### Selected C4 components: hosted Audit logs settings and delivery in the Node server
+ 
+@@ -416,7 +443,7 @@ flowchart TB
+   subgraph logs_server["Container: Thermus Node server"]
+     logs_app["app · TypeScript<br/>Compose diagnostics and AuditLog<br/>Own settings and queue lifetime"]
+     logs_mcp["mcp · TypeScript<br/>Final public capture<br/>Content-free diagnostics"]
+-    logs_web["web · TypeScript<br/>Trusted Admin capture<br/>Settings and invitation routes"]
++    logs_web["web · TypeScript<br/>Trusted Admin capture<br/>Settings and Admin changes"]
+     logs_audit["audit-logs · TypeScript / pg<br/>Redact, bound, and gate capture<br/>Queue; authorize export; settings / Test"]
+     logs_system["system-logs · TypeScript<br/>Internal diagnostics<br/>Caller location retained"]
+   end
+@@ -500,8 +527,8 @@ projection and safe error/cancellation mapping. Invalid arguments, unknown tools
+ request metadata, raw errors, and intermediate HTML are excluded. Fetch withholding
+ still projects to empty success; search withholding stays an explicit safe error.
+ Capture records produced content, not client receipt. Web captures invitation
+-send/resend/revoke and Audit logs Save/Test metadata with its current access
+-context. Submitted organization IDs cannot route events. A stale A form naming B
++send/resend/revoke, checked member removal, and Audit logs Save/Test metadata
++with its current access context. Submitted organization IDs cannot route events. A stale A form naming B
+ stays in A's trusted tenant context. Unattributable requests produce no customer
+ event. A Test action event is separate from its labelled synthetic Test record.
+ Settings reads and sender/retry diagnostics do not capture themselves.
+@@ -997,8 +1024,8 @@ refusal reports unsupported without effect; other failures leave the effect
+ unknown. The existing client sends no automatic retry and keeps its five-second
+ request timeout. The checked administration removal operation calls this boundary
+ after durable admission and current safety checks. The provider boundary itself
+-supplies no admission, current-authority, or last-Admin check. No browser removal
+-route calls the operation yet.
++supplies no admission, current-authority, or last-Admin check. The checked browser
++removal route calls the coordinator, not that provider boundary directly.
+ The old `/invitations` page checks current authority and redirects to Members.
+ Privileged mutations and their recording rules
+ remain described under resource ownership and design choices below.

@@ -1,0 +1,355 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mergeBase": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/logs/audit/audit-log.ts (+3 -1 lines)",
+        "detail": "diff --git a/docs/api-surface/src/logs/audit/audit-log.d.ts b/docs/api-surface/src/logs/audit/audit-log.d.ts\nindex e81e5922..208ac83d 100644\n--- a/docs/api-surface/src/logs/audit/audit-log.d.ts\n+++ b/docs/api-surface/src/logs/audit/audit-log.d.ts\n@@ -37,11 +37,13 @@ export interface AuditResult {\n     readonly truncated: boolean;\n }\n export interface AdministrationChange extends AuditContext {\n-    readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation';\n+    readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation' | 'remove-member';\n     readonly target: {\n         readonly email: string;\n     } | {\n         readonly invitationId: string;\n+    } | {\n+        readonly membershipId: string;\n     };\n     readonly role?: 'admin' | 'user';\n     readonly outcome: ChangeOutcome;\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/interfaces/web/account/account-form.ts (+2 -1 lines)",
+        "detail": "diff --git a/docs/api-surface/src/interfaces/web/account/account-form.d.ts b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\nindex 555ac53c..4d190edb 100644\n--- a/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n+++ b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n@@ -1,4 +1,4 @@\n-import type { InvitationChangeRequest, InvitationSendRequest } from '../../../accounts/organizations/organization-administration.ts';\n+import type { InvitationChangeRequest, InvitationSendRequest, MemberRemovalRequest } from '../../../accounts/organizations/organization-administration.ts';\n import type { NoticeName } from './account-pages.ts';\n export type FormRefusal = Extract<NoticeName, 'formTypeRefused' | 'formTooLarge' | 'forgedRequest' | 'invalidRequest'>;\n export interface Selection {\n@@ -17,5 +17,6 @@ export declare function single(values: readonly string[]): string | undefined;\n export declare function selectionIn(form: URLSearchParams, csrfToken: string, destinations: ReturnDestinations): Selection | FormRefusal;\n export declare function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal;\n export declare function invitationChangeIn(form: URLSearchParams, csrfToken: string): InvitationChangeRequest | FormRefusal;\n+export declare function memberRemovalIn(form: URLSearchParams, csrfToken: string): MemberRemovalRequest | FormRefusal;\n export declare function readForm(request: Request): Promise<URLSearchParams | FormRefusal>;\n export declare function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal;\n"
+      },
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/accounts/organizations/administration-overviews.ts (+1 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts b/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts\nindex ab92fec3..0137fbba 100644\n--- a/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts\n@@ -6,6 +6,7 @@ interface MemberEntry {\n     readonly status: MembershipStatus;\n     readonly roles: readonly string[];\n     readonly revision: string;\n+    readonly removable: boolean;\n }\n export interface MemberOverview {\n     readonly organizationId: string;\n"
+      },
+      {
+        "key": "architecture.registry_view_changed",
+        "fact": "architecture/components.md: 2 views edited"
+      }
+    ],
+    "summary": "T2: declarations changed in 3 public modules; 2 registry views edited"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/audit-log.ts (+3 -1 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/interfaces/web/account/account-form.ts (+2 -1 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/administration-overviews.ts (+1 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 2 views edited"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.component",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.security",
+      "fact": "src/interfaces/web/account/account-form.ts"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.security",
+      "question": "Does this change admission, trust, permissions, or what untrusted content can reach? Record the guarantee that holds after the change."
+    },
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/accounts/organizations/administration-overviews.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/interfaces/web/account/account-form.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/logs/audit/audit-log.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-01c.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/organizations/administration-overviews.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/organizations/membership-removal-checks.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/account-form.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/account-pages.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/account-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-pages.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-routes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/audit-event-projection.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/audit-log.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/logs/audit/otlp-audit-encoding.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-invitations.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-member-removal-scope.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-member-removal.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-member-self-removal.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-members.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-workos-administration.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-grant-retirement.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/hosted-admin/account-routes-removal-audit.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/hosted-admin/account-routes-removal.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/fixtures/organization-administration-double.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/doubles/organizations/removal-operation-store-fake.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/workos/workos-fake-invitations.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/workos/workos-fake-sessions.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/drivers/browser/member-removal-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/dsl/hosted-member-removal.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/in-process/hosted-member-removal-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/workos-site.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/logging/audit/audit-removal.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/organizations/organization-administration-members.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 137,
+    "productionLimit": 400,
+    "total": 1198,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 32,
+    "removed": 2,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/accounts/organizations/administration-overviews.ts: 75.7988076418376 to 76.8504719500318",
+    "changed: src/accounts/organizations/membership-removal-checks.ts: 56.89018621554175 to 61.01765055781432",
+    "changed: src/interfaces/web/account/account-form.ts: 61.60432516158119 to 59.83653028823848",
+    "changed: src/interfaces/web/account/account-pages.ts: 73.88014231968071 to 72.76076629466495",
+    "changed: src/interfaces/web/account/account-routes.ts: 60.07546058335585 to 59.440789019914476",
+    "changed: src/interfaces/web/account/administration-pages.ts: 64.89901264910168 to 61.87704640311736",
+    "changed: src/interfaces/web/account/administration-routes.ts: 56.14187606413681 to 51.26721230018643",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot",
+    "changed: src/logs/audit/audit-event-projection.ts: 36.562143613989605 to 34.782391578662406",
+    "changed: src/logs/audit/audit-log.ts: 88.05501787852491 to 88.05501787852491",
+    "changed: src/logs/audit/otlp-audit-encoding.ts: 53.45070666566668 to 53.159699439661836"
+  ],
+  "crap": [
+    "src/logs/audit/otlp-audit-encoding.ts: eventAttributes: 16.0",
+    "src/logs/audit/audit-event-projection.ts: administrationTarget: 11.0",
+    "src/logs/audit/audit-event-projection.ts: projectAdministrationChange: 8.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.keep: 7.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.removeMember: 7.0",
+    "src/accounts/organizations/membership-removal-checks.ts: targetRefusal: 5.0",
+    "src/accounts/organizations/membership-removal-checks.ts: removalSupported: 4.0",
+    "src/interfaces/web/account/administration-pages.ts: membersPage: 3.0",
+    "src/interfaces/web/account/account-form.ts: memberRemovalIn: 3.0",
+    "src/interfaces/web/account/administration-pages.ts: (anonymous): 3.0",
+    "src/interfaces/web/account/account-form.ts: (anonymous): 2.0",
+    "src/interfaces/web/account/account-pages.ts: removalResultPage: 2.0",
+    "src/accounts/organizations/administration-overviews.ts: (anonymous): 1.0",
+    "src/accounts/organizations/administration-overviews.ts: (anonymous): 1.0",
+    "src/accounts/organizations/administration-overviews.ts: (anonymous): 1.0",
+    "src/accounts/organizations/administration-overviews.ts: memberEntry: 1.0",
+    "src/accounts/organizations/membership-removal-checks.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/account-form.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/account-pages.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/account-routes.ts: (anonymous): 1.0",
+    "src/interfaces/web/account/administration-pages.ts: removalForm: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.constructor: 1.0",
+    "src/interfaces/web/account/administration-routes.ts: administration-routes\\AdministrationRoutes.membersPage: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/audit-log.ts)",
+    "src/logs/audit/audit-log.ts",
+    "src/logs/audit/audit-log.ts (imports changed src/logs/audit/audit-event-projection.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-log.ts)",
+    "src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)",
+    "src/logs/audit/audit-send.ts (imports changed src/logs/audit/audit-log.ts)",
+    "src/interfaces/web/account/account-form.ts",
+    "src/interfaces/web/account/account-form.ts (imports changed src/interfaces/web/account/account-pages.ts)",
+    "src/accounts/organizations/administration-overviews.ts",
+    "src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/membership-removal-checks.ts)",
+    "src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/administration-overviews.ts)"
+  ],
+  "informational": [
+    "49 public modules, 3 snapshots changed",
+    "public module touched, declarations unchanged: src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/audit-log.ts)",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-log.ts)",
+    "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)",
+    "public module touched, declarations unchanged: src/logs/audit/audit-send.ts (imports changed src/logs/audit/audit-log.ts)",
+    "public module touched, declarations unchanged: src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/administration-overviews.ts)",
+    "read_paths.removal_paths: the diff removes no lines from docs/implementation/test-gate-policy.md"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

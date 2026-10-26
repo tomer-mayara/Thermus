@@ -1,0 +1,15 @@
+{
+  "checked": "2026-10-26T08:09:18.733Z",
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "observations": [
+    {
+      "port": 46443,
+      "listeners": 0
+    },
+    {
+      "port": 46480,
+      "listeners": 0
+    }
+  ],
+  "method": "Read-only lsof; no listener stopped."
+}

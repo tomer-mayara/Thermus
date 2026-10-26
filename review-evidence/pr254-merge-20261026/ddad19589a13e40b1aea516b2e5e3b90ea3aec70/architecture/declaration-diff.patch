@@ -1,0 +1,48 @@
+diff --git a/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts b/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts
+index ab92fec3..0137fbba 100644
+--- a/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts
++++ b/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts
+@@ -6,6 +6,7 @@ interface MemberEntry {
+     readonly status: MembershipStatus;
+     readonly roles: readonly string[];
+     readonly revision: string;
++    readonly removable: boolean;
+ }
+ export interface MemberOverview {
+     readonly organizationId: string;
+diff --git a/docs/api-surface/src/interfaces/web/account/account-form.d.ts b/docs/api-surface/src/interfaces/web/account/account-form.d.ts
+index 555ac53c..4d190edb 100644
+--- a/docs/api-surface/src/interfaces/web/account/account-form.d.ts
++++ b/docs/api-surface/src/interfaces/web/account/account-form.d.ts
+@@ -1,4 +1,4 @@
+-import type { InvitationChangeRequest, InvitationSendRequest } from '../../../accounts/organizations/organization-administration.ts';
++import type { InvitationChangeRequest, InvitationSendRequest, MemberRemovalRequest } from '../../../accounts/organizations/organization-administration.ts';
+ import type { NoticeName } from './account-pages.ts';
+ export type FormRefusal = Extract<NoticeName, 'formTypeRefused' | 'formTooLarge' | 'forgedRequest' | 'invalidRequest'>;
+ export interface Selection {
+@@ -17,5 +17,6 @@ export declare function single(values: readonly string[]): string | undefined;
+ export declare function selectionIn(form: URLSearchParams, csrfToken: string, destinations: ReturnDestinations): Selection | FormRefusal;
+ export declare function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal;
+ export declare function invitationChangeIn(form: URLSearchParams, csrfToken: string): InvitationChangeRequest | FormRefusal;
++export declare function memberRemovalIn(form: URLSearchParams, csrfToken: string): MemberRemovalRequest | FormRefusal;
+ export declare function readForm(request: Request): Promise<URLSearchParams | FormRefusal>;
+ export declare function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal;
+diff --git a/docs/api-surface/src/logs/audit/audit-log.d.ts b/docs/api-surface/src/logs/audit/audit-log.d.ts
+index e81e5922..208ac83d 100644
+--- a/docs/api-surface/src/logs/audit/audit-log.d.ts
++++ b/docs/api-surface/src/logs/audit/audit-log.d.ts
+@@ -37,11 +37,13 @@ export interface AuditResult {
+     readonly truncated: boolean;
+ }
+ export interface AdministrationChange extends AuditContext {
+-    readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation';
++    readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation' | 'remove-member';
+     readonly target: {
+         readonly email: string;
+     } | {
+         readonly invitationId: string;
++    } | {
++        readonly membershipId: string;
+     };
+     readonly role?: 'admin' | 'user';
+     readonly outcome: ChangeOutcome;

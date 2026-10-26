@@ -1,0 +1,17 @@
+{
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "authorization": "Manager reports primary #253 ordinary suite/typecheck/portal pass and authorizes combined #254 capture while hosted-live owns 46443/46480.",
+  "ordinary46443References": [
+    "test/integration/auth/workos-provider-access.test.ts",
+    "test/integration/auth/workos-provider-verification.test.ts",
+    "test/integration/auth/workos-provider-directory.test.ts"
+  ],
+  "referenceUse": "MCP resource/audience identifiers only; provider proofs use local signing keys, grant doubles and WorkOSFakeApi.",
+  "bindings": [
+    "test/support/doubles/workos/workos-fake-api.ts:182 uses listen host127.0.0.1 port0",
+    "test/support/in-process/workos-site.ts:80 uses listen host127.0.0.1 port0"
+  ],
+  "selectionProof": "Coverage suiteCommands accepts direct package unit/integration/acceptance Node globs. No hosted.live.js or dedicated browser/Collector/PostgreSQL runtime file is selected.",
+  "result": "No selected ordinary helper binds 46443 or46480. No WorkOS live or Docker command is run."
+}

@@ -1,0 +1,95 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "baseSha": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "headSha": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "summary": {
+    "filesChanged": 26,
+    "filesAdded": 11,
+    "filesDeleted": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 2,
+    "improvements": 3
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-complex-function",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "line": 74,
+      "subject": "administrationTarget",
+      "message": "New function with cyclomatic complexity 11 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 0,
+      "after": 11
+    },
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "complexity-regression",
+      "file": "src/logs/audit/otlp-audit-encoding.ts",
+      "line": 23,
+      "subject": "eventAttributes",
+      "message": "Cyclomatic complexity: 15 -\u003e 16 (threshold: 10)",
+      "suggestion": "Extract smaller, well-named functions to reduce decision points",
+      "before": 15,
+      "after": 16
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "message": "Estimated bugs (Halstead): 2.46 -\u003e 2.56",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 2.463619094218801,
+      "after": 2.5646113853164993
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/unit/organizations/organization-administration-members.test.ts",
+      "message": "Estimated bugs (Halstead): 0.98 -\u003e 1.16",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 0.9817696189628399,
+      "after": 1.1576578978917647
+    }
+  ],
+  "improvements": [
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "complexity-improvement",
+      "file": "src/accounts/organizations/membership-removal-checks.ts",
+      "line": 33,
+      "subject": "targetRefusal",
+      "message": "Cyclomatic complexity: 8 -\u003e 5",
+      "before": 8,
+      "after": 5
+    },
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "complexity-improvement",
+      "file": "src/logs/audit/audit-event-projection.ts",
+      "line": 63,
+      "subject": "projectAdministrationChange",
+      "message": "Cyclomatic complexity: 11 -\u003e 8",
+      "before": 11,
+      "after": 8
+    },
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "bugs-improvement",
+      "file": "test/acceptance/auth/hosted-invitations.test.ts",
+      "message": "Estimated bugs (Halstead): 1.12 -\u003e 0.80",
+      "before": 1.1192725809912374,
+      "after": 0.8014555823748702
+    }
+  ],
+  "gate": "passed"
+}

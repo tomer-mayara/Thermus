@@ -1,0 +1,579 @@
+[
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "d8cdfc52ea01d07e128334a1ffcd115f6e82ef56cd2db21fbaf950dc32143de7",
+    "buildLogs": [],
+    "name": "install",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "pnpm",
+    "args": [
+      "install",
+      "--frozen-lockfile"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:09:19.300Z",
+    "finished": "2026-10-26T08:09:19.439Z",
+    "log": "install-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "b67d0ced059f9313d861ddbbe734d2d1f9219106a9e036ae6d88407afa0846e6",
+    "buildLogs": [],
+    "name": "runtime",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "pnpm",
+    "args": [
+      "exec",
+      "node",
+      "--version"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:09:19.517Z",
+    "finished": "2026-10-26T08:09:19.615Z",
+    "log": "runtime-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "200f9cc6ec11155d6b135f8f2b03843af4bb1d4d739db86235689978505e35f3",
+    "buildLogs": [],
+    "name": "api-surface",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "pnpm",
+    "args": [
+      "exec",
+      "node",
+      "script/pr-review/api-surface.ts",
+      "--check"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:09:19.684Z",
+    "finished": "2026-10-26T08:09:21.351Z",
+    "log": "api-surface-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+    "buildLogs": [],
+    "name": "focused-build",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "run",
+      "build"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:09:21.444Z",
+    "finished": "2026-10-26T08:09:22.914Z",
+    "log": "focused-build-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 411",
+      "ℹ suites 21",
+      "ℹ pass 411",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 11439.40525"
+    ],
+    "logSha256": "629318a75498e4f1ad6a711ff8fb42f473294b23c79f6e9db64469fbf1f705b6",
+    "buildLogs": [],
+    "name": "focused",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "node",
+    "args": [
+      "--test",
+      "--test-concurrency=1",
+      "dist/test/acceptance/auth/hosted-invitations.test.js",
+      "dist/test/acceptance/auth/hosted-member-removal-scope.test.js",
+      "dist/test/acceptance/auth/hosted-member-removal.test.js",
+      "dist/test/acceptance/auth/hosted-member-self-removal.test.js",
+      "dist/test/acceptance/auth/hosted-members.test.js",
+      "dist/test/acceptance/auth/hosted-membership-deletion.test.js",
+      "dist/test/acceptance/auth/hosted-workos-administration.test.js",
+      "dist/test/integration/auth/hosted-storage-lifecycle.test.js",
+      "dist/test/integration/auth/workos-connection.test.js",
+      "dist/test/integration/auth/workos-google-onboarding.test.js",
+      "dist/test/integration/auth/workos-provider-administration.test.js",
+      "dist/test/integration/auth/workos-provider-directory.test.js",
+      "dist/test/integration/auth/workos-provider-organizations.test.js",
+      "dist/test/integration/auth/workos-removal-lifetime.test.js",
+      "dist/test/integration/hosted-admin/account-routes-administration-pages.test.js",
+      "dist/test/integration/hosted-admin/account-routes-grant-retirement.test.js",
+      "dist/test/integration/hosted-admin/account-routes-removal-audit.test.js",
+      "dist/test/integration/hosted-admin/account-routes-removal.test.js",
+      "dist/test/unit/auth-workos/workos-membership-reads.test.js",
+      "dist/test/unit/auth-workos/workos-organizations-deletion.test.js",
+      "dist/test/unit/auth-workos/workos-organizations-members.test.js",
+      "dist/test/unit/auth-workos/workos-organizations-memberships.test.js",
+      "dist/test/unit/auth-workos/workos-organizations-read-lifetime.test.js",
+      "dist/test/unit/auth-workos/workos-organizations.test.js",
+      "dist/test/unit/logging/audit/audit-removal.test.js",
+      "dist/test/unit/logging/audit/pg-removal-operation-store.test.js",
+      "dist/test/unit/organizations/membership-removal-lifetime.test.js",
+      "dist/test/unit/organizations/membership-removal-outcomes.test.js",
+      "dist/test/unit/organizations/membership-removal-rules.test.js",
+      "dist/test/unit/organizations/organization-administration-members.test.js"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:09:23.004Z",
+    "finished": "2026-10-26T08:09:34.487Z",
+    "log": "focused-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "evidenceDirectory": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr254/browser",
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 1",
+      "ℹ suites 0",
+      "ℹ pass 1",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 1475.746917"
+    ],
+    "logSha256": "255a5e77eb9a4d7cb7d8d634c7f1d3b64f14c306bf9fe0bce45372f8d2ea666e",
+    "buildLogs": [],
+    "name": "members-browser",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "sh",
+    "args": [
+      "-c",
+      "npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:09:34.557Z",
+    "finished": "2026-10-26T08:09:38.166Z",
+    "log": "members-browser-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 22",
+      "ℹ suites 0",
+      "ℹ pass 22",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 51089.507958"
+    ],
+    "logSha256": "6cd6c6b037cc3a255cc552ae941445e52ac4509f2dba83a32e7c30870e68cfcf",
+    "buildLogs": [],
+    "name": "logging-postgres",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "run",
+      "test:logging:postgres"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:09:38.243Z",
+    "finished": "2026-10-26T08:10:30.715Z",
+    "log": "logging-postgres-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 5081",
+      "ℹ suites 266",
+      "ℹ pass 5081",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 308709.779167",
+      "ℹ tests 49",
+      "ℹ suites 0",
+      "ℹ pass 49",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 213.728584"
+    ],
+    "logSha256": "81870118112b589a3f645844ea6096ffb6152b3159965fdf633d7c83cf4fa3e3",
+    "buildLogs": [],
+    "name": "ordinary",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "test"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:10:30.921Z",
+    "finished": "2026-10-26T08:15:41.852Z",
+    "log": "ordinary-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+    "buildLogs": [],
+    "name": "typecheck",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "run",
+      "typecheck"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:15:42.050Z",
+    "finished": "2026-10-26T08:15:43.437Z",
+    "log": "typecheck-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "3e2f5068cbd0a4d3ab481c6dd6e37b53ab92c4f07cf63821cc5c756851a52793",
+    "buildLogs": [],
+    "name": "portal",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "run",
+      "build:user-portal"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:15:43.505Z",
+    "finished": "2026-10-26T08:15:44.215Z",
+    "log": "portal-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 28",
+      "ℹ suites 8",
+      "ℹ pass 28",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 517669.461084"
+    ],
+    "logSha256": "97ee4e4dde8ba85d71e7cfc8de8b359487e0c707e3401bde82bf3bd8fcb79ba2",
+    "buildLogs": [],
+    "name": "hosted-live",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "node",
+    "args": [
+      "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+      "npm",
+      "run",
+      "test:hosted-live"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:15:44.303Z",
+    "finished": "2026-10-26T08:24:24.299Z",
+    "log": "hosted-live-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 11",
+      "ℹ suites 1",
+      "ℹ pass 11",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 99924.397541"
+    ],
+    "logSha256": "de4a23f84335e6cad140f84a41af17c6140a1249eca68ceaf03f494ca9f44095",
+    "buildLogs": [
+      {
+        "path": "docker-build-1793002159140-native-container-1793003067309-6043.log",
+        "sha256": "be09c09a8299d21c3d046bcd5eacfb4a4ee39d62baffde6b96939da43aafb233"
+      },
+      {
+        "path": "docker-build-1793002159140-native-container-1793003077090-6256.log",
+        "sha256": "441fbe88c00bd2334b095ce9f5066f88d8ca9d732eb7bc5cc77c2a43cd0916df"
+      }
+    ],
+    "name": "native-container",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:24:24.522Z",
+    "finished": "2026-10-26T08:26:06.302Z",
+    "log": "native-container-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 7",
+      "ℹ suites 0",
+      "ℹ pass 7",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 613955.847917"
+    ],
+    "logSha256": "cc21dc7fd68c3fe00366d73362ec131310ca8aed415df008e12f8a5b4ee48c52",
+    "buildLogs": [
+      {
+        "path": "docker-build-1793002159140-hosted-container-1793003168465-11238.log",
+        "sha256": "02299e4879b86a2795bb4dd4acab4da6e569b02a0dd1bec5996d21d046741405"
+      }
+    ],
+    "name": "hosted-container",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container:hosted"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:26:06.499Z",
+    "finished": "2026-10-26T08:36:22.127Z",
+    "log": "hosted-container-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [
+      "ℹ tests 10",
+      "ℹ suites 0",
+      "ℹ pass 10",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 16013.749125"
+    ],
+    "logSha256": "6d6afea786e64af69e5ae3e37aeed6798a80aa2a03f32fb005525fc7af88d16f",
+    "buildLogs": [],
+    "name": "logging-collector",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "npm",
+    "args": [
+      "run",
+      "test:logging:collector"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:36:22.331Z",
+    "finished": "2026-10-26T08:36:40.162Z",
+    "log": "logging-collector-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 1,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "df203052d94323222fce1afc2f8dd36f3c7a2b373d1f0b4a42e4d8fd83fee4e7",
+    "buildLogs": [],
+    "name": "habit-hooks",
+    "attempt": 1,
+    "runId": "1793002159140",
+    "command": "habit-hooks",
+    "args": [
+      "--branch",
+      "origin/main"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:36:40.345Z",
+    "finished": "2026-10-26T08:36:42.415Z",
+    "log": "habit-hooks-1.log",
+    "code": 1,
+    "signal": null
+  },
+  {
+    "commandOutcome": {
+      "code": 0,
+      "signal": null
+    },
+    "summaries": [],
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "buildLogs": [],
+    "name": "diff-check",
+    "attempt": 1,
+    "runId": "1793003932052",
+    "command": "git",
+    "args": [
+      "diff",
+      "--check"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T08:38:52.191Z",
+    "finished": "2026-10-26T08:38:52.212Z",
+    "log": "diff-check-1.log",
+    "code": 0,
+    "signal": null
+  }
+]

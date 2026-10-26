@@ -1,0 +1,20 @@
+{
+  "reviewer": "Codex manager /root",
+  "reviewedAt": "2026-10-26T08:26:38.286790+00:00",
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mergeBase": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "rows": [
+    {
+      "revision": "b630a76275d5809a498ae63e1cbc322086f4194f",
+      "registrySha256": "65152df98a0d0a64ee52c10d0aba8e2692f01338286805aa84645bb3b2658f52",
+      "mermaidBlocks": 15
+    },
+    {
+      "revision": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+      "registrySha256": "c314f7d2650d629b4157dd9fa54fef8ca5e8e91dc808de7e2370ac85a0401a00",
+      "mermaidBlocks": 15
+    }
+  ],
+  "correction": "The current actual-parent comparison contains 15 registry Mermaid blocks before and after, with two edited views. A parenthetical 13 in the reused assessment text is a boilerplate error. The pinned inventories and current checker already contain the correct count.",
+  "effect": "No source, declared architecture fact, diagram source/render, contract comparison or test result changes. Keep the original authored assessment as history and use this explicit correction with the current main/Quality summary."
+}

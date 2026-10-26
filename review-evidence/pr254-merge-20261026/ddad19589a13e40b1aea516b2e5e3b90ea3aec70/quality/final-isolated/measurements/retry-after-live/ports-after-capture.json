@@ -1,0 +1,23 @@
+{
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "observedAt": "2026-10-26T07:54:56.354531+00:00",
+  "collector": "Complete combined retry exited0 and published verified report. No collector process remains.",
+  "ports": [
+    {
+      "port": 46443,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "noListener": true
+    },
+    {
+      "port": 46480,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "noListener": true
+    }
+  ],
+  "primaryCanStartOrdinaryAndLive": true
+}

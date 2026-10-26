@@ -1,0 +1,59 @@
+{
+  "status": "Read-only preparation; not an authorized launch pin",
+  "examinedHead": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualParent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "completeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "ordinaryFiles": [
+    "test/acceptance/auth/hosted-invitations.test.ts",
+    "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+    "test/acceptance/auth/hosted-member-removal.test.ts",
+    "test/acceptance/auth/hosted-member-self-removal.test.ts",
+    "test/acceptance/auth/hosted-members.test.ts",
+    "test/acceptance/auth/hosted-membership-deletion.test.ts",
+    "test/acceptance/auth/hosted-workos-administration.test.ts",
+    "test/integration/auth/hosted-storage-lifecycle.test.ts",
+    "test/integration/auth/workos-connection.test.ts",
+    "test/integration/auth/workos-google-onboarding.test.ts",
+    "test/integration/auth/workos-provider-administration.test.ts",
+    "test/integration/auth/workos-provider-directory.test.ts",
+    "test/integration/auth/workos-provider-organizations.test.ts",
+    "test/integration/auth/workos-removal-lifetime.test.ts",
+    "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+    "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+    "test/integration/hosted-admin/account-routes-removal-audit.test.ts",
+    "test/integration/hosted-admin/account-routes-removal.test.ts",
+    "test/unit/auth-workos/workos-membership-reads.test.ts",
+    "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+    "test/unit/auth-workos/workos-organizations-members.test.ts",
+    "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+    "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts",
+    "test/unit/auth-workos/workos-organizations.test.ts",
+    "test/unit/logging/audit/audit-removal.test.ts",
+    "test/unit/logging/audit/pg-removal-operation-store.test.ts",
+    "test/unit/organizations/membership-removal-lifetime.test.ts",
+    "test/unit/organizations/membership-removal-outcomes.test.ts",
+    "test/unit/organizations/membership-removal-rules.test.ts",
+    "test/unit/organizations/organization-administration-members.test.ts"
+  ],
+  "runtimeFiles": [
+    "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+    "test/acceptance/auth/membership-removal-restart.runtime.ts",
+    "test/acceptance/auth/membership-removal.runtime.ts",
+    "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+    "test/integration/logging/audit/removal-operations.runtime.ts"
+  ],
+  "membersBrowser": {
+    "command": "npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "evidenceVariable": "THERMUS_BROWSER_EVIDENCE_DIR",
+    "evidenceDirectory": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr254/browser",
+    "transport": "Playwright routing to the in-process application transport; no fixed host listener",
+    "liveCredentials": false
+  },
+  "runnerReuse": "Copy the fresh PR 253 runner only after manager handoff, update explicit head/parent/cache, replace focused list with this 30-file union, add Members browser gate, retain stable input guards, full Docker streams and fresh offline-layer proof.",
+  "hostPortCoordination": "Manager must release 46443 and 46480 from any separate-checkout combined capture before this runner reaches WorkOS live. Native/hosted image gates use dynamic host publication, and hosted offline checks bind inside the container build namespace.",
+  "primaryState": "Still detached b630a762; existing PR 253 gate continues. No PR 254 checkout, runtime or build was started."
+}

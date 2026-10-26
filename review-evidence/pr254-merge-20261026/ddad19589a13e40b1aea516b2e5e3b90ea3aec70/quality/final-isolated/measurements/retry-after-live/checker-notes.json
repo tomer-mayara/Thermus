@@ -1,0 +1,237 @@
+{
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "base": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "tier": "T2 Need architect",
+  "architectureSummary": "T2: declarations changed in 3 public modules; 2 registry views edited",
+  "architectureFacts": [
+    {
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/audit-log.ts (+3 -1 lines)",
+      "detail": "diff --git a/docs/api-surface/src/logs/audit/audit-log.d.ts b/docs/api-surface/src/logs/audit/audit-log.d.ts\nindex e81e5922..208ac83d 100644\n--- a/docs/api-surface/src/logs/audit/audit-log.d.ts\n+++ b/docs/api-surface/src/logs/audit/audit-log.d.ts\n@@ -37,11 +37,13 @@ export interface AuditResult {\n     readonly truncated: boolean;\n }\n export interface AdministrationChange extends AuditContext {\n-    readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation';\n+    readonly action: 'invite' | 'resend-invitation' | 'revoke-invitation' | 'remove-member';\n     readonly target: {\n         readonly email: string;\n     } | {\n         readonly invitationId: string;\n+    } | {\n+        readonly membershipId: string;\n     };\n     readonly role?: 'admin' | 'user';\n     readonly outcome: ChangeOutcome;\n"
+    },
+    {
+      "key": "architecture.declarations_changed",
+      "fact": "src/interfaces/web/account/account-form.ts (+2 -1 lines)",
+      "detail": "diff --git a/docs/api-surface/src/interfaces/web/account/account-form.d.ts b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\nindex 555ac53c..4d190edb 100644\n--- a/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n+++ b/docs/api-surface/src/interfaces/web/account/account-form.d.ts\n@@ -1,4 +1,4 @@\n-import type { InvitationChangeRequest, InvitationSendRequest } from '../../../accounts/organizations/organization-administration.ts';\n+import type { InvitationChangeRequest, InvitationSendRequest, MemberRemovalRequest } from '../../../accounts/organizations/organization-administration.ts';\n import type { NoticeName } from './account-pages.ts';\n export type FormRefusal = Extract<NoticeName, 'formTypeRefused' | 'formTooLarge' | 'forgedRequest' | 'invalidRequest'>;\n export interface Selection {\n@@ -17,5 +17,6 @@ export declare function single(values: readonly string[]): string | undefined;\n export declare function selectionIn(form: URLSearchParams, csrfToken: string, destinations: ReturnDestinations): Selection | FormRefusal;\n export declare function invitationIn(form: URLSearchParams, csrfToken: string): InvitationSendRequest | FormRefusal;\n export declare function invitationChangeIn(form: URLSearchParams, csrfToken: string): InvitationChangeRequest | FormRefusal;\n+export declare function memberRemovalIn(form: URLSearchParams, csrfToken: string): MemberRemovalRequest | FormRefusal;\n export declare function readForm(request: Request): Promise<URLSearchParams | FormRefusal>;\n export declare function formFields<Name extends string>(form: URLSearchParams, csrfToken: string, names: readonly Name[]): Record<Name, string> | FormRefusal;\n"
+    },
+    {
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/administration-overviews.ts (+1 -0 lines)",
+      "detail": "diff --git a/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts b/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts\nindex ab92fec3..0137fbba 100644\n--- a/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/administration-overviews.d.ts\n@@ -6,6 +6,7 @@ interface MemberEntry {\n     readonly status: MembershipStatus;\n     readonly roles: readonly string[];\n     readonly revision: string;\n+    readonly removable: boolean;\n }\n export interface MemberOverview {\n     readonly organizationId: string;\n"
+    },
+    {
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 2 views edited"
+    }
+  ],
+  "tierReasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/logs/audit/audit-log.ts (+3 -1 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/interfaces/web/account/account-form.ts (+2 -1 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/administration-overviews.ts (+1 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 2 views edited"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.contract",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.component",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.security",
+      "fact": "src/interfaces/web/account/account-form.ts"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included."
+    }
+  ],
+  "mechanicalEligibility": "eligible",
+  "mechanicalBlockers": [],
+  "overallEligibility": "Manager assessment required; quality worker supplies no waiver or gate/approval substitution.",
+  "notes": [
+    {
+      "group": "informational",
+      "note": "49 public modules, 3 snapshots changed",
+      "reason": "The overview adds a required removable display hint; the public parser adds exact removal inputs; AuditLog adds finite removal action/target metadata. All three current declaration diffs are retained."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/logs/audit/destination-settings-service.ts (imports changed src/logs/audit/audit-log.ts)",
+      "reason": "The service still owns its existing Save/Test and current-revision rules. Its imported Audit types change elsewhere; declaration text stays identical and this service gains no removal write or new lifetime."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/audit-log.ts)",
+      "reason": "The referenced finite Audit union now includes the removal event and its named membership target through the existing encoding/sending path. The named importer keeps identical declaration text and the same bounded sending/current-revision/lifetime rules. Identical text is not used to deny the referenced type expansion."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/logs/audit/otlp-audit-sender.ts (imports changed src/logs/audit/otlp-audit-encoding.ts)",
+      "reason": "The referenced finite Audit union now includes the removal event and its named membership target through the existing encoding/sending path. The named importer keeps identical declaration text and the same bounded sending/current-revision/lifetime rules. Identical text is not used to deny the referenced type expansion."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/logs/audit/audit-send.ts (imports changed src/logs/audit/audit-log.ts)",
+      "reason": "The referenced finite Audit union now includes the removal event and its named membership target through the existing encoding/sending path. The named importer keeps identical declaration text and the same bounded sending/current-revision/lifetime rules. Identical text is not used to deny the referenced type expansion."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/administration-overviews.ts)",
+      "reason": "The existing memberOverview result now carries the nested removable hint through its referenced overview type. Its callable declaration stays identical; current removal authority remains in the coordinator."
+    },
+    {
+      "group": "informational",
+      "note": "read_paths.removal_paths: the diff removes no lines from docs/implementation/test-gate-policy.md",
+      "reason": "The increment adds the dedicated browser gate and removes no test-gate policy line. The removal-path rule is N/A; the policy flag still records the added requirement."
+    },
+    {
+      "group": "metrics",
+      "note": "Delta: goal miss",
+      "reason": "Nine existing changed source files retain MI below 85 with individual current owner reasons. AuditLog is above 85; CSS-only members-style has no executable MI. No new production file or new-file exception is introduced."
+    },
+    {
+      "group": "metrics",
+      "note": "Review: passed",
+      "reason": "Current native inventory has zero high findings, two medium and two low findings, all individually dispositioned. Prior inherited/ignored inventories remain history rather than new fixes."
+    },
+    {
+      "group": "metrics",
+      "note": "CRAP: passed",
+      "reason": "All 25 required functions (17 new / 8 changed) have fresh measured shares and meet strict goals. Highest new administrationTarget is 11.004348377; highest changed eventAttributes is 16. Its changed-function limit is below 30; no CRAP exception is used."
+    },
+    {
+      "group": "metrics",
+      "note": "Architecture: passed",
+      "reason": "The current stage completed with the known unresolved CSS/global-edge-withholding limit. Base CRAP is head-derived, and analytical communities do not define registered components."
+    },
+    {
+      "group": "metrics",
+      "note": "0 findings on unchanged files, reason unchanged by this PR",
+      "reason": "All four current findings are on changed committed files. The current actual-parent inventory does not restamp the old full-main or ignored-tool inventories."
+    },
+    {
+      "group": "notes",
+      "note": "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.",
+      "reason": "Mechanical eligibility is preliminary. Manager must review the actual separate gate results, architecture, user architect-attestation mapping and remaining stack holds before a merge decision."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.security",
+      "question": "Does this change admission, trust, permissions, or what untrusted content can reach? Record the guarantee that holds after the change.",
+      "answer": "Checked current access supplies the actor and trusted tenant. The write accepts POST only, exact configured Origin, bounded exact-once form fields and a valid session CSRF token before one coordinator call. The displayed removable hint grants no authority; the coordinator still rechecks actor, exact target/revision, all grants and last-active-Admin safety after durable admission. Only named membership metadata reaches customer Audit capture."
+    },
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise.",
+      "answer": "Members adds native confirmation and Cancel. The POST returns a fixed applied/refused/busy/unknown response independently of a later Members GET and offers no replay form. Self-removal uses existing identity-only organization selection, signup recovery and reauthentication. AuditLog adds a removal action/membership target and safe outcomes; existing invitation action-to-target pairs remain valid. Capture failure cannot change a removal result, settle a hold or replay the write."
+    }
+  ],
+  "policyAnswers": {
+    "protected_paths.security": "Checked current access supplies the actor and trusted tenant. The write accepts POST only, exact configured Origin, bounded exact-once form fields and a valid session CSRF token before one coordinator call. The displayed removable hint grants no authority; the coordinator still rechecks actor, exact target/revision, all grants and last-active-Admin safety after durable admission. Only named membership metadata reaches customer Audit capture.",
+    "protected_paths.contracts": "Members adds native confirmation and Cancel. The POST returns a fixed applied/refused/busy/unknown response independently of a later Members GET and offers no replay form. Self-removal uses existing identity-only organization selection, signup recovery and reauthentication. AuditLog adds a removal action/membership target and safe outcomes; existing invitation action-to-target pairs remain valid. Capture failure cannot change a removal result, settle a hold or replay the write.",
+    "policy_and_dependencies": "The policy adds one dedicated local real-Chromium Members browser gate; it weakens no existing test, review or failure criterion. No third-party package, runtime configuration, schema, provider, paid service or deployment/container topology is added by this increment.",
+    "architecture": "Existing web-to-organizations and web-to-audit-logs owners get a removal caller; no component set or source dependency pair changes. Three public declarations and two registry views change. The overview result gains a display hint while the existing memberOverview callable stays. The finite removal event reaches the existing projection/encoder/sender path; no new sender lifetime or transport policy is added. Manager owns the current architecture comparison and before/after contract review.",
+    "approval_and_holds": "User directly attests independent architect approval of the full stack. Keep this as user attestation; no GitHub review, reviewer identity or timestamp is invented. Parent #253 is unmerged at measurement time, and R1 remains for #257. Manager owns current separate gates, hold reconciliation, candidate mapping and final merge eligibility."
+  },
+  "impactDeclaration": {
+    "sha256": "68e8998279a78eb3c72edbba3d51107839d47866746814e31ce0be8f663809f8",
+    "committed": {
+      "version": 1,
+      "classification": {
+        "container": false,
+        "external": false,
+        "contract": true,
+        "deployment": false,
+        "crossCutting": false,
+        "component": true,
+        "internalInterface": true,
+        "sensitiveBehavior": true,
+        "dependencyRisk": false,
+        "policy": true,
+        "uncertain": false
+      },
+      "architecture": {
+        "modelUpdated": true,
+        "summary": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included.",
+        "views": [
+          "Context",
+          "C4 containers: hosted edition",
+          "Selected C4 components: hosted authentication in the Node server",
+          "Selected C4 components: hosted membership removal in the Node server",
+          "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+          "Selected C4 components: system and audit logs in the Node server",
+          "Collaboration overview",
+          "Scenario: hosted member read",
+          "Deployment view",
+          "Behavior and resource ownership"
+        ],
+        "evidence": [
+          "src/interfaces/web/account/administration-routes.ts",
+          "src/interfaces/web/account/administration-pages.ts",
+          "src/interfaces/web/account/account-form.ts",
+          "src/interfaces/web/account/account-pages.ts",
+          "src/accounts/organizations/administration-overviews.ts",
+          "src/accounts/organizations/membership-removal-checks.ts",
+          "src/logs/audit/audit-log.ts",
+          "src/logs/audit/audit-event-projection.ts",
+          "src/logs/audit/otlp-audit-encoding.ts",
+          "architecture/components.md",
+          "docs/implementation/admin-s2-5-01c.md",
+          "docs/implementation/test-gate-policy.md",
+          "test/acceptance/auth/hosted-member-removal.test.ts",
+          "test/acceptance/auth/hosted-member-self-removal.test.ts",
+          "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+          "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+          "test/integration/hosted-admin/account-routes-removal.test.ts",
+          "test/integration/hosted-admin/account-routes-removal-audit.test.ts"
+        ]
+      }
+    }
+  },
+  "lineCounts": {
+    "production": 137,
+    "productionLimit": 400,
+    "total": 1198,
+    "totalLimit": 1500
+  },
+  "testDeclarations": {
+    "added": 32,
+    "removed": 2,
+    "skippedOrTodo": []
+  },
+  "checkerSha256": "eb3b495b232f1471a656b5f5184b6e784c3fef86e7e1a2a9ede81ce6ef8d06d4"
+}

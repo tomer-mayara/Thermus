@@ -1,0 +1,88 @@
+{
+  "head": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "parent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "inputFingerprint": "1fb4c3e8b4ac411ec9bb5d29fc4e79c5e874422c91640c0c197e5e06fba5cfa6",
+  "actualChildCode": 0,
+  "validatorCode": 0,
+  "stream": {
+    "path": "docker-build-1793002159140-hosted-container-1793003168465-11238.log",
+    "sha256": "02299e4879b86a2795bb4dd4acab4da6e569b02a0dd1bec5996d21d046741405"
+  },
+  "step": "#24",
+  "network": "none",
+  "command": "npm run build:hosted",
+  "cached": false,
+  "completion": "#24 DONE 577.0s",
+  "summaries": [
+    {
+      "group": "backend unit",
+      "tests": 3265,
+      "suites": 164,
+      "pass": 3265,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 269921.490573
+    },
+    {
+      "group": "portal unit",
+      "tests": 29,
+      "suites": 0,
+      "pass": 29,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 1814.189453
+    },
+    {
+      "group": "portal acceptance",
+      "tests": 20,
+      "suites": 0,
+      "pass": 20,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 1811.616453
+    },
+    {
+      "group": "integration",
+      "tests": 1149,
+      "suites": 59,
+      "pass": 1149,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 142542.311494
+    },
+    {
+      "group": "hosted acceptance",
+      "tests": 119,
+      "suites": 6,
+      "pass": 119,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 69306.176213
+    },
+    {
+      "group": "renderer runtime",
+      "tests": 13,
+      "suites": 2,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 69629.686858
+    }
+  ],
+  "predicateSha256": "9ae0e87a3975b880e3c433f2e8b71453de07cd58b7b65cc29650444ebbea5955",
+  "samePredicateAsReviewed253": true,
+  "manualCounterexampleReference": "../pr253/validation/hosted-provenance-manual-check.json"
+}

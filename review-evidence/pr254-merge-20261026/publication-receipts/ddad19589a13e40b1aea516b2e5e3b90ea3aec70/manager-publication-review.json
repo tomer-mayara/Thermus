@@ -1,0 +1,35 @@
+{
+  "reviewer": "manager agent; not independent human approval",
+  "reviewedAt": "2026-10-26T09:01:49.763375+00:00",
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualParent": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "inventorySha256": "ba710ad94363d5af1f7f2d5680a85950777730769eb5001bc882c77c6721851d",
+  "decision": "Accepted local publication package; publication and merge holds stay open.",
+  "texts": {
+    "main-body.md": "8d05810b3238d7b891c60ff48616d918a8e467318c50f6dbaa6211d67971be18",
+    "validation-comment.md": "4e8039684e25b737c53623904930c881560ae2a813af0465ac53fa730dc2685b",
+    "quality-review-comment.md": "79fb8446a9c40be05d079228c4b5ee0242d06b0d0acfd9192c0865a7a294a2e8"
+  },
+  "review": [
+    "Read all three final texts and checked current candidate and actual parent pins against manager quality, architecture, visual and validation receipts.",
+    "All selected primary product commands passed; separate first coverage capture failed from port collision, and the successful unchanged-input retry is preserved.",
+    "Registry inventory correction is explicit: 15 parent and 15 candidate views, two edited; old 13-parent boilerplate remains historical.",
+    "Three public declaration changes and finite payload/caller effects remain explicit; removal display hint grants no authority.",
+    "All metric goals, retained MI findings, exact Habit findings and limits are reported.",
+    "Configured-secret scan found no exact configured values; four heuristic URL groups are explained by committed invalid-URL fixtures.",
+    "Local scanner initially lacked the text-path metadata fallback; the corrected scanner completed with the exact current inventory. No product test was affected."
+  ],
+  "holds": [
+    "Architect identity and candidate/scope reconciliation",
+    "Confirmed Render workspace and deployment containment",
+    "Parent stack and final R1 integration",
+    "Final remote revision, CI and publication readback checks"
+  ],
+  "notClaimed": [
+    "human approval",
+    "Ready",
+    "merge",
+    "deployment",
+    "release"
+  ]
+}

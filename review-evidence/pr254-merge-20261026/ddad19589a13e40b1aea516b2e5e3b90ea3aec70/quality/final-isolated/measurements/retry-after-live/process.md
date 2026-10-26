@@ -1,0 +1,766 @@
+# Code quality process
+
+## Delta
+
+Status: goal miss.
+
+```text
+  34.8  src/logs/audit/audit-event-projection.ts  below 85
+  51.3  src/interfaces/web/account/administration-routes.ts  below 85
+  53.2  src/logs/audit/otlp-audit-encoding.ts  below 85
+  59.4  src/interfaces/web/account/account-routes.ts  below 85
+  59.8  src/interfaces/web/account/account-form.ts  below 85
+  61.0  src/accounts/organizations/membership-removal-checks.ts  below 85
+  61.9  src/interfaces/web/account/administration-pages.ts  below 85
+  72.8  src/interfaces/web/account/account-pages.ts  below 85
+  76.9  src/accounts/organizations/administration-overviews.ts  below 85
+  88.1  src/logs/audit/audit-log.ts
+  23.7  test/integration/hosted-admin/account-routes-administration-pages.test.ts  no goal
+  27.0  test/unit/organizations/organization-administration-members.test.ts  no goal
+  30.4  test/acceptance/auth/hosted-invitations.test.ts  no goal
+  31.0  test/acceptance/auth/hosted-live/administration-server.ts  no goal
+  31.5  test/acceptance/auth/hosted-member-self-removal.test.ts  no goal
+  33.2  test/acceptance/auth/hosted-member-removal-scope.test.ts  no goal
+  34.3  test/acceptance/auth/hosted-member-removal.test.ts  no goal
+  36.4  test/acceptance/auth/hosted-members.test.ts  no goal
+  36.7  test/acceptance/auth/hosted-workos-administration.test.ts  no goal
+  38.9  test/integration/hosted-admin/account-routes-removal.test.ts  no goal
+  39.8  test/acceptance/auth/hosted-member-removal-browser.runtime.ts  no goal
+  46.2  test/integration/hosted-admin/account-routes-removal-audit.test.ts  no goal
+  52.3  test/unit/logging/audit/audit-removal.test.ts  no goal
+  52.9  test/support/drivers/browser/member-removal-browser.ts  no goal
+  55.9  test/integration/hosted-admin/account-routes-grant-retirement.test.ts  no goal
+  56.0  test/support/in-process/hosted-member-removal-site.ts  no goal
+  57.7  test/integration/hosted-admin/fixtures/organization-administration-double.ts  no goal
+  59.0  test/support/doubles/workos/workos-fake-sessions.ts  no goal
+  59.2  test/support/doubles/workos/workos-fake-invitations.ts  no goal
+  68.7  test/support/dsl/hosted-member-removal.ts  no goal
+  75.2  test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts  no goal
+  77.6  test/support/doubles/organizations/removal-operation-store-fake.ts  no goal
+  83.8  test/support/in-process/workos-site.ts  no goal
+  not measured  docs/api-surface/src/accounts/organizations/administration-overviews.d.ts
+  not measured  docs/api-surface/src/interfaces/web/account/account-form.d.ts
+  not measured  docs/api-surface/src/logs/audit/audit-log.d.ts
+  not measured  src/interfaces/web/account/members-style.ts
+Result: 9 of 10 production files below 85. Goal: 85 or more for each production file. 23 other files without a goal. 4 files not measured.
+Comparison with b630a76275d5809a498ae63e1cbc322086f4194f: ast-report/compare.html
+```
+
+## Review
+
+Status: passed.
+
+## AST Metrics found regressions
+
+0 new critical issue(s), 4 other regression(s), 3 improvement(s)
+
+### Summary
+
+- ⚠️  **Complexity: +6**
+- ➖ **Ease of maintenance: -**
+- ➖ **Outgoing dependencies: -**
+- ✅ **Probability of bugs: -0.04**
+
+### Regressions
+
+- **administrationTarget** (`src/logs/audit/audit-event-projection.ts:74`, medium)
+  New function with cyclomatic complexity 11 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **eventAttributes** (`src/logs/audit/otlp-audit-encoding.ts:23`, medium)
+  Cyclomatic complexity: 15 -> 16 (threshold: 10)
+  Suggested action: Extract smaller, well-named functions to reduce decision points
+- **test/integration/hosted-admin/account-routes-administration-pages.test.ts** (`test/integration/hosted-admin/account-routes-administration-pages.test.ts`, low)
+  Estimated bugs (Halstead): 2.46 -> 2.56
+  Suggested action: This estimate grows with code volume and complexity; consider simplifying or splitting this file
+- **test/unit/organizations/organization-administration-members.test.ts** (`test/unit/organizations/organization-administration-members.test.ts`, low)
+  Estimated bugs (Halstead): 0.98 -> 1.16
+  Suggested action: This estimate grows with code volume and complexity; consider simplifying or splitting this file
+
+### Improvements
+
+- **targetRefusal** (`src/accounts/organizations/membership-removal-checks.ts:33`): Cyclomatic complexity: 8 -> 5
+- **projectAdministrationChange** (`src/logs/audit/audit-event-projection.ts:63`): Cyclomatic complexity: 11 -> 8
+- **test/acceptance/auth/hosted-invitations.test.ts** (`test/acceptance/auth/hosted-invitations.test.ts`): Estimated bugs (Halstead): 1.12 -> 0.80
+
+## CRAP
+
+Status: passed.
+
+Reused verified compatible unit + integration + acceptance coverage.
+
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/logs/audit/otlp-audit-encoding.ts | eventAttributes | changed | 16 | 100% | 16.0 | ok; for 15: split |
+| src/logs/audit/audit-event-projection.ts | inputOf | unchanged | 13 | 91.5% | 13.1 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | administrationTarget | new | 11 | 96.7% | 11.0 | ok |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.changeOnPost | unchanged | 11 | 100% | 11.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | contextOf | unchanged | 9 | 97.9% | 9.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | projectToolCompletion | unchanged | 9 | 98.9% | 9.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | checkRemoval | unchanged | 9 | 100% | 9.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | projectAdministrationChange | changed | 8 | 97% | 8.0 | ok |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.keep | changed | 7 | 100% | 7.0 | ok |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.removeMember | new | 7 | 100% | 7.0 | ok |
+| src/interfaces/web/account/account-form.ts | account-form\ReturnDestinations.check | unchanged | 6 | 100% | 6.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | invitationIn | unchanged | 6 | 100% | 6.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.organizationPage | unchanged | 6 | 100% | 6.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.selectOrganization | unchanged | 6 | 100% | 6.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | readForm | unchanged | 5 | 94.6% | 5.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | targetRefusal | changed | 5 | 100% | 5.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.tenantOperation | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | inputText | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | encodeAuditEvent | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | timestampNanos | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | removalSupported | new | 4 | 100% | 4.0 | ok |
+| src/interfaces/web/account/account-form.ts | formFields | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | invitationChangeIn | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | isSessionToken | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | selectionIn | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | deepFreeze | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.page | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | metadata | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-event-projection.ts | projectDestinationChange | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/logs/audit/otlp-audit-encoding.ts | stringAttribute | unchanged | 3 | 78.2% | 3.1 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 3 | 96.8% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | membersPage | changed | 3 | 98% | 3.0 | ok |
+| src/accounts/organizations/administration-overviews.ts | invitationEntry | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | memberRemovalIn | new | 3 | 100% | 3.0 | ok |
+| src/interfaces/web/account/account-form.ts | readBody | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.answerSignedIn | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.route | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.switchAnswer | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | requireTrustedTenant | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | withCookies | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | (anonymous) | new | 3 | 100% | 3.0 | ok |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.administrationChanged | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.destinationChanged | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.toolCompleted | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | sendForm | unchanged | 2 | 98.3% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/administration-overviews.ts | holdsUserSeat | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | adminGrants | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | (anonymous) | new | 1 | 0% | 2.0 | ok |
+| src/interfaces/web/account/account-form.ts | single | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-pages.ts | noOrganizationPage | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-pages.ts | removalResultPage | new | 2 | 100% | 2.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.handle | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | directoryUrl | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | identityPolicyText | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | rolesText | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.handlerFor | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.withScope | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/administration-overviews.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/organizations/administration-overviews.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/administration-overviews.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/organizations/administration-overviews.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/organizations/administration-overviews.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/administration-overviews.ts | activeUserSeatCount | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/administration-overviews.ts | memberEntry | changed | 1 | 100% | 1.0 | ok |
+| src/accounts/organizations/administration-overviews.ts | readInvitationOverview | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/administration-overviews.ts | readMemberOverview | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/administration-overviews.ts | userSeatsOf | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | currentAdmin | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | targetFacts | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/account-form.ts | account-form\ReturnDestinations.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | account-form\ReturnDestinations.urlOf | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-form.ts | cancelOnAbort | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-pages.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/account-pages.ts | accessDeniedPage | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-pages.ts | noticePage | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-pages.ts | noticeResponse | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-pages.ts | seeOther | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-pages.ts | unconfirmedInvitationPage | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | account-routes\HostedAccountRoutes.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/account-routes.ts | frozenCopy | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | invitationRow | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-pages.ts | removalForm | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/administration-pages.ts | roleLabel | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | new | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.billingPage | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.constructor | changed | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.invitationsPage | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.membersPage | changed | 1 | 100% | 1.0 | ok |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.pathOf | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.resendInvitation | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.revokeInvitation | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/interfaces/web/account/administration-routes.ts | administration-routes\AdministrationRoutes.sendInvitation | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/logs/audit/audit-log.ts | audit-log\AuditLog.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+
+Known limit violations: 0. Measured target misses: 1. Unmeasured functions: 0. Required functions with unknown assessment or identity: 0.
+
+## Architecture
+
+Status: passed.
+
+## Architecture of src/: base b630a762 → head
+
+Modularity 0.34 → 0.34 · cross share 0.22 → 0.31 · cycles 1 → 1 · communities 4 → 4 (2 new, 2 gone) · functions ≥ 30: 0 → 0
+
+```mermaid
+flowchart LR
+  c_accounts["accounts · new<br/>27 files · MI 57.3 · paths 782<br/>● good: 0 fn ≥ 30"]
+  c_accounts_2["accounts · gone<br/>71 files · MI 60.3 · paths 1633<br/>assessment incomplete: 38 unknown; 0 known fn ≥ 30"]
+  c_app["app · new<br/>74 files · MI 59.3 · paths 1638<br/>● good: 0 fn ≥ 30"]
+  c_app_2["app · gone<br/>30 files · MI 55.1 · paths 760<br/>assessment incomplete: 19 unknown; 0 known fn ≥ 30"]
+  c_pipelines["pipelines<br/>71 files · MI 49.4 · paths 1587<br/>● good: 0 fn ≥ 30"]
+  c_shared_kernel["shared kernel<br/>3 files · MI 57.5 · paths 78<br/>● good: 0 fn ≥ 30"]
+  c_accounts -. "46 · new · cycle" .-> c_app
+  c_accounts_2 -. "gone" .-> c_app_2
+  c_accounts == "1 · new" ==> c_shared_kernel
+  c_accounts_2 -. "gone" .-> c_shared_kernel
+  c_app -. "52 · new · cycle" .-> c_accounts
+  c_app_2 -. "gone" .-> c_accounts_2
+  c_app -. "5 · new · cycle" .-> c_pipelines
+  c_app_2 -. "gone" .-> c_pipelines
+  c_app == "3 · new" ==> c_shared_kernel
+  c_app_2 -. "gone" .-> c_shared_kernel
+  c_pipelines -. "22 · new · cycle" .-> c_accounts
+  c_pipelines -. "gone" .-> c_accounts_2
+  c_pipelines -. "7 · new · cycle" .-> c_app
+  c_pipelines -. "gone" .-> c_app_2
+  c_pipelines -- "2" --> c_shared_kernel
+  linkStyle 0 stroke:#d03b3b,stroke-width:2px
+  linkStyle 1 stroke:#999999,stroke-dasharray:4 4
+  linkStyle 3 stroke:#999999,stroke-dasharray:4 4
+  linkStyle 4 stroke:#d03b3b,stroke-width:2px
+  linkStyle 5 stroke:#999999,stroke-dasharray:4 4
+  linkStyle 6 stroke:#d03b3b,stroke-width:2px
+  linkStyle 7 stroke:#999999,stroke-dasharray:4 4
+  linkStyle 9 stroke:#999999,stroke-dasharray:4 4
+  linkStyle 10 stroke:#d03b3b,stroke-width:2px
+  linkStyle 11 stroke:#999999,stroke-dasharray:4 4
+  linkStyle 12 stroke:#d03b3b,stroke-width:2px
+  linkStyle 13 stroke:#999999,stroke-dasharray:4 4
+  classDef touched stroke-width:3px
+  classDef gone stroke-dasharray:4 4,color:#999999
+  classDef good stroke:#0ca30c
+  class c_accounts_2,c_app,c_app_2 touched
+  class c_accounts_2,c_app_2 gone
+  class c_accounts,c_app,c_pipelines,c_shared_kernel good
+```
+
+Legend: thick border = a community this pull request touched; `· new` and `· gone` = a community or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; border color = the CRAP band of the community (● good: complete assessment, no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base.
+
+### Community edge evidence
+
+Tool references and deduplicated file pairs have different units. An unchanged import means the same normalized file pair, after proven path moves; evidence kinds can differ.
+
+Dependency evidence incomplete: base has 1 issue; head has 1 issue. A missing pair on an incomplete side does not prove an import change.
+
+- base: <code>src/interfaces/user-portal/main.ts</code> → <code>./style.css</code> — unresolved-local.
+- head: <code>src/interfaces/user-portal/main.ts</code> → <code>./style.css</code> — unresolved-local.
+
+- accounts → app · new: 46 tool references; 11 deduplicated file pairs.
+  - `src/accounts/providers/better-auth/better-auth-provider.ts` → `src/runtime/http/client-address.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/better-auth/better-auth-runtime.ts` → `src/runtime/http/client-address.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-google-onboarding.ts` → `src/accounts/billing/billing.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-google-onboarding.ts` → `src/accounts/organizations/administration-overviews.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-google-onboarding.ts` → `src/accounts/organizations/change-records.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-google-onboarding.ts` → `src/accounts/organizations/organization-directory.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-organizations.ts` → `src/accounts/organizations/organization-directory.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-signup-documents.ts` → `src/accounts/organizations/signup-activation.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-signup.ts` → `src/accounts/organizations/organization-directory.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-signup.ts` → `src/accounts/organizations/signup-activation.ts` — unchanged import; community identity unmatched.
+  - 1 file pairs omitted.
+
+- accounts → app · gone: 30 tool references; 14 deduplicated file pairs.
+  - `src/accounts/organizations/organization-administration.ts` → `src/accounts/billing/billing.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/providers/workos/workos-google-onboarding.ts` → `src/accounts/billing/billing.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/cli/local-auth-command.ts` → `src/logs/system/system-logger.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/web/account/account-routes.ts` → `src/logs/audit/audit-log.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/web/account/administration-routes.ts` → `src/logs/audit/audit-log.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/web/account/billing-page.ts` → `src/accounts/billing/billing.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/web/account/logging-form.ts` → `src/logs/audit/destination-settings-service.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/web/account/logging-page.ts` → `src/logs/audit/destination-settings-service.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/web/account/logging-routes.ts` → `src/logs/audit/audit-log.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/web/account/logging-routes.ts` → `src/logs/audit/destination-settings-service.ts` — unchanged import; community identity unmatched.
+  - 4 file pairs omitted.
+
+- accounts → shared kernel · new: 1 tool references; 1 deduplicated file pair.
+  - `src/interfaces/cli/local-auth-command.ts` → `src/runtime/config/deployment-config.ts` — unchanged import; community identity unmatched.
+
+- accounts → shared kernel · gone: 2 tool references; 2 deduplicated file pairs.
+  - `src/interfaces/cli/local-auth-command.ts` → `src/runtime/config/deployment-config.ts` — unchanged import; community identity unmatched.
+  - `src/runtime/http/server.ts` → `src/runtime/config/deployment-config.ts` — unchanged import; community identity unmatched.
+
+- app → accounts · new: 52 tool references; 31 deduplicated file pairs.
+  - `src/accounts/organizations/change-records.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/organizations/membership-removal-checks.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/organizations/membership-removal.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/organizations/organization-administration.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/organizations/organization-directory.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/accounts/organizations/signup-activation.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/identity/browser-session.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/providers/better-auth/better-auth-provider.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/providers/better-auth/better-auth-runtime.ts` — unchanged import; community identity unmatched.
+  - 21 file pairs omitted.
+
+- app → accounts · gone: 27 tool references; 26 deduplicated file pairs.
+  - `src/app/application.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/identity/browser-session.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/organizations/change-records.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/organizations/organization-administration.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/organizations/organization-directory.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/organizations/removal-operation-store.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/providers/better-auth/better-auth-provider.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/accounts/providers/better-auth/better-auth-runtime.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/interfaces/web/account/account-routes.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/interfaces/web/auth/better-auth/local-auth-pages.ts` — unchanged import; community identity unmatched.
+  - 16 file pairs omitted.
+
+- app → pipelines · new: 5 tool references; 5 deduplicated file pairs.
+  - `src/app/application.ts` → `src/app/fetch-tool.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/interfaces/mcp/mcp-server.ts` — unchanged import; community identity unmatched.
+  - `src/app/hosted-workos-application.ts` → `src/app/fetch-tool.ts` — unchanged import; community identity unmatched.
+  - `src/app/hosted-workos-application.ts` → `src/interfaces/mcp/mcp-server.ts` — unchanged import; community identity unmatched.
+  - `src/app/hosted-workos-application.ts` → `src/interfaces/mcp/protected-resource-endpoint.ts` — unchanged import; community identity unmatched.
+
+- app → pipelines · gone: 5 tool references; 5 deduplicated file pairs.
+  - `src/app/application.ts` → `src/app/fetch-tool.ts` — unchanged import; community identity unmatched.
+  - `src/app/application.ts` → `src/interfaces/mcp/mcp-server.ts` — unchanged import; community identity unmatched.
+  - `src/app/hosted-workos-application.ts` → `src/app/fetch-tool.ts` — unchanged import; community identity unmatched.
+  - `src/app/hosted-workos-application.ts` → `src/interfaces/mcp/mcp-server.ts` — unchanged import; community identity unmatched.
+  - `src/app/hosted-workos-application.ts` → `src/interfaces/mcp/protected-resource-endpoint.ts` — unchanged import; community identity unmatched.
+
+- app → shared kernel · new: 3 tool references; 3 deduplicated file pairs.
+  - `src/app/application.ts` → `src/runtime/config/deployment-config.ts` — unchanged import; community identity unmatched.
+  - `src/app/logging-storage.ts` → `src/runtime/config/logging-storage-config.ts` — unchanged import; community identity unmatched.
+  - `src/runtime/http/server.ts` → `src/runtime/config/deployment-config.ts` — unchanged import; community identity unmatched.
+
+- app → shared kernel · gone: 2 tool references; 2 deduplicated file pairs.
+  - `src/app/application.ts` → `src/runtime/config/deployment-config.ts` — unchanged import; community identity unmatched.
+  - `src/app/logging-storage.ts` → `src/runtime/config/logging-storage-config.ts` — unchanged import; community identity unmatched.
+
+- pipelines → accounts · new: 22 tool references; 11 deduplicated file pairs.
+  - `src/app/operation-capacity.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/fetch-tool-server.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/get-url-as-markdown.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/identity-verifier-sdk-adapter.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/identity-verifier-sdk-adapter.ts` → `src/accounts/identity/identity-verifier.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/mcp-server.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/mcp-server.ts` → `src/accounts/identity/identity-verifier.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/search.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/tool-completion-record.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/pipelines/page-fetch/fetch-page.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - 1 file pairs omitted.
+
+- pipelines → accounts · gone: 24 tool references; 12 deduplicated file pairs.
+  - `src/app/operation-capacity.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/fetch-tool-server.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/get-url-as-markdown.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/identity-verifier-sdk-adapter.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/identity-verifier-sdk-adapter.ts` → `src/accounts/identity/identity-verifier.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/mcp-server.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/mcp-server.ts` → `src/accounts/identity/identity-verifier.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/mcp-server.ts` → `src/runtime/http/request-cancellation.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/search.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/tool-completion-record.ts` → `src/accounts/identity/access-context.ts` — unchanged import; community identity unmatched.
+  - 2 file pairs omitted.
+
+- pipelines → app · new: 7 tool references; 5 deduplicated file pairs.
+  - `src/app/fetch-tool.ts` → `src/logs/audit/audit-log.ts` — unchanged import; community identity unmatched.
+  - `src/app/fetch-tool.ts` → `src/logs/system/system-logger.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/fetch-tool-server.ts` → `src/logs/audit/audit-log.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/fetch-tool-server.ts` → `src/logs/system/system-logger.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/mcp-server.ts` → `src/runtime/http/request-cancellation.ts` — unchanged import; community identity unmatched.
+
+- pipelines → app · gone: 5 tool references; 4 deduplicated file pairs.
+  - `src/app/fetch-tool.ts` → `src/logs/audit/audit-log.ts` — unchanged import; community identity unmatched.
+  - `src/app/fetch-tool.ts` → `src/logs/system/system-logger.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/fetch-tool-server.ts` → `src/logs/audit/audit-log.ts` — unchanged import; community identity unmatched.
+  - `src/interfaces/mcp/fetch-tool-server.ts` → `src/logs/system/system-logger.ts` — unchanged import; community identity unmatched.
+
+### Unmatched community identity
+
+- `src/accounts/billing/billing-free.ts`: app → app.
+- `src/accounts/billing/billing.ts`: app → app.
+- `src/accounts/identity/access-context.ts`: accounts → accounts.
+- `src/accounts/identity/browser-session-controls.ts`: accounts → accounts.
+- `src/accounts/identity/browser-session.ts`: accounts → accounts.
+- `src/accounts/identity/identity-verifier.ts`: accounts → accounts.
+- `src/accounts/identity/local-user-administration.ts`: accounts → accounts.
+- `src/accounts/organizations/administration-overviews.ts`: accounts → app.
+- `src/accounts/organizations/change-records.ts`: accounts → app.
+- `src/accounts/organizations/customer-roles.ts`: accounts → app.
+- `src/accounts/organizations/directory-reads.ts`: accounts → app.
+- `src/accounts/organizations/membership-removal-checks.ts`: accounts → app.
+- `src/accounts/organizations/membership-removal-lifetime.ts`: accounts → app.
+- `src/accounts/organizations/membership-removal.ts`: accounts → app.
+- `src/accounts/organizations/organization-administration.ts`: accounts → app.
+- `src/accounts/organizations/organization-directory.ts`: accounts → app.
+- `src/accounts/organizations/removal-operation-store.ts`: accounts → app.
+- `src/accounts/organizations/signup-activation.ts`: accounts → app.
+- `src/accounts/providers/better-auth/better-auth-provider.ts`: accounts → accounts.
+- `src/accounts/providers/better-auth/better-auth-runtime.ts`: accounts → accounts.
+- `src/accounts/providers/better-auth/better-auth-user-administration.ts`: accounts → accounts.
+- `src/accounts/providers/better-auth/data-directory-lock.ts`: accounts → accounts.
+- `src/accounts/providers/better-auth/local-installation.ts`: accounts → accounts.
+- `src/accounts/providers/workos/hosted-role-mapping.ts`: accounts → accounts.
+- `src/accounts/providers/workos/session-cookies.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-approved-organization-documents.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-approved-signup-documents.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-auth-provider.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-browser-session.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-google-onboarding.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-organization-audit-documents.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-organizations.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-session-client.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-settings.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-sign-in.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-signup-documents.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-signup-settings.ts`: accounts → accounts.
+- `src/accounts/providers/workos/workos-signup.ts`: accounts → accounts.
+- `src/app/application.ts`: app → app.
+- `src/app/hosted-portal.ts`: app → app.
+- `src/app/hosted-workos-application.ts`: app → app.
+- `src/app/logging-storage.ts`: app → app.
+- `src/interfaces/cli/local-auth-command-line.ts`: accounts → accounts.
+- `src/interfaces/cli/local-auth-command.ts`: accounts → accounts.
+- `src/interfaces/web/account/account-form.ts`: accounts → app.
+- `src/interfaces/web/account/account-pages.ts`: accounts → app.
+- `src/interfaces/web/account/account-routes.ts`: accounts → app.
+- `src/interfaces/web/account/administration-pages.ts`: accounts → app.
+- `src/interfaces/web/account/administration-routes.ts`: accounts → app.
+- `src/interfaces/web/account/billing-page.ts`: accounts → app.
+- `src/interfaces/web/account/logging-form.ts`: accounts → app.
+- `src/interfaces/web/account/logging-page.ts`: accounts → app.
+- `src/interfaces/web/account/logging-routes.ts`: accounts → app.
+- `src/interfaces/web/account/logging-test-page.ts`: accounts → app.
+- `src/interfaces/web/account/members-page-layout.ts`: accounts → app.
+- `src/interfaces/web/account/members-style.ts`: accounts → app.
+- `src/interfaces/web/account/organization-selection-page.ts`: accounts → app.
+- `src/interfaces/web/account/organization-selection-style.ts`: accounts → app.
+- `src/interfaces/web/account/portal-access.ts`: accounts → app.
+- `src/interfaces/web/auth/better-auth/local-auth-page-form.ts`: accounts → app.
+- `src/interfaces/web/auth/better-auth/local-auth-page-html.ts`: accounts → app.
+- `src/interfaces/web/auth/better-auth/local-auth-pages.ts`: accounts → app.
+- `src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/sign-out-form.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/workos-session-pages.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/workos-session-routes.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/workos-signup-document-reader.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/workos-signup-form.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/workos-signup-pages.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/workos-signup-routes.ts`: accounts → app.
+- `src/interfaces/web/auth/workos/workos-signup-style.ts`: accounts → app.
+- `src/interfaces/web/html-escape.ts`: accounts → app.
+- `src/interfaces/web/page-html.ts`: accounts → app.
+- `src/logs/audit/audit-collector-state.ts`: app → app.
+- `src/logs/audit/audit-collector.ts`: app → app.
+- `src/logs/audit/audit-content.ts`: app → app.
+- `src/logs/audit/audit-event-projection.ts`: app → app.
+- `src/logs/audit/audit-https-connection.ts`: app → app.
+- `src/logs/audit/audit-log.ts`: app → app.
+- `src/logs/audit/audit-send.ts`: app → app.
+- `src/logs/audit/audit-snapshot-state.ts`: app → app.
+- `src/logs/audit/audit-snapshots.ts`: app → app.
+- `src/logs/audit/bounded-sql-runtime.ts`: app → app.
+- `src/logs/audit/destination-credential-codec.ts`: app → app.
+- `src/logs/audit/destination-endpoint.ts`: app → app.
+- `src/logs/audit/destination-settings-service.ts`: app → app.
+- `src/logs/audit/destination-settings-store.ts`: app → app.
+- `src/logs/audit/destination-test.ts`: app → app.
+- `src/logs/audit/otlp-audit-encoding.ts`: app → app.
+- `src/logs/audit/otlp-audit-request.ts`: app → app.
+- `src/logs/audit/otlp-audit-response.ts`: app → app.
+- `src/logs/audit/otlp-audit-sender.ts`: app → app.
+- `src/logs/audit/pg-destination-settings-store.ts`: app → app.
+- `src/logs/audit/public-audit-destination.ts`: app → app.
+- `src/logs/system/console-system-log-sink.ts`: app → app.
+- `src/logs/system/otel-system-log-sink.ts`: app → app.
+- `src/logs/system/system-logger.ts`: app → app.
+- `src/runtime/http/client-address.ts`: accounts → app.
+- `src/runtime/http/fetch-exchange.ts`: accounts → app.
+- `src/runtime/http/request-cancellation.ts`: accounts → app.
+- `src/runtime/http/server.ts`: accounts → app.
+
+## Components of src/
+
+Component dependency evidence is incomplete: known head dependencies and proven cycles are shown; edge and cycle changes are withheld. Additional dependencies or cycles may exist.
+
+```mermaid
+flowchart LR
+  c_app["app<br/>9 files · MI 60.0 · paths 174<br/>● good: 0 fn ≥ 30"]
+  c_audit_logs["audit-logs<br/>21 files · MI 53.4 ↓0.3 · paths 610 ↑9<br/>● good: 0 fn ≥ 30"]
+  c_better_auth["better-auth<br/>5 files · MI 58.7 · paths 166<br/>● good: 0 fn ≥ 30"]
+  c_billing["billing<br/>2 files · MI 68.8 · paths 6<br/>● good: 0 fn ≥ 30"]
+  c_cli["cli<br/>2 files · MI 53.7 · paths 56<br/>● good: 0 fn ≥ 30"]
+  c_config["config<br/>3 files · MI 57.6 · paths 78<br/>● good: 0 fn ≥ 30"]
+  c_execution["execution<br/>4 files · MI 83.4 · paths 10<br/>● good: 0 fn ≥ 30"]
+  c_html_processing["html-processing<br/>37 files · MI 46.9 · paths 946<br/>● good: 0 fn ≥ 30"]
+  c_http["http<br/>4 files · MI 64.5 · paths 66<br/>● good: 0 fn ≥ 30"]
+  c_identity["identity<br/>5 files · MI 66.4 · paths 19<br/>● good: 0 fn ≥ 30"]
+  c_mcp["mcp<br/>9 files · MI 51.2 · paths 186<br/>● good: 0 fn ≥ 30"]
+  c_organizations["organizations<br/>11 files · MI 69.9 ↑0.4 · paths 192 ↑1<br/>● good: 0 fn ≥ 30"]
+  c_page_fetch["page-fetch<br/>5 files · MI 49.9 · paths 109<br/>● good: 0 fn ≥ 30"]
+  c_search["search<br/>6 files · MI 48.3 · paths 131<br/>● good: 0 fn ≥ 30"]
+  c_search_engine["search-engine<br/>2 files · MI 33.0 · paths 56<br/>● good: 0 fn ≥ 30"]
+  c_system_logs["system-logs<br/>3 files · MI 63.1 · paths 39<br/>● good: 0 fn ≥ 30"]
+  c_user_portal["user-portal<br/>8 files · MI 51.2 · paths 71<br/>● good: 0 fn ≥ 30"]
+  c_web["web<br/>29 files · MI 60.2 ↓0.7 · paths 611 ↑17<br/>● good: 0 fn ≥ 30"]
+  c_website_fetcher["website-fetcher<br/>6 files · MI 60.9 · paths 133<br/>● good: 0 fn ≥ 30"]
+  c_workos["workos<br/>15 files · MI 56.6 · paths 541<br/>● good: 0 fn ≥ 30"]
+  c_app -- "4" --> c_audit_logs
+  c_app -- "2" --> c_better_auth
+  c_app -- "2" --> c_billing
+  c_app -- "1" --> c_cli
+  c_app -- "4" --> c_config
+  c_app -- "2" --> c_execution
+  c_app -- "1" --> c_html_processing
+  c_app -- "2" --> c_http
+  c_app -- "2" --> c_identity
+  c_app -- "3" --> c_mcp
+  c_app -- "3" --> c_organizations
+  c_app -- "1" --> c_page_fetch
+  c_app -- "1" --> c_search
+  c_app -- "1" --> c_search_engine
+  c_app -- "5" --> c_system_logs
+  c_app -- "2" --> c_web
+  c_app -- "1" --> c_website_fetcher
+  c_app -- "1" --> c_workos
+  c_audit_logs -- "2" --> c_organizations
+  c_better_auth -- "2" --> c_http
+  c_better_auth -- "3" --> c_identity
+  c_cli -- "1" --> c_config
+  c_cli -- "2" --> c_identity
+  c_cli -- "1" --> c_system_logs
+  c_execution -- "1" --> c_website_fetcher
+  c_html_processing -- "1" --> c_execution
+  c_html_processing -- "2" --> c_website_fetcher
+  c_http -- "1" --> c_config
+  c_http -- "2" --> c_system_logs
+  c_mcp -- "1" --> c_audit_logs
+  c_mcp -- "2" --> c_execution
+  c_mcp -- "1" --> c_http
+  c_mcp -- "6" --> c_identity
+  c_mcp -- "3" --> c_page_fetch
+  c_mcp -- "3" --> c_search
+  c_mcp -- "1" --> c_system_logs
+  c_organizations -- "1" --> c_billing
+  c_organizations -- "6" --> c_identity
+  c_page_fetch -- "3" --> c_execution
+  c_page_fetch -- "1" --> c_identity
+  c_page_fetch -- "2" --> c_website_fetcher
+  c_search -- "3" --> c_execution
+  c_search -- "1" --> c_identity
+  c_search -- "1" --> c_search_engine
+  c_search -- "2" --> c_website_fetcher
+  c_search_engine -- "2" --> c_website_fetcher
+  c_web -- "6" --> c_audit_logs
+  c_web -- "1" --> c_billing
+  c_web -- "5" --> c_http
+  c_web -- "7" --> c_identity
+  c_web -- "10" --> c_organizations
+  c_web -- "3" --> c_workos
+  c_workos -- "1" --> c_billing
+  c_workos -- "6" --> c_identity
+  c_workos -- "4" --> c_organizations
+  classDef touched stroke-width:3px
+  classDef gone stroke-dasharray:4 4,color:#999999
+  classDef good stroke:#0ca30c
+  class c_audit_logs,c_organizations,c_web touched
+  class c_app,c_audit_logs,c_better_auth,c_billing,c_cli,c_config,c_execution,c_html_processing,c_http,c_identity,c_mcp,c_organizations,c_page_fetch,c_search,c_search_engine,c_system_logs,c_user_portal,c_web,c_website_fetcher,c_workos good
+```
+
+Legend: thick border = a component this pull request touched; `· new` and `· gone` = a component or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; border color = the CRAP band of the component (● good: complete assessment, no function at CRAP 30 or more; ▲ warning: some, none added or worse by this pull request; ■ critical: one added or worse); numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base. Edges count distinct importing files per target component.
+
+## Complexity of the changed files
+
+| File | Maintainability | Decision paths | CRAP ≥ 30 | Risk rank |
+| --- | --- | --- | --- | --- |
+| src/accounts/organizations/administration-overviews.ts | 75.8 → 76.9 ↑1.1 | 15 → 15 | 0 → 0 | |
+| src/accounts/organizations/membership-removal-checks.ts | 56.9 → 61.0 ↑4.1 | 42 → 43 ↑1 | 0 → 0 | |
+| src/interfaces/web/account/account-form.ts | 61.6 → 59.8 ↓1.8 | 45 → 49 ↑4 | 0 → 0 | |
+| src/interfaces/web/account/account-pages.ts | 73.9 → 72.8 ↓1.1 | 8 → 10 ↑2 | 0 → 0 | |
+| src/interfaces/web/account/account-routes.ts | 60.1 → 59.4 ↓0.7 | 47 → 47 | 0 → 0 | 8 |
+| src/interfaces/web/account/administration-pages.ts | 64.9 → 61.9 ↓3.0 | 21 → 23 ↑2 | 0 → 0 | |
+| src/interfaces/web/account/administration-routes.ts | 56.1 → 51.3 ↓4.8 | 51 → 60 ↑9 | 0 → 0 | 3 |
+| src/interfaces/web/account/members-style.ts | not measured | not measured | not measured | |
+| src/logs/audit/audit-event-projection.ts | 36.6 → 34.8 ↓1.8 | 55 → 63 ↑8 | 0 → 0 | |
+| src/logs/audit/audit-log.ts | 88.1 → 88.1 | 10 → 10 | 0 → 0 | |
+| src/logs/audit/otlp-audit-encoding.ts | 53.5 → 53.2 ↓0.3 | 28 → 29 ↑1 | 0 → 0 | |
+
+### Functions at CRAP 30 or more, added or worse
+
+None.
+
+Unmatched functions: 0 (anonymous, duplicate, or not in the coverage).
+
+Base functions without an estimated covered share: 72.
+
+Coverage: unit + integration + acceptance suites at ddad1958.
+
+## Trend of src/ on main
+
+| Commit | PR | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| bb19a988 | – | 2026-10-23 | 0.39 | 0.15 | 1 | 55.9 | 59 (estimate) |
+| b03e2d2c | – | 2026-10-23 | 0.39 | 0.15 | 1 | 55.9 | 0 (estimate; integration + unit) |
+| 7d01d2fb | – | 2026-10-24 | 0.39 | 0.15 | 1 | 55.9 | 0 (estimate; integration + unit) |
+| 845cec30 | – | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| a7411fd0 | #248 | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 74f75656 | – | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 9d0546b9 | #250 | 2026-10-25 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 4d7f845b | – | 2026-10-25 | 0.34 | 0.31 | 1 | 55.7 | 0 (estimate; integration + unit) |
+| 581f30cf | #256 | 2026-10-25 | 0.34 | 0.31 | 1 | 55.7 | 59 (estimate) |
+| 8c6d204e | #258 | 2026-10-25 | 0.34 | 0.31 | 1 | 55.7 | 59 (estimate) |
+| this pull request | – | | 0.34 | 0.31 | 1 | 55.3 | 0 (measured; acceptance + integration + unit) |
+
+Historical estimates use head coverage from the first recording pull request. Later estimates for the same base can differ. Counts include known lower-bound violations; other unknown functions are not counted.
+
+### Maintainability trend
+
+Missing values are gaps; lines stop at each gap.
+
+Maintainability (maintainability), bb19a988 to this pull request.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Maintainability"
+    x-axis ["bb19a988", "b03e2d2c", "7d01d2fb", "845cec30", "a7411fd0", "74f75656", "9d0546b9", "4d7f845b", "581f30cf", "8c6d204e", "this pull request"]
+    y-axis "Maintainability" 55.3 --> 55.9
+    line [55.9, 55.9, 55.9, 55.8, 55.8, 55.8, 55.8, 55.7, 55.7, 55.7, 55.3]
+```
+
+
+### Functions ≥ 30 trend
+
+Missing values are gaps; lines stop at each gap or change of count basis.
+
+bb19a988: 59 (head-derived estimate). One point; no line.
+
+Functions ≥ 30 (head-derived estimate; integration + unit), b03e2d2c to 7d01d2fb.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate; integration + unit"
+    x-axis ["b03e2d2c", "7d01d2fb"]
+    y-axis "Functions at CRAP 30 or more" 0 --> 1
+    line [0, 0]
+```
+
+Functions ≥ 30 (head-derived estimate), 845cec30 to 9d0546b9.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate"
+    x-axis ["845cec30", "a7411fd0", "74f75656", "9d0546b9"]
+    y-axis "Functions at CRAP 30 or more" 57 --> 59
+    line [58, 58, 58, 58]
+```
+
+4d7f845b: 0 (head-derived estimate; integration + unit). One point; no line.
+
+Functions ≥ 30 (head-derived estimate), 581f30cf to 8c6d204e.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate"
+    x-axis ["581f30cf", "8c6d204e"]
+    y-axis "Functions at CRAP 30 or more" 58 --> 60
+    line [59, 59]
+```
+
+this pull request: 0 (measured; acceptance + integration + unit). One point; no line.
+
+
+### Trend by component
+
+| Component | bb19a988 | b03e2d2c | 7d01d2fb | 845cec30 | a7411fd0 | 74f75656 | 9d0546b9 | 4d7f845b | 581f30cf | 8c6d204e | this pull request |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| app | MI 60.9; functions ≥ 30: 0 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| audit-logs | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 55.2; functions ≥ 30: 0 (estimate) | MI 54.8; functions ≥ 30: 0 (estimate) | MI 54.8; functions ≥ 30: 0 (estimate) | MI 54.7; functions ≥ 30: 0 (estimate) | MI 54.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 54.2; functions ≥ 30: 0 (estimate) | MI 54.1; functions ≥ 30: 0 (estimate) | MI 53.4; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| better-auth | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.7; functions ≥ 30: 2 (estimate) | MI 58.7; functions ≥ 30: 2 (estimate) | MI 58.7; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| billing | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| cli | MI 53.8; functions ≥ 30: 3 (estimate) | MI 53.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| config | MI 56.8; functions ≥ 30: 0 (estimate) | MI 56.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 56.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| execution | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| html-processing | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| http | MI 64.6; functions ≥ 30: 0 (estimate) | MI 64.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| identity | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 66.4; functions ≥ 30: 0 (estimate) | MI 66.4; functions ≥ 30: 0 (estimate) | MI 66.4; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| logging | MI 62.4; functions ≥ 30: 0 (estimate) | MI 62.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.4; functions ≥ 30: 0 (estimate; integration + unit) | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – |
+| mcp | MI 51.1; functions ≥ 30: 5 (estimate) | MI 51.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| organizations | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 69.9; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| page-fetch | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| search | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| search-engine | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| system-logs | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| user-portal | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| web | MI 61.8; functions ≥ 30: 20 (estimate) | MI 61.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 61.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 61.0; functions ≥ 30: 21 (estimate) | MI 61.0; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.2; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| website-fetcher | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+| workos | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.4; functions ≥ 30: 16 (estimate) | MI 58.4; functions ≥ 30: 16 (estimate) | MI 56.6; functions ≥ 30: 0 (measured; acceptance + integration + unit) |
+
+1 commits of main between b03e2d2c and 7d01d2fb have no record.
