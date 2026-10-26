@@ -4,7 +4,7 @@
     "container": false,
     "external": false,
     "contract": true,
-    "deployment": false,
+    "deployment": true,
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
@@ -14,8 +14,8 @@
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "The hosted edition reads OPERATION_CAPACITY at startup, a whole number from 1 to 100 with default 10, and its one shared OperationCapacity lets that many fetch or search calls run at the same time in one process; the next call keeps the existing Server busy result, busy completion record, and audit capture, and an invalid value stops startup before listening with a FATAL line that names the setting and the rule but not the value. This changes the documented hosted capacity contract of both MCP tools from one call to the configured number; the self-hosted edition still has no capacity wrapper. No component, component edge, public module, declaration snapshot, or Mermaid view changes: the new config reader is imported by app only, and registry prose and the config ownership entry record it.",
+    "modelUpdated": true,
+    "summary": "The hosted edition reads OPERATION_CAPACITY at startup, a whole number from 1 to 100 with default 10, and its one shared OperationCapacity lets that many fetch or search calls run at the same time in one process; the next call keeps the existing Server busy result, busy completion record, and audit capture, and an invalid value stops startup before listening with a FATAL line that names the setting and the rule but not the value. This changes the documented hosted capacity contract of both MCP tools from one call to the configured number; the self-hosted edition still has no capacity wrapper. The default also raises the renderer runs of one hosted instance from 1 to 10 at the same time, while the recorded Render plan assumed one active fetch; production should set OPERATION_CAPACITY=1 until probe SO-01e measures the capacity, and the manager asks the owner for that setting. No component, component edge, public module, declaration snapshot, or Mermaid view changes: the new config reader is imported by app only, and registry prose and the config ownership entry record it.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -38,7 +38,7 @@
       "test/acceptance/auth/hosted-startup.test.ts",
       "test/acceptance/mcp/hosted-search-capacity.test.ts",
       "test/acceptance/mcp/hosted-fetch-tool.test.ts",
-      "test/integration/hosted-tool-operations.test.ts",
+      "test/integration/mcp/hosted-tool-operations.test.ts",
       "test/unit/app/operation-capacity.test.ts",
       "test/unit/config/operation-capacity-config.test.ts",
       ".env.example",
@@ -47,7 +47,9 @@
       "docs/reference/mcp-fetch-tool.md",
       "docs/reference/mcp-search-tool.md",
       "docs/design/authentication-design.md",
-      "docs/testing/test-list.md"
+      "docs/testing/test-list.md",
+      "package.json",
+      "docs/implementation/test-gate-policy.md"
     ]
   }
 }

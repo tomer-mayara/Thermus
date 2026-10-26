@@ -441,7 +441,7 @@ captured search results and exact query. It also checks one rules read per
 application, shared compatible cleaners and setup warning state, and separate
 converter instances.
 
-`test/integration/hosted-tool-operations.test.ts` runs the hosted composition
+`test/integration/mcp/hosted-tool-operations.test.ts` runs the hosted composition
 with the renderer process double. With `OPERATION_CAPACITY=2`, a held fetch and
 a held search run, and a third call is busy. An invalid value stops the hosted
 composition, and the self-hosted composition does not read the setting.
