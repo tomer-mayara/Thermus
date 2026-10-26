@@ -1,6 +1,6 @@
 # Organization administration plan
 
-UI design selected: 26 October 2026 — Refined tabs. UI-01 is in implementation in
+UI design selected: 26 October 2026 — Refined tabs. UI-01 is implemented in
 [PR #263](https://github.com/tomer-mayara/Thermus/pull/263); UI-02/03/04 remain planned.
 See the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
 
@@ -220,7 +220,7 @@ Organization unclear with multiple memberships: [Choose workspace]
 
 ### Members and invitations — Refined tabs
 
-**Approved design direction — 26 October 2026. UI-01 is in implementation; later
+**Approved design direction — 26 October 2026. UI-01 is implemented in PR #263; later
 UI tickets remain planned.**
 The owner selected Refined tabs. The following wireframes replace the earlier
 conceptual Members layout; they do not claim that the application has changed.
@@ -1213,7 +1213,7 @@ complete only when both of its child tickets are complete.
 
 ### Refined tabs UI — approved design, 26 October 2026
 
-**Status: UI-01 is in implementation in PR #263; UI-02/03/04 remain planned.** These four small,
+**Status: UI-01 is implemented in PR #263; UI-02/03/04 remain planned.** These four small,
 plan-local tickets implement the selected Members presentation against existing
 member, invitation, and removal behavior. They add no provider or MFA feature
 and have no Slice 3 dependency. They do not reopen completed Slice 2.5 release
@@ -1284,6 +1284,10 @@ Inspect actual visibility, keyboard focus, bounds, native validity, request
 counts and resulting state. HTTP form parsing alone cannot establish those facts.
 
 #### UI-01 — Shared admin shell and layout
+
+Implemented in [PR #263](https://github.com/tomer-mayara/Thermus/pull/263).
+The [implementation record](../implementation/admin-ui-01.md) links validation
+and review evidence. This status does not claim a merge or deployment.
 
 **BDD acceptance first.**
 
