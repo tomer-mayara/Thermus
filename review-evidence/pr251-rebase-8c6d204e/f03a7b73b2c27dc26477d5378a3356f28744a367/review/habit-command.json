@@ -1,0 +1,12 @@
+{
+  "command": [
+    "habit-hooks",
+    "--branch",
+    "origin/main"
+  ],
+  "started": "2026-10-26T03:58:38.038547+00:00",
+  "finished": "2026-10-26T03:58:40.294677+00:00",
+  "exit": 1,
+  "head": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f"
+}

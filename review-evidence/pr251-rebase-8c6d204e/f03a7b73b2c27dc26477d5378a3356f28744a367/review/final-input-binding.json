@@ -1,0 +1,17 @@
+{
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "gateHead": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+  "sourceAndGateInputsUnchanged": true,
+  "changedPathsSinceGate": [
+    "docs/implementation/admin-s2-5-01a.md",
+    "docs/metrics/2026-10-25-8c6d204e.json"
+  ],
+  "sourceFingerprint": "8d10b11e17dc6fd75427d20125a05851a9c3a90f7f991534d6b81ff06e337601",
+  "inputsFingerprint": "bc4e2c059c9cef75f56296870d0cbc96abd44918d6aa56699805e3c16453ff72",
+  "gateInputFingerprint": "aff5b06ef4e63d99a955e6e99dfb098684726ec2fd40403d7c265b862986656d",
+  "originalTrackedFilesVerifiedOutsideBridge": 1425,
+  "coverageCapturedCommit": "138e7ad6ce7310a19daa784f72c049a5a438bca1",
+  "coverageCaptureId": "f292e79f8605fc4e1b8599258b68f210f3fcb49b98d12e687df3a1b30db43b61",
+  "reason": "Only the reviewed implementation note and new immutable base history record changed after source gates. Every original runtime/build input retains its hash; fresh coverage keeps its original capture commit."
+}

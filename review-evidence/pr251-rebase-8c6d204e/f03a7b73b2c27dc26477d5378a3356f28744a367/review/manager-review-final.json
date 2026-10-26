@@ -1,0 +1,59 @@
+{
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "reviewed": true,
+  "reviewedAt": "2026-10-26T04:59:49.649688+00:00",
+  "overallMergeStatus": "blocked",
+  "draft": true,
+  "ready": false,
+  "mergeAuthorized": false,
+  "scope": "Rebase and resolve conflicts in PR251. No product/test behavior change beyond the incoming main commits.",
+  "conflictReview": [
+    "Preserved PR-specific impact declaration through replay.",
+    "Kept main immutable581f30cf metric history byte-for-byte.",
+    "Source/test rebase delta exactly matches upstream Audit timestamp changes.",
+    "Reviewed implementation note and newly generated base-history record; both are source-free."
+  ],
+  "checks": {
+    "selectedGates": {
+      "install": 0,
+      "runtime": 0,
+      "api-surface": 0,
+      "focused-build": 0,
+      "focused": 0,
+      "ordinary": 0,
+      "typecheck": 0,
+      "portal": 0,
+      "hosted-live": 0,
+      "native-container": 0,
+      "hosted-container": 0,
+      "logging-postgres": 1,
+      "logging-collector": 0
+    },
+    "diffCheck": "passed",
+    "localDocumentLinks": 252,
+    "coverage": "Fresh verified complete unit capture at138e7ad6; final source/input identity matches.",
+    "metrics": "Four sections complete; retained Delta/Review findings; CRAP/Architecture pass;17 required function goals pass.",
+    "habitHooks": "235 findings have reviewed reasons; no snoozes.",
+    "baselineFailure": "Full PostgreSQL12pass1fail; candidate focused1pass1fail; independent exact-main focused1pass1fail at same assertion. Exact dynamic read order remains inference.",
+    "checker": "Exit0 T2 with preliminary static eligibility; not proof of current gates or human approval."
+  },
+  "managerFindings": [
+    "The rebase preserves the feature implementation and current shared-client ownership. No new correctness issue introduced by conflict resolution was found.",
+    "Reviewed independent architecture assessment, final source hashes, 13 registry view hashes, rendered diagram, notes, and public declaration diff. L3 plus notes covers strongest changed callable; L4 would repeat it.",
+    "Reviewed independent metric/Habit dispositions and all checker reasons and policy answers. Retained low MI keeps existing cohesive owners; cache findings remain visible outside the production increment.",
+    "Reviewed publication helpers. Exact input/pin/hash checks, allowed evidence paths, temporary index and create-only evidence lease protect publication. Blocked-Draft guard preserves the specific failed gate and baseline proof; it cannot authorize Ready or merge.",
+    "Reviewed main and Validation text against fresh logs; independent validation reviewer found no factual correction and verified Mermaid equality.",
+    "Reviewed final Quality report and comment against fresh reports. No current human architect approval or de-escalation is established."
+  ],
+  "blockers": [
+    "Required logging-postgres gate fails on candidate and exact main. Keep Draft.",
+    "Independent authorized human architect approval of current head is pending."
+  ],
+  "cleanup": "Owned Colima VM/data and baseline temp archive removed. Default Docker context and6originalsharedcontainers preserved.",
+  "sourceInputBridge": "review/final-input-binding.json",
+  "architectureReview": "architecture/manager-review.md",
+  "qualityReview": "quality/final-review.md",
+  "baselineProof": "review/validation/baseline-diagnostic.json",
+  "externalState": "PR pushed with exact old-head lease; GitHub reports conflict-free Draft and no check runs/status contexts at recorded observation. No merge or deployment performed."
+}

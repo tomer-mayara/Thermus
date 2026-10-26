@@ -1,0 +1,17 @@
+{
+  "oldHead": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "oldBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "head": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+  "featureCodePreserved": true,
+  "sourceTestDeltaEqualsUpstream": true,
+  "upstreamDeltaSha256": "16d54a3dfb3b0cf8efac185998340ed177d3456f6a83b2b48de6d5286eaf701d",
+  "conflicts": [
+    ".pr-impact.json",
+    "docs/metrics/2026-10-25-581f30cf.json"
+  ],
+  "resolutions": {
+    "impact": "Preserved current PR declaration; final internalInterface and sensitiveBehavior are true.",
+    "metrics": "Kept main immutable history per AGENTS.md."
+  }
+}

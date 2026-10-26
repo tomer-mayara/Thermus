@@ -1,0 +1,16 @@
+{
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "gateHead": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+  "branch": "codex/pr251-rebase-8c6d204e-evidence",
+  "prefix": "review-evidence/pr251-rebase-8c6d204e",
+  "stage": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/pr251-rebase-8c6d204e/publication/stage/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "rawV8Included": false,
+  "sourceCopiesIncluded": false,
+  "overallMergeStatus": "blocked",
+  "ready": false,
+  "draft": true,
+  "failedGateDisposition": "logging-postgres remains a failed required gate; exact-main reproduction supports the scoped rebase Draft only",
+  "previousEvidence": "https://github.com/tomer-mayara/Thermus/tree/9a206af7fd3385c697b65903ab7f39e3fab39fea/review-evidence/s2-5-01a-rebase/07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "candidateUrl": "https://github.com/tomer-mayara/Thermus/commit/f03a7b73b2c27dc26477d5378a3356f28744a367"
+}

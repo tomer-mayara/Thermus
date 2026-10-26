@@ -1,0 +1,24 @@
+{
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "observedAt": "2026-10-26T04:55:01.752Z",
+  "pr": {
+    "url": "https://github.com/tomer-mayara/Thermus/pull/251",
+    "draft": true,
+    "mergeable": true,
+    "merged": false,
+    "state": "open"
+  },
+  "diagnostics": {
+    "headRevision": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+    "checks": [],
+    "statuses": [],
+    "annotations": [],
+    "hasMore": false,
+    "job": null,
+    "jobs": [],
+    "log": null,
+    "logTruncated": false
+  },
+  "meaning": "No check runs or status contexts were reported for this exact head. This does not replace local gates or required human architect approval."
+}

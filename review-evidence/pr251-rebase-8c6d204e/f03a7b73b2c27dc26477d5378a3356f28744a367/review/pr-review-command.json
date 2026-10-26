@@ -1,0 +1,32 @@
+{
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "observedAt": "2026-10-26T04:56:45.904507+00:00",
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/pr-review/check.ts",
+    "--base",
+    "origin/main",
+    "--repo",
+    "tomer-mayara/Thermus",
+    "--impact",
+    "ast-report/impact.json",
+    "--base-snapshot",
+    "ast-report/snapshot-base.json",
+    "--head-snapshot",
+    "ast-report/snapshot.json",
+    "--crap",
+    "ast-report/crap.json",
+    "--process",
+    "ast-report/process.json",
+    "--review",
+    "ast-report/review.json",
+    "--json"
+  ],
+  "exit": 0,
+  "stdout": "metrics/pr-review.json",
+  "stderr": "checks/pr-review.log",
+  "meaning": "Preliminary static eligibility; failed PostgreSQL gate and pending independent human architect approval keep actual merge status blocked."
+}

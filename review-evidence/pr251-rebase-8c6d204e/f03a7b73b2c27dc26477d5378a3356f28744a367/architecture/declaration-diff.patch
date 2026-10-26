@@ -1,0 +1,34 @@
+diff --git a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts
+index 59fd7de3..d1f5e593 100644
+--- a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts
++++ b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts
+@@ -6,12 +6,14 @@ export interface OrganizationMembership {
+     readonly grants: readonly RoleGrant[];
+ }
+ export type MembershipStatus = 'active' | 'inactive' | 'pending';
++export type MembershipManagement = 'ordinary' | 'external' | 'unknown';
+ export interface OrganizationMember {
+     readonly membershipId: string;
+     readonly subject: string;
+     readonly organizationId: string;
+     readonly email: string;
+     readonly status: MembershipStatus;
++    readonly management: MembershipManagement;
+     readonly grants: readonly RoleGrant[];
+     readonly revision: string;
+ }
+@@ -51,10 +53,14 @@ export interface InvitationSendResult {
+ export interface InvitationUpdateResult {
+     readonly outcome: 'applied' | 'not-pending' | 'unsupported';
+ }
++export interface MembershipDeletionResult {
++    readonly outcome: 'applied' | 'unsupported';
++}
+ export interface OrganizationDirectory {
+     membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]>;
+     memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;
+     member(membershipId: string): Promise<OrganizationMember | undefined>;
++    deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;
+     invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;
+     invitation(invitationId: string): Promise<OrganizationInvitation | undefined>;
+     sendInvitation(request: InvitationRequest): Promise<InvitationSendResult>;

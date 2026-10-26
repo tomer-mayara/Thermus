@@ -1,0 +1,78 @@
+{
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "reviewed": true,
+  "freshChecksExecuted": true,
+  "linuxAmd64": true,
+  "logs": {
+    "docker-build-1792988265831-47121.log": "538eb9960216502c8a392c05f63edbc4af214c1734ab04a6a35ea2351cd2442b"
+  },
+  "phaseCounts": [
+    {
+      "tests": 3164,
+      "suites": 164,
+      "pass": 3164,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "tests": 29,
+      "suites": 0,
+      "pass": 29,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "tests": 20,
+      "suites": 0,
+      "pass": 20,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "tests": 1103,
+      "suites": 59,
+      "pass": 1103,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "tests": 119,
+      "suites": 6,
+      "pass": 119,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    {
+      "tests": 13,
+      "suites": 2,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  ],
+  "phaseNames": [
+    "backend-unit",
+    "portal-unit",
+    "portal-acceptance",
+    "integration",
+    "selected-acceptance-interface",
+    "renderer-runtime"
+  ],
+  "network": "Check phase27 and final runtime verification35 used --network=none.",
+  "cache": "No whole check phase was cached. Setup/runtime artifacts may use normal Docker cache.",
+  "outerGate": "hosted-container passed7/7; gate ledger retains original head.",
+  "nativeBuildLimit": "Native Docker builds used --quiet, so those wrapper logs do not contain full phase progress. No duplicate native build was run."
+}

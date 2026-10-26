@@ -1,0 +1,2435 @@
+{
+  "candidate_observed": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "historical_candidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "status": "interim; fresh hook and metrics pending manager notice",
+  "files": [
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "current_sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+      "prior_disposition_sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+      "identical": true
+    },
+    {
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "current_sha256": "d0db0695aa80df0b8db3a437193bb28d0e64e89cb54163531ce0254813ae9649",
+      "prior_disposition_sha256": "d0db0695aa80df0b8db3a437193bb28d0e64e89cb54163531ce0254813ae9649",
+      "identical": true
+    },
+    {
+      "path": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "current_sha256": "4d7d1aefc5e2d3440e523dbd45bf1f2e087447f649cac2def7efd6b95e05175c",
+      "prior_disposition_sha256": "4d7d1aefc5e2d3440e523dbd45bf1f2e087447f649cac2def7efd6b95e05175c",
+      "identical": true
+    },
+    {
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "current_sha256": "ce4238ee6bf2e0134f03c1297507a5bcd5f5c7ce610d821e1aa8ed6b9791c105",
+      "prior_disposition_sha256": "ce4238ee6bf2e0134f03c1297507a5bcd5f5c7ce610d821e1aa8ed6b9791c105",
+      "identical": true
+    },
+    {
+      "path": "test/integration/auth/workos-provider-directory.test.ts",
+      "current_sha256": "1d56190ddf1392901e9bbcb441ca3dba921f57e005bc4dc29662a11390402a08",
+      "prior_disposition_sha256": "1d56190ddf1392901e9bbcb441ca3dba921f57e005bc4dc29662a11390402a08",
+      "identical": true
+    },
+    {
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "current_sha256": "12f0e790396bbc51e1a949a99e0d656c8ae9911f2ef68ada1fd8e58a86949e41",
+      "prior_disposition_sha256": "12f0e790396bbc51e1a949a99e0d656c8ae9911f2ef68ada1fd8e58a86949e41",
+      "identical": true
+    },
+    {
+      "path": "test/unit/auth-workos/workos-organizations-members.test.ts",
+      "current_sha256": "498e325e3df07138bf3230cb6f2c6e77a098fa1312f15e5496b05b765e82085e",
+      "prior_disposition_sha256": "498e325e3df07138bf3230cb6f2c6e77a098fa1312f15e5496b05b765e82085e",
+      "identical": true
+    },
+    {
+      "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "current_sha256": "f1a26a0f4d9c19ef49ee9066de57ba44da0031e4daee7e075f0a334d6d173772",
+      "prior_disposition_sha256": "f1a26a0f4d9c19ef49ee9066de57ba44da0031e4daee7e075f0a334d6d173772",
+      "identical": true
+    },
+    {
+      "path": "test/unit/auth-workos/workos-organizations.test.ts",
+      "current_sha256": "ef4a01e0e530171fed6734f1cd8688429e50827527315bde06405671a990718b",
+      "prior_disposition_sha256": "ef4a01e0e530171fed6734f1cd8688429e50827527315bde06405671a990718b",
+      "identical": true
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "current_sha256": "005c264fb4d8618800a66e01e585cfc2b99b9323ac4b46b56fe086a0cc4ca8d9",
+      "prior_disposition_sha256": "005c264fb4d8618800a66e01e585cfc2b99b9323ac4b46b56fe086a0cc4ca8d9",
+      "identical": true
+    },
+    {
+      "path": "test/support/doubles/organizations/directory-double-records.ts",
+      "current_sha256": "2edcf701011a2bd0d68ea4c93138386b44b55598ac3adbbde56c92400166a0f4",
+      "prior_disposition_sha256": "2edcf701011a2bd0d68ea4c93138386b44b55598ac3adbbde56c92400166a0f4",
+      "identical": true
+    },
+    {
+      "path": "test/support/doubles/organizations/organization-directory-double.ts",
+      "current_sha256": "419f3b0530fc9156fd075a2b953e408a136a562a3f5684ce022d8bff6b0acd5f",
+      "prior_disposition_sha256": "419f3b0530fc9156fd075a2b953e408a136a562a3f5684ce022d8bff6b0acd5f",
+      "identical": true
+    },
+    {
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "current_sha256": "d97297a7437095cf2f88e9f828d7468084724225f9ea174722568298e284653f",
+      "prior_disposition_sha256": "d97297a7437095cf2f88e9f828d7468084724225f9ea174722568298e284653f",
+      "identical": true
+    },
+    {
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "current_sha256": "20770a191f2148e59c7688fc1ae60bc24a98f85af18efecd29ef346d2cbac3df",
+      "prior_disposition_sha256": "20770a191f2148e59c7688fc1ae60bc24a98f85af18efecd29ef346d2cbac3df",
+      "identical": true
+    },
+    {
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "current_sha256": "5783e3b3d6f73b2e37fb858ac1bfdd5e7b16daf51f82c7a92c37ed940c58d094",
+      "prior_disposition_sha256": "5783e3b3d6f73b2e37fb858ac1bfdd5e7b16daf51f82c7a92c37ed940c58d094",
+      "identical": true
+    },
+    {
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "current_sha256": "d0f34ff754caede6919f5124822cdca3bdca2c19f7a7944a2b2a8a4d71e4f8e6",
+      "prior_disposition_sha256": "d0f34ff754caede6919f5124822cdca3bdca2c19f7a7944a2b2a8a4d71e4f8e6",
+      "identical": true
+    },
+    {
+      "path": "test/acceptance/auth/hosted-live/operator-setup.ts",
+      "current_sha256": "9ddcadea410195ee325f2b0f72c4c95d05493aad46d3b270d1f9600364077fa2",
+      "prior_disposition_sha256": "9ddcadea410195ee325f2b0f72c4c95d05493aad46d3b270d1f9600364077fa2",
+      "identical": true
+    },
+    {
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "current_sha256": "88af0fdcdbc4ffd036bd5c1719a53b96a4475d1bb5b127fbbb714b073098f681",
+      "prior_disposition_sha256": "88af0fdcdbc4ffd036bd5c1719a53b96a4475d1bb5b127fbbb714b073098f681",
+      "identical": true
+    }
+  ],
+  "habit_locations": [
+    {
+      "category": "high-complexity",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 97,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Composition keeps override precedence, optional capture lifetime, and cleanup transfer visible at one assembly boundary. Splitting each optional override into a factory would obscure ownership."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 28,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One connection binds settings, SDK transport and token keys to the same WorkOS environment; a local fake must replace both transport and keys."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 29,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One connection binds settings, SDK transport and token keys to the same WorkOS environment; a local fake must replace both transport and keys."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 36,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Production and development have different tool-server assembly choices. The comment states the supported composition boundary."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 37,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Production and development have different tool-server assembly choices. The comment states the supported composition boundary."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 41,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Explicit audit and tool overrides have precedence; callers need this guarantee to control capture and resources."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 44,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "A development composition can replace dispatch independently of capture. The comment identifies the intended override authority."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 48,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Enrollment is enabled only by an explicit organization selection; the comment prevents production from acquiring a default onboarding target."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 50,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Document ownership differs between explicit composition and production startup; the comment states the source of the organization Audit bundle."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 54,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Calls run inside browser/MCP request lifetimes, which is why retries are disabled and the timeout is short."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 78,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Invalid settings stop startup without anonymous fallback, while token keys load lazily. These are security and network-lifetime guarantees."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 79,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Invalid settings stop startup without anonymous fallback, while token keys load lazily. These are security and network-lifetime guarantees."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 140,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One directory supplies both current grants and account operations; sharing it prevents divergent provider authority within a request."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/app/hosted-workos-application.ts",
+      "line": 141,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One directory supplies both current grants and account operations; sharing it prevents divergent provider authority within a request."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 12,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The management union alone cannot establish the fail-closed rule: absent or invalid evidence must never authorize ordinary membership removal."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 15,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The revision is an optimistic concurrency token for the state observed by an actor; this is an operation contract beyond the field type."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 16,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The revision is an optimistic concurrency token for the state observed by an actor; this is an operation contract beyond the field type."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 19,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The subject belongs to a directory authority and cannot be reconstructed from a display email. This prevents identity confusion."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 31,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Invitation tokens and links are credentials. The comment defines a deliberate information boundary on returned records."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 36,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The invitation role describes the grant acceptance gives, rather than every role of the recipient."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 39,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The timestamp format is part of the public contract and is not enforced by the string type."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 43,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Recipient restrictions differ by provider. This comment prevents a caller from assuming strict invited-address authority under provider-rules."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 44,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Recipient restrictions differ by provider. This comment prevents a caller from assuming strict invited-address authority under provider-rules."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 45,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Recipient restrictions differ by provider. This comment prevents a caller from assuming strict invited-address authority under provider-rules."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 50,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The optional cursor means another page exists; an absent cursor means the final page. The type alone does not define this pagination contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 54,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Every read must select states explicitly so provider defaults cannot choose which members or invitations are visible."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 67,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The assignable role has permission semantics: Admin includes product access. The string union alone does not state this."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 73,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The requested role determines the acceptance grant; Admin includes product access and is not an independent display label."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 77,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Address-in-use and unsupported are no-effect outcomes. This explains safe interpretation and prevents retry after an unknown error."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 78,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Address-in-use and unsupported are no-effect outcomes. This explains safe interpretation and prevents retry after an unknown error."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 83,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Not-pending proves the invitation was already terminal and no change occurred; this behavior matters for repeated operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 88,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Unsupported proves deletion had no effect; a thrown error leaves the remote effect unknown and cannot authorize replay."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 93,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Fresh reads, all grants, permissionless defaults and failure-versus-absence semantics define the directory authority and effect contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 94,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Fresh reads, all grants, permissionless defaults and failure-versus-absence semantics define the directory authority and effect contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 95,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Fresh reads, all grants, permissionless defaults and failure-versus-absence semantics define the directory authority and effect contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 96,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Fresh reads, all grants, permissionless defaults and failure-versus-absence semantics define the directory authority and effect contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 98,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Membership enumeration is limited to the supplied user, preventing an implementation from broadening the identity scope."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 101,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The exact membership ID is global within this directory; callers cannot infer selected-organization scope from a successful read."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 103,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The provider operation deletes only the named membership. Admission and last-Admin safety remain caller-owned, avoiding an accidental implied guarantee."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 106,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The exact invitation read can span organizations; organization authority belongs to the caller, while undefined denotes absence."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 108,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Reactivation grants only the invited role. The rule prevents old privileges outside the sender authority from returning."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 109,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Reactivation grants only the invited role. The rule prevents old privileges outside the sender authority from returning."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 110,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Reactivation grants only the invited role. The rule prevents old privileges outside the sender authority from returning."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "line": 112,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Resend and revoke are limited to pending invitations, which defines repeated-call and terminal-state behavior."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "line": 13,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Limits the parent ticket's proof to the directory collaborator; it makes no browser-removal claim."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 19,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 20,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 21,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 22,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 23,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 29,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 48,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 49,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 97,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 120,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 125,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 126,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 146,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": 147,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Distinguishes local fake/real-package integration from live provider evidence, documents multi-role fixture intent, and explains exact write/page record selection."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-directory.test.ts",
+      "line": 14,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States wire-format and hosted-catalog assumptions, with an explicit limit on live provider claims."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-directory.test.ts",
+      "line": 15,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States wire-format and hosted-catalog assumptions, with an explicit limit on live provider claims."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-directory.test.ts",
+      "line": 64,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States wire-format and hosted-catalog assumptions, with an explicit limit on live provider claims."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 25,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 26,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 27,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 28,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 37,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 49,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 50,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": 107,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States real composition versus probe roles, fixture membership differences, billing-page ownership, and excluded key-set reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/workos-organizations-members.test.ts",
+      "line": 22,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Explains the direct-ID and page consistency of the shared membership fixture."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "line": 19,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States forbidden access-resolution calls and the cursor/recording semantics needed to check complete current membership reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "line": 40,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States forbidden access-resolution calls and the cursor/recording semantics needed to check complete current membership reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "line": 41,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States forbidden access-resolution calls and the cursor/recording semantics needed to check complete current membership reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/workos-organizations.test.ts",
+      "line": 20,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States the same no-write access-resolution boundary and the query observations used by the tests."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/workos-organizations.test.ts",
+      "line": 41,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States the same no-write access-resolution boundary and the query observations used by the tests."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 33,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The update timestamp is a provider revision input, not a local clock; the comment records the provider change guarantee used by revisionOf."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 35,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The optional untrusted field has three possible safety meanings. The comment identifies the provider evidence; managementOf accepts only literal true or false."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 40,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The provider response also contains invitation credentials. The comment makes deliberate omission from the public directory record explicit."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 41,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The provider response also contains invitation credentials. The comment makes deliberate omission from the public directory record explicit."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 47,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Null distinguishes an application invitation from an organization invitation, which controls whether invitation() returns a result."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 57,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The narrow injected SDK contract permits one exact membership deletion while excluding wider user, factor, role and status writes."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 58,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The narrow injected SDK contract permits one exact membership deletion while excluding wider user, factor, role and status writes."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 60,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "A subject is valid only inside the configured authority; the comment prevents cross-environment identity reuse."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 78,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The clock controls effective invitation expiry and is injectable for deterministic boundary tests."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 82,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The read bound is not evidence of uniqueness. activeMembership separately rejects duplicates and incomplete pages."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 84,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The constant reflects the remote maximum page size; this explains the provider limit instead of an arbitrary tuning value."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 86,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The page bound guarantees finite reads. Crossing it throws so a partial membership list cannot authorize access."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 91,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Only the exact documented 422/code pair proves a no-effect refusal; all other deletion failures must retain unknown effects."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 95,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The remote address-conflict semantics include role-independent pending invitations and case-insensitive addresses; these justify the accepted error codes."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 96,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The remote address-conflict semantics include role-independent pending invitations and case-insensitive addresses; these justify the accepted error codes."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 99,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The directory lifetime, fresh-read, fail-closed and at-most-one-write promises are caller-visible guarantees that signatures alone do not express."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 100,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The directory lifetime, fresh-read, fail-closed and at-most-one-write promises are caller-visible guarantees that signatures alone do not express."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 101,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The directory lifetime, fresh-read, fail-closed and at-most-one-write promises are caller-visible guarantees that signatures alone do not express."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 102,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The directory lifetime, fresh-read, fail-closed and at-most-one-write promises are caller-visible guarantees that signatures alone do not express."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 104,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "WorkOS can admit another address under provider rules. The comment prevents callers from treating the invitation as a strict recipient match."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 120,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The access-resolution result distinguishes no active membership from a provider failure; the comment defines that absence contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 126,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The organization-name read deliberately avoids the role catalog. This protects the narrow display-read dependency and failure scope."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 132,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "All active membership pages and current grants are required; authority rejection must occur before sending a subject to WorkOS."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 133,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "All active membership pages and current grants are required; authority rejection must occur before sending a subject to WorkOS."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 134,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "All active membership pages and current grants are required; authority rejection must occur before sending a subject to WorkOS."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 145,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Display pages have one bounded list call and serial user enrichment. This documents the ordering and remote-concurrency bound."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 146,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Display pages have one bounded list call and serial user enrichment. This documents the ordering and remote-concurrency bound."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 147,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Display pages have one bounded list call and serial user enrichment. This documents the ordering and remote-concurrency bound."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 150,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The provider default would silently omit inactive and pending members. The explicit-status guard prevents that incomplete view."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 175,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "WorkOS lacks the requested invitation-state filter, so local effective-state filtering is required for the directory contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 190,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "A provider invitation with no organization belongs outside the organization directory; the absence result is intentional."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 197,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "A completed send can still have an unexpected response. The comment preserves unknown effects rather than treating the mismatch as a safe retry."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 198,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "A completed send can still have an unexpected response. The comment preserves unknown effects rather than treating the mismatch as a safe retry."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 233,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The repeated-cursor and page-count failures prevent a partial current-membership list from appearing complete."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 234,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The repeated-cursor and page-count failures prevent a partial current-membership list from appearing complete."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 260,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Membership wire records lack email and the organization user list omits inactive members. An individual user read is required for each display member."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 261,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Membership wire records lack email and the organization user list omits inactive members. An individual user read is required for each display member."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 269,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "A WorkOS 404 establishes absence for an exact-ID read; other errors must remain failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 276,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Ambiguous invitation-write errors require a current read before claiming not-pending; response ID and resulting state must match before applied."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 277,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Ambiguous invitation-write errors require a current read before claiming not-pending; response ID and resulting state must match before applied."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 278,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Ambiguous invitation-write errors require a current read before claiming not-pending; response ID and resulting state must match before applied."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 296,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The exact invitation read maps only WorkOS 404 to absence and preserves other failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 325,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The role-list prerequisite is an environment setting. A missing list must fail rather than silently erase grants."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 340,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Status, role and management facts participate in the revision because equal provider timestamps need not imply equal safety state."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 346,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The provider may retain pending after expiry; local clock-based expiry is needed for the public state contract."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 354,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The role of an accepted invitation may reflect a later membership role. Only pending invitation roles describe the future acceptance grant."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 355,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The role of an accepted invitation may reflect a later membership role. Only pending invitation roles describe the future acceptance grant."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 362,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Provider address matching ignores letter case, so response verification follows the same identity semantics."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 372,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Provider terminal cursors include absent, null and empty values. The comment explains their mapping to the public no-next-page result."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 378,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Only a remote 404 proves absence. Preserving every other error prevents a failed read from becoming an empty success."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 388,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Several SDK error classes expose the same status/code fields. Shape checks preserve provider error semantics without brittle class identity."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 389,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Several SDK error classes expose the same status/code fields. Shape checks preserve provider error semantics without brittle class identity."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 410,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "SDK 11 normalizes absent/null management evidence to false. The raw transport workaround preserves unknown evidence with one GET per read."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": 411,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "SDK 11 normalizes absent/null management evidence to false. The raw transport workaround preserves unknown evidence with one GET per read."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/directory-double-records.ts",
+      "line": 42,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Explains deliberate credential fixtures, failing pages, and the permissionless default after the last role is removed."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/directory-double-records.ts",
+      "line": 43,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Explains deliberate credential fixtures, failing pages, and the permissionless default after the last role is removed."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/directory-double-records.ts",
+      "line": 47,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Explains deliberate credential fixtures, failing pages, and the permissionless default after the last role is removed."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/directory-double-records.ts",
+      "line": 92,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Explains deliberate credential fixtures, failing pages, and the permissionless default after the last role is removed."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts",
+      "line": 21,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The double applies stateful invitation changes and exposes controlled pages, failures and held writes. These semantics are required when arranging later observable reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts",
+      "line": 22,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The double applies stateful invitation changes and exposes controlled pages, failures and held writes. These semantics are required when arranging later observable reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts",
+      "line": 23,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The double applies stateful invitation changes and exposes controlled pages, failures and held writes. These semantics are required when arranging later observable reads."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts",
+      "line": 35,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The authority filter models the directory identity boundary; a convenient shared subject must not cross it."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts",
+      "line": 47,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Configuration replaces one subject or injects a read failure. It must not be mistaken for an additive fixture operation."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts",
+      "line": 81,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The provider owns invitation acceptance, and reactivation restores only the invited role. This preserves the privilege boundary in test state."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 6,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 27,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 46,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 75,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 76,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 82,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 83,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 99,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 100,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 118,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 157,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 158,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 159,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 160,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 173,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 174,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 179,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": 187,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Records provider behavior reproduced by the fake: default roles, cursor position after changes, reactivation, role/resource addressing, and idempotent role operations."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 16,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 23,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 35,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 41,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 42,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 43,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 44,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 45,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 52,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 54,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 55,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 57,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 59,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 60,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 62,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 65,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 66,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 68,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 70,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 71,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 78,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 110,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 111,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 124,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 129,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 146,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 159,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 168,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 169,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 174,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 175,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 180,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "line": 185,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents model inputs and provider-specific fixture semantics for credentials, external IDs, overlapping pages, faults, token expiry, and invitation acceptance."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 27,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 44,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 67,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 68,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 79,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 95,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 117,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": 137,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents what a live proof observes, why it forces small pages, and which independent provider reads it compares."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 43,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Marks credential boundaries, safe failure diagnostics, session continuity, and the browser action represented by its driver."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 44,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Marks credential boundaries, safe failure diagnostics, session continuity, and the browser action represented by its driver."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 79,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Marks credential boundaries, safe failure diagnostics, session continuity, and the browser action represented by its driver."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 101,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Marks credential boundaries, safe failure diagnostics, session continuity, and the browser action represented by its driver."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 104,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Marks credential boundaries, safe failure diagnostics, session continuity, and the browser action represented by its driver."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": 129,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Marks credential boundaries, safe failure diagnostics, session continuity, and the browser action represented by its driver."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/acceptance/auth/hosted-live/operator-setup.ts",
+      "line": 27,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "States that this setup uses the real hosted application reads against staging."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 26,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 43,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 64,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 66,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 69,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 83,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 98,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 113,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 118,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 123,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 124,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 133,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 138,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 140,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 165,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 192,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 193,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 205,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "non-essential-comment",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": 206,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "Documents pinned SDK field/error shapes, fixture authority/time, read/write spy behavior, preserved roles, and secret-free failures."
+    },
+    {
+      "category": "oversized-file",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The 430-line adapter owns WorkOS membership and invitation wire interpretation and current role mapping. This slice adds short exact-ID deletion and raw membership readers (1\u20134 paths). Moving individual methods solely for the line threshold would divide the same provider contract and expand the rebase; retain the cohesive adapter."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One live evidence driver compares application reads with provider facts; its proof boundaries stay adjacent."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One live site/driver owns server diagnostics, browser actions, and credential-safe observations."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/integration/auth/workos-provider-administration.test.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One real-package integration composition supports a matrix of provider administration results, rather than separate duplicated sites per result."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One browser/MCP integration composition checks organization selection and current role access through the same fixtures."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One fake directory owns related membership/role routes over the same provider state."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The double keeps the SDK-shaped state and the methods that change or observe it together."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/unit/auth-workos/workos-organizations-members.test.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "The member contract suite keeps independent management-evidence, grant, revision and malformed-page cases with one scoped SDK double. Deletion outcomes are already in their own file. A further threshold-only split would scatter the remaining read contract."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One current-membership contract matrix covers permissions, complete pages, and failure behavior."
+    },
+    {
+      "category": "oversized-file",
+      "path": "test/unit/auth-workos/workos-organizations.test.ts",
+      "line": null,
+      "text_matches": true,
+      "hash_matches": true,
+      "reason": "One provider access-resolution matrix keeps its no-write boundary and exact query observations together."
+    }
+  ],
+  "native_locations": [
+    {
+      "rule": "new-complex-function",
+      "severity": "high",
+      "path": ".cache/rebase251/prepare-review-evidence.py",
+      "line": 44,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "current_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "identical": true,
+      "reason": "Ignored current evidence packager. Its offline pass checks clean candidate/base, checker/impact/coverage identities, source-free gate bridge, allowlisted safe files, original capture manifests, exact source bytes and hash-stable staging. Keep explicit integrity decisions in the one-shot evidence operation; no application code depends on it."
+    },
+    {
+      "rule": "new-complex-function",
+      "severity": "high",
+      "path": ".cache/s25-r1/prepare-review-evidence.py",
+      "line": 32,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment."
+    },
+    {
+      "rule": "new-violation:maintainability",
+      "severity": "high",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/candidate/src/accounts/providers/workos/workos-organizations.ts",
+      "line": 104,
+      "scope": "ignored historical source copy outside committed candidate",
+      "prior_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "current_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "identical": true,
+      "reason": "Preserved archived R1 provider source. Its later facts-page/stop-guard responsibilities, 455-line size, class MI 54, total paths 131 and coupling 25 belong to R1, not current #251. Keep the historical copy; do not replace current file MI 48.1109 and paths 118 with these archive values."
+    },
+    {
+      "rule": "new-complex-function",
+      "severity": "high",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/prepare-review-evidence.py",
+      "line": 32,
+      "scope": "ignored historical helper copy outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment. This location is its preserved publication copy."
+    },
+    {
+      "rule": "maintainability-regression",
+      "severity": "high",
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "line": null,
+      "scope": "changed committed production file",
+      "prior_sha256": "005c264fb4d8618800a66e01e585cfc2b99b9323ac4b46b56fe086a0cc4ca8d9",
+      "current_sha256": "005c264fb4d8618800a66e01e585cfc2b99b9323ac4b46b56fe086a0cc4ca8d9",
+      "identical": true,
+      "reason": "Keep WorkOS wire interpretation, current role mapping, management evidence, revision calculation and exact-ID deletion in one adapter. The slice adds short reader/mapping/deletion functions with at most four paths. Splitting existing invitation/member operations solely for file MI would add interfaces and expand the rebase. This also explains the 5.3725-point MI drop and native high finding."
+    },
+    {
+      "rule": "maintainability-regression",
+      "severity": "high",
+      "path": "test/integration/auth/workos-connection.test.ts",
+      "line": null,
+      "scope": "changed committed test file",
+      "prior_sha256": "c4b07d64fcb18738b8300c11beddd7e898af35573a781aac9769e30a5c163f46",
+      "current_sha256": "c4b07d64fcb18738b8300c11beddd7e898af35573a781aac9769e30a5c163f46",
+      "identical": true,
+      "reason": "Keep independent real-client request, timeout, response-body and deletion-outcome cases with the scoped wire fixture. The increment checks one DELETE for success, documented refusal, lost reply and five-second abort. Abstracting these observations would obscure the transport contract. Tests have no production MI goal."
+    },
+    {
+      "rule": "new-violation:cyclomatic_complexity",
+      "severity": "medium",
+      "path": ".cache/rebase251/prepare-review-evidence.py",
+      "line": null,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "current_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "identical": true,
+      "reason": "Ignored current evidence packager. Its offline pass checks clean candidate/base, checker/impact/coverage identities, source-free gate bridge, allowlisted safe files, original capture manifests, exact source bytes and hash-stable staging. Keep explicit integrity decisions in the one-shot evidence operation; no application code depends on it."
+    },
+    {
+      "rule": "new-violation:lloc_by_method",
+      "severity": "medium",
+      "path": ".cache/rebase251/prepare-review-evidence.py",
+      "line": 44,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "current_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "identical": true,
+      "reason": "Ignored current evidence packager. Its offline pass checks clean candidate/base, checker/impact/coverage identities, source-free gate bridge, allowlisted safe files, original capture manifests, exact source bytes and hash-stable staging. Keep explicit integrity decisions in the one-shot evidence operation; no application code depends on it."
+    },
+    {
+      "rule": "new-violation:max_loc",
+      "severity": "medium",
+      "path": ".cache/rebase251/prepare-review-evidence.py",
+      "line": null,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "current_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "identical": true,
+      "reason": "Ignored current evidence packager. Its offline pass checks clean candidate/base, checker/impact/coverage identities, source-free gate bridge, allowlisted safe files, original capture manifests, exact source bytes and hash-stable staging. Keep explicit integrity decisions in the one-shot evidence operation; no application code depends on it."
+    },
+    {
+      "rule": "new-violation:max_loc_by_method",
+      "severity": "medium",
+      "path": ".cache/rebase251/prepare-review-evidence.py",
+      "line": 44,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "current_sha256": "1763a928fee59d6356bee858eba2088bb471b109d229c5ad4cf43aa1cb524ce1",
+      "identical": true,
+      "reason": "Ignored current evidence packager. Its offline pass checks clean candidate/base, checker/impact/coverage identities, source-free gate bridge, allowlisted safe files, original capture manifests, exact source bytes and hash-stable staging. Keep explicit integrity decisions in the one-shot evidence operation; no application code depends on it."
+    },
+    {
+      "rule": "new-violation:lloc_by_method",
+      "severity": "medium",
+      "path": ".cache/rebase251/publish-review-evidence.py",
+      "line": 26,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "20a42c68d90b0277bbd8630408209bbebdf2aa10366cdd3810abdaf637d5eadd",
+      "current_sha256": "20a42c68d90b0277bbd8630408209bbebdf2aa10366cdd3810abdaf637d5eadd",
+      "identical": true,
+      "reason": "Ignored current publisher. The single guarded pass verifies candidate/base, configured-secret scan, manifest hashes, manager sign-off, safe paths and create-only remote branch semantics before using an isolated Git index. Keep these fail-closed publication conditions explicit; it does not ship with the application."
+    },
+    {
+      "rule": "new-violation:max_loc_by_method",
+      "severity": "medium",
+      "path": ".cache/rebase251/publish-review-evidence.py",
+      "line": 26,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "20a42c68d90b0277bbd8630408209bbebdf2aa10366cdd3810abdaf637d5eadd",
+      "current_sha256": "20a42c68d90b0277bbd8630408209bbebdf2aa10366cdd3810abdaf637d5eadd",
+      "identical": true,
+      "reason": "Ignored current publisher. The single guarded pass verifies candidate/base, configured-secret scan, manifest hashes, manager sign-off, safe paths and create-only remote branch semantics before using an isolated Git index. Keep these fail-closed publication conditions explicit; it does not ship with the application."
+    },
+    {
+      "rule": "new-complex-function",
+      "severity": "medium",
+      "path": ".cache/rebase251/publish-review-evidence.py",
+      "line": 26,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "20a42c68d90b0277bbd8630408209bbebdf2aa10366cdd3810abdaf637d5eadd",
+      "current_sha256": "20a42c68d90b0277bbd8630408209bbebdf2aa10366cdd3810abdaf637d5eadd",
+      "identical": true,
+      "reason": "Ignored current publisher. The single guarded pass verifies candidate/base, configured-secret scan, manifest hashes, manager sign-off, safe paths and create-only remote branch semantics before using an isolated Git index. Keep these fail-closed publication conditions explicit; it does not ship with the application."
+    },
+    {
+      "rule": "new-violation:max_loc",
+      "severity": "medium",
+      "path": ".cache/s25-01b/prepare-review-evidence.py",
+      "line": null,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "f1361f751c33059c0857f58b9414a9d596cd550068ba7544fc09dbc3880c7cae",
+      "current_sha256": "f1361f751c33059c0857f58b9414a9d596cd550068ba7544fc09dbc3880c7cae",
+      "identical": true,
+      "reason": "Preserved ignored S2.5-01b packager. It groups exact candidate reports, source snapshots and provenance for one offline publication. Its historical size introduces no production responsibility in #251."
+    },
+    {
+      "rule": "new-violation:lloc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-01c/architecture/pin-final.py",
+      "line": 41,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "f5cf691b8a76cfd98e374ef4b00451d0823163dd95c084ccb045f857b33c116b",
+      "current_sha256": "f5cf691b8a76cfd98e374ef4b00451d0823163dd95c084ccb045f857b33c116b",
+      "identical": true,
+      "reason": "Preserved ignored architecture pinning helper. Candidate/frozen-source checks, public snapshot selection, source-region/hash verification and exact Mermaid checks precede a historical comparison. Keep explicit guards in this one-shot evidence operation."
+    },
+    {
+      "rule": "new-violation:max_loc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-01c/architecture/pin-final.py",
+      "line": 41,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "f5cf691b8a76cfd98e374ef4b00451d0823163dd95c084ccb045f857b33c116b",
+      "current_sha256": "f5cf691b8a76cfd98e374ef4b00451d0823163dd95c084ccb045f857b33c116b",
+      "identical": true,
+      "reason": "Preserved ignored architecture pinning helper. Candidate/frozen-source checks, public snapshot selection, source-region/hash verification and exact Mermaid checks precede a historical comparison. Keep explicit guards in this one-shot evidence operation."
+    },
+    {
+      "rule": "new-complex-function",
+      "severity": "medium",
+      "path": ".cache/s25-01c/architecture/pin-final.py",
+      "line": 41,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "f5cf691b8a76cfd98e374ef4b00451d0823163dd95c084ccb045f857b33c116b",
+      "current_sha256": "f5cf691b8a76cfd98e374ef4b00451d0823163dd95c084ccb045f857b33c116b",
+      "identical": true,
+      "reason": "Preserved ignored architecture pinning helper. Candidate/frozen-source checks, public snapshot selection, source-region/hash verification and exact Mermaid checks precede a historical comparison. Keep explicit guards in this one-shot evidence operation."
+    },
+    {
+      "rule": "new-violation:cyclomatic_complexity",
+      "severity": "medium",
+      "path": ".cache/s25-r1/architecture/finalize-provenance.py",
+      "line": null,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "2a48cddc94762b015c73e0f09342a37a3fa2c5b5e6428d05192798abd50811dc",
+      "current_sha256": "2a48cddc94762b015c73e0f09342a37a3fa2c5b5e6428d05192798abd50811dc",
+      "identical": true,
+      "reason": "Preserved ignored R1 provenance helper. It pins both revisions, bounds source links, inventories registry diagrams and verifies reused rendering and embedded Mermaid bytes. Its integrity decisions affect historical review artifacts only."
+    },
+    {
+      "rule": "new-violation:cyclomatic_complexity",
+      "severity": "medium",
+      "path": ".cache/s25-r1/prepare-review-evidence.py",
+      "line": null,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment."
+    },
+    {
+      "rule": "new-violation:lloc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/prepare-review-evidence.py",
+      "line": 32,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment."
+    },
+    {
+      "rule": "new-violation:max_loc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/prepare-review-evidence.py",
+      "line": 32,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment."
+    },
+    {
+      "rule": "new-violation:lloc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish-review-evidence.py",
+      "line": 22,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "current_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "identical": true,
+      "reason": "Preserved ignored R1 publisher. Its single pass retains exact inventory/hash, scanned stage, candidate and no-overwrite publication guards. This is historical review tooling, not shipped source."
+    },
+    {
+      "rule": "new-violation:max_loc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish-review-evidence.py",
+      "line": 22,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "current_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "identical": true,
+      "reason": "Preserved ignored R1 publisher. Its single pass retains exact inventory/hash, scanned stage, candidate and no-overwrite publication guards. This is historical review tooling, not shipped source."
+    },
+    {
+      "rule": "new-complex-function",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish-review-evidence.py",
+      "line": 22,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "current_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "identical": true,
+      "reason": "Preserved ignored R1 publisher. Its single pass retains exact inventory/hash, scanned stage, candidate and no-overwrite publication guards. This is historical review tooling, not shipped source."
+    },
+    {
+      "rule": "new-violation:cyclomatic_complexity",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/candidate/src/accounts/organizations/membership-removal-checks.ts",
+      "line": null,
+      "scope": "ignored historical source copy outside committed candidate",
+      "prior_sha256": "22697d95d43749739820ffd59dbf04d7c1acdf3abd748d5367455d756235154f",
+      "current_sha256": "22697d95d43749739820ffd59dbf04d7c1acdf3abd748d5367455d756235154f",
+      "identical": true,
+      "reason": "Preserved archived R1 safety owner. Its 43 total paths keep current actor/target authority, direct/paged agreement, supported grants and last-Admin checks together. It is outside the #251 source increment; retain history without claiming this behavior ships here."
+    },
+    {
+      "rule": "new-violation:cyclomatic_complexity",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/candidate/src/accounts/providers/workos/workos-organizations.ts",
+      "line": null,
+      "scope": "ignored historical source copy outside committed candidate",
+      "prior_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "current_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "identical": true,
+      "reason": "Preserved archived R1 provider source. Its later facts-page/stop-guard responsibilities, 455-line size, class MI 54, total paths 131 and coupling 25 belong to R1, not current #251. Keep the historical copy; do not replace current file MI 48.1109 and paths 118 with these archive values."
+    },
+    {
+      "rule": "new-violation:max_loc",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/candidate/src/accounts/providers/workos/workos-organizations.ts",
+      "line": null,
+      "scope": "ignored historical source copy outside committed candidate",
+      "prior_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "current_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "identical": true,
+      "reason": "Preserved archived R1 provider source. Its later facts-page/stop-guard responsibilities, 455-line size, class MI 54, total paths 131 and coupling 25 belong to R1, not current #251. Keep the historical copy; do not replace current file MI 48.1109 and paths 118 with these archive values."
+    },
+    {
+      "rule": "new-violation:cyclomatic_complexity",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/prepare-review-evidence.py",
+      "line": null,
+      "scope": "ignored historical helper copy outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment. This location is its preserved publication copy."
+    },
+    {
+      "rule": "new-violation:lloc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/prepare-review-evidence.py",
+      "line": 32,
+      "scope": "ignored historical helper copy outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment. This location is its preserved publication copy."
+    },
+    {
+      "rule": "new-violation:max_loc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/prepare-review-evidence.py",
+      "line": 32,
+      "scope": "ignored historical helper copy outside committed candidate",
+      "prior_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "current_sha256": "1181345434777192a938da86dd485509bbd3a755488fa569c1c21851d8cae857",
+      "identical": true,
+      "reason": "Preserved ignored R1 packager. Candidate/base, safe-file, gate, source snapshot and exact-inventory checks explain its offline staging pass. Historical helper findings remain visible; changing that history is outside the #251 source increment. This location is its preserved publication copy."
+    },
+    {
+      "rule": "new-violation:lloc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/publish-review-evidence.py",
+      "line": 22,
+      "scope": "ignored historical helper copy outside committed candidate",
+      "prior_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "current_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "identical": true,
+      "reason": "Preserved ignored R1 publisher. Its single pass retains exact inventory/hash, scanned stage, candidate and no-overwrite publication guards. This is historical review tooling, not shipped source. This location is its preserved publication copy."
+    },
+    {
+      "rule": "new-violation:max_loc_by_method",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/publish-review-evidence.py",
+      "line": 22,
+      "scope": "ignored historical helper copy outside committed candidate",
+      "prior_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "current_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "identical": true,
+      "reason": "Preserved ignored R1 publisher. Its single pass retains exact inventory/hash, scanned stage, candidate and no-overwrite publication guards. This is historical review tooling, not shipped source. This location is its preserved publication copy."
+    },
+    {
+      "rule": "new-complex-function",
+      "severity": "medium",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/tooling/publish-review-evidence.py",
+      "line": 22,
+      "scope": "ignored historical helper copy outside committed candidate",
+      "prior_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "current_sha256": "d7ca6da26733438cd6947e7f3f402c4e6bd06c417feb62544fcf9624cb00e43b",
+      "identical": true,
+      "reason": "Preserved ignored R1 publisher. Its single pass retains exact inventory/hash, scanned stage, candidate and no-overwrite publication guards. This is historical review tooling, not shipped source. This location is its preserved publication copy."
+    },
+    {
+      "rule": "new-violation:cyclomatic_complexity",
+      "severity": "medium",
+      "path": ".cache/s25-r1/review/prepare-habit-dispositions.py",
+      "line": null,
+      "scope": "ignored helper outside committed candidate",
+      "prior_sha256": "35a0ea3c2294ef0c1e3bc37d20b71919c6f31a9ab27da2936dac64484cffff0d",
+      "current_sha256": "35a0ea3c2294ef0c1e3bc37d20b71919c6f31a9ab27da2936dac64484cffff0d",
+      "identical": true,
+      "reason": "Preserved ignored R1 disposition generator. Branches match finding locations/text, verify prior/current hashes and attach reasons and provenance per finding. Keep its historical report-generation logic; it adds no #251 source behavior."
+    },
+    {
+      "rule": "new-violation:efferent_coupling",
+      "severity": "low",
+      "path": ".cache/s25-01b/publish/review-evidence/s2-5-01b/0ff3f6cdde5be4124df0ed2ab002844d5db1c502/candidate/api-surface/organization-administration.d.ts",
+      "line": null,
+      "scope": "ignored historical declaration copy outside committed candidate",
+      "prior_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "current_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "identical": true,
+      "reason": "Preserved declaration from a later slice. Eleven outgoing type references describe that historical interface. This copy adds no production import or component edge to #251; preserve the original declaration evidence."
+    },
+    {
+      "rule": "new-violation:efferent_coupling",
+      "severity": "low",
+      "path": ".cache/s25-01c/publish/review-evidence/s2-5-01c/2271545702a8f1ec28c6f7dd913fec7024ecadeb/candidate/api-surface/src/accounts/organizations/organization-administration.d.ts",
+      "line": null,
+      "scope": "ignored historical declaration copy outside committed candidate",
+      "prior_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "current_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "identical": true,
+      "reason": "Preserved declaration from a later slice. Eleven outgoing type references describe that historical interface. This copy adds no production import or component edge to #251; preserve the original declaration evidence."
+    },
+    {
+      "rule": "new-violation:efferent_coupling",
+      "severity": "low",
+      "path": ".cache/s25-02/publish/review-evidence/s2-5-02/806ccc573c6ae09c411a47a755d6dd9316343f8f/candidate/api-surface/src/accounts/organizations/organization-administration.d.ts",
+      "line": null,
+      "scope": "ignored historical declaration copy outside committed candidate",
+      "prior_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "current_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "identical": true,
+      "reason": "Preserved declaration from a later slice. Eleven outgoing type references describe that historical interface. This copy adds no production import or component edge to #251; preserve the original declaration evidence."
+    },
+    {
+      "rule": "new-violation:efferent_coupling",
+      "severity": "low",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/candidate/docs/api-surface/src/accounts/organizations/organization-administration.d.ts",
+      "line": null,
+      "scope": "ignored historical declaration copy outside committed candidate",
+      "prior_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "current_sha256": "5550ea08a3ed1080e66a90da5933f5bdd23fa664b10ac894ef741a188d23a7ec",
+      "identical": true,
+      "reason": "Preserved declaration from a later slice. Eleven outgoing type references describe that historical interface. This copy adds no production import or component edge to #251; preserve the original declaration evidence."
+    },
+    {
+      "rule": "new-violation:efferent_coupling",
+      "severity": "low",
+      "path": ".cache/s25-r1/publish/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/candidate/src/accounts/providers/workos/workos-organizations.ts",
+      "line": null,
+      "scope": "ignored historical source copy outside committed candidate",
+      "prior_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "current_sha256": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+      "identical": true,
+      "reason": "Preserved archived R1 provider source. Its later facts-page/stop-guard responsibilities, 455-line size, class MI 54, total paths 131 and coupling 25 belong to R1, not current #251. Keep the historical copy; do not replace current file MI 48.1109 and paths 118 with these archive values."
+    }
+  ],
+  "snooze": {
+    "path": ".habit-hooks/snooze.json",
+    "current_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "content": []
+  },
+  "historical_reports": "All ast-report evidence in prior dispositions is historical until manager supplies fresh completion notice."
+}

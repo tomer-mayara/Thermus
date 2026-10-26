@@ -1,0 +1,26 @@
+{
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "gateHead": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+  "reviewed": true,
+  "overallMergeStatus": "blocked",
+  "ready": false,
+  "draft": true,
+  "failedGate": {
+    "name": "logging-postgres",
+    "attempt": 1,
+    "code": 1,
+    "log": "logging-postgres-1.log",
+    "sha256": "8a35370a0d064ec2cd1506cff0aebe9d50b54f82afe90240cfc4fd9995fe52f8"
+  },
+  "baselineProof": {
+    "record": "validation/baseline-diagnostic.json",
+    "sha256": "eb51204c0415779534aefc628318180950c50467e307f5a3ffc68ec8748866aa"
+  },
+  "focusedRetry": {
+    "log": "quality-postgres-focused.log",
+    "code": 1,
+    "sha256": "6961714b2306530b19e928d16c74e976fec72a6aba266cd25f704efef16b8320"
+  },
+  "reason": "The requested scope is the behavior-preserving rebase. The selected PostgreSQL gate remains failed: the same two-case diagnostic fails at the same settingsFinished assertion on exact main. Preserve this blocker and return the PR as Draft; unrelated baseline logging fixture changes are outside this rebase. This disposition is not a gate pass or permission for Ready or merge."
+}

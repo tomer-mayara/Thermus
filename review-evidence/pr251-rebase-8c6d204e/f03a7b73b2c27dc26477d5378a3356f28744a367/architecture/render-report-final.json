@@ -1,0 +1,36 @@
+{
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "head": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "candidate": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "source": "comparison-v7.mmd",
+  "sourceSha256": "a60f5fdbf0e7f60de9c6a3b2daffc744c1b94394df1c3a9eff6a2ffd7ec5cbfc",
+  "svg": "comparison-v7-800.svg",
+  "svgSha256": "618be2ea3501ab501d3f49292818e1b5306ff6434628bf0fd5d369248f62d98b",
+  "png": "comparison-v7-800.png",
+  "pngSha256": "1b76a83ec181919d1dd4e937c583c12ccaf9af9c24f0f1ba3fee01a2719b2567",
+  "dimensions": [
+    800,
+    1195
+  ],
+  "viewBox": [
+    4.0,
+    4.0,
+    606.98486328125,
+    907.0
+  ],
+  "effectiveFontAt800px": 23.723820594398703,
+  "renderer": "@mermaid-js/mermaid-cli 12.0.0 (existing cached installation)",
+  "sizeOption": 1195,
+  "config": "mermaid-config.json",
+  "puppeteer": "puppeteer.json",
+  "parseAndRender": "Prior mmdc 12 parse/render retained after exact byte and semantic equivalence proof; no new render needed.",
+  "visualInspection": "Fresh worker inspection passed at 800 \u00d7 1195. Title and labels are readable. Component and L2 boundaries are accurate. Composition, source dependency and runtime calls have distinct arrows. Neutral SDK edge and label backgrounds remain clear. No line crosses an unrelated box or label.",
+  "history": "Initial -w option failed: mmdc12 uses --size. v1-v6 parse/rendered; v7 applies manager feedback by shortening labels, retaining raw GET-before-default inside workos, and leaving the external integration edge neutral. No dependencies added.",
+  "embeddedSourceByteIdentical": true,
+  "managerReview": "Fresh manager sign-off pending; prior sign-off remains historical.",
+  "sourceReviewedCandidate": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+  "finalPinReview": "final-pin-review.json",
+  "reuse": "Same diagram bytes match the prior source and remotely published main summary. Focused code, contracts, and all 13 registry diagrams match the prior reviewed head. Upstream Audit prose is outside this view.",
+  "finalHead": "f03a7b73b2c27dc26477d5378a3356f28744a367"
+}
