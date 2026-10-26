@@ -1,0 +1,26 @@
+{
+  "status": "Read-only prospective prerequisite probe, not a gate run or candidate launch",
+  "prospectiveFor": [
+    "255",
+    "257"
+  ],
+  "currentPrimaryHead": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "started": "2026-10-26T08:18:33.508Z",
+  "finished": "2026-10-26T08:18:34.039Z",
+  "exit": 0,
+  "configuredStagingLauncher": {
+    "path": "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "sha256": "c67c8a9dec4968095c359aa979f4aeec5648c26429dae70eb3a16d17de0e9a88"
+  },
+  "rendererAvailable": true,
+  "membersChromiumAlreadyPassed": true,
+  "result": {
+    "configuredStagingEnvironmentMatches": true,
+    "publicClientRegistered": true,
+    "applicationType": "oauth",
+    "isFirstParty": true,
+    "usesPkce": true,
+    "issuerDiscoveryStatus": 200
+  },
+  "limits": "Only read the registered designated public application and issuer discovery. No user, organization, authorization, callback listener, checkout, build or test was created. No credential value was printed. Actual paired proof still needs fixed ports and a full source-bound gate run."
+}

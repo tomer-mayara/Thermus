@@ -1,0 +1,16 @@
+{
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "originalFailureDirectory": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-2",
+  "originalFailureLogSha256": "9f85bb8fe0ac7461c6d09bb4e481692fde450b351777ebe2335a98d978ad8dab",
+  "originalCommandsSha256": "546a6a67d5746585023fa46d4332d9ca73bf3222738bbce470f9051f2405bbdc",
+  "cleanupReconciliationSha256": "0dcd1f62a25b595864754179dce44c4c3a8c023b2051582bd1a59da74ea5c09e",
+  "unchangedInputIdentity": {
+    "sourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "inputsFingerprint": "a6506c594060ebd212357eab5a1ed4acf04421b127cff1b7362462b08e60b368",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "authorization": "Manager approved exactly one full hosted-live retry. Initial500 remains unexplained; no established common transient cause. Public Connect only after full pass and clean owned fixture settlement. No per-test retry, changed deadline/assertion/source/config."
+}

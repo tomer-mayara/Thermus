@@ -1,0 +1,269 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "tier": "T1 Team review",
+  "architectureSummary": "T0: no architecture fact",
+  "architectureFacts": [],
+  "tierReasons": [
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates."
+    }
+  ],
+  "mechanicalEligibility": "eligible",
+  "mechanicalBlockers": [],
+  "overallEligibility": "Manager assessment required; prospective tests and inherited source validation are separate.",
+  "notes": [
+    {
+      "group": "informational",
+      "note": "49 public modules, 0 snapshots changed",
+      "reason": "Production source/API snapshots and registry match actual parent. Test helper options add no production callable or component; L4 N/A."
+    },
+    {
+      "group": "informational",
+      "note": "size.total_lines_note_above: 3006 lines without generated files, above the limit of 1500",
+      "reason": "The 3,006-line increment is verification code, runbooks/release history and a complete frozen notice/help proposal; production line count is zero. Keep exact proposal bytes and cohesive controlled/live proof. Size grants no approval or waiver."
+    },
+    {
+      "group": "metrics",
+      "note": "not applicable: trusted policy selects no metrics process",
+      "reason": "No src, metric-tool or metric configuration/exception path changes against actual parent. Production metrics/coverage are N/A and no empty reports are created. Current full-main stack still inherits source validation; old parent capture is not restamped current."
+    },
+    {
+      "group": "notes",
+      "note": "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.",
+      "reason": "Mechanical eligibility is preliminary. Manager owns selected tests, unmerged parent/R1/release/legal holds, current architecture and user architect-attestation mapping. No GitHub review or reviewer identity is invented."
+    }
+  ],
+  "questions": [],
+  "impactDeclaration": {
+    "version": 1,
+    "classification": {
+      "container": false,
+      "external": false,
+      "contract": false,
+      "deployment": false,
+      "crossCutting": false,
+      "component": false,
+      "internalInterface": false,
+      "sensitiveBehavior": false,
+      "dependencyRisk": false,
+      "policy": true,
+      "uncertain": false
+    },
+    "architecture": {
+      "modelUpdated": false,
+      "summary": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates.",
+      "views": [
+        "Context",
+        "C4 containers: hosted edition",
+        "Selected C4 components: hosted authentication in the Node server",
+        "Selected C4 components: hosted membership removal in the Node server",
+        "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+        "Selected C4 components: system and audit logs in the Node server",
+        "Collaboration overview",
+        "Scenario: hosted member read",
+        "Deployment view",
+        "Behavior and resource ownership"
+      ],
+      "evidence": [
+        "architecture/components.md",
+        "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+        "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+        "test/acceptance/auth/hosted-removal.live.ts",
+        "test/support/hosted-live/removal-fixtures.ts",
+        "test/support/hosted-live/live-run.ts",
+        "test/support/hosted-live/local-https-site.ts",
+        "package.json",
+        "docs/implementation/test-gate-policy.md",
+        "docs/implementation/admin-s2-5-02.md",
+        "docs/implementation/admin-s2-5-02-removal-runbook.md",
+        "docs/implementation/admin-s4-recovery.md",
+        "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json"
+      ]
+    }
+  },
+  "staticResults": [
+    {
+      "name": "frozen-install",
+      "command": [
+        "pnpm",
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+      "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+      "started": "2026-10-26T08:12:48.957161+00:00",
+      "finished": "2026-10-26T08:12:49.083453+00:00",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+      "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+      "started": "2026-10-26T08:12:49.124749+00:00",
+      "finished": "2026-10-26T08:12:50.849639+00:00",
+      "exit": 0
+    },
+    {
+      "name": "backend-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+      "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+      "started": "2026-10-26T08:12:50.887217+00:00",
+      "finished": "2026-10-26T08:12:52.354141+00:00",
+      "exit": 0
+    }
+  ],
+  "manualReview": {
+    "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "identityComparisons": {
+      "src": {
+        "baseObject": "09ec0805485ee873f55c75c88c2ee4eb8467b304",
+        "headObject": "09ec0805485ee873f55c75c88c2ee4eb8467b304",
+        "identical": true
+      },
+      "architecture/components.md": {
+        "baseObject": "53020b9513e420139dfb49cc8ad3fdffc7a432ac",
+        "headObject": "53020b9513e420139dfb49cc8ad3fdffc7a432ac",
+        "identical": true
+      },
+      "docs/api-surface": {
+        "baseObject": "2edc478e17df02958c48e29a9d4c30f3f0f925b6",
+        "headObject": "2edc478e17df02958c48e29a9d4c30f3f0f925b6",
+        "identical": true
+      },
+      "sql": {
+        "baseObject": "451385529732c7346d9389ee1bd9f0ac5e62bde6",
+        "headObject": "451385529732c7346d9389ee1bd9f0ac5e62bde6",
+        "identical": true
+      },
+      "Dockerfile": {
+        "baseObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+        "headObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+        "identical": true
+      },
+      "Dockerfile.hosted": {
+        "baseObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+        "headObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+        "identical": true
+      },
+      "pnpm-lock.yaml": {
+        "baseObject": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec",
+        "headObject": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec",
+        "identical": true
+      }
+    },
+    "productionMetricSelection": {
+      "selectedPaths": [],
+      "result": "N/A under trusted source/metric-path selection. No process/snapshot/CRAP/review/coverage run and no empty metric reports."
+    },
+    "productionArchitecture": "Unchanged. Existing production component set, source edges, public declarations, registry diagrams, schema/deployment and notice selection remain identical to parent. Test helper injection does not add a production callable; L4 is N/A.",
+    "testHelperReview": "LiveRun gains an optional scoped site factory and LocalHttpsSite gains a typed disposable SQL environment. Defaults still use the same production composition. Those changes affect test construction, not deployed production topology. Their actual consumer union remains prospective in the separate trace.",
+    "legalProposal": {
+      "status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+      "approval": null,
+      "proposedEffectiveDate": "2026-10-25",
+      "publicationDate": null,
+      "documents": [
+        {
+          "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+          "sha256": "c040e1c9d87d86f092b81c5badb7322f35412964e3e61d800efdb5613c9d3501",
+          "utf8Bytes": 20941,
+          "matchesManifest": true
+        },
+        {
+          "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+          "sha256": "bd47c4b0b60b566eae5b95ffac73d37a1df454e663ef0fc954b3fcb0f75906bb",
+          "utf8Bytes": 38301,
+          "matchesManifest": true
+        },
+        {
+          "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/agreement.txt",
+          "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+          "utf8Bytes": 378,
+          "matchesManifest": true
+        },
+        {
+          "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/audit-help.md",
+          "sha256": "1d8bf0636b9d7ffa0eb059f4238d3ed330b326478cfedeb64f8b9097efd0b953",
+          "utf8Bytes": 2706,
+          "matchesManifest": true
+        },
+        {
+          "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/members-help.md",
+          "sha256": "96826a14dd150495d784a446bd52bd4b9ea4b5dc467ff0593faff57e09621fb3",
+          "utf8Bytes": 2200,
+          "matchesManifest": true
+        }
+      ],
+      "runtimeSelection": "Source tree identical to parent; this proposal is not wired to active runtime documents."
+    },
+    "localMarkdownPathCheck": {
+      "checked": 435,
+      "missing": [],
+      "scope": "Relative linked file targets only; external destinations and fragment-only anchors not opened. This is manual/static prose review, not an executable prose test."
+    },
+    "coverageProvenance": {
+      "currentSourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+      "parentCaptureCommit": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+      "parentSourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+      "sourceFingerprintIdentical": true,
+      "currentInputFingerprint": "7c23ac53b73c14af238f80db8c5d40ed98c95136d5cb6f725641e947ada5099d",
+      "parentInputFingerprint": "9beb76cf0dfe141113349b07d0b578d7e45a6645b0bd2a8bd8f0d509dd57ea55",
+      "currentInputsIdentical": false,
+      "meaning": "Parent report retains its original capture identity. Changed test/package/impact inputs make it stale for a current255measurement; no fresh measurement is selected for this source-free increment."
+    },
+    "historicalDocPins": "The verification ledger retains its earlier measured-candidate and parent22715457 links and openR1status. They are historical evidence, not current adf3369a gate results or a current reviewer identity. Current base/head mapping lives in this evidence and the manager summary.",
+    "overallScope": "No tests/live/port changes; source-free Ready selection is prospective until parent254lands. Complete main comparison still inherits source and its separate validation. Manager owns current gates, holds and user-attestation mapping.",
+    "independentDocumentReview": {
+      "path": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/review/document-link-review.md",
+      "sha256": "e14067e668090fa83a57b885d1f0d6e3907be1a73b85cd5e01330c0644d5caef",
+      "limits": "Proposal remains unapproved/unpublished; date condition open; one destination-settings-service help-source pin is historical after inherited actor-name changes. No current-source pin or legal approval is invented."
+    },
+    "diffCheck": {
+      "exit": 2,
+      "diagnosticBodyMatchesIndependent": true,
+      "meaning": "Reviewed frozen proposal formatting, not green."
+    },
+    "prospectiveSelection": {
+      "path": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/validation/selection-prospective.md",
+      "sha256": "2c5ce1ca621eb81886a6e45124196c0aa01ba08f78886d85a8e0366f08d5716c",
+      "groups": [
+        "integration",
+        "7-file private PostgreSQL",
+        "hosted-live pair",
+        "documented Public Connect pair"
+      ],
+      "status": "Prospective until parent254integration and complete source-free recheck; no test run in static quality."
+    }
+  },
+  "metrics": "N/A under actual-increment path selection; no process/snapshot/CRAP/review or coverage run.",
+  "approval": "User directly attests independent architect approval of entire stack; recorded as user attestation only. No invented reviewer identity/GitHub review/timestamp; no legal publication approval or release hold is closed.",
+  "checkerSha256": "d52bd4111f4e98d28b78c5ad5dccbbe66d2b3880c04acfa578cfeb2bfe848a07"
+}

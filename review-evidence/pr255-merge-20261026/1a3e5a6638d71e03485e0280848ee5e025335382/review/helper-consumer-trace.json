@@ -1,0 +1,262 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "parent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "method": "Pinned Git objects; static relative runtime import graph plus manual guard/call review. Type-only edges recorded but excluded from runtime traversal.",
+  "traces": [
+    {
+      "changedHelper": "test/support/hosted-live/local-https-site.ts",
+      "directConsumers": [
+        {
+          "consumer": "test/acceptance/auth/hosted-removal.live.ts",
+          "dependency": "test/support/hosted-live/local-https-site.ts",
+          "typeOnly": false,
+          "line": 17
+        },
+        {
+          "consumer": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
+          "dependency": "test/support/hosted-live/local-https-site.ts",
+          "typeOnly": false,
+          "line": 18
+        },
+        {
+          "consumer": "test/integration/auth/hosted-live-site.test.ts",
+          "dependency": "test/support/hosted-live/local-https-site.ts",
+          "typeOnly": false,
+          "line": 7
+        },
+        {
+          "consumer": "test/integration/auth/hosted-live-site/mcp.ts",
+          "dependency": "test/support/hosted-live/local-https-site.ts",
+          "typeOnly": false,
+          "line": 10
+        },
+        {
+          "consumer": "test/support/hosted-live/fetch-public-script-proof.ts",
+          "dependency": "test/support/hosted-live/local-https-site.ts",
+          "typeOnly": false,
+          "line": 9
+        },
+        {
+          "consumer": "test/support/hosted-live/live-run.ts",
+          "dependency": "test/support/hosted-live/local-https-site.ts",
+          "typeOnly": false,
+          "line": 10
+        }
+      ],
+      "runtimeEntryConsumers": [
+        {
+          "entry": "test/acceptance/auth/hosted-removal.live.ts",
+          "kind": "dedicated live",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/acceptance/auth/hosted-removal.live.ts"
+          ],
+          "scopeNote": ""
+        },
+        {
+          "entry": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
+          "kind": "manual non-test entry",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts"
+          ],
+          "scopeNote": ""
+        },
+        {
+          "entry": "test/integration/auth/hosted-live-site.test.ts",
+          "kind": "ordinary integration",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/integration/auth/hosted-live-site.test.ts"
+          ],
+          "scopeNote": ""
+        },
+        {
+          "entry": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-admin-access.test.ts",
+          "kind": "ordinary acceptance",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
+            "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-admin-access.test.ts"
+          ],
+          "scopeNote": "Import/load consumer through manual composition module; direct-execution guard prevents the interactive LocalHttpsSite.start branch. Acceptance import/composition compatibility only; no claim of exercising storageEnvironment."
+        },
+        {
+          "entry": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts",
+          "kind": "ordinary acceptance",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
+            "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.ts"
+          ],
+          "scopeNote": "Import/load consumer through manual composition module; direct-execution guard prevents the interactive LocalHttpsSite.start branch. Acceptance import/composition compatibility only; no claim of exercising storageEnvironment."
+        },
+        {
+          "entry": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts",
+          "kind": "ordinary acceptance",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.ts",
+            "test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.ts"
+          ],
+          "scopeNote": "Import/load consumer through manual composition module; direct-execution guard prevents the interactive LocalHttpsSite.start branch. Acceptance import/composition compatibility only; no claim of exercising storageEnvironment."
+        },
+        {
+          "entry": "test/acceptance/auth/fetch-public-script.live.ts",
+          "kind": "dedicated live",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/support/hosted-live/fetch-public-script-proof.ts",
+            "test/acceptance/auth/fetch-public-script.live.ts"
+          ],
+          "scopeNote": ""
+        },
+        {
+          "entry": "test/acceptance/auth/hosted.live.ts",
+          "kind": "dedicated live",
+          "pathFromHelper": [
+            "test/support/hosted-live/local-https-site.ts",
+            "test/support/hosted-live/live-run.ts",
+            "test/acceptance/auth/hosted.live.ts"
+          ],
+          "scopeNote": ""
+        }
+      ]
+    },
+    {
+      "changedHelper": "test/support/hosted-live/live-run.ts",
+      "directConsumers": [
+        {
+          "consumer": "test/acceptance/auth/hosted-live/administration-proofs.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": true,
+          "line": 16
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted-live/administration-server.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": false,
+          "line": 10
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted-live/configuration.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": true,
+          "line": 2
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted-live/hosted-server.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": false,
+          "line": 9
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted-live/operator-setup.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": true,
+          "line": 9
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted-live/organization-server.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": false,
+          "line": 6
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted-live/signup-server.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": false,
+          "line": 9
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted-removal.live.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": false,
+          "line": 16
+        },
+        {
+          "consumer": "test/acceptance/auth/hosted.live.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": false,
+          "line": 2
+        },
+        {
+          "consumer": "test/support/hosted-live/portal-visit.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": true,
+          "line": 4
+        },
+        {
+          "consumer": "test/support/hosted-live/removal-fixtures.ts",
+          "dependency": "test/support/hosted-live/live-run.ts",
+          "typeOnly": true,
+          "line": 6
+        }
+      ],
+      "runtimeEntryConsumers": [
+        {
+          "entry": "test/acceptance/auth/hosted-removal.live.ts",
+          "kind": "dedicated live",
+          "pathFromHelper": [
+            "test/support/hosted-live/live-run.ts",
+            "test/acceptance/auth/hosted-removal.live.ts"
+          ],
+          "scopeNote": ""
+        },
+        {
+          "entry": "test/acceptance/auth/hosted.live.ts",
+          "kind": "dedicated live",
+          "pathFromHelper": [
+            "test/support/hosted-live/live-run.ts",
+            "test/acceptance/auth/hosted.live.ts"
+          ],
+          "scopeNote": ""
+        }
+      ]
+    },
+    {
+      "changedHelper": "test/support/hosted-live/removal-fixtures.ts",
+      "directConsumers": [
+        {
+          "consumer": "test/acceptance/auth/hosted-removal.live.ts",
+          "dependency": "test/support/hosted-live/removal-fixtures.ts",
+          "typeOnly": false,
+          "line": 21
+        }
+      ],
+      "runtimeEntryConsumers": [
+        {
+          "entry": "test/acceptance/auth/hosted-removal.live.ts",
+          "kind": "dedicated live",
+          "pathFromHelper": [
+            "test/support/hosted-live/removal-fixtures.ts",
+            "test/acceptance/auth/hosted-removal.live.ts"
+          ],
+          "scopeNote": ""
+        }
+      ]
+    },
+    {
+      "changedHelper": "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+      "directConsumers": [
+        {
+          "consumer": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+          "dependency": "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+          "typeOnly": false,
+          "line": 15
+        }
+      ],
+      "runtimeEntryConsumers": [
+        {
+          "entry": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+          "kind": "dedicated runtime",
+          "pathFromHelper": [
+            "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+            "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts"
+          ],
+          "scopeNote": ""
+        }
+      ]
+    }
+  ]
+}

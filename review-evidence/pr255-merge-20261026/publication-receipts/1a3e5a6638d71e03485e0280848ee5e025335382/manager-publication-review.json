@@ -1,0 +1,36 @@
+{
+  "reviewer": "manager agent; not independent human approval",
+  "reviewedAt": "2026-10-26T09:55:10.361056+00:00",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "inventorySha256": "516da21c38f45b988943e9de3552ef450d3f3405952960b2842e75835a4030ca",
+  "decision": "Accepted local publication package; publication and merge holds stay open.",
+  "texts": {
+    "main-body.md": "96660ee47084a8468eba2ddac2818ac232845bb16682c5a8f4bb1f0c33485545",
+    "validation-comment.md": "72d04d07d871f03bfef7cedcccd3a8371da5f47f43227f7f1878d81c04b14434",
+    "quality-review-comment.md": "d6181904b54156de6890235c2333eff24e41c46970a70491795197bbbda45845"
+  },
+  "review": [
+    "Read all three exact final text drafts. They preserve both failed live runs, the raw synthetic after-hook count, unrun Public Connect and the precommit PG provenance.",
+    "Verified every staged inventory hash and byte count, plus all five redacted copies against both raw and public hashes.",
+    "Public extracts retain test outcomes and safe phase reviews. Raw provider headers, cookie/query material and private resource identifiers remain local. Redaction is explicitly not byte-identical evidence.",
+    "Reviewed current static T1 evidence, no-architecture-change bridge, frozen legal source/date limitations, all Habit reasons and every checker note.",
+    "The later 52-resource cleanup is distinct from the original failed teardowns; early stopped receipts remain historical.",
+    "Exact configured-value scan found no values; the one heuristic URL group is a committed invalid-URL fixture.",
+    "The current source branch has been published with an exact lease. Main and the live deployment remain unchanged.",
+    "Direct Render lookup now resolves the target. These dated draft texts retain the earlier action-specific check language; the current PR overlay will give the resolved non-main publication scope and still-open main merge hold."
+  ],
+  "publicationScope": "Only truthful Draft/evidence publication under the existing request; current transport scan and lease checks still apply.",
+  "holds": [
+    "Required hosted live failed; Public Connect is unrun.",
+    "Independent current-candidate architect approval identity/scope remains unresolved.",
+    "Hold main auto-deploy before any main update.",
+    "Parent/R1 integration and separate release gates remain."
+  ],
+  "notClaimed": [
+    "passing live validation",
+    "Ready",
+    "merge",
+    "production or legal release"
+  ]
+}

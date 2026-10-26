@@ -1,0 +1,472 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "parent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "bundle": "docs/legal/organization-removal-2026-10-25-proposal-v1",
+  "manifestSha256": "04656d2305ca2eb2aad3099e8736305fa3add27d5fe255d8ee302d8ae9352e05",
+  "status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+  "approval": null,
+  "proposedEffectiveDate": "2026-10-25",
+  "dateCondition": "Requires exact-byte owner approval and publication/opening on 25 October 2026. If later, revise dates, changed versions and hashes, and obtain new approval.",
+  "documents": [
+    {
+      "file": "terms.md",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-25-v1-r2",
+      "utf8_bytes": 20941,
+      "sha256": "c040e1c9d87d86f092b81c5badb7322f35412964e3e61d800efdb5613c9d3501",
+      "changed_from_source": true,
+      "byteCountMatches": true,
+      "sha256Matches": true,
+      "utf8LFAndFinalNewline": true
+    },
+    {
+      "file": "privacy.md",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-25-v1-r3",
+      "utf8_bytes": 38301,
+      "sha256": "bd47c4b0b60b566eae5b95ffac73d37a1df454e663ef0fc954b3fcb0f75906bb",
+      "changed_from_source": true,
+      "byteCountMatches": true,
+      "sha256Matches": true,
+      "utf8LFAndFinalNewline": true
+    },
+    {
+      "file": "agreement.txt",
+      "version": "hosted-agreement-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 378,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "changed_from_source": false,
+      "byteCountMatches": true,
+      "sha256Matches": true,
+      "utf8LFAndFinalNewline": true
+    },
+    {
+      "file": "audit-help.md",
+      "version": "hosted-audit-help-organization-removal-proposal-2026-10-25-v1-r3",
+      "utf8_bytes": 2706,
+      "sha256": "1d8bf0636b9d7ffa0eb059f4238d3ed330b326478cfedeb64f8b9097efd0b953",
+      "changed_from_source": true,
+      "byteCountMatches": true,
+      "sha256Matches": true,
+      "utf8LFAndFinalNewline": true
+    },
+    {
+      "file": "members-help.md",
+      "version": "hosted-members-help-organization-removal-proposal-2026-10-25-v1",
+      "utf8_bytes": 2200,
+      "sha256": "96826a14dd150495d784a446bd52bd4b9ea4b5dc467ff0593faff57e09621fb3",
+      "changed_from_source": true,
+      "byteCountMatches": true,
+      "sha256Matches": true,
+      "utf8LFAndFinalNewline": true
+    }
+  ],
+  "allBundleFilesMatchOriginal0530dd63": true,
+  "bundleFileCount": 9,
+  "sourceBundleManifestAndDocumentHashes": [
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/terms.md",
+      "sha256Matches": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/privacy.md",
+      "sha256Matches": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/agreement.txt",
+      "sha256Matches": true
+    },
+    {
+      "path": "docs/legal/organization-audit-2026-10-24-proposal-v3/audit-help.md",
+      "sha256Matches": true
+    }
+  ],
+  "historicalHelpSourceReview": [
+    {
+      "path": "src/interfaces/web/account/logging-page.ts",
+      "manifestSha256": "89c14d74147178f8448d38cf0ffa708c313e7f54fb198b766174b1334b1ffc00",
+      "originalParentSha256": "89c14d74147178f8448d38cf0ffa708c313e7f54fb198b766174b1334b1ffc00",
+      "currentCandidateSha256": "89c14d74147178f8448d38cf0ffa708c313e7f54fb198b766174b1334b1ffc00",
+      "currentMatchesHistoricalSourcePin": true
+    },
+    {
+      "path": "src/interfaces/web/account/logging-form.ts",
+      "manifestSha256": "7a236011320e8a6e4bf5450af9e92cbd8cd16aa61e30d289d011c010a826001d",
+      "originalParentSha256": "7a236011320e8a6e4bf5450af9e92cbd8cd16aa61e30d289d011c010a826001d",
+      "currentCandidateSha256": "7a236011320e8a6e4bf5450af9e92cbd8cd16aa61e30d289d011c010a826001d",
+      "currentMatchesHistoricalSourcePin": true
+    },
+    {
+      "path": "src/interfaces/web/account/logging-routes.ts",
+      "manifestSha256": "b7751ea7964e6cd217c1bbf7821fd423e222eff878dc2664ed9220d27a0aae88",
+      "originalParentSha256": "b7751ea7964e6cd217c1bbf7821fd423e222eff878dc2664ed9220d27a0aae88",
+      "currentCandidateSha256": "b7751ea7964e6cd217c1bbf7821fd423e222eff878dc2664ed9220d27a0aae88",
+      "currentMatchesHistoricalSourcePin": true
+    },
+    {
+      "path": "src/interfaces/web/account/logging-test-page.ts",
+      "manifestSha256": "5a57a20dde037d0bc956cc825c9a661ac8bd12dadeb3222e13a842c0ebd53e83",
+      "originalParentSha256": "5a57a20dde037d0bc956cc825c9a661ac8bd12dadeb3222e13a842c0ebd53e83",
+      "currentCandidateSha256": "5a57a20dde037d0bc956cc825c9a661ac8bd12dadeb3222e13a842c0ebd53e83",
+      "currentMatchesHistoricalSourcePin": true
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "manifestSha256": "a09eafd9dbbb3850262132c3f74b8cf158b86a42a05db2c5817f23b1856bbc1a",
+      "originalParentSha256": "a09eafd9dbbb3850262132c3f74b8cf158b86a42a05db2c5817f23b1856bbc1a",
+      "currentCandidateSha256": "572bee5dc48c067f8d8d6d1b1eb53ffc37c671a2f47af43061d6b6479cce84ee",
+      "currentMatchesHistoricalSourcePin": false
+    }
+  ],
+  "sourcePinInterpretation": "Pins describe original22715457 source review, not rebased current source. Any changed pin needs semantic re-review before publication; do not rewrite frozen proposal bytes as part of this merge.",
+  "linkChecks": [
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "terms.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "privacy.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "agreement.txt",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/agreement.txt",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "audit-help.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/audit-help.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "members-help.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/members-help.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "manifest.json",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "changes.patch",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../organization-audit-2026-10-24-proposal-v3/README.md",
+      "resolved": "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "data-flow-review.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../../src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "resolved": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../implementation/admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../implementation/admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/audit-help.md",
+      "target": "https://thermus.ai/privacy/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "manifest.json",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "changes.patch",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "resolved": "src/accounts/organizations/membership-removal-checks.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "resolved": "src/accounts/organizations/membership-removal-checks.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/organization-directory.ts",
+      "resolved": "src/accounts/organizations/organization-directory.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-auth-provider.ts",
+      "resolved": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/account-pages.ts",
+      "resolved": "src/interfaces/web/account/account-pages.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "resolved": "src/accounts/organizations/membership-removal.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/removal-operation-store.ts",
+      "resolved": "src/accounts/organizations/removal-operation-store.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/pg-destination-settings-store.ts",
+      "resolved": "src/logs/audit/pg-destination-settings-store.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../sql/migrations/20261025082850_membership_removal_operations.sql",
+      "resolved": "sql/migrations/20261025082850_membership_removal_operations.sql",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-lifetime.ts",
+      "resolved": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "resolved": "src/accounts/organizations/membership-removal.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../implementation/admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/audit-event-projection.ts",
+      "resolved": "src/logs/audit/audit-event-projection.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/change-records.ts",
+      "resolved": "src/accounts/organizations/change-records.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-page.ts",
+      "resolved": "src/interfaces/web/account/logging-page.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-form.ts",
+      "resolved": "src/interfaces/web/account/logging-form.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-routes.ts",
+      "resolved": "src/interfaces/web/account/logging-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-test-page.ts",
+      "resolved": "src/interfaces/web/account/logging-test-page.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/destination-settings-service.ts",
+      "resolved": "src/logs/audit/destination-settings-service.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "resolved": "src/accounts/organizations/membership-removal-checks.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "resolved": "src/accounts/organizations/membership-removal.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/pg-destination-settings-store.ts",
+      "resolved": "src/logs/audit/pg-destination-settings-store.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/members-help.md",
+      "target": "https://thermus.ai/privacy/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "mailto:legal@thermus.ai",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://www.netlify.com/privacy/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://docs.netlify.com/manage/monitoring/real-user-monitoring/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://www.cloudflare.com/privacypolicy/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://developers.cloudflare.com/web-analytics/about/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://render.com/privacy",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://workos.com/legal/privacy",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://supabase.com/privacy",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://policies.google.com/privacy",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://thermus.ai/thermus.md",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "https://policies.google.com/technologies/retention",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "mailto:legal@thermus.ai",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "target": "mailto:legal@thermus.ai",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "target": "https://thermus.ai/privacy/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "target": "https://thermus.ai/privacy/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "target": "mailto:legal@thermus.ai",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "target": "https://commonpaper.com/standards/terms-of-service/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "target": "https://commonpaper.com/standards/cloud-service-agreement/2.1/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "target": "https://creativecommons.org/licenses/by/4.0/",
+      "kind": "External/publication URL or same-document anchor; no network check."
+    }
+  ],
+  "missingLocalFiles": [],
+  "whitespaceDiagnosticsExactlyOriginal": true,
+  "whitespaceExitCode": 2,
+  "whitespaceMeaning": "Unified-patch context blanks and deliberate Markdown hard breaks in unchanged frozen proposal. Retain reviewed bytes; do not silently rehash/legal-edit.",
+  "releaseMeaning": "Hash/link verification is not legal approval, runtime integration, publication, deployed presentation or release. 25 October date condition remains owner release work."
+}

@@ -1,0 +1,58 @@
+{
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "currentMainAtStart": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "currentMainSourceDiffPaths": [
+    "src/accounts/organizations/administration-overviews.ts",
+    "src/accounts/organizations/change-records.ts",
+    "src/accounts/organizations/directory-reads.ts",
+    "src/accounts/organizations/membership-removal-checks.ts",
+    "src/accounts/organizations/membership-removal-lifetime.ts",
+    "src/accounts/organizations/membership-removal.ts",
+    "src/accounts/organizations/organization-administration.ts",
+    "src/accounts/organizations/organization-directory.ts",
+    "src/accounts/organizations/removal-operation-store.ts",
+    "src/accounts/providers/workos/workos-organizations.ts",
+    "src/app/application.ts",
+    "src/app/hosted-workos-application.ts",
+    "src/app/logging-storage.ts",
+    "src/interfaces/web/account/account-form.ts",
+    "src/interfaces/web/account/account-pages.ts",
+    "src/interfaces/web/account/account-routes.ts",
+    "src/interfaces/web/account/administration-pages.ts",
+    "src/interfaces/web/account/administration-routes.ts",
+    "src/interfaces/web/account/members-style.ts",
+    "src/logs/audit/audit-event-projection.ts",
+    "src/logs/audit/audit-log.ts",
+    "src/logs/audit/otlp-audit-encoding.ts",
+    "src/logs/audit/pg-destination-settings-store.ts"
+  ],
+  "readySelectionStatus": "Prospective until parent254integration and complete source-free recheck; these are authorized selected-group proofs, not full-main validation.",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "started": "2026-10-26T08:48:19.953388+00:00",
+  "identity": {
+    "sourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "inputsFingerprint": "a6506c594060ebd212357eab5a1ed4acf04421b127cff1b7362462b08e60b368",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "nodeExecutable": "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+  "node": "v24.20.0",
+  "renderer": {
+    "path": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/lightpanda/1.0.0/lightpanda",
+    "sha256": "955440053a84754dd64c62f970449a56a2b350cdf43ea5f2e809a73047b8173d"
+  },
+  "stagingLauncher": {
+    "path": "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "sha256": "c67c8a9dec4968095c359aa979f4aeec5648c26429dae70eb3a16d17de0e9a88"
+  },
+  "dockerContext": "colima-thermus-s25-merge",
+  "selection": {
+    "path": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/validation/selection-prospective.md",
+    "sha256": "2c5ce1ca621eb81886a6e45124196c0aa01ba08f78886d85a8e0366f08d5716c"
+  },
+  "authorization": "Manager explicitly authorized these four sequential groups after primary254live28/28and port-release receipt. No source/config/deployment changes or broader suites."
+}

@@ -1,0 +1,26 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:25:51.024451+00:00",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "manifestSha256": "0db4c0ba307b215ffbf87365c7735be89635974dfc04212643c9728b6fbf9f29",
+  "filesVerified": 12,
+  "decision": "Second hosted-live failure accepted as preserved blocked evidence. No third unchanged live run.",
+  "rawSummary": {
+    "tests": 30,
+    "pass": 26,
+    "fail": 4,
+    "cancelled": 0,
+    "skip": 0,
+    "todo": 0
+  },
+  "review": [
+    "Read exact second failure diagnosis; scoped test now fails duringConnectemail step before the earlier500baseline. The first500remains unresolved, not reproduced or fixed.",
+    "Invitation email navigation fails again; sameURLform hypothesis remains unproven and nohelperchangeisjustifiedyet.",
+    "SignupMCP version probe failsHTTP500; teardown directly reportsWorkOS502. Earlier signout and real311sexpiry nowpass their assertions.",
+    "Raw30includes a synthetic top-levelafterhook failure beyond the29selectedcases; do not normalizeorclaim29executedresults.",
+    "Scoped12resourcecleanup is complete; separate legacy40resourcecleanup remains underway with exactownedIDs and singleDELETErules.",
+    "Current source is unchanged againstactualparent. No false productionfix or transientcauseclaim.",
+    "PublicConnect was notstarted; requiredlivegroup remainsfailed. Official publicstatusreportsnoincident, whichdoesnotnegatetheobservedAPI502."
+  ],
+  "next": "Completeindependentlocalgates/quality, preserve exactcleanupoutcomes, and retainlivevalidationasmergeblocker."
+}

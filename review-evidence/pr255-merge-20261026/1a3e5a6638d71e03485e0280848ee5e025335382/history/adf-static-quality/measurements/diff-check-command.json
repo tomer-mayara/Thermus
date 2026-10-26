@@ -1,0 +1,18 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check",
+    "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "adf3369a953792208b5c48b8776d3bfeb89c3fb7"
+  ],
+  "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "exit": 2,
+  "logSha256": "be4a211594ec96ce46410c12fd82ca93f2ce047cd8401ca74c5d903c34af8602",
+  "sameDiagnosticBodyAsIndependentReview": true,
+  "reference": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/review/frozen-whitespace-current.log",
+  "referenceFormat": "Independent log appends Exit:2; diagnostic body matches byte-for-byte after removing only that explicit exit footer.",
+  "disposition": "Not green. Retain frozen legal-proposal patch context markers and Markdown hard breaks with the existing independent reason. No proposal bytes are rewritten/re-hashed."
+}

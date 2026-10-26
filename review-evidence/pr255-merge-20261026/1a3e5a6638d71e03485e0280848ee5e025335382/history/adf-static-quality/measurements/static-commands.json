@@ -1,0 +1,47 @@
+[
+  {
+    "name": "frozen-install",
+    "command": [
+      "pnpm",
+      "install",
+      "--frozen-lockfile"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:12:48.957161+00:00",
+    "finished": "2026-10-26T08:12:49.083453+00:00",
+    "exit": 0
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:12:49.124749+00:00",
+    "finished": "2026-10-26T08:12:50.849639+00:00",
+    "exit": 0
+  },
+  {
+    "name": "backend-build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:12:50.887217+00:00",
+    "finished": "2026-10-26T08:12:52.354141+00:00",
+    "exit": 0
+  }
+]

@@ -1,0 +1,21 @@
+[
+  {
+    "name": "hosted-live",
+    "command": [
+      "node",
+      "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+      "npm",
+      "run",
+      "test:hosted-live"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T09:06:29.893607+00:00",
+    "finished": "2026-10-26T09:16:58.702219+00:00",
+    "exit": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-3/hosted-live.log",
+    "logSha256": "2043bf8595270eae70177bd9d79f7b49f16274e165514cf2d02788e4584e76e0"
+  }
+]

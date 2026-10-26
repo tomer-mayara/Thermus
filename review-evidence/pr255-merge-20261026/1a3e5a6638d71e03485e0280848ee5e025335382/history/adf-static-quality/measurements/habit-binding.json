@@ -1,0 +1,30 @@
+{
+  "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mergeBase": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-quality/measure/selection.md",
+  "selectionSha256": "cad0b84ae7dfdf66db47752207911cebcc7db5bd0074caf0c13c5fecd8326b69",
+  "identity": {
+    "sourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "inputsFingerprint": "7c23ac53b73c14af238f80db8c5d40ed98c95136d5cb6f725641e947ada5099d",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T08:13:54.136309+00:00",
+  "outputs": {
+    "habit-commands.json": "f65c092402ca6f585543fcca4ae6d46bd6194042e7a427a19b102b8999f6b184",
+    "static-commands.json": "cc82e05907a648ccd02c0987c82e75ff49f9be16d7feba5733850a8d167f82d2",
+    "pr-review.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "backend-build.log": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+    "pr-review.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "habit-hooks.log": "ac701cb08480d0eecf431aa562708fb16226117e2ede27ff091190c69f3d49fb",
+    "candidate-pin.json": "82a02837e55ff6db214b0ff172a3dfc5ed9b7c6a14960d86c5814c7fd8740423",
+    "frozen-install.log": "a931a07f747ef10fe676743b4204f4e174d4084a66c0c3e0d3bb1590f98cc1e4",
+    "typecheck.log": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+    "selection.md": "cad0b84ae7dfdf66db47752207911cebcc7db5bd0074caf0c13c5fecd8326b69",
+    "impact.json": "24595c3fcec31af60cb1af022bd5fa97affd329970411655e0deff20e1161823"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "copiedAt": "2026-10-26T08:35:32.776297+00:00",
+  "files": {
+    "integration-before-ports.json": {
+      "sha256": "fbf322b3a5e99a370a0b9dc1ae6cf670d998ca5dfb98a6b05b6152c2bbfb7c2a",
+      "bytes": 420
+    },
+    "live-evidence-before.json": {
+      "sha256": "e3ec6c7e07c46de9fab0fc82f17844b77c69dfec033f0bae3397e467f72c4ca6",
+      "bytes": 264
+    },
+    "portal-prerequisite.log": {
+      "sha256": "e193e0efaef659c8dc39d04875b40e7cafe6213dd4b2be8db04df367172aeec6",
+      "bytes": 536
+    },
+    "candidate-pin.json": {
+      "sha256": "da148e78154da2d062a98773c867645170e1d017beae92af46bd07e734e5b8fd",
+      "bytes": 3101
+    },
+    "integration-after-ports.json": {
+      "sha256": "1f4ca3887895918710ddb0f8bcb4b53f8d0c7fea2fff46f91d9c07eeca05583f",
+      "bytes": 420
+    },
+    "portal-prerequisite.json": {
+      "sha256": "e285340a9101461ebfcc02144a084a5708055ee9166d04c0655060796bba851a",
+      "bytes": 332
+    },
+    "docker-context.log": {
+      "sha256": "1934e7ef3cecadb390d8e3e86f62a3992b379faa0098f3aba1b0f15a71ea4e56",
+      "bytes": 684
+    },
+    "commands.json": {
+      "sha256": "db0cf20fd4a484d6b880d6bc8c5774a7ce1f9dd12c82f4c101dd868fa2242efa",
+      "bytes": 2889
+    },
+    "integration.log": {
+      "sha256": "78246319a657abfc11a70b57d85e033046aa0c392328a688d992caa44b71bf2e",
+      "bytes": 194653
+    },
+    "postgres.log": {
+      "sha256": "5d341625c0b602d94ff5ee4ed9f7d29142427801d4f1b0596f03c7e2b12dba2d",
+      "bytes": 7326
+    },
+    "postgres-before-ports.json": {
+      "sha256": "bd739ba28b261752e4b3aead70843f7fffb4426bd5c3af5a77ba89c2aaed0ee6",
+      "bytes": 420
+    },
+    "failure-review.json": {
+      "sha256": "6b85a6929640398bea4428e05e055a37044979b570041704e5528fc81a60ccc1",
+      "bytes": 2233
+    }
+  }
+}

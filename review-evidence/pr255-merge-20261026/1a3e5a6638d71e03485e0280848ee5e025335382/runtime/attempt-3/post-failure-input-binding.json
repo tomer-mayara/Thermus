@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-26T09:18:35.201074+00:00",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "headAfter": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "namedBranchAfter": "codex/s2-5-02-removal-verification",
+  "statusAfter": "",
+  "sameIdentityAsAttempt2": true,
+  "sameRendererAndLauncher": true,
+  "readbackScriptSha256": "d89001e6413d101b9aba8b3944791c107651279640a6e962ef1e9e999cd15f4b",
+  "readbackReceiptSha256": "b580c77d8e6c46bfa573746c5b886a3390db6e4e9350de330a1f80364307ea2c",
+  "readbackCommand": [
+    "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+    "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "node",
+    ".cache/pr255-runtime/attempt-3/owned-users-readback.mjs"
+  ],
+  "scope": "One full unchanged-input hosted-live retry. Public Connect not started. No third unchanged retry. No source/configuration or diagnostic test edits. No DELETE or list calls by post-run diagnosis.",
+  "ownedCleanup": "Scoped12 exact resources404 and cleanup-complete. Separate legacy signup user from failedDELETE still200 after one exact GET. Legacy outer deletion loop was aborted at exact personal organization lookup502; complete legacy inventory is not available from per-ID journal."
+}

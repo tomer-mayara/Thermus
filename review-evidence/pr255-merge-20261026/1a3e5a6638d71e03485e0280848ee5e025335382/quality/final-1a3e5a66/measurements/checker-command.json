@@ -1,0 +1,22 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/pr-review/check.ts",
+    "--base",
+    "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "--repo",
+    "tomer-mayara/Thermus",
+    "--impact",
+    "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-quality/final-1a3e5a66/impact.json",
+    "--json"
+  ],
+  "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "started": "2026-10-26T08:48:17.249237+00:00",
+  "finished": "2026-10-26T08:48:20.029803+00:00",
+  "exit": 0,
+  "metricInputs": "N/A under source-free actual-increment selection."
+}

@@ -1,0 +1,76 @@
+{
+  "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "copiedAt": "2026-10-26T08:44:14.368726+00:00",
+  "files": {
+    "habit-dispositions.json": {
+      "sha256": "9174cc87e18f5ee89dd78af3a57b778909f6b76cc6d1c1c8dfdfca5872cab997",
+      "bytes": 350545
+    },
+    "postgres-full.log": {
+      "sha256": "b15da8ded1b02698a6c8e53e8e1e5d03d3b259210b19225f49c1ee3482213543",
+      "bytes": 6417
+    },
+    "candidate.patch": {
+      "sha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+      "bytes": 6082
+    },
+    "diff-check-patch.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "integrated-focused.log": {
+      "sha256": "982436d518fba02f8ec8d8e1cfc9d8cdd2715ed862df0eee33026bd7e884ab52",
+      "bytes": 2058
+    },
+    "typecheck.log": {
+      "sha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+      "bytes": 158
+    },
+    "conditional-checker.json": {
+      "sha256": "6fc14c77a28d56f91ac2898d3be4677e391f4c3e8edd6fe74e717f7304eb7103",
+      "bytes": 522
+    },
+    "commands.json": {
+      "sha256": "8e4cf55bfd894f32237076ec0d413528342f31989158885a4afab10d0af8ecd4",
+      "bytes": 2834
+    },
+    "patch-inputs.json": {
+      "sha256": "5164c6e8c31e0cb560e77e593f886c4fd4fad13ddc890071bf0d04fbad0ee0da",
+      "bytes": 892
+    },
+    "habit.log": {
+      "sha256": "ac701cb08480d0eecf431aa562708fb16226117e2ede27ff091190c69f3d49fb",
+      "bytes": 28899
+    },
+    "diff-check-full.log": {
+      "sha256": "be4a211594ec96ce46410c12fd82ca93f2ce047cd8401ca74c5d903c34af8602",
+      "bytes": 5501
+    },
+    "REVIEW.md": {
+      "sha256": "27b42a91ad296ffaa07e4ace5e39ec0fd41fd3833297a744e538398ef74ef863",
+      "bytes": 1278
+    },
+    "review.json": {
+      "sha256": "683fc01550fead9bf125449a730387768ef5c0145e758e777ad03dbc2b85ae80",
+      "bytes": 6511
+    },
+    "build.log": {
+      "sha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+      "bytes": 146
+    },
+    "candidate-files/.pr-impact.json": {
+      "sha256": "ee49ee175e2b037136f3a03ff7f75f287c7d4c1a5caa8a2373e5d4a305f6b9b2",
+      "bytes": 2918
+    },
+    "candidate-files/docs/implementation/admin-s2-5-02.md": {
+      "sha256": "b1f229bc46d59fbd7a46aec57c4dd1022bb50fb0f11563c0decb6ebd48ad138b",
+      "bytes": 17428
+    },
+    "candidate-files/test/acceptance/auth/hosted-member-removal-integrated.runtime.ts": {
+      "sha256": "1a716aeb66145daea7dc171e765c62dd3cfe89164fae9be83f7ab80e5eb39bcb",
+      "bytes": 13564
+    }
+  }
+}

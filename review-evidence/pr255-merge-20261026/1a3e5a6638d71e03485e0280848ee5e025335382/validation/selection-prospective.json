@@ -1,0 +1,44 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "currentMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "status": "Conditional prospective selection only; no execution. Re-evaluate complete candidate after parent254 integration.",
+  "selectedGroups": [
+    "integration",
+    "private-postgresql",
+    "hosted-live-pair",
+    "public-connect-sequential-pair"
+  ],
+  "ordinaryAcceptance": "Not selected: three work-slice imports are load-only for changed helper; guard excludes LocalHttpsSite.start. Build/typecheck selected.",
+  "publicConnectPair": "Selected entire documented dedicated command under policy170; actual script is helper consumer, connect is companion of that guide-defined group.",
+  "builds": [
+    "backend",
+    "portal"
+  ],
+  "checks": [
+    "locked-install",
+    "Node24.20.0",
+    "typecheck",
+    "Habit full candidate",
+    "source/API/registry byte identity",
+    "stamped review checker",
+    "manual package/docs/legal hashes/links"
+  ],
+  "portSerialization": {
+    "integration": [
+      "46443"
+    ],
+    "hostedLive": [
+      "46443",
+      "46480"
+    ],
+    "publicConnectPair": [
+      "46443",
+      "46481"
+    ],
+    "rule": "Never overlap fixed-site groups; rebuilds clear dist."
+  },
+  "metrics": "N/A only if complete source-free condition holds; no source/metric paths.",
+  "hostedImage": "Deferred nested full-suite scope; not passed. Release gates unchanged.",
+  "selectionSha256": "2c5ce1ca621eb81886a6e45124196c0aa01ba08f78886d85a8e0366f08d5716c"
+}

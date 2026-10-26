@@ -1,0 +1,19 @@
+[
+    {
+        "Name": "colima-thermus-s25-merge",
+        "Metadata": {
+            "Description": "colima [profile=thermus-s25-merge]"
+        },
+        "Endpoints": {
+            "docker": {
+                "Host": "unix:///Users/tomermayara/.colima/thermus-s25-merge/docker.sock",
+                "SkipTLSVerify": false
+            }
+        },
+        "TLSMaterial": {},
+        "Storage": {
+            "MetadataPath": "/Users/tomermayara/.docker/contexts/meta/05740bc3fa874c77a20ca6a6d6d9c8816cb1ace920896358479850667938eed7",
+            "TLSPath": "/Users/tomermayara/.docker/contexts/tls/05740bc3fa874c77a20ca6a6d6d9c8816cb1ace920896358479850667938eed7"
+        }
+    }
+]

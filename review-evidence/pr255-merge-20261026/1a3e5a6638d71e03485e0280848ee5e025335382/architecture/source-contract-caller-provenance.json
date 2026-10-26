@@ -1,0 +1,790 @@
+{
+  "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "parent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "comparison": "Actual stacked parent",
+  "evidence": [
+    {
+      "path": "sql/migrations/20261025082850_membership_removal_operations.sql",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55",
+        "lineCount": 47,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/sql/migrations/20261025082850_membership_removal_operations.sql"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55",
+        "lineCount": 47,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/sql/migrations/20261025082850_membership_removal_operations.sql"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55",
+        "lineCount": 47,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/sql/migrations/20261025082850_membership_removal_operations.sql"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55",
+        "lineCount": 47,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/sql/migrations/20261025082850_membership_removal_operations.sql"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/identity/access-context.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "5c717112f0b24ace35a54dbbdb604fa9c8c52b5855fdec2041f40a93591996b0",
+        "lineCount": 91,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/identity/access-context.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "5c717112f0b24ace35a54dbbdb604fa9c8c52b5855fdec2041f40a93591996b0",
+        "lineCount": 91,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/identity/access-context.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "2807fbbc296de137748f5e69d53f37c53bb7a20d067449ad74fad4f89e99972a",
+        "lineCount": 82,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/identity/access-context.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "2807fbbc296de137748f5e69d53f37c53bb7a20d067449ad74fad4f89e99972a",
+        "lineCount": 82,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/identity/access-context.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/accounts/organizations/administration-overviews.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+        "lineCount": 96,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/organizations/administration-overviews.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+        "lineCount": 96,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/organizations/administration-overviews.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+        "lineCount": 96,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/organizations/administration-overviews.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+        "lineCount": 96,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/organizations/administration-overviews.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/organizations/directory-reads.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "163386a8605d211ebabd1d4d6a103cd8018a7ce6187605adcac260b154677301",
+        "lineCount": 39,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/organizations/directory-reads.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "163386a8605d211ebabd1d4d6a103cd8018a7ce6187605adcac260b154677301",
+        "lineCount": 39,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/organizations/directory-reads.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "163386a8605d211ebabd1d4d6a103cd8018a7ce6187605adcac260b154677301",
+        "lineCount": 39,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/organizations/directory-reads.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "163386a8605d211ebabd1d4d6a103cd8018a7ce6187605adcac260b154677301",
+        "lineCount": 39,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/organizations/directory-reads.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-checks.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "fe53ae18b41d57ba44dea2fc1a7f6fd6622b09ecc607cd677b761c4b6e79cb7c",
+        "lineCount": 55,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/organizations/membership-removal-checks.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "fe53ae18b41d57ba44dea2fc1a7f6fd6622b09ecc607cd677b761c4b6e79cb7c",
+        "lineCount": 55,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/organizations/membership-removal-checks.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "fe53ae18b41d57ba44dea2fc1a7f6fd6622b09ecc607cd677b761c4b6e79cb7c",
+        "lineCount": 55,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/organizations/membership-removal-checks.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "fe53ae18b41d57ba44dea2fc1a7f6fd6622b09ecc607cd677b761c4b6e79cb7c",
+        "lineCount": 55,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/organizations/membership-removal-checks.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+        "lineCount": 51,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/organizations/membership-removal-lifetime.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+        "lineCount": 51,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/organizations/membership-removal-lifetime.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+        "lineCount": 51,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/organizations/membership-removal-lifetime.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+        "lineCount": 51,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/organizations/membership-removal-lifetime.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+        "lineCount": 79,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/organizations/membership-removal.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+        "lineCount": 79,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/organizations/membership-removal.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+        "lineCount": 79,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/organizations/membership-removal.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+        "lineCount": 79,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/organizations/membership-removal.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/organizations/organization-administration.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+        "lineCount": 184,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/organizations/organization-administration.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+        "lineCount": 184,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/organizations/organization-administration.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+        "lineCount": 184,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/organizations/organization-administration.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+        "lineCount": 184,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/organizations/organization-administration.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "e816b32b8915560eb51e4731ac8da7f744f98e3fdf9f64756492d444ba47eea0",
+        "lineCount": 118,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/organizations/organization-directory.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "e816b32b8915560eb51e4731ac8da7f744f98e3fdf9f64756492d444ba47eea0",
+        "lineCount": 118,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/organizations/organization-directory.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "e816b32b8915560eb51e4731ac8da7f744f98e3fdf9f64756492d444ba47eea0",
+        "lineCount": 118,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/organizations/organization-directory.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "e816b32b8915560eb51e4731ac8da7f744f98e3fdf9f64756492d444ba47eea0",
+        "lineCount": 118,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/organizations/organization-directory.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "7c0314b9b56611ea0e57d70c4e3c5384c799f84c2135057f876e035b9f8fb889",
+        "lineCount": 177,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/accounts/providers/workos/workos-auth-provider.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "7c0314b9b56611ea0e57d70c4e3c5384c799f84c2135057f876e035b9f8fb889",
+        "lineCount": 177,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/accounts/providers/workos/workos-auth-provider.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "fde4ff7a3d0cf354717b1a840f3d0cf55459a6ecc09c890c09813456168d52e4",
+        "lineCount": 153,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/accounts/providers/workos/workos-auth-provider.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "fde4ff7a3d0cf354717b1a840f3d0cf55459a6ecc09c890c09813456168d52e4",
+        "lineCount": 153,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/accounts/providers/workos/workos-auth-provider.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/app/application.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+        "lineCount": 229,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/app/application.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+        "lineCount": 229,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/app/application.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+        "lineCount": 229,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/app/application.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+        "lineCount": 229,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/app/application.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/app/hosted-workos-application.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/app/hosted-workos-application.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "a61ff08194c3ecbffe9d05fce232d9a79d04255f7e853eb5e87e2f06355bbce0",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/app/hosted-workos-application.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "a61ff08194c3ecbffe9d05fce232d9a79d04255f7e853eb5e87e2f06355bbce0",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/app/hosted-workos-application.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/app/logging-storage.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+        "lineCount": 42,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/app/logging-storage.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+        "lineCount": 42,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/app/logging-storage.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+        "lineCount": 42,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/app/logging-storage.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+        "lineCount": 42,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/app/logging-storage.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/interfaces/web/account/account-form.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "be834f69551f637515ed7ee39e384cf1de464de92a9dae9d834254ee6c14e6cf",
+        "lineCount": 141,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/interfaces/web/account/account-form.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "be834f69551f637515ed7ee39e384cf1de464de92a9dae9d834254ee6c14e6cf",
+        "lineCount": 141,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/interfaces/web/account/account-form.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "be834f69551f637515ed7ee39e384cf1de464de92a9dae9d834254ee6c14e6cf",
+        "lineCount": 141,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/interfaces/web/account/account-form.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "be834f69551f637515ed7ee39e384cf1de464de92a9dae9d834254ee6c14e6cf",
+        "lineCount": 141,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/interfaces/web/account/account-form.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "34b35964982b22f6be0e1c3147fbdf4ba0b568ced466440b9ac986b6a443f463",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/interfaces/web/account/account-routes.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "34b35964982b22f6be0e1c3147fbdf4ba0b568ced466440b9ac986b6a443f463",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/interfaces/web/account/account-routes.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "34b35964982b22f6be0e1c3147fbdf4ba0b568ced466440b9ac986b6a443f463",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/interfaces/web/account/account-routes.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "34b35964982b22f6be0e1c3147fbdf4ba0b568ced466440b9ac986b6a443f463",
+        "lineCount": 176,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/interfaces/web/account/account-routes.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/interfaces/web/account/administration-pages.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+        "lineCount": 85,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/interfaces/web/account/administration-pages.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+        "lineCount": 85,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/interfaces/web/account/administration-pages.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+        "lineCount": 85,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/interfaces/web/account/administration-pages.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+        "lineCount": 85,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/interfaces/web/account/administration-pages.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/interfaces/web/account/administration-routes.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+        "lineCount": 215,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/interfaces/web/account/administration-routes.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+        "lineCount": 215,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/interfaces/web/account/administration-routes.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+        "lineCount": 215,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/interfaces/web/account/administration-routes.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+        "lineCount": 215,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/interfaces/web/account/administration-routes.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    },
+    {
+      "path": "src/logs/audit/audit-event-projection.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "de80bad3a72c44f26cac5e9c067613fdfbfa2224cdb25dd9576df95b0d2692db",
+        "lineCount": 93,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/logs/audit/audit-event-projection.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "de80bad3a72c44f26cac5e9c067613fdfbfa2224cdb25dd9576df95b0d2692db",
+        "lineCount": 93,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/logs/audit/audit-event-projection.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "3a22c00fc8bd085f1a1ead79eb061623616c6e6655fa0b16c578c3d4b5d61879",
+        "lineCount": 92,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/logs/audit/audit-event-projection.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "3a22c00fc8bd085f1a1ead79eb061623616c6e6655fa0b16c578c3d4b5d61879",
+        "lineCount": 92,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/logs/audit/audit-event-projection.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/logs/audit/audit-log.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "3328ba39ed8ea264ec0c50aec5125f7d7aad215954bbdf7b8b2ee18b86617c70",
+        "lineCount": 94,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/logs/audit/audit-log.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "3328ba39ed8ea264ec0c50aec5125f7d7aad215954bbdf7b8b2ee18b86617c70",
+        "lineCount": 94,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/logs/audit/audit-log.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "548df0db89be254e422d9d26d417cc8dcfebec48933b42299215c6dc46facf2c",
+        "lineCount": 94,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/logs/audit/audit-log.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "548df0db89be254e422d9d26d417cc8dcfebec48933b42299215c6dc46facf2c",
+        "lineCount": 94,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/logs/audit/audit-log.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/logs/audit/audit-snapshot-state.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "509332c628b4c01c117f0a5c9ab3a940480846fc8bbbd379605563157496572a",
+        "lineCount": 65,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/logs/audit/audit-snapshot-state.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "509332c628b4c01c117f0a5c9ab3a940480846fc8bbbd379605563157496572a",
+        "lineCount": 65,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/logs/audit/audit-snapshot-state.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "a5a789d3dba608484ed5b03fe9ff7e2c3945a000ce81241f532bcb19bedc5be8",
+        "lineCount": 48,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/logs/audit/audit-snapshot-state.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "a5a789d3dba608484ed5b03fe9ff7e2c3945a000ce81241f532bcb19bedc5be8",
+        "lineCount": 48,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/logs/audit/audit-snapshot-state.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/logs/audit/audit-snapshots.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8",
+        "lineCount": 156,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/logs/audit/audit-snapshots.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8",
+        "lineCount": 156,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/logs/audit/audit-snapshots.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "1a43b110f95d739338fe94078ec376992ab291825737b55ad7d1f24b593416bc",
+        "lineCount": 135,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/logs/audit/audit-snapshots.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "1a43b110f95d739338fe94078ec376992ab291825737b55ad7d1f24b593416bc",
+        "lineCount": 135,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/logs/audit/audit-snapshots.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/logs/audit/otlp-audit-encoding.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "76ddb5936f9e0128822a7ea94eea683f1da5635391333ca4e7f8c2fd96849a6b",
+        "lineCount": 61,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/logs/audit/otlp-audit-encoding.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "76ddb5936f9e0128822a7ea94eea683f1da5635391333ca4e7f8c2fd96849a6b",
+        "lineCount": 61,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/logs/audit/otlp-audit-encoding.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "67dacb9eba1fa4074fe79d0a64da04df8ed228d8a2a3387f8c32721420ab3d03",
+        "lineCount": 58,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/logs/audit/otlp-audit-encoding.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "67dacb9eba1fa4074fe79d0a64da04df8ed228d8a2a3387f8c32721420ab3d03",
+        "lineCount": 58,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/logs/audit/otlp-audit-encoding.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": false,
+      "parentMatchesOriginalReviewedBytes": false
+    },
+    {
+      "path": "src/logs/audit/pg-destination-settings-store.ts",
+      "incrementChanged": false,
+      "parent": {
+        "ref": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+        "exists": true,
+        "sha256": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+        "lineCount": 93,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/ddad19589a13e40b1aea516b2e5e3b90ea3aec70/src/logs/audit/pg-destination-settings-store.ts"
+      },
+      "candidate": {
+        "ref": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+        "exists": true,
+        "sha256": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+        "lineCount": 93,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/adf3369a953792208b5c48b8776d3bfeb89c3fb7/src/logs/audit/pg-destination-settings-store.ts"
+      },
+      "reviewedParent": {
+        "ref": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+        "exists": true,
+        "sha256": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+        "lineCount": 93,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/2271545702a8f1ec28c6f7dd913fec7024ecadeb/src/logs/audit/pg-destination-settings-store.ts"
+      },
+      "reviewedCandidate": {
+        "ref": "0530dd634fe8302b55d4a0669463ef733199cc40",
+        "exists": true,
+        "sha256": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+        "lineCount": 93,
+        "url": "https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/src/logs/audit/pg-destination-settings-store.ts"
+      },
+      "candidateMatchesOriginalReviewedBytes": true,
+      "parentMatchesOriginalReviewedBytes": true
+    }
+  ],
+  "restackCleanThreeWayProof": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/restack/pr255/increment-equivalence.json"
+}

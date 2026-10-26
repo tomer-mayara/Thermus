@@ -1,0 +1,56 @@
+[
+  {
+    "name": "integration",
+    "command": [
+      "npm",
+      "run",
+      "test:integration"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:48:20.525155+00:00",
+    "finished": "2026-10-26T08:48:39.501980+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-2/integration.log",
+    "logSha256": "5b85c780ecd7afdd49d9045f692a5b818a0b3cc1a07850149c64e57e49c4b57b"
+  },
+  {
+    "name": "docker-context",
+    "command": [
+      "docker",
+      "context",
+      "inspect",
+      "colima-thermus-s25-merge"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:48:40.150017+00:00",
+    "finished": "2026-10-26T08:48:40.222955+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-2/docker-context.log",
+    "logSha256": "1934e7ef3cecadb390d8e3e86f62a3992b379faa0098f3aba1b0f15a71ea4e56"
+  },
+  {
+    "name": "hosted-live",
+    "command": [
+      "node",
+      "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+      "npm",
+      "run",
+      "test:hosted-live"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:48:40.950241+00:00",
+    "finished": "2026-10-26T08:55:49.921376+00:00",
+    "exit": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-2/hosted-live.log",
+    "logSha256": "9f85bb8fe0ac7461c6d09bb4e481692fde450b351777ebe2335a98d978ad8dab"
+  }
+]

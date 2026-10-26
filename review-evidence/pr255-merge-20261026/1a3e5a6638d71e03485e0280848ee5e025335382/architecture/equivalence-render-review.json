@@ -1,0 +1,37 @@
+{
+  "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "parent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mainMergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "oldHead": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "oldParent": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+  "registryDiff": {
+    "added": [],
+    "removed": [],
+    "changed": [],
+    "unchanged": [
+      "C4 containers: hosted edition",
+      "C4 containers: local edition",
+      "Collaboration overview",
+      "Context",
+      "Recorded hosted Render target",
+      "Scenario: MCP page fetch and renderer cancellation",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: local authentication in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Selected C4 components: tool processing in the Node server",
+      "Self-hosted Compose"
+    ]
+  },
+  "currentParentDiagramsMatchReviewedParent": true,
+  "currentCandidateDiagramsMatchReviewedCandidate": true,
+  "managerReview": "Pending current comparison and exact final candidate check",
+  "testsBuildsMetricsRun": false,
+  "claimOfHumanApprovalMergeRelease": false,
+  "productionSourcePublicDeclarationsFullRegistryByteIdenticalToParent": true,
+  "noProductionCallableContractChanged": true,
+  "diagram": "Not required; source-free increment uses unchanged parent architecture."
+}

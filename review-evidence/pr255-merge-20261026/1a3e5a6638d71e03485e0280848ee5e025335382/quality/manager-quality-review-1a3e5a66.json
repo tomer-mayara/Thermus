@@ -1,0 +1,32 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:01:49.763375+00:00",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "decision": "Current static quality evidence accepted; live validation is not green.",
+  "tier": "T1 Team review",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "notesReviewed": 4,
+  "review": [
+    "Read fresh stamped checker, selection and quality review. The committed increment has zero production lines and no architecture fact.",
+    "No production or metric-tool path changed; metrics and coverage are N/A under actual-parent selection, with full-main validation held until parent integration.",
+    "Verified exact three precommit fixture/impact/document byte hashes against committed Git objects. Four focused and 26 PostgreSQL passes remain labeled precommit evidence.",
+    "Fresh Habit has 464 findings in 54 files with individual retained reasons and an empty snooze file. Original raw outcomes remain.",
+    "Frozen proposal whitespace is retained as approved review history, not silently rewritten.",
+    "Independently verified all compact report copy hashes, source owner hashes, retained reason presence, changed fixture complexity reason, and empty snooze list."
+  ],
+  "currentFailure": "The hosted-live run returned 25 pass / 4 fail. Cause and owned-fixture cleanup are being checked; Public Connect has not started.",
+  "limits": [
+    "Mechanical eligibility is preliminary.",
+    "User architect attestation is not replaced by an agent approval.",
+    "No Ready, merge, deployment or release claim."
+  ],
+  "manifestVerified": {
+    "files": 13,
+    "sha256": "ac20fccf9cf39662feacb62b475df04373c912402ac75de7c2da8483f676cfab"
+  }
+}

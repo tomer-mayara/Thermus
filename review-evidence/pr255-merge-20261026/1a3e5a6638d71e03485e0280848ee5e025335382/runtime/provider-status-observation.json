@@ -1,0 +1,8 @@
+{
+  "observedAt": "2026-10-26T09:20:46.693533+00:00",
+  "source": "https://status.workos.com/",
+  "publicStatus": "All systems operational; no incident reported for2026-10-26.",
+  "localEvidence": "The second hosted-live run directly received WorkOS API502responses, including Cloudflare origin_bad_gateway during cleanup.",
+  "conclusion": "No public incident is established. Local provider failures are observed, but a common cause for every navigation and portal failure remains unproven.",
+  "action": "No third unchanged live run. Reconcile exact-owned fixtures and complete independent local gates."
+}

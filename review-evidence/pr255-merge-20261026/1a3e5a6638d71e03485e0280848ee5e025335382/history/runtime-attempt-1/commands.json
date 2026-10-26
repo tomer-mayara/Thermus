@@ -1,0 +1,71 @@
+[
+  {
+    "name": "portal-prerequisite",
+    "command": [
+      "npm",
+      "run",
+      "build:user-portal"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:31:05.356044+00:00",
+    "finished": "2026-10-26T08:31:07.207501+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-1/portal-prerequisite.log",
+    "logSha256": "e193e0efaef659c8dc39d04875b40e7cafe6213dd4b2be8db04df367172aeec6"
+  },
+  {
+    "name": "integration",
+    "command": [
+      "npm",
+      "run",
+      "test:integration"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:31:08.019250+00:00",
+    "finished": "2026-10-26T08:31:28.829499+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-1/integration.log",
+    "logSha256": "78246319a657abfc11a70b57d85e033046aa0c392328a688d992caa44b71bf2e"
+  },
+  {
+    "name": "docker-context",
+    "command": [
+      "docker",
+      "context",
+      "inspect",
+      "colima-thermus-s25-merge"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:31:29.677981+00:00",
+    "finished": "2026-10-26T08:31:29.709369+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-1/docker-context.log",
+    "logSha256": "1934e7ef3cecadb390d8e3e86f62a3992b379faa0098f3aba1b0f15a71ea4e56"
+  },
+  {
+    "name": "postgres",
+    "command": [
+      "npm",
+      "run",
+      "test:logging:postgres"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T08:31:30.408215+00:00",
+    "finished": "2026-10-26T08:32:29.013913+00:00",
+    "exit": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/attempt-1/postgres.log",
+    "logSha256": "5d341625c0b602d94ff5ee4ed9f7d29142427801d4f1b0596f03c7e2b12dba2d"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/pr-review/check.ts",
+    "--base",
+    "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "--repo",
+    "tomer-mayara/Thermus",
+    "--impact",
+    "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-quality/measure/impact.json",
+    "--json"
+  ],
+  "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "head": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "started": "2026-10-26T08:13:51.773475+00:00",
+  "finished": "2026-10-26T08:13:54.739349+00:00",
+  "exit": 0,
+  "metricsInputs": "Not supplied: no src/metric-tool/config path changes in actual increment; no empty metric reports created.",
+  "stdoutSha256": "d52bd4111f4e98d28b78c5ad5dccbbe66d2b3880c04acfa578cfeb2bfe848a07",
+  "stderrSha256": "c44e39aa090816ab05975c9905c56e196cb961bbe2ca70ab012bfc16896bba1b"
+}

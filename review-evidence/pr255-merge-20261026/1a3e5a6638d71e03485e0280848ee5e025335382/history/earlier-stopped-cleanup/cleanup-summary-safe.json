@@ -1,0 +1,64 @@
+{
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "runId": "mvp19y06e23ec8",
+  "inventoryComplete": true,
+  "readOnlyInventoryPages": [
+    {
+      "kind": "user",
+      "page": 1,
+      "received": 34,
+      "hasNextPage": false
+    },
+    {
+      "kind": "organization",
+      "page": 1,
+      "received": 8,
+      "hasNextPage": false
+    },
+    {
+      "kind": "application",
+      "page": 1,
+      "received": 3,
+      "hasNextPage": false
+    }
+  ],
+  "proof": "Exact recorded run prefix, source-defined fixture label and creation time in failed-run window; personalExternalId reads verify known schema/subject where present. Unrelated rows were neither retained nor selected.",
+  "sourceOwnershipRules": {
+    "test/support/hosted-live/fixture-registry.ts": "0314fb7b26f60361e0388ec8ee724917b46b8a6e78a0050031036ee07f46222f",
+    "test/support/hosted-live/staging-fixtures.ts": "0351e88dc84a667bef4d9042c4e3d2360b02b688d71542db9687d63013962e40",
+    "test/support/hosted-live/organization-fixtures.ts": "9ad41c1fe6dfb4a22e23844173c374042d08f34a8163a94ac8b7f6702d47b240",
+    "test/support/hosted-live/administration-fixtures.ts": "1aaf39fcc1f91118cb2e88f1b265732b4fdd8e1f148c6ad9ede4fd3dc4a5a671",
+    "test/support/hosted-live/signup-fixtures.ts": "916ec4c506bacc426203693924fe2b84d3177a8aa3f9b9b93b3a0480e24a9b36"
+  },
+  "selectedResources": 40,
+  "intendedDeleteCalls": 38,
+  "deleteRetries": 0,
+  "confirmedAbsent": {
+    "users": 32,
+    "applications": 2,
+    "organizations": 3,
+    "total": 37
+  },
+  "unsettled": {
+    "acknowledgedDeleteOrgStill200AfterBound": 1,
+    "notYetAttemptedOrganizations": 2
+  },
+  "stop": "Manager bound reached: up to3exactGETs spaced2seconds. No further request after bound.",
+  "fixedPorts": "Explicitly released at09:22:09UTC; no localserver/teststarts since release. Primary now owns ports.",
+  "runtimeStatus": "Blocked: hosted-live original and retry red; PublicConnect pair unrun. No diagnostic source patch or third unchanged retry. Provider502observed; initial500/navigation causes remain unproven. No announced outage claim.",
+  "checkout": {
+    "head": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "branch": "codex/s2-5-02-removal-verification",
+    "status": ""
+  },
+  "privateEvidence": "Exact residual and deletion ownership IDs remain in inventory-private.json, cleanup-private.json, cleanup-continuation-private.json and final-organizations-private.json; do not publish those IDs as prose.",
+  "inventoryCorrection": "First receipt/script retained. Connect createdAt values deserialize as Date, so strict string comparison initially excluded2ownedapps. Normalized ISO comparison completed a second read-only inventory before any deletion.",
+  "runtimeBinding": {
+    "node": "v24.20.0",
+    "launcherPath": "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "launcherSha256": "c67c8a9dec4968095c359aa979f4aeec5648c26429dae70eb3a16d17de0e9a88",
+    "apiClient": "existing installed @workos-inc/node11.0.0; maxRetries0; timeout5000",
+    "commands": "PinnedNode executes designated staging launcher then each saved .mjs in this actualcwd; no secrets copied or printed."
+  }
+}

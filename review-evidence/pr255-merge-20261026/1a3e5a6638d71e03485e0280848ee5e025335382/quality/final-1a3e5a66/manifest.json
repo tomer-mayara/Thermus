@@ -1,0 +1,60 @@
+{
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "copiedAt": "2026-10-26T08:52:57.934038+00:00",
+  "files": {
+    "committed-input-bridge.json": {
+      "sha256": "254fbf43972b4291bafbbb33cbd74b71a341bc35a1148b67a73474d21335d35a",
+      "bytes": 1053
+    },
+    "measurements/quality-review.json": {
+      "sha256": "6d3240b9eda6fccbd98d82c3a13f66645b8bc63b0ffcaa03e2c2af5aa8c9dea0",
+      "bytes": 8961
+    },
+    "measurements/habit-commands.json": {
+      "sha256": "c965a60e66301a0ed4a9a5a219f52c2af434921b8649cd982d253faeb84a6485",
+      "bytes": 675
+    },
+    "measurements/habit-dispositions.json": {
+      "sha256": "e3cfa1d261f35ec2928e57e5604f457d8e993093c3363daf4d881e8ae4afc883",
+      "bytes": 476394
+    },
+    "measurements/checker-command.json": {
+      "sha256": "aa79c3f381370df9382520889d04292c1c72154f26b759c25d13033e19508638",
+      "bytes": 726
+    },
+    "measurements/pr-review.json": {
+      "sha256": "b87576651047d45b3f0644132384793337501286019646c88508544478605bc0",
+      "bytes": 5520
+    },
+    "measurements/pr-review.log": {
+      "sha256": "c44e39aa090816ab05975c9905c56e196cb961bbe2ca70ab012bfc16896bba1b",
+      "bytes": 89
+    },
+    "measurements/habit-hooks.log": {
+      "sha256": "ac701cb08480d0eecf431aa562708fb16226117e2ede27ff091190c69f3d49fb",
+      "bytes": 28899
+    },
+    "measurements/candidate-pin.json": {
+      "sha256": "2c3316d3a68dd493e333d042c535fa1310ea3e26428c3c03ef485ebe4d793bb2",
+      "bytes": 799
+    },
+    "measurements/selection.md": {
+      "sha256": "0d0321309c5190a23713db449aabe991b20e10fba26b478987d8e20513d96b6a",
+      "bytes": 1003
+    },
+    "measurements/README.md": {
+      "sha256": "73c2286e21a23cd619f83f28f88492f23cf6fb24fdc023d6812a47430edc93fb",
+      "bytes": 1471
+    },
+    "measurements/impact.json": {
+      "sha256": "bb49a5a1d2eeb320788694d87c427f48ef1b8f206fb5dcbaa831abdf28b66b50",
+      "bytes": 3026
+    },
+    "measurements/habit-binding.json": {
+      "sha256": "6242bdb38602828414826bc8c71a9d391d2409c05de894f436d73415b8ef74fe",
+      "bytes": 1599
+    }
+  }
+}

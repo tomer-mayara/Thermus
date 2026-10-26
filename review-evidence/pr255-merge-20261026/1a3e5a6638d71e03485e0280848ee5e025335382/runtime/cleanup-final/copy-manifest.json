@@ -1,0 +1,103 @@
+{
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "originalCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "sourceDirectory": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-runtime/cleanup-20261026",
+  "copiedAt": "2026-10-26T09:27:09.992555+00:00",
+  "files": [
+    {
+      "path": "cleanup-continuation-private.json",
+      "bytes": 1210,
+      "sha256": "0c0fa8e149b12e2a31e3b0a48b08a7d1d5cfbe86edcbf0d25548c62a964c7031"
+    },
+    {
+      "path": "cleanup-continuation.mjs",
+      "bytes": 5080,
+      "sha256": "2302edb910cf9a8cb977f7bd5cac2383c5e7f55b35f2b1e0f7f0af9077e69566"
+    },
+    {
+      "path": "cleanup-extension-private.json",
+      "bytes": 2624,
+      "sha256": "617fc693b2d3b608147210d383106cab47297de10f99c61bf4f5b5e29b5a500f"
+    },
+    {
+      "path": "cleanup-extension.mjs",
+      "bytes": 4093,
+      "sha256": "6b4215355566c992dc486d5a129007d45f77cc2a66badeb5e8f54c373b58bc33"
+    },
+    {
+      "path": "cleanup-journal-private.jsonl",
+      "bytes": 35642,
+      "sha256": "d0f7250f935301f903714f15d045780f09374167159527c891e20f216aad20a8"
+    },
+    {
+      "path": "cleanup-private.json",
+      "bytes": 11990,
+      "sha256": "4bf5d73d9a6f312322350b270c196ab026c3af11791b3482438fdd175ff15c7e"
+    },
+    {
+      "path": "cleanup-summary-safe.json",
+      "bytes": 3251,
+      "sha256": "643bd50df114f7b793019adffcd7d1af066873abb788e72acaf4bf50aaaa9b37"
+    },
+    {
+      "path": "cleanup.mjs",
+      "bytes": 4119,
+      "sha256": "f0adeef157af29907fb9d887b70d9ce765be3bc6157c3ec994743e8d04b35c18"
+    },
+    {
+      "path": "final-cleanup-summary-safe.json",
+      "bytes": 1290,
+      "sha256": "1ac2ac9d2ed45c420a90f2bb0938ce260c8b00f5fe8c145c4c178eaf85c94808"
+    },
+    {
+      "path": "final-organizations-private.json",
+      "bytes": 2007,
+      "sha256": "0d40bce32c57b3c2fd8b60bc7ec32796913c53246697f9d24ca92fbae270ad3b"
+    },
+    {
+      "path": "finish-organizations.mjs",
+      "bytes": 3728,
+      "sha256": "3a5b189b4976e00be8f52a8c7a0b3018213082f182de285c11f2eac109e5e4ae"
+    },
+    {
+      "path": "fixed-port-release.json",
+      "bytes": 562,
+      "sha256": "0ac6fe360cf60936b60b75f4534887677d9a48d1aea5cbf71b8faaf6cb336b6d"
+    },
+    {
+      "path": "inventory-first.mjs",
+      "bytes": 5848,
+      "sha256": "bad88b710ac815441fdd7b6e1aebf254881c893ac567bf24481c1ae7e3d2b937"
+    },
+    {
+      "path": "inventory-private-first.json",
+      "bytes": 18305,
+      "sha256": "f43a576a46922dc04a114bd18a696bfb2286b5d7d81714056444d633348a8c8d"
+    },
+    {
+      "path": "inventory-private.json",
+      "bytes": 18355,
+      "sha256": "d0d2e5913c0ec68508dd1bdb2ced0fa25c06e37d8fd3bf573c69dcfe5fceb2f1"
+    },
+    {
+      "path": "inventory.mjs",
+      "bytes": 5887,
+      "sha256": "8b80a226d938ad3449a2f6639f6aa24b9bef57f8f8a3ed1bc611e11f0ecf1cfd"
+    },
+    {
+      "path": "organization-reconciliation-private.json",
+      "bytes": 212,
+      "sha256": "08ddd747721382e1dfa06255d3e65895d209084f273a0bc551d83d2379891752"
+    },
+    {
+      "path": "reconcile.mjs",
+      "bytes": 1081,
+      "sha256": "cfd3c4fa90001cd94aecec38fe1209302d0ebab1c26eaa26e7bf3823b41fdc6b"
+    },
+    {
+      "path": "runtime-handback.md",
+      "bytes": 1691,
+      "sha256": "fd05fabd03aad2356b276b9527ddf01b76e650863f4317925b543e1f2c184fa9"
+    }
+  ]
+}

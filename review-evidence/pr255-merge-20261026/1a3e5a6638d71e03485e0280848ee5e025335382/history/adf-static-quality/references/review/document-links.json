@@ -1,0 +1,2617 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "method": "Local paths and GitHub-style source line bounds in changed Markdown, pinned Git objects; no network or anchor-slug claim.",
+  "checks": [
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/website-fetcher.md",
+      "resolved": "docs/reference/website-fetcher.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/pipeline-metrics.md",
+      "resolved": "docs/reference/pipeline-metrics.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md",
+      "resolved": "docs/reference/ad-rules.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/cache-design.md",
+      "resolved": "docs/design/cache-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/test-list.md#planned-cache-key-tests",
+      "resolved": "docs/testing/test-list.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/components.md",
+      "resolved": "architecture/components.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/component-registry-workflow.md",
+      "resolved": "docs/implementation/component-registry-workflow.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/component-structure-proposal.md",
+      "resolved": "docs/design/component-structure-proposal.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/hidden-text-sanitizer.md",
+      "resolved": "docs/reference/hidden-text-sanitizer.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "patches/agent-input-sanitizer@1.47.14.patch",
+      "resolved": "patches/agent-input-sanitizer@1.47.14.patch",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/hidden-text-sanitizer.md",
+      "resolved": "docs/reference/hidden-text-sanitizer.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/hidden-text-sanitizer.md#local-opacity-animations",
+      "resolved": "docs/reference/hidden-text-sanitizer.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/fetch-tool.ts",
+      "resolved": "src/app/fetch-tool.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/html-processing-limits.md",
+      "resolved": "docs/reference/html-processing-limits.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/mcp/mcp-server.ts",
+      "resolved": "src/interfaces/mcp/mcp-server.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/identity-verifier.ts",
+      "resolved": "src/accounts/identity/identity-verifier.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/access-context.ts",
+      "resolved": "src/accounts/identity/access-context.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/mcp-search-tool.md",
+      "resolved": "docs/reference/mcp-search-tool.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/mcp-fetch-tool.md",
+      "resolved": "docs/reference/mcp-fetch-tool.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/fetch-tool.ts",
+      "resolved": "src/app/fetch-tool.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#server-rules-file",
+      "resolved": "docs/reference/ad-rules.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-05.md",
+      "resolved": "docs/implementation/search-05.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-09.md",
+      "resolved": "docs/implementation/search-09.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-06.md",
+      "resolved": "docs/implementation/search-06.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-mcp-cancellation.md",
+      "resolved": "docs/implementation/search-mcp-cancellation.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-01.md",
+      "resolved": "docs/implementation/mcp-pipe-01.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-02.md",
+      "resolved": "docs/implementation/mcp-pipe-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-03.md",
+      "resolved": "docs/implementation/mcp-pipe-03.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/mcp-pipe-04.md",
+      "resolved": "docs/implementation/mcp-pipe-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/mcp/mcp-server.ts",
+      "resolved": "src/interfaces/mcp/mcp-server.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/mcp/discovery.test.ts",
+      "resolved": "test/unit/mcp/discovery.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/support/doubles/auth/identity-verifier-spy.ts",
+      "resolved": "test/support/doubles/auth/identity-verifier-spy.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/support/doubles/auth/access-resolver-spy.ts",
+      "resolved": "test/support/doubles/auth/access-resolver-spy.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/support/doubles/mcp/failure-reporter-spy.ts",
+      "resolved": "test/support/doubles/mcp/failure-reporter-spy.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/mcp/auth.test.ts",
+      "resolved": "test/integration/mcp/auth.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/mcp-context.test.ts",
+      "resolved": "test/integration/auth/mcp-context.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/mcp-access.test.ts",
+      "resolved": "test/acceptance/auth/mcp-access.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/mcp-failure-reports.test.ts",
+      "resolved": "test/acceptance/auth/mcp-failure-reports.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/test-list.md",
+      "resolved": "docs/testing/test-list.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "resolved": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "resolved": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#pinned-workos-sdk-proof",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/interface/auth/better-auth.test.ts",
+      "resolved": "test/interface/auth/better-auth.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#pinned-provider-proof",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/runtime/config/deployment-config.ts",
+      "resolved": "src/runtime/config/deployment-config.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": ".env.example",
+      "resolved": ".env.example",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/runtime/config/deployment-config.ts",
+      "resolved": "src/runtime/config/deployment-config.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/index.ts",
+      "resolved": "src/index.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "resolved": "src/app/application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/runtime/http/server.ts",
+      "resolved": "src/runtime/http/server.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/fetch-tool.ts",
+      "resolved": "src/app/fetch-tool.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#server-rules-file",
+      "resolved": "docs/reference/ad-rules.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#renderer-setup-report",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/mcp-fetch-tool.md#fetch-failure-diagnostics",
+      "resolved": "docs/reference/mcp-fetch-tool.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "resolved": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/data-directory-lock.ts",
+      "resolved": "src/accounts/providers/better-auth/data-directory-lock.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/local-installation.ts",
+      "resolved": "src/accounts/providers/better-auth/local-installation.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#pinned-provider-proof",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#provider-environment-variables",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "resolved": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "resolved": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "resolved": "src/app/application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "migrations/auth-local/",
+      "resolved": "migrations/auth-local",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#container-image",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#container-image",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#server-rules-file",
+      "resolved": "docs/reference/ad-rules.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "compose.yaml",
+      "resolved": "compose.yaml",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "Dockerfile",
+      "resolved": "Dockerfile",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#telemetry",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/render-hosted-docker-plan.md#rhd-03--build-and-prove-the-hosted-image",
+      "resolved": "docs/implementation/render-hosted-docker-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#container-gate",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/better-auth/better-auth-user-administration.ts",
+      "resolved": "src/accounts/providers/better-auth/better-auth-user-administration.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/cli/local-auth-command.ts",
+      "resolved": "src/interfaces/cli/local-auth-command.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/cli/local-auth-command-line.ts",
+      "resolved": "src/interfaces/cli/local-auth-command-line.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/local-user-administration.ts",
+      "resolved": "src/accounts/identity/local-user-administration.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-user-onboarding.md",
+      "resolved": "docs/implementation/hosted-user-onboarding.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-account-deletion.md",
+      "resolved": "docs/implementation/hosted-account-deletion.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": ".env.example",
+      "resolved": ".env.example",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-organization-setup.md#s1-05-cutover-checklist-prepared-not-executed",
+      "resolved": "docs/implementation/hosted-organization-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#select-the-executable",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/rhd-01.md",
+      "resolved": "docs/implementation/rhd-01.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/hosted-workos-application.ts",
+      "resolved": "src/app/hosted-workos-application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/rhd-02.md",
+      "resolved": "docs/implementation/rhd-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/user-portal.md",
+      "resolved": "docs/user-portal.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/user-portal.md#mcp-setup-guides",
+      "resolved": "docs/user-portal.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-composition-with-workos",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-access-of-auth-06",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#browser-session-of-auth-06",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "resolved": "src/app/application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/hosted-workos-application.ts",
+      "resolved": "src/app/hosted-workos-application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/browser-session.ts",
+      "resolved": "src/accounts/identity/browser-session.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/identity/access-context.ts",
+      "resolved": "src/accounts/identity/access-context.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/organizations/organization-directory.ts",
+      "resolved": "src/accounts/organizations/organization-directory.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing.ts",
+      "resolved": "src/accounts/billing/billing.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "resolved": "src/app/application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/application.ts",
+      "resolved": "src/app/application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing-free.ts",
+      "resolved": "src/accounts/billing/billing-free.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/web/account/account-routes.ts",
+      "resolved": "src/interfaces/web/account/account-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/organizations/organization-administration.ts",
+      "resolved": "src/accounts/organizations/organization-administration.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-organization-setup.md",
+      "resolved": "docs/implementation/hosted-organization-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/app/hosted-workos-application.ts",
+      "resolved": "src/app/hosted-workos-application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-role-mapping",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#workos-organization-administration-of-auth-08w",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/authentication-design.md#hosted-provider-findings",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/hosted-organization-setup.md",
+      "resolved": "docs/implementation/hosted-organization-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-startup.test.ts",
+      "resolved": "test/acceptance/auth/hosted-startup.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-workos.test.ts",
+      "resolved": "test/acceptance/auth/hosted-workos.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-workos-organizations.test.ts",
+      "resolved": "test/acceptance/auth/hosted-workos-organizations.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "resolved": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-organizations.test.ts",
+      "resolved": "test/acceptance/auth/hosted-organizations.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-organization-requests.test.ts",
+      "resolved": "test/acceptance/auth/hosted-organization-requests.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-grant-retirement.test.ts",
+      "resolved": "test/acceptance/auth/hosted-grant-retirement.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-membership-access.test.ts",
+      "resolved": "test/acceptance/auth/hosted-membership-access.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-invitations.test.ts",
+      "resolved": "test/acceptance/auth/hosted-invitations.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/auth/hosted-seats.test.ts",
+      "resolved": "test/acceptance/auth/hosted-seats.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/hosted-account.test.ts",
+      "resolved": "test/integration/auth/hosted-account.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/hosted-organizations.test.ts",
+      "resolved": "test/integration/auth/hosted-organizations.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/hosted-administration.test.ts",
+      "resolved": "test/integration/auth/hosted-administration.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-effects.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes-effects.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-organization-page.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes-organization-page.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-selection-input.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes-selection-input.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-selection.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes-selection.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-administration-changes.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes-administration-changes.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/hosted-admin/account-routes-administration-input.test.ts",
+      "resolved": "test/integration/hosted-admin/account-routes-administration-input.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration.test.ts",
+      "resolved": "test/unit/organizations/organization-administration.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-changes.test.ts",
+      "resolved": "test/unit/organizations/organization-administration-changes.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-members.test.ts",
+      "resolved": "test/unit/organizations/organization-administration-members.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-invitations.test.ts",
+      "resolved": "test/unit/organizations/organization-administration-invitations.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/organizations/organization-administration-invitation-overview.test.ts",
+      "resolved": "test/unit/organizations/organization-administration-invitation-overview.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/application-operator-log.test.ts",
+      "resolved": "test/unit/application-operator-log.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos",
+      "resolved": "test/unit/auth-workos",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "resolved": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos/workos-organizations-members.test.ts",
+      "resolved": "test/unit/auth-workos/workos-organizations-members.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/auth-workos/workos-organizations-invitations.test.ts",
+      "resolved": "test/unit/auth-workos/workos-organizations-invitations.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/workos-provider-organizations.test.ts",
+      "resolved": "test/integration/auth/workos-provider-organizations.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/integration/auth/workos-provider-administration.test.ts",
+      "resolved": "test/integration/auth/workos-provider-administration.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing.ts",
+      "resolved": "src/accounts/billing/billing.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "src/accounts/billing/billing-free.ts",
+      "resolved": "src/accounts/billing/billing-free.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/design/billing-design.md",
+      "resolved": "docs/design/billing-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/unit/billing/billing-free.test.ts",
+      "resolved": "test/unit/billing/billing-free.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/billing/free-billing.test.ts",
+      "resolved": "test/acceptance/billing/free-billing.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/billing/hosted-billing.test.ts",
+      "resolved": "test/acceptance/billing/hosted-billing.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/README.md",
+      "resolved": "docs/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/coding-principles.md",
+      "resolved": "docs/coding-principles.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/archive/oo-refactoring-plan.md",
+      "resolved": "docs/archive/oo-refactoring-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/user-portal.md",
+      "resolved": "docs/user-portal.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#verify-rendering",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/otel-logger.md",
+      "resolved": "docs/testing/otel-logger.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#container-gate",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-offline-build-checks",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-image-gate",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/rhd-03.md",
+      "resolved": "docs/implementation/rhd-03.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/reference/ad-rules.md#hosted-image-policy",
+      "resolved": "docs/reference/ad-rules.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/lightpanda-runtime.md#verify-rendering",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#renderer-gate-mcp-p03",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/search-pipeline-plan.md#search-06-prove-the-pinned-runtime-and-select-the-delivery-gates",
+      "resolved": "docs/implementation/search-pipeline-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/testing/otel-logger.md",
+      "resolved": "docs/testing/otel-logger.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/work-slice/basic-mcp-url-fetch/README.md",
+      "resolved": "test/acceptance/work-slice/basic-mcp-url-fetch/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/work-slice/README.md",
+      "resolved": "test/acceptance/work-slice/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/basic-mcp-url-fetch-plan.md",
+      "resolved": "docs/implementation/basic-mcp-url-fetch-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md",
+      "resolved": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/auth-workos-mcp-url-fetch-validation.md",
+      "resolved": "docs/implementation/auth-workos-mcp-url-fetch-validation.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#hosted-offline-checks",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docs/implementation/test-gate-policy.md#self-hosted-release",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-04.md#evidence-and-release-holds",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-stack-review.md",
+      "resolved": "docs/implementation/admin-s2-5-stack-review.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/mcp/tool-completion-record.ts",
+      "resolved": "src/interfaces/mcp/tool-completion-record.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-signup.ts",
+      "resolved": "src/accounts/providers/workos/workos-signup.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/hosted-role-mapping.ts",
+      "resolved": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/organizations/organization-administration.ts",
+      "resolved": "src/accounts/organizations/organization-administration.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/identity/access-context.ts",
+      "resolved": "src/accounts/identity/access-context.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/identity/browser-session.ts",
+      "resolved": "src/accounts/identity/browser-session.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/organizations/organization-directory.ts",
+      "resolved": "src/accounts/organizations/organization-directory.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/app/hosted-workos-application.ts",
+      "resolved": "src/app/hosted-workos-application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-sign-in.ts",
+      "resolved": "src/accounts/providers/workos/workos-sign-in.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "portal-design.md",
+      "resolved": "docs/design/portal-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/auth-workos-mcp-url-fetch-validation.md",
+      "resolved": "docs/implementation/auth-workos-mcp-url-fetch-validation.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/mcp/fetch-tool-server.ts",
+      "resolved": "src/interfaces/mcp/fetch-tool-server.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/mcp/fetch-tool-schema.ts",
+      "resolved": "src/interfaces/mcp/fetch-tool-schema.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/mcp/search-tool-schema.ts",
+      "resolved": "src/interfaces/mcp/search-tool-schema.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s4-recovery.md",
+      "resolved": "docs/implementation/admin-s4-recovery.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-04.md#evidence-and-release-holds",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-01a.md",
+      "resolved": "docs/implementation/admin-s2-01a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-01a-database-setup.md",
+      "resolved": "docs/implementation/admin-s2-01a-database-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../sql/migrations/20261023211956_logging_destination_settings.sql",
+      "resolved": "sql/migrations/20261023211956_logging_destination_settings.sql",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/test-gate-policy.md",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/hosted-user-onboarding.md",
+      "resolved": "docs/implementation/hosted-user-onboarding.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/hosted-organization-setup.md",
+      "resolved": "docs/implementation/hosted-organization-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/hosted-signup-recovery.md",
+      "resolved": "docs/implementation/hosted-signup-recovery.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../testing/test-code-layout.md",
+      "resolved": "docs/testing/test-code-layout.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/test-gate-policy.md",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-01.md",
+      "resolved": "docs/implementation/admin-s1-01.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-signup.ts",
+      "resolved": "src/accounts/providers/workos/workos-signup.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "resolved": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/identity/browser-session.ts",
+      "resolved": "src/accounts/identity/browser-session.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-02.md",
+      "resolved": "docs/implementation/admin-s1-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/hosted-role-mapping.ts",
+      "resolved": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/organizations/organization-administration.ts",
+      "resolved": "src/accounts/organizations/organization-administration.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-sign-in.ts",
+      "resolved": "src/accounts/providers/workos/workos-sign-in.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/app/hosted-workos-application.ts",
+      "resolved": "src/app/hosted-workos-application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-03a.md",
+      "resolved": "docs/implementation/admin-s1-03a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/auth/workos/workos-signup-form.ts",
+      "resolved": "src/interfaces/web/auth/workos/workos-signup-form.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "resolved": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-signup.ts",
+      "resolved": "src/accounts/providers/workos/workos-signup.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-03b.md",
+      "resolved": "docs/implementation/admin-s1-03b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-signup.ts",
+      "resolved": "src/accounts/providers/workos/workos-signup.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "resolved": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-04a.md",
+      "resolved": "docs/implementation/admin-s1-04a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/organizations/organization-directory.ts",
+      "resolved": "src/accounts/organizations/organization-directory.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/organizations/administration-overviews.ts",
+      "resolved": "src/accounts/organizations/administration-overviews.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/account/administration-pages.ts",
+      "resolved": "src/interfaces/web/account/administration-pages.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-04b.md",
+      "resolved": "docs/implementation/admin-s1-04b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../testing/workos-invitation-proof-matrix.md",
+      "resolved": "docs/testing/workos-invitation-proof-matrix.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "resolved": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/account/account-routes.ts",
+      "resolved": "src/interfaces/web/account/account-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/user-portal/portal.ts",
+      "resolved": "src/interfaces/user-portal/portal.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-05.md",
+      "resolved": "docs/implementation/admin-s1-05.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-05-legal-proposal.md",
+      "resolved": "docs/implementation/admin-s1-05-legal-proposal.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-04.md#evidence-and-release-holds",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-01a.md",
+      "resolved": "docs/implementation/admin-s2-01a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/app/hosted-workos-application.ts",
+      "resolved": "src/app/hosted-workos-application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/app/application.ts",
+      "resolved": "src/app/application.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/runtime/config/deployment-config.ts",
+      "resolved": "src/runtime/config/deployment-config.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/account/account-routes.ts",
+      "resolved": "src/interfaces/web/account/account-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/web/account/account-form.ts",
+      "resolved": "src/interfaces/web/account/account-form.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/organizations/organization-administration.ts",
+      "resolved": "src/accounts/organizations/organization-administration.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-02a.md",
+      "resolved": "docs/implementation/admin-s2-02a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/logs/system/otel-system-log-sink.ts",
+      "resolved": "src/logs/system/otel-system-log-sink.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/pipelines/providers/website-fetcher/network-policy.ts",
+      "resolved": "src/pipelines/providers/website-fetcher/network-policy.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-02b.md",
+      "resolved": "docs/implementation/admin-s2-02b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/mcp/fetch-tool-server.ts",
+      "resolved": "src/interfaces/mcp/fetch-tool-server.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/interfaces/mcp/tool-completion-record.ts",
+      "resolved": "src/interfaces/mcp/tool-completion-record.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../../src/accounts/organizations/change-records.ts",
+      "resolved": "src/accounts/organizations/change-records.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-03a.md",
+      "resolved": "docs/implementation/admin-s2-03a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-03b.md",
+      "resolved": "docs/implementation/admin-s2-03b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-03c.md",
+      "resolved": "docs/implementation/admin-s2-03c.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-04.md",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-04-notice-review.md",
+      "resolved": "docs/implementation/admin-s2-04-notice-review.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s1-staging-release-verification.md",
+      "resolved": "docs/implementation/admin-s1-staging-release-verification.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-04.md#evidence-and-release-holds",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-stack-review.md",
+      "resolved": "docs/implementation/admin-s2-5-stack-review.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-01a.md",
+      "resolved": "docs/implementation/admin-s2-5-01a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-01b.md",
+      "resolved": "docs/implementation/admin-s2-5-01b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-01c.md",
+      "resolved": "docs/implementation/admin-s2-5-01c.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-01a.md",
+      "resolved": "docs/implementation/admin-s2-5-01a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-01b.md",
+      "resolved": "docs/implementation/admin-s2-5-01b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-01c.md",
+      "resolved": "docs/implementation/admin-s2-5-01c.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/design/organization-admin-plan.md",
+      "target": "../implementation/admin-s4-recovery.md",
+      "resolved": "docs/implementation/admin-s4-recovery.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "admin-s2-04.md#evidence-and-release-holds",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "admin-s1-approved-organization-runtime.md",
+      "resolved": "docs/implementation/admin-s1-approved-organization-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "../testing/workos-invitation-proof-matrix.md",
+      "resolved": "docs/testing/workos-invitation-proof-matrix.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "../testing/workos-invitation-proof-matrix.md#follow-up-diagnostics-on-23-october",
+      "resolved": "docs/testing/workos-invitation-proof-matrix.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "organization-signup-approval-2026-10-23.md",
+      "resolved": "docs/implementation/organization-signup-approval-2026-10-23.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "../legal/organization-signup-2026-10-23/manifest.json",
+      "resolved": "docs/legal/organization-signup-2026-10-23/manifest.json",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "admin-s1-approved-organization-runtime.md",
+      "resolved": "docs/implementation/admin-s1-approved-organization-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s1-staging-release-verification.md",
+      "target": "../design/organization-admin-plan.md#s1-05--complete-journey-verification-and-cutover",
+      "resolved": "docs/design/organization-admin-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "admin-s2-04.md",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "../legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "hosted-organization-setup.md#historical-super-admin-procedure",
+      "resolved": "docs/implementation/hosted-organization-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "target": "admin-s4-recovery.md",
+      "resolved": "docs/implementation/admin-s4-recovery.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s2-5-stack-review.md",
+      "resolved": "docs/implementation/admin-s2-5-stack-review.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration",
+      "resolved": "docs/design/organization-admin-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "../design/organization-admin-plan.md#s25-02--integrated-verification-runbooks-and-release",
+      "resolved": "docs/design/organization-admin-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s4-recovery.md",
+      "resolved": "docs/implementation/admin-s4-recovery.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s2-04.md#evidence-and-release-holds",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "../legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-02.md",
+      "target": "admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-stack-review.md",
+      "target": "../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration",
+      "resolved": "docs/design/organization-admin-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-stack-review.md",
+      "target": "admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-stack-review.md",
+      "target": "../../src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-stack-review.md",
+      "target": "../../src/accounts/organizations/membership-removal-checks.ts",
+      "resolved": "src/accounts/organizations/membership-removal-checks.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s2-5-stack-review.md",
+      "target": "../design/organization-admin-plan.md#slice-25--password-only-membership-removal",
+      "resolved": "docs/design/organization-admin-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s4-recovery.md",
+      "target": "admin-s2-04.md",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/admin-s4-recovery.md",
+      "target": "admin-s2-5-02-removal-runbook.md#hold-reductions-outside-restored-rows",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "hosted-user-onboarding.md",
+      "resolved": "docs/implementation/hosted-user-onboarding.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "../design/authentication-design.md#organization-administration",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "test-gate-policy.md#hosted-live-gate-auth-06",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "hosted-user-onboarding.md",
+      "resolved": "docs/implementation/hosted-user-onboarding.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "hosted-user-onboarding.md",
+      "resolved": "docs/implementation/hosted-user-onboarding.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/hosted-organization-setup.md",
+      "target": "../testing/test-list.md",
+      "resolved": "docs/testing/test-list.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md#verify-rendering",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../testing/otel-logger.md",
+      "resolved": "docs/testing/otel-logger.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../architecture/components.md",
+      "resolved": "architecture/components.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../testing/test-code-layout.md#dependency-rules",
+      "resolved": "docs/testing/test-code-layout.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "pr-review-playbook.md#report-layout",
+      "resolved": "docs/implementation/pr-review-playbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "rhd-03.md",
+      "resolved": "docs/implementation/rhd-03.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "search-09.md",
+      "resolved": "docs/implementation/search-09.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "component-registry-workflow.md",
+      "resolved": "docs/implementation/component-registry-workflow.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "pr-review-playbook.md#report-layout",
+      "resolved": "docs/implementation/pr-review-playbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "hosted-organization-setup.md#s1-05-cutover-checklist-prepared-not-executed",
+      "resolved": "docs/implementation/hosted-organization-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/authentication-design.md#hosted-role-mapping",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md#select-the-executable",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "hosted-organization-setup.md#before-you-start",
+      "resolved": "docs/implementation/hosted-organization-setup.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/billing-design.md#auth-11-implementation-specification",
+      "resolved": "docs/design/billing-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../CLAUDE.md",
+      "resolved": "CLAUDE.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../package.json",
+      "resolved": "package.json",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../../README.md#build-and-test-commands",
+      "resolved": "README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../testing/test-list.md",
+      "resolved": "docs/testing/test-list.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/authentication-design.md#verification-and-release-gates",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../design/billing-design.md#auth-11-implementation-specification",
+      "resolved": "docs/design/billing-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/implementation/test-gate-policy.md",
+      "target": "../lightpanda-runtime.md#verify-rendering",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "terms.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "privacy.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "agreement.txt",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/agreement.txt",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "audit-help.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/audit-help.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "members-help.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/members-help.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "manifest.json",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "changes.patch",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../organization-audit-2026-10-24-proposal-v3/README.md",
+      "resolved": "docs/legal/organization-audit-2026-10-24-proposal-v3/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "data-flow-review.md",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../../src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "resolved": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../implementation/admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/README.md",
+      "target": "../../implementation/admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "manifest.json",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "changes.patch",
+      "resolved": "docs/legal/organization-removal-2026-10-25-proposal-v1/changes.patch",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "resolved": "src/accounts/organizations/membership-removal-checks.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "resolved": "src/accounts/organizations/membership-removal-checks.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/organization-directory.ts",
+      "resolved": "src/accounts/organizations/organization-directory.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-organizations.ts",
+      "resolved": "src/accounts/providers/workos/workos-organizations.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/providers/workos/workos-auth-provider.ts",
+      "resolved": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/account-pages.ts",
+      "resolved": "src/interfaces/web/account/account-pages.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "resolved": "src/accounts/organizations/membership-removal.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/removal-operation-store.ts",
+      "resolved": "src/accounts/organizations/removal-operation-store.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/pg-destination-settings-store.ts",
+      "resolved": "src/logs/audit/pg-destination-settings-store.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../sql/migrations/20261025082850_membership_removal_operations.sql",
+      "resolved": "sql/migrations/20261025082850_membership_removal_operations.sql",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-lifetime.ts",
+      "resolved": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "resolved": "src/accounts/organizations/membership-removal.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../implementation/admin-s2-5-02-removal-runbook.md",
+      "resolved": "docs/implementation/admin-s2-5-02-removal-runbook.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/administration-routes.ts",
+      "resolved": "src/interfaces/web/account/administration-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/audit-event-projection.ts",
+      "resolved": "src/logs/audit/audit-event-projection.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/change-records.ts",
+      "resolved": "src/accounts/organizations/change-records.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-page.ts",
+      "resolved": "src/interfaces/web/account/logging-page.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-form.ts",
+      "resolved": "src/interfaces/web/account/logging-form.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-routes.ts",
+      "resolved": "src/interfaces/web/account/logging-routes.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/interfaces/web/account/logging-test-page.ts",
+      "resolved": "src/interfaces/web/account/logging-test-page.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/destination-settings-service.ts",
+      "resolved": "src/logs/audit/destination-settings-service.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal-checks.ts",
+      "resolved": "src/accounts/organizations/membership-removal-checks.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/accounts/organizations/membership-removal.ts",
+      "resolved": "src/accounts/organizations/membership-removal.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/legal/organization-removal-2026-10-25-proposal-v1/data-flow-review.md",
+      "target": "../../../src/logs/audit/pg-destination-settings-store.ts",
+      "resolved": "src/logs/audit/pg-destination-settings-store.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-02.md",
+      "resolved": "docs/implementation/admin-s2-5-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-01c.md",
+      "resolved": "docs/implementation/admin-s2-5-01c.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-01b.md",
+      "resolved": "docs/implementation/admin-s2-5-01b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-5-01a.md",
+      "resolved": "docs/implementation/admin-s2-5-01a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-05.md",
+      "resolved": "docs/implementation/admin-s1-05.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-04b.md",
+      "resolved": "docs/implementation/admin-s1-04b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "workos-invitation-proof-matrix.md",
+      "resolved": "docs/testing/workos-invitation-proof-matrix.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-04a.md",
+      "resolved": "docs/implementation/admin-s1-04a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-03b.md",
+      "resolved": "docs/implementation/admin-s1-03b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-03a.md",
+      "resolved": "docs/implementation/admin-s1-03a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s1-02.md",
+      "resolved": "docs/implementation/admin-s1-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../AGENTS.md",
+      "resolved": "AGENTS.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "test-code-layout.md",
+      "resolved": "docs/testing/test-code-layout.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-05.md",
+      "resolved": "docs/implementation/search-05.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-09.md",
+      "resolved": "docs/implementation/search-09.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-mcp-cancellation.md",
+      "resolved": "docs/implementation/search-mcp-cancellation.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-04.md",
+      "resolved": "docs/implementation/search-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../script/README.md",
+      "resolved": "script/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/mcp-fetch-debug-oauth-plan.md",
+      "resolved": "docs/implementation/mcp-fetch-debug-oauth-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-01.md",
+      "resolved": "docs/implementation/fs-01.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-04.md",
+      "resolved": "docs/implementation/fs-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-02.md",
+      "resolved": "docs/implementation/fs-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/portal-design.md#ai-agent-quick-guide",
+      "resolved": "docs/design/portal-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/fs-05.md",
+      "resolved": "docs/implementation/fs-05.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/billing-design.md#auth-11-implementation-specification",
+      "resolved": "docs/design/billing-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/acceptance/logging/audit/actor-name.test.ts",
+      "resolved": "test/acceptance/logging/audit/actor-name.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/integration/auth/workos-actor-name.test.ts",
+      "resolved": "test/integration/auth/workos-actor-name.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/integration/auth/workos-connection.test.ts",
+      "resolved": "test/integration/auth/workos-connection.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/unit/auth/access-context.test.ts",
+      "resolved": "test/unit/auth/access-context.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/unit/logging/audit/audit-capture.test.ts",
+      "resolved": "test/unit/logging/audit/audit-capture.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/unit/logging/audit/otlp-audit-encoding.test.ts",
+      "resolved": "test/unit/logging/audit/otlp-audit-encoding.test.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+      "resolved": "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-03a.md",
+      "resolved": "docs/implementation/admin-s2-03a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/organization-admin-plan.md",
+      "resolved": "docs/design/organization-admin-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-02a.md",
+      "resolved": "docs/implementation/admin-s2-02a.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-02b.md",
+      "resolved": "docs/implementation/admin-s2-02b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-03b.md",
+      "resolved": "docs/implementation/admin-s2-03b.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-03c.md",
+      "resolved": "docs/implementation/admin-s2-03c.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/admin-s2-04.md",
+      "resolved": "docs/implementation/admin-s2-04.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "otel-logger.md",
+      "resolved": "docs/testing/otel-logger.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/authentication-design.md#live-provider-proofs",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../design/authentication-design.md#pinned-provider-proof",
+      "resolved": "docs/design/authentication-design.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../lightpanda-runtime.md#verify-rendering",
+      "resolved": "docs/lightpanda-runtime.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-01.md#verification",
+      "resolved": "docs/implementation/rhd-01.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-02.md#verification",
+      "resolved": "docs/implementation/rhd-02.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#live-brave-search-proof-search-06",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-09.md",
+      "resolved": "docs/implementation/search-09.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-06.md",
+      "resolved": "docs/implementation/search-06.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/search-mcp-cancellation.md",
+      "resolved": "docs/implementation/search-mcp-cancellation.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/acceptance/work-slice/basic-mcp-url-fetch/README.md",
+      "resolved": "test/acceptance/work-slice/basic-mcp-url-fetch/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../../test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md",
+      "resolved": "test/acceptance/work-slice/auth-workos-mcp-url-fetch/README.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/auth-workos-mcp-url-fetch-plan.md",
+      "resolved": "docs/implementation/auth-workos-mcp-url-fetch-plan.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#hosted-image-gate",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-03.md",
+      "resolved": "docs/implementation/rhd-03.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/rhd-03.md",
+      "resolved": "docs/implementation/rhd-03.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../reference/ad-rules.md#hosted-image-policy",
+      "resolved": "docs/reference/ad-rules.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/test-gate-policy.md#hosted-live-gate-auth-06",
+      "resolved": "docs/implementation/test-gate-policy.md",
+      "fileExists": true
+    },
+    {
+      "from": "docs/testing/test-list.md",
+      "target": "../implementation/auth-workos-mcp-url-fetch-validation.md",
+      "resolved": "docs/implementation/auth-workos-mcp-url-fetch-validation.md",
+      "fileExists": true
+    }
+  ]
+}

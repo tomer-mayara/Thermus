@@ -1,0 +1,41 @@
+{
+  "observedAt": "2026-10-26T09:05:34.796518+00:00",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "selectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "headAfter": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "branchAfter": "codex/s2-5-02-removal-verification",
+  "trackedStatusAfter": "",
+  "sourceTreeHead": "09ec0805485ee873f55c75c88c2ee4eb8467b304",
+  "sourceTreeParent": "09ec0805485ee873f55c75c88c2ee4eb8467b304",
+  "inputFiles": {
+    "test/acceptance/auth/hosted-removal.live.ts": "def3ae265f649ca923be7ce6919342d2a46bc524afb58edc9484fd32e67c8271",
+    "test/support/hosted-live/authkit-driver.ts": "f621ce62ab28c86e065aba1271abec04272282864fc8bdaa22bea130b6ba7e20",
+    "test/support/hosted-live/portal-visit.ts": "845157fd7a5ea24f701da1b98e25c275131d2aaf06eaf01248a996ffe250f64b",
+    "test/support/hosted-live/fixture-registry.ts": "0314fb7b26f60361e0388ec8ee724917b46b8a6e78a0050031036ee07f46222f",
+    "test/support/hosted-live/live-run.ts": "6c195779bca41b4371cea429a85a81107f43a6ad46b6299249715151d4be476a",
+    "test/support/hosted-live/removal-fixtures.ts": "21b8ce76094007a1a7778153316853700ee52d1ff765430d3b0872d9a1552570",
+    "test/support/hosted-live/local-https-site.ts": "04eae54352fe935ea8b4af6d65cc1b7637a1a17fde8a20a4fda42bd85eee1d5a",
+    "src/interfaces/web/account/portal-access.ts": "8fe6dfaf5272ba7cda6cf6617ccc76d885baf869da5d98fb5fff41c3562f2cbe",
+    "dist/test/acceptance/auth/hosted-removal.live.js": "ad1110d6d074b270460b4166cd14a4641d06e2435d2c173baade331eded4cf06",
+    "dist/test/acceptance/auth/hosted-live/administration-server.js": "08e7d4f7caf2324bf967ba35e6829370a7bf9f98ee81c998053bda367bac9fbb",
+    "dist/test/acceptance/auth/hosted-live/hosted-server.js": "81f62216dbbe5179d17a1c4361b04b99c3647b094ca328d195d0c19631c88bee"
+  },
+  "stagingLauncher": {
+    "path": "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "sha256": "c67c8a9dec4968095c359aa979f4aeec5648c26429dae70eb3a16d17de0e9a88"
+  },
+  "readbackCommand": [
+    "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+    "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+    "node",
+    ".cache/pr255-runtime/attempt-2/owned-users-readback.mjs"
+  ],
+  "readbackScriptSha256": "687e7ca09f76f74c98c6dee81a5979e261a3d27bdd65210acfbe40ef86105492",
+  "readbackReceiptSha256": "0dcd1f62a25b595864754179dce44c4c3a8c023b2051582bd1a59da74ea5c09e",
+  "ownedJournalOriginal": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/s25-02/live/s25-02-mvp0llvk-74dcb7.jsonl",
+  "ownedJournalSha256": "e0edea734ae2e68c4f37eca1c5da1923173d7c699eee988dd9c22d46afe55a9d",
+  "browserArtifacts": "No screenshots, traces, HAR or video were produced by these helpers; available browser observations are the sanitized paths, locator and errors in hosted-live.log. No failed HTTP500 body or OperatorLogSpy contents were persisted.",
+  "noFurtherRuntime": "No retry or Public Connect group has run. No new DELETE, list, source or configuration mutation was performed during diagnosis."
+}

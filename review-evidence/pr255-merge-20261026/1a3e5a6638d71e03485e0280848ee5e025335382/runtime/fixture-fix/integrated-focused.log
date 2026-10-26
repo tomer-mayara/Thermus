@@ -1,0 +1,16 @@
+✔ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin with its session retained, then current SQL receipts, counts, access denial, scope and usable selection agree (2371.745833ms)
+ℹ Real hosted HTTP composition and disposable verified-TLS PostgreSQL; WorkOS Password sessions and personal-factor sentinels are controlled. Factor preservation proves adapter scope only, not live provider semantics or MFA feasibility.
+✔ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin and the provider requires reauthentication, then current SQL receipts, counts, access denial, scope and usable selection agree (2278.640625ms)
+ℹ Real hosted HTTP composition and disposable verified-TLS PostgreSQL; WorkOS Password sessions and personal-factor sentinels are controlled. Factor preservation proves adapter scope only, not live provider semantics or MFA feasibility.
+✔ Given password-only access and enabled SQL-backed customer export, when Members confirms removal while the export sender fails, then the durable deletion stays confirmed without replay or an MFA or paid-feature requirement (1769.190083ms)
+ℹ Enabled snapshots, Collector authorization and removal use real PostgreSQL. The external export sender returns a controlled permanent transport failure. No live Collector or provider claim.
+✔ Given an authorized password-only Admin and unavailable Slice 2 PostgreSQL, when Members submits removal and ordinary product and MCP requests run, then removal is refused without deletion and product access still works (1752.985542ms)
+ℹ The disposable PostgreSQL container is stopped before the HTTP removal POST. WorkOS and the renderer are controlled; the hosted HTTP/MCP composition, removal refusal and product pipeline are real.
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8713.23925

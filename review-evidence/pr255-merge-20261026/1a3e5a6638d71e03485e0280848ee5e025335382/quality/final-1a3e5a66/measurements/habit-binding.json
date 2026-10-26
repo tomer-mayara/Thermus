@@ -1,0 +1,27 @@
+{
+  "head": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "mergeBase": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr255-quality/final-1a3e5a66/selection.md",
+  "selectionSha256": "0d0321309c5190a23713db449aabe991b20e10fba26b478987d8e20513d96b6a",
+  "identity": {
+    "sourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "inputsFingerprint": "a6506c594060ebd212357eab5a1ed4acf04421b127cff1b7362462b08e60b368",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T08:48:21.514579+00:00",
+  "outputs": {
+    "habit-commands.json": "c965a60e66301a0ed4a9a5a219f52c2af434921b8649cd982d253faeb84a6485",
+    "checker-command.json": "aa79c3f381370df9382520889d04292c1c72154f26b759c25d13033e19508638",
+    "pr-review.json": "b87576651047d45b3f0644132384793337501286019646c88508544478605bc0",
+    "pr-review.log": "c44e39aa090816ab05975c9905c56e196cb961bbe2ca70ab012bfc16896bba1b",
+    "habit-hooks.log": "ac701cb08480d0eecf431aa562708fb16226117e2ede27ff091190c69f3d49fb",
+    "candidate-pin.json": "2c3316d3a68dd493e333d042c535fa1310ea3e26428c3c03ef485ebe4d793bb2",
+    "selection.md": "0d0321309c5190a23713db449aabe991b20e10fba26b478987d8e20513d96b6a",
+    "impact.json": "bb49a5a1d2eeb320788694d87c427f48ef1b8f206fb5dcbaa831abdf28b66b50"
+  }
+}

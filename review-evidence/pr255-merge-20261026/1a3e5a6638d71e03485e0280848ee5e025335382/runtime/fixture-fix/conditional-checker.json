@@ -1,0 +1,7 @@
+{
+  "status": "Deferred until manager reviews/commits the patch and supplies the exact new candidate SHA.",
+  "reason": "Checker README71: --allow-dirty inspects committed HEAD alone. Running it now would not classify this working patch.",
+  "provisionalTier": "T1 Team review: no production/registry/API/metric-path change; policy/read path remains.",
+  "productionMetrics": "N/A; no empty reports and no coverage collection.",
+  "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda"
+}

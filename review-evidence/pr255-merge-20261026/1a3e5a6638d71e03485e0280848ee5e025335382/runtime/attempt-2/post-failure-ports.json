@@ -1,0 +1,28 @@
+{
+  "observedAt": "2026-10-26T09:05:34.794505+00:00",
+  "ports": [
+    {
+      "port": 46443,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "noListener": true
+    },
+    {
+      "port": 46480,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "noListener": true
+    },
+    {
+      "port": 46481,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "",
+      "noListener": true
+    }
+  ],
+  "processStoppedByWorker": false,
+  "reservation": "retained pending manager decision"
+}

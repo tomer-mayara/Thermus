@@ -1,0 +1,133 @@
+{
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "completeCandidateMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "tier": "T1 Team review",
+  "architectureSummary": "T0: no architecture fact",
+  "architectureFacts": [],
+  "tierReasons": [
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates. The enabled-export fixture first verifies and accepts the retained settings-save event, then checks the separate removal event and its transport failure."
+    }
+  ],
+  "mechanicalEligibility": "eligible",
+  "mechanicalBlockers": [],
+  "notes": [
+    {
+      "group": "informational",
+      "note": "49 public modules, 0 snapshots changed",
+      "reason": "Production source and declaration snapshots match actual parent. No production callable, component or registry change; test helper signatures do not trigger L4."
+    },
+    {
+      "group": "informational",
+      "note": "size.total_lines_note_above: 3026 lines without generated files, above the limit of 1500",
+      "reason": "Verification cases, runbooks/history and complete frozen legal/help proposal account for the current total. Production line count is zero. Preserve coherent proofs and exact frozen bytes; size is informational."
+    },
+    {
+      "group": "metrics",
+      "note": "not applicable: trusted policy selects no metrics process",
+      "reason": "No selected production or metric-tool/config path changed. Metrics, snapshots, CRAP and coverage remain N/A; no empty report or old capture is relabeled current."
+    },
+    {
+      "group": "notes",
+      "note": "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.",
+      "reason": "Mechanical eligibility is preliminary. Runtime/live groups and exact fixture cleanup are still in progress, Ready scope remains prospective until parent integration, and manager owns user-attestation mapping and release/legal/R1 holds."
+    }
+  ],
+  "questions": [],
+  "impactDeclaration": {
+    "version": 1,
+    "classification": {
+      "container": false,
+      "external": false,
+      "contract": false,
+      "deployment": false,
+      "crossCutting": false,
+      "component": false,
+      "internalInterface": false,
+      "sensitiveBehavior": false,
+      "dependencyRisk": false,
+      "policy": true,
+      "uncertain": false
+    },
+    "architecture": {
+      "modelUpdated": false,
+      "summary": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates. The enabled-export fixture first verifies and accepts the retained settings-save event, then checks the separate removal event and its transport failure.",
+      "views": [
+        "Context",
+        "C4 containers: hosted edition",
+        "Selected C4 components: hosted authentication in the Node server",
+        "Selected C4 components: hosted membership removal in the Node server",
+        "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+        "Selected C4 components: system and audit logs in the Node server",
+        "Collaboration overview",
+        "Scenario: hosted member read",
+        "Deployment view",
+        "Behavior and resource ownership"
+      ],
+      "evidence": [
+        "architecture/components.md",
+        "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+        "test/acceptance/auth/fixtures/member-removal-integrated-site.ts",
+        "test/acceptance/auth/hosted-removal.live.ts",
+        "test/support/hosted-live/removal-fixtures.ts",
+        "test/support/hosted-live/live-run.ts",
+        "test/support/hosted-live/local-https-site.ts",
+        "package.json",
+        "docs/implementation/test-gate-policy.md",
+        "docs/implementation/admin-s2-5-02.md",
+        "docs/implementation/admin-s2-5-02-removal-runbook.md",
+        "docs/implementation/admin-s4-recovery.md",
+        "docs/legal/organization-removal-2026-10-25-proposal-v1/manifest.json"
+      ]
+    }
+  },
+  "precommitInputBridge": {
+    "oldCommittedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "newCommittedHead": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "reviewedPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+    "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "started": "2026-10-26T08:44:54.806928+00:00",
+    "finished": "2026-10-26T08:44:54.899242+00:00",
+    "commitExit": 0,
+    "exactWorkingFilesMatchReviewedPrecommitInputs": true,
+    "files": {
+      ".pr-impact.json": "ee49ee175e2b037136f3a03ff7f75f287c7d4c1a5caa8a2373e5d4a305f6b9b2",
+      "docs/implementation/admin-s2-5-02.md": "b1f229bc46d59fbd7a46aec57c4dd1022bb50fb0f11563c0decb6ebd48ad138b",
+      "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts": "1a716aeb66145daea7dc171e765c62dd3cfe89164fae9be83f7ab80e5eb39bcb"
+    },
+    "meaning": "Precommit4/4and26/26/typecheck/Habit runs remain labeled as working-patch evidence. This separate bridge binds their identical input bytes to the new committed head; no old run is relabeled."
+  },
+  "precommitPGReuse": {
+    "originalCommand": {
+      "name": "postgres-full",
+      "command": [
+        "npm",
+        "run",
+        "test:logging:postgres"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+      "started": "2026-10-26T08:40:39.537245+00:00",
+      "finished": "2026-10-26T08:41:28.812172+00:00",
+      "exit": 0,
+      "logSha256": "b15da8ded1b02698a6c8e53e8e1e5d03d3b259210b19225f49c1ee3482213543"
+    },
+    "focused": "4/4",
+    "fullGroup": "26/26",
+    "meaning": "Exact reviewed input bytes are bound to the commit. Runs retain their original precommit identity; no duplicate PG run or relabeling."
+  },
+  "metrics": "N/A under actual-increment path selection.",
+  "validationScope": "Fresh integration and remaining hosted-live/PublicConnect are running at this pin. Source-free Ready selection remains prospective until parent254integration; current fullmain is source-bearing. No overall gate/merge claim yet.",
+  "frozenWhitespace": "Full increment retains the reviewed exit2frozen-proposal diagnostics; the narrow fixture patch passed whitespace check.",
+  "approval": "User architect approval remains attestation; no reviewer identity/GitHub review or legal publication approval is invented."
+}

@@ -1,0 +1,33 @@
+{"at": "2026-10-26T08:48:45.090Z", "clientIdAlias": "private-resource-001", "event": "proof-started", "workingTreeClean": true}
+{"at": "2026-10-26T08:48:45.525Z", "event": "resource-created", "idAlias": "private-resource-002", "kind": "organization"}
+{"at": "2026-10-26T08:48:45.677Z", "event": "resource-created", "idAlias": "private-resource-003", "kind": "organization"}
+{"at": "2026-10-26T08:48:45.841Z", "event": "resource-created", "idAlias": "private-resource-004", "kind": "organization"}
+{"at": "2026-10-26T08:48:46.068Z", "event": "resource-created", "idAlias": "private-resource-005", "kind": "user"}
+{"at": "2026-10-26T08:48:46.296Z", "event": "resource-created", "idAlias": "private-resource-006", "kind": "user"}
+{"at": "2026-10-26T08:48:46.490Z", "event": "resource-created", "idAlias": "private-resource-007", "kind": "user"}
+{"at": "2026-10-26T08:48:46.657Z", "event": "membership-created", "idAlias": "private-resource-008", "organizationIdAlias": "private-resource-002", "userIdAlias": "private-resource-005"}
+{"at": "2026-10-26T08:48:46.808Z", "event": "membership-created", "idAlias": "private-resource-009", "organizationIdAlias": "private-resource-002", "userIdAlias": "private-resource-006"}
+{"at": "2026-10-26T08:48:46.968Z", "event": "membership-created", "idAlias": "private-resource-010", "organizationIdAlias": "private-resource-002", "userIdAlias": "private-resource-007"}
+{"at": "2026-10-26T08:48:47.177Z", "event": "membership-created", "idAlias": "private-resource-011", "organizationIdAlias": "private-resource-003", "userIdAlias": "private-resource-005"}
+{"at": "2026-10-26T08:48:47.419Z", "event": "membership-created", "idAlias": "private-resource-012", "organizationIdAlias": "private-resource-003", "userIdAlias": "private-resource-007"}
+{"at": "2026-10-26T08:48:47.564Z", "event": "resource-created", "idAlias": "private-resource-013", "kind": "application"}
+{"at": "2026-10-26T08:48:47.970Z", "event": "password-profile-confirmed", "mfaEnabled": false, "mfaRequired": false, "passwordAuthEnabled": true}
+{"adapterManagement": "ordinary", "at": "2026-10-26T08:48:48.405Z", "directoryManaged": false, "event": "management-observed", "membershipIdAlias": "private-resource-008"}
+{"adapterManagement": "ordinary", "at": "2026-10-26T08:48:48.832Z", "directoryManaged": false, "event": "management-observed", "membershipIdAlias": "private-resource-009"}
+{"adapterManagement": "ordinary", "at": "2026-10-26T08:48:49.507Z", "directoryManaged": false, "event": "management-observed", "membershipIdAlias": "private-resource-010"}
+{"adapterManagement": "ordinary", "at": "2026-10-26T08:48:50.043Z", "directoryManaged": false, "event": "management-observed", "membershipIdAlias": "private-resource-011"}
+{"adapterManagement": "ordinary", "at": "2026-10-26T08:48:50.531Z", "directoryManaged": false, "event": "management-observed", "membershipIdAlias": "private-resource-012"}
+{"at": "2026-10-26T08:48:50.531Z", "event": "management-limit"}
+{"at": "2026-10-26T08:49:19.398Z", "event": "cleanup-started"}
+{"at": "2026-10-26T08:49:21.134Z", "deleteRetries": 0, "event": "cleanup-verification-limit", "maximumJitterMs": 50, "readDelayMs": 250, "readLimitMs": 10000}
+{"at": "2026-10-26T08:49:21.660Z", "event": "cleanup-verified", "idAlias": "private-resource-002", "kind": "organization", "readLimitMs": 10000, "status": 404}
+{"at": "2026-10-26T08:49:21.762Z", "event": "cleanup-verified", "idAlias": "private-resource-003", "kind": "organization", "readLimitMs": 10000, "status": 404}
+{"at": "2026-10-26T08:49:21.862Z", "event": "cleanup-verified", "idAlias": "private-resource-004", "kind": "organization", "readLimitMs": 10000, "status": 404}
+{"at": "2026-10-26T08:49:22.088Z", "event": "cleanup-verified", "idAlias": "private-resource-007", "kind": "user", "status": 404}
+{"at": "2026-10-26T08:49:22.193Z", "event": "cleanup-verified", "idAlias": "private-resource-013", "kind": "application", "status": 404}
+{"at": "2026-10-26T08:49:22.279Z", "event": "cleanup-verified", "idAlias": "private-resource-008", "kind": "membership", "status": 404}
+{"at": "2026-10-26T08:49:22.381Z", "event": "cleanup-verified", "idAlias": "private-resource-009", "kind": "membership", "status": 404}
+{"at": "2026-10-26T08:49:22.475Z", "event": "cleanup-verified", "idAlias": "private-resource-010", "kind": "membership", "status": 404}
+{"at": "2026-10-26T08:49:22.579Z", "event": "cleanup-verified", "idAlias": "private-resource-011", "kind": "membership", "status": 404}
+{"at": "2026-10-26T08:49:22.679Z", "event": "cleanup-verified", "idAlias": "private-resource-012", "kind": "membership", "status": 404}
+{"at": "2026-10-26T08:49:22.679Z", "event": "cleanup-failed"}

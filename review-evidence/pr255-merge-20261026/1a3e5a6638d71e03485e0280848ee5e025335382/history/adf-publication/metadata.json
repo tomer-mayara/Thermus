@@ -1,0 +1,32 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "actualStackParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "completeCandidateMainBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "currentLaterSourceTip": "22a8e3666a0e54a7ca49580ec3f111e61bd42566",
+  "prefix": "review-evidence/pr255-merge-20261026/adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "stage": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/publication/stage/review-evidence/pr255-merge-20261026/adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "evidenceRootPlaceholder": "%%EVIDENCE_ROOT%%",
+  "validationHandbackReceived": false,
+  "currentValidationFinalPassClaimed": false,
+  "state": "HISTORICAL / NOT CURRENT FOR CORRECTED CANDIDATE",
+  "publicationPerformed": false,
+  "actualQualityCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "qualityManifestSha256": "d05b53ef36da2c9402439b1fb34c96545576e2dac05fd151bccb0fb680985a2d",
+  "maintainedCommentIds": {
+    "Validation": 6397576862,
+    "Quality review": 6397577713
+  },
+  "sourceCopyCount": 63,
+  "fileCount": 70,
+  "totalBytes": 1478543,
+  "inventorySha256": "62fab96f1de58931c6b6e2087583cec5c2d732a6082651deffbb5a03005a1425",
+  "staticLinksChecked": 71,
+  "secretScan": "Manager scans exact final stage only after final runtime refresh; no scan performed here.",
+  "isCurrentCandidate": false,
+  "doNotPublishAsCurrent": true,
+  "supersessionReason": "Manager-authorized fixture correction after26-case private PostgreSQL red(25pass/1fail): retained settings-save Audit event precedes removal. The corrected candidate head is not yet assigned. This package is evidence only for old adf3369a; do not publish it as current for the next candidate.",
+  "replacementCandidate": null,
+  "replacementPending": "Fixture fix, focused/full SQL validation, manager patch review/commit; then257restack and refreshed pins/evidence.",
+  "historicalStagePreservedUnchanged": true,
+  "supersededAt": "2026-10-26T08:37:00.733143+00:00"
+}

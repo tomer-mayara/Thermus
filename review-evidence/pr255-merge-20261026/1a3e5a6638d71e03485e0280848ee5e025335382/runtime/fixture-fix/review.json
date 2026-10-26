@@ -1,0 +1,155 @@
+{
+  "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "files": {
+    ".pr-impact.json": "ee49ee175e2b037136f3a03ff7f75f287c7d4c1a5caa8a2373e5d4a305f6b9b2",
+    "docs/implementation/admin-s2-5-02.md": "b1f229bc46d59fbd7a46aec57c4dd1022bb50fb0f11563c0decb6ebd48ad138b",
+    "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts": "1a716aeb66145daea7dc171e765c62dd3cfe89164fae9be83f7ab80e5eb39bcb"
+  },
+  "classification": "Source-free test/doc/impact correction; no production change. Existing26-case25/26failure is the red acceptance evidence.",
+  "sourceTreeUnchanged": true,
+  "commit": "Not created; manager review required.",
+  "status": "Green focused/full PostgreSQL and static checks on this exact working patch; awaiting manager code review, no commit.",
+  "commands": [
+    {
+      "name": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+      "started": "2026-10-26T08:40:29.040688+00:00",
+      "finished": "2026-10-26T08:40:30.673025+00:00",
+      "exit": 0,
+      "logSha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a"
+    },
+    {
+      "name": "integrated-focused",
+      "command": [
+        "node",
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+      "started": "2026-10-26T08:40:30.722388+00:00",
+      "finished": "2026-10-26T08:40:39.481732+00:00",
+      "exit": 0,
+      "logSha256": "982436d518fba02f8ec8d8e1cfc9d8cdd2715ed862df0eee33026bd7e884ab52"
+    },
+    {
+      "name": "postgres-full",
+      "command": [
+        "npm",
+        "run",
+        "test:logging:postgres"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+      "started": "2026-10-26T08:40:39.537245+00:00",
+      "finished": "2026-10-26T08:41:28.812172+00:00",
+      "exit": 0,
+      "logSha256": "b15da8ded1b02698a6c8e53e8e1e5d03d3b259210b19225f49c1ee3482213543"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+      "started": "2026-10-26T08:41:28.876823+00:00",
+      "finished": "2026-10-26T08:41:30.381340+00:00",
+      "exit": 0,
+      "logSha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62"
+    },
+    {
+      "name": "habit",
+      "command": [
+        "habit-hooks",
+        "--branch",
+        "8c6d204e8588a664438ba8934ab36670b802525f"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+      "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+      "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+      "started": "2026-10-26T08:41:30.422905+00:00",
+      "finished": "2026-10-26T08:41:32.262814+00:00",
+      "exit": 1,
+      "logSha256": "ac701cb08480d0eecf431aa562708fb16226117e2ede27ff091190c69f3d49fb"
+    }
+  ],
+  "counts": {
+    "integrated-focused": {
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "postgres-full": {
+      "tests": 26,
+      "pass": 26,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "habit": {
+    "findings": 464,
+    "files": 54,
+    "counts": {
+      "high-complexity": 7,
+      "too-many-parameters": 5,
+      "non-essential-comment": 435,
+      "oversized-file": 17
+    },
+    "changedReportedFile": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+    "reason": "Reported first scenario remains unchanged; explicit ordered save/removal phases in the separate export case are reviewed."
+  },
+  "whitespace": {
+    "workingPatchExit": 0,
+    "completeIncrementExit": 2,
+    "completeDiagnosticUnchanged": "Same frozen legal proposal formatting as pre-fix; retained reason remains, not green."
+  },
+  "redEvidence": "Primary pr255/runtime/attempt-1 preserves26tests/25pass/1fail and audit.destination.changed vs organization.changed.",
+  "preservedAssertions": [
+    "removal event name",
+    "trusted tenant",
+    "remove-member action/applied outcome/exact target",
+    "durable applied receipt",
+    "current member count",
+    "unchanged saved settings/receipt",
+    "one provider DELETE"
+  ],
+  "addedAssertions": [
+    "first save event exact tenant",
+    "audit.destination.changed event kind",
+    "save/saved outcome",
+    "accepted completion before removal",
+    "second distinct removal attempt",
+    "two total attempts retained"
+  ],
+  "productionChange": false,
+  "metrics": "N/A: source-free test/doc/impact correction; no process/coverage run or empty report.",
+  "conditionalChecker": {
+    "status": "Deferred until manager reviews/commits the patch and supplies the exact new candidate SHA.",
+    "reason": "Checker README71: --allow-dirty inspects committed HEAD alone. Running it now would not classify this working patch.",
+    "provisionalTier": "T1 Team review: no production/registry/API/metric-path change; policy/read path remains.",
+    "productionMetrics": "N/A; no empty reports and no coverage collection.",
+    "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda"
+  },
+  "nextAction": "Manager reviews patch/greens, then commits and pins a clean candidate for final stamp/checker and any resumed live groups. Do not measure257before restacking it onto the new255head."
+}

@@ -1,0 +1,125 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "base": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "identityComparisons": {
+    "src": {
+      "baseObject": "09ec0805485ee873f55c75c88c2ee4eb8467b304",
+      "headObject": "09ec0805485ee873f55c75c88c2ee4eb8467b304",
+      "identical": true
+    },
+    "architecture/components.md": {
+      "baseObject": "53020b9513e420139dfb49cc8ad3fdffc7a432ac",
+      "headObject": "53020b9513e420139dfb49cc8ad3fdffc7a432ac",
+      "identical": true
+    },
+    "docs/api-surface": {
+      "baseObject": "2edc478e17df02958c48e29a9d4c30f3f0f925b6",
+      "headObject": "2edc478e17df02958c48e29a9d4c30f3f0f925b6",
+      "identical": true
+    },
+    "sql": {
+      "baseObject": "451385529732c7346d9389ee1bd9f0ac5e62bde6",
+      "headObject": "451385529732c7346d9389ee1bd9f0ac5e62bde6",
+      "identical": true
+    },
+    "Dockerfile": {
+      "baseObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+      "headObject": "1f5fa2b6ca510aaa159e9e66da9264ba9c677942",
+      "identical": true
+    },
+    "Dockerfile.hosted": {
+      "baseObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "headObject": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+      "identical": true
+    },
+    "pnpm-lock.yaml": {
+      "baseObject": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec",
+      "headObject": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec",
+      "identical": true
+    }
+  },
+  "productionMetricSelection": {
+    "selectedPaths": [],
+    "result": "N/A under trusted source/metric-path selection. No process/snapshot/CRAP/review/coverage run and no empty metric reports."
+  },
+  "productionArchitecture": "Unchanged. Existing production component set, source edges, public declarations, registry diagrams, schema/deployment and notice selection remain identical to parent. Test helper injection does not add a production callable; L4 is N/A.",
+  "testHelperReview": "LiveRun gains an optional scoped site factory and LocalHttpsSite gains a typed disposable SQL environment. Defaults still use the same production composition. Those changes affect test construction, not deployed production topology. Their actual consumer union remains prospective in the separate trace.",
+  "legalProposal": {
+    "status": "UNAPPROVED REVIEW CANDIDATE; NOT FOR RUNTIME OR PUBLICATION",
+    "approval": null,
+    "proposedEffectiveDate": "2026-10-25",
+    "publicationDate": null,
+    "documents": [
+      {
+        "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md",
+        "sha256": "c040e1c9d87d86f092b81c5badb7322f35412964e3e61d800efdb5613c9d3501",
+        "utf8Bytes": 20941,
+        "matchesManifest": true
+      },
+      {
+        "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md",
+        "sha256": "bd47c4b0b60b566eae5b95ffac73d37a1df454e663ef0fc954b3fcb0f75906bb",
+        "utf8Bytes": 38301,
+        "matchesManifest": true
+      },
+      {
+        "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/agreement.txt",
+        "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+        "utf8Bytes": 378,
+        "matchesManifest": true
+      },
+      {
+        "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/audit-help.md",
+        "sha256": "1d8bf0636b9d7ffa0eb059f4238d3ed330b326478cfedeb64f8b9097efd0b953",
+        "utf8Bytes": 2706,
+        "matchesManifest": true
+      },
+      {
+        "path": "docs/legal/organization-removal-2026-10-25-proposal-v1/members-help.md",
+        "sha256": "96826a14dd150495d784a446bd52bd4b9ea4b5dc467ff0593faff57e09621fb3",
+        "utf8Bytes": 2200,
+        "matchesManifest": true
+      }
+    ],
+    "runtimeSelection": "Source tree identical to parent; this proposal is not wired to active runtime documents."
+  },
+  "localMarkdownPathCheck": {
+    "checked": 435,
+    "missing": [],
+    "scope": "Relative linked file targets only; external destinations and fragment-only anchors not opened. This is manual/static prose review, not an executable prose test."
+  },
+  "coverageProvenance": {
+    "currentSourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "parentCaptureCommit": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "parentSourceFingerprint": "eb05703c74b51403c34b95505816061cbc6983146996b93bb61053b63e3e23c3",
+    "sourceFingerprintIdentical": true,
+    "currentInputFingerprint": "7c23ac53b73c14af238f80db8c5d40ed98c95136d5cb6f725641e947ada5099d",
+    "parentInputFingerprint": "9beb76cf0dfe141113349b07d0b578d7e45a6645b0bd2a8bd8f0d509dd57ea55",
+    "currentInputsIdentical": false,
+    "meaning": "Parent report retains its original capture identity. Changed test/package/impact inputs make it stale for a current255measurement; no fresh measurement is selected for this source-free increment."
+  },
+  "historicalDocPins": "The verification ledger retains its earlier measured-candidate and parent22715457 links and openR1status. They are historical evidence, not current adf3369a gate results or a current reviewer identity. Current base/head mapping lives in this evidence and the manager summary.",
+  "overallScope": "No tests/live/port changes; source-free Ready selection is prospective until parent254lands. Complete main comparison still inherits source and its separate validation. Manager owns current gates, holds and user-attestation mapping.",
+  "independentDocumentReview": {
+    "path": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/review/document-link-review.md",
+    "sha256": "e14067e668090fa83a57b885d1f0d6e3907be1a73b85cd5e01330c0644d5caef",
+    "limits": "Proposal remains unapproved/unpublished; date condition open; one destination-settings-service help-source pin is historical after inherited actor-name changes. No current-source pin or legal approval is invented."
+  },
+  "diffCheck": {
+    "exit": 2,
+    "diagnosticBodyMatchesIndependent": true,
+    "meaning": "Reviewed frozen proposal formatting, not green."
+  },
+  "prospectiveSelection": {
+    "path": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/validation/selection-prospective.md",
+    "sha256": "2c5ce1ca621eb81886a6e45124196c0aa01ba08f78886d85a8e0366f08d5716c",
+    "groups": [
+      "integration",
+      "7-file private PostgreSQL",
+      "hosted-live pair",
+      "documented Public Connect pair"
+    ],
+    "status": "Prospective until parent254integration and complete source-free recheck; no test run in static quality."
+  }
+}

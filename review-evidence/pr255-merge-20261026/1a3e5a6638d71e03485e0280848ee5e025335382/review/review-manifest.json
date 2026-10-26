@@ -1,0 +1,40 @@
+{
+  "reviewed": "2026-10-26T08:19:06.025408+00:00",
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "parent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "status": "Static prospective evidence only; manager must review selection and recheck complete candidate after parent integration. No tests or source/checkout changes.",
+  "files": {
+    "validation/selection-prospective.md": {
+      "sha256": "2c5ce1ca621eb81886a6e45124196c0aa01ba08f78886d85a8e0366f08d5716c",
+      "bytes": 11248
+    },
+    "validation/selection-prospective.json": {
+      "sha256": "d910b21b82e7b175976351034f3c2b2fe56c9269609facf20d47c2cbf665ee34",
+      "bytes": 1579
+    },
+    "review/helper-consumer-trace.json": {
+      "sha256": "5137b91c126e2af2eb98e16f409dc6e8dfe7f92c8c253c8440e0dbd6ace5d361",
+      "bytes": 10207
+    },
+    "review/legal-manifest-review.json": {
+      "sha256": "543ecde1cfebf28e9edbc83944c7be7684a384684bb54c441459300d6c452f52",
+      "bytes": 21637
+    },
+    "review/document-link-review.md": {
+      "sha256": "e14067e668090fa83a57b885d1f0d6e3907be1a73b85cd5e01330c0644d5caef",
+      "bytes": 3898
+    },
+    "review/document-links.json": {
+      "sha256": "18671ecddc495684137fbbb46f24d119b57a4cf7e58a35af9689b5797438a263",
+      "bytes": 91999
+    },
+    "review/frozen-whitespace-original.log": {
+      "sha256": "df4419a95ec6d9d6c6a2ba968225b8a01cfa7c41825137454a538e455acb752c",
+      "bytes": 5509
+    },
+    "review/frozen-whitespace-current.log": {
+      "sha256": "df4419a95ec6d9d6c6a2ba968225b8a01cfa7c41825137454a538e455acb752c",
+      "bytes": 5509
+    }
+  }
+}
