@@ -17,6 +17,7 @@ const identityTarget = `${mountedSupport}${basename(hostedImageIdentity)}`;
 const pageTarget = `${mountedSupport}${basename(containerPageScript)}`;
 const publicBaseUrl = 'https://thermus.example/';
 const settings = { ...workOSSettingsFor(publicBaseUrl), PUBLIC_BASE_URL: publicBaseUrl };
+const callerBuiltImage = process.env.THERMUS_HOSTED_GATE_IMAGE ?? '';
 
 export class HostedImageGate {
   readonly tag: string;
@@ -25,14 +26,21 @@ export class HostedImageGate {
   private containers = 0;
 
   constructor(private readonly t: TestContext) {
-    this.tag = `thermus-hosted-gate:${this.id}`;
+    this.tag = callerBuiltImage === '' ? `thermus-hosted-gate:${this.id}` : callerBuiltImage;
     this.label = `thermus.hosted-image-gate=${this.id}`;
     t.after(() => this.cleanup());
   }
 
   async build(): Promise<void> {
+    if (callerBuiltImage !== '') return this.reuseCallerBuiltImage();
     const result = await this.buildContext(root, this.tag);
     assert.equal(result.code, 0, `Hosted AMD64 image build failed:\n${result.stderr}`);
+  }
+
+  private async reuseCallerBuiltImage(): Promise<void> {
+    const [platform, id] = (await dockerOutput(['image', 'inspect', '--format', '{{.Os}}/{{.Architecture}} {{.Id}}', this.tag], { signal: this.t.signal })).split(' ');
+    assert.equal(platform, 'linux/amd64', `THERMUS_HOSTED_GATE_IMAGE names ${this.tag}, a ${platform} image`);
+    this.t.diagnostic(`Reused the caller-built image ${this.tag} (${id}); the gate built no image and removes only its containers`);
   }
 
   async server(environment: Readonly<Record<string, string>> = {}, seam = true, signal = this.t.signal): Promise<HostedImageServer> {
