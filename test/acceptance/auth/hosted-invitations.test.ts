@@ -22,10 +22,10 @@ describe('Hosted invitations through the public routes, with session and directo
     const evePage = await shownPage(eve, 'members');
     const samPage = await shownPage(sam, 'members');
 
-    const userInvitation = await submitOnPage(eve, 'members', { label: 'Invite', filled: { email: 'new.user@example.com' } });
-    const adminInvitation = await submitOnPage(sam, 'members', { label: 'Invite', filled: { email: 'new.admin@example.com', role: 'admin' } });
-    const inviteUser = formLabelled(evePage.forms, 'Invite');
-    const inviteAdmin = formLabelled(samPage.forms, 'Invite');
+    const userInvitation = await submitOnPage(eve, 'members', { label: 'Send invitation', filled: { email: 'new.user@example.com' } });
+    const adminInvitation = await submitOnPage(sam, 'members', { label: 'Send invitation', filled: { email: 'new.admin@example.com', role: 'admin' } });
+    const inviteUser = formLabelled(evePage.forms, 'Send invitation');
+    const inviteAdmin = formLabelled(samPage.forms, 'Send invitation');
     const forged = [
       await eve.submit({ ...inviteUser, fields: { ...inviteUser.fields, email: 'forged@example.com', role: 'owner' } }),
       await eve.submit({ ...inviteUser, fields: { ...inviteUser.fields, email: 'forged@example.com', role: 'super-admin' } }),
@@ -35,7 +35,7 @@ describe('Hosted invitations through the public routes, with session and directo
     const nia = await statusesOf(site.browserOf(userOf('user-nia', 'org-a')), ['members', 'portal']);
     const shown = invitationLines((await eve.open('members')).body);
 
-    assert.deepEqual([labelsOf(evePage.forms), labelsOf(samPage.forms)], [['Invite', ...removalLabels('eve')], ['Invite', ...removalLabels('sam')]]);
+    assert.deepEqual([labelsOf(evePage.forms), labelsOf(samPage.forms)], [['Send invitation', ...removalLabels('eve')], ['Send invitation', ...removalLabels('sam')]]);
     for (const [page, actor] of [[evePage, 'eve'], [samPage, 'sam']] as const) assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels(actor));
     assert.deepEqual([userInvitation.status, userInvitation.location?.href], [303, membersPage]);
     assert.deepEqual([adminInvitation.status, adminInvitation.location?.href], [303, membersPage]);
@@ -84,7 +84,7 @@ describe('Hosted invitations through the public routes, with session and directo
       'pending.user@example.com: User invitation, pending.',
       'pending.admin@example.com: Admin invitation, pending.',
     ]);
-    assert.deepEqual(labelsOf(page.forms), ['Invite', ...removalLabels('eve'), 'Resend the invitation to pending.user@example.com', 'Revoke the invitation to pending.user@example.com', 'Resend the invitation to pending.admin@example.com', 'Revoke the invitation to pending.admin@example.com']);
+    assert.deepEqual(labelsOf(page.forms), ['Send invitation', ...removalLabels('eve'), 'Resend the invitation to pending.user@example.com', 'Revoke the invitation to pending.user@example.com', 'Resend the invitation to pending.admin@example.com', 'Revoke the invitation to pending.admin@example.com']);
     assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels('eve'));
     assert.deepEqual([resent.status, revoked.status, resentAgain.status], [303, 303, 409]);
     assert.match(resentAgain.body, /The invitation is no longer pending/);
@@ -119,8 +119,8 @@ describe('Hosted invitations through the public routes, with session and directo
     const site = await serve(t);
     site.directory.addMembers({ subject: 'user-ida', organizationId: 'org-a', grants: [userGrant, adminGrant], status: 'inactive' });
 
-    await submitOnPage(site.browserOf(userOf('user-eve', 'org-a')), 'members', { label: 'Invite', filled: { email: 'ida@example.com' } });
-    await submitOnPage(site.browserOf(userOf('user-sam', 'org-a')), 'members', { label: 'Invite', filled: { email: 'pia@example.com', role: 'admin' } });
+    await submitOnPage(site.browserOf(userOf('user-eve', 'org-a')), 'members', { label: 'Send invitation', filled: { email: 'ida@example.com' } });
+    await submitOnPage(site.browserOf(userOf('user-sam', 'org-a')), 'members', { label: 'Send invitation', filled: { email: 'pia@example.com', role: 'admin' } });
     for (const [email, subject] of [['ida@example.com', 'user-ida'], ['pia@example.com', 'user-pia']] as const) {
       site.directory.acceptInvitation(site.directory.invitationTo(email)?.invitationId ?? '', subject);
     }
@@ -133,7 +133,7 @@ describe('Hosted invitations through the public routes, with session and directo
   test('Given a pending User invitation, when an Admin sends the same address as User again, also in another letter case, then nothing is sent and the browser returns to Members; after another Admin revokes the invitation, a new send is a new invitation', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const eve = site.browserOf(userOf('user-eve', 'org-a'));
-    const send = (email: string) => submitOnPage(eve, 'members', { label: 'Invite', filled: { email } });
+    const send = (email: string) => submitOnPage(eve, 'members', { label: 'Send invitation', filled: { email } });
 
     const answers = [await send('new.user@example.com'), await send('New.User@Example.com')];
     await submitOnPage(site.browserOf(userOf('user-cy', 'org-a')), 'members', 'Revoke the invitation to new.user@example.com');

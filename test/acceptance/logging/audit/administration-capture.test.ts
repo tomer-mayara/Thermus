@@ -35,7 +35,7 @@ for (const failure of ['none', 'throw', 'refuse', 'record-throw'] as const) {
         info(message);
       });
     }
-    const form = formLabelled(formsIn((await browser.open('members')).body), 'Invite');
+    const form = formLabelled(formsIn((await browser.open('members')).body), 'Send invitation');
     const response = await browser.submit({ ...form, fields: { ...form.fields, email: 'invited@example.com', role: 'user' } });
     assert.equal(response.status, 303, response.body);
     assert.equal(site.world.invitations.filter(invitation => invitation.email === 'invited@example.com').length, 1);
