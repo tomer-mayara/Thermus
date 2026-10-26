@@ -11,7 +11,8 @@ import { executionContextOf } from '../../support/fixtures/execution-context.ts'
 import { openSearchSite } from '../../support/in-process/mcp-search-site.ts';
 import { repositoryRoot } from '../../support/processes/module-paths.ts';
 
-const environment = { AD_RULES_FILE: trustedAdRulesFile };
+// These cases show the busy refusal of one hosted slot, so they set the capacity to one call.
+const environment = { AD_RULES_FILE: trustedAdRulesFile, OPERATION_CAPACITY: '1' };
 const logger = { info: () => {}, error: () => {} };
 const context = createRequestContext({ user: { authority: 'acceptance', subject: 'reader' }, tenantId: 'tenant', grants: [{ role: 'reader', permissions: ['product:access'] }] });
 const url = 'https://source.example/story';
@@ -168,7 +169,7 @@ for (const deployment of ['separate hosted applications', 'self-hosted operation
 for (const firstTool of ['fetch', 'search'] as const) {
   test(`Given public hosted ${firstTool} rendering, when its peer is called and the first client cancels, then capacity stays held through cleanup and the peer can recover`, { timeout: 5_000 }, async (t) => {
     const renderer = controlledRenderer(t);
-    const site = await openSearchSite(t, '2026-07-28', 'hosted');
+    const site = await openSearchSite(t, '2026-07-28', 'hosted', { OPERATION_CAPACITY: '1' });
     const peer = firstTool === 'fetch' ? 'search' : 'fetch';
     const controller = new AbortController();
     const call = (tool: Tool, signal?: AbortSignal) => site.client.callTool({ name: tool === 'fetch' ? 'getURLAsMarkdown' : 'search', arguments: tool === 'fetch' ? { url, reason: 'Read source' } : { query, reason: 'Find source' } }, { signal });

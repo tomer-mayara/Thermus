@@ -10,10 +10,11 @@ import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { completionRecordsIn, stepRecordsIn } from '../drivers/operator-log.ts';
 
-export async function openSearchSite(t: TestContext, era: McpProtocolEra, edition: 'hosted' | 'self-hosted') {
+// The settings add to the trusted ad rules file, for example OPERATION_CAPACITY of the hosted edition.
+export async function openSearchSite(t: TestContext, era: McpProtocolEra, edition: 'hosted' | 'self-hosted', settings: Readonly<Record<string, string>> = {}) {
   const records: string[] = [];
   const logger = { info: (record: string) => { records.push(record); }, error: (record: string) => { records.push(record); } };
-  const operations = (edition === 'hosted' ? createHostedToolOperations : createToolOperations)({ AD_RULES_FILE: trustedAdRulesFile }, logger);
+  const operations = (edition === 'hosted' ? createHostedToolOperations : createToolOperations)({ AD_RULES_FILE: trustedAdRulesFile, ...settings }, logger);
   const resource = new URL('https://thermus.example/mcp');
   const provider = new NoAuthProvider(resource);
   const server = new MCPServer({
