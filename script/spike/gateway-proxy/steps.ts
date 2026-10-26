@@ -10,7 +10,9 @@ import { TICK_MS, TICKS, type SlowCall, type Upstream } from './upstream.ts';
 // A buffered answer delivers every notification at about 3000 ms; a streamed answer delivers each one near its tick.
 const ARRIVAL_SLACK_MS = 250;
 const ABORT_AFTER_MS = 500;
+const EARLY_ABORT_AFTER_MS = 50;
 const ABORT_LIMIT_MS = 100;
+const STOP_LIMIT_MS = 20;
 const RESULT_TEXT = `slow finished for ${ORGANIZATION_ID}`;
 
 interface Keys { readonly gateway: { readonly privateKey: KeyObject }; readonly other: { readonly privateKey: KeyObject } }
@@ -19,6 +21,8 @@ interface Row { readonly part: string; readonly event: string; readonly expected
 export interface Report { readonly rows: Row[]; readonly conclusions: string[] }
 export interface ProbeStep { readonly name: string; readonly spec: string; run(parts: Parts, report: Report): Promise<string> }
 type StoppedCall = SlowCall & { readonly signalAt: number; readonly stoppedAt: number };
+type Exchange = Proxy['exchanges'][number] & { readonly clientGoneAt: number };
+interface AbortMeasure { readonly startedAt: number; readonly abortAt: number; readonly progress: number; readonly call: StoppedCall; readonly exchange: Exchange }
 
 async function streaming({ client, upstream }: Parts, report: Report): Promise<string> {
   const { tools } = await client.listTools();
@@ -61,29 +65,48 @@ async function headers({ upstream }: Parts, report: Report): Promise<string> {
   return `the bearer token reached the upstream in ${count}; TE, Trailer, and Proxy-* did not; the proxy replaced the Thermus-Access value of the client.`;
 }
 
-async function abort({ client, upstream, proxy }: Parts, report: Report): Promise<string> {
-  const run = await timedCall(client, 'abort', ABORT_AFTER_MS);
+async function measureAbort({ client, upstream, proxy }: Parts, label: string, afterMs: number): Promise<AbortMeasure> {
+  const run = await timedCall(client, label, afterMs);
   assert.ok(run.abortAt !== undefined && run.error !== undefined, 'The aborted call must fail at the client');
   const abortAt = run.abortAt;
-  const call = await waitFor(() => stoppedCall(upstream.calls.get('abort')), 1_000, 'the upstream handler to stop');
+  const call = await waitFor(() => stoppedCall(upstream.calls.get(label)), 1_000, 'the upstream handler to stop');
   const signalDelay = call.signalAt - abortAt;
   assert.ok(signalDelay >= 0 && signalDelay <= ABORT_LIMIT_MS, `The upstream signal fired ${ms(signalDelay)} after the abort; the limit is ${ABORT_LIMIT_MS} ms`);
-  assert.ok(call.stoppedAt - abortAt <= ABORT_LIMIT_MS, `The upstream handler stopped ${ms(call.stoppedAt - abortAt)} after the abort`);
+  assert.ok(call.stoppedAt - call.signalAt <= STOP_LIMIT_MS, `The upstream handler stopped ${ms(call.stoppedAt - call.signalAt)} after its signal; the limit is ${STOP_LIMIT_MS} ms`);
   assert.equal(call.finishedAt, undefined, 'The aborted handler must not finish');
   assert.ok(call.progressSentAt.every((at) => at < abortAt), 'The handler must send no progress after the abort');
-  const gone = proxy.exchanges.filter((exchange) => exchange.clientGoneAt !== undefined);
-  assert.equal(gone.length, 1, 'The proxy must see exactly one client go away');
-  const [{ clientGoneAt = Number.NaN, requestClosedAt }] = gone;
-  const closedAt = requestClosedAt === undefined ? 'not seen' : `${ms(requestClosedAt - run.startedAt)}, at the body end`;
-  report.rows.push(
-    { part: 'Abort', event: 'Client abort', expected: `about ${ABORT_AFTER_MS} ms`, measured: ms(abortAt - run.startedAt) },
-    { part: 'Abort', event: 'Progress received before the abort', expected: `${Math.floor(ABORT_AFTER_MS / TICK_MS)}`, measured: `${run.progressAt.length}` },
-    { part: 'Abort', event: 'Proxy sees the client go (response close)', expected: 'after the abort', measured: `+${ms(clientGoneAt - abortAt)}` },
-    { part: 'Abort', event: 'Upstream handler signal', expected: `within ${ABORT_LIMIT_MS} ms of the abort`, measured: `+${ms(signalDelay)}` },
-    { part: 'Abort', event: 'Upstream handler stops', expected: 'at once', measured: `+${ms(call.stoppedAt - abortAt)}` },
-    { part: 'Abort', event: 'Proxy incoming request close event', expected: 'not a client signal', measured: closedAt },
-  );
-  return `the upstream handler saw its signal ${ms(signalDelay)} after the client abort (limit ${ABORT_LIMIT_MS} ms) and stopped; the proxy used the close event of its response, because the close event of the incoming request came at the body end.`;
+  const exchange = proxy.exchanges.find((item) => item.startedAt >= run.startedAt);
+  assert.ok(exchange?.clientGoneAt !== undefined, 'The proxy must see the client go away');
+  return { startedAt: run.startedAt, abortAt, progress: run.progressAt.length, call, exchange: { ...exchange, clientGoneAt: exchange.clientGoneAt } };
+}
+
+function abortRows(part: string, measure: AbortMeasure, afterMs: number): Row[] {
+  const { startedAt, abortAt, call, exchange } = measure;
+  return [
+    { part, event: 'Client abort', expected: `about ${afterMs} ms`, measured: ms(abortAt - startedAt) },
+    { part, event: 'Progress received before the abort', expected: `${Math.floor(afterMs / TICK_MS)}`, measured: `${measure.progress}` },
+    { part, event: 'Proxy sees the client go (response close)', expected: 'after the abort', measured: `+${ms(exchange.clientGoneAt - abortAt)}` },
+    { part, event: 'Upstream handler signal', expected: `within ${ABORT_LIMIT_MS} ms of the abort`, measured: `+${ms(call.signalAt - abortAt)}` },
+    { part, event: 'Upstream handler stops', expected: `within ${STOP_LIMIT_MS} ms of its signal`, measured: `+${ms(call.stoppedAt - abortAt)}` },
+  ];
+}
+
+async function abort(parts: Parts, report: Report): Promise<string> {
+  const measure = await measureAbort(parts, 'abort', ABORT_AFTER_MS);
+  assert.equal(measure.exchange.status, 200, 'The abort must come while the answer streams');
+  const closedAt = measure.exchange.requestClosedAt;
+  report.rows.push(...abortRows('Abort', measure, ABORT_AFTER_MS), {
+    part: 'Abort', event: 'Proxy incoming request close event', expected: 'not a client signal',
+    measured: closedAt === undefined ? 'not seen' : `${ms(closedAt - measure.startedAt)}, at the body end`,
+  });
+  return `the upstream handler saw its signal ${ms(measure.call.signalAt - measure.abortAt)} after the client abort (limit ${ABORT_LIMIT_MS} ms) and stopped; the proxy used the close event of its response, because the close event of the incoming request came at the body end.`;
+}
+
+async function earlyAbort(parts: Parts, report: Report): Promise<string> {
+  const measure = await measureAbort(parts, 'early-abort', EARLY_ABORT_AFTER_MS);
+  assert.equal(measure.exchange.status, undefined, 'The early abort must come before the upstream answers');
+  report.rows.push(...abortRows('Early abort', measure, EARLY_ABORT_AFTER_MS));
+  return `before the upstream answered, the proxy aborted its pending upstream request; the handler saw its signal ${ms(measure.call.signalAt - measure.abortAt)} after the client abort.`;
 }
 
 async function signedHeader({ keys, upstream, client }: Parts, report: Report): Promise<string> {
@@ -126,6 +149,7 @@ export const partSteps: readonly ProbeStep[] = [
   { name: 'Streaming', spec: 'Given the three parts, when the client lists the tools and calls slow, then the progress notifications arrive before the result.', run: streaming },
   { name: 'Headers', spec: 'Given the requests of that call, when they reach the upstream, then they carry the bearer token and no hop-by-hop or client Thermus-Access value.', run: headers },
   { name: 'Abort', spec: `Given a second slow call, when the client aborts it after ${ABORT_AFTER_MS} ms, then the upstream handler sees its signal within ${ABORT_LIMIT_MS} ms.`, run: abort },
+  { name: 'Early abort', spec: `Given another slow call, when the client aborts it after ${EARLY_ABORT_AFTER_MS} ms, before the upstream answers, then the handler sees its signal within ${ABORT_LIMIT_MS} ms.`, run: earlyAbort },
   { name: 'Signed header', spec: 'Given no header, another key pair, or an expired context, when a request reaches the upstream directly, then 403; through the proxy, a result.', run: signedHeader },
 ];
 export const cleanupStep: ProbeStep = { name: 'Cleanup', spec: 'Given the end of the probe, then every listener is closed and no socket keeps the process alive.', run: cleanup };
