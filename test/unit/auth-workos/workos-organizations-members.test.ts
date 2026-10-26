@@ -44,9 +44,9 @@ describe('WorkOSOrganizations member pages', () => {
       { method: 'getUser', input: 'user_03CAROL' },
     ]);
     assert.deepEqual(page.items.map(({ revision: _revision, ...member }) => member), [
-      { membershipId: 'om_01ALICE', subject: 'user_01ALICE', organizationId: acme, email: 'alice@example.com', status: 'active', grants: [{ role: 'user', permissions: ['product:access'] }, { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
-      { membershipId: 'om_02BOB', subject: 'user_02BOB', organizationId: acme, email: 'bob@example.com', status: 'inactive', grants: [{ role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
-      { membershipId: 'om_03CAROL', subject: 'user_03CAROL', organizationId: acme, email: 'carol@example.com', status: 'pending', grants: [{ role: 'user', permissions: ['product:access'] }] },
+      { membershipId: 'om_01ALICE', subject: 'user_01ALICE', organizationId: acme, email: 'alice@example.com', status: 'active', management: 'ordinary', grants: [{ role: 'user', permissions: ['product:access'] }, { role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
+      { membershipId: 'om_02BOB', subject: 'user_02BOB', organizationId: acme, email: 'bob@example.com', status: 'inactive', management: 'ordinary', grants: [{ role: 'admin', permissions: ['product:access', 'user-grants:manage', 'admin-grants:manage', 'billing:manage'] }] },
+      { membershipId: 'om_03CAROL', subject: 'user_03CAROL', organizationId: acme, email: 'carol@example.com', status: 'pending', management: 'ordinary', grants: [{ role: 'user', permissions: ['product:access'] }] },
     ]);
     assert.equal(page.next, 'om_03CAROL');
     assert.ok(Object.isFrozen(page) && Object.isFrozen(page.items));
@@ -151,7 +151,7 @@ describe('WorkOSOrganizations member', () => {
 
     assert.ok(member !== undefined);
     const { revision, ...rest } = member;
-    assert.deepEqual(rest, { membershipId: 'om_05GLOBEX', subject: 'user_01ALICE', organizationId: globex, email: 'alice@example.com', status: 'active', grants: [{ role: 'super-admin', permissions: [] }] });
+    assert.deepEqual(rest, { membershipId: 'om_05GLOBEX', subject: 'user_01ALICE', organizationId: globex, email: 'alice@example.com', status: 'active', management: 'ordinary', grants: [{ role: 'super-admin', permissions: [] }] });
     assert.match(revision, /^[A-Za-z0-9_-]{43}$/);
     assert.ok(Object.isFrozen(member) && Object.isFrozen(member.grants));
     assert.deepEqual(double.calls, [
@@ -231,4 +231,61 @@ describe('WorkOSOrganizations member revision', () => {
       assert.notEqual(after.revision, before.revision);
     });
   }
+});
+
+describe('WorkOSOrganizations current management evidence', () => {
+  for (const { evidence, expected } of [
+    { evidence: false, expected: 'ordinary' },
+    { evidence: true, expected: 'external' },
+    { evidence: undefined, expected: 'unknown' },
+    { evidence: null, expected: 'unknown' },
+    { evidence: 'false', expected: 'unknown' },
+    { evidence: 0, expected: 'unknown' },
+    { evidence: {}, expected: 'unknown' },
+  ]) {
+    test(`Given directory management evidence ${JSON.stringify(evidence)}, when the member and page are read, then both report ${expected} management`, async () => {
+      const double = doubleWith([membership({ directoryManaged: evidence })]);
+      const directory = double.directory();
+
+      const single = await directory.member('om_01ALICE');
+      const [paged] = (await directory.memberPage({ organizationId: acme, statuses: ['active'] })).items;
+
+      assert.equal(single?.management, expected);
+      assert.deepEqual(paged, single);
+    });
+  }
+
+  for (const directoryManaged of [true, undefined]) {
+    test(`Given ordinary management, when it changes to ${String(directoryManaged)} with the same roles, status, and update time, then the revision changes`, async () => {
+      const double = doubleWith([alice]);
+      const directory = double.directory();
+      const before = await directory.member('om_01ALICE');
+
+      double.memberships.set('om_01ALICE', { ...alice, directoryManaged });
+      const after = await directory.member('om_01ALICE');
+
+      assert.notEqual(after?.revision, before?.revision);
+    });
+  }
+
+  test('Given a mixed inactive membership with a permissionless extra role, when it is read by ID and page, then all role slugs remain in grants', async () => {
+    const double = doubleWith([membership({ status: 'inactive', roles: roles('admin', 'user', 'super-admin') })]);
+    const directory = double.directory();
+
+    const single = await directory.member('om_01ALICE');
+    const [paged] = (await directory.memberPage({ organizationId: acme, statuses: ['inactive'] })).items;
+
+    assert.deepEqual(single?.grants.map(({ role }) => role), ['admin', 'user', 'super-admin']);
+    assert.deepEqual(single?.grants[2]?.permissions, []);
+    assert.equal(single?.status, 'inactive');
+    assert.deepEqual(paged, single);
+  });
+
+  test('Given a role slug absent from the organization catalog, when a member or page is read, then the read fails closed', async () => {
+    const double = doubleWith([membership({ roles: roles('admin', 'unlisted') })]);
+    const directory = double.directory();
+
+    await assertConfigurationError(directory.member('om_01ALICE'), /unlisted/, /no role/);
+    await assertConfigurationError(directory.memberPage({ organizationId: acme, statuses: ['active'] }), /unlisted/, /no role/);
+  });
 });

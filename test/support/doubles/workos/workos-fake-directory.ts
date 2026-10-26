@@ -6,6 +6,7 @@ import { listAnswer, membershipJson, notFound, refusal, roleAssignmentJson, role
 // What the directory routes read and change in the fake.
 export interface DirectoryView {
   memberships: readonly FakeMembership[];
+  readonly deletedMembershipIds: Set<string>;
   readonly users: readonly FakeUser[];
   readonly organizationNames: Readonly<Record<string, string>>;
   readonly organizationExternalIds: Readonly<Record<string, string>>;
@@ -85,6 +86,7 @@ export function answerDirectoryRoutes(fake: WorkOSFakeApi, view: DirectoryView, 
   fake.answer(membershipsRoute, (request) => membershipsAnswer(view, request));
   fake.answer('POST /user_management/organization_memberships', (request) => createMembershipAnswer(view, request));
   fake.answerEach(`${membershipsRoute}/:id`, (_request, id) => membershipAnswer(view, id));
+  fake.answerEach('DELETE /user_management/organization_memberships/:id', (_request, id) => deleteMembershipAnswer(view, id));
   fake.answerEach('GET /user_management/users/:id', (_request, id) => userAnswer(view, id));
   fake.answerEach('GET /organizations/:id', (_request, id) => organizationAnswer(view, started, id));
   fake.answerEach(`POST ${roleAssignmentsPath}`, (request, id) => roleAssignmentAnswer(view, request, id));
@@ -104,6 +106,7 @@ function membershipsAnswer(view: DirectoryView, request: RecordedRequest): FakeA
   const statuses = (query.get('statuses') ?? 'active').split(',');
   const fitting = view.memberships
     .map((membership, index) => ({ membership, index }))
+    .filter(({ index }) => !view.deletedMembershipIds.has(membershipIdAt(index)))
     .filter(({ membership }) => matches(query.get('user_id'), membership.userId) && matches(query.get('organization_id'), membership.organizationId))
     .filter(({ membership }) => statuses.includes(currentStatus(membership)));
   const start = after === null ? 0 : Math.max(0, positionAfter(fitting, indexOfId(view.memberships, after)) - view.membershipPageOverlap);
@@ -126,8 +129,19 @@ function createMembershipAnswer(view: DirectoryView, request: RecordedRequest): 
 
 function membershipAnswer(view: DirectoryView, membershipId: string): FakeAnswer {
   if (view.membershipOutage) return view.membershipOutage;
+  if (view.deletedMembershipIds.has(membershipId)) return membershipNotFound;
   const index = indexOfId(view.memberships, membershipId);
   return index === -1 ? membershipNotFound : { status: 200, body: membershipJson(shownMembership(view, index)) };
+}
+
+function deleteMembershipAnswer(view: DirectoryView, membershipId: string): FakeAnswer {
+  const index = indexOfId(view.memberships, membershipId);
+  if (index === -1 || view.deletedMembershipIds.has(membershipId)) return membershipNotFound;
+  if (view.memberships[index].directoryManaged === true) {
+    return { status: 422, body: { code: 'organization_membership_directory_managed', message: 'The directory manages this membership.' } };
+  }
+  view.deletedMembershipIds.add(membershipId);
+  return { status: 204 };
 }
 
 function userAnswer(view: DirectoryView, userId: string): FakeAnswer {

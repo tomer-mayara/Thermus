@@ -75,7 +75,7 @@ export function stateOf(seed: MemberSeed): MemberState {
 
 export function memberOf(state: MemberState): OrganizationMember {
   const { membershipId, subject, organizationId, email, status, grants, revision } = state;
-  return { membershipId, subject, organizationId, email, status, grants, revision: `r${revision}` };
+  return { membershipId, subject, organizationId, email, status, management: 'ordinary', grants, revision: `r${revision}` };
 }
 
 export function roleGrantOf(role: string): RoleGrant {

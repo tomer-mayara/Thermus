@@ -3,42 +3,42 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": true,
+    "contract": false,
     "deployment": false,
+    "crossCutting": false,
     "component": false,
-    "internalInterface": false,
-    "sensitiveBehavior": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
     "policy": false,
-    "crossCutting": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "Audit OTLP output now writes observedTimeUnixNano from the same captured timestamp as timeUnixNano. Each timestamp remains an exact decimal-string nanosecond value and stays fixed across queue delay and retries. Existing event capture, identity, content, tenant routing, validation, sender outcomes, System logs, and deployment are unchanged. No TypeScript callable contract, component, dependency, or public module changes. Registry prose documents the wire field; all registry Mermaid views remain unchanged.",
+    "summary": "S2.5-01a extends the organizations-owned directory contract with portable ordinary/external/unknown management evidence and exact-ID membership deletion. WorkOS implements applied on normal void completion, unsupported only for its documented no-effect 422 refusal, and unchanged thrown errors with unknown effect otherwise. Hosted composition binds a required raw membership reader through the same SDK client so missing/null wire evidence is not defaulted to false; read queries, one-request reads, all role grants, and existing zero-retry/five-second limits remain. Member revisions include normalized management evidence. No application caller invokes deletion: admission, authorization, last-Admin safety, browser UI, storage, and recovery stay in later tickets. Registry prose describes the boundary and binding; all 13 registry diagrams, components, dependency edges, external service selection, and deployment remain unchanged. The shared public declaration and provider binding require internalInterface review; sensitiveBehavior covers membership deletion and unknown evidence.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
-      "C4 containers: local edition",
       "Selected C4 components: hosted authentication in the Node server",
-      "Selected C4 components: local authentication in the Node server",
-      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Selected C4 components: system and audit logs in the Node server",
-      "Runtime view",
+      "Collaboration overview",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
       "Deployment view"
     ],
     "evidence": [
+      "src/accounts/organizations/organization-directory.ts",
+      "src/accounts/providers/workos/workos-organizations.ts",
+      "src/app/hosted-workos-application.ts",
+      "docs/api-surface/src/accounts/organizations/organization-directory.d.ts",
       "architecture/components.md",
       "docs/design/organization-admin-plan.md",
-      "src/logs/audit/otlp-audit-encoding.ts",
-      "src/logs/audit/audit-event-projection.ts",
-      "src/logs/audit/audit-collector.ts",
-      "src/interfaces/mcp/fetch-tool-server.ts",
-      "src/interfaces/web/account/administration-routes.ts",
-      "src/interfaces/web/account/logging-routes.ts",
-      "src/logs/audit/destination-settings-service.ts",
-      "test/unit/logging/audit/otlp-audit-encoding.test.ts",
-      "test/acceptance/logging/audit/hosted-audit-journey.runtime.ts"
+      "docs/implementation/admin-s2-5-01a.md",
+      "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+      "test/integration/auth/workos-connection.test.ts",
+      "test/unit/auth-workos/workos-membership-reads.test.ts",
+      "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+      "test/unit/auth-workos/workos-organizations-members.test.ts"
     ]
   }
 }
