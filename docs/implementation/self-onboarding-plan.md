@@ -31,7 +31,8 @@ Run the fetch and search work of each organization in its own Render
 **tenant role**. A free tenant runs on the smallest paid instance,
 `0.5c-512mb`; a paying tenant runs on `1c-2g`. A tenant has no public address
 and holds no credential: no WorkOS API key, no database password, no Stripe or
-Render key. Only the control plane reaches it, over the Render private network.
+Render key. Only the control plane reaches it, over the Render private network. Each
+container serves up to 10 tool calls at a time.
 
 MCP clients keep the one URL `https://app.thermus.ai/mcp`. The gateway
 verifies the Connect token and reads the current membership, as the single
@@ -79,7 +80,7 @@ Section 9 keeps the per-tenant hostname design as a later option.
 | Billing | `Billing` has `stateOf()` and `updateSeats()`. `BillingFree` is the only implementation. `BillingState.plan` is the literal `'free'`. The billing page needs `billing:manage` and has no form. The portal JSON gives `plan: 'free'`, and the browser code refuses any other value. | [billing.ts](../../src/accounts/billing/billing.ts), [billing-page.ts](../../src/interfaces/web/account/billing-page.ts), [portal-access.ts](../../src/interfaces/web/account/portal-access.ts), [portal.ts](../../src/interfaces/user-portal/portal.ts) |
 | Access | `verifyAccessToken()` checks the issuer, the audience `https://app.thermus.ai/mcp`, and the Connect claims, and takes the organization from `org_id`. It checks no membership. `resolve()` then reads the current membership from WorkOS. A token without `org_id` gets a `403` denial. The tenant ID is `authority:organizationId`. | [workos-auth-provider.ts](../../src/accounts/providers/workos/workos-auth-provider.ts), [mcp-server.ts](../../src/interfaces/mcp/mcp-server.ts) |
 | MCP server | The SDK handler serves each HTTP request with a fresh server instance and keeps no session between requests. GET and DELETE get `405`. A tool call can stream its answer as SSE inside that one request. The bearer challenge and the access check are private steps of `MCPServer`; `ProtectedResourceEndpoint` wraps it for the metadata. | [mcp-server.ts](../../src/interfaces/mcp/mcp-server.ts), [protected-resource-endpoint.ts](../../src/interfaces/mcp/protected-resource-endpoint.ts) |
-| Capacity | One `OperationCapacity` slot for each process: one fetch or search at a time for every organization together. A second call gets `Server busy`, which is also an audit event. | [operation-capacity.ts](../../src/app/operation-capacity.ts), [fetch-tool-server.ts](../../src/interfaces/mcp/fetch-tool-server.ts) |
+| Capacity | One `OperationCapacity` slot for each process: one fetch or search at a time for every organization together. A second call gets `Server busy`, which is also an audit event. D-15 changes the default to 10 calls at a time. | [operation-capacity.ts](../../src/app/operation-capacity.ts), [fetch-tool-server.ts](../../src/interfaces/mcp/fetch-tool-server.ts) |
 | Audit events | The tool server writes `toolCompleted` events. The audit snapshot reads the destination settings of the tenant from PostgreSQL on activity and sends the events to the customer collector. Pending events live in bounded memory. | [audit-snapshots.ts](../../src/logs/audit/audit-snapshots.ts), [audit-collector.ts](../../src/logs/audit/audit-collector.ts) |
 | Storage | Two tables in the `thermus_admin` schema of Supabase project `rnqktgtgrvvqptbaosth`, `logging_destination_settings` and `membership_removal_operations`, through the session pooler with a CA secret file. Role `thermus_logging` has SELECT, INSERT, and UPDATE on both, with `USING (true)` on the settings table: **it reads and writes every organization's row.** The stores scope queries by tenant in code. `pg` is allowed only in the `audit-logs` owner, and the bounded SQL runtime is not a public module. | [settings migration](../../sql/migrations/20261023211956_logging_destination_settings.sql), [removal migration](../../sql/migrations/20261025082850_membership_removal_operations.sql), [bounded-sql-runtime.ts](../../src/logs/audit/bounded-sql-runtime.ts), [review rules](pr-review-rules.yaml) |
 | Routing | `/mcp` gets an Origin check, then the MCP server. Browser routes without a session come next. Every other path under the base needs a signed-in session. | [application.ts](../../src/app/application.ts) |
@@ -88,7 +89,7 @@ The [billing design](../design/billing-design.md) records the owner answer of
 12 October 2026: billing is a separate object, `BillingFree` for now, Stripe
 as the likely replacement, and the open decisions D1 to D11. It names AUTH-11
 as the only paid billing ticket and requires Super Admin with MFA for billing
-actions. Section 5 maps the decisions to this plan; SO-09 is AUTH-11.
+actions. Section 5 maps the decisions to this plan; SO-13 is AUTH-11.
 
 ### 3.2 Render
 
@@ -228,9 +229,10 @@ One new setting, `THERMUS_ROLE`, selects the role of the hosted image.
 | `DATABASE_URL`, `LOGGING_DESTINATION_ENCRYPTION_KEY`, `DATABASE_CA_CERT_PATH` | required | not set |
 | `RENDER_API_KEY`, `RENDER_OWNER_ID`, `RENDER_REGISTRY_CREDENTIAL_ID`, `TENANT_IMAGE`, `TENANT_PLAN_FREE`, `TENANT_PLAN_TEAM` | new, required | not set |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM` | new, required | not set |
-| `LIGHTPANDA_BIN`, `AD_RULES_FILE` | set by the image; read until SO-15 removes the tools | read, as today |
+| `LIGHTPANDA_BIN`, `AD_RULES_FILE` | set by the image; read until SO-16 removes the tools | read, as today |
 | Routes | today's routes, plus `/billing/*`, `/billing/events`, `/workspace/status`, and `/internal/audit`; `/mcp` is the gateway when the switch is on | `/healthz` and `/mcp` only |
-| Tools and renderer | until SO-15: the tools of today, used when the switch is off | the fetch and search tools with one capacity slot and today's page limits |
+| `OPERATION_CAPACITY` | new, default 10; applies while the control plane still serves tools | new, default 10: the calls that run at the same time (D-15) |
+| Tools and renderer | until SO-16: the tools of today, used when the switch is off | the fetch and search tools with the capacity above and today's page limits |
 
 The signed access context is one request header. The control plane signs it
 with an Ed25519 private key; tenants hold only the public key. It carries the
@@ -307,8 +309,8 @@ every denial of today stay unchanged.
    safe message. State `suspended`: it asks Render to resume, once, then
    `503` with `Retry-After: 60`. State `failed`: `503` and an operator report.
    No row: it requests the tenant and answers `503`.
-4. The tenant checks the context and the token, runs the tool in its own
-   capacity slot, relays its audit events to `POST /internal/audit` of the
+4. The tenant checks the context and the token, runs the tool within its
+   capacity, relays its audit events to `POST /internal/audit` of the
    control plane with the same context, and answers.
 5. The control plane captures the relayed events through its existing audit
    pipeline and updates `last_active_at` of the tenant at most once a minute.
@@ -412,7 +414,7 @@ that the registry and the billing store can use it and `pg` is declared once.
 | Invariant | An invitation from the control plane is the only way to add a member. SSO, Directory Sync, domain joining, and dashboard-created memberships stay off, as the production readback shows. | the same |
 | Inviting again after a downgrade | Needs member removal on the Members page, or an upgrade. | not applicable |
 | Container | `0.5c-512mb` with today's page limits; suspended when idle. | `1c-2g`; never suspended. |
-| Capacity | One fetch or search at a time in its own container. | The same, with more memory for large pages. |
+| Capacity | Up to 10 fetches or searches at a time in its own container (D-15); the next call gets `Server busy`. | The same capacity, with more memory for large pages. |
 | Portal | `plan: 'free'`, `memberLimit: 5`. | `plan: 'team'`. |
 
 Native invitation acceptance happens in AuthKit, so the application cannot
@@ -458,11 +460,12 @@ New edges, at least: `app` to `tenants`, `render`, `stripe`, and `sql`;
 | D-7 | Tenant image source | A prebuilt image in GHCR from a GitHub Actions build. | SO-02; one image and one release path. |
 | D-8 | PostgreSQL plan | Supabase Free for now. | The daily reconciliation touches the database every day, so the 7-day pause is unlikely while the control plane runs. A pause stops provisioning, billing, and the audit export until the operator resumes the project. Revisit at the first paying customer. |
 | D-9 | Render workspace plan | Hobby for now. | 7 days of logs and failure emails only. Alerts come from the failure emails and the daily fleet summary. Revisit when the fleet grows. |
-| D-10 | Existing organizations | Fresh inventory; delete the unused test organizations. The rest get a tenant on first use. | SO-14. |
-| D-11 | Legal and marketing | Proceed under the existing document process. | SO-10. No customer reaches Checkout before approval and publication. |
-| D-12 | Team container | A larger instance, `1c-2g`, with one slot. | The tier change resizes the container. Costs about 25 USD a month for each team tenant. |
+| D-10 | Existing organizations | Fresh inventory; delete the unused test organizations. The rest get a tenant on first use. | SO-12. |
+| D-11 | Legal and marketing | Proceed under the existing document process. | SO-12 for the free tier, SO-14 for the paid tier. No customer reaches Checkout before approval and publication. |
+| D-12 | Team container | A larger instance, `1c-2g`, with the same capacity. | The tier change resizes the container. Costs about 25 USD a month for each team tenant. |
 | D-13 | Payment provider | Stripe. | Closes D1 of the billing design. |
 | D-14 | Tenant credentials | No credential in a tenant: signed access context and audit relay. | Sections 4.1 and 4.2. |
+| D-15 | Calls at the same time in a container | 10, instead of today's 1. | `OperationCapacity` takes a limit from the new setting `OPERATION_CAPACITY`, default 10. The 11th call gets `Server busy`. One render reached 631 MiB, so 10 renders at once can exceed 512 MB and also 2 GB; SO-01 measures the real concurrent peak on both instances, and the owner then confirms the free and team values or lowers the free one. |
 
 Mapping to the billing design: D1 Stripe; D2 monthly, billed at the end of
 each period from the meter; D3 automatic charge; D4 no proration, because the
@@ -472,27 +475,31 @@ retries; D8 becomes "no subscription means the free tier"; D9 start again
 with a new Checkout; D10 every existing organization starts as `free`; D11
 PostgreSQL. The AUTH-11 precondition "Super Admin with completed MFA" is
 superseded by the S1-02 model: Admin with `billing:manage` and no MFA. The
-`updateSeats()` operation stays unused; WorkOS counts the seats. SO-09
+`updateSeats()` operation stays unused; WorkOS counts the seats. SO-13
 records all of this in the billing design.
 
-## 6. Tickets
+## 6. Tickets, in four slices
 
 Each ticket writes its Given-When-Then acceptance specification first, then
 uses TDD, and runs the gates of the test gate policy. Sizes: S is a day or
-two, M is about a week, L is more. Dependencies are named in each ticket; the
-longest chain is SO-01, SO-04, SO-06, SO-07, SO-09, SO-10, SO-14.
+two, M is about a week, L is more. Each slice ends with something the owner
+can use. The longest chain is SO-01, SO-04, SO-06, SO-07, SO-12 for the free
+tier, then SO-13, SO-14, SO-15 for the paid tier.
+
+### Slice 1: decisions and spike
 
 **SO-00 Decision records.** Two records under `architecture/decisions/`:
 one for the container design (one public origin, gateway inside `MCPServer`,
 private tenant services without credentials, signed access context, audit
-relay, one image with two roles, tenant on first need, the instance of each
-tier) and one for tiers and billing (tiers, the per-member price through the
-WorkOS meter, Stripe, PostgreSQL state, the behavior at 5 members). Context,
-Decision, Consequences, with the answers of section 5. The same pull request
-records in the organization administration plan that the free-only rule no
-longer applies to the containers and the paid tier. The owner merges. Size S.
+relay, one image with two roles, tenant on first need, the instance and the
+capacity of each tier) and one for tiers and billing (tiers, the per-member
+price through the WorkOS meter, Stripe, PostgreSQL state, the behavior at 5
+members). Context, Decision, Consequences, with the answers of section 5. The
+same pull request records in the organization administration plan that the
+free-only rule no longer applies to the containers and the paid tier. The
+owner merges. Size S.
 
-**SO-01 Spikes.** Evidence only, in the My Workspace workspace, the WorkOS
+**SO-01 Spike.** Evidence only, in the My Workspace workspace, the WorkOS
 Staging environment, and Stripe test mode, with every resource deleted at
 the end. Size M.
 
@@ -505,19 +512,29 @@ the end. Size M.
   provisioner needs. Proxy one streamed MCP call from a Node process to the
   private service with a signed header, and relay one event back; confirm
   that SSE and cancellation pass through.
-- Capacity: run the RHD-05 protocol against that `0.5c-512mb` service, with
-  the 9 MiB page, the JavaScript page, Brave search, overlap, and shutdown.
-  Record memory, kills, restart time, and what the client sees. The result
-  sets the alert threshold and the words of the failure message.
-- Stripe and WorkOS: connect the WorkOS Stripe add-on in Staging to the
-  standard Stripe account in test mode, create a product with a metered
-  price on the "User Seat Count" meter, set `stripe_customer_id` on a
-  disposable organization, add and remove a membership, and confirm the
-  meter events. Run Checkout with required terms acceptance and Stripe Tax,
-  the Customer Portal, the webhook signature check with the Stripe CLI, the
-  dunning setting, and a test clock through a period end, a failed payment,
-  and a cancellation. Confirm a restricted API key with only the needed
-  permissions.
+- Capacity: run the RHD-05 protocol against that service on `0.5c-512mb` and
+  on `1c-2g`, with 1, 5, and 10 parallel calls: the 9 MiB page, the
+  JavaScript page, Brave search, overlap, and shutdown. Record memory, kills,
+  restart time, and what the client sees. The result confirms or lowers the
+  capacity of each tier (D-15) and sets the alert threshold and the words of
+  the failure message.
+- Stripe and WorkOS, needed before Slice 3: connect the WorkOS Stripe add-on
+  in Staging to the standard Stripe account in test mode, create a product
+  with a metered price on the "User Seat Count" meter, set
+  `stripe_customer_id` on a disposable organization, add and remove a
+  membership, and confirm the meter events. Run Checkout with required terms
+  acceptance and Stripe Tax, the Customer Portal, the webhook signature check
+  with the Stripe CLI, the dunning setting, and a test clock through a period
+  end, a failed payment, and a cancellation. Confirm a restricted API key
+  with only the needed permissions.
+
+### Slice 2: free tier end to end
+
+At the end of this slice, a visitor creates a free organization on
+`thermus.ai`, its container is provisioned, the organization uses Thermus
+through the gateway with 10 calls at a time, the 5-member limit holds, idle
+containers are suspended, and the owner can remove an organization and its
+container.
 
 **SO-02 Release pipeline.** A GitHub Actions workflow on `main` builds
 `Dockerfile.hosted` for `linux/amd64`, pushes `thermus-hosted:<sha>` to GHCR,
@@ -528,15 +545,18 @@ through the deploy hook. Document the GHCR quota and the retention of old
 images. The workflow also gives the hosted image gate a native AMD64 runner.
 Size M. Depends on SO-01.
 
-**SO-03 Tenant role and signed context.** The `identity` module that signs
-and verifies the access context. `THERMUS_ROLE=tenant` composes `/healthz` and
-`/mcp` only, pinned to `TENANT_ORGANIZATION_ID`, with the settings of section
-4.1 and an access resolver that takes the grants from the verified context.
-The audit relay sink. Given a request with a valid context and token for the
-pinned organization, when the client calls a tool, then it gets the cleaned
-Markdown and the relay receives one event; a context for another
-organization, an expired context, a bad signature, or a token with another
-hash gets `403`; the start needs no WorkOS API key and no database. Size L.
+**SO-03 Tenant role, signed context, and capacity.** The `identity` module
+that signs and verifies the access context. `THERMUS_ROLE=tenant` composes
+`/healthz` and `/mcp` only, pinned to `TENANT_ORGANIZATION_ID`, with the
+settings of section 4.1 and an access resolver that takes the grants from
+the verified context. The audit relay sink. `OperationCapacity` takes a limit
+from `OPERATION_CAPACITY`, default 10, in both roles. Given a request with a
+valid context and token for the pinned organization, when the client calls a
+tool, then it gets the cleaned Markdown and the relay receives one event; a
+context for another organization, an expired context, a bad signature, or a
+token with another hash gets `403`; given 10 running calls, when an 11th
+arrives, then it gets `Server busy`; the start needs no WorkOS API key and no
+database. Size L.
 
 **SO-04 Tenant registry and SQL owner.** The `sql` owner with the moved
 runtime, the three tables of section 4.3, the migration, the control-plane
@@ -560,15 +580,16 @@ runs both roles as two local processes. Size L. Depends on SO-03, SO-04.
 
 **SO-06 Provisioner.** The state machine of section 4.2 behind a small
 `TenantPlatform` interface with a Render adapter: idempotent creation by
-name, the duplicate-name stop, the plan change, bounded retries, failure
-reports, and the claim of one row at a time. Given a `requested` row, when
-the loop runs with a fake Render API, then the row reaches `live` with the
-service ID and the internal address; given a Render `429`, then the loop
-waits for `Retry-After` and creates no second service; given a restart after
-`creating`, then it finds the service by name and continues; given a row
-whose plan differs from the applied plan, then the service is updated once.
-A live interface test in the My Workspace workspace creates, resizes, and
-deletes one disposable tenant. Size L. Depends on SO-04.
+name, the duplicate-name stop, deletion, bounded retries, failure reports,
+and the claim of one row at a time. The plan change comes with Slice 3.
+Given a `requested` row, when the loop runs with a fake Render API, then the
+row reaches `live` with the service ID and the internal address; given a
+Render `429`, then the loop waits for `Retry-After` and creates no second
+service; given a restart after `creating`, then it finds the service by name
+and continues; given a row marked for deletion, then the service is deleted
+and the row becomes `deleted`. A live interface test in the My Workspace
+workspace creates and deletes one disposable tenant. Size L. Depends on
+SO-04.
 
 **SO-07 Signup handoff and workspace status.** `?tier=free` on `/signup`, the
 cap check with the closed notice, the tenant request after the first Admin is
@@ -578,104 +599,121 @@ when the agreement is accepted, then the organization exists, the row is
 `requested`, and the portal shows the setup state until `live`. The hosted
 live gate gains this scenario. Size M. Depends on SO-05, SO-06.
 
-**SO-08 Tier state and member limit.** `BillingState` gains
-`plan: 'free' | 'team'` and `memberLimit`. `BillingFree` answers `free` with
-the limit 5. The members page shows "N of 5 members" on `free`;
-`sendInvitation()` refuses beyond the limit with `limit-reached` and an
-Upgrade link, serialized for each organization; the portal accepts both
-plans. Given a free organization with 4 members and 1 pending invitation,
-when two Admins invite at the same time, then one invitation is sent and the
-other is refused; given a `team` organization, then both are sent. Size M.
-Depends on SO-04.
+**SO-08 Free member limit.** `BillingState` gains `plan: 'free' | 'team'`
+and `memberLimit`. `BillingFree` answers `free` with the limit 5. The members
+page shows "N of 5 members" on `free`; `sendInvitation()` refuses beyond the
+limit with `limit-reached` and an Upgrade link, serialized for each
+organization; the portal accepts both plans. Given a free organization with
+4 members and 1 pending invitation, when two Admins invite at the same time,
+then one invitation is sent and the other is refused. Size M. Depends on
+SO-04.
 
-**SO-09 Stripe billing (AUTH-11).** `BillingStripe` behind the `Billing`
+**SO-09 Fleet script and organization removal.** `script/fleet/*.ts` over
+the Render adapter and the registry: list, status, request a tenant for an
+organization, upgrade one or all tenants to a digest in batches with health
+checks, suspend, resume, repair a `failed` row, rotate the gateway key pair,
+delete a tenant with its Render service, and the daily cost and state
+summary. Each command prints what it will do and asks before a write. The
+owner's removal of an organization: the deletion runbook gains the order
+(remove the WorkOS organization under the existing procedure, then delete
+the tenant with the fleet script) and the registry rows, and a weekly sweep
+deletes the tenant of an organization that WorkOS no longer lists. Given an
+organization that WorkOS no longer lists, when the sweep runs, then its
+Render service is deleted and its row is `deleted`. Size M. Depends on SO-06.
+
+**SO-10 Idle suspension and resume.** The idle sweep, the resume path of the
+gateway, and the portal notice. Given a free tenant idle for the period, when
+the sweep runs, then Render suspends it; given a call after that, then the
+gateway resumes it once and answers `503` with `Retry-After` until it is
+live. Size M. Depends on SO-05, SO-09.
+
+**SO-11 Runbooks, alerts, and secrets.** Runbooks for a failed provision, an
+orphaned Render service, a paused Supabase project, the deletion of a tenant,
+and the rotation of the Render API key, the gateway key pair, and the
+settings encryption key. Within the Hobby plan: Render failure emails for
+memory kills, and the daily summary of SO-09 as the fleet alert. Size S.
+
+**SO-12 Free-tier release.** Confirmation of the v3 Audit bundle status; the
+marketing **Start free** link to `https://app.thermus.ai/signup?tier=free`
+and the free-tier guides; rehearsal with the WorkOS Staging environment, a
+staging control plane and database, a dedicated Render user, and the My
+Workspace workspace: signup, provisioning, an MCP call, suspend, resume, a
+fleet upgrade, and an organization removal. Then production, in this order:
+fresh WorkOS inventory and the D-10 cleanup; the owner's disposition of the
+open release holds; the database migration; the registry credential; the
+control plane deploy with the gateway switch off; the switch on; one real
+MCP call for each kept organization, which provisions its tenant; a canary
+signup with an owner account; marketing publication; then the signup switch.
+Rollback: turn the gateway switch off, close signup, keep the tenants
+running, and redeploy the previous control plane release if needed. Size M.
+Depends on SO-02 to SO-11.
+
+### Slice 3: upgrade to team
+
+At the end of this slice, an Admin upgrades with a card, the organization has
+no member limit, is billed for each active member, and runs on `1c-2g`; a
+cancellation returns it to the free tier.
+
+**SO-13 Stripe billing (AUTH-11).** `BillingStripe` behind the `Billing`
 interface with the operations that the flow needs: start Checkout, open the
 Customer Portal, apply a verified event, reconcile a subscription. Routes
 `POST /billing/upgrade`, `POST /billing/portal`, the return handling of
 `GET /billing`, and the public `POST /billing/events` before the account
 routes. The `stripe_customer_id` write to WorkOS, the metered price, the
 no-second-subscription rule, the applied mark, the daily reconciliation, the
-tier change that resizes the tenant, the downgrade with the revoked
+tier change that resizes the tenant through the provisioner plan change,
+team tenants excluded from suspension, the downgrade with the revoked
 invitations, and the dunning setting. Settings and an exact pin of the
-`stripe` package. The billing design records the decisions and the superseded
-MFA precondition. Given an Admin on `free`, when Upgrade completes, then the
-organization is `team` before the webhook arrives, the WorkOS organization has
-the customer ID, the tenant row wants `1c-2g`, and a duplicate event changes
-nothing; given a second Upgrade while the subscription runs, then it is
-refused; given `customer.subscription.deleted` with 8 members, then the tier
-is `free`, the pending invitations above the limit are revoked, the members
-keep access, the tenant row wants `0.5c-512mb`, and a new invitation is
-refused. Offline tests use a local double of the Stripe API and the Stripe
-signature helper. The paid billing gate runs the scenarios in Stripe test
-mode with test clocks and the Staging Seat Sync. Size L. Depends on SO-08,
-SO-01.
+`stripe` package. The billing design records the decisions and the
+superseded MFA precondition. Given an Admin on `free`, when Upgrade
+completes, then the organization is `team` before the webhook arrives, the
+WorkOS organization has the customer ID, the tenant row wants `1c-2g`, and a
+duplicate event changes nothing; given a second Upgrade while the
+subscription runs, then it is refused; given
+`customer.subscription.deleted` with 8 members, then the tier is `free`, the
+pending invitations above the limit are revoked, the members keep access,
+the tenant row wants `0.5c-512mb`, and a new invitation is refused. Offline
+tests use a local double of the Stripe API and the Stripe signature helper.
+The paid billing gate runs the scenarios in Stripe test mode with test
+clocks and the Staging Seat Sync. Size L. Depends on SO-08, SO-01.
 
-**SO-10 Legal, marketing, and guides.** Paid Terms and Privacy with the next
-unused version, new hashes, and owner approval; confirmation of the v3 Audit
-bundle status; the runtime bundle update; the marketing pricing section with
-two hosted tiers, a price that matches the Stripe price, and direct links to
-`https://app.thermus.ai/signup?tier=free`; the subscription and connection
-guides. Given the published pages, when the publication verification runs,
-then versions and hashes match the approved bundle. Size M in two
-repositories. Depends on the SO-09 wording. No customer reaches Checkout
-before this ticket is done.
+**SO-14 Paid legal and marketing.** Paid Terms and Privacy with the next
+unused version, new hashes, and owner approval; the runtime bundle update;
+the marketing pricing section with two hosted tiers and a price that matches
+the Stripe price; the subscription guide. Given the published pages, when
+the publication verification runs, then versions and hashes match the
+approved bundle. Size M in two repositories. Depends on the SO-13 wording.
+No customer reaches Checkout before this ticket is done.
 
-**SO-11 Fleet script.** `script/fleet/*.ts` over the Render adapter and the
-registry: list, status, request a tenant for an organization, upgrade one or
-all tenants to a digest in batches with health checks, resize, suspend,
-resume, repair a `failed` row, rotate the gateway key pair, delete a tenant
-with its Render service, and the daily cost and state summary. Each command
-prints what it will do and asks before a write. Size M. Depends on SO-06.
+**SO-15 Team release.** The WorkOS Stripe add-on in production with the live
+Stripe product and metered price; runbooks for a Stripe webhook failure, a
+downgrade dispute, the deletion of a subscription with its organization, and
+the rotation of the Stripe keys and the webhook secret; rehearsal in Stripe
+test mode with test clocks and the Staging seat sync: upgrade with a meter
+event, downgrade with the resize, and cancellation; then production rollout
+and the marketing publication. Rollback: hide the Upgrade button with a
+setting and keep existing subscriptions; Stripe replays webhooks for three
+days. Size M. Depends on SO-13, SO-14.
 
-**SO-12 Idle suspension, resume, and sweeps.** The idle sweep, the resume
-path of the gateway, the portal notice, and the weekly organization sweep.
-Given a free tenant idle for the period, when the sweep runs, then Render
-suspends it; given a call after that, then the gateway resumes it once and
-answers `503` with `Retry-After` until it is live; given an organization that
-WorkOS no longer lists, then its tenant is deleted. Size M. Depends on SO-05,
-SO-11.
+### Slice 4: cleanup
 
-**SO-13 Runbooks and secrets.** Runbooks for a failed provision, an orphaned
-Render service, a Stripe webhook failure, a paused Supabase project, a
-downgrade dispute, the deletion of a tenant and its subscription, and the
-rotation of the Render API key, the Stripe keys, the webhook secret, the
-gateway key pair, and the settings encryption key. The deletion runbook gains
-the tenant service, the registry rows, and the Stripe customer data. Within
-the Hobby plan: Render failure emails for memory kills, and the daily summary
-of SO-11 as the fleet alert. Size S.
-
-**SO-14 Release.** Rehearsal with the WorkOS Staging environment and its
-Stripe add-on, a staging control plane and database, a dedicated Render user,
-the My Workspace workspace, and Stripe test mode: signup, provisioning, an MCP
-call, upgrade with a meter event, downgrade with the resize, suspend, resume,
-and a fleet upgrade. Then production, in this order: fresh WorkOS inventory
-and the D-10 cleanup; the owner's disposition of the open release holds; the
-WorkOS Stripe add-on in production with the live Stripe product and metered
-price; the database migration; the registry credential; the control plane
-deploy with the gateway switch off; the switch on; one real MCP call for each
-kept organization, which provisions its tenant; a canary signup with an owner
-account; marketing publication; then the signup switch. Rollback: turn the
-gateway switch off, close signup, keep the tenants running, and redeploy the
-previous control plane release if needed; Stripe replays webhooks for three
-days. Size M. Depends on all tickets above.
-
-**SO-15 Cleanup.** After the rollout, remove the in-process tools, the
+**SO-16 Cleanup.** After the rollouts, remove the in-process tools, the
 renderer check, and the gateway switch from the control plane role, and
-consider a smaller instance for it. Size S. Depends on SO-14.
+consider a smaller instance for it. Size S. Depends on SO-12.
 
 ## 7. Risks and limits
 
 | Risk | Fact | Mitigation |
 | --- | --- | --- |
-| Memory on the free instance | 631 MiB peak recorded against 512 MB. A kill ends the active call with a failure. | Accepted in D-2. Render restarts the container. SO-01 measures the rate; SO-13 watches the failure emails. A team tenant has 2 GB. |
+| Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. D-15 allows 10 renders at a time, which multiplies the peak. A kill ends every active call with a failure. | Accepted in D-2 and D-15 for the defaults. SO-01 measures the concurrent peak on both instances; if the free instance cannot hold 10, the owner lowers `OPERATION_CAPACITY` for free tenants or chooses a larger instance. Render restarts the container. SO-11 watches the failure emails. |
 | Render API rate limits | 20 creates, resizes, suspends, resumes, and modifies an hour for each Render user. | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
 | PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A runbook resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |
-| Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-15. |
+| Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-16. |
 | Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal and its verification merged on 26 October 2026 (PRs #251 to #257); the removal release itself is still pending in the S2.5-02 ledger. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
 | Billed count | WorkOS counts every active membership, also a membership with only the default role, which gives no product access. | Default-role memberships do not exist in normal use; the fleet summary reports one. |
 | Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01. Keep old digests for rollback. Prune GHCR under its quota. |
-| Legal | Paid fees are outside the approved Terms. The runtime bundle status needs confirmation. The published price must match Stripe. | SO-10 before any customer reaches Checkout. |
+| Legal | Paid fees are outside the approved Terms. The runtime bundle status needs confirmation. The published price must match Stripe. | SO-14 before any customer reaches Checkout. |
 | WorkOS metadata is full | 10 of 10 keys used. | All tier and tenant facts live in PostgreSQL. |
 | Credentials in the control plane | The Render API key can change every service of the workspace. The Stripe key can create charges. | Render secret variables, a dedicated Render user, a Stripe restricted key, rotation runbooks, and no credential in any tenant. |
 | Webhook order and duplicates | Stripe can deliver an event twice and out of order. | Event ID table with the applied mark; read the subscription from Stripe on each event; daily reconciliation. |
