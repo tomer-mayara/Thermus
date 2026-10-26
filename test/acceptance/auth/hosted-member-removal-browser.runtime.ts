@@ -9,6 +9,7 @@ import type { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 import { DestinationSettingsService } from '../../../src/logs/audit/destination-settings-service.ts';
 import { DestinationSettingsFake } from '../../support/doubles/logging/destination-settings-fake.ts';
 import { HostedPortal } from '../../../src/app/hosted-portal.ts';
+import { InvitationBrowser } from '../../support/drivers/browser/invitation-browser.ts';
 import { AdminShellBrowser } from '../../support/drivers/browser/admin-shell-browser.ts';
 import { memberActionStyle, memberRemovalBrowser, tabTo } from '../../support/drivers/browser/member-removal-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
@@ -190,6 +191,114 @@ for (const self of [false, true]) {
   }
 }
 
+test('Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden', async (t) => {
+  const { page } = await adminBrowser(t, { javaScriptEnabled: false });
+  await page.goto('https://thermus.example/team/members');
+  const disclosure = page.locator('details').filter({ has: page.getByText('Invite member', { exact: true }) });
+  assert.equal(await disclosure.count(), 1, 'Members must offer a native Invite member disclosure');
+  assert.equal(await disclosure.getAttribute('open'), null);
+  assert.equal(await page.getByLabel('Email address', { exact: true }).isVisible(), false);
+});
+
+for (const javaScriptEnabled of [false, true]) {
+  for (const width of [320, 1280]) {
+    const options = { javaScriptEnabled, width };
+    const layout = `JavaScript ${javaScriptEnabled ? 'on' : 'off'} at ${width}px`;
+    test(`Given Members with ${layout}, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write`, async (t) => {
+      const { site, browser } = await invitationBrowser(t, options);
+      await browser.inspectClosedHeading(width);
+      await browser.openByKeyboard();
+      await browser.inspectOpenForm(width);
+      await browser.cancelDraft();
+      assert.equal(site.world.invitations.length, 0);
+      assert.equal(site.removalStore.admissions.length, 0);
+    });
+
+    test(`Given a fresh invitation form with ${layout}, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request`, async (t) => {
+      const { site, browser } = await invitationBrowser(t, options);
+      await browser.openByKeyboard();
+      await browser.rejectInvalidEmail();
+      assert.equal(site.world.invitations.length, 0);
+    });
+
+    test(`Given a fresh invitation form with ${layout}, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write`, async (t) => {
+      const { site, page, browser } = await invitationBrowser(t, options);
+      await browser.openByKeyboard();
+      assert.equal(await browser.submitForNotice(removalUser.email), 409);
+      assert.equal(await page.getByRole('heading', { name: 'Invitation not sent', exact: true }).isVisible(), true);
+      assert.match(await page.getByRole('main').innerText(), /An existing member cannot be invited again\. To replace a pending invitation, revoke it first\./);
+      assert.equal(site.world.invitations.length, 0);
+    });
+
+    test(`Given a fresh invitation form with ${layout} and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry`, async (t) => {
+      const { site, page, browser } = await invitationBrowser(t, options);
+      site.world.fake.answer('POST /user_management/invitations', { status: 500, body: { message: 'private-provider-failure' } });
+      await browser.openByKeyboard();
+      assert.equal(await browser.submitForNotice('uncertain@example.com'), 503);
+      assert.equal(await page.getByRole('heading', { name: 'Invitation change not confirmed', exact: true }).isVisible(), true);
+      assert.match(await page.getByRole('main').innerText(), /It may have taken effect\. Check the current status before making another change\./);
+      assert.doesNotMatch(await page.getByRole('main').innerText(), /private-provider-failure|Try again|Retry/);
+      assert.equal(await page.getByRole('link', { name: 'Check status', exact: true }).getAttribute('href'), '/team/members');
+      assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'POST' && request.path === '/user_management/invitations').length, 1);
+    });
+
+    for (const role of ['User', 'Admin'] as const) {
+      test(`Given a fresh invitation form with ${layout}, when an Admin submits ${role} once, then one protected POST creates that pending role and a 303 returns the closed Members form`, async (t) => {
+        const { site, browser } = await invitationBrowser(t, options);
+        await browser.openByKeyboard();
+        const email = `new.${role.toLowerCase()}@example.com`;
+        await browser.sendInvitation(email, role);
+        assert.equal(site.world.invitations.filter(invitation => invitation.email === email && invitation.roleSlug === role.toLowerCase()).length, 1);
+        assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'POST' && request.path === '/user_management/invitations').length, 1);
+        assert.equal(site.removalStore.admissions.length, 0);
+      });
+    }
+  }
+}
+
+for (const width of [481, 600, 860, 1280]) {
+  test(`Given Members at ${width}px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap`, async (t) => {
+    const { page } = await adminBrowser(t, { javaScriptEnabled: false, setUp: world => {
+      world.organizationNames = { ...world.organizationNames, [removalOrganization]: 'LongWorkspaceName'.repeat(12) };
+    } });
+    await page.setViewportSize({ width, height: 844 });
+    const browser = new InvitationBrowser(page, `double-text-${width}`);
+    await browser.openMembers();
+    await browser.openByKeyboard();
+    await browser.inspectDoubledText();
+  });
+}
+
+for (const javaScriptEnabled of [false, true]) {
+  test(`Given the last Admin with JavaScript ${javaScriptEnabled ? 'on' : 'off'}, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task`, async (t) => {
+    const { site, page } = await adminBrowser(t, { javaScriptEnabled, setUp: world => {
+      world.memberships = world.memberships.filter(member => member.userId !== 'user_ADMIN2');
+    } });
+    await page.goto('https://thermus.example/team/members');
+    const targetId = site.world.membershipId(removalAdmin, removalOrganization);
+    const details = page.locator('details.member-removal').filter({ has: page.locator(`input[name="membership_id"][value="${targetId}"]`) });
+    await tabTo(page, details.locator('summary'));
+    await page.keyboard.press('Enter');
+    await tabTo(page, details.getByRole('button'));
+    await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
+    assert.equal(await page.getByRole('heading', { name: 'Keep an Admin', exact: true }).isVisible(), true);
+    assert.match(await page.getByRole('main').innerText(), /On Members, open Invite member, select Admin, and wait for acceptance\./);
+    const recovery = page.getByRole('link', { name: 'Invite another Admin', exact: true });
+    assert.equal(await recovery.getAttribute('href'), '/team/invitations');
+    await tabTo(page, recovery);
+    await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
+    const browser = new InvitationBrowser(page, `recovery-${javaScriptEnabled ? 'on' : 'off'}`);
+    await browser.assertClosed();
+    await browser.openByKeyboard();
+    await page.getByRole('radio', { name: 'Admin', exact: true }).check();
+    await page.getByLabel('Email address', { exact: true }).fill('replacement.admin@example.com');
+    assert.equal(await page.getByRole('button', { name: 'Send invitation', exact: true }).isEnabled(), true);
+    assert.equal(site.world.deletedMembershipIds.size, 0);
+    assert.equal(site.world.invitations.length, 0);
+    assert.equal(browser.posts.length, 0);
+  });
+}
+
 test('Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership', async (t) => {
   const { site, page } = await adminBrowser(t, { javaScriptEnabled: true });
   await page.setViewportSize({ width: 320, height: 844 });
@@ -340,6 +449,14 @@ async function adminBrowser(t: TestContext, options: { readonly javaScriptEnable
   const loggingService = new DestinationSettingsService(settingsStore, new Uint8Array(32).fill(7), { send: async (_destination, event) => { testEvents.push(event.eventName); return { kind: 'accepted' }; } });
   const site = await serveMemberRemovalSite(t, { portal, setUp: options.setUp, loggingService });
   const { browser: session } = await signInThroughServer(site, removalAdmin, removalOrganization);
-  const page = await memberRemovalBrowser(t, site.transport, session.cookieHeader ?? '', { javaScriptEnabled: options.javaScriptEnabled });
+  const page = await memberRemovalBrowser(t, site.transport, { cookieHeader: session.cookieHeader ?? '', javaScriptEnabled: options.javaScriptEnabled });
   return { site, page, settingsStore, testEvents };
+}
+
+async function invitationBrowser(t: TestContext, options: { readonly javaScriptEnabled: boolean; readonly width: number }) {
+  const { site, page } = await adminBrowser(t, options);
+  await page.setViewportSize({ width: options.width, height: 844 });
+  const browser = new InvitationBrowser(page, `${options.javaScriptEnabled ? 'on' : 'off'}-${options.width}`);
+  await browser.openMembers();
+  return { site, page, browser };
 }

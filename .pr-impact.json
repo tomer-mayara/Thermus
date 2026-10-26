@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "UI-02 refines member rows and native removal disclosures inside the existing Web owner. It uses the complete existing overview for the active-row heading and retains activeUserSeats as a separate product-access count. Trusted subject identity selects You and Leave; existing removable decisions and checked removal POSTs remain authoritative. Preserve hidden fields, current access, last-Admin/stale/busy/unknown outcomes, self-removal recovery, account and other-workspace access, and approved help bytes. No new production component, import edge, public declaration, provider read, store, dependency, deployment or security guarantee. Desktop labels now sit beside values with less row padding; natural growth and 48px action targets remain. Registry views remain accurate; the browser inventory changes only to describe the implemented cases.",
+    "summary": "UI-03 changes invitation presentation inside the existing Web owner. The increment preserves the parent UI-02 member rows, distinct counts and compact quiet removal controls. A native closed Invite member disclosure contains the current protected form, Send invitation and a Members GET Cancel link. Last-Admin refusal adds instructions beside the existing recovery link. Allowed roles, recipient policy, POST fields, session/access checks, provider operations, server notices, removal authority and approved help remain unchanged. There is no new script, state, query, production component, dependency, public declaration, store or deployment change. All 15 registry views and current responsibility descriptions remain accurate. The browser gate inventory documents the added cases without changing gate selection or decision authority.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -29,12 +29,12 @@
     ],
     "evidence": [
       "src/interfaces/web/account/administration-pages.ts",
-      "src/interfaces/web/account/members-style.ts",
       "src/interfaces/web/account/account-pages.ts",
-      "test/acceptance/auth/hosted-members.test.ts",
+      "src/interfaces/web/account/members-style.ts",
       "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
       "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
-      "docs/implementation/admin-ui-02.md",
+      "test/acceptance/auth/hosted-invitations.test.ts",
+      "docs/implementation/admin-ui-03.md",
       "docs/implementation/test-gate-policy.md",
       "architecture/components.md"
     ]

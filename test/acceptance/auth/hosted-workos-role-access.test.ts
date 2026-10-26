@@ -27,7 +27,7 @@ test('Given an active Admin-only membership and password sign-in, when the Admin
   const invitations = await browser.open('members');
   assert.equal(invitations.status, 200, invitations.body);
   for (const role of ['User', 'Admin']) {
-    const form = formLabelled(formsIn(invitations.body), 'Invite');
+    const form = formLabelled(formsIn(invitations.body), 'Send invitation');
     const answer = await browser.submit({ ...form, fields: { ...form.fields, role: role.toLowerCase(), email: `new-${role.toLowerCase()}@example.com` } });
     assert.equal(answer.status, 303, answer.body);
   }

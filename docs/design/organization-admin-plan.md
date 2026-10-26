@@ -2,7 +2,9 @@
 
 UI design selected: 26 October 2026 — Refined tabs. UI-01 is implemented in
 [PR #263](https://github.com/tomer-mayara/Thermus/pull/263). UI-02 is implemented in
-[PR #264](https://github.com/tomer-mayara/Thermus/pull/264); UI-03/04 remain planned.
+[PR #264](https://github.com/tomer-mayara/Thermus/pull/264), with UI-03
+([PR #266](https://github.com/tomer-mayara/Thermus/pull/266)) now stacked on UI-02.
+UI-04 remains the next child to restack.
 See the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
 
 Plan reviewed: 25 October 2026. Slice 1 and Slice 2 are merged, and the internal
@@ -227,7 +229,8 @@ Organization unclear with multiple memberships: [Choose workspace]
 ### Members and invitations — Refined tabs
 
 **Approved design direction — 26 October 2026. UI-01 is implemented in PR #263;
-UI-02 is implemented in PR #264. UI-03/04 remain planned.**
+UI-02 and UI-03 have candidates in PR #264 and PR #266, with UI-03 stacked on UI-02.
+UI-04 remains the next child to restack.**
 The owner selected Refined tabs. The following wireframes replace the earlier
 conceptual Members layout; they do not claim that the application has changed.
 Follow [portal design](portal-design.md#members) and the
@@ -1219,7 +1222,8 @@ complete only when both of its child tickets are complete.
 
 ### Refined tabs UI — approved design, 26 October 2026
 
-**Status: UI-01 is implemented in PR #263. UI-02 is implemented in PR #264; UI-03/04 remain planned.** These four small,
+**Status: UI-01, UI-02 and UI-03 have candidates in PR #263, #264 and #266.
+UI-03 is now stacked on UI-02; UI-04 is next to restack.** These four small,
 plan-local tickets implement the selected Members presentation against existing
 member, invitation, and removal behavior. They add no provider or MFA feature
 and have no Slice 3 dependency. They do not reopen completed Slice 2.5 release
@@ -1448,6 +1452,10 @@ expanded rows, all affected row/self-action test consumers are migrated, and the
 candidate validation gate passes. No later invitation UI is required.
 
 #### UI-03 — On-demand invitation form
+
+**Candidate: [PR #266](https://github.com/tomer-mayara/Thermus/pull/266), stacked
+on UI-02.** See the [implementation record](../implementation/admin-ui-03.md).
+This candidate includes the parent member rows, both counts and compact removal actions.
 
 **BDD acceptance first.**
 

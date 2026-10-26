@@ -166,7 +166,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       assert.equal(pages.some((path) => path.startsWith('/mfa/')), false);
       assert.equal(session.mfaCompleted, false);
       assert.equal((await serverGet(page, 'portal/access')).status, 200);
-      assert.ok(labelsOf(members.forms).includes('Invite'));
+      assert.ok(labelsOf(members.forms).includes('Send invitation'));
       assert.match(members.body, /type="radio" name="role" value="admin"/);
       assert.equal(answer.status, 404, answer.body);
       const allowedActions = new Set(['/invitations/send', '/invitations/resend', '/invitations/revoke', '/members/remove']);
@@ -190,13 +190,14 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const [inviteeUser, inviteeAdmin, inviteeRevoked] = [users['c-invitee-user'], users['c-invitee-admin'], users['c-invitee-revoked']];
       const { page } = await administrator();
       const first = await shownPage(run, page, 'members');
-      const invite = (role: 'User' | 'Admin', email: string) => submit(page, formLabelled(first.forms, 'Invite'), { email, role: role.toLowerCase() });
+      const invite = (role: 'User' | 'Admin', email: string) => submit(page, formLabelled(first.forms, 'Send invitation'), { email, role: role.toLowerCase() });
 
       const sent = [await invite('User', inviteeUser.email), await invite('Admin', inviteeAdmin.email), await invite('User', inviteeUser.email)];
       const refused = [await invite('Admin', inviteeUser.email), await invite('User', actor.email)];
       const pending = await shownPage(run, page, 'members');
       const resent = await submit(page, formLabelled(pending.forms, `Resend the invitation to ${inviteeUser.email}`));
       const third = await invite('User', inviteeRevoked.email);
+      assertSeeOther(third, 'members');
       const revoked = await submitFrom(page, 'members', `Revoke the invitation to ${inviteeRevoked.email}`);
       const after = await shownPage(run, page, 'members');
       const invitations = await invitationsInWorkOS(organizationC.id);
@@ -209,7 +210,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       t.diagnostic(`sends ${JSON.stringify(sent.map(({ status }) => status))}; refused sends ${JSON.stringify(refused.map(({ status }) => status))}; resend ${resent.status}; third send ${third.status}; revoke ${revoked.status}`);
       t.diagnostic(`WorkOS invitations: ${JSON.stringify(invitations.map(({ roleSlug, state }) => `${String(roleSlug)} ${state}`))}; membership of the Admin invitee: ${adminInvitee.status} ${JSON.stringify(adminInvitee.roles)}`);
 
-      for (const answer of [...sent, resent, third, revoked]) assertSeeOther(answer, 'members');
+      for (const answer of [...sent, resent, revoked]) assertSeeOther(answer, 'members');
       for (const answer of refused) assertNotice(answer, 409, addressInUse);
       assert.ok(pending.body.includes(`${inviteeUser.email}: User invitation, pending.`), 'The invitations page does not show the pending User invitation.');
       assert.ok(pending.body.includes(`${inviteeAdmin.email}: Admin invitation, pending.`), 'The invitations page does not show the pending Admin invitation.');

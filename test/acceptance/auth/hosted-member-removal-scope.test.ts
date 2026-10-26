@@ -15,7 +15,7 @@ test('Given a target Admin with two memberships, a global account, and a persona
   const otherId = site.world.membershipId(removalUser, otherOrganization);
   const token = await site.world.connectToken(removalUser, { org_id: removalOrganization });
   const otherToken = await site.world.connectToken(removalUser, { org_id: otherOrganization });
-  const oldInvitationForm = formLabelled(formsIn((await target.open('members')).body), 'Invite');
+  const oldInvitationForm = formLabelled(formsIn((await target.open('members')).body), 'Send invitation');
   const factor = { object: 'authentication_factor', id: 'auth_factor_PERSONAL', type: 'totp', totp: { issuer: 'Thermus', user: removalUser.email }, created_at: '2026-10-01T08:00:00.000Z', updated_at: '2026-10-01T08:00:00.000Z' };
   site.world.fake.answer(`GET /user_management/users/${removalUser.id}/auth_factors`, { status: 200, body: { object: 'list', data: [factor], list_metadata: { before: null, after: null } } });
   const { workos } = site.world.connection();
@@ -38,7 +38,7 @@ test('Given a target Admin with two memberships, a global account, and a persona
   const deletionWrites = site.world.fake.takeRequests().filter(request => request.method !== 'GET');
   assert.deepEqual(deletionWrites.map(({ method, path }) => [method, path]), [['DELETE', `/user_management/organization_memberships/${targetId}`]]);
 
-  const invitationForm = formLabelled(formsIn((await admin.open('members')).body), 'Invite');
+  const invitationForm = formLabelled(formsIn((await admin.open('members')).body), 'Send invitation');
   const sent = await admin.submit({ ...invitationForm, fields: { ...invitationForm.fields, email: removalUser.email, role: 'user' } });
   assert.equal(sent.status, 303, sent.body);
   const invitation = site.world.invitations.find(each => each.email === removalUser.email && each.state === 'pending');
