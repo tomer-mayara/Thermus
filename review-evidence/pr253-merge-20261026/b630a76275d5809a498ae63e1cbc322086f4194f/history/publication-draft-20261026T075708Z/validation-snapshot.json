@@ -1,0 +1,28 @@
+{
+  "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "actualParent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "mainForCompleteCandidate": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "copiedLedgerSha256": "7ec95581134cf86f745b283aa24d0f3d3405562386bf90a01b47114d1aa3e5ee",
+  "snapshotCreated": "2026-10-26T07:57:08.235909+00:00",
+  "completedNames": [
+    "install",
+    "runtime",
+    "api-surface",
+    "focused-build",
+    "focused",
+    "logging-postgres",
+    "ordinary",
+    "typecheck",
+    "portal",
+    "hosted-live",
+    "native-container"
+  ],
+  "pendingWorkerHandback": [
+    "hosted-container",
+    "logging-collector",
+    "habit-hooks",
+    "diff-check"
+  ],
+  "finalValidationClaimed": false,
+  "rule": "Do not infer final outcomes from this snapshot. Refresh completed logs, counts, exact hashes and final binding only after worker handback."
+}

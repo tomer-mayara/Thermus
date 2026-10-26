@@ -1,0 +1,296 @@
+{
+  "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "base": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "mainForCompleteCandidateTests": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "tier": "T2 Need architect",
+  "architectureSummary": "T2: 1 public module added; declarations changed in 3 public modules; 2 registry views added, 5 registry views edited",
+  "architectureFacts": [
+    {
+      "key": "architecture.public_module_added",
+      "fact": "src/accounts/organizations/removal-operation-store.ts"
+    },
+    {
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/change-records.ts (+2 -2 lines)",
+      "detail": "diff --git a/docs/api-surface/src/accounts/organizations/change-records.d.ts b/docs/api-surface/src/accounts/organizations/change-records.d.ts\nindex 9688b8a9..8a8f6563 100644\n--- a/docs/api-surface/src/accounts/organizations/change-records.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/change-records.d.ts\n@@ -1,6 +1,6 @@\n import type { AuthenticatedUser } from '../identity/access-context.ts';\n export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-pending' | 'address-in-use' | 'unsupported';\n-export type ChangeOutcome = ChangeResult | 'failed' | 'unknown';\n+export type ChangeOutcome = ChangeResult | 'failed' | 'unknown' | 'last-admin' | 'busy' | 'unavailable';\n export declare class UnconfirmedChangeError extends Error {\n     constructor(cause: unknown);\n }\n@@ -40,6 +40,6 @@ export declare class ChangeRecording {\n     constructor(records: ChangeRecorder, clock: () => Date);\n     run(entry: ChangeEntry, check: () => Promise<ChangeResult | DirectoryChange>): Promise<ChangeResult>;\n     private recordingFailure;\n-    private keep;\n+    record(entry: ChangeEntry, outcome: ChangeOutcome): void;\n }\n export {};\n"
+    },
+    {
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-administration.ts (+6 -0 lines)",
+      "detail": "diff --git a/docs/api-surface/src/accounts/organizations/organization-administration.d.ts b/docs/api-surface/src/accounts/organizations/organization-administration.d.ts\nindex 2caf2796..0928c317 100644\n--- a/docs/api-surface/src/accounts/organizations/organization-administration.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/organization-administration.d.ts\n@@ -3,6 +3,8 @@ import type { Billing, BillingState } from '../billing/billing.ts';\n import { type InvitationOverview, type MemberOverview } from './administration-overviews.ts';\n import { type ChangeRecorder, type ChangeResult } from './change-records.ts';\n import type { OrganizationDirectory } from './organization-directory.ts';\n+import type { MemberRemovalRequest, RemovalOperationStore, RemovalResult } from './removal-operation-store.ts';\n+export type { MemberRemovalRequest, RemovalResult } from './removal-operation-store.ts';\n export interface Actor {\n     readonly user: AuthenticatedUser;\n }\n@@ -26,12 +28,16 @@ export interface OrganizationAdministrationOptions {\n     readonly records: ChangeRecorder;\n     readonly billing: Billing;\n     readonly clock?: () => Date;\n+    readonly removalStore?: RemovalOperationStore;\n }\n export declare class OrganizationAdministration {\n     private readonly directory;\n     private readonly changes;\n     private readonly billing;\n+    private readonly removals;\n     constructor(options: OrganizationAdministrationOptions);\n+    removeMember(actor: Actor, request: MemberRemovalRequest): Promise<RemovalResult>;\n+    close(): Promise<void>;\n     listOrganizations(user: AuthenticatedUser): Promise<readonly AuthorizedOrganization[]>;\n     authorizeSelection(user: AuthenticatedUser, organizationId: string): Promise<AuthorizedOrganization | undefined>;\n     memberOverview(actor: Actor, organizationId: string): Promise<MemberOverview | AdministrationRefusal>;\n"
+    },
+    {
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-directory.ts (+3 -2 lines)",
+      "detail": "diff --git a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\nindex d1f5e593..614af3d0 100644\n--- a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n@@ -35,6 +35,7 @@ export interface MemberPageRequest {\n     readonly organizationId: string;\n     readonly statuses: readonly MembershipStatus[];\n     readonly cursor?: string;\n+    readonly signal?: AbortSignal;\n }\n export interface InvitationPageRequest {\n     readonly organizationId: string;\n@@ -57,9 +58,9 @@ export interface MembershipDeletionResult {\n     readonly outcome: 'applied' | 'unsupported';\n }\n export interface OrganizationDirectory {\n-    membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]>;\n+    membershipsOf(user: AuthenticatedUser, signal?: AbortSignal): Promise<readonly OrganizationMembership[]>;\n     memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;\n-    member(membershipId: string): Promise<OrganizationMember | undefined>;\n+    member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined>;\n     deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;\n     invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;\n     invitation(invitationId: string): Promise<OrganizationInvitation | undefined>;\n"
+    },
+    {
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 2 views added, 5 views edited"
+    }
+  ],
+  "tierReasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.public_module_added",
+      "fact": "src/accounts/organizations/removal-operation-store.ts"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/change-records.ts (+2 -2 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-administration.ts (+6 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-directory.ts (+3 -2 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "architecture.registry_view_changed",
+      "fact": "architecture/components.md: 2 views added, 5 views edited"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.deployment",
+      "fact": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.component",
+      "fact": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks."
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks."
+    },
+    {
+      "tier": "T1",
+      "key": "protected_paths.policy",
+      "fact": "docs/implementation/pr-review-rules.yaml"
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": ".code-quality-exceptions.yaml"
+    },
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/accounts/organizations/membership-removal-checks.ts covered by \"One rule file keeps current actor authority, exact target facts, all grant support, complete bounded member pages, and the last-Admin decision together. Its largest function has nine paths, covered by refusal, pagination, duplicate, and target-change cases. Per-guard files would hide the order that prevents a stale User-to-Admin transition from bypassing the last-Admin check.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/accounts/organizations/membership-removal-lifetime.ts covered by \"One small lifetime owns the total deadline, admission uncertainty, read stop signal, guarded continuations, and one public result. Its largest function has four paths. Tests cover the exact deadline, accumulated phase time, close, late replies, and signal propagation. Splitting timer, stop, or result state into another owner would obscure release-once and no-late-dispatch guarantees.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "ratchet.exceptions",
+      "fact": "src/accounts/organizations/membership-removal.ts covered by \"One removal owner keeps authorization, durable admission, current checks, single dispatch, and conditional terminal receipts in one ordered flow. Its largest function has nine paths. Focused cases cover ambiguous admission, provider uncertainty, completion mismatch, and exact receipt matching. Further splitting would spread the no-replay and completion authority rules without reducing their decisions.\" until 2026-12-24"
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.policy",
+      "fact": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks."
+    }
+  ],
+  "mechanicalEligibility": "eligible",
+  "mechanicalBlockers": [],
+  "lineCounts": {
+    "production": 384,
+    "productionLimit": 400,
+    "total": 2475,
+    "totalLimit": 1500
+  },
+  "impactDeclaration": {
+    "path": ".pr-impact.json",
+    "sha256": "d34ee93232b76b84ba68fab38290f44e0c0cdfe730366aceb6da9a2eb47548a8",
+    "committed": {
+      "version": 1,
+      "classification": {
+        "container": false,
+        "external": false,
+        "contract": false,
+        "deployment": true,
+        "crossCutting": false,
+        "component": true,
+        "internalInterface": true,
+        "sensitiveBehavior": true,
+        "dependencyRisk": false,
+        "policy": true,
+        "uncertain": false
+      },
+      "architecture": {
+        "modelUpdated": true,
+        "summary": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks.",
+        "views": [
+          "Context",
+          "C4 containers: hosted edition",
+          "Selected C4 components: hosted authentication in the Node server",
+          "Selected C4 components: hosted membership removal in the Node server",
+          "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+          "Selected C4 components: system and audit logs in the Node server",
+          "Collaboration overview",
+          "Scenario: hosted member read",
+          "Deployment view",
+          "Self-hosted Compose",
+          "Recorded hosted Render target",
+          "Behavior and resource ownership"
+        ],
+        "evidence": [
+          "src/accounts/organizations/organization-administration.ts",
+          "src/accounts/organizations/removal-operation-store.ts",
+          "src/accounts/organizations/membership-removal.ts",
+          "src/accounts/organizations/membership-removal-checks.ts",
+          "src/accounts/organizations/membership-removal-lifetime.ts",
+          "src/accounts/organizations/organization-directory.ts",
+          "src/accounts/providers/workos/workos-organizations.ts",
+          "src/logs/audit/pg-destination-settings-store.ts",
+          "src/app/application.ts",
+          "src/app/logging-storage.ts",
+          "sql/migrations/20261025082850_membership_removal_operations.sql",
+          "architecture/components.md",
+          "docs/design/organization-admin-plan.md",
+          "docs/implementation/admin-s2-5-01b.md",
+          "test/acceptance/auth/membership-removal.runtime.ts",
+          "test/acceptance/auth/membership-removal-restart.runtime.ts",
+          "test/integration/auth/workos-removal-lifetime.test.ts",
+          "test/integration/logging/audit/removal-operations.runtime.ts",
+          "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts"
+        ]
+      }
+    }
+  },
+  "overallMergeEligibility": "Manager assessment required; worker does not replace gate and approval evidence.",
+  "knownStackHolds": [
+    "Actual parent #251 is not merged at the time of this quality run.",
+    "R1 display-email hydration is retained until the authorized later #257 correction."
+  ],
+  "policyAnswers": {
+    "protected_paths.policy": "The policy registers the new public RemovalOperationStore and extends the existing real-PostgreSQL gate with removal/settings coverage. No gate, approval decision or failure criterion is weakened. Three new-file MI exceptions retain explicit bounded reasons through 2026-12-24; independent human review stays required. Habit snooze stays empty.",
+    "protected_paths.contracts": "Internal removeMember(actor, request) adds exact organization/membership/revision inputs and bounded denied/stale/unsupported/last-admin/busy/unavailable/unknown/applied outcomes. Durable per-organization admission has no lease or replay. An uncertain completion is accepted only after an exact matching terminal receipt. Optional directory signals stop later WorkOS read substeps while in-flight requests keep their existing timeout. Existing callers can omit the signal. No browser removal action or customer removal Audit capture is added.",
+    "deployment_and_recovery": "Before activation an owner applies the additive membership_removal_operations migration. The existing concrete SQL store/pool owns both settings and removal intent; no startup migration, environment variable, key, provider, paid service or deployment/container change is added. Keep pending operations through restart and application rollback. Database restore safety is not proved; elapsed time or current provider reads cannot clear a hold. Independent reconciliation and restore safety stay in the runbook work.",
+    "sensitive_behavior": "Current actor Admin authority precedes admission and is checked again with exact target revision/status/ordinary management, all raw target grants and complete bounded active pages. Later duplicate membership facts win, and the last usable active Admin cannot be removed. One single exact-ID dispatch can occur only before stop; uncertainty holds without replay. Recording failure cannot change the result. R1 remains open and no improvement to email-read cost is claimed.",
+    "dependencies_and_architecture": "No npm dependency key, Node builtin import, component set or source owner pair is added. Existing organizations and audit-logs responsibilities gain durable removal calls over the same store. Runtime organization-to-store calls are distinct from the existing opposite type dependency. Registry drawings change; actual component/container topology and provider choice remain. No ADR was requested by an authorized decision maker.",
+    "approval_and_scope": "User directly attests independent architect approval of the full Slice2.5 stack. Record it as user attestation; this worker invents no reviewer identity, GitHub review or timestamp. Manager owns final candidate mapping, gate results, hold reconciliation and merge decisions. No commit, push, live migration or deployment is performed by this worker."
+  },
+  "questions": [
+    {
+      "key": "protected_paths.policy",
+      "question": "Does this change what the checks enforce, or who decides? Record the new rule and why.",
+      "answer": "The policy registers the new public RemovalOperationStore and extends the existing real-PostgreSQL gate with removal/settings coverage. No gate, approval decision or failure criterion is weakened. Three new-file MI exceptions retain explicit bounded reasons through 2026-12-24; independent human review stays required. Habit snooze stays empty."
+    },
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise.",
+      "answer": "Internal removeMember(actor, request) adds exact organization/membership/revision inputs and bounded denied/stale/unsupported/last-admin/busy/unavailable/unknown/applied outcomes. Durable per-organization admission has no lease or replay. An uncertain completion is accepted only after an exact matching terminal receipt. Optional directory signals stop later WorkOS read substeps while in-flight requests keep their existing timeout. Existing callers can omit the signal. No browser removal action or customer removal Audit capture is added."
+    }
+  ],
+  "notes": [
+    {
+      "group": "informational",
+      "note": "49 public modules, 3 snapshots changed, 1 added",
+      "reason": "The snapshot set has 49 public modules. Three current declarations change and the new removal-operation-store declaration is added; their exact deltas match the named internal contracts."
+    },
+    {
+      "group": "informational",
+      "note": "declaration snapshot added: src/accounts/organizations/removal-operation-store.ts",
+      "reason": "The new organizations-owned request/result/store types are directly snapshot-visible and are registered in public_surface."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/index.ts (imports changed src/app/application.ts)",
+      "reason": "The named importer retains identical public declarations. Its existing entry/overview/role behavior remains compatible; unrelated callers omit the optional signal. Dependency regeneration alone does not establish a new callable contract."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/directory-reads.ts)",
+      "reason": "The named importer retains identical public declarations. Its existing entry/overview/role behavior remains compatible; unrelated callers omit the optional signal. Dependency regeneration alone does not establish a new callable contract."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+      "reason": "The named importer retains identical public declarations. Its existing entry/overview/role behavior remains compatible; unrelated callers omit the optional signal. Dependency regeneration alone does not establish a new callable contract."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/customer-roles.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+      "reason": "The named importer retains identical public declarations. Its existing entry/overview/role behavior remains compatible; unrelated callers omit the optional signal. Dependency regeneration alone does not establish a new callable contract."
+    },
+    {
+      "group": "informational",
+      "note": "size.total_lines_note_above: 2475 lines without generated files, above the limit of 1500",
+      "reason": "The increment includes current-check/removal logic, conditional store operations, the additive migration, TDD/acceptance/restart proof, declaration snapshots, registry views and required documentation. The current checker line-count table is retained. Keep the cohesive removal slice; size is informational and grants no waiver."
+    },
+    {
+      "group": "informational",
+      "note": "ratchet.maintainability_index.existing_file_drop_note_at: src/logs/audit/pg-destination-settings-store.ts: 53.641844103270124 to 46.31569984025012",
+      "reason": "Keep three short atomic removal statements and row mapping on the existing bounded SQL runtime. Each client is released before provider HTTP. A second adapter/pool would duplicate lifetime and hide shared admission. The existing-file MI drop is disclosed; the inherited MI bound 54 does not waive it. Type-only imported contracts explain efferent coupling on an existing allowed owner pair."
+    },
+    {
+      "group": "informational",
+      "note": "ratchet.review_findings_high: src/accounts/organizations/membership-removal-lifetime.ts: Maintainability too low: got 70 (min: 85)",
+      "reason": "One owner keeps the monotonic deadline, admission uncertainty, read stop signal, guarded continuations, timer cleanup, and one public result. The largest function has four paths. Splitting shared stop/result state would obscure release-once and no-late-dispatch guarantees. The class-level native 70 and raw file MI 73.50007134856634 are different measures."
+    },
+    {
+      "group": "informational",
+      "note": "ratchet.review_findings_high: src/accounts/organizations/membership-removal.ts: Maintainability too low: got 43 (min: 85)",
+      "reason": "One owner keeps initial authority, durable admission, current checks, one dispatch, and exact terminal receipt checks in order. The largest function has nine paths. Further splitting would spread the no-replay and completion authority rules without removing decisions."
+    },
+    {
+      "group": "informational",
+      "note": "ratchet.review_findings_high: src/logs/audit/pg-destination-settings-store.ts: Maintainability index: 54 -> 46 (below 85 is hard to maintain)",
+      "reason": "Keep three short atomic removal statements and row mapping on the existing bounded SQL runtime. Each client is released before provider HTTP. A second adapter/pool would duplicate lifetime and hide shared admission. The existing-file MI drop is disclosed; the inherited MI bound 54 does not waive it. Type-only imported contracts explain efferent coupling on an existing allowed owner pair."
+    },
+    {
+      "group": "metrics",
+      "note": "Delta: goal miss",
+      "reason": "The complete raw delta reports existing files below 85 and the three new files below 85. All source MI values and individual reasons are retained. The three current new-file exceptions meet exact raw bounds; existing-file low scores do not create extra exception use."
+    },
+    {
+      "group": "metrics",
+      "note": "Review: goal miss",
+      "reason": "All 8 current findings have individual scope, source hash and retained reasons. Severity counts: {'high': 3, 'medium': 2, 'low': 3}. No ignored helper/archive finding appears in this checkout inventory; no baseline was refreshed."
+    },
+    {
+      "group": "metrics",
+      "note": "CRAP: passed",
+      "reason": "All 86 new/changed functions have measured coverage and satisfy strict applicable goals. Highest score is 9; no unknown identity/coverage miss or CRAP exception is used."
+    },
+    {
+      "group": "metrics",
+      "note": "Architecture: passed",
+      "reason": "The stage completed with its known unresolved CSS evidence limit. Native dependency/cycle deltas are withheld; checker facts and manager source/import review remain authoritative."
+    },
+    {
+      "group": "metrics",
+      "note": "0 findings on unchanged files, reason unchanged by this PR",
+      "reason": "This is the current native inventory outside the changed committed-file set. It does not transfer the old ignored-tool inventory or claim that absent archived findings were production fixes."
+    },
+    {
+      "group": "notes",
+      "note": "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.",
+      "reason": "Current static checker is preliminarily eligible with no mechanical blocker. The manager owns separate gate results, R1/parent hold reconciliation and final merge eligibility. User directly attests independent architect approval of the full stack; no GitHub approval or reviewer identity is invented."
+    }
+  ],
+  "humanApprovalEvidence": "User directly attests independent architect approval of the full Slice2.5 stack. Record it as user attestation; this worker invents no reviewer identity, GitHub review or timestamp. Manager owns final candidate mapping, gate results, hold reconciliation and merge decisions. No commit, push, live migration or deployment is performed by this worker.",
+  "checkerSha256": "ed36df17a3ece89b60e50b40b77fbc765aa07c9633bb3a7331c222825a61d30d"
+}

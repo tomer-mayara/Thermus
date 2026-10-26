@@ -1,0 +1,263 @@
+{
+  "artifactRelativeLinks": [
+    {
+      "from": "README.md",
+      "target": "gate-ledger.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation-snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/selection.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/focused-files.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "gated-inputs.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/run-gates.mjs",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "inventory.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/metrics-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/checker-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/pr-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/metric-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/checker-notes.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/process.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/process.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/crap.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/snapshot-base.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/index.html",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/compare.html",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/metrics.txt",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/coverage.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/capture-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/coverage-build.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/coverage-capture.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/coverage-captures/capture-unit-XStpcu/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/coverage-captures/capture-integration-F1Pu5Z/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/coverage-captures/capture-acceptance-LJKg2E/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/habit-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/habit-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/manager-quality-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/assessment-current.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/summary-comparison-current.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/comparison-current.mmd",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/manager-review-current.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/equivalence-render-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "restack/increment-equivalence.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "restack/range-diff.txt",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "history/initial-pr-stack-state.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "history/parent-fixture/postgres-fixture-review.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/main-body.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/validation-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/quality-review-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "review/deployment-preflight-context.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "provenance.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "inventory.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "link-review.json",
+      "exists": true
+    }
+  ],
+  "placeholderLinksResolve": true,
+  "nativeHtmlStaticAssetsComplete": true,
+  "dynamicBindings": "Ignored bound :href/:src expressions, not file paths. Raw HTML remains untouched.",
+  "networkLookupPerformed": false
+}

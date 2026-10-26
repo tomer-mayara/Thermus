@@ -1,0 +1,4 @@
+{"command":"/opt/homebrew/bin/docker","args":["build","--quiet","--label","thermus.container-gate=e0751729","--label","org.opencontainers.image.revision=rebuilt","--tag","thermus-container-gate:e0751729-rebuilt","/Users/tomermayara/.codex/worktrees/c617/Thermus/"],"started":"2026-10-26T07:45:30.494Z","context":"colima-thermus-s25-merge"}
+sha256:2f15296c6c9418f393ffc1d9f4a56602b44bd2aed941ca440da61a747eea5291
+
+{"finished":"2026-10-26T07:45:31.169Z","code":0,"signal":null}

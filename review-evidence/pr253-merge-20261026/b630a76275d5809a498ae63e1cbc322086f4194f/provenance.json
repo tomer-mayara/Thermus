@@ -1,0 +1,1175 @@
+{
+  "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "actualStackParent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "completeCandidateMainBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "artifactPrefix": "review-evidence/pr253-merge-20261026/b630a76275d5809a498ae63e1cbc322086f4194f",
+  "created": "2026-10-26T07:51:27.171024+00:00",
+  "packageState": "Accepted final product-validation handback; manager publication review/scan and independent holds remain.",
+  "actualQualityCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "qualityMeasurementOrigin": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr253-quality/measure",
+  "qualityCopyCreatedAt": "2026-10-26T07:28:29.253107+00:00",
+  "copyMeaning": "Reports retain actual cwd, capture identity, comparison base and original paths. This copy is not a new run.",
+  "qualityCurrentBaseMeaning": "Snapshots, CRAP and checker compare actual parent d0dd8fc8. Complete-candidate selection compares main8c6d204e. No prior-main snapshot substituted.",
+  "validationSnapshotNames": [
+    "install",
+    "runtime",
+    "api-surface",
+    "focused-build",
+    "focused",
+    "logging-postgres",
+    "ordinary",
+    "typecheck",
+    "portal",
+    "hosted-live",
+    "native-container",
+    "hosted-container",
+    "logging-collector",
+    "habit-hooks",
+    "diff-check"
+  ],
+  "validationStillPending": [],
+  "validationHandbackReceived": true,
+  "coverageIncluded": "Aggregate coverage plus three capture manifests only. No raw V8/process/signal profiles or source copies.",
+  "excluded": [
+    "Raw V8 captures",
+    "Source trees",
+    "Unrelated user draft bytes",
+    "Environment/credential files"
+  ],
+  "blockers": [
+    "Parent integration and inclusion/reconciliation of verified later R1 repair with deployment held",
+    "Qualified independent architect identity and exact candidate approval-scope reconciliation",
+    "Render workspace/target confirmation and deployment preflight",
+    "Manager final inventory/text review, secret scan/publication/readback"
+  ],
+  "copies": [
+    {
+      "path": "gate-ledger.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/gate-ledger.json",
+      "sha256": "f811ecf2e45b93ceff4160299857ebc064de5a2f8b7f1baf86baac1b7c09c894",
+      "bytes": 16145,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "install-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/install-1.log",
+      "sha256": "27f5a934f06003f91e622e99201f88c138f2f7ebe2628835baa86a8396e8fca2",
+      "bytes": 176,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "runtime-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/runtime-1.log",
+      "sha256": "b67d0ced059f9313d861ddbbe734d2d1f9219106a9e036ae6d88407afa0846e6",
+      "bytes": 9,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "api-surface-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/api-surface-1.log",
+      "sha256": "200f9cc6ec11155d6b135f8f2b03843af4bb1d4d739db86235689978505e35f3",
+      "bytes": 132,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "focused-build-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/focused-build-1.log",
+      "sha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+      "bytes": 146,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "focused-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/focused-1.log",
+      "sha256": "ca64aa6283cf359d8c2cc412c11c39f58167c94d440a11e1341c76ac2ca3f18b",
+      "bytes": 49127,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "logging-postgres-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/logging-postgres-1.log",
+      "sha256": "dd99fb6907a25b73145e3d74133ac37fd036d0860596e1bb0f0f3ecadf600ece",
+      "bytes": 4406,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "ordinary-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/ordinary-1.log",
+      "sha256": "52fe1b72cf27fd759c05a7daad92330c20f994d5a7975b370b9958e009bd4223",
+      "bytes": 745605,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "typecheck-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/typecheck-1.log",
+      "sha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62",
+      "bytes": 158,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "portal-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/portal-1.log",
+      "sha256": "cba7ef24394bb9bd77ac865a649a7afec797299659e174cd1e675fc5549209ef",
+      "bytes": 536,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "hosted-live-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/hosted-live-1.log",
+      "sha256": "f6c7a379ca2bb08a8fedd15a1026ec9283de4515ac98c6c26b369a42ff844d3b",
+      "bytes": 14553,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "native-container-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/native-container-1.log",
+      "sha256": "1c985f3d5adc75ab8ad11e919e9b1ac414176ddf316b4ad46ba43bdb9eb618b6",
+      "bytes": 5278,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "docker-build-1792999729728-native-container-1793000631833-52590.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/docker-build-1792999729728-native-container-1793000631833-52590.log",
+      "sha256": "149e1a2b029fa63bcc5899b0cc2fe84a7aee2125739062a1c19cb177e9ebc261",
+      "bytes": 476,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "docker-build-1792999729728-native-container-1793000730493-53464.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/docker-build-1792999729728-native-container-1793000730493-53464.log",
+      "sha256": "25a268f33b15e9b216b7c2a502b23a888fa0ec02713d82248efc95a10977ba15",
+      "bytes": 476,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "gated-inputs.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/gated-inputs.json",
+      "sha256": "caff283b7c7f0f7d294a695ea71e75906342d5846a25c39d1b777f35751df4e2",
+      "bytes": 251149,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "gated-inputs-1792999729728.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/gated-inputs-1792999729728.json",
+      "sha256": "a1585c5296b47ccf52087351a6b1c95105f72865d8e74766c9adf53a21e21204",
+      "bytes": 251149,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/native-build-history.jsonl",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/native-build-history.jsonl",
+      "sha256": "342aeffb5fa15f55a2ee0be09d7a186375f817066fb031f4624265d8d59ef092",
+      "bytes": 1625,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/run-gates.mjs",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/run-gates.mjs",
+      "sha256": "102394ee7342407d48c40fc117f5ca072a2170f7abd6b53a983ea907b2ad5467",
+      "bytes": 10515,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/focused-files.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/focused-files.json",
+      "sha256": "cb056f560ea5ac4428ce600e4f2318c61d1a098a647f23ed414b83e541b2f1bf",
+      "bytes": 1190,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/candidate-pin.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/candidate-pin.json",
+      "sha256": "9017b700af20e06ca462f2cde16b75f93632fbbe2a5f8661dd2ffce798c62acc",
+      "bytes": 354,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/selection.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/selection.md",
+      "sha256": "51c4415c7d7ab0a6f048dceffab1779ab3ae2e4f4435db92a1dd1f60fb30c480",
+      "bytes": 2517,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/bin/docker",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/bin/docker",
+      "sha256": "b6bbe794bf7a5e63ec62b6287892add7b545e6876419a3036a6972a1fdd95127",
+      "bytes": 1599,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/README.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/README.md",
+      "sha256": "3ff92a5aa18f95e228c3f3bd9bb1930e728884a87de0673818ab1fe691e6c328",
+      "bytes": 3120,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/configured-secret-scan.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/configured-secret-scan.json",
+      "sha256": "f504f13f9ae1b83cdb857b8b5a22f375070e84dcda3908b13313f28e7e744aca",
+      "bytes": 263,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/manifest.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/manifest.json",
+      "sha256": "95c9646c4072305a7fb4d04823de6e912899198ea0c0df9eb9c39cf087de7bd6",
+      "bytes": 444918,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/coverage-build.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/coverage-build.json",
+      "sha256": "00d50df2b1891259c78d3480d6903251fe26e3a2224dd27f29c8d2280ce2dddf",
+      "bytes": 397,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/coverage-compatibility.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/coverage-compatibility.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/metrics-commands.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/metrics-commands.json",
+      "sha256": "102904a0c0cbe63dd3b29451e10fb03b2da42be2ba6992f98949df6bbf7b414e",
+      "bytes": 5089,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/process.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/process.md",
+      "sha256": "d609805572a1a1929ca1158ae0bd0f9973dcd11e00639086b65158a8b75065e1",
+      "bytes": 54235,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/metrics-binding.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/metrics-binding.json",
+      "sha256": "8e7db803675ecfd203582e627e5a8497af46d8bce426e818599af5f1fdeb08a6",
+      "bytes": 3445,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/habit-commands.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/habit-commands.json",
+      "sha256": "fce9065109a647ce4069e07010f11f26c8084049e6b5b7269905f5b2d7d06378",
+      "bytes": 668,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/habit-dispositions.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/habit-dispositions.json",
+      "sha256": "e85a042a77cddaaf391d43470cf4e2242386ef88286fdf4eb1ebfdad318e38e2",
+      "bytes": 301626,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/coverage-capture.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/coverage-capture.log",
+      "sha256": "7508e2ec55945922181df8836b5613e3f10d5b890b3ac60d2fb7417ab806f97c",
+      "bytes": 734676,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/pr-review.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/pr-review.json",
+      "sha256": "ed36df17a3ece89b60e50b40b77fbc765aa07c9633bb3a7331c222825a61d30d",
+      "bytes": 33598,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/capture-binding.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/capture-binding.json",
+      "sha256": "ff92e33492023c99e35628b7eb1454d620eed0dab888010cefc6442060d95c69",
+      "bytes": 1985,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/checker-notes.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/checker-notes.md",
+      "sha256": "0a19f6fad9f49ad6258efa5e8f8d390492641679b4d74056f5f772fa06c0b0db",
+      "bytes": 9696,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/pr-review.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/pr-review.log",
+      "sha256": "c44e39aa090816ab05975c9905c56e196cb961bbe2ca70ab012bfc16896bba1b",
+      "bytes": 89,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/habit-hooks.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/habit-hooks.log",
+      "sha256": "e1f8ca200e4bdd285ffc322f7a8b97e506a8c17c2a8c6d670b349f0184c1b1a0",
+      "bytes": 21656,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/candidate-pin.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/candidate-pin.json",
+      "sha256": "7b3b55bb2cc9b0673019d20169e780c782f2736d5052ca974700b835ccb019f2",
+      "bytes": 792,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/checker-notes.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/checker-notes.json",
+      "sha256": "896970c1340f32d8b2e0b01397dd6276f5a407cae32d6472738b8281662c0865",
+      "bytes": 31896,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/crap.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/crap.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/snapshot-head.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/snapshot-head.log",
+      "sha256": "acdb11f92fac4175ccfd4300a216f66075af81b3ceb6d482c417c0d326f5737f",
+      "bytes": 157,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/snapshot-base.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/snapshot-base.log",
+      "sha256": "1832c3eb2bf07c7d16a902e4e69ca42f8a58f88916a24d8c216c2dc6524c78cd",
+      "bytes": 162,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/selection.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/selection.md",
+      "sha256": "deb4dfb7bf747179c49eac8d75b03f6241490b0d45dfaf888392268ad354b383",
+      "bytes": 2481,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/snapshot.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/snapshot.json",
+      "sha256": "5caa9336bc2a0b93ed373f2949af672a02d1d1eebdf7d93ccdae0d7fad075ae2",
+      "bytes": 1071190,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/checker-binding.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/checker-binding.json",
+      "sha256": "a876a25229e67b34dee7e4454eb43254140f1d578d526e9d3cf86a1f31135fc3",
+      "bytes": 3904,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/install-command.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/install-command.json",
+      "sha256": "d21ff9b73829c30ec05a362e5ae365a71bee8c17c7349666e0578f0babde2462",
+      "bytes": 478,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/checker-commands.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/checker-commands.json",
+      "sha256": "6d5d18610560cbdfe2eb3109e16f19a06a2974f32954283f50d0fe96ac6c2604",
+      "bytes": 2880,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/capture-commands.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/capture-commands.json",
+      "sha256": "55273355c9412e5449243cce9d258f60c370f3871c2c14e9e635942be3fdccf2",
+      "bytes": 922,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/crap.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/crap.json",
+      "sha256": "6f1e10f20af7c1dff8f5a7106ec9223c850702fa57c8beb2d1e7185dd5a9408a",
+      "bytes": 109646,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/impact.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/impact.json",
+      "sha256": "21516151effd93d29c73f2916cffc5e4cacda42358fcfd1ac23060cb4db5c673",
+      "bytes": 3532,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/snapshot-base.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/snapshot-base.json",
+      "sha256": "1676d2ba06ebc572e9d3b476ac59aa3b77f3a5c2145bda5988ca083a0ea811b6",
+      "bytes": 1031278,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/coverage-compatibility.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/coverage-compatibility.json",
+      "sha256": "b14af9fe424bbaf16133af2a3db426a6273820ecce940b90e0f6be9c025f0580",
+      "bytes": 421,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/coverage.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/coverage.json",
+      "sha256": "32eb72e79af70fd0cb62c6701207738e0ae90d69ffb866d0d467500b803f933c",
+      "bytes": 1021971,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/crap.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/crap.md",
+      "sha256": "39ea38b9cc29ee171d044195d68d780805ad0dd81482e1cb370ac2e5de04ed8c",
+      "bytes": 25437,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/process.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/process.json",
+      "sha256": "d326641faddf5796cbcf8481db552ad34a716314623fb3fb261dfd95a868b13d",
+      "bytes": 55428,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/review.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/review.md",
+      "sha256": "0474f971f3cd7dba7b658bf26f4a4fb7a253bfe39a908bb090853e25429677f8",
+      "bytes": 2058,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/review.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/review.json",
+      "sha256": "fa5e518268aed7487687c1122362e75d4bff89cad65cbc5dc53e4ffeefcfda40",
+      "bytes": 3401,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/install.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/install.log",
+      "sha256": "d8cdfc52ea01d07e128334a1ffcd115f6e82ef56cd2db21fbaf950dc32143de7",
+      "bytes": 176,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/habit-binding.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/habit-binding.json",
+      "sha256": "67dc1b73bd61ee6fe7c04595e68324295a47f2d76fe01ed492cc66c100732686",
+      "bytes": 1413,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/metric-dispositions.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/metric-dispositions.md",
+      "sha256": "50176f4374651728bfca4ca741bc388e85c04e6a3e9a1d14603f1ea724c02470",
+      "bytes": 9336,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/habit-dispositions.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/habit-dispositions.md",
+      "sha256": "fee7468a1985def07d9588f9399b65b3e023cea11a5915d82eaed02265825281",
+      "bytes": 1306,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/metric-dispositions.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/metric-dispositions.json",
+      "sha256": "82ea66a87cdd6d14b9cbb11eb989ca16e5e98e06d0627b403b4d50bfcdf2791d",
+      "bytes": 220711,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/measurements/metrics-process.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/measurements/metrics-process.log",
+      "sha256": "3753cf16dc22a73de71edde57730025295fc150081e3581899f921ace8c0f48a",
+      "bytes": 54388,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/compare.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/compare.html",
+      "sha256": "2fdd1bfc36f432dc85bd19cfaf1bfee43998c83d609f5f5b6aa387a83246d5cb",
+      "bytes": 46170,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/index.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/index.html",
+      "sha256": "758eced33eec3940a4410f3e8534b2ad98d6a6dcbbe8d2e8d4e7ff318fe1f26f",
+      "bytes": 77755,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "sha256": "82556552803fc99ce5c8aa6dcaebb8cfea96c6bdca63adecf1c7fff54a7d16c2",
+      "bytes": 49907,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/classification.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/classification.html",
+      "sha256": "d7ed34990d9e3228bd558e02251f2865f86022831d83b323f4837b1e3ab43269",
+      "bytes": 162576,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/classification_TypeScript.html",
+      "sha256": "f061a3ece485878a284d2c16b7d45f4fa2455255f6b2d91c65fb0c105b59d7f4",
+      "bytes": 162715,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/explorer.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/explorer.html",
+      "sha256": "693ae5a4aa7f1323c1dd2028ff78160e5d626d3cf51b81e61932f733923c6194",
+      "bytes": 77473,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/busfactor.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/busfactor.html",
+      "sha256": "c90073a7283acc097d58e355baf8a743411bcf829894e37299b616d2f2001e7c",
+      "bytes": 60619,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/risks.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/risks.html",
+      "sha256": "5f9a8466349bc9c8a70c34671bbf09e738108dd4c391544e5c4a7299d5687be0",
+      "bytes": 175929,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "sha256": "445b0ec80797084861030943c73711830bf70503560aad2778ad1573c59a4812",
+      "bytes": 65787,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/index_TypeScript.html",
+      "sha256": "6dbf09d3dd74873087344db62b7b71e5ab363b89e0454c8e8e84fbc54c093fdb",
+      "bytes": 78026,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "sha256": "78a51f2540b3bb4223a003a4f0fff72f4683591867c6a48287567caf91bf3783",
+      "bytes": 103244,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "sha256": "8f295c3d2f9afe532ca91733a1c7f3d57ebc8fd7b0595005b6e0c5138266fbc3",
+      "bytes": 60758,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/compare_TypeScript.html",
+      "sha256": "bfbce4120e4d60641fbb37de2efcef175a1d4adf1504e5de5c997e7b30a97367",
+      "bytes": 46309,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/linters.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/linters.html",
+      "sha256": "79954ea278f772a94208167115eee3f6df4e645f609ab8a139b69a739085b0dd",
+      "bytes": 60206,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "sha256": "d8cda55cd411b6165d7896e31f20f1d6b7e86fb20c965f958457c3eb0104fa25",
+      "bytes": 77612,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/risks_TypeScript.html",
+      "sha256": "f67d1fabaf7bba28d7d3efd9c1c9245e66a0dfb99db740e3de560c7729bc58d7",
+      "bytes": 172724,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/linters_TypeScript.html",
+      "sha256": "689d6665b34d181728aa5c4e0446caf5a6843963e5ef4ef68ba4264662062050",
+      "bytes": 60345,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/communities_TypeScript.html",
+      "sha256": "007dc9c06a13b249fa26132b3346846350d1ee91df54d01356ae5d09cb666ccb",
+      "bytes": 166936,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/classes.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/classes.html",
+      "sha256": "7f0cefc7459c1ce3c48ac1b35d5efad9dff9cb7ac4a920b5d58fc26db298b0d5",
+      "bytes": 78024,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/classes_TypeScript.html",
+      "sha256": "f8b3d73ddfdb449974b15ec7bf5601eefd811d0fc03bcfb57c53a3e6da94148d",
+      "bytes": 78171,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/testquality.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/testquality.html",
+      "sha256": "980ea8b721ad9f2fc89352bff9ccb3d7620c8653d8ee30c88e481d0a8295ef37",
+      "bytes": 49768,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/review.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/review.md",
+      "sha256": "0474f971f3cd7dba7b658bf26f4a4fb7a253bfe39a908bb090853e25429677f8",
+      "bytes": 2058,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/review.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/review.json",
+      "sha256": "fa5e518268aed7487687c1122362e75d4bff89cad65cbc5dc53e4ffeefcfda40",
+      "bytes": 3401,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/communities.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/communities.html",
+      "sha256": "5f29985b30b324b5359e39cb87a25e922681eed04f362f088f9c635a74e1edc7",
+      "bytes": 166800,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/dependencies.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/dependencies.html",
+      "sha256": "01942f8261f3988420ac1ec3b26750efec1eb1053ecd54101d2b7b1c39c70fd3",
+      "bytes": 103077,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/metrics.txt",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/metrics.txt",
+      "sha256": "0001282bda5001f69dc11ff9ba4818ec82abc01c6363314756c9be1bf4acf45d",
+      "bytes": 1664648,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/metrics.html",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/metrics.html",
+      "sha256": "3412bdd47d2607baddda78f3238f532369a6954bcf71a91e3fa1473c4854da16",
+      "bytes": 65640,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/images/icon-ai.webp",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/images/icon-ai.webp",
+      "sha256": "174475a276806b3d157ab74b28212f23330545887721c1300522e60af03e8910",
+      "bytes": 6128,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/images/icon-classifier.webp",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/images/icon-classifier.webp",
+      "sha256": "34b96e747b6350ace925857d6ffc87e76b0db90aed5c499f3ddcb36cb93e9c6c",
+      "bytes": 2846,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/images/logo-ast-metrics-small.png",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/images/logo-ast-metrics-small.png",
+      "sha256": "c423e65a3369eb1cb543bba47b7f3a8c1afbd1a0c4d705b365d3221d57fbc87d",
+      "bytes": 18577,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/images/icon-fingerprint.webp",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/images/icon-fingerprint.webp",
+      "sha256": "d84851b361f62697e96d01a50dd1b312168422eb0ea2103d7a2b5ae1f394a345",
+      "bytes": 3174,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/data/data_All.js",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/data/data_All.js",
+      "sha256": "3b1a314a7e8b2c05f1cd0f764f13c7265e98cb09dd0cb2aebc840ecf2e489030",
+      "bytes": 768007,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/data/data_TypeScript.js",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/data/data_TypeScript.js",
+      "sha256": "3b1a314a7e8b2c05f1cd0f764f13c7265e98cb09dd0cb2aebc840ecf2e489030",
+      "bytes": 768007,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/data/linters.js",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/data/linters.js",
+      "sha256": "d78c8c39a96daa718421193d2ed8cbe86f3cdcecf0e04617727137a88d089ff2",
+      "bytes": 113663,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/coverage-captures/capture-acceptance-LJKg2E/capture-manifest.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/coverage-captures/capture-acceptance-LJKg2E/capture-manifest.json",
+      "sha256": "f3431a3670c635538e43a3ac4ba7bad17a402456da9adeb1b315b88a696a4597",
+      "bytes": 38907,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/coverage-captures/capture-integration-F1Pu5Z/capture-manifest.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/coverage-captures/capture-integration-F1Pu5Z/capture-manifest.json",
+      "sha256": "8f6f0118ec1e08f479ec3d3df4d79062e7fdfa3f56683ae2afd3da1416d6e4f2",
+      "bytes": 36754,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/final-isolated/ast-report/coverage-captures/capture-unit-XStpcu/capture-manifest.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/final-isolated/ast-report/coverage-captures/capture-unit-XStpcu/capture-manifest.json",
+      "sha256": "a20b6836769375f2d2982272646e4284d9770448256d9c04f010e7913f3db471",
+      "bytes": 35286,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "quality/manager-quality-review.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/quality/manager-quality-review.json",
+      "sha256": "022f2f2635a2eca222c9ef16cf2e3584ccab749a550b6e56778f26fba233fe01",
+      "bytes": 1490,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/manager-review-current.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/manager-review-current.json",
+      "sha256": "446a7f4943b8aa43a43a6be4df6f7447da634a119a72c25862d6864fad064859",
+      "bytes": 1433,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/comparison-current.mmd",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/comparison-current.mmd",
+      "sha256": "3660d10cbad98f631fc92832da7fe19e50e6bc374166c0a312dfaa9b320bcd2e",
+      "bytes": 1666,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/inventory-reviewed-candidate.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/inventory-reviewed-candidate.json",
+      "sha256": "aade4c6f0041212dcb95b7cc7a3e5fc5f3f62c560ea1ab3920136678bec81dc4",
+      "bytes": 27585,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/assessment-current.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/assessment-current.md",
+      "sha256": "c2d7f720e06bb3e08bf363b5b01af6f8a91a1490ab0c6aea5370f11ac0323051",
+      "bytes": 8281,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/declaration-diff.patch",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/declaration-diff.patch",
+      "sha256": "ff8969c76703ebb4f5e4ad04b2882669333dabb4e9e9eb867ef14343e3e49f11",
+      "bytes": 6153,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/source-contract-caller-provenance.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/source-contract-caller-provenance.json",
+      "sha256": "fe332a27cade50e88ec71b3f184eb336c3e9e8d274ed1838a7772afd56b16200",
+      "bytes": 49780,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/registry-diff.patch",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/registry-diff.patch",
+      "sha256": "27f82ca42409eea92bc5d0f28f023d20bdca2830ad96b48c70a96f1a5f1e1937",
+      "bytes": 37605,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/inventory-candidate.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/inventory-candidate.json",
+      "sha256": "0ef290c18fc867f12519bc0702f18bac137c9c091601c9673814115fe4126b3e",
+      "bytes": 27585,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/inventory-parent.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/inventory-parent.json",
+      "sha256": "28e785d277f8e1a23060f782827d2820aee679c93d22ac45b5f08177f7cf8431",
+      "bytes": 26700,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/equivalence-render-review.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/equivalence-render-review.json",
+      "sha256": "0772b66a9f5842bf598d64830aa19e2d2b5f7cee45c37a7bcb3c57feb1924a3f",
+      "bytes": 13387,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/summary-comparison-current.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/summary-comparison-current.md",
+      "sha256": "8d127b53dc2c4410309fa95245e1422692d44bdc9a5aa291f5aa64e72f669a70",
+      "bytes": 4342,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "architecture/inventory-reviewed-parent.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/architecture/inventory-reviewed-parent.json",
+      "sha256": "63d7b6141ca13ec68082f51807c81d68bd75c27adac60726cb8be7c9d5da8796",
+      "bytes": 26700,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "restack/increment-equivalence.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/restack/pr253/increment-equivalence.json",
+      "sha256": "7269731ca2d63766592f49fd6b82e26b16d0cd9f65000fd018bb46ce1139eff2",
+      "bytes": 19940,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "restack/range-diff.txt",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/restack/pr253/range-diff.txt",
+      "sha256": "de37c35eadb292b95e378bc7972be07c7d464619af4862e6a08acc41399cfc2a",
+      "bytes": 867,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "restack/source-test-patch-ids.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/restack/pr253/source-test-patch-ids.json",
+      "sha256": "b8c08f11f7e2ed02e25fe85ff630ff39d19db5a907f69ccd8ae67a1e63cbaf23",
+      "bytes": 262,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "restack/declarations-registry-patch-ids.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/restack/pr253/declarations-registry-patch-ids.json",
+      "sha256": "bd993b8cc612a2ab8497b14f603137e088fba2c52809f39dd29c20ce3fdb2f3d",
+      "bytes": 262,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "restack/new-head.txt",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/restack/pr253/new-head.txt",
+      "sha256": "b7dc0f19fc050c550bf1433bea5247936c75520a20213d83fbfe72fd29ec3e57",
+      "bytes": 41,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "restack/conflict-7e3510df/decision.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/restack/pr253/conflict-7e3510df/decision.md",
+      "sha256": "632effb41a9d5b9b27989f76af284e7fb1ea391b81b925b55d2f3160d54d574f",
+      "bytes": 436,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "history/initial-pr-stack-state.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/initial-state.json",
+      "sha256": "ef05208cb20189b4e8ed10529470769c72b4ae0bae98475e7e1d2178789c76a2",
+      "bytes": 307093,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "history/parent-fixture/postgres-fixture-review.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/postgres-fixture-review.md",
+      "sha256": "1fecd7bdf542a5f9488e9272c56d7474fafcbca237fe7d91b47371e3ccb4b901",
+      "bytes": 3282,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "history/parent-fixture/postgres-fixture-log-sha256.txt",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/postgres-fixture-log-sha256.txt",
+      "sha256": "6a7b7d3ad234ef06d409d363b02aaf8680ee373e3067ecb39b1737699a4994d0",
+      "bytes": 655,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "history/parent-fixture/postgres-fixture-red-focused.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/postgres-fixture-red-focused.log",
+      "sha256": "6966706c36e2e5b3db7f86b4de8d6858a42028a427cfdc74b66f74dc722b6910",
+      "bytes": 2020,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "history/parent-fixture/postgres-fixture-green-focused.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/postgres-fixture-green-focused.log",
+      "sha256": "56ab5f8429dac58af681665fe0fafe106051b0547361294f7b8f5808a71020b9",
+      "bytes": 609,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "history/parent-fixture/postgres-fixture-green-group.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/postgres-fixture-green-group.log",
+      "sha256": "111431226f7f4278fd26674050ebe72f9bc24339b46043d7de8d67ba87263a22",
+      "bytes": 2598,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "history/parent-fixture/postgres-input-binding.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/validation/postgres-input-binding.json",
+      "sha256": "0f2e24a143ff68fa7f12fe7ac12cbc75586b0253c9e4148b56b88819bf67208b",
+      "bytes": 215462,
+      "meaning": "Exact frozen report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "logging-collector-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/logging-collector-1.log",
+      "sha256": "795eaaf2faa45991c18bf6d274f1ef2428cd7ed6694a32f9c9cc8e4b06566898",
+      "bytes": 3528,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "habit-hooks-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/habit-hooks-1.log",
+      "sha256": "e1f8ca200e4bdd285ffc322f7a8b97e506a8c17c2a8c6d670b349f0184c1b1a0",
+      "bytes": 21656,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "gated-inputs-1793001947496.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/gated-inputs-1793001947496.json",
+      "sha256": "caff283b7c7f0f7d294a695ea71e75906342d5846a25c39d1b777f35751df4e2",
+      "bytes": 251149,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "hosted-container-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/hosted-container-1.log",
+      "sha256": "e85b810d705a5dc8172c6f3c21971d78a2eb65b71e9e61135d5a62652297145d",
+      "bytes": 1890,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+      "sha256": "387ebffc78f725f845827f95780a2706ac36dc36869142832181263ef5da54c6",
+      "bytes": 738974,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "diff-check-1.log",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/diff-check-1.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "gated-inputs-1793001877864.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/gated-inputs-1793001877864.json",
+      "sha256": "2684b04c78df5c50247000efb06217d9230ee1d8b69d36bd1abc10b110329191",
+      "bytes": 251149,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation-draft.md",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation-draft.md",
+      "sha256": "874cf4fd72161707e597a3d4a093f0ccabdd7a5bc76a618a342e0c4d6ab1304e",
+      "bytes": 12675,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/run-gates-captured-1792999729728.mjs",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/run-gates-captured-1792999729728.mjs",
+      "sha256": "1c546724ef45ae0196c3fb2a3c559d2b489aabe2a261d4691fd0554eeac93b19",
+      "bytes": 9720,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/manager-validation-review.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/manager-validation-review.json",
+      "sha256": "4706c461befed48e50a67e2d1e52b5bf49a3c4e743bac97773e0aeb53f87cf8a",
+      "bytes": 1146,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/hosted-provenance-correction.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/hosted-provenance-correction.json",
+      "sha256": "79fdb43bce5a10165cb5dd6db452b58ba46d6aa227fa887c0c50c6e13f412385",
+      "bytes": 3400,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/final-binding.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/final-binding.json",
+      "sha256": "51145c194dc83728e373b9e77454e8b048300b495dad8a4c357881d4c67a406c",
+      "bytes": 1541,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/hosted-offline-evidence.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/hosted-offline-evidence.json",
+      "sha256": "f89669f04b5ed57824764eeb4256374d0df463772c818718d369fb4d95dd1688",
+      "bytes": 2014,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/manager-hosted-proof-correction-review.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/manager-hosted-proof-correction-review.json",
+      "sha256": "10402c117d31843e3987ace0e99eeebcaa02d26db30a6cc05ef754d4af7dc7ba",
+      "bytes": 2725,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/final-build-history.jsonl",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/final-build-history.jsonl",
+      "sha256": "642333b487b927671dec3505d3ae72994dbbf2a70720392a36d084f9011189d4",
+      "bytes": 1678,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/hosted-provenance-manual-check.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/hosted-provenance-manual-check.json",
+      "sha256": "5b80bb41a0dea889d5da81dc2d9a5d6e7b2381e4efb58d0525f3b771d57d58b7",
+      "bytes": 1008,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/habit-run-bridge.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/habit-run-bridge.json",
+      "sha256": "834be609d6a2c7cd0cf3097a30a3b3fa78b15855ed7bd1b3e3b01978682b40c6",
+      "bytes": 2427,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    },
+    {
+      "path": "validation/hosted-provenance-correction-initial.json",
+      "source": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr253/validation/hosted-provenance-correction-initial.json",
+      "sha256": "d1458e35b5296b9776346e8e0a225fddcdf558f4c479ae8cae164fe2db9cc2bf",
+      "bytes": 3192,
+      "meaning": "Exact final-handback report copy; not a new run or rewritten report."
+    }
+  ],
+  "generated": [
+    {
+      "path": "README.md",
+      "sha256": "402935ba2b97f4b6d24357858e07f5755292d633342dcf2093f27ec48c758276",
+      "bytes": 8761,
+      "meaning": "Authored index/text or review boundary; not a raw measurement."
+    },
+    {
+      "path": "validation-snapshot.json",
+      "sha256": "1b6e6b233d313a809668d790768a4e17dcea20ee8ad2c2dea64c2bdffafe440a",
+      "bytes": 1189,
+      "meaning": "Authored index/text or review boundary; not a raw measurement."
+    },
+    {
+      "path": "publication-drafts/quality-review-comment.md",
+      "sha256": "f5d2fbdc322c80ae9b8a6471fd1347c348bf245e317ce63803876c6384813d31",
+      "bytes": 18192,
+      "meaning": "Authored index/text or review boundary; not a raw measurement."
+    },
+    {
+      "path": "publication-drafts/main-body.md",
+      "sha256": "106d2af79e50a78a42b1aeb4fb80d0e33beda1fbdf719d915cc85e7973ddb5dc",
+      "bytes": 12260,
+      "meaning": "Authored index/text or review boundary; not a raw measurement."
+    },
+    {
+      "path": "publication-drafts/validation-comment.md",
+      "sha256": "eeb725eb1caa81d1033f48072aa212b7a7949759bc654c16e07b0f2fcdacdb39",
+      "bytes": 11119,
+      "meaning": "Authored index/text or review boundary; not a raw measurement."
+    }
+  ],
+  "deploymentContext": "review/deployment-preflight-context.json",
+  "updated": "2026-10-26T08:13:20.826658+00:00",
+  "historicalPackageSnapshot": [
+    {
+      "path": "history/publication-draft-20261026T075708Z/README.md",
+      "sha256": "39b978b6db4044f6d6e36acc176fec0ab30e3a84b6275814aa5b924df7776d40",
+      "bytes": 7779,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/provenance.json",
+      "sha256": "157b6d043d4b79eeb146916bf28f35705dc120cb2c86c67c24801054336f6686",
+      "bytes": 55243,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/inventory.json",
+      "sha256": "bdb00e2657a2c266a01b33f9053f72f06d78b3165f21ca5d467b69bd03070f86",
+      "bytes": 22852,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/link-review.json",
+      "sha256": "1eba58e79a46b05f5e2dff04454db82219d0beeda0577c8553193211e9c634aa",
+      "bytes": 6590,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/validation-snapshot.json",
+      "sha256": "f9a95d73ae4721b7da1337c5879c0a099b349c4485d828c8897ce1f943bb9cf3",
+      "bytes": 878,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/gate-ledger.json",
+      "sha256": "7ec95581134cf86f745b283aa24d0f3d3405562386bf90a01b47114d1aa3e5ee",
+      "bytes": 11947,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/gated-inputs.json",
+      "sha256": "a1585c5296b47ccf52087351a6b1c95105f72865d8e74766c9adf53a21e21204",
+      "bytes": 251149,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/validation/run-gates.mjs",
+      "sha256": "1c546724ef45ae0196c3fb2a3c559d2b489aabe2a261d4691fd0554eeac93b19",
+      "bytes": 9720,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/publication-drafts/main-body.md",
+      "sha256": "8ea760f6cadcc42966de67a6f79fcf0049e6bad66ad17701adfed1671b47df45",
+      "bytes": 12177,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/publication-drafts/validation-comment.md",
+      "sha256": "8098ecdea8f23a2dbdc03ee529f8fdde035c73194f5b8a657f0a4065a5287416",
+      "bytes": 7987,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    },
+    {
+      "path": "history/publication-draft-20261026T075708Z/publication-drafts/quality-review-comment.md",
+      "sha256": "a6f7c7df21112a7692560b21bf4bd69f7a0ca3600ed32e6a6d9080a0ad11e69c",
+      "bytes": 17399,
+      "meaning": "Historical completed-only package snapshot from 07:57Z; superseded by accepted final handback. Original bytes retained."
+    }
+  ],
+  "validationInterpretation": {
+    "allSelectedProductCommandsPassed": true,
+    "hostedOriginalValidatorExit": 1,
+    "actualHostedChildExit": 0,
+    "correction": "Reviewed exact captured stream and manual counterexamples; no product rerun. Original ledger remains unchanged.",
+    "habitExit": 1,
+    "habitFindings": 320,
+    "habitOwners": 32,
+    "finalBinding": "validation/final-binding.json",
+    "managerReview": "validation/manager-validation-review.json"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "mergeBase": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "originalHead": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "originalParent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "mainAtReview": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "managerReviewed": true,
+  "scope": "Rebase reconciliation, current before/after contracts and callers, registry inventories, preserved upstream Audit behavior, test fixture integration and historical evidence.",
+  "productionManualConflict": false,
+  "regressionProof": "New251 SQL warm-up and old253 first-case removal assertions are independently byte-identical. No original production increment was dropped.",
+  "visualReview": "Retained exact comparison PNG inspected at800px for253,254,257; titles, owner/container boundaries, labels and arrows are readable. Worker inspected all affected registry renders and proved source/render hashes.255 production source/declarations/registry match its parent and needs no diagram.",
+  "strongestContractL4": "Reviewed callable questions and L3 plus adjacent behavior notes; no additional L4 detail needed.",
+  "limit": "Manager source/architecture sign-off is not a test pass, independent human approval, deployment preflight or merge. Lower253/254/255 retain the pre-R1 scan until257 integrates. Final revision and current eligibility must be rechecked before publication."
+}

@@ -1,0 +1,15 @@
+# PR253 final isolated quality evidence
+
+Candidate `b630a76275d5809a498ae63e1cbc322086f4194f`. Actual parent `d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d` (#251). Complete-candidate test-selection main `8c6d204e8588a664438ba8934ab36670b802525f`.
+
+Actual execution checkout: `/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus`. Reports are copied without rewriting their cwd, absolute capture paths, original provenance or commit labels. This is a review copy, not a new run.
+
+Start with `measurements/metric-dispositions.md` and `measurements/checker-notes.md`; their JSON files retain every current function row, source-file reason, native finding, exception, policy answer and checker note. Raw current metrics/process/checker reports and logs are in `measurements/`. `ast-report/` contains all native HTML reports and complete data/script/style assets. Its coverage-captures folder contains only this candidate's three original unit/integration/acceptance captures; the earlier #251 capture is not mixed into this package. `coverage-build.json` preserves the original collector build identity.
+
+Fresh combined capture: 172 source files with verified provenance at this exact head. All 86 required functions (68 new, 18 changed) pass strict applicable CRAP goals, maximum 9; no CRAP exception is used. All four process stages completed: Delta and Review keep assessed goal misses; CRAP and Architecture pass. Standalone snapshots and CRAP pass. Current native inventory: 8 findings (3 high, 2 medium, 3 low), each retained with its current source hash and reason. Prior ignored helper/archive findings are absent from this clean checkout inventory, not repaired production defects. One test maintainability improvement remains in the raw report. Three new-file MI exceptions remain within their exact bounds through 24 December 2026.
+
+Checker: T2 Need architect, mechanical eligibility eligible, no mechanical blocker. Architecture: T2: 1 public module added; declarations changed in 3 public modules; 2 registry views added, 5 registry views edited. All 17 checker notes and both questions have reasons. Fresh Habit: 320 findings on 32 exact matching source files; every location has a retained reason, and snooze is empty.
+
+The exact history limit is `No record: d0dd8fc8 is not on origin/main.` No new history record or tracked change remains. Keep the unresolved CSS import/global edge-withholding limit and estimated base-CRAP limit. R1 display-email hydration remains a later #257 concern. The actual parent is unmerged at measurement time. Manager owns current gate results, architecture comparison review, hold reconciliation, approval mapping and overall merge eligibility. No Docker, hosted/live gate, commit or push ran in this quality task. The user directly attests independent architect approval of the full stack; no GitHub review, reviewer identity or approval timestamp is invented.
+
+Frozen install, fresh combined coverage, Habit, snapshots, process, standalone CRAP and checker completed in one attempt each. No old measured report was restamped, and no failed current check was hidden.

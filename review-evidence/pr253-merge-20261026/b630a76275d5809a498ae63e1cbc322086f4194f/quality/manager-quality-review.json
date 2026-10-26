@@ -1,0 +1,12 @@
+{
+  "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "mergeBase": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "mainAtReview": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "accepted": true,
+  "coverage": "Fresh verified172-file combined unit/integration/acceptance capture;86new/changedfunctions all measured, maximumCRAP9. NoCRAPexception.",
+  "maintainability": "Reviewed all12source dispositions,8native findings,3new-fileMIexception bounds/expiry,17checker notes and policy/contract/recovery answers. WorkOS compared with actual251parent; PGadapter existingMI drop retained with atomic-statement/pool-ownership reason.",
+  "registryCountReconciliation": "Canonical checker reports2added/5edited views. Heading-based manual inventory reports3added,1removed and4edited: it records old Deployment replacement separately. Both identify7affected current diagrams and preserve all other views.",
+  "habit": "320reported findings on32files matched exact prior reviewed file/text hashes and have individual reasons; snoozeempty.",
+  "static": "T2 Need architect; checker mechanicallyeligible/no blockers.",
+  "limits": "Process correctly did not write a trend record because actualparentd0dd8fc8 was not on origin/main at run time. R1 defect persists at this intermediate head; whole-stack integration must include the verified257fix with deployment held. Current runtime gates, parent integration, human reviewer identity/revision and deployment preflight remain manager gates."
+}

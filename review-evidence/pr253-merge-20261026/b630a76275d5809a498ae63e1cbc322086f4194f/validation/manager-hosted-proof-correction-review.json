@@ -1,0 +1,59 @@
+{
+  "reviewedAt": "2026-10-26T08:03:26.473711+00:00",
+  "reviewer": "Codex manager /root",
+  "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "mergeBase": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "scope": "Validation-helper provenance correction only; product source and completed test command unchanged.",
+  "originalRunnerSha256": "f3c30ecf2c29375e847c39ea52620103a0936a791269bb253ddb96c2cd6a20f3",
+  "originalStep": {
+    "summaries": [
+      "\u2139 tests 7",
+      "\u2139 suites 0",
+      "\u2139 pass 7",
+      "\u2139 fail 0",
+      "\u2139 cancelled 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 duration_ms 869564.633208"
+    ],
+    "logSha256": "e85b810d705a5dc8172c6f3c21971d78a2eb65b71e9e61135d5a62652297145d",
+    "buildLogs": [
+      {
+        "path": "docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+        "sha256": "387ebffc78f725f845827f95780a2706ac36dc36869142832181263ef5da54c6"
+      }
+    ],
+    "name": "hosted-container",
+    "attempt": 1,
+    "runId": "1792999729728",
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container:hosted"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+    "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "inputFingerprint": "f422da7def1b56bbbcfa7de2e7521b22097c859ae8978ccd71c6bf8f04a93a62",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T07:47:01.315Z",
+    "finished": "2026-10-26T08:01:32.699Z",
+    "log": "hosted-container-1.log",
+    "code": 1,
+    "signal": null,
+    "validationError": "Fresh successful nested offline build not proved by retained Docker stream."
+  },
+  "rawBuildSha256": "387ebffc78f725f845827f95780a2706ac36dc36869142832181263ef5da54c6",
+  "evidence": {
+    "marker": "#27 [checked-build 5/5] RUN --network=none npm run build:hosted",
+    "firstNumericOutput": "#27 1.022",
+    "completion": "#27 DONE 565.0s",
+    "cached": false,
+    "outerTests": 7,
+    "outerPass": 7,
+    "outerFail": 0
+  },
+  "conclusion": "The helper requires a first numeric timestamp beginning with0.; this is invalid. Source control flow enters the failing freshness override only when the actual child returned0. Therefore child exit0 is recovered from the original guarded control flow, while the original postprocessor exit1 remains preserved. Full raw log independently shows fresh successful nested execution.",
+  "approvedAction": "Fix ignored cache proof matcher, retain original ledger and script bytes/history, append explicit correction receipt, resume remaining selected gates. No product rerun required."
+}

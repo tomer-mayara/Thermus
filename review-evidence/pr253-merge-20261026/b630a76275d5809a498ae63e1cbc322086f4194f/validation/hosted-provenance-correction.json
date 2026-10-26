@@ -1,0 +1,67 @@
+{
+  "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "recorded": "2026-10-26T08:03:16.667Z",
+  "originalLedgerEntry": {
+    "summaries": [
+      "\u2139 tests 7",
+      "\u2139 suites 0",
+      "\u2139 pass 7",
+      "\u2139 fail 0",
+      "\u2139 cancelled 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 duration_ms 869564.633208"
+    ],
+    "logSha256": "e85b810d705a5dc8172c6f3c21971d78a2eb65b71e9e61135d5a62652297145d",
+    "buildLogs": [
+      {
+        "path": "docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+        "sha256": "387ebffc78f725f845827f95780a2706ac36dc36869142832181263ef5da54c6"
+      }
+    ],
+    "name": "hosted-container",
+    "attempt": 1,
+    "runId": "1792999729728",
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container:hosted"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+    "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "inputFingerprint": "f422da7def1b56bbbcfa7de2e7521b22097c859ae8978ccd71c6bf8f04a93a62",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T07:47:01.315Z",
+    "finished": "2026-10-26T08:01:32.699Z",
+    "log": "hosted-container-1.log",
+    "code": 1,
+    "signal": null,
+    "validationError": "Fresh successful nested offline build not proved by retained Docker stream."
+  },
+  "actualChildCode": 0,
+  "actualChildEvidence": "The captured runner applies the hosted proof only inside the condition name === hosted-container && outcome.code === 0; the validationError in this exact row can only be produced after child code 0. All seven tests and the Docker build also pass in the original raw streams.",
+  "validatorExit": 1,
+  "cause": "The old proof required a timestamp beginning with 0.; first output was at 1.022 seconds. The layer executed fresh and completed.",
+  "correction": "Accept numeric command timestamps; require the exact RUN, DONE, no CACHED and six positive all-pass summary groups. Preserve commandOutcome separately before any validation override.",
+  "capturedRunner": {
+    "path": ".cache/s25-merge-20261026/pr253/validation/run-gates-captured-1792999729728.mjs",
+    "sha256": "1c546724ef45ae0196c3fb2a3c559d2b489aabe2a261d4691fd0554eeac93b19",
+    "matchesOriginalBinding": true
+  },
+  "correctedRunner": {
+    "path": ".cache/s25-merge-20261026/pr253/validation/run-gates.mjs",
+    "sha256": "102394ee7342407d48c40fc117f5ca072a2170f7abd6b53a983ea907b2ad5467"
+  },
+  "rawLog": "hosted-container-1.log",
+  "rawLogSha256": "e85b810d705a5dc8172c6f3c21971d78a2eb65b71e9e61135d5a62652297145d",
+  "stream": {
+    "path": "docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+    "sha256": "387ebffc78f725f845827f95780a2706ac36dc36869142832181263ef5da54c6"
+  },
+  "assessment": "Captured stream recheck and manual counterexamples are recorded in hosted-provenance-manual-check.json. Original failed postprocessor row remains unchanged.",
+  "managerReview": "Manager reviewed raw #27 and the guarded override source, approved this cache-only correction, separate receipt, manual actual/cached/nonmatching checks, and resume at Collector without product retest."
+}

@@ -1,0 +1,115 @@
+diff --git a/docs/api-surface/src/accounts/organizations/change-records.d.ts b/docs/api-surface/src/accounts/organizations/change-records.d.ts
+index 9688b8a9..8a8f6563 100644
+--- a/docs/api-surface/src/accounts/organizations/change-records.d.ts
++++ b/docs/api-surface/src/accounts/organizations/change-records.d.ts
+@@ -1,6 +1,6 @@
+ import type { AuthenticatedUser } from '../identity/access-context.ts';
+ export type ChangeResult = 'applied' | 'unchanged' | 'denied' | 'stale' | 'not-pending' | 'address-in-use' | 'unsupported';
+-export type ChangeOutcome = ChangeResult | 'failed' | 'unknown';
++export type ChangeOutcome = ChangeResult | 'failed' | 'unknown' | 'last-admin' | 'busy' | 'unavailable';
+ export declare class UnconfirmedChangeError extends Error {
+     constructor(cause: unknown);
+ }
+@@ -40,6 +40,6 @@ export declare class ChangeRecording {
+     constructor(records: ChangeRecorder, clock: () => Date);
+     run(entry: ChangeEntry, check: () => Promise<ChangeResult | DirectoryChange>): Promise<ChangeResult>;
+     private recordingFailure;
+-    private keep;
++    record(entry: ChangeEntry, outcome: ChangeOutcome): void;
+ }
+ export {};
+diff --git a/docs/api-surface/src/accounts/organizations/organization-administration.d.ts b/docs/api-surface/src/accounts/organizations/organization-administration.d.ts
+index 2caf2796..0928c317 100644
+--- a/docs/api-surface/src/accounts/organizations/organization-administration.d.ts
++++ b/docs/api-surface/src/accounts/organizations/organization-administration.d.ts
+@@ -3,6 +3,8 @@ import type { Billing, BillingState } from '../billing/billing.ts';
+ import { type InvitationOverview, type MemberOverview } from './administration-overviews.ts';
+ import { type ChangeRecorder, type ChangeResult } from './change-records.ts';
+ import type { OrganizationDirectory } from './organization-directory.ts';
++import type { MemberRemovalRequest, RemovalOperationStore, RemovalResult } from './removal-operation-store.ts';
++export type { MemberRemovalRequest, RemovalResult } from './removal-operation-store.ts';
+ export interface Actor {
+     readonly user: AuthenticatedUser;
+ }
+@@ -26,12 +28,16 @@ export interface OrganizationAdministrationOptions {
+     readonly records: ChangeRecorder;
+     readonly billing: Billing;
+     readonly clock?: () => Date;
++    readonly removalStore?: RemovalOperationStore;
+ }
+ export declare class OrganizationAdministration {
+     private readonly directory;
+     private readonly changes;
+     private readonly billing;
++    private readonly removals;
+     constructor(options: OrganizationAdministrationOptions);
++    removeMember(actor: Actor, request: MemberRemovalRequest): Promise<RemovalResult>;
++    close(): Promise<void>;
+     listOrganizations(user: AuthenticatedUser): Promise<readonly AuthorizedOrganization[]>;
+     authorizeSelection(user: AuthenticatedUser, organizationId: string): Promise<AuthorizedOrganization | undefined>;
+     memberOverview(actor: Actor, organizationId: string): Promise<MemberOverview | AdministrationRefusal>;
+diff --git a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts
+index d1f5e593..614af3d0 100644
+--- a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts
++++ b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts
+@@ -35,6 +35,7 @@ export interface MemberPageRequest {
+     readonly organizationId: string;
+     readonly statuses: readonly MembershipStatus[];
+     readonly cursor?: string;
++    readonly signal?: AbortSignal;
+ }
+ export interface InvitationPageRequest {
+     readonly organizationId: string;
+@@ -57,9 +58,9 @@ export interface MembershipDeletionResult {
+     readonly outcome: 'applied' | 'unsupported';
+ }
+ export interface OrganizationDirectory {
+-    membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]>;
++    membershipsOf(user: AuthenticatedUser, signal?: AbortSignal): Promise<readonly OrganizationMembership[]>;
+     memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;
+-    member(membershipId: string): Promise<OrganizationMember | undefined>;
++    member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined>;
+     deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;
+     invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;
+     invitation(invitationId: string): Promise<OrganizationInvitation | undefined>;
+diff --git a/docs/api-surface/src/accounts/organizations/removal-operation-store.d.ts b/docs/api-surface/src/accounts/organizations/removal-operation-store.d.ts
+new file mode 100644
+index 00000000..2438f3bd
+--- /dev/null
++++ b/docs/api-surface/src/accounts/organizations/removal-operation-store.d.ts
+@@ -0,0 +1,35 @@
++export interface MemberRemovalRequest {
++    readonly organizationId: string;
++    readonly membershipId: string;
++    readonly revision: string;
++}
++export type RemovalResult = 'applied' | 'denied' | 'stale' | 'unsupported' | 'last-admin' | 'busy' | 'unavailable' | 'unknown';
++export interface RemovalIntent {
++    readonly organizationId: string;
++    readonly operationId: string;
++    readonly membershipId: string;
++    readonly revision: string;
++    readonly actor: {
++        readonly authority: string;
++        readonly subject: string;
++    };
++    readonly startedAt: string;
++}
++export type RemovalTerminal = 'applied' | 'no-effect';
++export type RemovalOperation = RemovalIntent & {
++    readonly outcome: RemovalTerminal | null;
++};
++export interface RemovalOperationStore {
++    admitRemoval(intent: RemovalIntent): Promise<{
++        status: 'admitted' | 'busy' | 'unavailable' | 'unconfirmed';
++    }>;
++    readRemoval(organizationId: string): Promise<{
++        status: 'found';
++        operation: RemovalOperation;
++    } | {
++        status: 'absent' | 'unavailable';
++    }>;
++    completeRemoval(organizationId: string, operationId: string, outcome: RemovalTerminal): Promise<{
++        status: 'completed' | 'mismatch' | 'unavailable' | 'unconfirmed';
++    }>;
++}

@@ -1,0 +1,8 @@
+{
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "dockerContext": "colima-thermus-s25-merge",
+  "reviewed": true,
+  "authorizedBy": "Manager, detached primary checkout; quality worker owns the feature branch in a separate checkout."
+}

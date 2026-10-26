@@ -1,0 +1,88 @@
+{
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "inputFingerprint": "f422da7def1b56bbbcfa7de2e7521b22097c859ae8978ccd71c6bf8f04a93a62",
+  "stream": {
+    "path": "docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+    "sha256": "387ebffc78f725f845827f95780a2706ac36dc36869142832181263ef5da54c6"
+  },
+  "step": "#27",
+  "network": "none",
+  "command": "npm run build:hosted",
+  "cached": false,
+  "completion": "#27 DONE 565.0s",
+  "summaries": [
+    {
+      "group": "backend unit",
+      "tests": 3251,
+      "suites": 164,
+      "pass": 3251,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 278274.181759
+    },
+    {
+      "group": "portal unit",
+      "tests": 29,
+      "suites": 0,
+      "pass": 29,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 2002.616475
+    },
+    {
+      "group": "portal acceptance",
+      "tests": 20,
+      "suites": 0,
+      "pass": 20,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 1874.612729
+    },
+    {
+      "group": "integration",
+      "tests": 1109,
+      "suites": 59,
+      "pass": 1109,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 124425.797007
+    },
+    {
+      "group": "hosted acceptance",
+      "tests": 119,
+      "suites": 6,
+      "pass": 119,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 67712.671195
+    },
+    {
+      "group": "renderer runtime",
+      "tests": 13,
+      "suites": 2,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 69722.829428
+    }
+  ],
+  "matcherCorrection": {
+    "oldMatcher": false,
+    "newMatcher": true,
+    "firstOutput": "#27 1.022 > thermus@0.0.0 build:hosted"
+  }
+}

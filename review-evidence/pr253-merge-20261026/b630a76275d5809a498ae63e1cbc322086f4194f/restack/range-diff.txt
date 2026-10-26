@@ -1,0 +1,13 @@
+1:  842458ba = 1:  b4f23c2c Record the S2.5-01b implementation scope
+2:  7e3510df ! 2:  11cbc3e3 Coordinate membership removal with durable per-org admission
+    @@ .pr-impact.json
+            "docs/design/organization-admin-plan.md",
+     -      "docs/implementation/admin-s2-5-01a.md",
+     -      "test/acceptance/auth/hosted-membership-deletion.test.ts",
+    +-      "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+     -      "test/integration/auth/workos-connection.test.ts",
+     -      "test/unit/auth-workos/workos-membership-reads.test.ts",
+     -      "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+3:  aa14f972 = 3:  f2888f90 Clarify unknown removal recording outcomes
+4:  fa5d4d7f = 4:  77c5bae4 Record S2.5-01b validation and remaining release work
+5:  790fa3e1 = 5:  b630a762 Record PR 253 rebase onto updated parent

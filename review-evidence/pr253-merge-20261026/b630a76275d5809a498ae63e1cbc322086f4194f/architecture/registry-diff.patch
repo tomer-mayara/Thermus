@@ -1,0 +1,496 @@
+diff --git a/architecture/components.md b/architecture/components.md
+index efbf37d1..366a459c 100644
+--- a/architecture/components.md
++++ b/architecture/components.md
+@@ -53,30 +53,36 @@ flowchart TB
+ Scope: Thermus hosted system. The browser portal is a separate browser
+ application. The Node server serves its assets and routes. Lightpanda is a
+ short-lived process container even when it shares the server's Docker image.
++The optional PostgreSQL datastore uses a private schema for destination settings
++and removal intent. The Collector is the configured customer destination,
++including compatible OTLP services such as Axiom; WorkOS includes AuthKit.
++The portal's HTTP arrow covers account requests and server-provided assets.
+ 
+ ```mermaid
+-%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
++%%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+ flowchart TB
+-  hosted_user["Person: customer<br/>Uses tools and manages access"]
+-  hosted_client["External software: MCP client<br/>Calls Thermus tools"]
++  hosted_user["Person: customer<br/>Tools and access"]
++  hosted_client["External: MCP client<br/>Tool calls"]
+   subgraph hosted_system["Software system: Thermus · hosted"]
+-    hosted_portal["Container: user portal<br/>Browser JavaScript / HTML / CSS<br/>Connection instructions and account UI"]
+-    hosted_server["Container: Thermus server<br/>Node.js / TypeScript<br/>MCP tools, account routes, authentication"]
+-    hosted_renderer["Container: renderer child<br/>Lightpanda<br/>Renders one public page per fetch"]
+-    hosted_settings[("Container: optional settings datastore<br/>PostgreSQL / private schema<br/>Tenant destination, optional dataset, revision")]
++    hosted_portal["Browser app: portal<br/>JavaScript / HTML / CSS<br/>Accounts and setup"]
++    hosted_server["Server container<br/>Node.js / TypeScript<br/>Tools and accounts"]
++    hosted_renderer["Renderer process<br/>Lightpanda<br/>One page per fetch"]
++    hosted_settings[("PostgreSQL datastore<br/>Private settings and<br/>removal intent")]
+   end
+-  hosted_workos["External system: WorkOS / AuthKit<br/>Identity and organization services"]
+-  hosted_public["External systems: public websites<br/>Includes Brave HTML search"]
+-  hosted_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Enabled export and Test / includes Axiom"]
+-  hosted_user -->|uses in browser| hosted_portal
+-  hosted_client -->|MCP over HTTP / bearer token| hosted_server
+-  hosted_portal -->|HTTP account routes| hosted_server
+-  hosted_server -->|serves portal assets over HTTP| hosted_portal
+-  hosted_server -->|SDK HTTPS / JWT key set| hosted_workos
+-  hosted_server -->|plain pg / verified TLS when configured| hosted_settings
+-  hosted_server -->|audit export and Test / OTLP HTTP JSON over HTTPS| hosted_collector
+-  hosted_server -->|execFile / stdout JSON| hosted_renderer
+-  hosted_renderer -->|HTTP / HTTPS page requests| hosted_public
++  hosted_workos["External: WorkOS<br/>Identity and orgs"]
++  hosted_public["External: public web<br/>Pages and Brave HTML"]
++  hosted_collector["External: Collector<br/>Events and Test"]
++  hosted_user -->|browser| hosted_portal
++  hosted_client -->|MCP / HTTP bearer| hosted_server
++  hosted_portal -->|account HTTP| hosted_server
++  hosted_server -->|HTTPS / SDK + JWKS| hosted_workos
++  hosted_server -->|pg / verified TLS| hosted_settings
++  hosted_server -->|OTLP JSON / HTTPS| hosted_collector
++  hosted_server -->|execFile / JSON| hosted_renderer
++  hosted_renderer -->|HTTP / HTTPS| hosted_public
++  %% Invisible links keep external services in one column.
++  hosted_settings ~~~ hosted_workos
++  hosted_workos ~~~ hosted_collector
+ ```
+ 
+ ### C4 containers: local edition
+@@ -119,13 +125,13 @@ roots, responsibilities, and public contracts.
+ | Container or artifact | Registry owners that contribute |
+ | --- | --- |
+ | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
+-| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, Test, and runtime) |
++| Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, removal intent, Test, and runtime) |
+ | Local server addition | `better-auth` |
+ | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
+ | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
+ | Renderer process | External Lightpanda binary, controlled by `website-fetcher`; no new source owner |
+ | Local installation datastore | Opened and owned by `better-auth`; no new source owner |
+-| Optional hosted settings datastore | `audit-logs` owns SQL access; `app` owns its runtime lifetime; no new source owner |
++| Optional hosted admin datastore | `audit-logs` owns SQL access for settings and removal intent; `app` owns its runtime lifetime; no new source owner |
+ 
+ ### Selected C4 components: tool processing in the Node server
+ 
+@@ -185,31 +191,34 @@ Scope: one hosted Node server container. The browser application and WorkOS
+ service remain outside that boundary. Role use follows calls on supplied
+ collaborators; it does not reverse the source dependency from provider
+ implementations to neutral contracts.
++The session/access arrow denotes BrowserSession and AccessResolver; the
++verification/access arrow denotes IdentityVerifier and AccessResolver. The
++directory and billing arrows use OrganizationDirectory and Billing.
+ 
+ ```mermaid
+-%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
++%%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+ flowchart TB
+-  hosted_portal["Container: user portal<br/>Account and connection UI<br/>Browser JavaScript / HTML / CSS"]
++  hosted_portal["L2: user portal<br/>Browser account and connection UI"]
+   subgraph account_server["Container: Thermus Node server · hosted"]
+-    account_root["Component: app<br/>Select edition and bind account roles<br/>TypeScript"]
+-    account_web["Component: web<br/>Account and provider-specific browser routes<br/>TypeScript"]
+-    account_mcp["Component: mcp<br/>Authenticate and bind request access<br/>TypeScript"]
+-    account_identity["Component: identity<br/>Trusted access records and neutral auth contracts<br/>TypeScript"]
+-    account_org["Component: organizations<br/>Check current customer roles and invitations<br/>TypeScript"]
+-    account_billing["Component: billing<br/>Free-plan state and seat-update role<br/>TypeScript"]
+-    account_workos["Component: workos<br/>Verify access, manage sessions and directory<br/>TypeScript / WorkOS SDK"]
++    account_root["app · TypeScript<br/>Select edition; supply roles"]
++    account_web["web · TypeScript<br/>Accounts and sign-in"]
++    account_mcp["mcp · TypeScript<br/>Verify request access"]
++    account_identity["identity · TypeScript<br/>Trusted access contracts"]
++    account_org["organizations · TypeScript<br/>Roles, invites and checked removal"]
++    account_billing["billing · TypeScript<br/>Free plan and seats"]
++    account_workos["workos · TypeScript / SDK<br/>Access, sessions and directory"]
+   end
+-  hosted_workos["External system: WorkOS / AuthKit<br/>Remote identity and organization data"]
+-  hosted_portal -->|HTTP account routes| account_web
+-  account_root ==>|constructs / supplies session and account roles| account_web
+-  account_root ==>|constructs / supplies verification roles| account_mcp
+-  account_web -->|calls supplied BrowserSession / AccessResolver| account_workos
+-  account_mcp -->|calls supplied IdentityVerifier / AccessResolver| account_workos
+-  account_web -->|requests account administration| account_org
+-  account_org -->|calls supplied OrganizationDirectory| account_workos
+-  account_org -->|calls supplied Billing| account_billing
+-  account_workos -->|creates trusted access records| account_identity
+-  account_workos -->|SDK HTTPS / JWT key set| hosted_workos
++  hosted_workos["External: WorkOS<br/>Identity and organizations"]
++  hosted_portal -->|account HTTP| account_web
++  account_root ==>|supplies account roles| account_web
++  account_root ==>|supplies verification| account_mcp
++  account_web -->|session / access| account_workos
++  account_mcp -->|verification / access| account_workos
++  account_web -->|administration| account_org
++  account_org -->|directory calls| account_workos
++  account_org -->|billing calls| account_billing
++  account_workos -->|trusted access records| account_identity
++  account_workos -->|HTTPS / SDK + JWKS| hosted_workos
+ ```
+ 
+ [Hosted composition](../src/app/hosted-workos-application.ts) shares a WorkOS
+@@ -217,7 +226,10 @@ SDK client, key-set resolver, and directory and selects `BillingFree`.
+ [WorkOSAuthProvider](../src/accounts/providers/workos/workos-auth-provider.ts)
+ implements identity-owned verifier/resolver contracts;
+ [WorkOSOrganizations](../src/accounts/providers/workos/workos-organizations.ts)
+-implements the organizations-owned directory role. `WorkOSBrowserSession`
++implements the organizations-owned directory role. Removal supplies an optional
++server-owned stop signal to directory reads. WorkOS checks it before and after
++each remote read; existing callers omit it and keep their current behavior.
++`WorkOSBrowserSession`
+ implements the identity-owned `BrowserSessionControls`, including profile data
+ for display and trusted identity from a completed sign-in. A missing sealed
+ return destination selects the default landing; an explicit safe destination
+@@ -238,6 +250,73 @@ form destinations. The portal uses a supplied current active-organization name
+ read for workspace display; an absent or blank name returns unavailable rather
+ than a fallback identity. Profile data does not grant access.
+ 
++### Selected C4 components: hosted membership removal in the Node server
++
++Scope: one hosted Node server container. Organizations owns the checked removal
++operation and its lifetime. App supplies the existing SQL adapter through the
++organizations-owned RemovalOperationStore role. Thick arrows show composition;
++solid arrows show runtime calls. The adapter's source type dependency points
++from audit-logs to organizations and is omitted from this runtime view.
++PostgreSQL is an existing supporting Level 2 container. No browser route invokes
++this operation yet; S2.5-01c adds that caller.
++
++```mermaid
++%%{init: {"flowchart": {"wrappingWidth": 230, "nodeSpacing": 35, "rankSpacing": 45}}}%%
++flowchart TB
++  subgraph removal_server["Container: Thermus Node server · hosted"]
++    removal_app["app · TypeScript<br/>Supply directory and removal store<br/>Stop removal before SQL close"]
++    removal_org["organizations · TypeScript<br/>Current Admin and target checks<br/>Last-Admin rule; bounded removal"]
++    removal_audit["audit-logs · TypeScript / pg<br/>Shared settings SQL runtime<br/>Atomic intent and terminal receipts"]
++    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion"]
++    removal_app ==>|composition / lifetime| removal_org
++    removal_app ==>|store / pool ownership| removal_audit
++    removal_org -->|supplied RemovalOperationStore| removal_audit
++    removal_org -->|supplied OrganizationDirectory| removal_workos
++  end
++  removal_db[("L2: PostgreSQL<br/>Private settings and removal intent")]
++  removal_provider["External system: WorkOS<br/>Identity and memberships"]
++  removal_audit -->|SQL / verified TLS| removal_db
++  removal_workos -->|SDK HTTPS| removal_provider
++  style removal_server fill:#fafafa,stroke:#777777,color:#222222
++```
++
++[OrganizationAdministration](../src/accounts/organizations/organization-administration.ts)
++owns one [removal coordinator](../src/accounts/organizations/membership-removal.ts).
++It checks current Admin authority before admission. The existing
++[SQL adapter](../src/logs/audit/pg-destination-settings-store.ts) implements the
++organizations-owned [store role](../src/accounts/organizations/removal-operation-store.ts)
++through its existing [bounded runtime](../src/logs/audit/bounded-sql-runtime.ts).
++It admits at most one pending operation per organization in a short atomic
++statement. A conflicting pending row returns busy. Each statement releases its
++client before provider HTTP; no transaction spans those calls. A terminal receipt
++stays until the next operation replaces it. The pending row has no lease.
++
++After admission, the [current checks](../src/accounts/organizations/membership-removal-checks.ts)
++reread the actor, exact target, roles, management, revision, and all active-member
++pages within a fixed ten-page limit. Only active Admin memberships with the
++required product and administration permissions count; pending records and
++invitations do not count. MFA proof is not required. Unsafe, stale, unsupported,
++incomplete, or last-Admin removal stops before the existing exact-ID WorkOS
++boundary can delete once. These are current reads, not a remote transaction;
++independent provider/operator writes remain a runbook constraint.
++
++Unknown admission dispatches nothing. A possible provider effect keeps the pending
++row. Confirmed no-send or provider settlement can complete only the matching
++organization and operation ID. An uncertain completion requires a matching
++terminal readback before the caller can claim the proven result; missing or
++replaced rows do not prove completion. No polling, replay, worker, or lease
++takeover is added.
++
++The [server-owned lifetime](../src/accounts/organizations/membership-removal-lifetime.ts)
++has a fixed 30-second monotonic budget, independent of browser cancellation.
++It checks before and after each awaited step and supplies its stop signal to
++directory reads. WorkOS checks that signal around each remote read, so expiry
++and close stop later read calls and pre-dispatch deletion. They do not cancel
++an SDK request or roll back a SQL write already in flight. Late provider answers
++cannot start completion; an already-started terminal write may still settle its
++own row. Removal uses the existing safe internal change recorder; customer
++removal capture is not wired.
++
+ ### Selected C4 components: hosted Audit logs settings and delivery in the Node server
+ 
+ Scope: one hosted Node server container. Current Admins read and save their
+@@ -255,7 +334,7 @@ flowchart TB
+     storage_identity["identity · TypeScript<br/>Access contracts"]
+     storage_logging["audit-logs · TypeScript / pg<br/>Protect settings; atomic Save<br/>Snapshots; bounded export / Test"]
+   end
+-  storage_data[("L2: PostgreSQL<br/>Private tenant settings")]
++  storage_data[("L2: PostgreSQL<br/>Private settings and removal intent")]
+   storage_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
+   storage_app -.->|supplies| storage_web
+   storage_app -.->|service / dispatch / lifetime| storage_logging
+@@ -269,6 +348,8 @@ flowchart TB
+ [Audit settings composition](../src/app/logging-storage.ts) supplies the settings store
+ and server key only when hosted storage configuration is available. It constructs
+ one service, collector, and sender; saved Test and export use that same sender.
++The same adapter and pool implement the organizations-owned removal store.
++Destination settings and export keep their existing contracts.
+ [Config](../src/runtime/config/logging-storage-config.ts) validates the URI,
+ independent 32-byte base64 key, and optional PEM CA bundle. URI query parameters
+ cannot override TLS or connection options. Dotted arrows show labelled composition
+@@ -323,8 +404,8 @@ thick arrows show composition. Dashed arrows show type-only source dependencies.
+ App composition supplies the concrete sender to the settings service's required
+ DestinationTestSender role. The service does not select its own transport.
+ App also constructs SystemLog and the hosted settings service/runtime. Audit-logs
+-retains a type-only ChangeOutcome dependency on organizations; that source edge
+-is omitted here. The saved-destination Test uses the sender in production. MCP and protected web
++retains type-only ChangeOutcome and RemovalOperationStore dependencies on
++organizations; that source edge is omitted here. The saved-destination Test uses the sender in production. MCP and protected web
+ boundaries capture customer events through a supplied AuditLog. The composition
+ uses activity-driven enabled/revision snapshots when hosted settings storage is
+ available. Hosted storage supplies bounded dispatch with a fresh saved-version
+@@ -618,33 +699,35 @@ Git diffs. WorkOS and public websites are external services. The local auth data
+ directory is application-owned storage.
+ 
+ ```mermaid
++%%{init: {"flowchart": {"wrappingWidth": 110, "nodeSpacing": 12, "rankSpacing": 35}}}%%
+ flowchart TB
+-  clients["Clients / operator<br/>Thermus user-portal"]
+-  interfaces["Request adapters<br/>mcp · web · cli"]
+-  accounts["Account rules and roles<br/>identity · organizations · billing"]
++  clients["Clients / operator<br/>user-portal"]
++  interfaces["Request adapters<br/>mcp / web / cli"]
++  accounts["Account rules<br/>identity / organizations / billing"]
+   hosted["Hosted provider<br/>workos"]
+   local["Local provider<br/>better-auth"]
+   workos_service(["WorkOS / AuthKit"])
+   local_data[("Local auth data directory")]
+-  tools["Tool operations<br/>page-fetch · search"]
+-  processing["Steps and HTML processing<br/>execution · html-processing"]
+-  fetching["Search and page providers<br/>search-engine · website-fetcher"]
+-  external_web(["Lightpanda → public web / Brave HTML"])
+-  runtime["Composition and runtime<br/>app · config · http · system-logs · audit-logs"]
+-  settings_data[("Optional hosted PostgreSQL<br/>Destination settings")]
++  tools["Tool operations<br/>page-fetch / search"]
++  processing["Content processing<br/>execution / html-processing"]
++  fetching["Page providers<br/>search-engine / website-fetcher"]
++  external_web(["Lightpanda → public web"])
++  runtime["Runtime owners<br/>app / config / http / system-logs / audit-logs"]
++  settings_data[("Hosted PostgreSQL<br/>Settings and removal intent")]
+   clients --> interfaces
+-  interfaces -->|supplied account roles| accounts
+-  accounts -->|hosted selection| hosted
+-  accounts -->|local selection| local
++  interfaces -->|MCP tools| tools
++  interfaces -->|account calls| accounts
++  accounts -->|hosted| hosted
++  accounts -->|local| local
+   hosted --> workos_service
+   local --> local_data
+-  interfaces -->|MCP tools| tools
+   tools --> processing
+   tools --> fetching
+   fetching --> external_web
+-  runtime -.->|construct, serve, record, close| interfaces
+-  interfaces -->|settings operations / customer capture| runtime
+-  runtime -->|audit destination settings SQL| settings_data
++  runtime -.->|compose / serve / close| interfaces
++  interfaces -->|settings / capture| runtime
++  accounts -->|removal store| runtime
++  runtime -->|settings + intent / SQL| settings_data
+ ```
+ 
+ App constructs the collaborators and selects one authentication edition. The
+@@ -663,6 +746,9 @@ Audit-logs owns the optional hosted settings service, credential protection,
+ store, bounded SQL runtime, and saved-destination Test. Web calls the service
+ for the trusted current tenant and actor. Test sends one synthetic event; the
+ separate tool and administration capture shares hosted activity-driven snapshots.
++Organizations calls the same SQL adapter through its supplied removal store for
++admission and terminal receipts. This runtime call points from organizations to
++audit-logs; the adapter's type-only source dependency points the other way.
+ The collector admits bounded memory and freshly authorizes each attempt before
+ using the same sender as Test. Neither stream enters SystemLog.
+ 
+@@ -909,8 +995,10 @@ The directory can delete one exact membership ID through WorkOS. A normal
+ void completion reports applied. Only the documented directory-managed 422
+ refusal reports unsupported without effect; other failures leave the effect
+ unknown. The existing client sends no automatic retry and keeps its five-second
+-request timeout. No browser route or administration method calls this deletion
+-boundary. It supplies no admission, current-authority, or last-Admin check.
++request timeout. The checked administration removal operation calls this boundary
++after durable admission and current safety checks. The provider boundary itself
++supplies no admission, current-authority, or last-Admin check. No browser removal
++route calls the operation yet.
+ The old `/invitations` page checks current authority and redirects to Members.
+ Privileged mutations and their recording rules
+ remain described under resource ownership and design choices below.
+@@ -943,40 +1031,60 @@ inside that same Docker boundary. An offline CLI uses the same image and data
+ volume while the server is stopped. A data-directory lock prevents concurrent
+ installation ownership.
+ 
++### Self-hosted Compose
++
++The Node server listens on port 8080. Compose publishes it only at
++`127.0.0.1:8080`, mounts `thermus-data` at `/var/lib/thermus`, and supplies
++`/etc/thermus/ad-rules.txt` through a read-only bind mount. The server reads
++that file at startup. These host bindings are described here to keep the
++process and datastore view readable.
++
+ ```mermaid
+-%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
++%%{init: {"flowchart": {"wrappingWidth": 150, "nodeSpacing": 20, "rankSpacing": 35, "subGraphTitleMargin": {"top": 0, "bottom": 12}}}}%%
+ flowchart TB
+   subgraph deploy_local["Deployment alternative: self-hosted Compose"]
+-    deploy_loopback["Host endpoint<br/>127.0.0.1:8080"]
+     subgraph deploy_local_docker["Docker container · Thermus image"]
+-      deploy_local_node["Node server process<br/>HTTP :8080 / local edition"]
+-      deploy_local_child["Lightpanda child process<br/>Per fetch / same image"]
++      deploy_local_node["Node server process<br/>HTTP :8080 / local"]
++      deploy_local_child["Lightpanda process<br/>Per fetch / same image"]
+     end
+-    deploy_volume["Named volume: thermus-data<br/>/var/lib/thermus · SQLite and secrets"]
+-    deploy_rules["Read-only bind mount<br/>/etc/thermus/ad-rules.txt"]
+-    deploy_loopback -->|published port| deploy_local_node
+-    deploy_local_node -->|execFile / stdout JSON| deploy_local_child
+-    deploy_local_node -->|SQLite / filesystem, locked directory| deploy_volume
+-    deploy_rules -->|startup rules read| deploy_local_node
++    deploy_volume[("Named volume: thermus-data<br/>SQLite and secrets")]
++    deploy_local_node -->|execFile / JSON| deploy_local_child
++    deploy_local_node -->|locked data directory| deploy_volume
+   end
+-  subgraph deploy_hosted["Recorded target: hosted Render web service"]
+-    deploy_edge["Render HTTPS edge<br/>Recorded ingress target"]
++  deploy_public["External: public web<br/>Pages and Brave HTML"]
++  deploy_local_child -->|HTTP / HTTPS| deploy_public
++```
++
++### Recorded hosted Render target
++
++The recorded Render HTTPS edge forwards requests to the Node process on port
++8080. PostgreSQL is the optional selected Supabase target with a private
++`thermus_admin` schema; the diagram does not verify its rollout. The customer
++Collector denotes the configured Collector or compatible OTLP service, including
++Axiom. WorkOS includes AuthKit. The short labels retain process placement,
++SQL/HTTPS connections, and the shared Docker image; ingress is described here.
++
++```mermaid
++%%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35, "subGraphTitleMargin": {"top": 0, "bottom": 12}}}}%%
++flowchart TB
++  subgraph deploy_hosted["Recorded target: hosted Render service"]
+     subgraph deploy_hosted_docker["Docker container · hosted image"]
+-      deploy_hosted_node["Node server process<br/>HTTP :8080 / portal + account + MCP"]
+-      deploy_hosted_child["Lightpanda child process<br/>Per fetch / same image"]
++      deploy_hosted_node["Node server process<br/>HTTP :8080<br/>Portal / account / MCP"]
++      deploy_hosted_child["Lightpanda process<br/>Per fetch / same image"]
+     end
+-    deploy_edge -->|HTTP forwarding to :8080| deploy_hosted_node
+-    deploy_hosted_node -->|execFile / stdout JSON| deploy_hosted_child
++    deploy_hosted_node -->|execFile / JSON| deploy_hosted_child
+   end
+-  deploy_settings[("Optional managed PostgreSQL<br/>Private thermus_admin schema<br/>Selected Supabase target; rollout unverified")]
+-  deploy_hosted_node -->|pg / verified TLS when configured| deploy_settings
+-  deploy_collector["External system: customer Audit destination<br/>Collector or compatible OTLP service<br/>Customer events and Test / includes Axiom"]
+-  deploy_hosted_node -->|authorized export and Test / HTTPS| deploy_collector
+-  deploy_workos["External system: WorkOS / AuthKit<br/>HTTPS identity / organization services"]
+-  deploy_public["External systems: public websites<br/>HTTP / HTTPS pages and Brave HTML"]
+-  deploy_hosted_node -->|HTTPS SDK / key set| deploy_workos
+-  deploy_hosted_child --> deploy_public
+-  deploy_local_child --> deploy_public
++  deploy_settings[("Managed PostgreSQL<br/>Settings and removal intent<br/>Rollout unverified")]
++  deploy_collector["External: Collector<br/>Events and Test"]
++  deploy_workos["External: WorkOS<br/>Identity and orgs"]
++  deploy_public["External: public web<br/>Pages and Brave HTML"]
++  deploy_hosted_node -->|pg / verified TLS| deploy_settings
++  deploy_hosted_node -->|OTLP / HTTPS| deploy_collector
++  deploy_hosted_node -->|HTTPS SDK / JWKS| deploy_workos
++  deploy_hosted_child -->|HTTP / HTTPS| deploy_public
++  %% Invisible links keep external services in one column.
++  deploy_settings ~~~ deploy_collector
++  deploy_collector ~~~ deploy_workos
+ ```
+ 
+ Both renderer children use HTTP or HTTPS to reach public websites and Brave.
+@@ -987,14 +1095,17 @@ includes the built portal and trusted rules and selects hosted operation.
+ The [recorded Render topology](../docs/implementation/render-hosted-docker-plan.md)
+ describes the earlier single-service target without a separate frontend, database,
+ Redis, disk, or worker. Source now supports an optional external PostgreSQL
+-settings datastore. The selected Supabase target and ordered setup are recorded in
++datastore for destination settings and removal intent. The selected Supabase target and ordered setup are recorded in
+ the [organization-admin plan](../docs/design/organization-admin-plan.md#owner-setup-for-supabase--slice-2);
+ the [rollout ledger](../docs/implementation/admin-s2-04.md#evidence-and-release-holds)
+ records applied SQL and the remaining live connection, configuration, destination,
+ and capacity proof. Backup and recovery are future Slice 4 work under the owner
+ decision. Neither this source map nor that dated record verifies current cloud
+ configuration or claims a deployed Axiom destination.
+-Current replica count and activated database settings are unknown here.
++Current replica count and activated database settings are unknown here. The
++[removal-operation migration](../sql/migrations/20261025082850_membership_removal_operations.sql)
++still needs deployment verification; this map does not claim that the live target
++has its new table.
+ Compose publishes only loopback HTTP. A different public address requires the
+ HTTPS reverse proxy described by the installation contract; this diagram does
+ not invent that infrastructure.
+@@ -1018,7 +1129,7 @@ surface and the narrower file-context restrictions.
+ | --- | --- | --- |
+ | `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
+ | `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, and local-user-administration contracts. No provider or UI implementation belongs here. |
+-| `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, and signup-activation modules. Directory-read helpers remain private. |
++| `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read and removal helpers remain private. |
+ | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
+ | `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. |
+ | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
+@@ -1033,7 +1144,7 @@ surface and the narrower file-context restrictions.
+ | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
+ | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
+ | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
+-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral store, private codec, pg adapter and SQL runtime; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
++| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. The shared pg adapter also stores removal intent and terminal receipts. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, pg adapter and SQL runtime; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
+ | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
+ | `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader. |
+ 
+@@ -1097,22 +1208,24 @@ fields. WorkOS organization metadata and the deterministic external ID retain
+ creation/legal facts independently of the optional logging-settings datastore. Google enrollment is an optional explicit composition;
+ production does not supply its onboarding settings.
+ 
+-The hosted [audit settings runtime](../src/logs/audit/bounded-sql-runtime.ts) bounds active
++The shared hosted [SQL runtime](../src/logs/audit/bounded-sql-runtime.ts) bounds active
+ and pending work, acquisition, caller duration and PostgreSQL statements. Caller
+ timeout does not free unsettled work from accounting. Late clients are destroyed;
+ late results cannot complete an expired caller. Idle-pool errors are observed.
+ The pool is lazy: configuration does not establish a live SQL connection or prove
+-TLS/grants. Missing or failed storage leaves MCP and admitted product access
+-independent of SQL. The local edition does not open this pool.
+-
+-Hosted application close starts MCP cleanup and hosted storage cleanup together.
+-Hosted composition first closes snapshots and clears their pending content,
+-then the collector stops admission, clears content and aborts attempts, then SQL
+-closes. The SQL runtime rejects new work, expires admitted calls and bounds pool
+-closure within the existing process
++TLS/grants. Missing or failed storage blocks removal but leaves MCP and admitted
++product access independent of SQL. The local edition does not open this pool.
++
++Hosted application close starts MCP cleanup and the administration/storage cleanup
++chain together. It stops removal before hosted composition closes snapshots and
++clears their pending content. The collector then stops admission, clears content
++and aborts attempts, and SQL closes. The SQL runtime rejects new work, expires
++admitted calls and bounds pool closure within the existing process
+ shutdown deadline. Unsettled read/native work retains charged metadata
+-reservations; late results cannot start dispatch or restore content. The settings
+-datastore persists across runtime closure; export queues are memory-only.
++reservations; late results cannot start dispatch or restore content. Destination
++settings, pending removal rows, and terminal receipts persist across runtime
++closure; export queues are memory-only. A terminal write that started before a
++removal stopped may still commit for the same operation.
+ 
+ ## Design choices and current soft spots
+ 
+@@ -1122,9 +1235,11 @@ and step roles. Edition-specific dynamic imports keep provider startup separate.
+ Immutable [access records](../src/accounts/identity/access-context.ts) keep trusted
+ identity and permissions together. Ordered HTML transformations separate cleanup
+ operations; [ChangeRecording](../src/accounts/organizations/change-records.ts)
+-separates current checks from one directory mutation and records uncertain
+-outcomes without repeating a mutation. A failed post-write recorder cannot replace
+-the completed outcome or the original failure. Disposable stacks and idempotent close
++separates invitation checks from one directory mutation and records uncertain
++outcomes without repeating a mutation. Removal uses its safe record sink after
++its own durable coordination; the sink does not own admission, settlement, or retry.
++A failed post-write recorder cannot replace the completed outcome or the original
++failure. Disposable stacks and idempotent close
+ promises make ownership explicit. These are observed uses, not requirements to
+ add a class hierarchy or a shared workflow engine.
+ 

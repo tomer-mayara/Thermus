@@ -1,0 +1,2482 @@
+{
+  "checked": "2026-10-26T08:13:20.826658+00:00",
+  "authoredArtifactLinks": [
+    {
+      "from": "README.md",
+      "target": "gate-ledger.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation-snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/selection.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/focused-files.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "gated-inputs.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/run-gates.mjs",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation-draft.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/final-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/manager-validation-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/hosted-provenance-correction.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/manager-hosted-proof-correction-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/hosted-provenance-manual-check.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/run-gates-captured-1792999729728.mjs",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/run-gates.mjs",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/hosted-offline-evidence.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/final-build-history.jsonl",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "history/publication-draft-20261026T075708Z/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "inventory.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/metrics-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/checker-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/pr-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/metric-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/checker-notes.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/process.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/process.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/crap.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/snapshot-base.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/index.html",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/compare.html",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/metrics.txt",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/coverage.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/capture-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/coverage-build.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/coverage-capture.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/coverage-captures/capture-unit-XStpcu/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/coverage-captures/capture-integration-F1Pu5Z/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/ast-report/coverage-captures/capture-acceptance-LJKg2E/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/habit-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/final-isolated/measurements/habit-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/manager-quality-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/habit-run-bridge.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/assessment-current.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/summary-comparison-current.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/comparison-current.mmd",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/manager-review-current.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/equivalence-render-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "restack/increment-equivalence.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "restack/range-diff.txt",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "history/initial-pr-stack-state.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "history/parent-fixture/postgres-fixture-review.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/main-body.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/validation-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/quality-review-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "review/deployment-preflight-context.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "provenance.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "inventory.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "link-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/pr-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/README.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/metrics-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/checker-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/manager-quality-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/metric-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/process.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/process.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/crap.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/snapshot-base.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/ast-report/index.html",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/checker-notes.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/checker-notes.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/initial-pr-stack-state.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/habit-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/habit-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/habit-run-bridge.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/manager-review-current.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/source-contract-caller-provenance.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/equivalence-render-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/restack/increment-equivalence.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/review/deployment-preflight-context.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/manager-validation-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/manager-hosted-proof-correction-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-provenance-correction.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-provenance-manual-check.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/main-body.md",
+      "target": "%%EVIDENCE_ROOT%%/README.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/selection.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/focused-files.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/gate-ledger.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/gated-inputs.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/install-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/runtime-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/api-surface-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/focused-build-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/focused-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/logging-postgres-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/ordinary-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/typecheck-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/portal-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/hosted-live-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/native-container-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/hosted-container-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/docker-build-1792999729728-hosted-container-1793000823378-58534.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-provenance-correction.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/logging-collector-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/habit-hooks-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/habit-run-bridge.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/diff-check-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/final-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/parent-fixture/postgres-fixture-review.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/parent-fixture/postgres-input-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/restack/increment-equivalence.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/coverage-capture.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/coverage.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/measurements/capture-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/final-isolated/coverage-build.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation-draft.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/manager-validation-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-offline-evidence.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/final-build-history.jsonl",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/run-gates-captured-1792999729728.mjs",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-provenance-correction-initial.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-provenance-correction.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/manager-hosted-proof-correction-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/run-gates.mjs",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-provenance-manual-check.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/habit-run-bridge.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/publication-draft-20261026T075708Z/validation-snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/initial-pr-stack-state.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/review/deployment-preflight-context.json",
+      "exists": true
+    }
+  ],
+  "nativeHtmlStaticAssets": [
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classification_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/index_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/busfactor_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/compare_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "data/linters.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/explorer_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/risks_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "data/linters.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/linters_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/classes_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/testquality.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/communities.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/dependencies.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/final-isolated/ast-report/metrics.html",
+      "target": "classes.html",
+      "exists": true
+    }
+  ],
+  "placeholderLinksResolve": true,
+  "nativeHtmlStaticAssetsComplete": true,
+  "dynamicBindings": "Bound :href/:src expressions are not file paths; raw HTML unmodified.",
+  "rawReportLinks": "Original execution-relative links preserved; curated authored index/comments provide stage links.",
+  "networkLookupPerformed": false
+}

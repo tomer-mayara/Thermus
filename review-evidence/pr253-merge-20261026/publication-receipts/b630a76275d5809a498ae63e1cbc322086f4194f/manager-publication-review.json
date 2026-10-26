@@ -1,0 +1,32 @@
+{
+  "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "mergeBase": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "reviewedAt": "2026-10-26T08:17:37.694555+00:00",
+  "reviewer": "Codex manager /root (agent review, not independent human approval)",
+  "inventorySha256": "6b79b481c75bd6189d8d36ba2615a59e9110e3e7a7e4ad4d6cca636e5a27aa47",
+  "approvedForPublication": true,
+  "publicationAuthorizationReady": false,
+  "scope": "Current evidence package and three PR texts reviewed. Publication still requires the deployment preflight. This is not Ready or merge approval.",
+  "review": [
+    "Read the final Validation text against the accepted gate ledger and final binding. All product commands pass. The original hosted validator failure and reviewed correction remain explicit.",
+    "Read canonical T2 reasons, all architecture facts, current declaration diffs and the same reviewed L3 source. The intermediate display-lookup defect remains stated with required R1 integration.",
+    "Fresh actual-parent metrics, all 86 required function results, eight findings, three used MI exceptions, 17 notes and exact Habit bridge keep their current dispositions.",
+    "Reviewed original failure and retry history. Neither a copied report nor a corrected parser is represented as another product run.",
+    "The exact inventory and text bytes passed the configured WorkOS/Axiom value scan. Pattern matches resolve to committed invalid-URL fixture prefixes.",
+    "No raw V8 profiles, user draft, environment files, credentials or source archive are included. Existing comment IDs remain."
+  ],
+  "texts": {
+    "main-body.md": "106d2af79e50a78a42b1aeb4fb80d0e33beda1fbdf719d915cc85e7973ddb5dc",
+    "validation-comment.md": "eeb725eb1caa81d1033f48072aa212b7a7949759bc654c16e07b0f2fcdacdb39",
+    "quality-review-comment.md": "f5d2fbdc322c80ae9b8a6471fd1347c348bf245e317ce63803876c6384813d31"
+  },
+  "scanHistory": [
+    "Initial exact-value scanner stopped before scanning because this package calls the parent actualStackParent.",
+    "The scanner now accepts both explicit metadata schemas, still verifies the exact Git merge base and file inventory, and completed with zero configured-value matches."
+  ],
+  "remainingHolds": [
+    "Confirmed Render workspace, target and current deployment hold.",
+    "Independent qualified architect identity and current-candidate approval-scope reconciliation.",
+    "Remaining stack validation, parent integration and R1 inclusion."
+  ]
+}

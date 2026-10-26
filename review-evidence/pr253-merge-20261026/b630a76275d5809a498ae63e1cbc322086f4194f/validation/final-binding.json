@@ -1,0 +1,27 @@
+{
+  "checked": "2026-10-26T08:07:31.825Z",
+  "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "trackedStatus": "",
+  "allTrackedFileHashesMatch": true,
+  "trackedFiles": 1446,
+  "inputFingerprint": "f422da7def1b56bbbcfa7de2e7521b22097c859ae8978ccd71c6bf8f04a93a62",
+  "runnerProcessCount": 0,
+  "runningTaskContainerCount": 0,
+  "dockerProfileRetained": "colima-thermus-s25-merge",
+  "hostedActualChildCode": 0,
+  "hostedOriginalValidatorExit": 1,
+  "hostedCorrectionReviewed": true,
+  "habitRetainedFindings": 320,
+  "artifactHashes": {
+    "gate-ledger.json": "f811ecf2e45b93ceff4160299857ebc064de5a2f8b7f1baf86baac1b7c09c894",
+    "gated-inputs.json": "caff283b7c7f0f7d294a695ea71e75906342d5846a25c39d1b777f35751df4e2",
+    "validation-draft.md": "874cf4fd72161707e597a3d4a093f0ccabdd7a5bc76a618a342e0c4d6ab1304e",
+    "validation/hosted-offline-evidence.json": "f89669f04b5ed57824764eeb4256374d0df463772c818718d369fb4d95dd1688",
+    "validation/hosted-provenance-correction.json": "79fdb43bce5a10165cb5dd6db452b58ba46d6aa227fa887c0c50c6e13f412385",
+    "validation/hosted-provenance-manual-check.json": "5b80bb41a0dea889d5da81dc2d9a5d6e7b2381e4efb58d0525f3b771d57d58b7",
+    "validation/habit-run-bridge.json": "834be609d6a2c7cd0cf3097a30a3b3fa78b15855ed7bd1b3e3b01978682b40c6"
+  },
+  "scope": "PR 253 validation handoff complete. The manager authorized a later detached primary checkout of PR 254 after this handback."
+}

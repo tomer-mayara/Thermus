@@ -1,0 +1,6 @@
+{
+  "oldIncrement": "fd4458e6584e2c9d4edf010703b6d30070d7b7bb",
+  "newIncrement": "fd4458e6584e2c9d4edf010703b6d30070d7b7bb",
+  "equal": true,
+  "note": "Index and context can change with upstream integration; per-file clean three-way proof is authoritative."
+}

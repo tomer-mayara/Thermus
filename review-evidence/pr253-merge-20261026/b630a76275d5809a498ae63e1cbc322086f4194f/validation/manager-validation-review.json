@@ -1,0 +1,22 @@
+{
+  "reviewer": "Codex manager /root",
+  "reviewedAt": "2026-10-26T08:09:18.942931+00:00",
+  "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "reviewed": true,
+  "scope": "Complete candidate selected product validation and accepted provenance correction; not humanapproval/deployment/merge.",
+  "allSelectedProductCommandsPass": true,
+  "notes": [
+    "Reviewed finalbinding1446trackedfiles and runtimefingerprint.",
+    "Focused276,PG22,ordinary5004+49,WorkOS28,native11,hosted7,Collector10; types/API/portal/diff pass.",
+    "Freshoffline6groups capturedwith565.0s layer; originalpostprocessor1 persists with conditional-source proof ofactualchild0 and reviewedmatcher/counterexamplecorrection; no productrerun.",
+    "Habit320/32ownerexactbridge accepted; no suppression.",
+    "Primary handedoffclean detachedcandidate, no runner/container left."
+  ],
+  "remainingHolds": [
+    "Parent/whole-stack integration includingR1",
+    "Qualifiedhumanapprovalreconciliation",
+    "ConfirmedRenderworkspace/target/deploymenthold"
+  ]
+}

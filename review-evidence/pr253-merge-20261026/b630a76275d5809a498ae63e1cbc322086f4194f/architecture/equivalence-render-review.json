@@ -1,0 +1,177 @@
+{
+  "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "parent": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "mainMergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "oldHead": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "oldParent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "registryDiff": {
+    "added": [
+      "Recorded hosted Render target",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Self-hosted Compose"
+    ],
+    "removed": [
+      "Deployment view"
+    ],
+    "changed": [
+      "C4 containers: hosted edition",
+      "Collaboration overview",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: hosted authentication in the Node server"
+    ],
+    "unchanged": [
+      "C4 containers: local edition",
+      "Context",
+      "Scenario: MCP page fetch and renderer cancellation",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Selected C4 components: local authentication in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Selected C4 components: tool processing in the Node server"
+    ]
+  },
+  "currentParentDiagramsMatchReviewedParent": true,
+  "currentCandidateDiagramsMatchReviewedCandidate": true,
+  "managerReview": "Pending current comparison and exact final candidate check",
+  "testsBuildsMetricsRun": false,
+  "claimOfHumanApprovalMergeRelease": false,
+  "evidenceCommit": "6181c1750a95cdb7718d7eb351bc1ee55343737d",
+  "evidencePrefix": "review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/",
+  "renderReportUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/render-report-final.json",
+  "mermaidSha256": "3660d10cbad98f631fc92832da7fe19e50e6bc374166c0a312dfaa9b320bcd2e",
+  "initialPRMermaidByteIdentical": true,
+  "sourceReused": true,
+  "newRenderRun": false,
+  "assets": [
+    {
+      "name": "comparison-v2",
+      "sourceSha256": "3660d10cbad98f631fc92832da7fe19e50e6bc374166c0a312dfaa9b320bcd2e",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/comparison-final.mmd",
+      "pngSha256": "eb32e2e755259d9d6e1e25ac3d2360bb0ae105bf94a51cba2fcc6667c867dd0f",
+      "svgSha256": "91f0d7eb7eb2a266c112b7d6209b31e9eb044768a1921915180442c63d1a57bf",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/comparison-v2-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/comparison-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 818.828125
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    },
+    {
+      "name": "registry-hosted-containers-v2",
+      "sourceSha256": "6efd91bd512f70bc71446bc7beafa8c60d12e7be40fe97b8e9ee2caab6d32035",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/embedded-registry-hosted-containers-v2.mmd",
+      "pngSha256": "14b1a08ac8490533ac1940b4f902389816b8ced0acd2fbc0ae29267995f08f0d",
+      "svgSha256": "525c9d5b1f2d793bb67c7bf0fdd4e51626e67f125a0d89ea6a1b056684c7a55c",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-hosted-containers-v2-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-hosted-containers-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 1019.234375
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    },
+    {
+      "name": "registry-hosted-auth-v2",
+      "sourceSha256": "0eb999ee23b54a61a8e3703c4e63f833856af3727e972e511bed703e7c5eccf3",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/embedded-registry-hosted-auth-v2.mmd",
+      "pngSha256": "2a772a95bd76f63812ff5a71fb0adc1a8b889d2ee488aa5f417e431553aca7d4",
+      "svgSha256": "b72f2ad3b2224289a002675b04305d9cf3d71cdba8740442aab3c34b51412dfb",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-hosted-auth-v2-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-hosted-auth-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 708.515625
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    },
+    {
+      "name": "registry-membership-removal-v2",
+      "sourceSha256": "c3a194b087c659c47f878a0d8a38daa685f2508190a4d4e5954e172247f50e63",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/embedded-registry-membership-removal-v2.mmd",
+      "pngSha256": "92d7e2f6aca4707f6befcf05deb93fef55ff29052c3d70038d4b9149ad7b4f8a",
+      "svgSha256": "6e1fe634311cc732bb3fe525c9f4e1ecd1dd7e9ab7a5855a4e9354c7db647788",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-membership-removal-v2-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-membership-removal-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 850.015625
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    },
+    {
+      "name": "registry-audit-storage-v1",
+      "sourceSha256": "81bf68dcbc6500daa05fdcaff1294b1160325c9094ad6960f38d70532e03b260",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/embedded-registry-audit-storage-v1.mmd",
+      "pngSha256": "c7dc25fc6d581950b4bc004411341d2d774aec3ce8be4ece541120331cc1ae93",
+      "svgSha256": "cb4c5e37f5fa873b15ab8a2f204c7b3ae9d22a7a9328c653de18d28200e9df47",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-audit-storage-v1-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-audit-storage-v1-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 907.546875
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    },
+    {
+      "name": "registry-collaboration-v3",
+      "sourceSha256": "5cfd938fbfd94b2900fd0499c2c76edf0cae14faf20804dfce468ef7f71274f0",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/embedded-registry-collaboration-v3.mmd",
+      "pngSha256": "f6be9c1155978ef408d551012eaac2c5d8657456b5d710f1cb8025288b9456ad",
+      "svgSha256": "7e502cddd781f6f2a8a55dab525b8fca034d233cd4c24f421114670dc84d0137",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-collaboration-v3-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-collaboration-v3-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 664
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    },
+    {
+      "name": "registry-deployment-local-v4",
+      "sourceSha256": "4b03d531fb5b0495291131a2baf0bc65b44e8f925886dfd1961c1ed53a86331b",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/embedded-registry-deployment-local-v4.mmd",
+      "pngSha256": "538776ab316d05fedfb1b4170aa10f521f0e79750a46808569c2e84f9ae997c4",
+      "svgSha256": "3f1af32058c6373dd0e2ea1733ecf88802f0141c1620da724920accd7e9dede3",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-deployment-local-v4-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-deployment-local-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 671.296875
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    },
+    {
+      "name": "registry-deployment-hosted-v4",
+      "sourceSha256": "d31dc72684e9e9a494f7ad2d780ea0678ebc82fab1899309efc182634ea62ec0",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/embedded-registry-deployment-hosted-v4.mmd",
+      "pngSha256": "b04370ea96a65035a136f1ee4a4beab79a760b5d22395729143665ff9947af19",
+      "svgSha256": "75faf5a73782ea4c9e8a76be6ba109162489b736c7838c3a6455d28b9b67910e",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-deployment-hosted-v4-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/6181c1750a95cdb7718d7eb351bc1ee55343737d/review-evidence/pr253-rebase-f03a7b73/790fa3e1f85ab3ed9a5228300cc90373117a2793/architecture/renders-v1/registry-deployment-hosted-v4-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 813.046875
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    }
+  ],
+  "currentSummaryEmbeddedByteIdentical": true,
+  "currentSummarySha256": "8d127b53dc2c4410309fa95245e1422692d44bdc9a5aa291f5aa64e72f669a70"
+}
