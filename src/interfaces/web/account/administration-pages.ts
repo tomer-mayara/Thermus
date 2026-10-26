@@ -1,8 +1,14 @@
+import { micromark } from 'micromark';
+import { membersRemovalHelpDocument } from './administration-help-documents.ts';
 import { escapeHtml } from '../html-escape.ts';
 import type { InvitationEntry, InvitationOverview, MemberOverview } from '../../../accounts/organizations/administration-overviews.ts';
 import type { InvitationIdentityPolicy } from '../../../accounts/organizations/organization-directory.ts';
 import { hiddenField, postForm } from '../page-html.ts';
 import { membersPageLayout } from './members-page-layout.ts';
+
+const membersHelp = `<details class="administration-help" data-help="members" data-document-version="${membersRemovalHelpDocument.version}" data-document-sha256="${membersRemovalHelpDocument.sha256}">
+<summary>Member removal help</summary><div class="administration-help-content">${micromark(membersRemovalHelpDocument.text)
+  .replace(/<(\/?)h([1-3])>/g, (_tag: string, closing: string, level: string) => `<${closing}h${Number(level) + 2}>`)}</div></details>`;
 
 export { billingPage } from './billing-page.ts';
 
@@ -28,7 +34,7 @@ ${sendForm(form).join('\n')}
 <p class="policy-note">${identityPolicyText(form.invitations.identityPolicy)}</p></section>
 <div class="member-lists"><section class="members-card" aria-labelledby="active-heading"><h2 id="active-heading">Active members</h2>
 <p class="list-note">Active product members: ${form.members.activeUserSeats}</p>
-${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">${memberRows.join('\n')}</ul>`}</section>
+${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">${memberRows.join('\n')}</ul>`}${membersHelp}</section>
 <section class="members-card" aria-labelledby="pending-heading"><h2 id="pending-heading">Pending invitations</h2>
 ${invitations.length === 0 ? '<p class="list-note">No pending invitations.</p>' : `<ul class="invitation-list">${invitations.map((invitation) => invitationRow(form, invitation)).join('\n')}</ul>`}
 </section></div>`;

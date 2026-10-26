@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import { parseHTML } from 'linkedom';
+import { micromark } from 'micromark';
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { DestinationSettingsService } from '../../../src/logs/audit/destination-settings-service.ts';
@@ -27,15 +30,31 @@ test('Given a password-authenticated current Admin, when the Admin opens Audit l
   assert.match(members.body, /href="[^"]*logging"[^>]*>Audit logs/);
 });
 
-test('Given an Admin choosing an audit destination, when Audit logs opens, then a Bearer-only destination selector and a short privacy notice guide Save', async (t) => {
-  const { browser } = await loggingSite(t);
+test('Given an Admin choosing an audit destination, when Audit logs opens, then a Bearer-only destination selector, short privacy notice and complete expandable help guide Save', async (t) => {
+  const { browser, store } = await loggingSite(t);
   const page = await browser.open('logging');
   assert.equal(page.status, 200);
   assert.match(page.body, /<legend>Destination<\/legend>/);
   assert.match(page.body, /name="destination" value="axiom"/);
   assert.match(page.body, /name="destination" value="custom"/);
   assert.match(page.body, /<aside[^>]*role="note"[^>]*><p>Send organization data only if you have authority to do so\. Check destination access and retention\. Read our <a href="https:\/\/thermus.ai\/privacy\/">Privacy Policy<\/a>\.<\/p><\/aside>/);
-  assert.doesNotMatch(page.body, /What export includes|Settings have no backup|name="auth" value="none"|Axiom dataset \(optional\)/);
+  const document = parseHTML(page.body).document;
+  const help = document.querySelector('details[data-help="audit"]');
+  assert.ok(help, 'Complete Audit help must be available without scripts');
+  assert.equal(help.hasAttribute('open'), false);
+  assert.equal(help.querySelector('summary')?.textContent, 'Audit logs help');
+  assert.equal(help.getAttribute('data-document-version'), 'hosted-audit-help-organization-removal-proposal-2026-10-26-v1');
+  assert.equal(help.getAttribute('data-document-sha256'), '91c500488861110b50b01aea8cda7ba60cf5a7990e5a398a9124742b77588391');
+  const canonical = await readFile('docs/legal/organization-removal-2026-10-26-proposal-v1/audit-help.md', 'utf8');
+  const expected = parseHTML(`<div>${micromark(canonical)}</div>`).document.querySelector('div')?.textContent;
+  assert.equal(help.querySelector('.administration-help-content')?.textContent, expected);
+  assert.equal(help.querySelector('a')?.getAttribute('href'), 'https://thermus.ai/privacy/');
+  assert.equal(help.querySelectorAll('form, input, script').length, 0);
+  assert.equal(help.closest('form'), null);
+  assert.doesNotMatch(document.querySelector('form')?.textContent ?? '', /What export includes|Settings have no backup/);
+  assert.doesNotMatch(page.body, /name="auth" value="none"|Axiom dataset \(optional\)/);
+  assert.equal(document.querySelectorAll('form').length, 1);
+  assert.equal(store.writes, 0);
   const form = formLabelled(formsIn(page.body), 'Save');
   const saved = await browser.submit({ ...form, fields: { ...form.fields, ...destination, destination: 'axiom', axiom_dataset: 'audit-log-test', token: secret } });
   assert.equal(saved.status, 200);

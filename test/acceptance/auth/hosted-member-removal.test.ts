@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { parseHTML } from 'linkedom';
 import { formsIn, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
 import { removalForm } from '../../support/dsl/hosted-member-removal.ts';
@@ -86,7 +87,15 @@ test('Given an uncertain removal that deleted its target, when the Admin repeats
   assert.equal(repeated.status, 409, repeated.body);
   assert.match(repeated.body, /progress|busy|pending/i);
   assert.equal(current.status, 200, current.body);
-  assert.doesNotMatch(current.body, /user@example\.com|removal (is|was) confirmed/i);
+  assert.doesNotMatch(current.body, /user@example\.com/);
+  const currentPage = parseHTML(current.body).document;
+  const help = currentPage.querySelector('details[data-help="members"]');
+  assert.ok(help);
+  help.remove();
+  const currentContent = currentPage.querySelector('main');
+  assert.ok(currentContent);
+  assert.equal(currentContent.querySelector('h1')?.textContent, 'Members');
+  assert.doesNotMatch(currentContent.textContent ?? '', /removal (is|was) confirmed|member removed/i);
   assert.deepEqual(site.removalStore.operations.get(removalOrganization), held);
   assert.equal(site.removalStore.admissions.length, 1);
   assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'DELETE').length, 1);

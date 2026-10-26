@@ -3,7 +3,7 @@ import type { AuthenticatedUser } from '../../identity/access-context.ts';
 import type { CookieEffects, OrganizationSwitch } from '../../identity/browser-session.ts';
 import type { BrowserProfile, BrowserSessionControls, BrowserSignInCompletion, ProfiledBrowserSessionState, ProfiledSignedInBrowserSession, SessionEnd } from '../../identity/browser-session-controls.ts';
 import { sessionCookie, type SealedCookie, type SessionEnvelope } from './session-cookies.ts';
-import { isDamagedSeal, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
+import { isDamagedSeal, isMissingOrganizationMembership, isNewSigningKey, isOAuthRefusal, sealedSessionOf } from './workos-session-client.ts';
 import type { SealRefresh, SessionFacts, WorkOSSealedSession, WorkOSSessionClient } from './workos-session-client.ts';
 import { AuthKitSignIn, type SignInCallback, type SignInStart, type SignInOnboarding } from './workos-sign-in.ts';
 import type { WorkOSSettings } from './workos-settings.ts';
@@ -94,7 +94,14 @@ export class WorkOSBrowserSession implements BrowserSessionControls {
 
   // The refresh stays in the organization of the session.
   private async refreshed(envelope: SessionEnvelope): Promise<ProfiledBrowserSessionState> {
-    const refresh = await this.sealedSession(envelope.seal).refresh();
+    let refresh: SealRefresh;
+    try {
+      refresh = await this.sealedSession(envelope.seal).refresh();
+    } catch (error) {
+      // A new sign-in can recover other access after the selected membership is removed.
+      if (isMissingOrganizationMembership(error)) return this.signedOut();
+      throw error;
+    }
     if (!refresh.authenticated) return this.signedOutAfter(refresh);
     const renewed = renewedEnvelope(envelope, refresh);
     return this.signedIn(renewed, refresh, [this.sessionCookie.setCookie(renewed)]);

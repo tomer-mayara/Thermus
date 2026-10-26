@@ -1009,6 +1009,13 @@ sequenceDiagram
 before access resolution. Signed-in route failures are reported and become a
 request-failed page with the session cookie effects; a failure during initial
 session authentication follows the outer failure handler instead.
+An automatic WorkOS refresh that returns OAuth 400
+`organization_membership_not_found` ends the local browser session and clears its
+cookie. A new sign-in can then show current workspace choices. Other errors and
+refresh refusal results keep their existing handling. Retryable outages and
+unrecognized thrown errors retain the cookie; an explicit refused workspace
+switch keeps its session. Membership removal and current-access checks remain
+separate.
 [Administration routes](../src/interfaces/web/account/administration-routes.ts)
 permit GET/HEAD reads without a CSRF check.
 [OrganizationAdministration](../src/accounts/organizations/organization-administration.ts)
@@ -1232,10 +1239,12 @@ client, remote key-set resolver, and organization directory. WorkOS owns remote
 identity/organization data. Provider calls run during requests with a short
 timeout and no SDK retry. Self-serve signup follows configured enablement and
 selected organization/authority documents. Production composition supplies the
-[purpose-marked organization Audit bundle](../src/accounts/providers/workos/workos-organization-audit-documents.ts).
+[purpose-marked organization removal bundle](../src/accounts/providers/workos/workos-organization-removal-documents.ts).
 The bundle holds exact versioned bytes; the separate approval and rollout record
 decides publication and deployment. Existing approved and historical bundles stay
-unchanged.
+unchanged. Account pages render the complete approved Audit and Members removal
+help in native expandable regions; the frozen help bytes remain inside the web
+component.
 Signup remains false by default. The unchanged historical personal-User bundle
 does not authorize new named creation; marked test documents prove behavior only.
 The selected document versions and hashes use the existing WorkOS creator-record

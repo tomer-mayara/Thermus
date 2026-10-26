@@ -1,7 +1,13 @@
+import { micromark } from 'micromark';
+import { auditHelpDocument } from './administration-help-documents.ts';
 import type { PublicDestinationSettings } from '../../../logs/audit/destination-settings-service.ts';
 import { escapeHtml } from '../html-escape.ts';
 import { hiddenField } from '../page-html.ts';
 import { membersPageLayout } from './members-page-layout.ts';
+
+const auditHelp = `<details class="administration-help" data-help="audit" data-document-version="${auditHelpDocument.version}" data-document-sha256="${auditHelpDocument.sha256}">
+<summary>Audit logs help</summary><div class="administration-help-content">${micromark(auditHelpDocument.text)
+  .replace(/<(\/?)h([1-3])>/g, (_tag: string, closing: string, level: string) => `<${closing}h${Number(level) + 2}>`)}</div></details>`;
 
 export interface LoggingNotice { readonly title: string; readonly message: string; readonly status: number }
 
@@ -61,7 +67,7 @@ export function loggingPage(page: LoggingPage): Response {
 ${page.settings === undefined ? notice : ''}
 <p>Save one destination for your organization's audit logs. Thermus system logs are internal.</p>
 <aside class="destination-notice" role="note" aria-label="Organization data"><p>Send organization data only if you have authority to do so. Check destination access and retention. Read our <a href="https://thermus.ai/privacy/">Privacy Policy</a>.</p></aside>
-${page.settings === undefined ? `<p><a href="${escapeHtml(page.navigation.logging)}">Read saved settings</a></p>` : destinationForm(page, page.settings, notice)}</section>`, { title: 'Audit logs', current: 'logging', script: destinationScript });
+${page.settings === undefined ? `<p><a href="${escapeHtml(page.navigation.logging)}">Read saved settings</a></p>` : destinationForm(page, page.settings, notice)}${auditHelp}</section>`, { title: 'Audit logs', current: 'logging', script: destinationScript });
   return new Response(response.body, { status: page.notice?.status ?? 200, headers: response.headers });
 }
 
