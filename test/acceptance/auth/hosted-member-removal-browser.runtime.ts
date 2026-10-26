@@ -10,10 +10,146 @@ import { DestinationSettingsService } from '../../../src/logs/audit/destination-
 import { DestinationSettingsFake } from '../../support/doubles/logging/destination-settings-fake.ts';
 import { HostedPortal } from '../../../src/app/hosted-portal.ts';
 import { AdminShellBrowser } from '../../support/drivers/browser/admin-shell-browser.ts';
-import { memberRemovalBrowser, tabTo } from '../../support/drivers/browser/member-removal-browser.ts';
+import { memberActionStyle, memberRemovalBrowser, tabTo } from '../../support/drivers/browser/member-removal-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
-import { removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
+import { otherOrganization, removalAdmin, removalOrganization, removalUser, serveMemberRemovalSite } from '../../support/in-process/hosted-member-removal-site.ts';
 import { portalBuild } from '../../support/processes/module-paths.ts';
+
+test('Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill', async (t) => {
+  const { page } = await adminBrowser(t, { javaScriptEnabled: false });
+  await page.setViewportSize({ width: 1280, height: 844 });
+  await page.goto('https://thermus.example/team/members');
+  const triggers = page.locator('.member-list summary');
+  assert.equal(await triggers.count(), 3);
+  for (const trigger of await triggers.all()) assert.deepEqual(await memberActionStyle(trigger), { color: 'rgb(180, 186, 192)', background: 'rgba(0, 0, 0, 0)', border: 'rgba(0, 0, 0, 0)' });
+});
+
+for (const width of [320, 1280]) {
+  test(`Given labelled member rows at ${width}px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red`, async (t) => {
+    const longEmail = `${'member'.repeat(22)}@example.com`;
+    const { page } = await adminBrowser(t, { javaScriptEnabled: false, setUp: world => {
+      world.users = world.users.map(user => user.id === removalUser.id ? { ...user, email: longEmail } : user);
+    } });
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('https://thermus.example/team/members');
+    await page.locator('html').evaluate(element => element.ownerDocument.fonts.ready);
+    const rows = page.locator('.member-list > li');
+    assert.equal(await rows.count(), 3);
+    const geometry = await rows.evaluateAll(elements => elements.map(row => [...row.querySelectorAll('dt')].map(label => ({ text: label.textContent, x: label.getBoundingClientRect().x, y: label.getBoundingClientRect().y }))));
+    const first = geometry[0];
+    assert.ok(first);
+    assert.deepEqual(first.map(label => label.text), ['Member', 'Role', 'Action']);
+    if (width === 1280) {
+      for (const labels of geometry) {
+        assert.deepEqual(labels.map(label => label.x), first.map(label => label.x));
+        const firstLabel = labels[0];
+        assert.ok(firstLabel);
+        assert.ok(labels.every(label => label.y === firstLabel.y), 'Row labels must align on one line');
+      }
+    }
+    const details = rows.filter({ has: page.getByText(longEmail, { exact: true }) }).locator('details');
+    const trigger = details.locator('summary');
+    assert.equal(await trigger.getAttribute('aria-label'), `Remove ${longEmail} from Acme`);
+    const quiet = await memberActionStyle(trigger);
+    assert.deepEqual(quiet, { color: 'rgb(180, 186, 192)', background: 'rgba(0, 0, 0, 0)', border: 'rgba(0, 0, 0, 0)' });
+    await tabTo(page, trigger);
+    await page.keyboard.press('Enter');
+    const confirm = details.getByRole('button');
+    assert.deepEqual(await memberActionStyle(confirm), { color: 'rgb(255, 205, 210)', background: 'rgb(64, 40, 44)', border: 'rgb(198, 110, 118)' });
+    for (const target of [trigger, confirm, details.getByRole('link', { name: 'Cancel', exact: true })]) {
+      const bounds = await target.boundingBox();
+      assert.ok(bounds && bounds.height >= 48 && bounds.width >= 48 && bounds.x >= 0 && bounds.x + bounds.width <= width, 'Each action needs a visible 48px target');
+    }
+    assert.equal(await page.locator('html').evaluate(element => element.scrollWidth <= element.clientWidth), true, 'Long member facts and expanded confirmation must reflow');
+    const evidence = process.env.THERMUS_BROWSER_EVIDENCE_DIR;
+    if (evidence !== undefined) {
+      await mkdir(evidence, { recursive: true });
+      await page.screenshot({ path: join(evidence, `member-row-expanded-${width}.png`), fullPage: true });
+    }
+    await rows.evaluateAll(elements => {
+      for (const row of elements) {
+        const view = row.ownerDocument.defaultView;
+        if (view === null) throw new Error('The member row has no browser window');
+        const sizes = [...row.querySelectorAll('*')].map(element => ({ element, size: Number.parseFloat(view.getComputedStyle(element).fontSize) }));
+        for (const { element, size } of sizes) element.style.fontSize = `${size * 2}px`;
+      }
+    });
+    assert.equal(await page.locator('html').evaluate(element => element.scrollWidth <= element.clientWidth), true, 'Expanded removal and member facts must reflow at 200% text');
+  });
+}
+
+test('Given an expanded removal at widths between phone and desktop, when the Admin reads its consequence, then confirmation has room for readable text', async (t) => {
+  const { page } = await adminBrowser(t, { javaScriptEnabled: false });
+  await page.goto('https://thermus.example/team/members');
+  const target = page.locator('.member-list > li').filter({ has: page.getByText(removalUser.email, { exact: true }) }).locator('details');
+  assert.equal(await target.count(), 1);
+  await tabTo(page, target.locator('summary'));
+  await page.keyboard.press('Enter');
+  for (const width of [481, 600, 860]) {
+    await page.setViewportSize({ width, height: 844 });
+    const confirmation = await target.locator('.removal-confirmation').boundingBox();
+    assert.ok(confirmation && confirmation.width >= 240, `Confirmation text must stay readable at ${width}px`);
+    assert.equal(await page.locator('html').evaluate(element => element.scrollWidth <= element.clientWidth), true);
+  }
+});
+
+for (const self of [false, true]) {
+  const target = self ? removalAdmin : removalUser;
+  const summaryText = self ? 'Leave…' : 'Remove…';
+  const summaryName = self ? `Leave Acme as ${target.email}` : `Remove ${target.email} from Acme`;
+  const confirmationName = self ? 'Leave Acme' : `Remove ${target.email}`;
+  for (const cancel of [true, false]) {
+    const expectedPosts = cancel ? [] : ['/team/members/remove'];
+    const expectedWrites = cancel ? 0 : 1;
+    for (const width of [320, 1280]) {
+      test(`Given a fresh ${self ? 'self Leave' : 'other Remove'} confirmation without JavaScript at ${width}px and another Admin, when the Admin uses the keyboard to ${cancel ? 'Cancel' : 'confirm once'}, then ${cancel ? 'a GET closes the disclosure without a write' : 'one POST removes only that membership and gives recovery links'}`, async (t) => {
+        const { site, page } = await adminBrowser(t, { javaScriptEnabled: false, setUp: world => {
+          world.memberships = [...world.memberships, { userId: removalAdmin.id, organizationId: otherOrganization, roles: ['user'], directoryManaged: false }];
+        } });
+        const accounts = structuredClone(site.world.users);
+        const memberships = structuredClone(site.world.memberships);
+        const targetId = site.world.membershipId(target, removalOrganization);
+        const otherId = site.world.membershipId(target, otherOrganization);
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto('https://thermus.example/team/members');
+        const posts: string[] = [];
+        page.on('request', request => { if (request.method() === 'POST') posts.push(new URL(request.url()).pathname); });
+        site.world.fake.takeRequests();
+        const details = page.locator('details').filter({ has: page.locator(`input[name="membership_id"][value="${targetId}"]`) });
+        const summary = details.locator('summary');
+        assert.equal(await summary.innerText(), summaryText);
+        assert.equal(await summary.getAttribute('aria-label'), summaryName);
+        assert.equal(await details.getAttribute('open'), null);
+        await tabTo(page, summary);
+        await page.keyboard.press('Enter');
+        assert.notEqual(await details.getAttribute('open'), null);
+        assert.match(await details.innerText(), new RegExp(`Remove ${target.email.replaceAll('.', '\\.')} from Acme\\?`));
+        assert.match(await details.innerText(), /This removes access to this workspace\. The account and access to other workspaces remain\./);
+        const action = cancel ? details.getByRole('link', { name: 'Cancel', exact: true }) : details.getByRole('button', { name: confirmationName, exact: true });
+        if (cancel) assert.equal(await action.getAttribute('href'), '/team/members');
+        await tabTo(page, action);
+        await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
+        assert.deepEqual(posts, expectedPosts);
+        assert.deepEqual([...site.world.deletedMembershipIds], cancel ? [] : [targetId]);
+        assert.equal(site.removalStore.admissions.length, expectedWrites);
+        assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'DELETE').length, expectedWrites);
+        assert.deepEqual(site.world.users, accounts, 'The accounts must remain');
+        assert.deepEqual(site.world.memberships, memberships, 'Other workspace memberships must remain');
+        assert.equal(site.world.deletedMembershipIds.has(otherId), false);
+        if (cancel) {
+          assert.equal(await details.getAttribute('open'), null);
+          assert.equal(new URL(page.url()).pathname, '/team/members');
+        } else {
+          assert.equal(await page.getByRole('heading', { name: 'Member removed', exact: true }).isVisible(), true);
+          assert.equal(await page.getByRole('link', { name: 'Read current Members', exact: true }).isVisible(), true);
+          assert.equal(await page.getByRole('link', { name: 'Choose a workspace or check access', exact: true }).isVisible(), true);
+          assert.equal(await page.getByRole('link', { name: 'sign in again', exact: true }).isVisible(), true);
+          assert.equal(await page.locator('form').count(), 0, 'The result must not repeat removal');
+        }
+      });
+    }
+  }
+}
 
 test('Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership', async (t) => {
   const { site, page } = await adminBrowser(t, { javaScriptEnabled: true });
