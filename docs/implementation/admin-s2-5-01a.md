@@ -131,3 +131,19 @@ checking and the portal build also pass. The maintained Validation comment recor
 the live and container gates, coverage, failures and retries for the final candidate.
 Quality review records current metrics, the architecture comparison and remaining
 human approval. These checks do not release removal or supply architect approval.
+
+### Second rebase
+
+PR #251 was then rebased onto main
+`8c6d204e8588a664438ba8934ab36670b802525f`. The source and test delta from
+the prior candidate is exactly the upstream Audit observation-time fix. The
+membership boundary, raw reader, profile binding, and deletion specifications
+remain unchanged. The impact declaration retains this PR's scope. The immutable
+metric record for `581f30cf` is the exact file from main, as the conflict policy
+requires. All 13 registry diagrams still match the new base.
+
+The results above remain history for their named candidates. They do not prove
+checks on this second rebase. The maintained PR comments must bind fresh check
+results and review evidence to the final candidate and this merge base. The
+rebase adds no removal action or live deletion proof. Independent human architect
+approval of the current candidate remains required.
