@@ -5,8 +5,8 @@ of the Refined tabs plan. This work is stacked on
 [UI-01, PR #263](https://github.com/tomer-mayara/Thermus/pull/263), at
 `a017020ebe2448f5de6cc7d9cbb0700367fc80b1`.
 Candidate: [PR #264](https://github.com/tomer-mayara/Thermus/pull/264).
-UI-02 is implemented; final validation is in progress. This record claims no merge or
-deployment. Current pins and results are in its maintained
+UI-02 is implemented. This record claims no merge or deployment.
+Current validation, review status, pins and results are in its maintained
 [Validation](https://github.com/tomer-mayara/Thermus/pull/264#issuecomment-6427827431)
 and [Quality review](https://github.com/tomer-mayara/Thermus/pull/264#issuecomment-6427827759)
 comments.
@@ -68,3 +68,17 @@ review results. This source increment remains inside Web. It adds no component,
 import edge, public declaration, provider read or security rule. All 15 registry
 views remain accurate. The existing private renderer contract is unchanged; a
 new architecture drawing would not add useful detail.
+
+Complete ordinary validation passed 5,131 tests and 49 portal tests. The staging
+gate passed all 29 tests, including removal, retained access, token expiry and
+session recovery. Its owned removal fixtures were cleaned up with no failures.
+The changed live test ran before the source commit; all tested source, test and
+build input hashes were then verified against that commit.
+
+The first quality run could not measure the member-row callback with unit
+coverage alone. The existing integration suite already exercises that renderer.
+All 1,158 integration tests passed under coverage collection, and all changed
+function goals then passed. This needed no source change or metric exception.
+The earlier unit capture also passed 3,301 emitted and 29 portal unit tests.
+The Quality review comment records the retained maintainability findings and
+the scope of each coverage report.
