@@ -39,22 +39,25 @@ Choices:
   `actions/checkout` v7.0.1, `actions/setup-node` v7.1.0,
   `docker/setup-buildx-action` v4.4.1, and `docker/login-action` v4.6.0.
 - One build. The gate tests the image that the job pushes, so no second build
-  runs.
+  runs. In the final run, the image ID that the gate tested is the config
+  digest of the pushed manifest, because the runner uses the classic image
+  store.
 - No layer cache. A `type=gha` cache lets a rerun with the same inputs skip the
   stage that runs the offline checks. The
   [hosted offline build checks](test-gate-policy.md#hosted-offline-build-checks)
   say that every real hosted image build runs the complete checks. A cold build
-  takes about six minutes on the runner. SO-02 can cache the dependency stages
+  took 6 to 8 minutes on the runner. SO-02 can cache the dependency stages
   only, if the time becomes important.
 - `--provenance=false`: the pushed digest names one image manifest, not an
   index with an attestation manifest.
 - Timeouts: 120 minutes for the job, 60 for the build, 30 for the gate, and
   15 for the push. The gate allows 60 minutes for its build and image cases.
 
-The runner was the GitHub-hosted image `ubuntu-24.04` version 20261012.334.1,
-with 2 CPUs, 7,938 MiB of memory, 11 GB of free disk of 72 GB, and Docker
-Engine 28.0.4 with the overlay2 image store. GitHub says that `ubuntu-latest`
-moves to Ubuntu 26 from 19 October 2026, so the Docker version can change.
+Each run used the GitHub-hosted image `ubuntu-24.04` version 20261012.334.1,
+with 2 CPUs, 7,938 MiB of memory, 11 to 12 GB of free disk of 72 GB, and Docker
+Engine 28.0.4 with the overlay2 image store. A run annotation says that
+`ubuntu-latest` moves to Ubuntu 26 from 19 October 2026, so the Docker version
+can change.
 
 ### Gate helper changes
 
@@ -90,6 +93,7 @@ not hold that commit. After the merge to main, this step is not necessary.
 | [40413199958, attempt 1](https://github.com/tomer-mayara/Thermus/actions/runs/40413199958/job/121888852363) | `2381c7b4` | The build failed in the integration suite: the port 46443 flake below. No image. | Build 3 min 46 s |
 | [40413199958, attempt 2](https://github.com/tomer-mayara/Thermus/actions/runs/40413199958/job/121892267118) | `2381c7b4` | The build passed. The gate passed 5 of its 6 cases; the missing-portal case could not create its container. No push. | Build 5 min 36 s, gate 11 s |
 | [40413396454](https://github.com/tomer-mayara/Thermus/actions/runs/40413396454/job/121889521286) | `8a4a6066`, throwaway | The build failed at the deliberate unit test. No image. | Build 3 min 22 s |
+| [40415702003](https://github.com/tomer-mayara/Thermus/actions/runs/40415702003/job/121897364456), final | `2a900dcf` | Passed: build, gate 7/7, push, and record. | Build 472 s, gate 17 s, push 18 s; job 10 min 39 s |
 
 In attempt 2, `npm run build:hosted` in the image build passed: backend units
 3,301/3,301, portal units 29/29, portal acceptance 20/20, integration
@@ -99,6 +103,30 @@ The gate wrote "Reused the caller-built image
 ghcr.io/tomer-mayara/thermus-hosted:2381c7b47a79f2290858634c19a82a9d25476f33"
 with image ID
 `sha256:c04e9e13d69600cd94e8d4e397cd87dce1dbf6c4b3d3559c9736653317c57cd5`.
+
+### Final evidence run
+
+Run [40415702003](https://github.com/tomer-mayara/Thermus/actions/runs/40415702003/job/121897364456)
+ran on commit `2a900dcf8ca79f527c6ddf60a60c426f5026ea59`, after the mount
+change, and passed. The values come from the table that the record step wrote
+to the log:
+
+| Item | Value |
+| --- | --- |
+| Pull by digest | `ghcr.io/tomer-mayara/thermus-hosted@sha256:ca1ab23d3bd8ea2397076a370939173eb2548e275f322c7749d460a28ec71d26` |
+| Tag | `ghcr.io/tomer-mayara/thermus-hosted:2a900dcf8ca79f527c6ddf60a60c426f5026ea59` |
+| Compressed size | 154,723,455 bytes (147.6 MiB), 16 layers, `linux/amd64` |
+| Build time | 472 s, the Buildx build of `Dockerfile.hosted` with its offline checks |
+| Gate time | 17 s, `npm run test:container:hosted` against the built image |
+| Push time | 18 s |
+| Tested image ID and config digest | `sha256:876a8fc739a16389ad283346f58de56f61844d436a92d9279c74204a36e5959c` |
+
+`docker push` reported the same digest, with a manifest of 3,667 bytes. In the
+image build, `npm run build:hosted` passed the same counts as attempt 2. The
+gate passed 7 of 7 tests, its six cases and their parent, with no failed,
+cancelled, skipped, or todo test, in 12.1 s. It wrote "Reused the caller-built
+image ghcr.io/tomer-mayara/thermus-hosted:2a900dcf8ca79f527c6ddf60a60c426f5026ea59"
+with the image ID above. The pnpm install took 96 s.
 
 ### Retry history: port 46443
 
@@ -127,6 +155,11 @@ units passed 3,301 of 3,302; the one failure was the deliberate test.
 `npm run build:hosted` exited 1, and the build step failed after 3 min 22 s.
 The gate, login, push, and record steps were skipped, so no image was pushed.
 
+After the final run, the versions page of the package showed 1 tagged and 0
+untagged versions: only the tag `2a900dcf8ca79f527c6ddf60a60c426f5026ea59`.
+No version has the tag of the throwaway commit or of the two failed attempts.
+The throwaway branch was then deleted.
+
 ### GHCR facts
 
 From the GitHub documentation, read on 26 October 2026:
@@ -142,6 +175,20 @@ From the GitHub documentation, read on 26 October 2026:
 - Visibility and link: a new package is private by default. A package that a
   workflow publishes with `GITHUB_TOKEN` is linked to the repository of the
   workflow, and that repository gets the admin role on the package.
+
+Seen on the package pages in the owner's browser after the final run:
+
+- The package `ghcr.io/tomer-mayara/thermus-hosted` is private and linked to
+  the repository: its page moved to
+  `https://github.com/tomer-mayara/Thermus/pkgs/container/thermus-hosted`.
+- Its settings name `tomer-mayara/Thermus` as the repository source and show
+  the source label as `https://github.com/tomer-mayara/Thermus`.
+  `Dockerfile.hosted` still names the old URL,
+  `https://github.com/3-headed-monkey/Thermus`, which redirects; GHCR linked
+  the package correctly, so the owner does not need to connect it by hand.
+- Actions access: the repository Thermus has the Admin role. The package
+  inherits its access from the repository.
+- Versions: 1 tagged and 0 untagged, about 148 MiB compressed in total.
 
 The session could not read the account plan, the billing usage, or the package
 REST API. Its token scopes (`repo`, `workflow`, `gist`, `admin:org`) include
@@ -173,7 +220,7 @@ token. The owner does these steps:
    account can read.
 7. Give the credential name and the expiry date to the SO-01c worker. SO-01c
    finds the credential ID with the Render API and pulls the image by the
-   digest of the final run.
+   digest of the [final evidence run](#final-evidence-run).
 
 To replace the token before it expires, make a new token with the same scope,
 update the credential in Render, and then delete the old token on GitHub.
