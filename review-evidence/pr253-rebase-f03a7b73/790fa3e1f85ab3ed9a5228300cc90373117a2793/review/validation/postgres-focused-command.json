@@ -1,0 +1,18 @@
+{
+  "head": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "parent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "command": [
+    "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+    "--test",
+    "--test-concurrency=1",
+    "dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js"
+  ],
+  "started": "2026-10-26T05:50:33.179159+00:00",
+  "finished": "2026-10-26T05:50:39.838579+00:00",
+  "code": 1,
+  "log": "quality-postgres-focused.log",
+  "sha256": "f00cf7fd9095913a67fafa7dd3901f44cd609022c94e0b3daf73ae99100c472e",
+  "dockerContext": "colima-thermus-pr253",
+  "scope": "Both cases in the failing runtime file; unchanged output freshly built by the preceding Collector gate. Diagnostic only; does not replace the complete PostgreSQL group."
+}

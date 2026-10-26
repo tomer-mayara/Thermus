@@ -1,0 +1,279 @@
+{
+  "actualParent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "actualMergeBase": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "gateHead": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "currentMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "fullStackMergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "evidence": [
+    {
+      "path": "src/accounts/organizations/organization-administration.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "472b7f5e530bce8e5b4ee6d17e7e8966f2f7cd6cbb04bccedd7acfa5eb39e24c",
+          "lines": 164,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/accounts/organizations/organization-administration.ts#L1-L164"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+          "lines": 184,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/organizations/organization-administration.ts#L1-L184"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+          "lines": 79,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/organizations/membership-removal.ts#L1-L79"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-checks.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "fcfda7a175d95af3d945f218b3cbfb487814d99cf04525112f8d29aec24768a5",
+          "lines": 50,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/organizations/membership-removal-checks.ts#L1-L50"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+          "lines": 51,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/organizations/membership-removal-lifetime.ts#L1-L51"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/organizations/removal-operation-store.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "e86c5e5f0b921ca99eb77862dca6aea4c23f6cf826d6f463f497c2987b8f78c4",
+          "lines": 25,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/organizations/removal-operation-store.ts#L1-L25"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "d0db0695aa80df0b8db3a437193bb28d0e64e89cb54163531ce0254813ae9649",
+          "lines": 116,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/accounts/organizations/organization-directory.ts#L1-L116"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "e816b32b8915560eb51e4731ac8da7f744f98e3fdf9f64756492d444ba47eea0",
+          "lines": 118,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/organizations/organization-directory.ts#L1-L118"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/organizations/change-records.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "d1b489d5af968a24fd3f1f245f9b1c44ddb9ef5a520fe62aa6101708a42a1d64",
+          "lines": 96,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/accounts/organizations/change-records.ts#L1-L96"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "e2a81cacc0354221519cfe14b03b2c87bc030fed6c29b74f74a32e12bcd5e7a9",
+          "lines": 96,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/organizations/change-records.ts#L1-L96"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "005c264fb4d8618800a66e01e585cfc2b99b9323ac4b46b56fe086a0cc4ca8d9",
+          "lines": 430,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/accounts/providers/workos/workos-organizations.ts#L1-L430"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "71aca4b60b4492eab3be02de8755ce777b7ad7a338181971b9e08f328a6e08f0",
+          "lines": 440,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/providers/workos/workos-organizations.ts#L1-L440"
+        }
+      }
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "7c0314b9b56611ea0e57d70c4e3c5384c799f84c2135057f876e035b9f8fb889",
+          "lines": 177,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/accounts/providers/workos/workos-auth-provider.ts#L1-L177"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "7c0314b9b56611ea0e57d70c4e3c5384c799f84c2135057f876e035b9f8fb889",
+          "lines": 177,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/accounts/providers/workos/workos-auth-provider.ts#L1-L177"
+        }
+      }
+    },
+    {
+      "path": "src/app/application.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "93f634069945ebc4542a4cc46f4ce827d349cd1ee3e4814e8b687ed46b453cd8",
+          "lines": 224,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/app/application.ts#L1-L224"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+          "lines": 229,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/app/application.ts#L1-L229"
+        }
+      }
+    },
+    {
+      "path": "src/app/logging-storage.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "e26a223fc99e647c11651c5c8cbf11274a680deafacaca1352973a43c2112960",
+          "lines": 40,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/app/logging-storage.ts#L1-L40"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+          "lines": 42,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/app/logging-storage.ts#L1-L42"
+        }
+      }
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+          "lines": 176,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/app/hosted-workos-application.ts#L1-L176"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+          "lines": 176,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/app/hosted-workos-application.ts#L1-L176"
+        }
+      }
+    },
+    {
+      "path": "src/logs/audit/pg-destination-settings-store.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "4b3517cc84644bce708138d196e4da09e7f114566211544a5c937cfcd8469b7f",
+          "lines": 49,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/logs/audit/pg-destination-settings-store.ts#L1-L49"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+          "lines": 93,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/logs/audit/pg-destination-settings-store.ts#L1-L93"
+        }
+      }
+    },
+    {
+      "path": "src/logs/audit/audit-snapshots.ts",
+      "revisions": {
+        "f03a7b73b2c27dc26477d5378a3356f28744a367": {
+          "sha256": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8",
+          "lines": 156,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/f03a7b73b2c27dc26477d5378a3356f28744a367/src/logs/audit/audit-snapshots.ts#L1-L156"
+        },
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8",
+          "lines": 156,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/src/logs/audit/audit-snapshots.ts#L1-L156"
+        }
+      }
+    },
+    {
+      "path": "test/acceptance/auth/membership-removal.runtime.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "a2332d01c73118cde401a2d02e129e01840d5a7e264ebffce37abb77e181b9f3",
+          "lines": 102,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/test/acceptance/auth/membership-removal.runtime.ts#L1-L102"
+        }
+      }
+    },
+    {
+      "path": "test/acceptance/auth/membership-removal-restart.runtime.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "b99bc0fa9033c8bd86a944b7ae48f16650e9a00d7121cdddcd9e73d3324fb2b1",
+          "lines": 38,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/test/acceptance/auth/membership-removal-restart.runtime.ts#L1-L38"
+        }
+      }
+    },
+    {
+      "path": "test/integration/auth/workos-removal-lifetime.test.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "c622ab5dd59dfacc4d96ad36a10778728ebcdc692a85f3169a7dd512a9d67ae1",
+          "lines": 81,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/test/integration/auth/workos-removal-lifetime.test.ts#L1-L81"
+        }
+      }
+    },
+    {
+      "path": "test/integration/logging/audit/removal-operations.runtime.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "0c4de92cd90506a165a966f9480af0fbd8c47f42f6a30324f7c03e56f29ac46d",
+          "lines": 112,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/test/integration/logging/audit/removal-operations.runtime.ts#L1-L112"
+        }
+      }
+    },
+    {
+      "path": "test/unit/organizations/membership-removal-rules.test.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "e54ed4cca4dfbb5b6642dbfbd79f29917e1c7ffaa67cb64edcee485d32f52a2b",
+          "lines": 213,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/test/unit/organizations/membership-removal-rules.test.ts#L1-L213"
+        }
+      }
+    },
+    {
+      "path": "test/unit/organizations/membership-removal-outcomes.test.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "23f7a9927829764cceb9df368df7c4b6cce947a47760078cd460629670cfe46a",
+          "lines": 167,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/test/unit/organizations/membership-removal-outcomes.test.ts#L1-L167"
+        }
+      }
+    },
+    {
+      "path": "test/unit/organizations/membership-removal-lifetime.test.ts",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "026f0d96fe63a4ff655d8e33facc9d3a08a4ee07e36c6444a5ab53705a0edaf3",
+          "lines": 230,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/test/unit/organizations/membership-removal-lifetime.test.ts#L1-L230"
+        }
+      }
+    },
+    {
+      "path": "sql/migrations/20261025082850_membership_removal_operations.sql",
+      "revisions": {
+        "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6": {
+          "sha256": "22d1f83dffff16f302868fec7192f142007f1c4741a441320d357123fcaaec55",
+          "lines": 47,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/fa5d4d7f57ef270df2a056ad523ec22e3b5032b6/sql/migrations/20261025082850_membership_removal_operations.sql#L1-L47"
+        }
+      }
+    }
+  ]
+}

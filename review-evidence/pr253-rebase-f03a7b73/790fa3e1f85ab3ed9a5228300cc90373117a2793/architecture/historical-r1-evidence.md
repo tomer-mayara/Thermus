@@ -1,0 +1,5 @@
+# R1 evidence retained for the rebase
+
+The manager supplied `.cache/pr253-rebase-f03a7b73/pr-history-initial.json`. Its initial PR description and maintained comments preserve S2.5-R1 and the 100-member / 300 ms controlled reproduction. The source remains unchanged in this rebase: `checkRemoval` calls `memberPage`, and WorkOS `memberPage` calls `memberOf`, which calls `getUser` for email for each member. This is separate from the resolved optional stop-signal finding.
+
+The original reproduction is [pinned here](https://github.com/tomer-mayara/Thermus/blob/94229f1c8309b33cfe5957dc894273bfd16a08d9/review-evidence/s2-5-stack-review/0530dd634fe8302b55d4a0669463ef733199cc40/review/member-read-budget-probe-manager.json). The repair ticket is [pinned here](https://github.com/tomer-mayara/Thermus/blob/0530dd634fe8302b55d4a0669463ef733199cc40/docs/design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration). The later [PR #257](https://github.com/tomer-mayara/Thermus/pull/257) repair is outside the authorized PR #253 rebase. R1 remains open in this PR. No reproduction or live provider call was rerun by this worker.

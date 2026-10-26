@@ -1,0 +1,187 @@
+{
+  "observedAt": "2026-10-26T05:51:47.584800+00:00",
+  "candidate": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "parent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "scope": "Read-only failure review. No tests, builds, dist changes, tracked edits, Git/PR mutations or credential access.",
+  "gate": {
+    "name": "logging-postgres",
+    "attempt": 1,
+    "head": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "parent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+    "started": "2026-10-26T05:47:09.783Z",
+    "finished": "2026-10-26T05:48:37.882Z",
+    "code": 1,
+    "signal": null,
+    "log": "logging-postgres-1.log",
+    "inputFingerprint": "7e9a46583642da285a5430e341c8942e95e751edd6aafbb5f78bf44b45fd9850",
+    "dockerContext": "colima-thermus-pr253",
+    "logSha256": "cf3894dd02af363821017d073033c3cfac66197170a7baebc52dc971d0c7b6d0",
+    "reportedCounts": {
+      "tests": 22,
+      "pass": 21,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "evidence": "../../checks/logging-postgres-1.log"
+  },
+  "failure": {
+    "case": "Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline",
+    "assertionMessage": "Product and Admin results complete while the queue attempt authorization still waits for SQL.",
+    "actual": true,
+    "expected": false,
+    "sourcePath": "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+    "sourceLine": 170,
+    "emittedReportedLine": 175,
+    "reportedCaseDurationMs": 4726.607417,
+    "sameAssertionAsHistoricalMainDiagnostic": true,
+    "changedFirstCase": "passed",
+    "changedFirstCaseDurationMs": 7984.474875
+  },
+  "sourceComparison": {
+    "record": "postgres-source-comparison.json",
+    "sha256": "7077b645b121fe6f5a07f72991433af73f643b0d16a8fe69da51e07d8f4e29b9",
+    "secondCaseByteIdenticalAtHeadParentMain": true,
+    "settingsReadAndSaveFragmentsIdenticalAtHeadParentMain": true,
+    "unchangedRelevantWholeFiles": [
+      "test/support/in-process/postgres-settings-site.ts",
+      "src/logs/audit/bounded-sql-runtime.ts",
+      "src/logs/audit/destination-settings-service.ts",
+      "src/logs/audit/audit-snapshots.ts",
+      "src/logs/audit/audit-collector.ts"
+    ],
+    "changedRelevantInputs": [
+      "first runtime case and four imports",
+      "PgDestinationSettingsStore adds removal operations; destination settings read/save bodies are unchanged",
+      "composeLoggingStorage carries optional removalStore; service/collector construction and closure remain",
+      "composeHostedApplication creates removal coordinator and closes it before SQL",
+      "module-paths adds removal child and third SQL migration",
+      "WorkOS organization adapter changes; inherited WorkOS fakes differ from main"
+    ]
+  },
+  "establishedStaticFindings": [
+    "Warm-up still asserts cold capture only loads settings and sends no old content at source line152. Existing AuditSnapshots first-event retention flushes pending events after enabled metadata loads.",
+    "Collector startAttempt calls fresh authorizeExport, which reads current stored settings before sender.start. A zero sender.start count does not prove authorization has settled.",
+    "Read observer at lines144-147 resolves mutable readStarted/readSettled variables, reassigned at lines153-154. An earlier read can resolve a deferred object intended for a later read. lastRead is also shared without invocation identity.",
+    "One setImmediate turn at line151 does not establish completion of the warm-up authorization/sender lifetime."
+  ],
+  "observedBeforeFailure": [
+    "MCP response content and non-error assertions",
+    "Members page/Form read",
+    "Admin invite POST303",
+    "One matching invitation"
+  ],
+  "notReachedAfterFailure": [
+    "Health assertion in this second case",
+    "No-Collector-start assertion after actions",
+    "Explicit application.close and its ten-second duration assertion",
+    "Post-close unavailable-read and safe-log assertions"
+  ],
+  "configuredBounds": {
+    "runtimeOperationMs": 2000,
+    "runtimeStatementMs": 5000,
+    "defaultAcquisitionMs": 1000,
+    "collectorAuthorizationReadMs": 2500,
+    "caseMs": 30000,
+    "explicitShutdownMs": 10000
+  },
+  "unknowns": [
+    "Which store.read invocation settled the new readSettled deferred",
+    "That invocation start/end/result and whether it was pre-lock warm-up or intended post-lock authorization",
+    "Whether a real operation/acquisition/collector deadline or other read failure occurred before the assertion",
+    "Any exact dynamic scheduling/latency/resource cause; total case duration includes setup and cleanup and is not the duration of the observed read",
+    "Whether changed composition/provider paths influenced action duration; historical main reproduction does not exclude such interaction"
+  ],
+  "historicalDiagnostic": {
+    "classification": "Historical independent exact-main focused diagnostic performed during PR251; not a new PR253 baseline run and not a complete PostgreSQL gate pass",
+    "record": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/review/validation/baseline-diagnostic.json",
+    "recordSha256": "eb51204c0415779534aefc628318180950c50467e307f5a3ffc68ec8748866aa",
+    "review": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/review/validation/failure-review.md",
+    "reviewSha256": "220d99bbe20e25ddf053b656d730545b9342c674a09c73e086e8fc4e0d7ba54d",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "priorCandidateGateHead": "fd7fa0b1e53d653f92168b75ba4d65618a9138a8",
+    "nodeVersion": "v24.20.0",
+    "archiveSha256": "90b005cfc1f27e7006163f8fb975cfc00f72549236cf832db2becd0aff95848c",
+    "archivedInputsUnchangedAfterRun": true,
+    "temporaryDirectoryAbsent": true,
+    "commands": [
+      {
+        "command": [
+          "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/npm",
+          "run",
+          "build"
+        ],
+        "exit": 0,
+        "log": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/review/validation/baseline-build.log",
+        "logSha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+        "hashVerifiedNow": true
+      },
+      {
+        "command": [
+          "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+          "--test",
+          "--test-concurrency=1",
+          "dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js"
+        ],
+        "exit": 1,
+        "log": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/review/validation/baseline-hosted-storage-failure.log",
+        "logSha256": "e7514b97bc7b273ab919d860842bd6bd8db264f0483006f958ac869e26d23478",
+        "hashVerifiedNow": true
+      }
+    ],
+    "testCounts": {
+      "tests": 2,
+      "pass": 1,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "sameAssertion": true
+  },
+  "disposition": {
+    "requiredGateStatus": "failed",
+    "rebaseRegressionEstablished": false,
+    "inheritedStaticObserverDefectRetained": true,
+    "exactDynamicCauseEstablished": false,
+    "testFixInScope": false,
+    "focusedFileRetry": "Completed once by manager after Collector: exit1, two tests/one pass/one same-assertion failure, no skips/cancellations/todos. No further diagnostic selected."
+  },
+  "focusedRetry": {
+    "head": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+    "parent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+    "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "command": [
+      "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+      "--test",
+      "--test-concurrency=1",
+      "dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js"
+    ],
+    "started": "2026-10-26T05:50:33.179159+00:00",
+    "finished": "2026-10-26T05:50:39.838579+00:00",
+    "code": 1,
+    "log": "quality-postgres-focused.log",
+    "sha256": "f00cf7fd9095913a67fafa7dd3901f44cd609022c94e0b3daf73ae99100c472e",
+    "dockerContext": "colima-thermus-pr253",
+    "scope": "Fresh focused file diagnostic at the original gate head, not a new complete-group pass",
+    "commandRecord": "postgres-focused-command.json",
+    "commandRecordSha256": "714fb0a04ac0c525a1290bb1fc8daada3949271a4d3d74fa30a67c1551e0d565",
+    "logSha256VerifiedNow": true,
+    "reportedCounts": {
+      "tests": 2,
+      "pass": 1,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "reportedFailingCaseDurationMs": 1670.597625,
+    "reportedWholeFileDurationMs": 6580.720167,
+    "sameAssertion": true,
+    "timerInference": "The failing case finishes in under 2000 ms, so expiry of its configured two-second operation timer cannot explain this retry failure. This does not identify the read invocation/result, and it does not establish the timing cause of the original 4726.607417 ms case.",
+    "evidence": "../../checks/quality-postgres-focused.log"
+  }
+}

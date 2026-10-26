@@ -1,0 +1,16 @@
+{
+  "context": "colima",
+  "containers": [
+    "6bfb5dd8ffec",
+    "3f56f623eede",
+    "8b49558a8780",
+    "6d094ec75fe3",
+    "e0cf47519c16",
+    "6b7e6d3dd5d9"
+  ],
+  "profiles": [
+    "{\"name\":\"default\",\"status\":\"Running\",\"arch\":\"aarch64\",\"cpus\":4,\"memory\":4294967296,\"disk\":26843545600,\"runtime\":\"docker\"}"
+  ],
+  "ownedProfile": "thermus-pr253",
+  "ownedContext": "colima-thermus-pr253"
+}

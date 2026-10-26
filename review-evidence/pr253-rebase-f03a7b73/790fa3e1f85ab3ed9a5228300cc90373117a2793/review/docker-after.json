@@ -1,0 +1,15 @@
+{
+  "context": "colima",
+  "containers": [
+    "6bfb5dd8ffec",
+    "3f56f623eede",
+    "8b49558a8780",
+    "6d094ec75fe3",
+    "e0cf47519c16",
+    "6b7e6d3dd5d9"
+  ],
+  "allOriginalRunningContainersPreserved": true,
+  "ownedProfileRemoved": true,
+  "ownedContextRemoved": true,
+  "scope": "Only the task-owned thermus-pr253 profile and cache were removed. No shared container action was performed."
+}

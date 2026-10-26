@@ -1,0 +1,20 @@
+[
+  "test/acceptance/auth/hosted-membership-deletion.test.ts",
+  "test/integration/auth/hosted-storage-lifecycle.test.ts",
+  "test/integration/auth/workos-connection.test.ts",
+  "test/integration/auth/workos-google-onboarding.test.ts",
+  "test/integration/auth/workos-provider-administration.test.ts",
+  "test/integration/auth/workos-provider-directory.test.ts",
+  "test/integration/auth/workos-provider-organizations.test.ts",
+  "test/integration/auth/workos-removal-lifetime.test.ts",
+  "test/unit/auth-workos/workos-membership-reads.test.ts",
+  "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+  "test/unit/auth-workos/workos-organizations-members.test.ts",
+  "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+  "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts",
+  "test/unit/auth-workos/workos-organizations.test.ts",
+  "test/unit/logging/audit/pg-removal-operation-store.test.ts",
+  "test/unit/organizations/membership-removal-lifetime.test.ts",
+  "test/unit/organizations/membership-removal-outcomes.test.ts",
+  "test/unit/organizations/membership-removal-rules.test.ts"
+]

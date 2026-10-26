@@ -1,0 +1,27 @@
+{
+  "candidate": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "mergeBase": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "gateHead": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "sourceAndGateInputsUnchanged": true,
+  "changedPathsSinceGate": [
+    "docs/design/organization-admin-plan.md",
+    "docs/implementation/admin-s2-5-01b.md"
+  ],
+  "sourceFingerprint": "e3b3c732dd70bb3a77355bdc2d50c7ae9c58852943857b58db66a927bcba50bc",
+  "inputsFingerprint": "e95280c48e68c66b2b56a13e267abe8258d38149f31a54bf25c7cb9a55700e87",
+  "verifiedGateRuns": [
+    "1792991215318",
+    "1792991629959",
+    "1792993728861"
+  ],
+  "coverageCapturedCommit": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "coverageSuites": [
+    "unit",
+    "integration",
+    "acceptance"
+  ],
+  "coverageRuntime": "node-24.20.0",
+  "coverageCompiler": "typescript-7.0.2",
+  "reason": "Every tracked file from each original gate binding, except the two reviewed prose documents, matches byte-for-byte. Runtime, test, SQL and build inputs are unchanged. Fresh combined coverage was captured at the final clean commit; no coverage was relabeled."
+}

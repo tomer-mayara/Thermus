@@ -1,0 +1,187 @@
+{
+  "observedAt": "2026-10-26T05:46:34.941094+00:00",
+  "candidate": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "mergeBase": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "scope": "Read-only observation of actual full Docker progress. This does not run a gate, approve a report, or establish hosted runtime-container success.",
+  "packageSha256": "1bfb3e236da9505ca0cb6ce0c8952ca6afe501f988593dc97c31943b207751e9",
+  "dockerfileSha256": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d",
+  "hostedBuildLogsFound": 1,
+  "logs": [
+    {
+      "log": "docker-build-1792992425163-79589.log",
+      "sha256": "ac59e545ff768436e007f15b9986f377c5853997d8b935cb9befeebce24a6219",
+      "bytes": 749848,
+      "stableWhileRead": true,
+      "command": "/opt/homebrew/bin/docker",
+      "args": [
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--progress=plain",
+        "--file",
+        "/Users/tomermayara/.codex/worktrees/c617/Thermus/Dockerfile.hosted",
+        "--label",
+        "thermus.hosted-image-gate=181de0881bc2",
+        "--tag",
+        "thermus-hosted-gate:181de0881bc2",
+        "/Users/tomermayara/.codex/worktrees/c617/Thermus/"
+      ],
+      "dockerContext": "colima-thermus-pr253",
+      "started": "2026-10-26T05:27:05.163Z",
+      "completion": {
+        "finished": "2026-10-26T05:46:12.554Z",
+        "code": 0,
+        "signal": null
+      },
+      "platformFromActualInvocation": "linux/amd64",
+      "networkNoneBuildHostedStepIds": [
+        "27"
+      ],
+      "completedStepIds": [
+        "27"
+      ],
+      "cachedStepIds": [],
+      "observedNpmCommands": [
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 build:hosted"
+        },
+        {
+          "step": "27",
+          "command": "npm run check && node --test \"dist/test/integration/**/*.test.js\" && node --test dist/test/acceptance/hosted-ad-policy.test.js dist/test/acceptance/auth/hosted-startup.test.js dist/test/acceptance/auth/hosted-portal.test.js dist/test/acceptance/auth/hosted-mcp-origin.test.js dist/test/acceptance/auth/hosted-workos-signup.test.js dist/test/acceptance/auth/hosted-signup-restart.test.js dist/test/acceptance/auth/hosted-signup-guidance.test.js dist/test/acceptance/auth/hosted-mcp-signup-guidance.test.js dist/test/acceptance/mcp/hosted-fetch-tool.test.js dist/test/acceptance/mcp/search-pipeline.test.js dist/test/acceptance/mcp/hosted-search-capacity.test.js dist/test/acceptance/mcp/search-lifecycle.test.js dist/test/acceptance/mcp/hosted-process-shutdown.test.js dist/test/acceptance/mcp/server-only-modules.test.js dist/test/interface/hosted-renderer-startup.test.js && node --test dist/test/acceptance/mcp/get-url-as-markdown.runtime.js dist/test/acceptance/mcp/search-pipeline.runtime.js"
+        },
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 check"
+        },
+        {
+          "step": "27",
+          "command": "npm run typecheck && npm run test:unit && node --test \"test/acceptance/user-portal/**/*.test.ts\" && npm run build:user-portal"
+        },
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 typecheck"
+        },
+        {
+          "step": "27",
+          "command": "tsc --noEmit && npm run typecheck:user-portal"
+        },
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 typecheck:user-portal"
+        },
+        {
+          "step": "27",
+          "command": "tsc --project tsconfig.user-portal.json"
+        },
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 test:unit"
+        },
+        {
+          "step": "27",
+          "command": "npm run build && node --test --test-concurrency=1 \"dist/test/unit/**/*.test.js\" && node --test \"test/unit/user-portal/**/*.test.ts\""
+        },
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 build"
+        },
+        {
+          "step": "27",
+          "command": "test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist"
+        },
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 build:user-portal"
+        },
+        {
+          "step": "27",
+          "command": "npm run typecheck:user-portal && vite build --config src/interfaces/user-portal/vite.config.ts"
+        },
+        {
+          "step": "27",
+          "command": "thermus@0.0.0 typecheck:user-portal"
+        },
+        {
+          "step": "27",
+          "command": "tsc --project tsconfig.user-portal.json"
+        }
+      ],
+      "phaseCounts": [
+        {
+          "phase": "emitted unit",
+          "tests": 3251,
+          "suites": 164,
+          "pass": 3251,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 284333.075979
+        },
+        {
+          "phase": "portal unit",
+          "tests": 29,
+          "suites": 0,
+          "pass": 29,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 3196.348038
+        },
+        {
+          "phase": "portal acceptance",
+          "tests": 20,
+          "suites": 0,
+          "pass": 20,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 2623.080813
+        },
+        {
+          "phase": "emitted integration",
+          "tests": 1109,
+          "suites": 59,
+          "pass": 1109,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 242515.542358
+        },
+        {
+          "phase": "explicit hosted acceptance/interface selection",
+          "tests": 119,
+          "suites": 6,
+          "pass": 119,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 145196.086725
+        },
+        {
+          "phase": "local renderer runtime",
+          "tests": 13,
+          "suites": 2,
+          "pass": 13,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0,
+          "duration_ms": 93518.312321
+        }
+      ],
+      "phaseMappingBasis": "Current package.json build:hosted/check/test:unit command order; names are inferred from that order only when all six summaries are present.",
+      "freshChecksExecuted": true,
+      "allRequiredCountsPassWithoutSkips": true,
+      "observedHostedOfflinePass": true,
+      "status": "observed pass; manager review still required"
+    }
+  ],
+  "parseErrors": []
+}

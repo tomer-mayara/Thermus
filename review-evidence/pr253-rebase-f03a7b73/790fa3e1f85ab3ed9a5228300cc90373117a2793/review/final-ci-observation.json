@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-26T06:16:04.684Z",
+  "candidate": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "actualParent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "state": "open",
+  "draft": true,
+  "merged": false,
+  "mergeable": true,
+  "ci": {
+    "headRevision": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+    "checks": [],
+    "statuses": [],
+    "annotations": [],
+    "hasMore": false,
+    "job": null,
+    "jobs": [],
+    "log": null,
+    "logTruncated": false
+  },
+  "meaning": "GitHub reports no merge conflict at this head. No check runs or commit statuses were returned; this is not a CI pass or full merge eligibility."
+}

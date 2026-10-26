@@ -1,0 +1,58 @@
+
+> thermus@0.0.0 test:logging:postgres
+> npm run build && node --test --test-concurrency=1 dist/test/acceptance/logging/audit/destination-settings.runtime.js dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js dist/test/integration/logging/audit/destination-settings.runtime.js dist/test/integration/logging/audit/removal-operations.runtime.js dist/test/acceptance/auth/membership-removal.runtime.js dist/test/acceptance/auth/membership-removal-restart.runtime.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ Given a removal process paused after-admission, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (21692.966833ms)
+✔ Given a removal process paused during-provider, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2778.040791ms)
+✔ Given a removal process paused before-completion, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2599.596584ms)
+✔ Given two password-only Admins and separate SQL pools, when one removal is admitted, then another instance is busy, another organization proceeds, and the remaining Admin cannot remove itself (2490.931333ms)
+✔ Given a committed removal whose provider reply is lost and whose recorder fails, when SQL and the coordinator reopen, then the same organization stays busy without replaying deletion (2240.254917ms)
+✔ Given tenant settings, when the SQL runtime reopens, then committed settings persist and other tenants stay isolated (2779.948875ms)
+✔ Given competing first saves, when both expect absence, then one commits and the other conflicts (2338.083958ms)
+✔ Given a real SQL query that stalls, when a storage deadline passes, then callers return and late work stays bounded (2140.707208ms)
+✔ Given a table lock in real PostgreSQL, when public settings calls stall, then reads fail safely and writes remain unconfirmed (2226.646041ms)
+✔ Given a current WorkOS Admin and locked settings and removal tables, when removal and an admitted MCP request run, then unavailable admission and unknown writes send no deletion while product and health stay usable (7984.474875ms)
+✖ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (4726.607417ms)
+✔ Given persisted generic settings, when an Axiom dataset is added, repeated, changed, and cleared, then each real change advances its tenant revision (2605.731416ms)
+✔ Given real PostgreSQL, when saves compete or repeat, then only actual changes advance the scoped revision (2391.721833ms)
+✔ Given an untrusted certificate, when settings are read, then verified TLS rejects the connection safely (2807.144209ms)
+✔ Given conflicting ambient PostgreSQL variables, when an explicit runtime connects, then its scoped verified configuration wins (2429.478667ms)
+✔ Given a live PostgreSQL query, when local shutdown closes its socket, then the caller settles and late server work ends within its statement deadline (4000.700375ms)
+✔ Given a trusted certificate for a different hostname, when settings are read, then hostname verification rejects it (2080.032333ms)
+✔ Given an idle database disconnect, when PostgreSQL terminates the connection, then later explicit reads can recover (3490.9705ms)
+✔ Given independent SQL pools, when removals contend, then one pending intent wins and another organization proceeds (2433.560625ms)
+✔ Given persisted pending and terminal operations, when pools reopen and stale completions arrive, then only the same intent can settle (2182.449625ms)
+✔ Given committed writes whose replies are lost, when reread through a new pool, then the pending intent and same terminal receipt survive (3048.615042ms)
+✔ Given production logging storage configuration, when settings and removal intent are used and storage closes, then both public roles share the same concrete store and closure (2454.290083ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 21
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85354.122291
+
+✖ failing tests:
+
+test at dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js:99:1
+✖ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (4726.607417ms)
+  AssertionError [ERR_ASSERTION]: Product and Admin results complete while the queue attempt authorization still waits for SQL.
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/c617/Thermus/dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js:175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

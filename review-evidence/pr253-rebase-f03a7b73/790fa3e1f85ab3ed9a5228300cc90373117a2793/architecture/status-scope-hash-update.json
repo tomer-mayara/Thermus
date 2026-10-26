@@ -1,0 +1,11 @@
+{
+  "path": "docs/implementation/admin-s2-5-01b.md",
+  "beforeSha256": "0126c95bc23409655c07f2ed200f62fece68214eb815cc5a227d44d4c04be0ec",
+  "afterSha256": "5608f55bf5630ef22e925b85a9906fd38f0cb1b03d9733a42799f104fbb5af4e",
+  "oldSentence": "This rebase runs no live removal, migration, rollout, or restore action.",
+  "newSentence": "This rebase changes no production membership, database schema, rollout, or restore state.",
+  "review": "Exact replacement reviewed. This statement limits production state changes and permits controlled staging acceptance actions.",
+  "priorReviewedInputs": "reviewed-inputs-v1-before-status-scope.json",
+  "priorProvenance": "provenance-final-before-status-scope.json",
+  "sourceTestDiagramOrGitChanges": false
+}

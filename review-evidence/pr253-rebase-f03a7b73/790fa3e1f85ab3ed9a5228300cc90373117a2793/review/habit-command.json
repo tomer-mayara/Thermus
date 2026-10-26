@@ -1,0 +1,26 @@
+{
+  "name": "habit-hooks",
+  "attempt": 1,
+  "runId": "1792991629959",
+  "command": [
+    "habit-hooks",
+    "--branch",
+    "origin/main"
+  ],
+  "args": [
+    "--branch",
+    "origin/main"
+  ],
+  "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "head": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "inputFingerprint": "7e9a46583642da285a5430e341c8942e95e751edd6aafbb5f78bf44b45fd9850",
+  "dockerContext": "colima-thermus-pr253",
+  "started": "2026-10-26T05:13:50.000Z",
+  "finished": "2026-10-26T05:13:52.666Z",
+  "log": "habit-hooks-1.log",
+  "code": 1,
+  "signal": null,
+  "role": "Independent complete-candidate hook run. Its raw ledger snapshot and input binding are retained separately from the serial runtime gate runner."
+}

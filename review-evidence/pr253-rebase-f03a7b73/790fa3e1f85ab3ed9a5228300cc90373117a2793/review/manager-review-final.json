@@ -1,0 +1,54 @@
+{
+  "candidate": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "mergeBase": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "gateHead": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "reviewed": true,
+  "reviewedAt": "2026-10-26T06:14:46.931805+00:00",
+  "scope": "Manager sign-off for the requested rebase, conflict resolution and accurate blocked-Draft evidence. This is not independent human approval or authorization to merge.",
+  "subagentReview": {
+    "architecture": "Read both conflict rounds and preserved current Audit cleanup and removal-first shutdown. Inspected all eight 800px renders, callable changes, type/runtime directions, before/after notes and final source bindings.",
+    "quality": "Read final review, all high findings and all changed committed-path findings, all policy answers and all17 checker notes; verified all12 feature hashes, all132 finding reasons and192 function reasons. Requested and verified uncertain-completion/application-rollback qualifications and corrected76 stale historical-context reasons. Verified seven frozen final output hashes and original Habit files.",
+    "validation": "Read22/21/1 complete-group failure,2/1/1 focused retry, exact-case/source comparison and historical-main provenance. Retained unexecuted-assertion and dynamic-cause limits. Reviewed fresh nested AMD64 build counts and7/7runtime result."
+  },
+  "checks": {
+    "ordinaryBackend": 5004,
+    "ordinaryPortal": 49,
+    "focused": 276,
+    "hostedLive": 28,
+    "nativeContainer": 11,
+    "hostedContainer": 7,
+    "collector": 10,
+    "postgres": {
+      "total": 22,
+      "pass": 21,
+      "fail": 1
+    },
+    "postgresFocused": {
+      "total": 2,
+      "pass": 1,
+      "fail": 1
+    },
+    "coverage": "Fresh verified unit+integration+acceptance capture at final head; all86 new/changed functions measured, maximumCRAP9.",
+    "typecheck": "passed",
+    "portalBuild": "passed",
+    "apiSurface": "49 current; passed",
+    "diffCheck": "passed",
+    "habit": "320 retained findings with explicit reasons; empty snooze",
+    "metrics": "One complete run; Delta/Review retained goal misses, CRAP/Architecture passed. Three current MI exceptions meet raw bounds. No tool failure; no trend record because parent is not on main."
+  },
+  "qualityFrozenManifestSha256": "bb8e806f3706eb2fd0732507ba3d5c930b7ad5297abd5c1dd71b88fd2d462dca",
+  "architectureProvenanceSha256": "d202ad0eb18dc166aea6ca94f567db1ccd73428af7ca3cb0c1c576e9e990e5bf",
+  "finalInputBridgeSha256": "2f91a3a3ec2acb77c8f2e50eae21f7ec04bd233bab850951da506c947e2296f7",
+  "overallMergeStatus": "blocked",
+  "draft": true,
+  "ready": false,
+  "holds": [
+    "Required PostgreSQL gate failed; not waived by historical main reproduction.",
+    "R1 display hydration remains in this increment; later PR257 fix is outside rebase.",
+    "Parent PR251 integration.",
+    "Independent authorized architect approval of the current candidate."
+  ],
+  "noMerge": true,
+  "noProductionChange": true
+}

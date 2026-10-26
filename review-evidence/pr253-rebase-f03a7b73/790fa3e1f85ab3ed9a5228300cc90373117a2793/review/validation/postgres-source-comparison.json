@@ -1,0 +1,165 @@
+{
+  "pins": {
+    "head": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+    "parent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+    "main": "8c6d204e8588a664438ba8934ab36670b802525f"
+  },
+  "paths": [
+    {
+      "path": "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+      "sha256": {
+        "head": "5263946b741b33ecf83b2729bc399cfbc5bad31ef393125b4395ec2fe7e49069",
+        "parent": "c78da6dc83f835a3d0353efc4078e78d422f937dbdabc16a77783a07efd07b60",
+        "main": "c78da6dc83f835a3d0353efc4078e78d422f937dbdabc16a77783a07efd07b60"
+      },
+      "headEqualsParent": false,
+      "headEqualsMain": false
+    },
+    {
+      "path": "test/support/in-process/postgres-settings-site.ts",
+      "sha256": {
+        "head": "fae54e63aa3fed99550c0f26f63574530189405116f58a0f1cb51904889d7fe4",
+        "parent": "fae54e63aa3fed99550c0f26f63574530189405116f58a0f1cb51904889d7fe4",
+        "main": "fae54e63aa3fed99550c0f26f63574530189405116f58a0f1cb51904889d7fe4"
+      },
+      "headEqualsParent": true,
+      "headEqualsMain": true
+    },
+    {
+      "path": "test/support/processes/module-paths.ts",
+      "sha256": {
+        "head": "9c769c570f0a8a822ece453db96ad77be78d302d605861f7b6fb45377e0e3007",
+        "parent": "b32e4db62cdd14c304e75141f195a34ff53c4e984f0879c179c54888064bdea9",
+        "main": "b32e4db62cdd14c304e75141f195a34ff53c4e984f0879c179c54888064bdea9"
+      },
+      "headEqualsParent": false,
+      "headEqualsMain": false
+    },
+    {
+      "path": "src/logs/audit/bounded-sql-runtime.ts",
+      "sha256": {
+        "head": "ae53d0fc278d33f4918e1e1424b6b6705e7719125dd4d89b6e7fe47e5602bc90",
+        "parent": "ae53d0fc278d33f4918e1e1424b6b6705e7719125dd4d89b6e7fe47e5602bc90",
+        "main": "ae53d0fc278d33f4918e1e1424b6b6705e7719125dd4d89b6e7fe47e5602bc90"
+      },
+      "headEqualsParent": true,
+      "headEqualsMain": true
+    },
+    {
+      "path": "src/logs/audit/pg-destination-settings-store.ts",
+      "sha256": {
+        "head": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+        "parent": "4b3517cc84644bce708138d196e4da09e7f114566211544a5c937cfcd8469b7f",
+        "main": "4b3517cc84644bce708138d196e4da09e7f114566211544a5c937cfcd8469b7f"
+      },
+      "headEqualsParent": false,
+      "headEqualsMain": false
+    },
+    {
+      "path": "src/logs/audit/destination-settings-service.ts",
+      "sha256": {
+        "head": "572bee5dc48c067f8d8d6d1b1eb53ffc37c671a2f47af43061d6b6479cce84ee",
+        "parent": "572bee5dc48c067f8d8d6d1b1eb53ffc37c671a2f47af43061d6b6479cce84ee",
+        "main": "572bee5dc48c067f8d8d6d1b1eb53ffc37c671a2f47af43061d6b6479cce84ee"
+      },
+      "headEqualsParent": true,
+      "headEqualsMain": true
+    },
+    {
+      "path": "src/logs/audit/audit-snapshots.ts",
+      "sha256": {
+        "head": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8",
+        "parent": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8",
+        "main": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8"
+      },
+      "headEqualsParent": true,
+      "headEqualsMain": true
+    },
+    {
+      "path": "src/logs/audit/audit-collector.ts",
+      "sha256": {
+        "head": "d1834b3e15c629dbc1d768c82b7307211194e1f0faf2693db40fed08bbc2d1b6",
+        "parent": "d1834b3e15c629dbc1d768c82b7307211194e1f0faf2693db40fed08bbc2d1b6",
+        "main": "d1834b3e15c629dbc1d768c82b7307211194e1f0faf2693db40fed08bbc2d1b6"
+      },
+      "headEqualsParent": true,
+      "headEqualsMain": true
+    },
+    {
+      "path": "src/app/logging-storage.ts",
+      "sha256": {
+        "head": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+        "parent": "e26a223fc99e647c11651c5c8cbf11274a680deafacaca1352973a43c2112960",
+        "main": "e26a223fc99e647c11651c5c8cbf11274a680deafacaca1352973a43c2112960"
+      },
+      "headEqualsParent": false,
+      "headEqualsMain": false
+    },
+    {
+      "path": "src/app/application.ts",
+      "sha256": {
+        "head": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+        "parent": "93f634069945ebc4542a4cc46f4ce827d349cd1ee3e4814e8b687ed46b453cd8",
+        "main": "93f634069945ebc4542a4cc46f4ce827d349cd1ee3e4814e8b687ed46b453cd8"
+      },
+      "headEqualsParent": false,
+      "headEqualsMain": false
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "sha256": {
+        "head": "71aca4b60b4492eab3be02de8755ce777b7ad7a338181971b9e08f328a6e08f0",
+        "parent": "005c264fb4d8618800a66e01e585cfc2b99b9323ac4b46b56fe086a0cc4ca8d9",
+        "main": "41b307189c703ad51f124b60e19b132fc812137b42ba9a2a0bf167446836ac79"
+      },
+      "headEqualsParent": false,
+      "headEqualsMain": false
+    },
+    {
+      "path": "test/support/doubles/workos/workos-fake.ts",
+      "sha256": {
+        "head": "20770a191f2148e59c7688fc1ae60bc24a98f85af18efecd29ef346d2cbac3df",
+        "parent": "20770a191f2148e59c7688fc1ae60bc24a98f85af18efecd29ef346d2cbac3df",
+        "main": "4c3c75815b15b47c24b996a512caa038075e63c0deb492d731f4cf0d72f0142d"
+      },
+      "headEqualsParent": true,
+      "headEqualsMain": false
+    },
+    {
+      "path": "test/support/doubles/workos/workos-fake-directory.ts",
+      "sha256": {
+        "head": "d97297a7437095cf2f88e9f828d7468084724225f9ea174722568298e284653f",
+        "parent": "d97297a7437095cf2f88e9f828d7468084724225f9ea174722568298e284653f",
+        "main": "86ecfda8371fa3cbea89026a2b29985ac31bad76e2db558f279c391c56d7a6df"
+      },
+      "headEqualsParent": true,
+      "headEqualsMain": false
+    }
+  ],
+  "fragments": {
+    "secondCase": {
+      "sha256": {
+        "head": "e94d3a1085570e2fdbf32e689414ecee0628e293212c35ca63ac9c22d2158949",
+        "parent": "e94d3a1085570e2fdbf32e689414ecee0628e293212c35ca63ac9c22d2158949",
+        "main": "e94d3a1085570e2fdbf32e689414ecee0628e293212c35ca63ac9c22d2158949"
+      },
+      "identicalAllThree": true
+    },
+    "settingsRead": {
+      "sha256": {
+        "head": "e8a6c0becf769b61360473693c27c8512cadf8d562eb3810e02b52589cdec7ec",
+        "parent": "e8a6c0becf769b61360473693c27c8512cadf8d562eb3810e02b52589cdec7ec",
+        "main": "e8a6c0becf769b61360473693c27c8512cadf8d562eb3810e02b52589cdec7ec"
+      },
+      "identicalAllThree": true
+    },
+    "settingsSave": {
+      "sha256": {
+        "head": "db56c7a9dc57dff5e357913cc8923d45f77f8e3f4e238b6461c74f7d671e1962",
+        "parent": "db56c7a9dc57dff5e357913cc8923d45f77f8e3f4e238b6461c74f7d671e1962",
+        "main": "db56c7a9dc57dff5e357913cc8923d45f77f8e3f4e238b6461c74f7d671e1962"
+      },
+      "identicalAllThree": true
+    }
+  }
+}

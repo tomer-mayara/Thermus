@@ -1,0 +1,15 @@
+{
+  "oldHead": "0ff3f6cdde5be4124df0ed2ab002844d5db1c502",
+  "oldParent": "122d65bf1f035fc195792cc083732aa05c423c58",
+  "parent": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "gateHead": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "sourceTestDeltaEqualsUpstream": true,
+  "sourceTestDeltaSha256": "0ff7a9f7b1bd5c9becd841f09025d82cdf270dae13a78ef6505c2e9b3cff14df",
+  "upstreamDeltaSha256": "0ff7a9f7b1bd5c9becd841f09025d82cdf270dae13a78ef6505c2e9b3cff14df",
+  "conflicts": [
+    "architecture/components.md",
+    "docs/design/organization-admin-plan.md"
+  ],
+  "rebaseCommits": 4
+}

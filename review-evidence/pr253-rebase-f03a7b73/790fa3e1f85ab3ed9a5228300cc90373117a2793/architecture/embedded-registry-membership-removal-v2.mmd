@@ -1,0 +1,17 @@
+%%{init: {"flowchart": {"wrappingWidth": 230, "nodeSpacing": 35, "rankSpacing": 45}}}%%
+flowchart TB
+  subgraph removal_server["Container: Thermus Node server · hosted"]
+    removal_app["app · TypeScript<br/>Supply directory and removal store<br/>Stop removal before SQL close"]
+    removal_org["organizations · TypeScript<br/>Current Admin and target checks<br/>Last-Admin rule; bounded removal"]
+    removal_audit["audit-logs · TypeScript / pg<br/>Shared settings SQL runtime<br/>Atomic intent and terminal receipts"]
+    removal_workos["workos · TypeScript / SDK<br/>Current reads; stop signal checks<br/>One exact membership deletion"]
+    removal_app ==>|composition / lifetime| removal_org
+    removal_app ==>|store / pool ownership| removal_audit
+    removal_org -->|supplied RemovalOperationStore| removal_audit
+    removal_org -->|supplied OrganizationDirectory| removal_workos
+  end
+  removal_db[("L2: PostgreSQL<br/>Private settings and removal intent")]
+  removal_provider["External system: WorkOS<br/>Identity and memberships"]
+  removal_audit -->|SQL / verified TLS| removal_db
+  removal_workos -->|SDK HTTPS| removal_provider
+  style removal_server fill:#fafafa,stroke:#777777,color:#222222

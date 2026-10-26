@@ -1,0 +1,91 @@
+1:  5876bc46 = 1:  842458ba Record the S2.5-01b implementation scope
+2:  d75b8676 ! 2:  7e3510df Coordinate membership removal with durable per-org admission
+    @@ architecture/components.md: fields. WorkOS organization metadata and the determi
+      The pool is lazy: configuration does not establish a live SQL connection or prove
+     -TLS/grants. Missing or failed storage leaves MCP and admitted product access
+     -independent of SQL. The local edition does not open this pool.
+    +-
+    +-Hosted application close starts MCP cleanup and hosted storage cleanup together.
+    +-Hosted composition first closes snapshots and clears their pending content,
+    +-then the collector stops admission, clears content and aborts attempts, then SQL
+    +-closes. The SQL runtime rejects new work, expires admitted calls and bounds pool
+    +-closure within the existing process
+     +TLS/grants. Missing or failed storage blocks removal but leaves MCP and admitted
+     +product access independent of SQL. The local edition does not open this pool.
+    - 
+    --Hosted application close starts MCP cleanup and hosted storage cleanup together.
+    --Hosted composition first closes snapshots, then the collector stops admission,
+    --clears content and aborts attempts, then SQL closes. The SQL runtime rejects new
+    --work, expires admitted calls and bounds pool closure within the existing process
+    ++
+     +Hosted application close starts MCP cleanup and the administration/storage cleanup
+    -+chain together. It stops removal before closing snapshots. The collector then
+    -+stops admission, clears content and aborts attempts, and SQL closes. The SQL
+    -+runtime rejects new work, expires admitted calls and bounds pool closure within the existing process
+    ++chain together. It stops removal before hosted composition closes snapshots and
+    ++clears their pending content. The collector then stops admission, clears content
+    ++and aborts attempts, and SQL closes. The SQL runtime rejects new work, expires
+    ++admitted calls and bounds pool closure within the existing process
+      shutdown deadline. Unsettled read/native work retains charged metadata
+     -reservations; late results cannot start dispatch or restore content. The settings
+     -datastore persists across runtime closure; export queues are memory-only.
+    @@ docs/api-surface/src/accounts/organizations/removal-operation-store.d.ts (new)
+     +}
+     
+      ## docs/design/organization-admin-plan.md ##
+    -@@ docs/design/organization-admin-plan.md: records the redaction correction, the single stack integration path, and merge c
+    - The [S2-04 ledger](../implementation/admin-s2-04.md#evidence-and-release-holds)
+    - owns the separate activation requirements. PR #245 records the code integration;
+    - Slice 2 release remains separate. The expanded Slice 2.5 tickets were reviewed
+    --on 24 October 2026. S2.5-01a is implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251),
+    --with validation and review in progress; the remaining Slice 2.5 tickets are planned.
+    -+on 24 October 2026. S2.5-01a is implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
+    +@@ docs/design/organization-admin-plan.md: retains the rollout and release evidence. Ticket records describe their historic
+    + increments; earlier missing features and candidate holds are not the current
+    + internal rollout status. Historical gate passes do not verify this follow-up.
+    + The expanded Slice 2.5 tickets were reviewed on 24 October 2026. S2.5-01a is
+    +-implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251), with
+    +-validation and review in progress; the remaining Slice 2.5 tickets are planned.
+    ++implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
+     +S2.5-01b adds durable removal coordination in stacked
+     +[PR #253](https://github.com/tomer-mayara/Thermus/pull/253), with validation and review
+     +in progress. S2.5-01c and S2.5-02 remain planned.
+    - Ticket records describe their historical increments; their earlier missing
+    - features are not the status of the combined candidate. Merged does not mean
+    - released, and passing controlled tests does not complete owner gates.
+    + This document authorizes no access change, provider action, account change,
+    + destination change, or cutover. Mock addresses are examples. Legal copy must use
+    + the exact approved documents and agreement.
+     @@ docs/design/organization-admin-plan.md: Keep permission checks, origin/CSRF protection, escaping, and non-cacheable resp
+      | Web/account | Native forms, browser sessions, selected organization, safe responses, and Slice 3 browser MFA proof. |
+      | Destination settings | Slice 2 tenant settings, revisions, and encrypted credential references. |
+3:  fb9b0fd0 = 3:  aa14f972 Clarify unknown removal recording outcomes
+4:  0ff3f6cd ! 4:  fa5d4d7f Record S2.5-01b validation and remaining release work
+    @@ Commit message
+         Record S2.5-01b validation and remaining release work
+     
+      ## docs/design/organization-admin-plan.md ##
+    -@@ docs/design/organization-admin-plan.md: Slice 2 release remains separate. The expanded Slice 2.5 tickets were reviewed
+    - on 24 October 2026. S2.5-01a is implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
+    +@@ docs/design/organization-admin-plan.md: internal rollout status. Historical gate passes do not verify this follow-up.
+    + The expanded Slice 2.5 tickets were reviewed on 24 October 2026. S2.5-01a is
+    + implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
+      S2.5-01b adds durable removal coordination in stacked
+    - [PR #253](https://github.com/tomer-mayara/Thermus/pull/253), with validation and review
+    +-[PR #253](https://github.com/tomer-mayara/Thermus/pull/253), with validation and review
+     -in progress. S2.5-01c and S2.5-02 remain planned.
+    -+complete locally. Merge still requires the parent and independent architect
+    -+approval. S2.5-01c and S2.5-02 remain planned.
+    - Ticket records describe their historical increments; their earlier missing
+    - features are not the status of the combined candidate. Merged does not mean
+    - released, and passing controlled tests does not complete owner gates.
+    ++[PR #253](https://github.com/tomer-mayara/Thermus/pull/253). Its original candidate
+    ++passed local validation; checks for the rebased candidate remain pending. Merge
+    ++still requires the parent, resolution of S2.5-R1 in this PR, and independent
+    ++architect approval. S2.5-01c and S2.5-02 remain planned.
+    + This document authorizes no access change, provider action, account change,
+    + destination change, or cutover. Mock addresses are examples. Legal copy must use
+    + the exact approved documents and agreement.
+     
+      ## docs/implementation/admin-s2-5-01b.md ##
+     @@

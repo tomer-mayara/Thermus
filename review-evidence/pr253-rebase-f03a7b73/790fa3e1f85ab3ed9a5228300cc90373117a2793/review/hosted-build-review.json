@@ -1,0 +1,90 @@
+{
+  "candidate": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "mergeBase": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "main": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "gateHead": "fa5d4d7f57ef270df2a056ad523ec22e3b5032b6",
+  "reviewed": true,
+  "freshChecksExecuted": true,
+  "linuxAmd64": true,
+  "logs": {
+    "docker-build-1792992425163-79589.log": "ac59e545ff768436e007f15b9986f377c5853997d8b935cb9befeebce24a6219",
+    "hosted-container-1.log": "050889823068371082aa0a98d48186dbf01331480d18d5f5e4a101cd6729e96f"
+  },
+  "phaseCounts": [
+    {
+      "phase": "emitted unit",
+      "tests": 3251,
+      "suites": 164,
+      "pass": 3251,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 284333.075979
+    },
+    {
+      "phase": "portal unit",
+      "tests": 29,
+      "suites": 0,
+      "pass": 29,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 3196.348038
+    },
+    {
+      "phase": "portal acceptance",
+      "tests": 20,
+      "suites": 0,
+      "pass": 20,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 2623.080813
+    },
+    {
+      "phase": "emitted integration",
+      "tests": 1109,
+      "suites": 59,
+      "pass": 1109,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 242515.542358
+    },
+    {
+      "phase": "explicit hosted acceptance/interface selection",
+      "tests": 119,
+      "suites": 6,
+      "pass": 119,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 145196.086725
+    },
+    {
+      "phase": "local renderer runtime",
+      "tests": 13,
+      "suites": 2,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 93518.312321
+    }
+  ],
+  "imageRuntimeTests": {
+    "tests": 7,
+    "pass": 7,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "reason": "Manager read actual Docker invocation, fresh noncached build:hosted step27 under network=none, all six positive passing summaries and final image runtime7/7. Retained native build logs have quiet output; they are not claimed as hosted offline evidence."
+}

@@ -1,0 +1,174 @@
+{
+  "candidate": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+  "status": "frozen after both manager wording corrections",
+  "completionRuleQualified": true,
+  "applicationRollbackQualified": true,
+  "databaseRestoreNotProved": true,
+  "historicalReasonContextReview": {
+    "allIgnoredReasonTextsReviewed": true,
+    "correctedFindingReasons": 76,
+    "actualParentProviderMI": 48.11091770208057,
+    "actualParentProviderPaths": 118,
+    "currentPR253ProviderMI": 47.08422952684704,
+    "currentPR253ProviderPaths": 124,
+    "reason": "Historical PR251 and R1 comparisons and helper purposes are named explicitly. Raw reports, historical evidence and original Habit outputs remain unchanged."
+  },
+  "outputSha256": {
+    "final-review.md": "e46478851268a621ce11959173f1f4cfeb47a779f5d71cecf468baede2ce18d6",
+    "final-dispositions.json": "5e8dcffe8d65894d645efdcf33dffbbfea8688b58f5cd6bbf6a8b9e50d22fe00",
+    "metric-dispositions.md": "6df4a5cfc53204e185b42c3d761161da7ae4a0d4d39168588f583650a84d3e05",
+    "metric-dispositions.json": "8f2734fd207a3a498d4ab88fb2f8da29112956c2a34ce02e9a84d86d7d1acaf4",
+    "checker-notes.md": "676e861527844845bf0ac0c1f59968f03c569219e84ff2ec3b9cd424695231b8",
+    "checker-notes.json": "a238553b333d88478eece73312012c6139428ca38ce5c04a2433a01bb130dec9",
+    "quality-comment-draft.md": "47b0f86a4139a44830eaecca86286b4551565486d9d3c90418e1e1e488cdfebd"
+  },
+  "originalHabitUnchanged": {
+    "habit-dispositions.md": "a656b54ad9802914a3b3d829b657d15fb2f5f5464b482e0500f9b4f5ba513125",
+    "habit-dispositions.json": "71cf7ae1632bec674830429c6f693feedcf9b6923d0a37b634d1994c52ffa174"
+  },
+  "bridge": {
+    "artifact": "../review/final-input-binding.json",
+    "sha256": "2f91a3a3ec2acb77c8f2e50eae21f7ec04bd233bab850951da506c947e2296f7",
+    "threeOriginalGateBindingsReviewed": true,
+    "onlyTwoProseDocumentsDiffer": true
+  },
+  "rawMetricReportHashesUnchanged": true,
+  "artifactRelativeLinks": [
+    {
+      "source": "quality/final-review.md",
+      "target": "../review/rebase-review.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "final-dispositions.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "checker-notes.md",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "checker-notes.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "../metrics/process.md",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "../metrics/review.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "../metrics/crap.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "metric-dispositions.md",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "../review/final-input-binding.json",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "../review/validation/postgres-failure-review.md",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "../architecture/assessment.md",
+      "exists": true
+    },
+    {
+      "source": "quality/final-review.md",
+      "target": "../architecture/provenance-final.json",
+      "exists": true
+    },
+    {
+      "source": "quality/metric-dispositions.md",
+      "target": "../metrics/process.md",
+      "exists": true
+    },
+    {
+      "source": "quality/metric-dispositions.md",
+      "target": "../metrics/review.json",
+      "exists": true
+    },
+    {
+      "source": "quality/metric-dispositions.md",
+      "target": "metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "source": "quality/metric-dispositions.md",
+      "target": "../metrics/coverage.json",
+      "exists": true
+    },
+    {
+      "source": "quality/checker-notes.md",
+      "target": "../metrics/pr-review.json",
+      "exists": true
+    },
+    {
+      "source": "quality/checker-notes.md",
+      "target": "checker-notes.json",
+      "exists": true
+    },
+    {
+      "source": "quality/quality-comment-draft.md",
+      "target": "checker-notes.md",
+      "exists": true
+    },
+    {
+      "source": "quality/quality-comment-draft.md",
+      "target": "../metrics/process.md",
+      "exists": true
+    },
+    {
+      "source": "quality/quality-comment-draft.md",
+      "target": "metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "source": "quality/quality-comment-draft.md",
+      "target": "habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "source": "quality/quality-comment-draft.md",
+      "target": "final-review.md",
+      "exists": true
+    },
+    {
+      "source": "quality/quality-comment-draft.md",
+      "target": "final-dispositions.json",
+      "exists": true
+    },
+    {
+      "source": "quality/quality-comment-draft.md",
+      "target": "../review/validation/postgres-failure-review.md",
+      "exists": true
+    }
+  ],
+  "internalHashReferencesMatch": true
+}
