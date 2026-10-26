@@ -42,6 +42,8 @@ function closeFront(front: Server): Promise<void> {
 
 interface LocalHttpsSiteOptions {
   readonly signupDocuments?: SignupDocuments;
+  // A scoped live proof can use its disposable SQL environment with the default production composition.
+  readonly storageEnvironment?: Readonly<Partial<Record<'DATABASE_URL' | 'DATABASE_CA_CERT_PATH' | 'LOGGING_DESTINATION_ENCRYPTION_KEY', string>>>;
   // Only a custom application uses the static front. Its default portal build is src/interfaces/user-portal/dist/.
   readonly portalBuild?: string;
   // The default application checks this executable. The live gate uses LIGHTPANDA_BIN from its environment.
@@ -116,10 +118,11 @@ export class LocalHttpsSite {
   }
 }
 
-async function stagingApplication(settings: HostedLiveSettings, logger: SystemLog, options: Pick<LocalHttpsSiteOptions, 'rendererExecutable' | 'signupDocuments'>): Promise<Application> {
+async function stagingApplication(settings: HostedLiveSettings, logger: SystemLog, options: Pick<LocalHttpsSiteOptions, 'rendererExecutable' | 'signupDocuments' | 'storageEnvironment'>): Promise<Application> {
   const executable = options.rendererExecutable ?? process.env.LIGHTPANDA_BIN;
   const documents = options.signupDocuments;
   const environment = {
+    ...options.storageEnvironment,
     DEPLOYMENT: 'hosted',
     PUBLIC_BASE_URL: publicBaseUrl,
     AD_RULES_FILE: trustedAdRulesFile,

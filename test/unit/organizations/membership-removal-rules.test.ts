@@ -101,17 +101,17 @@ test('Given a second active Admin on a later page, when self-removal is requeste
   const { administration, directory } = removalFixture();
   directory.pageSize = 1;
   assert.equal(await administration.removeMember(actor, { ...request, membershipId: 'member-a' }), 'applied');
-  assert.equal(directory.memberPageReads.length, 3);
-  assert.ok(directory.memberPageReads.every(read => read.statuses.length === 1 && read.statuses[0] === 'active'));
+  assert.equal(directory.memberFactsPageReads.length, 3);
+  assert.ok(directory.memberFactsPageReads.every(read => read.statuses.length === 1 && read.statuses[0] === 'active'));
 });
 
 test('Given a later page failure or a repeating cursor, when the full Admin count cannot be established, then removal refuses without a partial count', async () => {
   for (const failure of ['page', 'cursor']) {
     const { administration, directory, deletes } = removalFixture();
-    if (failure === 'page') directory.memberPageLayout = records => [[records[0]], new Error('Later page failed')];
+    if (failure === 'page') directory.memberFactsPageLayout = records => [[records[0]], new Error('Later page failed')];
     else {
-      const page = await directory.memberPage({ organizationId: 'org-a', statuses: ['active'] });
-      directory.memberPage = async () => ({ ...page, next: 'repeated' });
+      const page = await directory.memberFactsPage({ organizationId: 'org-a', statuses: ['active'] });
+      directory.memberFactsPage = async () => ({ ...page, next: 'repeated' });
     }
     assert.equal(await administration.removeMember(actor, request), 'unavailable');
     assert.deepEqual(deletes, []);
@@ -120,7 +120,7 @@ test('Given a later page failure or a repeating cursor, when the full Admin coun
 
 test('Given the last Admin duplicated across pages, when a newer record makes the other Admin inactive, then duplicates and stale active state do not permit self-removal', async () => {
   const { administration, directory, deletes } = removalFixture();
-  directory.memberPageLayout = records => [[records[0], records[1]], [records[0], { ...records[1], status: 'inactive' }]];
+  directory.memberFactsPageLayout = records => [[records[0], records[1]], [records[0], { ...records[1], status: 'inactive' }]];
   assert.equal(await administration.removeMember(actor, { ...request, membershipId: 'member-a' }), 'last-admin');
   assert.deepEqual(deletes, []);
 });
@@ -137,9 +137,9 @@ test('Given a target that changes from User to Admin between its direct read and
 for (const pageCount of [10, 11]) {
   test(`Given ${pageCount} active-member pages, when a removal needs the complete count, then the fixed ten-page budget ${pageCount === 10 ? 'allows completion' : 'refuses without reading page eleven'}`, async () => {
     const { administration, directory, deletes, store } = removalFixture();
-    directory.memberPageLayout = records => [...Array.from({ length: pageCount - 1 }, () => []), records];
+    directory.memberFactsPageLayout = records => [...Array.from({ length: pageCount - 1 }, () => []), records];
     assert.equal(await administration.removeMember(actor, request), pageCount === 10 ? 'applied' : 'unavailable');
-    assert.equal(directory.memberPageReads.length, 10);
+    assert.equal(directory.memberFactsPageReads.length, 10);
     assert.equal(deletes.length, pageCount === 10 ? 1 : 0);
     assert.equal(store.operations.get('org-a')?.outcome, pageCount === 10 ? 'applied' : 'no-effect');
   });
@@ -159,7 +159,7 @@ for (const missingPermission of ['product:access', 'user-grants:manage', 'admin-
 
 test('Given the actor loses Admin permissions before the member pages return, when target facts stay unchanged, then the paged current actor still refuses removal', async () => {
   const { administration, directory, deletes } = removalFixture();
-  directory.memberPageLayout = records => [records.map(member => member.subject === actor.user.subject ? { ...member, grants: [userGrant] } : member)];
+  directory.memberFactsPageLayout = records => [records.map(member => member.subject === actor.user.subject ? { ...member, grants: [userGrant] } : member)];
   assert.equal(await administration.removeMember(actor, request), 'denied');
   assert.deepEqual(deletes, []);
 });
@@ -179,13 +179,18 @@ test('Given an Admin plus User target, when direct and page grant order differs 
   assert.deepEqual(deletes, [request.membershipId]);
 });
 
-for (const difference of ['missing', 'revision', 'status', 'management', 'subject'] as const) {
+for (const difference of ['missing', 'membershipId', 'organizationId', 'revision', 'status', 'management', 'subject', 'roles', 'permissions'] as const) {
   test(`Given target ${difference} changes between direct and complete page reads, when a form uses its old facts, then removal is stale`, async () => {
     const { administration, directory, deletes } = removalFixture();
-    directory.memberPageLayout = records => [records.flatMap(member => {
+    directory.memberFactsPageLayout = records => [records.flatMap(member => {
       if (member.membershipId !== request.membershipId) return [member];
       if (difference === 'missing') return [];
-      const changes = { revision: { revision: 'r2' }, status: { status: 'inactive' as const }, management: { management: 'external' as const }, subject: { subject: 'replacement-person' } };
+      const changes = {
+        membershipId: { membershipId: 'replacement-membership' }, organizationId: { organizationId: 'another-organization' },
+        revision: { revision: 'r2' }, status: { status: 'inactive' as const }, management: { management: 'external' as const },
+        subject: { subject: 'replacement-person' }, roles: { grants: [adminGrant, { role: 'unknown', permissions: [] }] },
+        permissions: { grants: [{ ...adminGrant, permissions: ['product:access'] }] },
+      };
       return [{ ...member, ...changes[difference] }];
     })];
     assert.equal(await administration.removeMember(actor, request), 'stale');
@@ -210,4 +215,12 @@ test('Given request and actor objects that the caller later mutates, when remova
   assert.equal(store.admissions[0].organizationId, 'org-a');
   assert.equal(store.admissions[0].actor.subject, actor.user.subject);
   assert.equal(store.admissions[0].revision, 'r1');
+});
+
+test('Given current safety facts and unavailable display pages, when removal runs, then the facts scan alone permits the exact deletion', async () => {
+  const { administration, directory, deletes } = removalFixture();
+  directory.memberPage = async () => { assert.fail('Removal must not load display pages'); };
+  assert.equal(await administration.removeMember(actor, request), 'applied');
+  assert.deepEqual(deletes, [request.membershipId]);
+  assert.ok(directory.memberFactsPageReads.length > 0);
 });

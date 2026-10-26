@@ -14,6 +14,23 @@ matching key. The owner must select and validate the recovery scope before
 activating this future work. Do not apply restore or key-reset commands merely
 to complete a Slice 2 release.
 
+## Removal holds are outside a settings restore
+
+The private schema now also contains membership-removal operation records.
+This settings procedure must not restore or erase those records. Select only
+`thermus_admin.logging_destination_settings` for new scoped settings archives.
+An older whole-schema archive can contain removal records or ACLs. Before any
+recovery that can replace, omit, or roll them back, follow the [S2.5 removal
+restore hold](admin-s2-5-02-removal-runbook.md#hold-reductions-outside-restored-rows):
+stop every old sender, revoke effective runtime INSERT/UPDATE on the removal
+table outside restored rows, restore only reviewed data without ACL replay,
+and reconcile the snapshot window with independent evidence. Keep that hold
+through restart checks. An empty restored table or a current membership read
+cannot establish that a possible provider deletion is safe to repeat.
+
+This rule adds no production backup prerequisite to Slice 2 or Slice 2.5 and
+changes no owner decision about future Slice 4 activation.
+
 ## Choose the backup owner and storage
 
 The following are proposed defaults, **pending owner selection**:
@@ -55,19 +72,22 @@ logs.
    revision. Stop on a name collision or unexplained schema change. Create a
    private working folder with `umask 077` on the owner's protected disk. Use a
    fresh empty folder for each backup. Ensure shell tracing is off.
-2. Make one consistent archive of only `thermus_admin`. Review warnings and
-   stop on failure. Do not use `pg_dumpall`, a whole-database dump, large-object
+2. Make one consistent archive of only
+   `thermus_admin.logging_destination_settings`. Review warnings and stop on failure. Do not use `pg_dumpall`, a whole-database dump, large-object
    inclusion, or an export of other schemas.
 
    ```sh
-   pg_dump 'service=thermus-owner' --format=custom --schema=thermus_admin \
+   pg_dump 'service=thermus-owner' --format=custom \
+     --table=thermus_admin.logging_destination_settings \
      --no-owner --file=settings.dump
    pg_restore --list settings.dump > archive-list.txt
    ```
 
 3. Inspect the archive list against the reviewed migration. It must contain only
-   the private schema, settings table and its data, primary key, checks, RLS
-   policies, and scoped grants. Retain the applied migration and source SHA,
+   the settings table and its data, primary key, checks, RLS policies, and scoped
+   table grants. Table selection does not include the schema or dedicated role;
+   keep the reviewed migrations separately. Exclude membership-removal records
+   and unrelated objects. Retain the applied migration and source SHA,
    server/client versions, UTC backup time, row count, archive SHA-256, and the
    role's nonsecret attributes and memberships. Do not export role password
    hashes or all global roles. `pg_dump` does not back up global roles: the
@@ -96,9 +116,9 @@ logs.
    avoid extra copies. Apply the selected retention process to old encrypted
    bundles. Record exceptions with a reason and review date.
 
-The scoped archive carries tenant identifiers, Collector addresses, revisions,
-enabled state, and encrypted optional credentials. It holds no event history,
-WorkOS records, or fetched content. A database archive without its matching
+The scoped archive carries tenant identifiers, Collector addresses, optional
+Axiom dataset names, revisions, enabled state, and encrypted optional credentials.
+It holds no event history, WorkOS records, or fetched content. A database archive without its matching
 application key cannot recover saved Bearer credentials.
 
 ## Restore only the private settings store
@@ -126,15 +146,18 @@ schema/database to recover this table.
 3. Recover the encrypted bundle in a private local folder. Verify its copied hash,
    decrypt with the separate recovery secret, and verify the plaintext manifest
    and archive hash. Inspect dump SQL with `pg_restore --file` before execution.
-   Restore first into a disposable isolated local database whose dedicated role
-   already exists as `NOLOGIN`:
+   Restore first into a disposable isolated local database whose private schema
+   and dedicated `NOLOGIN` role are prepared from reviewed definitions, without
+   an existing settings table. A table-only archive does not create its schema:
 
    ```sh
    pg_restore --dbname='service=thermus-local-recovery' --single-transaction \
      --exit-on-error --no-owner settings.dump
    ```
 
-   Never aim this command at the live shared database. Require the reviewed
+   Never aim this command at the live shared database. This example is for the
+   new table-only archive; inspect an older archive and exclude all other
+   objects, especially removal records and ACLs. Require the reviewed
    schema, constraints, grants, and forced RLS to match. If live private objects
    are missing, apply only the reviewed migration with collision checks; if a
    role survives, do not replay its `CREATE ROLE` blindly. Do not change
@@ -179,12 +202,12 @@ schema/database to recover this table.
    SET LOCAL statement_timeout = '30s';
    CREATE TEMP TABLE recovered_settings
      (LIKE thermus_admin.logging_destination_settings INCLUDING ALL);
-   \copy recovered_settings (tenant_id, revision, endpoint, auth, enabled, encrypted_credential) FROM '/private/owner/recovered-settings.csv' WITH (FORMAT csv)
+   \copy recovered_settings (tenant_id, revision, endpoint, auth, enabled, encrypted_credential, axiom_dataset) FROM '/private/owner/recovered-settings.csv' WITH (FORMAT csv)
    UPDATE recovered_settings SET enabled = false, revision = gen_random_uuid();
    TRUNCATE ONLY thermus_admin.logging_destination_settings;
    INSERT INTO thermus_admin.logging_destination_settings
-     (tenant_id, revision, endpoint, auth, enabled, encrypted_credential)
-     SELECT tenant_id, revision, endpoint, auth, enabled, encrypted_credential
+     (tenant_id, revision, endpoint, auth, enabled, encrypted_credential, axiom_dataset)
+     SELECT tenant_id, revision, endpoint, auth, enabled, encrypted_credential, axiom_dataset
        FROM recovered_settings;
    COMMIT;
    ```
@@ -209,8 +232,9 @@ schema/database to recover this table.
    Confirm fresh settings reads show disabled rows and no automatic export.
    Each current Admin must review their destination and credential, may Test it,
    and must explicitly Enable it with the fresh revision. Activity then refreshes
-   the enabled snapshot. A successful Test is not Enable or proof of storage at
-   the Collector.
+   the enabled snapshot. Test saves the submitted export enabled state before sending its synthetic
+   event; leave the switch off during recovery until the Admin intends to
+   enable export. A successful Test is no proof of storage at the Collector.
 8. Verify MCP, current access controls, restart persistence, a reviewed owned
    Collector canary, and no unrelated data change. Remove temporary plaintext
    and the isolated recovery database. Record backup time, scope, row counts,
@@ -258,6 +282,11 @@ retention disposition; never store either key beside its ciphertext backup.
 
 ## Historical local procedure validation
 
+The evidence below predates the table-only archive selection, optional
+`axiom_dataset` transfer column, and removal-hold cross-reference added on
+25 October 2026. It does not validate those revised future procedure steps.
+The S2.5-02 record must retain its separate controlled removal-restore drill.
+
 A disposable PostgreSQL 17 drill uses synthetic tenants, endpoints, tokens, and
 an unrelated sentinel table. It applies the existing reviewed migration, exports
 only the private schema, encrypts and decrypts it, recovers the separately wrapped
@@ -294,5 +323,5 @@ PostgreSQL documents the archive, selection, global-role, inspection, and restor
 behavior in [pg_dump](https://www.postgresql.org/docs/17/app-pgdump.html) and
 [pg_restore](https://www.postgresql.org/docs/17/app-pgrestore.html). The scoped
 transfer uses [COPY](https://www.postgresql.org/docs/17/sql-copy.html) through the
-client connection. These commands were reviewed with the Supabase PostgreSQL
+client connection. The historical commands were reviewed with the Supabase PostgreSQL
 best-practices skill; no Supabase SDK, new index, or pooling service is added.

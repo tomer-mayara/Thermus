@@ -1,5 +1,64 @@
 # Test inventory
 
+## Current S2.5-R1 inventory scope
+
+The [repair record](../implementation/admin-s2-5-r1.md) distinguishes the branch
+implementation, verified runs and pending complete-candidate/release gates.
+Inventory presence alone is not a passing result.
+
+- `test/acceptance/auth/hosted-member-removal-budget.test.ts` uses the real
+  WorkOS adapter and public administration operation with 100 active memberships
+  and 300 ms simulated user reads. It checks applied removal within the existing
+  budget, one direct-target email lookup, exact deletion after admission, the
+  matching terminal receipt and retention of the acting Admin. Its store fake
+  does not prove PostgreSQL durability or live provider timing.
+- `test/unit/auth-workos/workos-organizations-member-facts.test.ts` checks exact
+  filters/cursor, all safety fields, role/catalog and management mapping,
+  direct-read revision parity, empty pages, scope errors and failed remote reads
+  without display-user calls.
+- `test/integration/auth/workos-member-facts.test.ts` uses the pinned WorkOS
+  client and raw membership reader against the controlled HTTP provider. It
+  checks missing/null management evidence, full roles, direct/facts revision
+  parity, exact query filters/cursor and no user HTTP request for facts pages.
+- Existing removal rule/lifetime and WorkOS lifetime cases now stop or alter the
+  facts-page path. They retain complete pagination, later-page Admin/target
+  decisions, unknown roles, changed safety fields, deadline and close checks.
+  Display member/email and enrichment-stop cases keep the display path.
+
+These files are in the ordinary suite. The separate PostgreSQL, browser, staging
+and container gates remain selected for the complete source candidate under the
+[test gate policy](../implementation/test-gate-policy.md).
+
+## Current S2.5-02 inventory scope
+
+The [implementation record](../implementation/admin-s2-5-02.md) separates actual
+runs, evidence limits, and pending release gates. These cases verify the existing
+leaf behavior; inventory presence is not a passing run or release approval.
+
+- `test/acceptance/auth/hosted-member-removal-integrated.runtime.ts` has four
+  hosted HTTP acceptance cases with disposable verified-TLS PostgreSQL. They
+  check User and self-removal with a retained session or reauthentication,
+  current counts, portal/MCP denial, other-workspace/account preservation,
+  controlled factor sentinels, enabled export failure without replay, and a real
+  SQL outage that blocks deletion while product/MCP access remains usable.
+  WorkOS and renderer behavior is controlled. Factor sentinels show scope only.
+  Run the complete dedicated SQL group with `npm run test:logging:postgres`;
+  it needs Docker Engine and OpenSSL and is outside the ordinary suite.
+- `test/acceptance/auth/hosted-removal.live.ts` has one scoped WorkOS staging
+  case with Chromium password sign-in, real portal/MCP requests, and disposable
+  verified-TLS PostgreSQL. It checks unsafe-request refusals, exact User/Admin
+  deletion, current access/counts, last-Admin refusal, other-workspace/account
+  preservation, and fresh-invitation rejoin with only the new role. It records
+  exact fresh fixture IDs and verifies cleanup. External/unknown management
+  refusal and personal factors remain controlled evidence; the live case creates
+  no factor or directory resource. Invitation acceptance uses the provider API,
+  so this case does not prove recipient/link rules.
+- `npm run test:hosted-live` builds the portal and runs `hosted.live.ts` followed
+  by `hosted-removal.live.ts`. Both require the existing password-only WorkOS
+  staging profile, public network access, Playwright Chromium, OpenSSL, the
+  pinned renderer, and free local HTTPS ports. The removal case also needs
+  Docker Engine. Ordinary suite commands select neither `.live.ts` file.
+
 ## Current S2.5-01c inventory scope
 
 The [implementation record](../implementation/admin-s2-5-01c.md) records runs and
@@ -2828,70 +2887,50 @@ Run the emitted specification after a clean build:
 npm run build && node --test dist/test/acceptance/hosted-ad-policy.test.js
 ```
 
-**Hosted live gate** (`test/acceptance/auth/hosted.live.ts`, `npm run test:hosted-live`)
+**Hosted live gate** (`test/acceptance/auth/hosted.live.ts` and
+`test/acceptance/auth/hosted-removal.live.ts`, `npm run test:hosted-live`)
 
-The gate reaches the production hosted application and its WorkOS adapter
-against WorkOS Staging. The [gate policy](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
-gives its settings, browser, renderer, and local HTTPS prerequisites. Provider
-configuration is checked before the product cases start. Optional and Required
-MFA profiles each need a matching provider setting and a complete passing run.
-Historical counts and results remain in the
-[validation record](../implementation/auth-workos-mcp-url-fetch-validation.md).
+The command builds the portal and runs both files in sequence against WorkOS
+Staging. The [gate policy](../implementation/test-gate-policy.md#hosted-live-gate-auth-06)
+gives the settings, Chromium, pinned renderer, OpenSSL, local HTTPS ports, and
+Docker Engine prerequisites. Docker supplies verified-TLS PostgreSQL for the
+scoped removal case. Provider preflight requires password authentication with
+MFA disabled and changes no provider setting. A missing setup is a failure.
+There is no Optional/Required application MFA profile in this gate.
 
 ```sh
-node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
-WORKOS_MFA_POLICY=required node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
+LIGHTPANDA_BIN="$(pwd -P)/.cache/lightpanda/1.0.0/lightpanda" node ~/.config/thermus/with-workos-staging.cjs npm run test:hosted-live
 ```
 
-The Optional profile checks no application MFA evidence and refuses browser
-administration. Required keeps the positive administration cases. Both profiles
-exercise the real organization services with service credentials; those checks
-do not give Optional browser sessions administration authority. The signup
-cases reach the production notice, agreement, callback, and access behavior.
+The current source inventory is:
 
-AUTH-06 cases of the hosted server (`test/acceptance/auth/hosted-live/hosted-server.ts`), with the local HTTPS test server at `https://localhost:46443/`:
+- `hosted-live/operator-setup.ts`: scoped external Admin grant/revocation,
+  replacement and recovery; identity and other-membership preservation.
+- `hosted-live/administration-proofs.ts`: explicit membership-status pagination,
+  active product-member counts, and invitation send/resend/revoke contracts.
+- `hosted-live/organization-server.ts`: current workspace selection, denied
+  selection/forms, onboarding, current permissions, billing access, and refresh.
+- `hosted-live/administration-server.ts`: password Admin and User access,
+  retired grant-route refusal, invitation actions, and native invited-role
+  acceptance without returning earlier grants. Admin includes product access.
+- `hosted-live/hosted-server.ts`: password sign-in without MFA, protected cookie,
+  current portal/MCP access, browser/M2M token refusal at MCP, organization
+  isolation, Initiate login, logout, and session/client-token expiry behavior.
+- `hosted-live/signup-server.ts`: TEST ONLY organization agreement, initial Admin
+  activation and real MCP fetch, plus another-workspace access after revocation
+  and refusal to restore access through repeat activation.
+- `hosted-removal.live.ts`: the scoped exact-membership removal and cleanup proof
+  in the S2.5-02 inventory above. No MFA enrollment or paid feature is used.
 
-[V] A member with User and Admin signs in through the portal with MFA; the server keeps a sealed `__Host-thermus-session` cookie (`HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`); the portal shows the product access of the organization; the session has MFA evidence
-[V] A user without a membership gets no product access, a 403 portal request, and the onboarding guidance
-[V] Admin alone and the default role alone get a 403 portal request
-[V] A Connect grant of a User works at the MCP endpoint; without a token, the endpoint gives 401 with the metadata URL; the metadata names the AuthKit issuer
-[V] A browser access token and an M2M token get 401 at the MCP endpoint
-[V] A browser session in one organization and an MCP grant in another keep their own organizations
-[V] An Admin-only member gets 403 `access_denied` at the MCP endpoint
-[V] An external sign-in through the Initiate login URI `/login` signs the user in
-[V] The sign-out clears the cookie, ends the WorkOS session, and lands on the Sign-out URI with the signed-out portal; the `form-action` of the portal allows the AuthKit domain
-[V] After the 300-second lifetime, a session refreshes with one new cookie and the same form token; a revoked session gives 401 with a cleared cookie; an MCP grant whose consent was revoked works until its token expires and then gives 401
-
-AUTH-07W application service proofs (`test/acceptance/auth/hosted-live/operator-setup.ts`)
-use the operator driver to set state, then check real `WorkOSOrganizations`
-and `OrganizationAdministration` results against Staging. They cover grants,
-revocation, replacement, and recovery. Operator MFA remains a manual
-precondition of the [runbook](../implementation/hosted-organization-setup.md).
-
-[V] A Super Admin grant to a verified identity without a membership gives exactly the role `super-admin`; the application reads only the Super Admin grant, no Admin and no User, and a second grant changes nothing
-[V] A grant and then a revocation of Super Admin keep User and Admin at each step; the identity and its membership in another organization do not change
-[V] The revocation of Super Admin, the only grant of a membership, keeps the membership active: WorkOS gives it only the default role; the organization service then lists no organization for the identity, and the identity stays
-[V] A replacement grants Super Admin to the new identity first, so that the organization keeps a Super Admin at each step; the old identity loses only Super Admin and keeps User
-[V] A recovery stops at the inactive membership of the lost Super Admin without a create or a reactivation, and grants Super Admin to another verified identity
-
-AUTH-07W cases of the hosted server (`test/acceptance/auth/hosted-live/organization-server.ts`), with the same local HTTPS test server. The run registers the first four cases before the AUTH-06 cases and the expiry case after them, so that the 300-second wait of the AUTH-06 cases also lets the access token of the selection session expire:
-
-[V] Users with only an inactive membership or only the default role get the invitation and operator guidance without a form, and the billing page and the protected portal request refuse them
-[V] A member with User and Admin in A, User in B, and an inactive membership in the operator organization is offered only A and B, with their WorkOS names; the selection of B gives 303 with a new session cookie, and the session and the portal are in B
-[V] In the same session, selections of an organization without a membership and of the inactive membership, and selections from another origin or with another form token, each get 403 without a switch; the session stays in B
-[V] An identity that the operator made Super Admin of the operator organization is offered that organization, opens the billing page with the Free plan, and gets 403 for the protected portal request; the retired customer grant path gets 404 without a membership write or change record; after the operator revokes Super Admin, the next request of the same session is refused, and the organization page gives the onboarding guidance
-[V] After the access token of the selection session expired, a refused selection gets 403 with the refreshed session cookie; the form token stays the same, and the session stays in B
-
-AUTH-08W application service proofs (`test/acceptance/auth/hosted-live/administration-proofs.ts`) run the real directory against Staging in organization D. The run creates C, D, and their fixture users, then cleans them up. These assertions require the live gate; inventory presence is not a current pass.
-
-[V] Given memberships of D in the statuses active, inactive, and pending, when the directory reads them in pages of two, then each status filter gives exactly the memberships of a direct WorkOS read with that filter, and the User seat count counts each active membership with User once: User and Admin is one seat, and Admin only, Super Admin only, the default role, pending, and inactive count zero
-[V] Given an identity without a membership in D, when the directory invites it as Admin, sends again to its address and to an active member, resends, revokes, and then resends and revokes again, then the send gives a pending Admin invitation and a pending membership with only admin; both other sends are address-in-use without a second invitation; the resend and the revoke are applied; the revoked invitation is listed only as revoked and its membership stays pending without access; the last two changes are not-pending; and no result holds the token or the link of the invitation
-
-AUTH-08W hosted cases (`test/acceptance/auth/hosted-live/administration-server.ts`) use the same local HTTPS server in organization C. External operator fixture changes stay separate from the retired customer grant writer.
-
-[V] Given an authorized Admin with MFA and a valid current grant form, when it posts to the retired grant route, then it gets 404 with no member controls, provider change, or grant record
-[V] Given the administrator of C, when it invites an identity without a membership as User and an identity whose inactive membership had User and Admin as Admin, repeats the User invitation, invites the pending address as Admin and an active member, resends the User invitation, and sends and revokes a third invitation, then the sends, the repeat, the resend, and the revoke get 303, the other two sends get 409 address in use, WorkOS has one invitation to each address and the pending membership of the Admin invitation has only admin, the invitations page shows each state with forms only for pending invitations, each change has its record, and no page or log line holds an invitation token or link
-[V] Given the pending User invitation and the pending Admin invitation of C, when each invitee opens its invitation link and completes the AuthKit sign-in with MFA, then WorkOS makes the first active with only user, which opens the portal, and the second active with only admin — the earlier User grant does not return —, which opens the members page but not the portal; the invitations page shows both accepted, the members page shows the User seats of WorkOS, and no page or log line holds an invitation token or link
+Each `hosted-live/` path above is under `test/acceptance/auth/`. The run reaches
+the real hosted application through the local TLS front at
+`https://localhost:46443/`. Historical results remain in the
+[validation record](../implementation/auth-workos-mcp-url-fetch-validation.md);
+current S2.5-02 results and limits are in its implementation record. Historical
+MFA, Super Admin, or User-only product expectations do not describe this current
+password User/Admin gate. API-created verified users do not prove fresh email
+verification or password reset. A live case cannot prove every arbitrary late
+provider effect, production deployment, or legal approval.
 
 **Small-text cutoff** (`test/acceptance/small-text-cutoff.test.ts`)
 

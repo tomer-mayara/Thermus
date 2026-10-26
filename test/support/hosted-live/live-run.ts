@@ -44,7 +44,11 @@ export class LiveRun {
   readonly site: () => Promise<LocalHttpsSite>;
   #site: Promise<LocalHttpsSite> | undefined;
 
-  constructor(settings: HostedLiveSettings, options: { readonly signupDocuments?: SignupDocuments; readonly existingFixtures?: () => Promise<StagingFixtures> } = {}) {
+  constructor(settings: HostedLiveSettings, options: {
+    readonly signupDocuments?: SignupDocuments;
+    readonly existingFixtures?: () => Promise<StagingFixtures>;
+    readonly site?: () => Promise<LocalHttpsSite>;
+  } = {}) {
     this.settings = settings;
     this.workos = workosClient(settings);
     this.browser = new LiveBrowser(() => checkAuthKitReachable(settings.authkitIssuer));
@@ -62,7 +66,7 @@ export class LiveRun {
       const { twoOrganizationUser, organizationA } = await this.fixtures();
       return signInWithAuthKit(this, { user: twoOrganizationUser, organizationName: organizationA.name });
     });
-    this.site = () => (this.#site ??= LocalHttpsSite.start(settings, options.signupDocuments === undefined ? {} : { signupDocuments: options.signupDocuments }));
+    this.site = () => (this.#site ??= options.site?.() ?? LocalHttpsSite.start(settings, options.signupDocuments === undefined ? {} : { signupDocuments: options.signupDocuments }));
     this.connectGrant = once(async () => {
       const { connectUser, organizationA, oauthApplication } = await this.fixtures();
       return authorizeWithConnect(this, { user: connectUser, organizationName: organizationA.name, clientId: oauthApplication.clientId });

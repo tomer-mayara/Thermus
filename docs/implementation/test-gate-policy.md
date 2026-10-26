@@ -34,9 +34,9 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Container | `npm run test:container` | `dist/test/acceptance/auth/self-hosted-container.test.js` with `THERMUS_CONTAINER_GATE=1` | Docker Engine with Buildx and Compose. The image build needs network access, or a build cache with the pinned images, the packages, and the Lightpanda asset. The containers under test run without outbound access. The gate supplies its own trusted rules fixture; `ad-rules.txt` next to `compose.yaml` is the operator's file. |
 | Hosted offline build | `npm run build:hosted` | `check`, all emitted integration tests, the explicit acceptance/interface selection, and the renderer gate below | No live credentials or public network access. Pinned absolute `LIGHTPANDA_BIN`, Git and OpenSSL in `PATH`, free local port 46443, and local loopback access. The Docker build supplies Git and the renderer. |
 | Hosted image | `npm run test:container:hosted` | `dist/test/acceptance/auth/hosted-image.test.js` only | Docker Engine with Buildx and a Linux AMD64 builder/runtime, native or emulated. Image build needs network access or cached pinned inputs; the renderer test needs HTTPS egress to `https://example.com/`. No live WorkOS or Axiom credential. |
-| Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
+| Hosted live | `npm run test:hosted-live` | `hosted.live.js` and `hosted-removal.live.js`, in sequence after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, Docker Engine for the scoped removal proof’s disposable PostgreSQL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
-| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, and membership-removal overlap/restart acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
+| Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, and membership-removal overlap/restart and integrated hosted acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
 | Members browser | `npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js` | Keyboard open, cancel, and confirm at a 390 × 844 viewport | Playwright Chromium and the built portal assets. Uses a local HTTP site and provider doubles; no live credentials. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
@@ -49,7 +49,8 @@ that check work deadlines. Test selection, process isolation, assertions, and
 deadlines stay unchanged.
 `npm run check` does not run the full integration, acceptance, interface, or
 container suites, the hosted image gate, or the renderer gate.
-Only `npm run test:hosted-live` runs the hosted live file.
+Only `npm run test:hosted-live` runs both hosted live files. The removal file uses
+exact fresh fixture IDs and disposable PostgreSQL; it never scans old fixtures.
 The ordinary `test` and `test:acceptance` commands use the quoted Node glob
 `**/!(hosted-image).test.js` to exclude the hosted image test by basename.
 Node 24.20.0 supports this exclusion. Only `npm run test:container:hosted` runs
@@ -809,9 +810,13 @@ within the run's authority. A restart reuses the same pull request and result.
 ## Hosted live gate (AUTH-06)
 
 `npm run test:hosted-live` makes a clean build, builds the portal, and runs
-only `dist/test/acceptance/auth/hosted.live.js`. The `.live.ts` name does not
-match the `*.test.js` globs on purpose. Thus `npm test` and
-`npm run test:acceptance` do not select it.
+`dist/test/acceptance/auth/hosted.live.js` and
+`dist/test/acceptance/auth/hosted-removal.live.js` in sequence. The `.live.ts`
+names do not match the `*.test.js` globs on purpose. Thus `npm test` and
+`npm run test:acceptance` do not select them. The removal proof also needs
+Docker Engine for disposable PostgreSQL. It creates only fresh staging
+fixtures, records their exact IDs, and verifies cleanup. It does not enroll
+factors, create SSO or Directory Sync resources, or scan old fixtures.
 
 The gate needs a WorkOS staging environment and these settings in the
 environment of the command:
