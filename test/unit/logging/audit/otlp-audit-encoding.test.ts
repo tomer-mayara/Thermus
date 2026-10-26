@@ -99,3 +99,20 @@ for (const name of [' Zoë O’Neil — 李 ', 'é'.repeat(512), '', ' ', 42, '\
     assert.deepEqual(attributes['actor.name'], expected);
   });
 }
+
+for (const captured of [
+  event,
+  { ...event, tool: 'getURLAsMarkdown', input: { url: 'https://example.com', reason: 'public reason' } },
+  { ...event, eventName: 'audit.destination.test', destinationRevision: 'saved-r1' },
+  { ...event, eventName: 'audit.destination.changed', action: 'save', outcome: 'saved' },
+  { ...event, eventName: 'organization.changed', action: 'invite', target: { email: 'new@example.com' }, role: 'user', outcome: 'applied' },
+] satisfies AuditEvent[]) {
+  test(`Given a captured ${captured.eventName}${captured.eventName === 'mcp.tool.completed' ? ` ${captured.tool}` : ''} event, when encoded again for delivery, then event and observation times retain the capture nanoseconds`, () => {
+    const expected = '1792756800123456789';
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const record = JSON.parse(encodeAuditEvent(captured).toString()).resourceLogs[0].scopeLogs[0].logRecords[0];
+      assert.equal(record.timeUnixNano, expected);
+      assert.equal(record.observedTimeUnixNano, expected);
+    }
+  });
+}

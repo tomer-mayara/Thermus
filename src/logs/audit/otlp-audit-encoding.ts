@@ -48,7 +48,8 @@ export function encodeAuditEvent(event: AuditEvent): Buffer {
   try {
     const name = auditActorName(event.actor.name);
     const attributes = [stringAttribute('organization.id', event.organizationId), stringAttribute('actor.authority', event.actor.authority), stringAttribute('actor.subject', event.actor.subject), ...(name === undefined ? [] : [stringAttribute('actor.name', name)]), ...eventAttributes(event)];
-    const record = { timeUnixNano: timestampNanos(event.timestamp), severityNumber: 9, severityText: 'INFO', eventName: event.eventName, body: { stringValue: event.eventName }, attributes };
+    const capturedTime = timestampNanos(event.timestamp);
+    const record = { timeUnixNano: capturedTime, observedTimeUnixNano: capturedTime, severityNumber: 9, severityText: 'INFO', eventName: event.eventName, body: { stringValue: event.eventName }, attributes };
     const body = Buffer.from(JSON.stringify({ resourceLogs: [{ resource: { attributes: [stringAttribute('service.name', 'thermus.audit')] }, scopeLogs: [{ scope: { name: 'thermus.audit' }, logRecords: [record] }] }] }));
     if (body.length > AUDIT_SEND_LIMITS.requestBytes) throw new AuditSendFailure({ kind: 'permanent_failure', reason: 'request_too_large' });
     return body;
