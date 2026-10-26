@@ -1,0 +1,383 @@
+{
+  "base": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "head": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "candidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "comparisonScope": "PR #251 complete candidate against trusted main; not a stack",
+  "registryAll13ViewsByteIdentical": true,
+  "declarationDelta": {
+    "path": "src/accounts/organizations/organization-directory.ts",
+    "added": 6,
+    "removed": 0
+  },
+  "evidence": [
+    {
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "d0db0695aa80df0b8db3a437193bb28d0e64e89cb54163531ce0254813ae9649",
+      "lines": 116,
+      "ranges": [
+        {
+          "first": 9,
+          "last": 28,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/organizations/organization-directory.ts#L9-L28",
+          "excerptSha256": "2e94798201ce3c635ff867c289981d3a0b78c7163f43a0829db8ae60cf207451"
+        },
+        {
+          "first": 88,
+          "last": 113,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/organizations/organization-directory.ts#L88-L113",
+          "excerptSha256": "a53cfed03517c7ce27c5a410c7630d84cb7329abbd15d2387418db183dcf3308"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "005c264fb4d8618800a66e01e585cfc2b99b9323ac4b46b56fe086a0cc4ca8d9",
+      "lines": 430,
+      "ranges": [
+        {
+          "first": 58,
+          "last": 84,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-organizations.ts#L58-L84",
+          "excerptSha256": "58fce10591d4506eb961625bb2f58cebf5ff8588b4055d80de0d9fbc6ee689ee"
+        },
+        {
+          "first": 119,
+          "last": 173,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-organizations.ts#L119-L173",
+          "excerptSha256": "34abfd07aaec68a89f9907d96890b1ce5c0a4807f4ae61cea84bf51f1836acbd"
+        },
+        {
+          "first": 220,
+          "last": 277,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-organizations.ts#L220-L277",
+          "excerptSha256": "4d8787ab73d9c8562ad16c3ae689e7099deba8ac379be7a078428f467bf872a6"
+        },
+        {
+          "first": 326,
+          "last": 344,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-organizations.ts#L326-L344",
+          "excerptSha256": "d7248731e02c47ca639945b47c6f30e21a622073eeaa59e0b19a31bcbdb36d04"
+        },
+        {
+          "first": 399,
+          "last": 430,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-organizations.ts#L399-L430",
+          "excerptSha256": "de27a4022bdce8d0b9bfea457f60e9f3c545b893574d413228cab67691776b49"
+        }
+      ]
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+      "lines": 176,
+      "ranges": [
+        {
+          "first": 54,
+          "last": 55,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/app/hosted-workos-application.ts#L54-L55",
+          "excerptSha256": "f12c2f9d231e31d4934fa6355758afc747aebe9e708f2a0f373d344fa3cd87d5"
+        },
+        {
+          "first": 80,
+          "last": 94,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/app/hosted-workos-application.ts#L80-L94",
+          "excerptSha256": "c81f62fff816f7bba181b40dc7567e86079aa2547d46f61783cf2cfc82097877"
+        },
+        {
+          "first": 128,
+          "last": 147,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/app/hosted-workos-application.ts#L128-L147",
+          "excerptSha256": "3e14b61312c584c1b5ea103867e6edc9e8934ddc35585b58b3adb003028681a6"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "7c0314b9b56611ea0e57d70c4e3c5384c799f84c2135057f876e035b9f8fb889",
+      "lines": 177,
+      "ranges": [
+        {
+          "first": 15,
+          "last": 28,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-auth-provider.ts#L15-L28",
+          "excerptSha256": "cfd20c6f876dc1332ca7e6c3bb140768139905235fb853e0215e765e92488851"
+        },
+        {
+          "first": 82,
+          "last": 109,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-auth-provider.ts#L82-L109",
+          "excerptSha256": "c15b67d5fe1fcd901a38d92ae8c7fd8306a7d2fead3e0991d17b7b90694659d2"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/organizations/organization-administration.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "472b7f5e530bce8e5b4ee6d17e7e8966f2f7cd6cbb04bccedd7acfa5eb39e24c",
+      "lines": 164,
+      "ranges": [
+        {
+          "first": 66,
+          "last": 94,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/organizations/organization-administration.ts#L66-L94",
+          "excerptSha256": "3f28dd29a8626f70348c589f99fc946fd6459d7937033e61f2b96b002a14c307"
+        },
+        {
+          "first": 141,
+          "last": 152,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/organizations/organization-administration.ts#L141-L152",
+          "excerptSha256": "58e0e84e59a56145e66ea131749acf569a52b4cc01c611a5bce122e88aa7f77f"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/organizations/administration-overviews.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "8e4546a592920c51fa11203dedb7fc05ccdf05090f2e8ebe2210ed6068e24b64",
+      "lines": 93,
+      "ranges": [
+        {
+          "first": 51,
+          "last": 60,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/organizations/administration-overviews.ts#L51-L60",
+          "excerptSha256": "6222013a379ccec7b363b7de1d18b385f62ea88e7059663cb7dec855d946052b"
+        },
+        {
+          "first": 75,
+          "last": 90,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/organizations/administration-overviews.ts#L75-L90",
+          "excerptSha256": "ab5eb6100eeff2aa23daa4837fa750e921c5ab6932dab8725abe93bc45bc3d82"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/organizations/directory-reads.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "3d690c89570fd5757effa3da97bb6f7968811142fe88a5647e005c4f3760c22f",
+      "lines": 39,
+      "ranges": [
+        {
+          "first": 3,
+          "last": 39,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/organizations/directory-reads.ts#L3-L39",
+          "excerptSha256": "82667eb9a1d24b0f83fa385033af935e3cc8c8e2e10ef397e363bb7dab37a9a4"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-signup.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "d4e5da1c9dbc4ee088df62727f76f0fb32ab8e10df39895c9a53f6851f723f28",
+      "lines": 256,
+      "ranges": [
+        {
+          "first": 110,
+          "last": 123,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/src/accounts/providers/workos/workos-signup.ts#L110-L123",
+          "excerptSha256": "d56781ba8911a4808acb294d3962105e6e94250512f5fe2f0daa32a32ad2ead5"
+        }
+      ]
+    },
+    {
+      "path": "docs/api-surface/src/accounts/organizations/organization-directory.d.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "bbb558f52303916fb0d0d2d63bf1aa4e33b72920a0c0d12f5838da5c631bddde",
+      "lines": 70,
+      "ranges": [
+        {
+          "first": 1,
+          "last": 70,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts#L1-L70",
+          "excerptSha256": "bbb558f52303916fb0d0d2d63bf1aa4e33b72920a0c0d12f5838da5c631bddde"
+        }
+      ]
+    },
+    {
+      "path": "architecture/components.md",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "6fc373c3e2a439e816c68789853c916e87922c02c434b3583b8fe8b6379563c7",
+      "lines": 1165,
+      "ranges": [
+        {
+          "first": 182,
+          "last": 240,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/architecture/components.md#L182-L240",
+          "excerptSha256": "7dff032e51f78628c91c15637f87ce291d079c43768ad80ec6bf982a686ac5e7"
+        },
+        {
+          "first": 814,
+          "last": 932,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/architecture/components.md#L814-L932",
+          "excerptSha256": "34dc14a634d5658379f350023d5d51ef71ad4ad0c6f02258a3f44bb5c9809568"
+        },
+        {
+          "first": 933,
+          "last": 998,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/architecture/components.md#L933-L998",
+          "excerptSha256": "991c598b2d6b74ded358d2f7d4685a5ff8d8a45147512bb5a6f13d159159607d"
+        }
+      ]
+    },
+    {
+      "path": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "4d7d1aefc5e2d3440e523dbd45bf1f2e087447f649cac2def7efd6b95e05175c",
+      "lines": 130,
+      "ranges": [
+        {
+          "first": 13,
+          "last": 130,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/test/acceptance/auth/hosted-membership-deletion.test.ts#L13-L130",
+          "excerptSha256": "f584530817a2ffc6845679d4276bc028aec157a0d0ac2103ae1617060e5e3290"
+        }
+      ]
+    },
+    {
+      "path": "test/unit/auth-workos/workos-membership-reads.test.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "86048a825a0e3170c681d7d3fe26ccc74d95b7d6ca7596919f9539cdd17936bb",
+      "lines": 52,
+      "ranges": [
+        {
+          "first": 1,
+          "last": 52,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/test/unit/auth-workos/workos-membership-reads.test.ts#L1-L52",
+          "excerptSha256": "86048a825a0e3170c681d7d3fe26ccc74d95b7d6ca7596919f9539cdd17936bb"
+        }
+      ]
+    },
+    {
+      "path": "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "51dff4f467810b72bc8d989c2c263c54f18c490760b661188c9bd05d4c860364",
+      "lines": 46,
+      "ranges": [
+        {
+          "first": 1,
+          "last": 46,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/test/unit/auth-workos/workos-organizations-deletion.test.ts#L1-L46",
+          "excerptSha256": "51dff4f467810b72bc8d989c2c263c54f18c490760b661188c9bd05d4c860364"
+        }
+      ]
+    },
+    {
+      "path": "test/integration/auth/workos-connection.test.ts",
+      "ref": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+      "sha256": "c4b07d64fcb18738b8300c11beddd7e898af35573a781aac9769e30a5c163f46",
+      "lines": 142,
+      "ranges": [
+        {
+          "first": 17,
+          "last": 32,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/test/integration/auth/workos-connection.test.ts#L17-L32",
+          "excerptSha256": "8152ee64988f5ed817eb911476b673354bcac734c12eac3d6502c0ff41f50658"
+        },
+        {
+          "first": 59,
+          "last": 90,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/test/integration/auth/workos-connection.test.ts#L59-L90",
+          "excerptSha256": "163401510d4933168523ce5267487a2c568d0d642afe7323d5b5eca68168c153"
+        },
+        {
+          "first": 94,
+          "last": 142,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/test/integration/auth/workos-connection.test.ts#L94-L142",
+          "excerptSha256": "54a591e19f433ec0f36b0eaefbd7265ecfa36c7b5c51794a28f2638336384222"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/organizations/organization-directory.ts",
+      "ref": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+      "sha256": "f5a49e2fc0d81207d7d5d4e84e4c152971289fc306222e90393963225600b009",
+      "lines": 105,
+      "ranges": [
+        {
+          "first": 9,
+          "last": 25,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/accounts/organizations/organization-directory.ts#L9-L25"
+        },
+        {
+          "first": 81,
+          "last": 104,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/accounts/organizations/organization-directory.ts#L81-L104"
+        }
+      ]
+    },
+    {
+      "path": "src/accounts/providers/workos/workos-organizations.ts",
+      "ref": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+      "sha256": "41b307189c703ad51f124b60e19b132fc812137b42ba9a2a0bf167446836ac79",
+      "lines": 371,
+      "ranges": [
+        {
+          "first": 58,
+          "last": 84,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/accounts/providers/workos/workos-organizations.ts#L58-L84"
+        },
+        {
+          "first": 135,
+          "last": 166,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/accounts/providers/workos/workos-organizations.ts#L135-L166"
+        },
+        {
+          "first": 243,
+          "last": 255,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/accounts/providers/workos/workos-organizations.ts#L243-L255"
+        },
+        {
+          "first": 311,
+          "last": 321,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/accounts/providers/workos/workos-organizations.ts#L311-L321"
+        }
+      ]
+    },
+    {
+      "path": "src/app/hosted-workos-application.ts",
+      "ref": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+      "sha256": "d312f8b7d8bc2e91dc6743b456b33388a814e87cd91134eab39795e254720fb3",
+      "lines": 176,
+      "ranges": [
+        {
+          "first": 80,
+          "last": 94,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/app/hosted-workos-application.ts#L80-L94"
+        },
+        {
+          "first": 128,
+          "last": 146,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/src/app/hosted-workos-application.ts#L128-L146"
+        }
+      ]
+    },
+    {
+      "path": "architecture/components.md",
+      "ref": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+      "sha256": "b54613ed4823cc0ab15608e80f5043b4e26b1142fe607d8bb1fe2a6ef8acff3b",
+      "lines": 1153,
+      "ranges": [
+        {
+          "first": 182,
+          "last": 240,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/architecture/components.md#L182-L240"
+        },
+        {
+          "first": 886,
+          "last": 910,
+          "url": "https://github.com/tomer-mayara/Thermus/blob/581f30cfaa32b01399422b087b0f0bdc3b800f70/architecture/components.md#L886-L910"
+        }
+      ]
+    }
+  ],
+  "sourceSha256": "a60f5fdbf0e7f60de9c6a3b2daffc744c1b94394df1c3a9eff6a2ffd7ec5cbfc",
+  "testsExecutedByThisWorker": false,
+  "publication": "Pending: local cache is not an accessible GitHub artifact",
+  "managerReview": "Manager approved identical compact v7 source and render; final source-free document note independently checked. See manager-review-final.md and final-pin-review.json.",
+  "sourceReviewedCandidate": "e1e55dc04f5afa1e46eab5946067683fa496aaa6",
+  "finalPinReview": "final-pin-review.json"
+}

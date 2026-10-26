@@ -1,0 +1,16 @@
+{
+  "command": "pnpm",
+  "args": [
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-coverage.ts",
+    "--suite",
+    "unit",
+    "--out",
+    "ast-report/coverage.json"
+  ],
+  "started": "2026-10-25T23:49:29.711Z",
+  "finished": "2026-10-25T23:51:05.526Z",
+  "code": 0,
+  "signal": null
+}

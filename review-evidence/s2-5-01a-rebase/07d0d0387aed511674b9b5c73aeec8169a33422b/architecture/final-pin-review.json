@@ -1,0 +1,29 @@
+{
+  "sourceReviewedCandidate": "e1e55dc04f5afa1e46eab5946067683fa496aaa6",
+  "finalCandidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "changedPathsSinceSourceReview": [
+    "docs/implementation/admin-s2-5-01a.md",
+    "docs/metrics/2026-10-25-581f30cf.json"
+  ],
+  "sourceRegistryAndDiagramHashesMatchReviewedCandidate": true,
+  "documentReview": {
+    "path": "docs/implementation/admin-s2-5-01a.md",
+    "sha256": "78af6a3d6e842dd76e3c683e1c7f05b99823a9a92cbf0e77ae7bbeb5a5b0271a",
+    "lines": 133,
+    "ranges": [
+      [
+        73,
+        74
+      ],
+      [
+        115,
+        133
+      ]
+    ],
+    "url": "https://github.com/tomer-mayara/Thermus/blob/07d0d0387aed511674b9b5c73aeec8169a33422b/docs/implementation/admin-s2-5-01a.md#L115-L133",
+    "finding": "Source-free note marks original results historical, names preserved raw membership/profile bindings and timeout cases, records the new base and unchanged registry, and leaves live/container results and human approval in maintained comments. Worker did not independently run or certify tests."
+  },
+  "diagramSourceSha256": "a60f5fdbf0e7f60de9c6a3b2daffc744c1b94394df1c3a9eff6a2ffd7ec5cbfc",
+  "rerender": "Not needed: exact source and render bytes retained. Manager approved v7 at 800px."
+}

@@ -1,0 +1,25 @@
+{
+  "context": "colima",
+  "sharedContainers": [
+    "02907d0e2ecc",
+    "03b89045aaa8",
+    "3f56f623eede",
+    "6b7e6d3dd5d9",
+    "6bfb5dd8ffec",
+    "6d094ec75fe3",
+    "7ae18e15701f",
+    "8b49558a8780",
+    "a1040427f3a0",
+    "e0cf47519c16"
+  ],
+  "taskProfileDeleted": true,
+  "taskContextDeleted": true,
+  "originalSharedContainersRetained": true,
+  "additionalConcurrentContainers": [
+    "02907d0e2ecc",
+    "03b89045aaa8",
+    "7ae18e15701f",
+    "a1040427f3a0"
+  ],
+  "cleanupCheckNote": "Initial exact-inventory assertion found four additional shared containers. All original containers remain. No shared containers or data were changed by this task."
+}

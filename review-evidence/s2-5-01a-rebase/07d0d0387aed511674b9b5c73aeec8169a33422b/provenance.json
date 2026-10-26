@@ -1,0 +1,13 @@
+{
+  "candidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "gateHead": "e1e55dc04f5afa1e46eab5946067683fa496aaa6",
+  "branch": "codex/s2-5-01a-rebase-evidence",
+  "prefix": "review-evidence/s2-5-01a-rebase",
+  "stage": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/rebase251/publish/review-evidence/s2-5-01a-rebase/07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "rawV8Included": false,
+  "checkerEligibility": "eligible",
+  "checkerBlockers": [],
+  "humanApproval": "Not established by this helper",
+  "release": "No release or live deletion proof claimed"
+}

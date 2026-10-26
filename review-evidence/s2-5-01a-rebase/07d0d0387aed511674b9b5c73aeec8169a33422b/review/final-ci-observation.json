@@ -1,0 +1,12 @@
+{
+  "candidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "observedAt": "2026-10-26T00:27:08.139Z",
+  "mergeable": true,
+  "draft": true,
+  "merged": false,
+  "checks": [],
+  "statuses": [],
+  "hasMore": false,
+  "scope": "GitHub has no check runs or status contexts on this candidate at this observation. Required local checks are recorded separately."
+}

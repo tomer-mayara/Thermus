@@ -1,0 +1,34 @@
+{
+  "base": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "head": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "candidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "source": "comparison-v7.mmd",
+  "sourceSha256": "a60f5fdbf0e7f60de9c6a3b2daffc744c1b94394df1c3a9eff6a2ffd7ec5cbfc",
+  "svg": "comparison-v7-800.svg",
+  "svgSha256": "618be2ea3501ab501d3f49292818e1b5306ff6434628bf0fd5d369248f62d98b",
+  "png": "comparison-v7-800.png",
+  "pngSha256": "1b76a83ec181919d1dd4e937c583c12ccaf9af9c24f0f1ba3fee01a2719b2567",
+  "dimensions": [
+    800,
+    1195
+  ],
+  "viewBox": [
+    4.0,
+    4.0,
+    606.98486328125,
+    907.0
+  ],
+  "effectiveFontAt800px": 23.723820594398703,
+  "renderer": "@mermaid-js/mermaid-cli 12.0.0 (existing cached installation)",
+  "sizeOption": 1195,
+  "config": "mermaid-config.json",
+  "puppeteer": "puppeteer.json",
+  "parseAndRender": "passed",
+  "visualInspection": "Passed at normal ~800px width. All title text, labels, boundaries and arrow targets are clear. Edge labels have neutral backgrounds. Runtime and source arrows remain distinct. No line crosses a node or an unrelated label. Green marks added operations inside amber existing owners.",
+  "history": "Initial -w option failed: mmdc12 uses --size. v1-v6 parse/rendered; v7 applies manager feedback by shortening labels, retaining raw GET-before-default inside workos, and leaving the external integration edge neutral. No dependencies added.",
+  "embeddedSourceByteIdentical": true,
+  "managerReview": "Manager approved identical compact v7 source and render; final source-free document note independently checked. See manager-review-final.md and final-pin-review.json.",
+  "sourceReviewedCandidate": "e1e55dc04f5afa1e46eab5946067683fa496aaa6",
+  "finalPinReview": "final-pin-review.json"
+}

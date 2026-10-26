@@ -1,0 +1,15 @@
+{
+  "candidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "gateHead": "e1e55dc04f5afa1e46eab5946067683fa496aaa6",
+  "sourceFingerprint": "14cb583303ab4a2c8ff1c0d85f7c1e831e92b652d37e76260ee8cee9810d4d71",
+  "inputsFingerprint": "81799e26288b319443b94dcede592384be5922850309d7956260e4317f893b4b",
+  "sourceAndGateInputsUnchanged": true,
+  "changedPathsSinceGate": [
+    "docs/implementation/admin-s2-5-01a.md",
+    "docs/metrics/2026-10-25-581f30cf.json"
+  ],
+  "permittedChanges": "source-free documentation/metric history only",
+  "trackedHashesVerified": 1424,
+  "coverageCaptureIsOriginal": true
+}

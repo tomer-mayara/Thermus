@@ -1,0 +1,21 @@
+## Quality review
+
+Candidate: [07d0d0387aed511674b9b5c73aeec8169a33422b](https://github.com/tomer-mayara/Thermus/commit/07d0d0387aed511674b9b5c73aeec8169a33422b). Trusted main merge base: `581f30cfaa32b01399422b087b0f0bdc3b800f70`. This PR is based directly on main.
+
+**T2 Need architect**
+Architecture: T2: declarations changed in 1 public module. Fact d and `impact.internalInterface` require T2; `impact.sensitiveBehavior` also requires T1. No fact is undeclared. The final checker is locally eligible with no blockers; overall merge is **blocked pending independent authorized human architect approval of this head**. No human approval or de-escalation is recorded.
+
+**Policy answer.** The internal directory adds ordinary/external/unknown management evidence and exact-ID membership deletion. Normal void completion is applied. Only the documented 422/code refusal proves unsupported/no effect; every other error throws unchanged with unknown effects. Revisions include normalized management evidence. The raw reader preserves missing/null evidence before SDK normalization through the same transport, with existing queries, all grants and limits. No browser/MCP removal caller is added. Admission, current authority and last-Admin safety remain later work.
+
+**Metrics.** [Full process](__EVIDENCE_BLOB__/metrics/process.md), [CRAP](__EVIDENCE_BLOB__/metrics/crap.json) and [all per-location dispositions](__EVIDENCE_BLOB__/review/quality-metric-dispositions.json) are retained. All four sections complete; Delta/Review have assessed findings, CRAP/Architecture pass. All 17 machine-classified new/changed functions meet strict goals: highest new CRAP 4, highest changed 7. The hosted binding has 94.5% coverage. Two one-path default callbacks have measured 0% and CRAP 2; an unchanged startup cleanup callback remains unmapped. No new production file or increment-used exception exists.
+
+- Provider MI **53.4834 → 48.1109**: retain the cohesive WorkOS wire/mapping/revision/deletion owner and short added operations. A file-score split would expand this rebase. This reason covers the 5.37-point drop and native high note.
+- Hosted composition MI **56.1898 → 56.1505**: retain override precedence and resource/cleanup ownership; the increment adds one reader binding.
+- Connection test MI **41.2021 → 34.7201**: keep independent real-client timeout, response-body and one-request DELETE outcomes with one scoped wire fixture. Tests have no production MI goal.
+- The contract-only directory has no runtime MI. All **39** native findings have reasons: two changed committed-file highs and 37 ignored helper/archive locations. Historical R1 source copies are identified by path and hash; their facts-page behavior and scores are not attributed to #251. Current evidence helpers retain explicit candidate/hash/staging/publication guards. Raw reports and history remain unchanged.
+
+**Habit Hooks.** All **235** findings have [per-location reasons](__EVIDENCE_BLOB__/review/quality-habit-dispositions.json): one unchanged composition complexity, 224 authority/provider/fixture comments and ten cohesive adapter/test-file sizes. All 18 file hashes and 235 final locations are verified; 17 files equal original #251 source, and the composition difference is the inherited provider dependency. Snooze remains `[]`; no finding is suppressed. Hook exit 1 is the reviewed retained findings.
+
+**Checker notes and limits.** [Each note and policy answer](__EVIDENCE_BLOB__/review/quality-checker-notes.json) is recorded. Of 48 public modules, only the directory snapshot changes. `administration-overviews`, `customer-roles` and `organization-administration` retain declarations; regeneration alone adds no runtime behavior. The checker’s four high paths outside its changed-file set are ignored artifacts, not a claim of Git-parent byte equality. Unit-only coverage is verified for 152 files/433 processes and does not establish live deletion. The native global graph retains the unresolved CSS import and withholds edge/cycle changes; analytical community changes are not registry component changes. Unchanged high/unknown function bands remain outside this increment. Base CRAP using head coverage is estimated. Manager import/registry assessment and final gates remain separate evidence.
+
+__ARCHITECTURE_PROVENANCE_AND_MANAGER_REVIEW__

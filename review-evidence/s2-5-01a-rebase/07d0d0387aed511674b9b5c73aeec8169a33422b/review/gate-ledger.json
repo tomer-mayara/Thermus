@@ -1,0 +1,118 @@
+[
+  {
+    "name": "api-surface",
+    "attempt": 1,
+    "command": "pnpm",
+    "args": [
+      "exec",
+      "node",
+      "script/pr-review/api-surface.ts"
+    ],
+    "started": "2026-10-25T23:43:05.161Z",
+    "finished": "2026-10-25T23:43:07.934Z",
+    "log": "api-surface-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "ordinary",
+    "attempt": 1,
+    "command": "npm",
+    "args": [
+      "test"
+    ],
+    "started": "2026-10-25T23:43:07.936Z",
+    "finished": "2026-10-25T23:48:50.147Z",
+    "log": "ordinary-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "typecheck",
+    "attempt": 1,
+    "command": "npm",
+    "args": [
+      "run",
+      "typecheck"
+    ],
+    "started": "2026-10-25T23:48:50.150Z",
+    "finished": "2026-10-25T23:48:52.447Z",
+    "log": "typecheck-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "portal",
+    "attempt": 1,
+    "command": "npm",
+    "args": [
+      "run",
+      "build:user-portal"
+    ],
+    "started": "2026-10-25T23:48:52.448Z",
+    "finished": "2026-10-25T23:48:53.368Z",
+    "log": "portal-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "hosted-live",
+    "attempt": 1,
+    "command": "node",
+    "args": [
+      "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+      "npm",
+      "run",
+      "test:hosted-live"
+    ],
+    "started": "2026-10-25T23:51:56.026Z",
+    "finished": "2026-10-25T23:52:20.715Z",
+    "log": "hosted-live-1.log",
+    "code": 1,
+    "signal": null
+  },
+  {
+    "name": "hosted-live",
+    "attempt": 2,
+    "command": "node",
+    "args": [
+      "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+      "npm",
+      "run",
+      "test:hosted-live"
+    ],
+    "started": "2026-10-25T23:53:53.337Z",
+    "finished": "2026-10-26T00:02:46.694Z",
+    "log": "hosted-live-2.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "native-container",
+    "attempt": 1,
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container"
+    ],
+    "started": "2026-10-26T00:02:46.697Z",
+    "finished": "2026-10-26T00:08:26.166Z",
+    "log": "native-container-1.log",
+    "code": 0,
+    "signal": null
+  },
+  {
+    "name": "hosted-container",
+    "attempt": 1,
+    "command": "npm",
+    "args": [
+      "run",
+      "test:container:hosted"
+    ],
+    "started": "2026-10-26T00:08:26.170Z",
+    "finished": "2026-10-26T00:25:37.212Z",
+    "log": "hosted-container-1.log",
+    "code": 0,
+    "signal": null
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "context": "colima",
+  "sharedContainers": [
+    "3f56f623eede",
+    "6b7e6d3dd5d9",
+    "6bfb5dd8ffec",
+    "6d094ec75fe3",
+    "8b49558a8780",
+    "e0cf47519c16"
+  ],
+  "profile": "thermus-rebase251"
+}

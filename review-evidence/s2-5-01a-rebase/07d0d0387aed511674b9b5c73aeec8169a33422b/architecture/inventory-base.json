@@ -1,0 +1,85 @@
+{
+  "ref": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "path": "architecture/components.md",
+  "sha256": "b54613ed4823cc0ab15608e80f5043b4e26b1142fe607d8bb1fe2a6ef8acff3b",
+  "views": [
+    {
+      "title": "Context",
+      "start": 30,
+      "end": 47,
+      "sha256": "6b957185d0455dda221479961a7f89efd1cd84b59a451f15838fb5ba61d3b0e3"
+    },
+    {
+      "title": "C4 containers: hosted edition",
+      "start": 57,
+      "end": 80,
+      "sha256": "3eb90a094cf9b44d2232c3639fa35ebaca66fcef9f939b85e63d25c1c8362a51"
+    },
+    {
+      "title": "C4 containers: local edition",
+      "start": 89,
+      "end": 110,
+      "sha256": "016a9ebf8a9b9cbae058568e24fe1f970998c02aad814367f3406cfbcbfb8909"
+    },
+    {
+      "title": "Selected C4 components: tool processing in the Node server",
+      "start": 140,
+      "end": 169,
+      "sha256": "19b027b1bcd4ea4bc5de8f116152319f372e30cabcf5423dcd73194f0a6ceb57"
+    },
+    {
+      "title": "Selected C4 components: hosted authentication in the Node server",
+      "start": 189,
+      "end": 213,
+      "sha256": "a19a8315bf26fd6f3996768876006938d705608621a2b0f157674205e8ff8191"
+    },
+    {
+      "title": "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "start": 250,
+      "end": 267,
+      "sha256": "7a7ef444a6897ab5c59fbba1095146ca8e0bea1449a6af9da65d0dab4ee53dcc"
+    },
+    {
+      "title": "Selected C4 components: system and audit logs in the Node server",
+      "start": 333,
+      "end": 349,
+      "sha256": "ad26b997ff9cc7498b6e4465627bb51e51207ba3204cf5acb25fbf7a708750fa"
+    },
+    {
+      "title": "Selected C4 components: local authentication in the Node server",
+      "start": 570,
+      "end": 589,
+      "sha256": "bfe964801e9f797260e2e5a24c809f614b193eda1f7f0494f52c1f2a160f4ae0"
+    },
+    {
+      "title": "Collaboration overview",
+      "start": 617,
+      "end": 645,
+      "sha256": "7265248b29f0a2253e87b091142e6c187f82504126d1de6604b691bc8b2b3fc9"
+    },
+    {
+      "title": "Scenario: MCP page fetch and renderer cancellation",
+      "start": 684,
+      "end": 736,
+      "sha256": "e623dd52350deb18c7e34b04f8c43328443b619f7d2aef2a29da9eec8eeeab8d"
+    },
+    {
+      "title": "Scenario: hosted default sign-in landing",
+      "start": 755,
+      "end": 801,
+      "sha256": "7494ec9c7acd1b7145bced0848e68f840886c3d05b5b5653cdda375f89607686"
+    },
+    {
+      "title": "Scenario: hosted member read",
+      "start": 822,
+      "end": 882,
+      "sha256": "27b9f3fa478ce7c7d4de7c700be2330338f4d740fb39fcfd139d505491e81a84"
+    },
+    {
+      "title": "Deployment view",
+      "start": 931,
+      "end": 965,
+      "sha256": "7585ee2a08ce28bf32504d62fb6c5fd20b6056f6b5634194f694569ea5456a14"
+    }
+  ]
+}

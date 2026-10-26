@@ -1,0 +1,15 @@
+{
+  "candidate": "07d0d0387aed511674b9b5c73aeec8169a33422b",
+  "mergeBase": "581f30cfaa32b01399422b087b0f0bdc3b800f70",
+  "reviewed": true,
+  "scope": "Rebase PR 251 onto main and resolve conflicts; no product behavior added; no merge.",
+  "codeReview": "Reviewed range diff, every conflict, tests and source preservation. Kept raw membership reads and upstream actor-name dependency on the shared WorkOS client; kept all timeout and deletion tests; kept the main metric record byte-for-byte.",
+  "delegatedReview": "Reviewed final validation/doc pin report, architecture comparison and all metric/habit/checker dispositions. All subagents completed. No unresolved code defect found.",
+  "architecture": "13 registry drawings unchanged; one directory declaration changes by +6/-0. Reviewed compact v7 at 800px. L3 and behavior notes answer exact-ID and no-effect versus uncertain-effect question; L4 omitted.",
+  "diagramSha256": "a60f5fdbf0e7f60de9c6a3b2daffc744c1b94394df1c3a9eff6a2ffd7ec5cbfc",
+  "validation": "All selected test/build gates passed. WorkOS fixture setup attempt 1 timed out before tests; unchanged attempt 2 passed 28. Full logs and failed attempt retained. Final source/gate hash binding verified.",
+  "quality": "17 new/changed functions meet CRAP goals. Retained file MI, 39 native findings and 235 habit-hook findings all have recorded reasons; snooze empty. Final checker reports local eligibility with no blockers.",
+  "environment": "Task-owned Docker profile and data deleted after gates. Original Docker context and all six original shared container IDs retained; four concurrent additions observed and left untouched.",
+  "publication": "Publish only reviewed allowlisted evidence after exact configured-secret scan; no raw V8, credentials, user draft or unrelated archived source copied.",
+  "humanApproval": "Not established. Independent authorized architect approval of current head is required before merge."
+}

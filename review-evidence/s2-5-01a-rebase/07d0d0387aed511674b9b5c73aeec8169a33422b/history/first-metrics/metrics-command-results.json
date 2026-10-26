@@ -1,0 +1,66 @@
+[
+  {
+    "name": "metrics-process",
+    "args": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-process.ts",
+      "--base",
+      "origin/main",
+      "--coverage",
+      "ast-report/coverage.json",
+      "--json",
+      "ast-report/process.json"
+    ],
+    "started": "2026-10-25T23:51:55.438678+00:00",
+    "ended": "2026-10-25T23:52:19.970264+00:00",
+    "exit": 1,
+    "log": "metrics-process.log"
+  },
+  {
+    "name": "metrics-base-snapshot",
+    "args": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-snapshot.ts",
+      "--base",
+      "origin/main"
+    ],
+    "started": "2026-10-25T23:52:19.971551+00:00",
+    "ended": "2026-10-25T23:52:23.022947+00:00",
+    "exit": 0,
+    "log": "metrics-base-snapshot.log"
+  },
+  {
+    "name": "metrics-head-snapshot",
+    "args": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-snapshot.ts"
+    ],
+    "started": "2026-10-25T23:52:23.023370+00:00",
+    "ended": "2026-10-25T23:52:25.312062+00:00",
+    "exit": 0,
+    "log": "metrics-head-snapshot.log"
+  },
+  {
+    "name": "metrics-parent-crap",
+    "args": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-crap.ts",
+      "--base",
+      "origin/main",
+      "--json",
+      "ast-report/crap.json"
+    ],
+    "started": "2026-10-25T23:52:25.312619+00:00",
+    "ended": "2026-10-25T23:52:31.149090+00:00",
+    "exit": 0,
+    "log": "metrics-parent-crap.log"
+  }
+]

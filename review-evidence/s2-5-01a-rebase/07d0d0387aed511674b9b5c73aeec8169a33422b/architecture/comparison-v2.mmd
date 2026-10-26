@@ -1,0 +1,17 @@
+%%{init: {"flowchart": {"wrappingWidth": 260, "nodeSpacing": 25, "rankSpacing": 25}}}%%
+flowchart TB
+  subgraph server["L2 container: Thermus Node server · hosted"]
+    app["app · TypeScript<br/>Shared client and directory construction<br/>CHANGED: raw-reader binding"]
+    adapter["workos · TypeScript / SDK<br/>Provider reads and directory changes<br/>CHANGED: raw management mapping<br/>ADDED: exact-ID deletion boundary"]
+    org["organizations · TypeScript<br/>Directory contract and administration<br/>ADDED: management and deletion contract"]
+    app ==>|"CHANGED composition: raw reader<br/>Same SDK client and other bindings"| adapter
+    adapter -.->|"Source: implements<br/>OrganizationDirectory"| org
+    org -->|"Existing runtime: supplied<br/>member and invitation calls"| adapter
+  end
+  provider["External system: WorkOS / AuthKit<br/>Memberships, users, roles, invitations"]
+  adapter -->|"Existing SDK HTTPS<br/>CHANGED membership GET mapping"| provider
+  style app fill:#fff7ed,stroke:#b45309,color:#222222
+  style org fill:#fff7ed,stroke:#b45309,color:#222222
+  style adapter fill:#fff7ed,stroke:#b45309,color:#222222
+  style server fill:#fafafa,stroke:#777777,color:#222222
+  linkStyle 0 stroke:#b45309,color:#222222,stroke-width:3px

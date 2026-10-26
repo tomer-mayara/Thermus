@@ -1,0 +1,136 @@
+exceptions:
+  - path: src/logs/system/console-system-log-sink.ts
+    metric: mi
+    bound: 82
+    reason: Renamed console adapter preserves its small color map, formatting and Writable output. Removing logger inheritance improves MI from 79.6 to 83.0; splitting its two output functions would hide one format contract.
+    expires: 2026-12-23
+  - path: src/logs/system/otel-system-log-sink.ts
+    metric: mi
+    bound: 81
+    reason: Renamed OTel adapter preserves the severity map and one emit operation. Removing logger inheritance improves MI from 76.8 to 82.0. A separate mapping owner would add indirection without a distinct lifetime or invariant.
+    expires: 2026-12-23
+  - path: src/app/logging-storage.ts
+    metric: mi
+    bound: 60
+    reason: Optional hosted storage composition keeps validation, safe failure, lazy adapter loading, and service/key wiring in one small boundary. Its three paths are unchanged; splitting construction from cleanup would hide ownership.
+    expires: 2026-12-22
+  - path: src/logs/audit/bounded-sql-runtime.ts
+    metric: mi
+    bound: 41
+    reason: One SQL owner keeps admission, deadlines, late-work accounting and disposal together. The largest function has seven paths; reviewed unit and real PostgreSQL cases cover the lifetime invariants. A mechanical split would obscure shared ownership.
+    expires: 2026-12-22
+  - path: src/logs/audit/pg-destination-settings-store.ts
+    metric: mi
+    bound: 54
+    reason: The compact adapter keeps atomic SQL, expected-revision outcomes and row mapping together. Unit mapping and real PostgreSQL acceptance cover separate concerns; splitting SQL constants or mappings would spread the same invariant.
+    expires: 2026-12-22
+  - path: src/runtime/config/logging-storage-config.ts
+    metric: mi
+    bound: 59
+    reason: The settings reader keeps required URI, canonical key and PEM validation with safe variable-only diagnostics. Its input rules need distinct branches and are covered by focused cases; a new validation framework would add complexity.
+    expires: 2026-12-22
+  - path: src/logs/audit/public-audit-destination.ts
+    metric: mi
+    bound: 60
+    reason: One destination boundary keeps URL and auth checks, all-answer public IP policy, and pinned peer comparison together. Its largest function has 13 paths covered by focused refusal cases. Splitting each guard would hide the connection policy.
+    expires: 2026-12-23
+  - path: src/logs/audit/audit-https-connection.ts
+    metric: mi
+    bound: 49
+    reason: One TLS owner keeps handshake approval, actual peer checks, cancellation, and awaited socket disposal in the same lifetime. Its largest function has four paths; unit and real TLS cases cover the order before HTTP data.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-encoding.ts
+    metric: mi
+    bound: 54
+    reason: Named OTLP fields now include bounded public input and result copies and the Save/Test action variant. Timestamp conversion and encoded byte validation remain one wire-format boundary. The largest function has fifteen paths for four event variants; focused format and real Collector cases cover the contract. Splitting individual attributes would spread one format without reducing its rules.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-request.ts
+    metric: mi
+    bound: 60
+    reason: The request owner keeps the checked socket, bounded response collection, cancellation, and response settlement together. Callbacks have at most five paths. A request framework would obscure the no-global-agent guarantee and cleanup ownership.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-response.ts
+    metric: mi
+    bound: 47
+    reason: Success shape, partial rejection, status classification, and Retry-After limits belong to one OTLP result policy. The largest functions have nine paths and focused wire cases. Splitting status and body rules would make their required precedence harder to review.
+    expires: 2026-12-23
+  - path: src/logs/audit/otlp-audit-sender.ts
+    metric: mi
+    bound: 64
+    reason: One sender owns synchronous payload preparation, safe failure mapping, caller outcome and physical cleanup. Functions have at most six paths. Clearable request state is needed while native DNS ignores cancellation; separating its admission and cleanup would hide that lifetime.
+    expires: 2026-12-23
+  - function: src/logs/audit/otlp-audit-encoding.ts#encodeAuditEvent
+    metric: crap
+    bound: 20
+    reason: The prior verified capture could not bind emitted encoder coverage to its source identity. The four source paths bound unknown-coverage CRAP to [4, 20], so the new-function target of 15 is unproved unless the current capture resolves it. Focused encoding and real Collector cases cover behavior; keep the small wire boundary without editing coverage or splitting it to evade the mapping limit.
+    expires: 2026-12-23
+  - path: src/interfaces/web/account/logging-form.ts
+    metric: mi
+    bound: 73
+    reason: One small form parser combines the shared CSRF and exact-field check with optional checkbox and typed field validation. Each guard rejects a distinct invalid request; a second parser framework would duplicate the existing owner.
+    expires: 2026-12-22
+  - path: src/interfaces/web/account/logging-page.ts
+    metric: mi
+    bound: 72
+    reason: The native form and fixed recovery notice stay with their HTML escaping and write-only token projection. The form reuses the current page layout; extracting individual markup fields would spread one small page.
+    expires: 2026-12-22
+  - path: src/interfaces/web/account/logging-routes.ts
+    metric: mi
+    bound: 47
+    reason: This boundary keeps current Admin authority, request checks, safe outcome mapping and trusted audit capture together. Read, Save and Test stay separate; the route callback has thirteen paths, and each mutation has eight. Tests cover refusals, uncertain writes and throwing capture. Two form-guard copies do not justify a parser or dispatch framework.
+    expires: 2026-12-22
+  - path: src/logs/audit/destination-credential-codec.ts
+    metric: mi
+    bound: 57
+    reason: The compact codec keeps key copying, nonce and tag layout, tenant authenticated data and fail-closed decryption in one owner. Its largest function has four paths. Splitting cryptographic framing would obscure the invariant.
+    expires: 2026-12-22
+  - path: src/logs/audit/destination-endpoint.ts
+    metric: mi
+    bound: 69
+    reason: Syntax and literal-address checks need distinct guards. A range table replaces repeated IPv4 branches; no DNS or socket policy is added here. Focused cases cover malformed and private destinations without a general URL framework.
+    expires: 2026-12-22
+  - path: src/logs/audit/destination-settings-service.ts
+    metric: mi
+    bound: 41
+    reason: One owner keeps validated credential recovery, atomic Save, saved Test and fresh export authorization together. Test has fourteen paths; export authorization has ten for distinct unavailable, changed, aborted and credential outcomes. One fresh version supplies all dispatch fields. Splitting credentials or revision checks into another service would weaken visible ownership.
+    expires: 2026-12-22
+  - path: src/logs/audit/destination-test.ts
+    metric: mi
+    bound: 73
+    reason: One small lifetime owner keeps four-slot admission, caller deadline, cancellation and late callback settlement together. Its largest function has three paths. Moving timer or slot cleanup to another owner would obscure when admission is released.
+    expires: 2026-12-24
+  - path: src/interfaces/web/account/logging-test-page.ts
+    metric: mi
+    bound: 71
+    reason: Two typed lookup tables keep every safe sender and operation notice exhaustive in one small presentation boundary. The sole function has two paths. Splitting fixed messages into more files would spread one outcome contract without reducing decisions.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-content.ts
+    metric: mi
+    bound: 64
+    reason: Recognized credential redaction and the bounded exported text copy share one content-safety owner. Six short functions have at most six paths. Recognized bounded text enclosures preserve public syntax; validated URLs and ambiguous text retain full query-value redaction. Byte accounting reserves JSON escaping and the marker. Regression cases cover raw punctuation, escaped or split credentials, Unicode, and malformed enclosures. A general document parser or separate file for each pattern would hide the fixed policy.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-event-projection.ts
+    metric: mi
+    bound: 36.9
+    reason: This owner projects three named event formats and validates their bounded metadata. Seven functions have at most thirteen paths; input checks and event byte reservation stay adjacent to the fields they protect. Explicit guards make unsupported data fail closed without a generic schema layer or imports back into MCP. The measured score is 36.99712939607105, displayed as 37.0; the bound includes this rounding difference.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-snapshots.ts
+    metric: mi
+    bound: 51
+    reason: One owner keeps activity admission, bounded metadata, freshness, backoff, physical reads, deadlines and shutdown consistent. The load function has ten paths after the optional successful-observation hook; failure isolation must not invalidate valid metadata. Splitting its shared reservations or observation checks would obscure lifetime and authority.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-snapshot-state.ts
+    metric: mi
+    bound: 67
+    reason: Small state contracts and pure projections keep fixed limits, enabled/revision validation and detached bounded AuditEvent ownership explicit. Four functions have at most five paths. A cache framework or per-field modules would spread one metadata contract.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-collector.ts
+    metric: mi
+    bound: 40
+    reason: One queue owner keeps admission, tenant FIFO, one item and byte account, authorization, retry, fixed age and physical settlement consistent. Nineteen functions have at most eleven paths; the short authorization frame prevents a destination or event alias from surviving a send wait. Moving each state or counter into another owner would obscure release-once and cancellation rules. Focused tests cover overload, deadlines, revisions and each close phase.
+    expires: 2026-12-24
+  - path: src/logs/audit/audit-collector-state.ts
+    metric: mi
+    bound: 59
+    reason: Two small calculations own positive bound validation and typed retry eligibility, exponential delay, jitter and Retry-After precedence. They have four and eight paths. State records stay with these limits; a policy hierarchy or per-field modules would add structure without reducing the rules.
+    expires: 2026-12-24
