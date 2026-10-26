@@ -8,14 +8,14 @@
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
-    "sensitiveBehavior": false,
+    "sensitiveBehavior": true,
     "dependencyRisk": false,
-    "policy": true,
+    "policy": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "Select the owner-approved 26 October organization removal document bundle through existing hosted composition. Render complete frozen Audit and Members help in closed native details inside their existing cards. Preserve historical bundles, prior acceptance records, invitation/sign-in flows, roles, current authorization, removal coordination, provider calls, SQL, export behavior and deployment topology. The exact approved notice and help content changes; no callable contract, component set, cross-component edge, public module membership or declaration changes. All 15 registry Mermaid views remain byte-identical; prose names the selected bundle and web-owned help. Docker build inputs add only canonical files used by exact-byte source contracts. The policy flag declares the approved notice/acceptance scope; Docker context and existing security/read paths may independently require team review. Approval is recorded separately without modifying the approved manifest.",
+    "summary": "Treat only the pinned WorkOS OAuth 400 organization_membership_not_found error during automatic expired-session refresh as the existing local signed-out result. Clear the Thermus cookie so a new sign-in can recover current identity and explicitly choose a retained workspace. Other errors and refresh refusal results keep their existing handling. Retryable outages and unrecognized thrown errors retain the cookie; existing terminal refusals still clear it. Explicit workspace-switch refusal still retains its session. No fail-open, automatic workspace choice, role/MFA/CSRF/acceptance change, provider write, removal receipt/replay change, storage/deployment change, new component, component edge, public module or declaration change. All 15 registry Mermaid views remain byte-identical; registry prose records the known terminal branch in the existing WorkOS owner. This restores the existing sign-in-required contract for a known provider refusal and changes sensitive session recovery within the approved architecture guarantees. Current-head independent human approval remains required.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,20 +27,13 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
+      "src/accounts/providers/workos/workos-browser-session.ts",
+      "src/accounts/providers/workos/workos-session-client.ts",
+      "test/acceptance/auth/hosted-member-session-recovery.test.ts",
+      "test/unit/auth-workos/workos-browser-session-refresh.test.ts",
+      "test/integration/auth/workos-browser-session.test.ts",
       "architecture/components.md",
-      "src/app/hosted-workos-application.ts",
-      "src/accounts/providers/workos/workos-organization-removal-documents.ts",
-      "src/interfaces/web/account/administration-help-documents.ts",
-      "src/interfaces/web/account/administration-pages.ts",
-      "src/interfaces/web/account/logging-page.ts",
-      "src/interfaces/web/account/members-style.ts",
-      "test/acceptance/auth/hosted-workos-signup.test.ts",
-      "test/acceptance/auth/hosted-members.test.ts",
-      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
-      "test/acceptance/logging/hosted-destination-settings.test.ts",
-      "Dockerfile.hosted.dockerignore",
-      "docs/legal/organization-removal-2026-10-26-proposal-v1/owner-approval.json",
-      "docs/implementation/admin-s2-5-production-release.md"
+      "docs/implementation/admin-s2-5-stale-session-recovery.md"
     ]
   }
 }

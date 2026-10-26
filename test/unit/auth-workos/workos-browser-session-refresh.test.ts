@@ -78,6 +78,34 @@ describe('WorkOSBrowserSession: the refresh of a session check', () => {
     }
   });
 
+  test('Given an expired session whose selected membership was removed, when WorkOS throws OAuth 400 organization_membership_not_found, then the session signs out with a cleared cookie and no further refresh', async () => {
+    const client = new WorkOSSessionClientDouble();
+    client.check = () => ({ authenticated: false, reason: 'invalid_jwt' });
+    client.refresh = () => oauthError(400, 'organization_membership_not_found');
+
+    assert.deepEqual(await browserSession(client).authenticate(cookieHeader), { status: 'signed-out', cookies: [clearedSessionCookie] });
+    assert.deepEqual(client.methods(), ['authenticate', 'refresh']);
+  });
+
+  test('Given a different OAuth status, code, or error shape, when automatic refresh throws, then the error still rejects and the session cookie is retained', async () => {
+    const errors = [
+      oauthError(403, 'organization_membership_not_found'),
+      oauthError(500, 'organization_membership_not_found'),
+      oauthError(400, 'invalid_request'),
+      Object.assign(new Error('Wrong error kind'), { status: 400, error: 'organization_membership_not_found' }),
+      Object.assign(new Error('Wrong status type'), { name: 'OauthException', status: '400', error: 'organization_membership_not_found' }),
+      Object.assign(new Error('Wrong code field'), { name: 'OauthException', status: 400, code: 'organization_membership_not_found' }),
+    ];
+    for (const error of errors) {
+      const client = new WorkOSSessionClientDouble();
+      client.check = () => ({ authenticated: false, reason: 'invalid_jwt' });
+      client.refresh = () => error;
+
+      await assert.rejects(browserSession(client).authenticate(cookieHeader), actual => actual === error);
+      assert.deepEqual(client.methods(), ['authenticate', 'refresh']);
+    }
+  });
+
   test('Given a refresh that the SDK throws (UnauthorizedException, an OAuth error, or a 5xx answer that is not JSON) or that gives no seal, when the session authenticates, then it rejects, so the cookie stays', async () => {
     const parseFailure = new Error('Unexpected error', { cause: Object.assign(new Error('Bad JSON'), { name: 'ParseError', rawStatus: 502 }) });
     const withoutSeal: SealRefresh = { authenticated: true, user: ada, organizationId: 'org_01ACME' };

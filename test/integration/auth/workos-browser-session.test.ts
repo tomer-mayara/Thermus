@@ -94,6 +94,15 @@ describe('WorkOSBrowserSession with the pinned WorkOS SDK: sign-in, session chec
     assert.deepEqual(await world.session.authenticate(cookie), { status: 'signed-out', cookies: [clearedSessionCookie] });
   });
 
+  test('Given an expired session in an organization whose membership was removed, when the pinned SDK refresh receives 400 organization_membership_not_found, then the local session clears its cookie and requires sign-in', async (t) => {
+    const world = await startSessionFixture(t);
+    const cookie = await signIn(world, await accessToken(world, 'org_01ACME', true));
+    world.fake.answer(authenticateRoute, { status: 400, body: { error: 'organization_membership_not_found', error_description: 'The user is not a member of the organization.' } });
+
+    assert.deepEqual(await world.session.authenticate(cookie), { status: 'signed-out', cookies: [clearedSessionCookie] });
+    assert.equal(grantsSent(world.fake).length, 1);
+  });
+
 
   test('Given a browser key set that answers 500 or a WorkOS API that refuses the connection, when the session authenticates, then the check rejects without a refresh, so the cookie stays, and the same cookie authenticates after the outage', async (t) => {
     const world = await startSessionFixture(t);
