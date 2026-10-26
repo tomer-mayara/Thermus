@@ -35,7 +35,8 @@ WorkOS facts, read on 26 October 2026:
 
 ## Decision
 
-Each item gives the choice, the reason, and the alternative that lost.
+Each item gives the choice, the reason, and, where the plan names one, the
+alternative that lost.
 
 1. **One public origin, with the MCP gateway inside `MCPServer` (D-1).**
    `https://app.thermus.ai` stays the only public origin. It becomes the
