@@ -1,21 +1,21 @@
 {
   "version": 1,
   "classification": {
-    "container": false,
+    "container": true,
     "external": false,
     "contract": false,
-    "deployment": false,
+    "deployment": true,
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
-    "sensitiveBehavior": true,
+    "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "Treat only the pinned WorkOS OAuth 400 organization_membership_not_found error during automatic expired-session refresh as the existing local signed-out result. Clear the Thermus cookie so a new sign-in can recover current identity and explicitly choose a retained workspace. Other errors and refresh refusal results keep their existing handling. Retryable outages and unrecognized thrown errors retain the cookie; existing terminal refusals still clear it. Explicit workspace-switch refusal still retains its session. No fail-open, automatic workspace choice, role/MFA/CSRF/acceptance change, provider write, removal receipt/replay change, storage/deployment change, new component, component edge, public module or declaration change. All 15 registry Mermaid views remain byte-identical; registry prose records the known terminal branch in the existing WorkOS owner. This restores the existing sign-in-required contract for a known provider refusal and changes sensitive session recovery within the approved architecture guarantees. Current-head independent human approval remains required.",
+    "modelUpdated": false,
+    "summary": "Documentation only. Two decision records under architecture/decisions/ decide the per-tenant container design and the free and team tiers of the self on-boarding plan (PR #259), from the owner answers D-1 to D-15 of 26 October 2026. The container record: one public origin with the MCP gateway inside MCPServer, Render private tenant services without credentials, an Ed25519-signed access context with an audit relay, one GHCR image with two roles, a tenant on first need, and the instance and capacity of each tier. The tiers record: free with at most 5 members, team priced for each active member through the WorkOS Seat Sync meter and Stripe, and subscription state in the existing Supabase PostgreSQL project. The container and deployment flags name the topology and deployment that these records decide; later tickets of the plan implement them. This candidate changes no source, registry view, declaration, or deployment. The organization administration plan gains one dated sentence: its free-only rule no longer applies to the tenant containers and the paid tier.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,13 +27,10 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "src/accounts/providers/workos/workos-browser-session.ts",
-      "src/accounts/providers/workos/workos-session-client.ts",
-      "test/acceptance/auth/hosted-member-session-recovery.test.ts",
-      "test/unit/auth-workos/workos-browser-session-refresh.test.ts",
-      "test/integration/auth/workos-browser-session.test.ts",
-      "architecture/components.md",
-      "docs/implementation/admin-s2-5-stale-session-recovery.md"
+      "architecture/decisions/2026-10-26-per-tenant-containers.md",
+      "architecture/decisions/2026-10-26-tiers-and-billing.md",
+      "docs/implementation/self-onboarding-plan.md",
+      "docs/design/organization-admin-plan.md"
     ]
   }
 }
