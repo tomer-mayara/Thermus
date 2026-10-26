@@ -70,11 +70,15 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}
 .member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}
 .member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}
-.member-row{display:grid;gap:12px}
-.member-identity{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.member-facts{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.45fr) minmax(0,1fr);gap:24px;margin:0}
+.member-facts>div{min-width:0}
+.member-facts dt{margin:0 0 8px;font-size:13px;color:#B4BAC0}
+.member-facts dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.member-identity dd{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 12px}
+.member-email{min-width:0;overflow-wrap:anywhere}
 .member-row p,.invitation-list p{margin:0}
-.member-removal summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 16px;border:1px solid #C66E76;border-radius:6px;color:#FFCDD2;background:#40282C;font-size:15px;cursor:pointer}
-.member-removal summary:hover{background:#533038;border-color:#E58F98}
+.member-removal summary{width:fit-content;max-width:100%;min-width:48px;min-height:48px;padding:12px 0;border:1px solid transparent;border-radius:6px;color:#B4BAC0;background:transparent;font-size:15px;cursor:pointer}
+.member-removal summary:hover{color:#F3F2EE;text-decoration:underline}
 .removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}
 .removal-confirmation form{display:grid;gap:16px}
 .removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
@@ -86,6 +90,6 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .invitation-actions form[action$="/invitations/revoke"] button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
 .invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}
 .site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}
-@media(max-width:860px){.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}
-@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.member-row{gap:8px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
+@media(max-width:860px){.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}
+@media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
 `;

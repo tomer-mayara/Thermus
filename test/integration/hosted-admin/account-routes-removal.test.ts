@@ -14,7 +14,7 @@ test('Given an ordinary active member, when Members opens, then native confirmat
   const removals = formsIn(body).filter(form => form.action === path);
   assert.equal(removals.length, 1);
   assert.deepEqual(removals[0]?.fields, fields);
-  assert.match(body, /<details[^>]*>[\s\S]*<summary[^>]*>Remove/);
+  assert.match(body, /<details[^>]*>[\s\S]*<summary[^>]*>Leave/);
   assert.match(body, /href="\/members">Cancel<\/a>/);
   assert.doesNotMatch(body, /role="dialog"|<script/);
   assert.deepEqual(organizations.administrationCalls.map(call => call.operation), ['memberOverview', 'invitationOverview']);

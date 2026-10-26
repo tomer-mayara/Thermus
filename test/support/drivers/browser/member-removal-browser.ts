@@ -30,3 +30,12 @@ export async function tabTo(page: Page, target: Locator): Promise<void> {
   }
   throw new Error('The removal control was not reachable with Tab');
 }
+
+export function memberActionStyle(control: Locator) {
+  return control.evaluate(element => {
+    const view = element.ownerDocument.defaultView;
+    if (view === null) throw new Error('The member action has no browser window');
+    const style = view.getComputedStyle(element);
+    return { color: style.color, background: style.backgroundColor, border: style.borderColor };
+  });
+}

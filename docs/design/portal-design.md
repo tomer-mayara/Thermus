@@ -77,8 +77,8 @@ switch offers safe recovery and must not repeat the first-Admin grant.
 
 On 26 October 2026, the owner selected **Refined tabs** as the approved design
 direction for Members. UI-01 is implemented in
-[PR #263](https://github.com/tomer-mayara/Thermus/pull/263); the later UI tickets
-remain planned. The
+[PR #263](https://github.com/tomer-mayara/Thermus/pull/263). UI-02 is implemented
+in [PR #264](https://github.com/tomer-mayara/Thermus/pull/264); UI-03/04 remain planned. The
 [UI tickets and validation gate](organization-admin-plan.md#refined-tabs-ui--approved-design-26-october-2026)
 define the work; this selection changes no release or provider approval.
 
