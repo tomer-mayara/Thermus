@@ -1,0 +1,13 @@
+{
+  "pr": 253,
+  "mergedAtObserved": "2026-10-26T12:57:32.862769+00:00",
+  "mergeCommit": "0c9bfbda706397d4df8834f1d9d441a394f051ae",
+  "head": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "priorMain": "3d271bbae20b3d2ed91751fb77c10f6ead4bed99",
+  "reviewedMergeBase": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "tree": "648e30fca690a7df2871b19e1defc6a09b954718",
+  "sameAsReviewedTree": true,
+  "nextPr254MergeBase": "b630a76275d5809a498ae63e1cbc322086f4194f",
+  "nextPr254ExpectedTree": "c9528ca016831afd36052f98b3a8b50be95b6e1a",
+  "evidenceReuse": "Reviewed merge base and source head are unchanged. Original tests/quality remain pinned to their actual execution SHAs; the merge result has identical files."
+}

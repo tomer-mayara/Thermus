@@ -1,0 +1,11 @@
+# Invitation diagnostic
+
+Candidate: `e46c506811b8639f691304c423f4af5fe894955e`. Actual stack parent: `1a3e5a6638d71e03485e0280848ee5e025335382`. Complete-candidate validation base: `8c6d204e8588a664438ba8934ab36670b802525f`.
+
+This was a focused diagnostic, not a required live gate run. It selected the complete three-case invitation suite from `dist/test/acceptance/auth/hosted.live.js`, with the original setup, password-profile check, acceptance assertions, deadlines, and registered teardown. Temporary compiled-file instrumentation disabled the stale-resource sweep and kept an exact private resource journal. No production or test source changed.
+
+The process exited 1. WorkOS returned HTTP 502 from user creation during fixture setup in the password-profile before hook. All three selected tests were cancelled before their bodies ran: 0 passed, 0 failed test bodies, 3 cancelled, 0 skipped, and 0 todo. The invitation browser flow did not begin, so its failure-only diagnostic produced no observation. This result establishes a provider failure in this run's setup; it does not identify the cause of the earlier invitation-navigation failures.
+
+Registered teardown recorded deletion completion for all nine resources that this run journaled. A later bounded readback made one GET for each exact recorded ID, without a list or prefix scan, retry, or mutation. All three organizations and six users returned HTTP 404. These responses prove absence only for those nine recorded IDs at readback time. A create response lost before its ID was recorded can leave an unknown resource; neither the journal nor this readback can prove absence of unknown IDs.
+
+The process ended before restoration. All five temporary compiled-file changes were restored and independently checked against the original hashes. All 1,596 compiled-file hashes, all 1,478 tracked-file hashes, and the unrelated user draft matched the preflight record. The 1,189 build inputs matched the reviewed candidate, Node was 24.20.0, and no backend rebuild was needed. Fixed ports 46443, 46480, and 46481 were free after the run. No full live retry or Public Connect proof was run. The required live groups remain unpassed and merge remains blocked.

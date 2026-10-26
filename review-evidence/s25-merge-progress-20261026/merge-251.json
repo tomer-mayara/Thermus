@@ -1,0 +1,12 @@
+{
+  "pr": 251,
+  "mergedAtObserved": "2026-10-26T12:56:41.459532+00:00",
+  "mergeCommit": "3d271bbae20b3d2ed91751fb77c10f6ead4bed99",
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "priorMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "tree": "d703454ee49533db2f2da7730ab77dde65778b6b",
+  "sameAsReviewedTree": true,
+  "nextPr253MergeBase": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "nextPr253ExpectedTree": "648e30fca690a7df2871b19e1defc6a09b954718",
+  "evidenceReuse": "Original tests and quality remain pinned to reviewed source head; byte-identical merge tree introduces no new runtime or test inputs. No test is relabeled as execution on the merge commit."
+}

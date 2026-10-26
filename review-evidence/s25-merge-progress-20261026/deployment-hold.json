@@ -1,0 +1,17 @@
+{
+  "observedAt": {
+    "current_time": "2026-10-26 12:42:52 UTC"
+  },
+  "workspace": "Thermus AI",
+  "workspaceId": "tea-db8i6ceq1p3s73dev9og",
+  "serviceId": "srv-db8mnqg473hc739d529g",
+  "branch": "main",
+  "autoDeploy": "no",
+  "autoDeployTrigger": "off",
+  "previews": {
+    "generation": "off"
+  },
+  "method": "Saved Off in authenticated Render dashboard; visual screenshot and connector readback confirm.",
+  "purpose": "Keep production at its existing release during ordered Slice 2.5 main integration.",
+  "scope": "No manual deployment or other service setting changed."
+}
