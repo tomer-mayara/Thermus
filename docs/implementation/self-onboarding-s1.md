@@ -224,3 +224,200 @@ token. The owner does these steps:
 
 To replace the token before it expires, make a new token with the same scope,
 update the credential in Render, and then delete the old token on GitHub.
+
+## SO-01d: gateway proxy and private network
+
+Date: 26 October 2026. Branch `self-ob-s1-so-01d-gateway-proxy-probe-012463`,
+on the SO-01b branch at `6fcfe3fb`. Part one is a local probe. Part two needs
+the private service of SO-01c.
+
+### Part one: what the probe models
+
+[`gateway-proxy-probe.ts`](../../script/spike/gateway-proxy-probe.ts) models
+the MCP gateway of the plan, sections 4.1 and 4.2. It starts three parts in
+one Node process, each on its own loopback port:
+
+1. A stand-in tenant upstream,
+   [`upstream.ts`](../../script/spike/gateway-proxy/upstream.ts). It serves
+   `createMcpHandler` of `@modelcontextprotocol/server` 2.3.1, with one server
+   for each request, through a small `node:http` bridge in the pattern of
+   [`fetch-exchange.ts`](../../src/runtime/http/fetch-exchange.ts). Before any
+   MCP handling, it checks the `Thermus-Access` header. It answers `403` with
+   a JSON error when the header is missing, has a bad signature, or has an
+   expired context. Its one tool, `slow`, sends a progress notification every
+   200 ms for 3 seconds. Then it answers with text that names the
+   organization of the verified context. It obeys the abort signal of the
+   request and records the time when the signal fires.
+2. A proxy, [`proxy.ts`](../../script/spike/gateway-proxy/proxy.ts). It
+   forwards `POST /mcp` to the upstream with Node's fetch and a streamed body
+   (`duplex: 'half'`). It removes the hop-by-hop headers and sets its own
+   signed `Thermus-Access` header. It passes the abort of the client to the
+   upstream request and streams the answer back, chunk by chunk.
+3. An MCP client, `@modelcontextprotocol/client` 2.3.1, with the streamable
+   HTTP transport, pinned to protocol 2026-07-28. It connects through the
+   proxy.
+
+[`access-context.ts`](../../script/spike/gateway-proxy/access-context.ts) has
+the header format: a base64url JSON body `{ organizationId, subject,
+expiresAt }`, a dot, and a base64url Ed25519 signature of the raw body bytes.
+`expiresAt` is in milliseconds since the Unix epoch. The proxy signs a context
+that is valid for 2 minutes. Each run makes new key pairs with
+`generateKeyPairSync('ed25519')`.
+
+To run the probe, type `node script/spike/gateway-proxy-probe.ts` in the
+repository root. A run takes about 7 seconds and uses no network. The steps go
+to stderr and the report goes to stdout. A failed step writes
+`FAIL <step>: <reason>`, and the exit code is 1.
+
+### Part one: steps
+
+Each step is an assertion of the script. The two steps marked "extra" are not
+in the ticket. Headers checks the header rules of the proxy. Early abort
+checks the abort path that the 500 ms abort does not reach (see the mutation
+checks).
+
+| Step | Given, when, then |
+| --- | --- |
+| Streaming | Given the three parts, when the client lists the tools and calls `slow`, then 15 progress notifications arrive before the result, each at most 250 ms after its tick. |
+| Headers (extra) | Given the requests of that call, when they reach the upstream, then they carry the bearer token of the client, and not `TE`, `Trailer`, `Proxy-Probe`, or the `Thermus-Access` value of the client. |
+| Abort | Given a second `slow` call, when the client aborts it after 500 ms, then the upstream handler sees its signal within 100 ms of the abort and stops within 20 ms of the signal. |
+| Early abort (extra) | Given a third call, when the client aborts it after 50 ms, before the upstream answers, then the same limits apply. |
+| Signed header | Given a request with no header, a header signed by another key pair, or an expired context, when it goes to the upstream directly, then the answer is `403` before any MCP handling. Through the proxy, a normal call gets its result. |
+| Cleanup | Given the end of the probe, then both listeners are closed and no TCP handle is open. A timer that does not keep the process alive stops the process with code 1 if it does not exit within 5 seconds. |
+
+### Part one: measured times
+
+Run 1 of 5, on 26 October 2026, on the owner's Mac (Darwin 27.0.0) at commit
+`506e88ed`. The table and the conclusions are as the script printed them. The
+script printed this line first: "Node v24.20.0, @modelcontextprotocol/server
+2.3.1, @modelcontextprotocol/client 2.3.1, protocol 2026-07-28. Times are
+milliseconds after the start of each call, on one clock; a "+" time is after
+the client abort."
+
+| Part | Event | Expected | Measured |
+| --- | --- | --- | --- |
+| Streaming | Progress 1 received | about 200 ms | 215.7 ms (sent 207.7 ms) |
+| Streaming | Progress 2 received | about 400 ms | 412.7 ms (sent 408.8 ms) |
+| Streaming | Progress 3 received | about 600 ms | 611.4 ms (sent 607.7 ms) |
+| Streaming | Progress 4 received | about 800 ms | 814.5 ms (sent 809.2 ms) |
+| Streaming | Progress 5 received | about 1000 ms | 1009.6 ms (sent 1006.1 ms) |
+| Streaming | Progress 6 received | about 1200 ms | 1211.4 ms (sent 1207.8 ms) |
+| Streaming | Progress 7 received | about 1400 ms | 1413.1 ms (sent 1409.6 ms) |
+| Streaming | Progress 8 received | about 1600 ms | 1612.1 ms (sent 1607.8 ms) |
+| Streaming | Progress 9 received | about 1800 ms | 1808.2 ms (sent 1805.7 ms) |
+| Streaming | Progress 10 received | about 2000 ms | 2008.5 ms (sent 2007.3 ms) |
+| Streaming | Progress 11 received | about 2200 ms | 2207.4 ms (sent 2206.4 ms) |
+| Streaming | Progress 12 received | about 2400 ms | 2408.8 ms (sent 2407.6 ms) |
+| Streaming | Progress 13 received | about 2600 ms | 2609.0 ms (sent 2606.2 ms) |
+| Streaming | Progress 14 received | about 2800 ms | 2806.4 ms (sent 2805.8 ms) |
+| Streaming | Progress 15 received | about 3000 ms | 3012.7 ms (sent 3009.6 ms) |
+| Streaming | Result received | after progress 15 | 3014.2 ms |
+| Headers | Bearer token at the upstream | forwarded | forwarded in 3 of 3 requests (server/discover, tools/list, tools/call) |
+| Headers | TE, Trailer, and Proxy-Probe at the upstream | removed | removed in 3 of 3 requests |
+| Headers | Thermus-Access value of the client | replaced | replaced in 3 of 3 requests |
+| Abort | Client abort | about 500 ms | 502.2 ms |
+| Abort | Progress received before the abort | 2 | 2 |
+| Abort | Proxy sees the client go (response close) | after the abort | +6.4 ms |
+| Abort | Upstream handler signal | within 100 ms of the abort | +8.2 ms |
+| Abort | Upstream handler stops | within 20 ms of its signal | +8.4 ms |
+| Abort | Proxy incoming request close event | not a client signal | 2.0 ms, at the body end |
+| Early abort | Client abort | about 50 ms | 52.5 ms |
+| Early abort | Progress received before the abort | 0 | 0 |
+| Early abort | Proxy sees the client go (response close) | after the abort | +2.5 ms |
+| Early abort | Upstream handler signal | within 100 ms of the abort | +3.6 ms |
+| Early abort | Upstream handler stops | within 20 ms of its signal | +3.9 ms |
+| Signed header | Direct request, no header | 403 | 403, reason missing |
+| Signed header | Direct request, signed by another key pair | 403 | 403, reason bad_signature |
+| Signed header | Direct request, expired context | 403 | 403, reason expired |
+| Signed header | MCP handling of the refused requests | none | none |
+| Signed header | Call through the proxy | result | result at 3006.6 ms |
+| Cleanup | Open listeners and TCP handles | 0 | 0 |
+
+- PASS Streaming: 15 progress notifications arrived before the result, from 215.7 ms to 3012.7 ms; the result came at 3014.2 ms.
+- PASS Headers: the bearer token reached the upstream in 3 of 3 requests; TE, Trailer, and Proxy-* did not; the proxy replaced the Thermus-Access value of the client.
+- PASS Abort: the upstream handler saw its signal 8.2 ms after the client abort (limit 100 ms) and stopped; the proxy used the close event of its response, because the close event of the incoming request came at the body end.
+- PASS Early abort: before the upstream answered, the proxy aborted its pending upstream request; the handler saw its signal 3.6 ms after the client abort.
+- PASS Signed header: direct requests with no header, another key pair, or an expired context got 403 before MCP handling; the call through the proxy got its result.
+- PASS Cleanup: both listeners are closed and no TCP handle is open; a watchdog stops the process with code 1 if it does not exit.
+
+Five runs in sequence, all with exit code 0:
+
+| Measure | Range of five runs |
+| --- | --- |
+| Progress arrival after its planned tick | 6.4 to 20.1 ms |
+| Upstream send to client arrival, the largest in a run | 7.2 to 10.5 ms |
+| Result of the first call | 3,011.0 to 3,017.7 ms |
+| Abort at 500 ms: the proxy sees the client go | +1.9 to +9.2 ms |
+| Abort at 500 ms: upstream handler signal | +2.8 to +12.4 ms |
+| Abort at 500 ms: handler stop after its signal | 0.1 to 0.3 ms |
+| Abort at 50 ms: upstream handler signal | +1.3 to +3.6 ms |
+| Close event of the incoming request at the proxy | 2.0 to 4.4 ms after the call start |
+| Direct requests: no header, other key pair, expired context | `403`, with reason `missing`, `bad_signature`, and `expired`, in each run |
+| Run time | 6.84 to 6.85 s |
+
+### Part one: mutation checks
+
+To show that each assertion can fail, the worker changed one line at a time,
+ran the probe, and then reverted the change. No change is in the branch.
+
+| Change | Result |
+| --- | --- |
+| The proxy reads the whole answer before it sends it. | `FAIL Streaming`: progress 1 arrived at 3,012.3 ms, after the 450 ms limit. |
+| The proxy aborts the upstream request on the `close` event of the incoming request. | `FAIL Setup`: the first request, the version negotiation probe, failed with "fetch failed". |
+| The proxy does not set its signed header. | `FAIL Setup`: the server denied access (HTTP 403). |
+| The proxy forwards the hop-by-hop request headers. | `FAIL Headers`: the proxy forwarded `te`. |
+| The upstream handler ignores its abort signal. | `FAIL Abort`: the handler stopped 95.9 ms after its signal; the limit is 20 ms. The first version of this check had a limit of 100 ms after the abort, and the change failed it by only 1.7 ms. |
+| The proxy does not abort its pending upstream request. | `FAIL Early abort`: the upstream signal fired 157.2 ms after the abort. Before the Early abort step was added, this change passed. |
+| The proxy listener stays open. | `FAIL Cleanup`: the proxy listener is still open. The timer then stopped the process with code 1, 5 seconds later. |
+
+### Part one: findings for the gateway
+
+- The proxy streams. Each progress notification reached the client 6.4 to
+  20.1 ms after its tick. A buffered answer delivers all of them at about
+  3,000 ms, as the first mutation check shows.
+- In protocol 2026-07-28, the SDK client cancels a call when it closes the
+  HTTP stream of that call (SDK client source). The abort crosses the proxy as
+  a closed connection. The upstream handler saw its signal 1.3 to 12.4 ms
+  after the client abort.
+- Watch the `close` event of the response, with `writableFinished` false. Do
+  not use the `close` event of the incoming request. In Node 24, the incoming
+  request closes when its body ends: 2.0 to 4.4 ms after the call start. An
+  abort on that event stopped the first request of the client immediately.
+  The bridge in `fetch-exchange.ts` uses the same response rule.
+- The abort has two paths. Before the upstream answers, only the abort of the
+  pending fetch stops the upstream request. After the answer starts, a cancel
+  of the response body also stops it. The gateway must have the two paths.
+- The proxy must replace a `Thermus-Access` value that the client sends. The
+  Headers step checks that the upstream never sees the client value.
+- For connect, list, and call, the client sent three requests through the
+  proxy: `server/discover`, `tools/list`, and `tools/call`. The proxy signed
+  each one. The refused direct requests started no MCP server.
+- Seen in a separate check with Node 24.20.0: Node's fetch refuses a request
+  with a `keep-alive`, `transfer-encoding`, or `upgrade` header ("invalid
+  header"). So the gateway must remove these headers before its fetch. A
+  client that sends a chunked body sends `transfer-encoding`. The probe client
+  sends none of the three.
+
+### Part one: limits
+
+- One process, one clock, and loopback ports. No TLS and no real network. The
+  Render private network adds latency; part two checks only that the private
+  address answers.
+- A model, not the production code. The upstream does not check the bearer
+  token, its hash, the pinned organization, the grants, or a repeated context.
+  The proxy signs one fixed organization and subject.
+- Only protocol 2026-07-28. In protocol 2025-11-25, the SDK client cancels
+  with a `notifications/cancelled` POST and does not close the stream (SDK
+  client source). The probe does not test that era.
+- No compressed answer, no large body, no slow reader, and no calls at the same
+  time. SO-01e measures the capacity. The proxy forwards only `POST /mcp` and
+  answers `404` to other requests.
+
+### Part two: Render private network
+
+This part waits for SO-01c. When the private service of SO-01c is live, the
+operator starts a disposable web service from the same image, in the same
+workspace and region. The operator opens a Render shell on the web service and
+requests `/healthz` at the internal address of the private service. The answer
+must be `200` with `ok`. From the public internet, the internal address must
+not resolve. The transcript of that check goes here.
