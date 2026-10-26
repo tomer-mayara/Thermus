@@ -74,7 +74,7 @@ Section 9 keeps the per-tenant hostname design as a later option.
 | --- | --- | --- |
 | Editions | `DEPLOYMENT=hosted` runs WorkOS sign-in, Connect token checks, account routes, signup, and the MCP tools in one Node process. `PUBLIC_BASE_URL` gives the MCP URL and the metadata URL. The hosted edition needs five `WORKOS_*` settings and a root base path. | [deployment-config.ts](../../src/runtime/config/deployment-config.ts), [workos-settings.ts](../../src/accounts/providers/workos/workos-settings.ts), [hosted-workos-application.ts](../../src/app/hosted-workos-application.ts) |
 | Signup | `GET /signup` shows the notice, the sign-in, then a form with the organization name and one agreement. `POST /signup` creates the WorkOS organization with external ID `thermus-signup:<hash>` and a ten-field acceptance record in its metadata, creates the first Admin membership, selects the organization, and opens the portal. Eligibility needs a verified email only. Local admission: 8 concurrent POSTs and 3 attempts for each subject in a minute. | [workos-signup-routes.ts](../../src/interfaces/web/auth/workos/workos-signup-routes.ts), [workos-signup.ts](../../src/accounts/providers/workos/workos-signup.ts) |
-| Switch and bundle | `SELF_SERVE_SIGNUP_ENABLED` is read at startup. `true` needs a document bundle with purpose `organization-creation`. Production selects the v3 organization Audit bundle, `s204-organization-audit-proposal-2026-10-24-v3`. Its repository README still calls it an unapproved review candidate, while PR #248 records a notice approval. Confirm the approval status before signup opens. | [workos-signup-settings.ts](../../src/accounts/providers/workos/workos-signup-settings.ts), [bundle](../../src/accounts/providers/workos/workos-organization-audit-documents.ts), [v3 README](../legal/organization-audit-2026-10-24-proposal-v3/README.md) |
+| Switch and bundle | `SELF_SERVE_SIGNUP_ENABLED` is read at startup. `true` needs a document bundle with purpose `organization-creation`. Since PR #260, production selects the organization removal bundle, `s2502-organization-removal-proposal-2026-10-26-v1`, which the owner approved on 26 October 2026; its notices are published, and the deployment proof is pending in the Slice 2.5 release checkpoint. | [workos-signup-settings.ts](../../src/accounts/providers/workos/workos-signup-settings.ts), [bundle](../../src/accounts/providers/workos/workos-organization-removal-documents.ts), [approval](../legal/organization-removal-2026-10-26-proposal-v1/owner-approval.json), [release checkpoint](admin-s2-5-production-release.md) |
 | Roles | `user` gives `product:access`. `admin` gives product access, `user-grants:manage`, `admin-grants:manage`, and `billing:manage`. Other roles give nothing. | [hosted-role-mapping.ts](../../src/accounts/providers/workos/hosted-role-mapping.ts) |
 | Members | The members page counts active memberships with product access, Admin alone included. Invitations are native WorkOS invitations. Acceptance happens in AuthKit, outside the application. Since the Slice 2.5 merges of 26 October 2026 (PRs #251, #253, and #254), an Admin can remove an ordinary member on the Members page through a removal coordinator with a durable per-organization operation record in PostgreSQL. Its verification, release controls, and safety-scan repair merged in PRs #255 and #257 on the same day; the [S2.5-02 ledger](admin-s2-5-02.md) says that the removal release is still pending. No code changes a role. | [administration-overviews.ts](../../src/accounts/organizations/administration-overviews.ts), [organization-directory.ts](../../src/accounts/organizations/organization-directory.ts), [removal-operation-store.ts](../../src/accounts/organizations/removal-operation-store.ts) |
 | Billing | `Billing` has `stateOf()` and `updateSeats()`. `BillingFree` is the only implementation. `BillingState.plan` is the literal `'free'`. The billing page needs `billing:manage` and has no form. The portal JSON gives `plan: 'free'`, and the browser code refuses any other value. | [billing.ts](../../src/accounts/billing/billing.ts), [billing-page.ts](../../src/interfaces/web/account/billing-page.ts), [portal-access.ts](../../src/interfaces/web/account/portal-access.ts), [portal.ts](../../src/interfaces/user-portal/portal.ts) |
@@ -139,12 +139,13 @@ Render API facts that the plan uses, from the Render documentation:
 
 ### 3.4 Legal and marketing
 
-- The approved Terms of Service version 2, section 3, say: the hosted early
+- The approved Terms of Service, version
+  `hosted-terms-organization-removal-proposal-2026-10-26-v1`, still say: the hosted early
   access is free, no payment card is required, and the terms authorize no
   fees, automatic charges, or automatic renewal. A paid tier needs new Terms
   with fees, renewal, cancellation, refunds, and taxes, and a new Privacy
   Policy that names Stripe as a processor. They get the next unused version
-  label, because `v3` labels already exist for the Audit proposal. Both need
+  label after the removal proposal of 26 October. Both need
   new hashes, owner approval, publication on `thermus.ai`, and a new runtime
   bundle, under the existing document process.
 - The marketing pricing section shows **Free, $0, self-hosted download** and
@@ -633,8 +634,8 @@ and the rotation of the Render API key, the gateway key pair, and the
 settings encryption key. Within the Hobby plan: Render failure emails for
 memory kills, and the daily summary of SO-09 as the fleet alert. Size S.
 
-**SO-12 Free-tier release.** Confirmation of the v3 Audit bundle status; the
-marketing **Start free** link to `https://app.thermus.ai/signup?tier=free`
+**SO-12 Free-tier release.** The deployment proof of the approved removal
+bundle from the Slice 2.5 release checkpoint; the marketing **Start free** link to `https://app.thermus.ai/signup?tier=free`
 and the free-tier guides; rehearsal with the WorkOS Staging environment, a
 staging control plane and database, a dedicated Render user, and the My
 Workspace workspace: signup, provisioning, an MCP call, suspend, resume, a
@@ -713,7 +714,7 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 | Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal and its verification merged on 26 October 2026 (PRs #251 to #257); the removal release itself is still pending in the S2.5-02 ledger. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
 | Billed count | WorkOS counts every active membership, also a membership with only the default role, which gives no product access. | Default-role memberships do not exist in normal use; the fleet summary reports one. |
 | Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01. Keep old digests for rollback. Prune GHCR under its quota. |
-| Legal | Paid fees are outside the approved Terms. The runtime bundle status needs confirmation. The published price must match Stripe. | SO-14 before any customer reaches Checkout. |
+| Legal | Paid fees are outside the approved Terms. The published price must match Stripe. | SO-14 before any customer reaches Checkout. |
 | WorkOS metadata is full | 10 of 10 keys used. | All tier and tenant facts live in PostgreSQL. |
 | Credentials in the control plane | The Render API key can change every service of the workspace. The Stripe key can create charges. | Render secret variables, a dedicated Render user, a Stripe restricted key, rotation runbooks, and no credential in any tenant. |
 | Webhook order and duplicates | Stripe can deliver an event twice and out of order. | Event ID table with the applied mark; read the subscription from Stripe on each event; daily reconciliation. |
