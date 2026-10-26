@@ -1,0 +1,5 @@
+habit-sensors: no [files] are configured — name what to scan in .habit-hooks/config.toml; nothing scanned
+habit-sensors: detected typescript; the typescript plugin is installed but not enabled — add "typescript" to `plugins` in .habit-hooks/config.toml
+✅ Habit Hooks: automated checks passed.
+
+Habit Hooks catches structural smells, not correctness or design. If no reviewer sub-agent has reviewed this change set, run one before declaring done.

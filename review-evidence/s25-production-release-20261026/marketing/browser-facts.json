@@ -1,0 +1,246 @@
+{
+  "checkedAt": "2026-10-26T16:08:25.902Z",
+  "scope": "Local final static build; no deployed preview or production claim",
+  "results": [
+    {
+      "name": "terms",
+      "width": 375,
+      "javaScriptEnabled": false,
+      "status": 200,
+      "completeVisibleTextEqualsSource": true,
+      "title": "Terms of Service",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+      "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "h1Count": 1,
+      "allAnchorsResolve": true,
+      "anchorCount": 13,
+      "horizontalOverflow": false,
+      "directEmail": true,
+      "footerLinks": [
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Privacy",
+          "href": "/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "/terms"
+        }
+      ],
+      "tableCells": [],
+      "pageHeight": 18062,
+      "pageErrors": []
+    },
+    {
+      "name": "privacy",
+      "width": 375,
+      "javaScriptEnabled": false,
+      "status": 200,
+      "completeVisibleTextEqualsSource": true,
+      "title": "Privacy Policy",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+      "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "h1Count": 1,
+      "allAnchorsResolve": true,
+      "anchorCount": 11,
+      "horizontalOverflow": false,
+      "directEmail": true,
+      "footerLinks": [
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Privacy",
+          "href": "/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "/terms"
+        }
+      ],
+      "tableCells": [
+        [
+          "Cookie",
+          "Purpose",
+          "Browser lifetime"
+        ],
+        [
+          "__Host-thermus-sign-in",
+          "Holds temporary sign-in state, a code verifier, return destination, and expiry time to complete sign-in securely.",
+          "Up to 10 minutes."
+        ],
+        [
+          "__Host-thermus-session",
+          "Holds the encrypted WorkOS session described in section 2, including profile data, access and refresh tokens, and security information.",
+          "30 days; this can renew when the session refreshes. WorkOS can end a session earlier."
+        ],
+        [
+          "Hosted information",
+          "Retention and deletion handling"
+        ],
+        [
+          "Accounts, organizations, memberships, and client authorizations",
+          "Keep while needed for active access. Account, membership, and authorization deletion are separate actions. Membership removal alone does not delete the underlying user or unrelated organization access. Apply the operator-action target above to authorized deletion actions."
+        ],
+        [
+          "Initial acceptance and enrollment record",
+          "Keep while access is active. Access revocation alone retains the created organization, initial creator agreement metadata, and stable enrollment identifier so repeated signup cannot automatically restore access. Earlier personal-workspace records retain their original schema and purpose. Account deletion receives a separate review of each record and purpose; revocation does not justify indefinite retention. Limit any retained exception to needed evidence or identifiers, with a reason and review date. The record applies to the same WorkOS identity and environment while retained; it does not prevent all future accounts or establish a permanent ban. Deleting this enrollment record can permit a later fresh signup."
+        ],
+        [
+          "Exact documents, agreement wording, and operator records",
+          "Keep the exact versioned terms, notice, and agreement wording so initial and separately recorded agreements can be understood. Keep personal acceptance, recovery, privacy-request, and deletion evidence while needed for access, an applicable agreement, a dispute, security, or legal duties. Review need at closure and when a related issue ends. Delete personal information when no longer needed, subject to applicable obligations."
+        ],
+        [
+          "Invitations",
+          "Current invitation validity is 7 days. Expiry does not establish deletion of the invitation or delivery records. Cancel invitations no longer needed when closing access and request record deletion where available under the operator-action target above. WorkOS may retain separate operational, security, or legal records."
+        ],
+        [
+          "Service completion, organization-change, operational, and error logs",
+          "Render's current plan provides 7 days of accessible application log history. We keep this setting and avoid routine operator-log exports or extra operator-log stores. No Render log-stream destination is currently configured. Organization audit export is a separate stream. Specific security or legal evidence can be retained with a reason and review date. The history window does not establish physical erasure after 7 days or govern provider-managed security, compliance, or backup copies."
+        ],
+        [
+          "Membership-removal operation record",
+          "Keep the current record to control safe removal. An unresolved record has no automatic expiry and must not be removed merely because time passed or a current membership read changed. A proved terminal record can be replaced by the next admitted operation for that organization; this is not a complete history. At closure or on an authorized deletion request, review the remaining safety, dispute, and legal need. Limit any retained exception to necessary evidence or identifiers, record a reason and review date, and delete it when that need ends, subject to applicable obligations."
+        ],
+        [
+          "Audit destination settings",
+          "Keep while needed for the organization’s audit configuration. Disabling export stops export but does not itself delete the destination or saved credential. Thermus does not make a separate backup of these settings or provide a settings restore service. If settings or their encryption key are lost, an Admin may need to re-enter the destination and credential. Authorized deletion requests receive the operator-action review and target above."
+        ],
+        [
+          "Pending audit events and destination copies",
+          "Thermus holds pending events only in bounded process memory, with no durable queue, history, or replay. Events can expire or be dropped before delivery. Disabling or changing a destination does not recall copies already sent. The selected destination controls retention and deletion of received copies; contact its operator for those copies."
+        ],
+        [
+          "Provider backups, archives, security, and legal records",
+          "Providers retain residual copies under their applicable schedules and legal requirements. We use applicable provider deletion processes. Residual copies can remain after account or membership deletion; no fixed purge deadline for all provider copies is promised."
+        ]
+      ],
+      "pageHeight": 32957,
+      "pageErrors": []
+    },
+    {
+      "name": "terms",
+      "width": 1280,
+      "javaScriptEnabled": false,
+      "status": 200,
+      "completeVisibleTextEqualsSource": true,
+      "title": "Terms of Service",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+      "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "h1Count": 1,
+      "allAnchorsResolve": true,
+      "anchorCount": 13,
+      "horizontalOverflow": false,
+      "directEmail": true,
+      "footerLinks": [
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Privacy",
+          "href": "/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "/terms"
+        }
+      ],
+      "tableCells": [],
+      "pageHeight": 9086,
+      "pageErrors": []
+    },
+    {
+      "name": "privacy",
+      "width": 1280,
+      "javaScriptEnabled": false,
+      "status": 200,
+      "completeVisibleTextEqualsSource": true,
+      "title": "Privacy Policy",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+      "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "h1Count": 1,
+      "allAnchorsResolve": true,
+      "anchorCount": 11,
+      "horizontalOverflow": false,
+      "directEmail": true,
+      "footerLinks": [
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Privacy",
+          "href": "/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "/terms"
+        }
+      ],
+      "tableCells": [
+        [
+          "Cookie",
+          "Purpose",
+          "Browser lifetime"
+        ],
+        [
+          "__Host-thermus-sign-in",
+          "Holds temporary sign-in state, a code verifier, return destination, and expiry time to complete sign-in securely.",
+          "Up to 10 minutes."
+        ],
+        [
+          "__Host-thermus-session",
+          "Holds the encrypted WorkOS session described in section 2, including profile data, access and refresh tokens, and security information.",
+          "30 days; this can renew when the session refreshes. WorkOS can end a session earlier."
+        ],
+        [
+          "Hosted information",
+          "Retention and deletion handling"
+        ],
+        [
+          "Accounts, organizations, memberships, and client authorizations",
+          "Keep while needed for active access. Account, membership, and authorization deletion are separate actions. Membership removal alone does not delete the underlying user or unrelated organization access. Apply the operator-action target above to authorized deletion actions."
+        ],
+        [
+          "Initial acceptance and enrollment record",
+          "Keep while access is active. Access revocation alone retains the created organization, initial creator agreement metadata, and stable enrollment identifier so repeated signup cannot automatically restore access. Earlier personal-workspace records retain their original schema and purpose. Account deletion receives a separate review of each record and purpose; revocation does not justify indefinite retention. Limit any retained exception to needed evidence or identifiers, with a reason and review date. The record applies to the same WorkOS identity and environment while retained; it does not prevent all future accounts or establish a permanent ban. Deleting this enrollment record can permit a later fresh signup."
+        ],
+        [
+          "Exact documents, agreement wording, and operator records",
+          "Keep the exact versioned terms, notice, and agreement wording so initial and separately recorded agreements can be understood. Keep personal acceptance, recovery, privacy-request, and deletion evidence while needed for access, an applicable agreement, a dispute, security, or legal duties. Review need at closure and when a related issue ends. Delete personal information when no longer needed, subject to applicable obligations."
+        ],
+        [
+          "Invitations",
+          "Current invitation validity is 7 days. Expiry does not establish deletion of the invitation or delivery records. Cancel invitations no longer needed when closing access and request record deletion where available under the operator-action target above. WorkOS may retain separate operational, security, or legal records."
+        ],
+        [
+          "Service completion, organization-change, operational, and error logs",
+          "Render's current plan provides 7 days of accessible application log history. We keep this setting and avoid routine operator-log exports or extra operator-log stores. No Render log-stream destination is currently configured. Organization audit export is a separate stream. Specific security or legal evidence can be retained with a reason and review date. The history window does not establish physical erasure after 7 days or govern provider-managed security, compliance, or backup copies."
+        ],
+        [
+          "Membership-removal operation record",
+          "Keep the current record to control safe removal. An unresolved record has no automatic expiry and must not be removed merely because time passed or a current membership read changed. A proved terminal record can be replaced by the next admitted operation for that organization; this is not a complete history. At closure or on an authorized deletion request, review the remaining safety, dispute, and legal need. Limit any retained exception to necessary evidence or identifiers, record a reason and review date, and delete it when that need ends, subject to applicable obligations."
+        ],
+        [
+          "Audit destination settings",
+          "Keep while needed for the organization’s audit configuration. Disabling export stops export but does not itself delete the destination or saved credential. Thermus does not make a separate backup of these settings or provide a settings restore service. If settings or their encryption key are lost, an Admin may need to re-enter the destination and credential. Authorized deletion requests receive the operator-action review and target above."
+        ],
+        [
+          "Pending audit events and destination copies",
+          "Thermus holds pending events only in bounded process memory, with no durable queue, history, or replay. Events can expire or be dropped before delivery. Disabling or changing a destination does not recall copies already sent. The selected destination controls retention and deletion of received copies; contact its operator for those copies."
+        ],
+        [
+          "Provider backups, archives, security, and legal records",
+          "Providers retain residual copies under their applicable schedules and legal requirements. We use applicable provider deletion processes. Residual copies can remain after account or membership deletion; no fixed purge deadline for all provider copies is promised."
+        ]
+      ],
+      "pageHeight": 15814,
+      "pageErrors": []
+    }
+  ]
+}

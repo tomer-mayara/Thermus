@@ -1,0 +1,130 @@
+[
+  {
+    "name": "terms",
+    "width": 375,
+    "javaScriptEnabled": false,
+    "status": 200,
+    "completeVisibleTextEqualsSource": true,
+    "title": "Terms of Service",
+    "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+    "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+    "h1Count": 1,
+    "allAnchorsResolve": true,
+    "anchorCount": 13,
+    "horizontalOverflow": false,
+    "directEmail": true,
+    "footerLinks": [
+      {
+        "text": "Home",
+        "href": "/"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy"
+      },
+      {
+        "text": "Terms",
+        "href": "/terms"
+      }
+    ],
+    "pageHeight": 18062,
+    "pageErrors": [],
+    "tableRows": 0
+  },
+  {
+    "name": "privacy",
+    "width": 375,
+    "javaScriptEnabled": false,
+    "status": 200,
+    "completeVisibleTextEqualsSource": true,
+    "title": "Privacy Policy",
+    "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+    "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+    "h1Count": 1,
+    "allAnchorsResolve": true,
+    "anchorCount": 11,
+    "horizontalOverflow": false,
+    "directEmail": true,
+    "footerLinks": [
+      {
+        "text": "Home",
+        "href": "/"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy"
+      },
+      {
+        "text": "Terms",
+        "href": "/terms"
+      }
+    ],
+    "pageHeight": 32957,
+    "pageErrors": [],
+    "tableRows": 13
+  },
+  {
+    "name": "terms",
+    "width": 1280,
+    "javaScriptEnabled": false,
+    "status": 200,
+    "completeVisibleTextEqualsSource": true,
+    "title": "Terms of Service",
+    "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+    "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+    "h1Count": 1,
+    "allAnchorsResolve": true,
+    "anchorCount": 13,
+    "horizontalOverflow": false,
+    "directEmail": true,
+    "footerLinks": [
+      {
+        "text": "Home",
+        "href": "/"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy"
+      },
+      {
+        "text": "Terms",
+        "href": "/terms"
+      }
+    ],
+    "pageHeight": 9086,
+    "pageErrors": [],
+    "tableRows": 0
+  },
+  {
+    "name": "privacy",
+    "width": 1280,
+    "javaScriptEnabled": false,
+    "status": 200,
+    "completeVisibleTextEqualsSource": true,
+    "title": "Privacy Policy",
+    "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+    "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+    "h1Count": 1,
+    "allAnchorsResolve": true,
+    "anchorCount": 11,
+    "horizontalOverflow": false,
+    "directEmail": true,
+    "footerLinks": [
+      {
+        "text": "Home",
+        "href": "/"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy"
+      },
+      {
+        "text": "Terms",
+        "href": "/terms"
+      }
+    ],
+    "pageHeight": 15814,
+    "pageErrors": [],
+    "tableRows": 13
+  }
+]

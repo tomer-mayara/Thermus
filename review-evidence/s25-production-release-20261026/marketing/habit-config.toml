@@ -1,0 +1,8 @@
+plugins = ["typescript", "generic"]
+files = ["tests/free-hosted-signup.test.mjs", "src/pages/terms.astro", "src/pages/privacy.astro", "src/content/legal/terms.md", "src/content/legal/privacy.md", "docs/legal-content.md"]
+[sensors.eslint]
+args = ["--config", "/Users/tomermayara/.codex/worktrees/c617/Thermus/.habit-hooks/eslint.config.mjs"]
+[sensors.knip]
+disabled = true
+[sensors.jscpd]
+disabled = true

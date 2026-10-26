@@ -1,0 +1,32 @@
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'thermus-marketing@1.0.0',
+npm warn EBADENGINE   required: { node: '24.x' },
+npm warn EBADENGINE   current: { node: 'v22.14.0', npm: '11.9.0' }
+npm warn EBADENGINE }
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@astrojs/prism@4.1.0',
+npm warn EBADENGINE   required: { node: '>=22.22.0' },
+npm warn EBADENGINE   current: { node: 'v22.14.0', npm: '11.9.0' }
+npm warn EBADENGINE }
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: '@astrojs/telemetry@3.4.0',
+npm warn EBADENGINE   required: { node: '>=22.22.0' },
+npm warn EBADENGINE   current: { node: 'v22.14.0', npm: '11.9.0' }
+npm warn EBADENGINE }
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'astro@7.4.0',
+npm warn EBADENGINE   required: { node: '>=22.22.0', npm: '>=9.6.5', pnpm: '>=7.1.0' },
+npm warn EBADENGINE   current: { node: 'v22.14.0', npm: '11.9.0' }
+npm warn EBADENGINE }
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'undici@8.12.2',
+npm warn EBADENGINE   required: { node: '>=22.19.0' },
+npm warn EBADENGINE   current: { node: 'v22.14.0', npm: '11.9.0' }
+npm warn EBADENGINE }
+
+added 195 packages, and audited 196 packages in 2s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities

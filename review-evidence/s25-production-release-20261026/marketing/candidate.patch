@@ -1,0 +1,396 @@
+diff --git a/docs/legal-content.md b/docs/legal-content.md
+index ff91070..e6170cc 100644
+--- a/docs/legal-content.md
++++ b/docs/legal-content.md
+@@ -1,108 +1,104 @@
+ # Website legal pages
+ 
+-The `/privacy` and `/terms` pages in this draft render the complete organization
+-Audit review bundle `s204-organization-audit-proposal-2026-10-24-v3`. Its proposed
+-effective date is 24 October 2026. Exact-byte owner approval, publication, and
+-runtime rollout are pending. This draft supplies no approval or publication claim.
+-Do not merge or deploy it until the owner approves the complete package and its
+-publication/runtime scope. If publication is delayed, confirm the dates and
+-refresh the affected versions, hashes, and approval.
+-
+-The previous organization-signup package
+-`s105-organization-proposal-2026-10-23-v2` was approved on 23 October 2026 at
+-19:45 UTC. Its source package remains unchanged in the Thermus repository and
+-its prior Marketing representation remains in Git history.
++The `/privacy` and `/terms` pages render the complete owner-approved bundle
++`s2502-organization-removal-proposal-2026-10-26-v1`, effective 26 October 2026.
++The owner answered, “Approve this package and continue the release”. The separate
++Thermus approval record is
++[owner approval](https://github.com/tomer-mayara/Thermus/blob/7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba/docs/legal/organization-removal-2026-10-26-proposal-v1/owner-approval.json).
++It records the response and approved scope; its recording time is not a claimed
++response timestamp. The approved manifest SHA-256 is
++`7528832b4e2baf055d4be35ec2d12fe3d00a9681d0a7684dc5f246e830c4071e`.
++
++This candidate has not been published. Manager review, merge, Netlify publication,
++and complete public readback remain pending. If publication moves past
++26 October, prepare a new dated successor and obtain approval of its exact bytes.
++Preserve every earlier package, approval, and acceptance record.
+ 
+ ## Source and rendering
+ 
+-The authoritative review package is retained in the Thermus repository at
+-`docs/legal/organization-audit-2026-10-24-proposal-v3/`. Exact copies of its Terms
+-and Privacy Markdown are in `src/content/legal/`. Do not edit those copies
+-independently. Changed bytes or dates need new versions, hashes, and owner approval.
++The authoritative package is retained in the Thermus repository at
++`docs/legal/organization-removal-2026-10-26-proposal-v1/`. Exact copies of its
++complete Terms and Privacy Markdown are in `src/content/legal/`. Do not edit
++those copies independently. Changed bytes or dates need new versions, hashes,
++and owner approval. The five-document source package also contains the unchanged
++agreement checkbox and complete Audit and Members help. Their runtime integration
++is separate Thermus work.
+ 
+-| Document | Review version | UTF-8 bytes | SHA-256 |
++| Document | Approved version | UTF-8 bytes | SHA-256 |
+ | --- | --- | --- | --- |
+-| Terms | `hosted-terms-organization-audit-proposal-2026-10-24-v3` | 19,946 | `ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3` |
+-| Privacy | `hosted-privacy-organization-audit-proposal-2026-10-24-v3` | 35,098 | `692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6` |
+-
+-Astro imports and compiles the complete Markdown at build time. The shared legal
+-layout supplies the single document H1; the remaining document is rendered
+-without text changes. Contents links use Astro's generated heading IDs. The
+-Sätteri processor disables smart punctuation so straight apostrophes stay
+-unchanged. Tables wrap within the page at desktop and mobile widths. No
+-application JavaScript or dependency is added for these pages.
+-
+-The rendered legal content retains the supported Cloudflare `email_off` comment
+-guards so email addresses and direct `mailto:` links stay readable without its
+-decoder script. These output guards do not change the Markdown bytes. See the
++| Terms | `hosted-terms-organization-removal-proposal-2026-10-26-v1` | 20,941 | `164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048` |
++| Privacy | `hosted-privacy-organization-removal-proposal-2026-10-26-v1` | 38,594 | `df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c` |
++
++Astro compiles the complete Markdown to HTML at build time. The shared layout
++supplies one H1; the remaining document keeps its complete text. Contents links
++use Astro heading IDs. The Sätteri processor disables smart punctuation so
++straight apostrophes stay unchanged. Tables wrap at desktop and mobile widths.
++The public HTML includes navigation and layout and is not a byte copy of the
++Markdown. The document's data attributes identify the approved source version
++and source hash. No JavaScript, dependency, route, or layout change is needed.
++
++The rendered legal content retains supported Cloudflare `email_off` comment
++guards so direct email links remain readable without a decoder script. These
++output guards do not change the Markdown bytes. See the
+ [Cloudflare exception documentation](https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/#prevent-cloudflare-from-obfuscating-email).
+-The rendered document exposes its review version and source hash as data
+-attributes. The layout, public footer, routes, legal links, homepage, contact
+-dialog, waitlist, pricing, and product-guide copy stay unchanged.
+-
+-## Scope and retained facts
+-
+-The complete Terms cover the website, guides, waitlist, evaluation materials,
+-and hosted portal/MCP service at `app.thermus.ai`, with historical coverage for
+-`thermus.onrender.com`. They cover named organization creation, creator authority,
+-first Admin access, invitations under the organization agreement, password
+-sign-in, page fetching, and web search. Invited members have no separate
+-agreement checkbox. The terms remain free early-access terms; they add no
+-payment card, automatic charge, renewal, or service-level commitment.
+-
+-The changed text describes optional organization-controlled Audit export,
+-including supported tool inputs and final public results/errors, administration
+-event identifiers, pattern-based redaction and its limits, export size limits,
+-best-effort delivery, loss and duplicates, and no Thermus audit history/replay.
+-An authorized Admin selects and controls the recipient. The Privacy text covers
+-private Supabase PostgreSQL destination settings, encrypted saved credentials,
+-and the optional Axiom dataset routing header. Slice 2 supplies no settings
+-backup/restore; lost settings or an encryption key can require Admin re-entry.
+-Backup and recovery work belongs to future Slice 4.
+-
+-The defined page-fetch and search completion/pipeline records omit request and
+-result content; the documents do not promise that every operational or provider
+-log is content-free. Recipient access, retention, onward sharing, provider
+-settings, and existing-organization notice/agreement handling need separate
+-owner review. Public posting or sign-in alone does not replace an existing
+-agreement.
+-
+-Common Paper attribution, license links, warranty and liability exceptions,
+-California law with mandatory protections, and separate-agreement limits remain
+-in the complete text. Marketing contact-form disclosures remain: collected
+-fields, Netlify submission and mailbox notification copies, no implicit
+-marketing subscription, page-only drafts, no browser storage or contact-field
+-analytics, and deletion of both copies. Waitlist, guide-event, Cloudflare, and
+-Netlify monitoring disclosures also remain. This implementation adds no legal
+-terms beyond the exact review source.
+-
+-## Verification and release limits
+-
+-Use Node 24.20.0, `npm ci`, and `npm run check`. The existing rendered-policy case
+-uses the new review versions, hashes, and date. It checks production and
+-preview-context local builds for every rendered word and punctuation mark,
+-links, table cells, a single H1, complete contents anchors, and unchanged public
+-routes. No prose tests were added. The existing email-guard check remains.
+-Retain local check output and browser review at 375 and 1,280 pixels as evidence.
+-
+-The draft commit and pull request title include `[skip netlify]` to prevent
+-automatic branch/production and Deploy Preview builds. No Netlify deployment
+-is requested. Keep the draft unmerged while exact-byte owner approval is pending.
+-
+-Before approved publication, verify the complete deployed policies against the
+-approved sources, footer destinations, slash variants, direct email links, and
+-Cloudflare response. Signup opening and Slice 2 product rollout remain separate
+-Thermus operational steps. Local builds and screenshots prove no deployed state.
+-
+-Local review on 24 October 2026 passed with Node 24.20.0 and locked dependencies:
+-typecheck, all 62 existing tests, and build. The complete policy comparison passed
+-in both local build contexts. The homepage remains 113.1 KB gzip within 200 KB;
+-executable JavaScript remains 3.50 KB within 10 KB. Chromium with JavaScript
+-disabled checked both pages at 375 and 1,280 pixels: one H1, all contents anchors,
+-correct versions/hashes and date, direct email links, unchanged footer links,
+-and no horizontal overflow. The Privacy tables and added Audit section remain
+-readable. Local logs, browser facts, and screenshots are retained in ignored
+-`reports/s2-04-policy/`; these local paths are not published review artifacts.
+-
+-The skip markers follow Netlify's official
+-[Skip a deploy instructions](https://docs.netlify.com/deploy/manage-deploys/manage-deploys-overview/#skip-a-deploy).
++
++## Scope and retained history
++
++Before this candidate, the public pages contained approved Audit bundle
++`s204-organization-audit-proposal-2026-10-24-v3`, effective 24 October. Marketing
++[PR 27](https://github.com/tomer-mayara/Thermus-Marketing/pull/27) published it.
++[PR 29](https://github.com/tomer-mayara/Thermus-Marketing/pull/29) retained its
++Terms and Privacy hashes. The later
++[owner approval record](https://github.com/tomer-mayara/Thermus/blob/a7284b0c4dc02a8c7cd7958cfdc4a11ce4adee89/ast-report/s2-04-rollout/approvals/owner-approval.json)
++records that approval; the original review packet keeps its preparation history.
++The earlier 23 October signup package and approval also remain unchanged.
++
++The successor describes supported removal of an ordinary active User or Admin
++membership, last-Admin protection, retained accounts and other memberships and
++factors, fresh-invitation rejoin, uncertain results, and the private current
++operation safety record. Privacy also explains optional bounded actor display
++names, pattern redaction, and synthetic Audit Test events.
++
++The complete documents retain optional input/result and administration export,
++Supabase destination settings, encrypted saved credentials, Axiom routing,
++Admin-controlled recipients, best-effort delivery, loss and duplicates, and no
++Thermus audit history or replay. Slice 2 has no settings backup or restore;
++future Slice 4 owns that work. The existing no-backup and $0 scope is unchanged.
++Provider facts, recipient access, retention, onward sharing, and removal-record
++retention remain subject to the approved release checks.
++
++The approved existing-organization handling uses current public policy links and
++in-app help. Keep historical acceptance records. Posting, sign-in, invitation
++acceptance, and use do not create a new agreement record or represent an existing
++organization as having accepted updated Terms. The retained rule for separately
++required notice or renewed agreement still applies. Runtime signup must record
++the new identifiers only for a new explicit organization-creation agreement.
++
++Common Paper attribution, license links, liability and warranty terms, governing
++law, marketing contact, waitlist, guide, and provider disclosures remain in the
++complete source. This implementation adds no independent legal wording.
++
++## Verification and publication
++
++Use Node 24.20.0, locked `npm ci`, and `npm run check`. The existing policy case
++uses the approved versions, hashes, and date. It compares complete rendered text,
++links, tables, H1, anchors, and routes in production and preview-context builds.
++The existing email-guard check remains. No new prose test is needed. Inspect
++both complete pages at 375 and 1,280 pixels with JavaScript disabled, including
++tables, footer and email links, date, identifiers, and horizontal overflow.
++Keep check logs, exact source comparisons, browser facts, and screenshots in
++ignored `reports/s25-policy/`; local paths are not published review artifacts.
++
++`main` publishes automatically through Netlify. This preparation makes no push,
++pull request, or deployment. The manager reviews and controls publication. To
++hold a later push or draft PR, use `[skip netlify]` in its commit and PR title;
++ensure an approved publication merge message contains no skip directive. See
++[Netlify's skip instructions](https://docs.netlify.com/deploy/manage-deploys/manage-deploys-overview/#skip-a-deploy).
++Do not weaken non-production access controls for preview review.
++
++After publication, record the exact merge SHA, ready production deploy ID, and
++actual publication time. Verify both direct and slash policy URLs, complete text,
++all links and table cells, source version/hash attributes, effective date,
++footer/email links, Cloudflare response, and mobile/desktop layout. Local builds
++and screenshots prove no deployed state. Thermus runtime rollout and the
++remaining Slice 2.5 release gates need their own evidence.
+diff --git a/src/content/legal/privacy.md b/src/content/legal/privacy.md
+index 307eb25..d3b1e12 100644
+--- a/src/content/legal/privacy.md
++++ b/src/content/legal/privacy.md
+@@ -1,10 +1,10 @@
+ # Privacy Policy
+ 
+-**Effective date: 24 October 2026.**
++**Effective date: 26 October 2026.**
+ 
+ How Thermus handles information from our website, contact form, waitlist, public product guides, hosted portal, and hosted MCP service.
+ 
+-**The essentials:** We collect contact-form details and messages, waitlist information, and website information as described below. Our hosted service also processes sign-in and organization information, agreement records, the URLs, search queries, and reasons submitted through your MCP client, fetched pages and search results, and service logs. We fetch a requested page or send your search query to Brave Search, clean the returned HTML, and return Markdown to your chosen client. The defined tool-completion and pipeline-step operator records omit submitted URLs, search queries, reasons, and returned content. Other operational, error, and provider logs have separate behavior. If your organization Admin enables audit export, copies of supported tool inputs, public results or errors, and administration events are sent to its selected Collector or supported OTLP service. Supabase stores destination settings; Thermus holds pending audit events only in bounded process memory, with no audit history or replay. Redaction is pattern-based and does not remove every secret or confidential value. Delivery can lose or duplicate events. You can request access, correction, or deletion by emailing [legal@thermus.ai](mailto:legal@thermus.ai).
++**The essentials:** We collect contact-form details and messages, waitlist information, and website information as described below. Our hosted service also processes sign-in and organization information, agreement records, the URLs, search queries, and reasons submitted through your MCP client, fetched pages and search results, and service logs. We fetch a requested page or send your search query to Brave Search, clean the returned HTML, and return Markdown to your chosen client. The defined tool-completion and pipeline-step operator records omit submitted URLs, search queries, reasons, and returned content. Other operational, error, and provider logs have separate behavior. If your organization Admin enables audit export, copies of supported tool inputs, public results or errors, and administration events are sent to its selected Collector or supported OTLP service. Supabase stores destination settings and the current membership-removal operation record; Thermus holds pending audit events only in bounded process memory, with no audit history or replay. Redaction is pattern-based and does not remove every secret or confidential value. Delivery can lose or duplicate events. You can request access, correction, or deletion by emailing [legal@thermus.ai](mailto:legal@thermus.ai).
+ 
+ ## 1. Who we are and scope
+ 
+@@ -40,7 +40,7 @@ We use WorkOS AuthKit for hosted sign-in. Hosted sign-in uses email and password
+ 
+ We process the WorkOS user identifier, email address, name, email verification status, selected organization, authentication method, and session and authentication information. The encrypted browser session can contain the user profile returned by WorkOS, including identifiers, name, email and verification status, and, when supplied, profile image, locale, account or sign-in timestamps, external identifiers, and account metadata. It also contains the selected organization, WorkOS access and refresh tokens, authentication method, and any impersonation information returned by WorkOS. The portal uses security values to protect access. The portal does not use multi-factor authentication status as an application access requirement. These WorkOS session credentials are distinct from Google identity data.
+ 
+-WorkOS stores organization memberships, roles, and invitations. We read this information to check access and send authorized invitations and invitation changes to WorkOS. User permits product and MCP access. Admin includes that access and permits viewing members, managing invitations, and managing the organization’s audit export destination. The portal does not provide member removal or changes to an existing member’s role. Authorized organization administrators can see member or invitee email addresses, roles, and status.
++WorkOS stores organization memberships, roles, and invitations. We read this information to check access and send authorized invitations, invitation changes, and exact-membership deletions to WorkOS. User permits product and MCP access. Admin includes that access and permits viewing members, managing invitations, removing supported ordinary active User and Admin memberships, and managing the organization’s audit export destination. The portal does not change an existing member’s role. Removal requires another usable active Admin to remain; a pending invitation does not count. Directory-managed or unknown-management memberships and unsupported grants are outside this removal action. Removal deletes only the selected organization membership and preserves the underlying account, other organization memberships, and existing personal factors. Rejoining requires a new authorized invitation and does not restore old grants. A result that is not confirmed may have taken effect. A refresh shows current access and cannot settle that operation; do not submit another removal. Authorized organization administrators can see member or invitee email addresses, roles, and status.
+ 
+ When you connect an MCP client, WorkOS Connect handles authorization consent and credentials. Thermus receives and checks the client's bearer token and uses user and organization identifiers to check current access. The MCP client's credentials are separate from the browser's session cookies. Browser workspace selection does not change the workspace in an existing MCP token.
+ 
+@@ -52,6 +52,10 @@ We retain the exact versioned terms, privacy notice, and agreement wording separ
+ 
+ For operator-managed onboarding, recovery, privacy, access-removal, and deletion requests, we keep restricted private records as needed. These can include account identity and email, organization, stated authority, requested scope, relevant agreement and notice versions, exact agreement evidence, dates, checks, actions, outcomes, and reasons and review dates for retained exceptions. We use these records to administer access, show which agreement applies, prevent an uncertain activation from being replayed, handle requests, resolve disputes, and meet legal obligations. Their retention criteria are in section 6.
+ 
++### Membership-removal operation records
++
++To prevent overlapping or repeated uncertain removals, we store one current operation record per organization in the private Supabase PostgreSQL schema. It contains the organization identifier, operation UUID, exact target membership identifier and revision, actor identity service and user identifier, start time, and a confirmed applied or no-effect outcome when available. The operation record contains no password, token, invitation link, or factor secret. It is separate from audit export and is not an audit history. An unresolved record holds further removals for that organization without an automatic expiry, including after a restart. Current membership reads cannot clear that hold. An export failure does not change the removal outcome or release the hold. The retention criteria are in section 6.
++
+ ### Hosted page fetches and web searches
+ 
+ Your MCP client sends Thermus a URL and a reason for fetching it. The page-fetch tool accepts these fields; it is not a general chat transcript or file upload service. Thermus sends the full submitted URL to a browser renderer, fetches and renders the page, cleans the HTML, converts it to Markdown, and returns the result to your requesting MCP client. Cleaning attempts to remove advertisements and potential prompt injection. The reason can be included in the organization’s enabled audit export; it is not sent to the renderer as a separate field.
+@@ -70,15 +74,15 @@ Organization change logs record the actor identifiers, organization, target memb
+ 
+ ### Organization audit export and destination settings
+ 
+-An organization Admin can save one HTTPS destination for a Collector or supported OTLP service, an optional Axiom dataset name, and an optional Bearer credential, and separately enable export. We store the organization identifier, destination address, optional dataset name, authentication choice, enabled state, revision, and encrypted optional credential in a private PostgreSQL schema hosted by Supabase. For direct Axiom export, the application sends the saved dataset name in the x-axiom-dataset routing header. The application uses the credential to authenticate delivery; the dataset routing header and credential are not fields of the audit event payload. Authorized Admins can read the saved destination and optional dataset name and whether a credential is present, but the portal does not display the saved credential.
++An organization Admin can choose Axiom or a Custom HTTPS OTLP/HTTP JSON logs destination, provide a Bearer credential, and save the export enabled state. Axiom requires a dataset name; Custom uses no Axiom dataset. The portal requires a new token when none is saved or the endpoint changes. A blank token keeps the saved Bearer credential for the same endpoint. The portal has no unauthenticated-delivery or token-removal option. We store the organization identifier, destination address, optional dataset name, authentication choice, enabled state, revision, and encrypted optional credential in a private PostgreSQL schema hosted by Supabase. For direct Axiom export, the application sends the saved dataset name in the x-axiom-dataset routing header. The application uses the credential to authenticate delivery; the dataset routing header and credential are not fields of the audit event payload. Authorized Admins can read the saved destination and optional dataset name and whether a credential is present. The portal can show the first four characters followed by masking when the saved token is longer than four characters; it does not display the full saved credential.
+ 
+-When export is enabled, supported tool events can include the validated fetch URL and reason or search query and reason, together with the final public result or error text returned to the MCP client. They also include trusted organization and actor identifiers, operation identifier, tool, outcome, duration, and time. A captured fetch URL can include noncredential query parameters and fragments. Invitation send, resend, and revoke events include the actor, organization, target email address or invitation identifier, role where applicable, action, outcome, and time. Audit destination Save and Test events include action and outcome metadata; those event payloads exclude the saved endpoint, dataset name, and credential. These exports are separate from internal operator logs.
++When export is enabled, supported tool events can include the validated fetch URL and reason or search query and reason, together with the final public result or error text returned to the MCP client. They also include trusted organization and actor identifiers, operation identifier, tool, outcome, duration, and time. A captured fetch URL can include noncredential query parameters and fragments. Invitation send, resend, and revoke events include the actor, organization, target email address or invitation identifier, role where applicable, action, outcome, and time. Membership-removal events include the actor, organization, exact target membership identifier, action, outcome, and time; their payloads exclude the form token and membership revision. Audit destination Save and Test events include action and outcome metadata; those event payloads exclude the saved endpoint, dataset name, and credential. These exports are separate from internal operator logs. Supported audit events and synthetic Test events can also include the actor’s display name when available. Names are display metadata; stable actor identifiers remain. Thermus trims and bounds names and applies the same pattern-based redaction to them. Missing or invalid names are omitted.
+ 
+ Before export, Thermus replaces recognized credential fields and selected credential-bearing URL parameters. This redaction uses patterns; it does not remove every secret, personal detail, or confidential value. Sign-in form fields, session cookies, request Authorization headers, and the saved destination credential are not collected as audit event fields. Information repeated in tool inputs or returned text can still be captured. The existing restrictions on submitting secrets, confidential information, sensitive personal information, and regulated data still apply.
+ 
+ Exported result text is limited to 65,536 bytes; the serialized captured event is limited to 131,072 bytes. A truncated exported result copy includes a [TRUNCATED] marker and original and captured byte counts. These capture limits do not shorten the result returned to your MCP client. Unsupported or invalid captures can be omitted.
+ 
+-The optional Test action attempts to send one synthetic event for the saved destination revision, including organization and actor identifiers, time, and the revision. Test can run while export is disabled. It does not save edits or enable export, and it proves neither future delivery nor durable receipt or storage. Pending export events remain only in bounded process memory. Delivery is best effort: overload, expiry, disable, changed settings, outages, or shutdown can drop events; retries can produce duplicates. Thermus provides no audit event history or replay. Your organization controls the destination and its retention, access, and onward sharing.
++The optional Test action first saves the submitted destination settings, including the export enabled state, then attempts to send one synthetic event for that saved destination revision, including organization and actor identifiers, time, and the revision. Test can run while export is disabled. Save and Test each apply the Enable export switch state, so either action can enable or disable export. If Save fails or is not confirmed, no Test is sent. A Test failure or uncertain result does not roll back saved settings. A Test event may have reached the destination even if its result cannot be confirmed. Test proves neither future delivery nor durable receipt or storage. Pending export events remain only in bounded process memory. Delivery is best effort: overload, expiry, disable, changed settings, outages, or shutdown can drop events; retries can produce duplicates. Thermus provides no audit event history or replay. Your organization controls the destination and its retention, access, and onward sharing.
+ 
+ ## 3. How we use information
+ 
+@@ -89,7 +93,7 @@ The optional Test action attempts to send one synthetic event for the saved dest
+ - **Hosted access:** sign you in, record agreement, maintain sessions, check access, manage organization membership and invitations, and connect authorized MCP clients.
+ - **Page fetching:** retrieve a requested page, clean and convert it, and return the result to the requesting client.
+ - **Web search:** send a submitted query to Brave Search, process its search-results HTML, and return the result to the requesting client.
+-- **Hosted operation:** record request outcomes and account changes, diagnose failures, handle activation recovery and access removal, and support service security and administration.
++- **Hosted operation:** record request outcomes and account changes, prevent overlapping or repeated uncertain removals, diagnose failures, handle activation recovery and access removal, and support service security and administration.
+ - **Organization audit export:** store the organization’s destination settings, send supported events when an Admin enables export, and test the saved destination on request.
+ 
+ For Thermus's own use of hosted information, we use account, agreement, request, and log information only to provide the service, maintain security, respond to support and privacy requests, and meet legal obligations. We do not sell personal information or share it for cross-context behavioral advertising. We do not use hosted account data, submitted URLs, search queries and reasons, fetched content or search results, or service logs to train models. The website does not use advertising pixels to track you across unrelated sites. These commitments describe Thermus's use; providers can separately process their own account, security, and usage information under their policies.
+@@ -108,7 +112,7 @@ We use these providers to operate the hosted service. They process information n
+ 
+ - **Render:** hosts the application and processes service traffic and operational logs. The production application sends completion, account-change, and other service log records to its logging output on Render. See [Render's Privacy Policy](https://render.com/privacy).
+ - **WorkOS:** provides sign-in, identity and session services, organization membership and invitation management, signup acceptance-record storage, and Connect authorization consent and token services. See [WorkOS's Privacy Policy](https://workos.com/legal/privacy).
+-- **Supabase:** hosts the private PostgreSQL schema for organization audit destination settings, including the optional Axiom dataset name, revisions, enabled state, and encrypted optional credentials. Thermus stores no audit event history in that schema. See [Supabase’s Privacy Policy](https://supabase.com/privacy).
++- **Supabase:** hosts the private PostgreSQL schema for organization audit destination settings, including the optional Axiom dataset name, revisions, enabled state, and encrypted optional credentials, and the current membership-removal operation record described in section 2. Thermus stores no audit event history in that schema. See [Supabase’s Privacy Policy](https://supabase.com/privacy).
+ - **Brave Search:** receives search queries and network information through requests from the hosted browser renderer to its public search page. Thermus receives and processes the returned search-results HTML. Brave Search handles information it receives under its own policies.
+ - **Google:** processed Google sign-in when that method was used and provided identity information through WorkOS. Google sign-in is not part of hosted sign-in. Earlier information remains subject to the retention and deletion rules below. See [Google's Privacy Policy](https://policies.google.com/privacy).
+ 
+@@ -164,6 +168,7 @@ We retain active account and access records while needed to provide your access.
+ | Exact documents, agreement wording, and operator records | Keep the exact versioned terms, notice, and agreement wording so initial and separately recorded agreements can be understood. Keep personal acceptance, recovery, privacy-request, and deletion evidence while needed for access, an applicable agreement, a dispute, security, or legal duties. Review need at closure and when a related issue ends. Delete personal information when no longer needed, subject to applicable obligations. |
+ | Invitations | Current invitation validity is 7 days. Expiry does not establish deletion of the invitation or delivery records. Cancel invitations no longer needed when closing access and request record deletion where available under the operator-action target above. WorkOS may retain separate operational, security, or legal records. |
+ | Service completion, organization-change, operational, and error logs | Render's current plan provides 7 days of accessible application log history. We keep this setting and avoid routine operator-log exports or extra operator-log stores. No Render log-stream destination is currently configured. Organization audit export is a separate stream. Specific security or legal evidence can be retained with a reason and review date. The history window does not establish physical erasure after 7 days or govern provider-managed security, compliance, or backup copies. |
++| Membership-removal operation record | Keep the current record to control safe removal. An unresolved record has no automatic expiry and must not be removed merely because time passed or a current membership read changed. A proved terminal record can be replaced by the next admitted operation for that organization; this is not a complete history. At closure or on an authorized deletion request, review the remaining safety, dispute, and legal need. Limit any retained exception to necessary evidence or identifiers, record a reason and review date, and delete it when that need ends, subject to applicable obligations. |
+ | Audit destination settings | Keep while needed for the organization’s audit configuration. Disabling export stops export but does not itself delete the destination or saved credential. Thermus does not make a separate backup of these settings or provide a settings restore service. If settings or their encryption key are lost, an Admin may need to re-enter the destination and credential. Authorized deletion requests receive the operator-action review and target above. |
+ | Pending audit events and destination copies | Thermus holds pending events only in bounded process memory, with no durable queue, history, or replay. Events can expire or be dropped before delivery. Disabling or changing a destination does not recall copies already sent. The selected destination controls retention and deletion of received copies; contact its operator for those copies. |
+ | Provider backups, archives, security, and legal records | Providers retain residual copies under their applicable schedules and legal requirements. We use applicable provider deletion processes. Residual copies can remain after account or membership deletion; no fixed purge deadline for all provider copies is promised. |
+diff --git a/src/content/legal/terms.md b/src/content/legal/terms.md
+index 6d58b05..bb5f6c5 100644
+--- a/src/content/legal/terms.md
++++ b/src/content/legal/terms.md
+@@ -1,6 +1,6 @@
+ # Terms of Service
+ 
+-**Effective date: 24 October 2026.**
++**Effective date: 26 October 2026.**
+ 
+ The terms for using the Thermus website, guides, waitlist, evaluation materials, and hosted portal and MCP service, including the limits of our security protections.
+ 
+@@ -14,7 +14,7 @@ You accept these terms when you expressly agree to them, including by submitting
+ 
+ When self-service organization creation is available, you may request free access with an email that WorkOS reports as verified. Personal and company email addresses are eligible. This route requires no company domain, email allowlist, or proof of employment. Email verification does not verify your age, employment, or authority to act for an organization. You must review the terms and privacy notice presented on the organization creation form and make the statements in its agreement checkbox before submitting it.
+ 
+-Self-service organization creation creates a named organization and gives its creator the first Admin role after creation and access are confirmed. User permits product and MCP access. Admin includes that access and permits viewing members, managing invitations, and managing the organization’s audit export destination. Access remains subject to current organization membership and permissions. Creation does not add you to Thermus’s internal organization. An organization role or invitation does not give you authority to bind an organization to a contract.
++Self-service organization creation creates a named organization and gives its creator the first Admin role after creation and access are confirmed. User permits product and MCP access. Admin includes that access and permits viewing members, managing invitations, removing supported ordinary active User and Admin memberships, and managing the organization’s audit export destination. Access remains subject to current organization membership and permissions. Creation does not add you to Thermus’s internal organization. An organization role or invitation does not give you authority to bind an organization to a contract.
+ 
+ Hosted sign-in uses email and password through WorkOS. Signing in, accepting an invitation, or authorizing an MCP client does not itself accept these terms or an updated version of them. An authorized Admin can invite Users and Admins to use the organization’s workspace under the organization’s agreement; Thermus does not ask an invited member to accept a separate agreement when joining. Authentication and MCP authorization alone do not grant product access. If you already have access, signing in or selecting Continue does not itself record agreement to an updated version. Posting these terms does not by itself replace an existing agreement.
+ 
+@@ -26,7 +26,7 @@ You may use the public website and guides for lawful purposes. You may use hoste
+ 
+ Keep your sign-in account, devices, browser sessions, and MCP client credentials secure. Use only accounts and client connections you are authorized to use. Do not share credentials in a way that gives another person access they are not permitted to have. Tell us promptly at legal@thermus.ai if you become aware of unauthorized use of your Thermus access. Sign out of the portal and disconnect clients when they are no longer needed. If you need authorization or access revoked, contact legal@thermus.ai. Portal sign-out and client disconnection are separate actions, as explained in section 9.
+ 
+-An organization administrator must have authority to invite members and assign either available invitation role. Administrators are responsible for assigning appropriate access and requesting removal of access that is no longer needed. The portal does not provide member removal or changes to an existing member’s role. Contact legal@thermus.ai for access-removal requests. An organization role or invitation does not give a person authority to bind the organization to a contract. Each user must stay within their assigned permissions; WorkOS authentication alone does not grant a Thermus role.
++An organization administrator must have authority to invite members and assign either available invitation role. Administrators are responsible for assigning appropriate access and removing access that is no longer needed. An authorized Admin can use Members to remove supported ordinary active User and Admin memberships, subject to the safeguards in section 9. The portal does not change an existing member’s role. Contact legal@thermus.ai for removal requests outside that supported scope or for an uncertain result. An organization role or invitation does not give a person authority to bind the organization to a contract. Each user must stay within their assigned permissions; WorkOS authentication alone does not grant a Thermus role.
+ 
+ You must not use the Services to gain unauthorized access to systems or data, violate another person’s rights, distribute malicious content, disrupt the Services, or evade access restrictions. Submit a URL only when you are permitted to have Thermus fetch and process the page for your intended use. Do not use the service to bypass a paywall, authentication requirement, or other access restriction.
+ 
+@@ -64,7 +64,7 @@ Third-party and open-source materials remain subject to their own licenses. Thes
+ 
+ Our [Privacy Policy](https://thermus.ai/privacy/) explains how the Services handle personal information, including hosted sign-in, organization access, requests, and operational logs. These terms do not waive our obligations under applicable privacy or data protection laws. An applicable data processing agreement controls its own subject matter as stated in section 1.
+ 
+-WorkOS supports hosted identity, sessions, organization access, and MCP client authorization. Hosted sign-in uses email and password. Render hosts the hosted service. Supabase stores audit destination settings, including encrypted optional credentials. An organization’s selected Collector or supported OTLP service receives its audit export and optional synthetic Test events. Direct Axiom export also sends the saved optional dataset name as a routing header. Their roles in handling data are described in the Privacy Policy.
++WorkOS supports hosted identity, sessions, organization access, and MCP client authorization. Hosted sign-in uses email and password. Render hosts the hosted service. Supabase stores audit destination settings, including encrypted optional credentials, and the current operation record used to control membership removal. An organization’s selected Collector or supported OTLP service receives its audit export and optional synthetic Test events. Direct Axiom export also sends the saved optional dataset name as a routing header. Their roles in handling data are described in the Privacy Policy.
+ 
+ When you request a page, the target site and its page dependencies receive network requests from the hosted service. When you search, Brave Search receives the query and network requests from the hosted renderer; services that provide search-page dependencies can also receive network requests. Thermus returns the resulting page or search-results Markdown to the MCP client you chose. That client and its provider handle the result under their own terms, settings, and policies. Review them before connecting a client or requesting content. The client's subsequent processing can differ from Thermus's processing.
+ 
+@@ -86,7 +86,7 @@ These limits apply regardless of whether a claim arises in contract, tort, or ot
+ 
+ ## 9. Ending use
+ 
+-You may stop using the Services at any time. You can sign out of the portal, disconnect an MCP client using that client’s controls, and ask to leave the waitlist by emailing legal@thermus.ai. Portal sign-out and client disconnection are separate actions. Disconnecting a client may remove credentials from that client without revoking all authorization or deleting service records. An authorized organization administrator can request removal of a member’s organization access by contacting legal@thermus.ai. Do not assume that any of these actions immediately invalidates every issued token. Contact legal@thermus.ai to request connection or access revocation, or with account or deletion requests. These actions and requests do not by themselves delete retained operational records or all records held by identity or hosting providers. We may retain a limited signup agreement and workspace record after access is removed to show the initial agreement and prevent repeat signup from restoring removed access, as described in the Privacy Policy. This record is not a complete history of agreements or account activity.
++You may stop using the Services at any time. You can sign out of the portal, disconnect an MCP client using that client’s controls, and ask to leave the waitlist by emailing legal@thermus.ai. Portal sign-out and client disconnection are separate actions. Disconnecting a client may remove credentials from that client without revoking all authorization or deleting service records. An authorized Admin can use Members to remove a supported ordinary active User or Admin membership, including their own, when another usable active Admin remains. A pending invitation does not count as an active Admin. Removal deletes only the selected organization membership. The person’s account, memberships in other organizations, and existing personal factors remain. Return to that organization requires a new authorized invitation; old grants are not restored. Directory-managed or unknown-management memberships and unsupported grants require a separate authorized process. If a removal result is not confirmed, it may have taken effect: do not submit another removal. Refresh shows current access and does not settle that operation. Contact legal@thermus.ai for help with an uncertain result or a request outside the supported scope. Do not assume that any of these actions immediately invalidates every issued token. Contact legal@thermus.ai to request connection or access revocation, or with account or deletion requests. These actions and requests do not by themselves delete retained operational records or all records held by identity or hosting providers. We may retain a limited signup agreement and workspace record after access is removed to show the initial agreement and prevent repeat signup from restoring removed access, as described in the Privacy Policy. This record is not a complete history of agreements or account activity.
+ 
+ After verifying a request and the requester’s authority, we will promptly revoke the access covered by an authorized closure or removal request. We aim to complete deletion actions within our control within 30 calendar days after receiving the request, subject to identity and authority verification. Verification does not extend a deadline imposed by law, and faster legal requirements apply. This target does not guarantee that all provider residual records or backups are erased within 30 days. The Privacy Policy explains retained records, provider limits, and related requests.
+ 
+diff --git a/src/pages/privacy.astro b/src/pages/privacy.astro
+index 7f280ba..a2742dc 100644
+--- a/src/pages/privacy.astro
++++ b/src/pages/privacy.astro
+@@ -14,8 +14,8 @@ const content = (await policy.compiledContent()).replace(/^<h1\b[^>]*>.*?<\/h1>\
+   description="How Thermus handles information from our website, contact form, waitlist, public product guides, hosted portal, and hosted MCP service."
+   path="/privacy"
+   sections={sections}
+-  version="hosted-privacy-organization-audit-proposal-2026-10-24-v3"
+-  sha256="692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6"
++  version="hosted-privacy-organization-removal-proposal-2026-10-26-v1"
++  sha256="df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c"
+ >
+   <Fragment set:html={content} />
+ </LegalLayout>
+diff --git a/src/pages/terms.astro b/src/pages/terms.astro
+index a0118bf..0dad044 100644
+--- a/src/pages/terms.astro
++++ b/src/pages/terms.astro
+@@ -14,8 +14,8 @@ const content = (await policy.compiledContent()).replace(/^<h1\b[^>]*>.*?<\/h1>\
+   description="The terms for using the Thermus website, guides, waitlist, evaluation materials, and hosted portal and MCP service, including the limits of our security protections."
+   path="/terms"
+   sections={sections}
+-  version="hosted-terms-organization-audit-proposal-2026-10-24-v3"
+-  sha256="ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3"
++  version="hosted-terms-organization-removal-proposal-2026-10-26-v1"
++  sha256="164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048"
+ >
+   <Fragment set:html={content} />
+ </LegalLayout>
+diff --git a/tests/free-hosted-signup.test.mjs b/tests/free-hosted-signup.test.mjs
+index 2f2a14f..984ccf2 100644
+--- a/tests/free-hosted-signup.test.mjs
++++ b/tests/free-hosted-signup.test.mjs
+@@ -142,10 +142,10 @@ function markdownText(markdown) {
+     .replace(/\*\*|`/g, '').replace(/\|/g, ' ').replace(/\s+/g, ' ').trim();
+ }
+ 
+-test('Given the prepared organization Audit policies, when either context builds, then both public pages preserve the complete candidate text, links, tables, and date', async () => {
++test('Given the approved organization removal policies, when either context builds, then both public pages preserve the complete candidate text, links, tables, and date', async () => {
+   const documents = [
+-    { name: 'terms', version: 'hosted-terms-organization-audit-proposal-2026-10-24-v3', sha256: 'ce5f1afb9ac2759117b722a4d819b6207f23e2ff99f15d09a5abbd9e1b32eee3' },
+-    { name: 'privacy', version: 'hosted-privacy-organization-audit-proposal-2026-10-24-v3', sha256: '692801219c0ac19c50300cd188cfd2ca55cb7e89caaba656269e484b44d4dcc6' },
++    { name: 'terms', version: 'hosted-terms-organization-removal-proposal-2026-10-26-v1', sha256: '164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048' },
++    { name: 'privacy', version: 'hosted-privacy-organization-removal-proposal-2026-10-26-v1', sha256: 'df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c' },
+   ];
+   for (const document of documents) {
+     const markdown = await read(`src/content/legal/${document.name}.md`);
+@@ -178,7 +178,7 @@ test('Given the prepared organization Audit policies, when either context builds
+       assert.deepEqual(actualRows, expectedRows);
+       const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => id));
+       for (const [, id] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.has(id), `Unresolved legal anchor: ${id}`);
+-      assert.match(html, /Effective date: 24 October 2026\./);
++      assert.match(html, /Effective date: 26 October 2026\./);
+       assert.doesNotMatch(html, /October (?:16|18), 2026/);
+       assert.deepEqual(build.paths.filter(path => /(?:privacy|terms|policy|publication|free-hosted-signup)/i.test(path)).sort(), ['privacy', 'privacy/index.html', 'terms', 'terms/index.html']);
+     }

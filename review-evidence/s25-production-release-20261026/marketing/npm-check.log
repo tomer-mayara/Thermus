@@ -1,0 +1,127 @@
+
+> thermus-marketing@1.0.0 check
+> npm run typecheck && npm test && npm run build
+
+
+> thermus-marketing@1.0.0 typecheck
+> tsc --noEmit -p tsconfig.waitlist.json
+
+
+> thermus-marketing@1.0.0 pretest
+> npm run prepare:guide
+
+
+> thermus-marketing@1.0.0 prepare:guide
+> node scripts/prepare-guide.mjs
+
+
+> thermus-marketing@1.0.0 test
+> node --test tests/*.test.mjs
+
+✔ contact sends every field without losing plus addresses, Unicode, or newlines (42.451625ms)
+✔ contact rejects missing forms, rate limits, server failures, and static registration responses (6.453ms)
+✔ network failures propagate and the actual request honors the caller’s abort signal (0.479291ms)
+✔ the honeypot reaches Netlify so its spam filter can discard automated submissions (0.18825ms)
+(node:53785) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ each successful copy gets fresh topic URLs and a matching notification (4.362375ms)
+✔ clipboard denial shows the fallback and sends no copy event (1.711333ms)
+✔ analytics failure does not turn a successful copy into an error (0.981416ms)
+✔ without the clipboard API the copy button stays hidden (0.837375ms)
+✔ skill index verifies the exact served bytes and changes with the skill (0.631584ms)
+✔ API catalog describes only existing public guides and real documents (13.687583ms)
+✔ AI catalog identifies existing artifacts without advertising product servers (1.222958ms)
+✔ Given the homepage, Hosted opens the waitlist and sign-in remains a direct link (1.1425ms)
+✔ Given the hosted offer, readers see $10/month/user and the early-access waitlist (0.611208ms)
+✔ Given hosted onboarding, guides describe identity, activation, and MCP authorization (0.473875ms)
+✔ Given alert, download, and Hosted actions, all five triggers use the shared waitlist form (0.696542ms)
+✔ Given the current fetch tool, the homepage describes GET and required reasons (0.300375ms)
+✔ Given the product guides, readers see the current request limits without reason scoring promises (0.337375ms)
+✔ Given hosted logging, the page and guide state user/workspace attribution and customer limits (0.741625ms)
+✔ Given the approved organization removal policies, when either context builds, then both public pages preserve the complete candidate text, links, tables, and date (11.904042ms)
+✔ Given either legal page without JavaScript, when the HTML is delivered, then Cloudflare exception guards preserve visible direct email links (0.704167ms)
+✔ starter and cross-topic links retain a guide ID on the current deployment (2.938833ms)
+✔ topic requests return Markdown directly and log only the intended fields (53.420542ms)
+✔ repeat requests remain observable and HEAD is distinguishable from content retrieval (0.903791ms)
+✔ successful copy notification requires POST from the same origin (0.859042ms)
+✔ canonical files pass through and invalid routes do not produce interest events (0.986625ms)
+✔ guide round-trips without creating HTML or a closing script element (8.879875ms)
+✔ Accept null → html (0.678417ms)
+✔ Accept "*/*" → html (0.177709ms)
+✔ Accept "text/*" → html (0.063917ms)
+✔ Accept "text/html" → html (0.87875ms)
+✔ Accept "text/markdown" → markdown (0.136167ms)
+✔ Accept "TEXT/MARKDOWN;Q=1" → markdown (0.196041ms)
+✔ Accept "text/markdown;q=0, text/html" → html (0.124458ms)
+✔ Accept "text/html;q=1, text/markdown;q=0.5" → html (0.170333ms)
+✔ Accept "text/html;q=0.5, text/markdown;q=1" → markdown (0.095459ms)
+✔ Accept "text/html, text/markdown" → html (0.115084ms)
+✔ Accept "text/html;q=0, text/markdown;q=0" → 406 (0.05725ms)
+✔ Accept "text/html;q=0, */*;q=1" → markdown (0.067541ms)
+✔ Accept "text/markdown;q=0, text/*;q=0.5" → html (0.048333ms)
+✔ Accept "text/html;q=0, text/markdown;q=0, */*;q=1" → 406 (0.035583ms)
+✔ Accept "application/json" → 406 (1.06975ms)
+✔ Accept "" → 406 (0.108375ms)
+✔ Accept "text/markdown; charset=\"utf-8\", text/html;q=0.5" → markdown (0.645417ms)
+✔ Accept "text/html; charset=iso-8859-1, text/markdown" → markdown (8.987125ms)
+✔ Accept "text/html;profile=\"a,b;c\",text/markdown" → markdown (13.778791ms)
+✔ Accept "text/markdown;q=wat, text/html" → html (0.058ms)
+✔ Accept "text/markdown;q=1.2, text/html;q=0.5" → html (0.30875ms)
+✔ Accept "text/html;q=1, text/html;q=0, text/markdown;q=0.5" → html (7.968875ms)
+✔ HTML retains headers and adds Vary once (47.85725ms)
+✔ Markdown uses the direct file, retains headers, and handles HEAD (1.107292ms)
+✔ 406 responses are not cached and HEAD has no body (0.253458ms)
+✔ the adapter sends encoded fields matching Netlify’s static registration (22.226ms)
+✔ rejected, missing, and unavailable forms never report success (0.941042ms)
+✔ network failures propagate so the UI can keep the email and offer retry (0.200333ms)
+✔ a static-server 200 is not mistaken for a stored signup (3.712541ms)
+✔ closing the popup can abort the actual storage request (0.314083ms)
+✔ the honeypot is forwarded for provider-side filtering (0.158417ms)
+✔ guide tool restricts retrieval to known public documents without credentials (22.027417ms)
+✔ guide failures and HTML login responses are not returned as documentation (0.402541ms)
+✔ opening the waitlist preserves existing input and never submits or fetches (0.326958ms)
+✔ WebMCP is optional, prefers document API, cleans up and restores on back navigation (4.308625ms)
+✔ legacy browser API unregisters only successfully registered tools (0.537167ms)
+ℹ tests 62
+ℹ suites 0
+ℹ pass 62
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4387.40975
+
+> thermus-marketing@1.0.0 prebuild
+> npm run prepare:guide
+
+
+> thermus-marketing@1.0.0 prepare:guide
+> node scripts/prepare-guide.mjs
+
+
+> thermus-marketing@1.0.0 build
+> astro build && node scripts/finalize-build.mjs && node scripts/check-build.mjs
+
+10:08:19 [types] Generated 40ms
+10:08:19 [build] output: "static"
+10:08:19 [build] mode: "static"
+10:08:19 [build] directory: /Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-release-20261026/marketing-candidate/dist/
+10:08:19 [build] Collecting build info...
+10:08:19 [build] ✓ Completed in 58ms.
+10:08:19 [build] Building static entrypoints...
+10:08:20 [vite] ✓ built in 185ms
+10:08:20 [vite] ✓ built in 18ms
+10:08:20 [build] Rearranging server assets...
+
+ generating static routes 
+10:08:20   ├─ /contact-us/index.html (+8ms) 
+10:08:20   ├─ /privacy/index.html (+5ms) 
+10:08:20   ├─ /site-map/index.html (+3ms) 
+10:08:20   ├─ /terms/index.html (+3ms) 
+10:08:20   ├─ /index.html (+3ms) 
+10:08:20 ✓ Completed in 29ms.
+
+10:08:20 [build] ✓ Completed in 260ms.
+10:08:20 [build] 5 page(s) built in 324ms
+10:08:20 [build] Complete!
+Complete homepage: 113.2 KB gzip / 200 KB; executable JavaScript: 3.51 KB / 10 KB.

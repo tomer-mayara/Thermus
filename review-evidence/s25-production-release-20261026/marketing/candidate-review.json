@@ -1,0 +1,105 @@
+{
+  "checked_at": "2026-10-26T16:19:24.631616+00:00",
+  "base": "654eebabb6465967edf8d4b0388708e6421f0691",
+  "branch": "codex/s2-5-removal-notices",
+  "manifest_sha256": "7528832b4e2baf055d4be35ec2d12fe3d00a9681d0a7684dc5f246e830c4071e",
+  "documents": [
+    {
+      "file": "terms.md",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 20941,
+      "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "changed_from_immediate_source": true,
+      "approved_source_unchanged": true,
+      "marketing_path": "src/content/legal/terms.md",
+      "exact_copy": true
+    },
+    {
+      "file": "privacy.md",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 38594,
+      "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "changed_from_immediate_source": true,
+      "approved_source_unchanged": true,
+      "marketing_path": "src/content/legal/privacy.md",
+      "exact_copy": true
+    },
+    {
+      "file": "agreement.txt",
+      "version": "hosted-agreement-organization-proposal-2026-10-23-v2",
+      "utf8_bytes": 378,
+      "sha256": "279cb2f3005131618bcf7f3ea755ad09205dca3c490f2c3de0c70b25e1ef2a9a",
+      "changed_from_immediate_source": false,
+      "approved_source_unchanged": true
+    },
+    {
+      "file": "audit-help.md",
+      "version": "hosted-audit-help-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 2961,
+      "sha256": "91c500488861110b50b01aea8cda7ba60cf5a7990e5a398a9124742b77588391",
+      "changed_from_immediate_source": true,
+      "approved_source_unchanged": true
+    },
+    {
+      "file": "members-help.md",
+      "version": "hosted-members-help-organization-removal-proposal-2026-10-26-v1",
+      "utf8_bytes": 2414,
+      "sha256": "853d344d0f861fd3a53ed05b846909108d56d39d6105a7fa4fcc626e0d1aa9ca",
+      "changed_from_immediate_source": true,
+      "approved_source_unchanged": true
+    }
+  ],
+  "diff_sha256": "3bfeb184be02acd59051eaff63e7ba465202741157f092bb461728a2a2e230e2",
+  "files": [
+    {
+      "path": "docs/legal-content.md",
+      "sha256": "effeb3c804f5d73867a1480964c7d22dd3f9c6afee2cb5eb6435e820785f4763"
+    },
+    {
+      "path": "src/content/legal/privacy.md",
+      "sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c"
+    },
+    {
+      "path": "src/content/legal/terms.md",
+      "sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048"
+    },
+    {
+      "path": "src/pages/privacy.astro",
+      "sha256": "0880aacc46ebc87cd1ba191a0ee172b32d1c0cbe592c1ab9f7d14b32ce75efa2"
+    },
+    {
+      "path": "src/pages/terms.astro",
+      "sha256": "94043bd52aa9f7f25034d0cbaf14a5d661d7c6f19572e5d049ec5cd1f1a80520"
+    },
+    {
+      "path": "tests/free-hosted-signup.test.mjs",
+      "sha256": "255c3b30b38ea41d520dd3a982b25f0de727b872d9a1431016f02dc5ae9f4997"
+    }
+  ],
+  "publication": "Committed locally only; no push, pull request or deployment",
+  "checks": {
+    "node": "24.20.0",
+    "npm": "11.19.0",
+    "npm_ci": 0,
+    "npm_check": 0,
+    "tests": 62,
+    "passed": 62,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "contexts": [
+      "production",
+      "deploy-preview"
+    ],
+    "git_diff_check": 0
+  },
+  "head": "b07ea8836e3a8df1a8766af81846b25251915549",
+  "manager_review": "Signed off original complete candidate; requested final immutable approval-link substitution and local commit",
+  "final_link_check": {
+    "url": "https://github.com/tomer-mayara/Thermus/blob/7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba/docs/legal/organization-removal-2026-10-26-proposal-v1/owner-approval.json",
+    "read_via": "GitHub connector fetch_file at exact ref",
+    "result": "Success; direct approval answer, bundle and manifest match",
+    "broader_checks": "Not rerun for documentation-link-only change; previous source/test/browser checks remain applicable"
+  },
+  "previous_diff_sha256": "57440b029d36ac85ff8db29c1a999139a6d3d577d8969ebe57ecf2f783e9bf63"
+}
