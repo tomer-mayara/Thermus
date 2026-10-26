@@ -119,13 +119,21 @@ test('Given password-only access and enabled SQL-backed customer export, when Me
   const enabled = await site.store.read(site.tenant);
   assert.equal(enabled.status, 'found');
   assert.equal(enabled.settings.enabled, true);
+  await sender.untilAttempts(1);
+  const saveAttempt = sender.attempts[0];
+  const savedEvent = saveAttempt.event;
+  assert.equal(savedEvent.organizationId, site.tenant);
+  assert.equal(savedEvent.eventName, 'audit.destination.changed');
+  assert.ok(savedEvent.eventName === 'audit.destination.changed');
+  assert.deepEqual([savedEvent.action, savedEvent.outcome], ['save', 'saved']);
+  saveAttempt.complete({ kind: 'accepted' });
   const target = site.world.membershipId(ordinaryUser, organization);
   const form = await removalForm(browser, target);
   site.world.fake.takeRequests();
 
   const removed = await browser.submit(form);
-  await sender.untilAttempts(1);
-  const attempt = sender.attempts[0];
+  await sender.untilAttempts(2);
+  const attempt = sender.attempts[1];
   attempt.complete(failure);
   const exported = attempt.event;
 
@@ -142,7 +150,7 @@ test('Given password-only access and enabled SQL-backed customer export, when Me
   assert.match((await browser.open('members')).body, /Active product members: 2/);
   assert.deepEqual(await site.store.readRemoval(organization), receipt);
   assert.deepEqual(await site.store.read(site.tenant), enabled);
-  assert.equal(sender.attempts.length, 1);
+  assert.equal(sender.attempts.length, 2);
   assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'DELETE').length, 1);
   t.diagnostic('Enabled snapshots, Collector authorization and removal use real PostgreSQL. The external export sender returns a controlled permanent transport failure. No live Collector or provider claim.');
 });

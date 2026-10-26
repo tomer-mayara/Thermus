@@ -79,6 +79,18 @@ are not claims of new source behavior or manufactured TDD red steps. Production
 source, public declarations, dependencies, deployment and registry views remain
 unchanged from the actual parent.
 
+## Fixture correction — 26 October 2026
+
+The enabled-export fixture first observed the retained settings-save event and
+treated it as the removal event. The first current PostgreSQL run passed 25 of
+26 cases and retained that mismatch. The fixture now checks the saved event's
+tenant, action and outcome, completes that export successfully, and then checks
+the separate removal export with a controlled transport failure. It keeps both
+attempts and all removal, receipt, count and single-DELETE assertions. Production
+code and per-tenant FIFO behavior remain unchanged. The PR Validation record
+holds the original failure and current candidate checks; the results below stay
+historical.
+
 ## Latest complete-candidate gate results
 
 These results cover the implementation and test bytes of
