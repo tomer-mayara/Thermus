@@ -37,7 +37,11 @@ export class AdminShellBrowser {
     await this.page.keyboard.press('Enter');
     assert.equal(await this.page.getByRole('main').evaluate(element => element.matches(':focus')), true, 'Skip to content must move focus into main');
     await this.checkTargets('link', ['Connect', 'Members', 'Audit logs', 'Switch workspace']);
-    await this.checkTargets('button', ['Invite']);
+    const invitation = this.page.locator('details.member-invitation');
+    assert.equal(await invitation.getAttribute('open'), null);
+    assert.equal(await invitation.getByRole('button', { name: 'Send invitation', exact: true }).isVisible(), false);
+    const trigger = await invitation.locator('summary').boundingBox();
+    assert.ok(trigger && trigger.height >= 48 && trigger.width >= 48 && trigger.x >= 0 && trigger.x + trigger.width <= this.options.width, 'Invite member must have a visible 48px target');
   }
 
   async expandMembersHelpWithDoubleText(): Promise<void> {

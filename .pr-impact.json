@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "UI-01 changes presentation inside the existing Web owner: pass the existing trusted MemberOverview organizationName to private layout chrome, escape it, label ordinary page links, use a 32px shared title and full-width Members, and focus main after the skip link. Audit keeps its form, script, Save/Test, context and current lookups. Style/script CSP hashes still derive actual bytes; admission, session, permissions, mutations, recovery, seat counts and approved help remain unchanged. No new production component, import edge, public module/declaration, provider call, store, deployment boundary or dependency. All registry drawings remain unchanged because the existing member-read and Web responsibility descriptions still apply. The test-gate document updates the browser group inventory; commands, selection, required checks and decision authority do not change.",
+    "summary": "UI-03 changes invitation presentation inside the existing Web owner. A native closed Invite member disclosure contains the current protected form, Send invitation and a Members GET Cancel link. Last-Admin refusal adds instructions beside the existing recovery link. Allowed roles, recipient policy, POST fields, session/access checks, provider operations, server notices, removal authority and approved help remain unchanged. There is no new script, state, query, production component, dependency, public declaration, store or deployment change. All 15 registry views and current responsibility descriptions remain accurate. The browser gate inventory documents the added cases without changing gate selection or decision authority.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -28,14 +28,13 @@
       "Deployment view"
     ],
     "evidence": [
-      "src/interfaces/web/account/members-page-layout.ts",
-      "src/interfaces/web/account/members-style.ts",
       "src/interfaces/web/account/administration-pages.ts",
-      "test/acceptance/auth/hosted-members.test.ts",
+      "src/interfaces/web/account/account-pages.ts",
+      "src/interfaces/web/account/members-style.ts",
       "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
       "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
-      "test/support/in-process/hosted-member-removal-site.ts",
-      "docs/implementation/admin-ui-01.md",
+      "test/acceptance/auth/hosted-invitations.test.ts",
+      "docs/implementation/admin-ui-03.md",
       "docs/implementation/test-gate-policy.md",
       "architecture/components.md"
     ]

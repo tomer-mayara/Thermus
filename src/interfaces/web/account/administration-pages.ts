@@ -27,11 +27,8 @@ export function membersPage(form: MembersPageForm): Response {
   const members = form.members.members.filter(({ status }) => status === 'active');
   const invitations = form.invitations.invitations.filter(({ state }) => state === 'pending');
   const memberRows = members.map((member) => `<li class="member-row"><div class="member-identity"><p>${escapeHtml(member.email)}: active. Roles: ${rolesText(member.roles)}.</p>${member.subject === form.subject ? '<span class="you-label">You</span>' : ''}</div>${member.removable ? removalForm(form, member) : ''}</li>`);
-  const content = `<div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>
-<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to ${escapeHtml(form.members.organizationName)}</h2>
-<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>
-${sendForm(form).join('\n')}
-<p class="policy-note">${identityPolicyText(form.invitations.identityPolicy)}</p></section>
+  const content = `<div class="introduction members-introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1>
+${sendForm(form).join('\n')}</div>
 <div class="member-lists"><section class="members-card" aria-labelledby="active-heading"><h2 id="active-heading">Active members</h2>
 <p class="list-note">Active product members: ${form.members.activeUserSeats}</p>
 ${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">${memberRows.join('\n')}</ul>`}${membersHelp}</section>
@@ -56,13 +53,20 @@ function removalForm(form: MembersPageForm, member: MemberOverview['members'][nu
 function sendForm(form: MembersPageForm): string[] {
   if (form.invitations.invitableRoles.length === 0) return [];
   const roles = form.invitations.invitableRoles.map((role) => `<label class="role-option"><input type="radio" name="role" value="${escapeHtml(role)}"${role === 'user' ? ' checked' : ''} required> ${escapeHtml(roleLabel(role))}</label>`);
-  return postForm(form.actions.send, [
-    hiddenField('csrf_token', form.csrfToken),
-    hiddenField('organization_id', form.members.organizationId),
-    '<label for="invite-email">Email address</label>',
-    '<input id="invite-email" type="email" name="email" autocomplete="email" required maxlength="254">',
-    '<fieldset><legend>Role</legend>', ...roles, '</fieldset>',
-  ], 'Invite');
+  return [
+    '<details class="member-invitation"><summary>Invite member</summary>',
+    `<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to ${escapeHtml(form.members.organizationName)}</h2>`,
+    '<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>',
+    ...postForm(form.actions.send, [
+      hiddenField('csrf_token', form.csrfToken),
+      hiddenField('organization_id', form.members.organizationId),
+      '<label for="invite-email">Email address</label>',
+      '<input id="invite-email" type="email" name="email" autocomplete="email" required maxlength="254">',
+      '<fieldset><legend>Role</legend>', ...roles, '</fieldset>',
+      `<p class="policy-note">${identityPolicyText(form.invitations.identityPolicy)}</p>`,
+    ], 'Send invitation'),
+    `<a href="${escapeHtml(form.navigation.members)}">Cancel</a></section></details>`,
+  ];
 }
 
 function invitationRow(form: MembersPageForm, invitation: InvitationEntry): string {

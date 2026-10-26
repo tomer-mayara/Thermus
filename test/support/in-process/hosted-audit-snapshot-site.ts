@@ -39,7 +39,7 @@ export async function serveHostedAuditSnapshotSite(t: TestContext, suppliedStore
     advance: (milliseconds: number) => { now += milliseconds; },
     drainLoads: () => setImmediate(),
     invite: async (email: string) => {
-      const form = formLabelled(formsIn((await browser.open('members')).body), 'Invite');
+      const form = formLabelled(formsIn((await browser.open('members')).body), 'Send invitation');
       return browser.submit({ ...form, fields: { ...form.fields, email, role: 'user' } });
     },
     search: async (query: string, organizationIndex = 0) => rpcResult(await site.transport(mcpRequest({ url: hostedConfig.mcpResourceUrl, method: 'tools/call', token: tokens[organizationIndex], params: { name: 'search', arguments: { query, reason: 'Find the requested source' } } }))),

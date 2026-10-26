@@ -10,6 +10,47 @@ import { acmeInvitations, acmeMembers, annToken, serveAdministration, sessionCoo
 const current = { members: acmeMembers, invitations: acmeInvitations };
 
 describe('HostedAccountRoutes combined Members page', () => {
+  test('Given an invitable role, when Members opens, then one closed native disclosure beside Members contains the protected Send invitation form before the list', async () => {
+    const { routes } = serveAdministration(current);
+    const document = parseHTML(await (await routes.handle(accountRequest('/members', 'session=ann'))).text()).document;
+    const disclosure = document.querySelector('details.member-invitation');
+    assert.ok(disclosure, 'Members has an invitation disclosure');
+    assert.equal(disclosure.hasAttribute('open'), false);
+    assert.equal(disclosure.querySelector('summary')?.textContent, 'Invite member');
+    assert.equal(disclosure.parentElement?.querySelector('h1')?.textContent, 'Members');
+    assert.equal(disclosure.querySelectorAll('form').length, 1);
+    assert.equal(disclosure.querySelector('button')?.textContent, 'Send invitation');
+    assert.equal(document.querySelector('main form'), disclosure.querySelector('form'));
+    assert.equal(disclosure.querySelector('input[type="email"]')?.getAttribute('maxlength'), '254');
+    assert.ok((disclosure.textContent ?? '').indexOf('Only a sign-in') < (disclosure.textContent ?? '').indexOf('Send invitation'));
+  });
+
+  test('Given a public base path, when Members opens, then invitation Cancel is an ordinary Members GET link', async () => {
+    const { routes } = serveAdministration(current, { routes: { publicBaseUrl: 'https://thermus.example/team' } });
+    const document = parseHTML(await (await routes.handle(accountRequest('/team/members', 'session=ann'))).text()).document;
+    const cancel = document.querySelector('details.member-invitation a');
+    assert.equal(cancel?.textContent, 'Cancel');
+    assert.equal(cancel?.getAttribute('href'), '/team/members');
+    assert.equal(cancel?.hasAttribute('onclick'), false);
+  });
+
+  test('Given no invitable roles, when Members opens, then no invitation trigger or send form is offered', async () => {
+    const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitableRoles: [] } });
+    const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
+    assert.doesNotMatch(body, /Invite member/);
+    assert.equal(formsIn(body).filter(form => form.action === '/invitations/send').length, 0);
+  });
+
+  for (const role of ['user', 'admin'] as const) {
+    test(`Given only ${role} is invitable, when Members opens, then the form offers only that allowed role and keeps the existing User default`, async () => {
+      const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitableRoles: [role] } });
+      const document = parseHTML(await (await routes.handle(accountRequest('/members', 'session=ann'))).text()).document;
+      const roles = [...document.querySelectorAll('input[name="role"]')];
+      assert.deepEqual(roles.map(input => input.getAttribute('value')), [role]);
+      assert.equal(roles[0]?.hasAttribute('checked'), role === 'user');
+    });
+  }
+
   test('Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace', async () => {
     const organizationName = 'Acme <script>alert("name")</script> & Labs';
     const { routes, organizations } = serveAdministration({ ...current, members: { ...acmeMembers, organizationName } });
@@ -53,7 +94,7 @@ describe('HostedAccountRoutes combined Members page', () => {
       const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
 
       assert.deepEqual(formsIn(body), [
-        { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user' }, label: 'Invite' },
+        { action: '/invitations/send', fields: { csrf_token: annToken, organization_id: 'org-a', role: 'user' }, label: 'Send invitation' },
         { action: '/members/remove', fields: { csrf_token: annToken, organization_id: 'org-a', membership_id: 'membership-ann', revision: 'r7' }, label: 'Remove ann@example.com' },
         { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Resend the invitation to new@example.com' },
         { action: '/invitations/revoke', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Revoke the invitation to new@example.com' },
@@ -84,7 +125,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitations: [] } });
     const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
     assert.match(body, /No pending invitations/);
-    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Invite', 'Remove ann@example.com']);
+    assert.deepEqual(formsIn(body).map(({ label }) => label), ['Send invitation', 'Remove ann@example.com']);
   });
 
   test('Given another member with the same email, when Members opens, then only the trusted subject gets the You label', async () => {

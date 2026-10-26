@@ -8,7 +8,7 @@ import { memberRole, userGrant } from '../../support/fixtures/hosted-roles.ts';
 test('Given a User and Admin with existing browser and MCP sessions in two organizations, when the provider removes Admin in one, then old invitation forms and Members are denied there while product and other organization access remain', async (t) => {
   const site = await serveAdministrationSite(t);
   const browser = site.browserOf(userOf('user-cy', 'org-a'));
-  const invite = formLabelled((await shownPage(browser, 'members')).forms, 'Invite');
+  const invite = formLabelled((await shownPage(browser, 'members')).forms, 'Send invitation');
   assert.equal((await browser.open('members')).status, 200);
   assert.equal(await toolOutcome(site, 'user-cy-token'), 'done');
 

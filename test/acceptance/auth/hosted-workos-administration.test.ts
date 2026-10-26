@@ -216,7 +216,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const browser = await signIn(site, dan);
     const first = await pageOf(browser, 'members');
     const invite = (role: 'User' | 'Admin', email: string) => {
-      const form = formLabelled(first.forms, 'Invite');
+      const form = formLabelled(first.forms, 'Send invitation');
       return browser.submit({ ...form, fields: { ...form.fields, email, role: role.toLowerCase() } });
     };
     changesIn(site);
@@ -233,7 +233,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     assert.ok(invitation, 'WorkOS has no invitation for new@example.com.');
     const { token, acceptInvitationUrl } = await site.world.connection().workos.userManagement.getInvitation(invitation.id);
 
-    assert.deepEqual(labelsOf(first.forms), ['Invite', ...removalLabels]);
+    assert.deepEqual(labelsOf(first.forms), ['Send invitation', ...removalLabels]);
     assert.deepEqual(first.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.match(first.body, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);
     assert.doesNotMatch(first.body, /Only a sign-in with the invited email address can accept the invitation\./);
@@ -269,7 +269,7 @@ describe('Hosted WorkOS edition: organization invitations', () => {
   test('Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, Members no longer shows the accepted invitation, and the active product members count Eve', async (t) => {
     const site = await openSite(t);
     const browser = await signIn(site, hal);
-    const form = formLabelled((await pageOf(browser, 'members')).forms, 'Invite');
+    const form = formLabelled((await pageOf(browser, 'members')).forms, 'Send invitation');
 
     assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'eve@example.com' } }), 'members');
     const pendingMembers = await pageOf(browser, 'members');
@@ -299,11 +299,11 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const page = await pageOf(browser, 'members');
     changesIn(site);
 
-    const userForm = formLabelled(page.forms, 'Invite');
+    const userForm = formLabelled(page.forms, 'Send invitation');
     const adminInvite = await browser.submit({ ...userForm, fields: { ...userForm.fields, role: 'admin', email: 'x@example.com' } });
     const resend = await browser.post('invitations/resend', { csrf_token: userForm.fields.csrf_token ?? '', organization_id: acme, invitation_id: 'invitation_01OLD' });
 
-    assert.deepEqual(labelsOf(page.forms), ['Invite', ...removalLabels, 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
+    assert.deepEqual(labelsOf(page.forms), ['Send invitation', ...removalLabels, 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
     assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
     assert.doesNotMatch(page.body, /old@example\.com/);
     assert.match(page.body, /boss@example\.com: Admin invitation, pending\./);
@@ -320,7 +320,7 @@ describe('Hosted WorkOS edition: the active product member count from every Work
     site.world.membershipPageOverlap = 1;
     site.world.invitations = [];
     const browser = await signIn(site, dan);
-    const form = formLabelled((await pageOf(browser, 'members')).forms, 'Invite');
+    const form = formLabelled((await pageOf(browser, 'members')).forms, 'Send invitation');
     assertRedirectTo(await browser.submit({ ...form, fields: { ...form.fields, email: 'newcomer@example.com' } }), 'members');
     site.world.fake.takeRequests();
 
