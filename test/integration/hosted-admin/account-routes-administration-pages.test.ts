@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { describe, test } from 'node:test';
+import { parseHTML } from 'linkedom';
 import type { InvitationOverview } from '../../../src/accounts/organizations/administration-overviews.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { accountRequest, ann, assertPage, publicOrigin } from './fixtures/account-routes-fixtures.ts';
@@ -9,6 +10,20 @@ import { acmeInvitations, acmeMembers, annToken, serveAdministration, sessionCoo
 const current = { members: acmeMembers, invitations: acmeInvitations };
 
 describe('HostedAccountRoutes combined Members page', () => {
+  test('Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace', async () => {
+    const organizationName = 'Acme <script>alert("name")</script> & Labs';
+    const { routes, organizations } = serveAdministration({ ...current, members: { ...acmeMembers, organizationName } });
+    const response = await routes.handle(accountRequest('/members?organizationName=Forged&organizationId=org-b', 'session=ann'));
+    const body = await response.text();
+    const document = parseHTML(body).document;
+    const switchLink = [...document.querySelectorAll('header a')].find(link => link.textContent === 'Switch workspace');
+    assert.ok(switchLink);
+    assert.equal(switchLink.parentElement?.textContent, `${organizationName}Switch workspace`);
+    assert.equal(document.querySelectorAll('header script').length, 0);
+    assert.doesNotMatch(body, /Forged|<script>/);
+    assert.deepEqual(organizations.administrationCalls.map(({ operation, request }) => [operation, request]), [['memberOverview', 'org-a'], ['invitationOverview', 'org-a']]);
+  });
+
   for (const method of ['GET', 'HEAD']) {
     test(`Given current Admin access, when a ${method} request opens Members with forged organization values, then both complete reads use the trusted actor and organization`, async () => {
       const { routes, organizations, resolver } = serveAdministration(current);
@@ -162,7 +177,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     const { routes } = serveAdministration(current, { routes: { publicBaseUrl: 'https://thermus.example/team' } });
     const body = await (await routes.handle(accountRequest('/team/members', 'session=ann'))).text();
     assert.deepEqual([...new Set(formsIn(body).map(({ action }) => action))], ['/team/invitations/send', '/team/members/remove', '/team/invitations/resend', '/team/invitations/revoke']);
-    assert.match(body, /href="\/team\/">Product \/ Connect<\/a>/);
+    assert.match(body, /href="\/team\/">Connect<\/a>/);
     assert.match(body, /href="\/team\/members" aria-current="page">Members<\/a>/);
     assert.match(body, /href="\/team\/logging" >Audit logs<\/a>/);
     assert.match(body, /href="\/team\/organizations">Switch workspace<\/a>/);
