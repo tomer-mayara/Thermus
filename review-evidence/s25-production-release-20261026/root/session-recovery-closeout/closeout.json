@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "state": "Manager-reviewed production closeout",
+  "release_complete": true,
+  "cleanup_complete": true,
+  "reviewed_candidate": "0293827b1f9a66bbd8f26ecf3aa1ad1cb6b7b931",
+  "production_commit": "57c99e2b892acea52bfc3a53aee61b5ae442bf46",
+  "reviewed_and_merge_trees_identical": true,
+  "deployment": {
+    "exact_connector_readback": true,
+    "status": "live",
+    "live_since": "2026-10-26T19:05:56.965081Z",
+    "final_readback_at": "2026-10-26T19:21:35.261286+00:00",
+    "health_status": 200,
+    "root_status": 200,
+    "health_observed_at": "2026-10-26T19:06:39Z",
+    "root_observed_at": "2026-10-26T19:06:40Z",
+    "auto_deploy_enabled": false,
+    "bounded_application_error_log_query": {
+      "start": "2026-10-26T19:05:56Z",
+      "count": 0,
+      "has_more": false,
+      "scope": "Application errors in the manager-read post-deploy window; not a claim that every provider or historic log is error-free"
+    }
+  },
+  "recovery": {
+    "scope": "Live expired-session /organizations only",
+    "no_intervening_portal_requests_on_blank_page": true,
+    "first_post_removal_request": "2026-10-26T19:07:05.189Z",
+    "status": 401,
+    "request_session_cookie_present": true,
+    "response_session_cookie_empty": true,
+    "response_cookie_max_age": 0,
+    "header_evidence_source": "Actual manager DevTools request/response observation; no cookie values published",
+    "notice": "Sign-in required",
+    "observed500": false,
+    "session_cookie_name": "__Host-thermus-session",
+    "last_completed_portal_response_observed_upper_bound": "2026-10-26T18:38:56.859Z",
+    "response_observation_note": "Observed upper bound of the last completed portal response; not the exact request time"
+  },
+  "fresh_sign_in": {
+    "inline_notice_sign_in_link": false,
+    "public_home_sign_in_link_observed_and_followed": true,
+    "genuine_authkit_password_sign_in_submitted": true,
+    "human_check": "Completed by the user; not bypassed",
+    "callback_completed": true,
+    "fresh_retained_access_status": 200,
+    "fixture_user_and_exact_retained_identity_verified_by_manager": true,
+    "switch_workspace_route": "GET /organizations",
+    "exact_retained_selected": true,
+    "completed_at": "2026-10-26T19:13:07.729Z",
+    "verify_recovery_passed_at": "2026-10-26T19:13:12.733Z",
+    "retained_selection_source": "Fresh AuthKit sign-in automatically reached the only remaining Retained workspace. The manager clicked Switch workspace afterward; its selector200 confirmed Retained selected."
+  },
+  "scope": {
+    "live_route": "Expired removed-User GET /organizations",
+    "live_status": 401,
+    "fresh_workspace_route": "Switch workspace GET /organizations",
+    "fresh_status": 200,
+    "exact_fixture_user_and_retained_selected": true,
+    "completed_at": "2026-10-26T19:13:07.729Z",
+    "guarded_helper_verified_at": "2026-10-26T19:13:12.733Z",
+    "session_route": "Local BDD and pinned-SDK evidence only; no live expired /session probe claimed",
+    "manager_accepted_scope": true,
+    "earlier_core_mcp_and_audit": "Preserved prior c9 evidence, not rerun or relabeled as this recovery fixture",
+    "failed_session_handling": "Failed session was cleared and was not reassigned to another workspace. Fresh AuthKit sign-in is a separate flow."
+  },
+  "cleanup": {
+    "owned_resource_counts": {
+      "organizations": 2,
+      "users": 2,
+      "memberships": 4
+    },
+    "both_browser_contexts_closed": true,
+    "initial_cleanup_command_executions": 1,
+    "initial_organization_delete_journal_entries_confirmed": 2,
+    "initial_hold": "OWNED_ORGANIZATION_ABSENCE_NOT_CONFIRMED after Retained was not absent within the bounded wait; no API write was unknown",
+    "read_only_reconciliation_at": "2026-10-26T19:18:41.748Z",
+    "reconciliation_snapshot_sha256": "58add695893cfb0237a5416cf9fcf54a4c7a2ae0484590da0f08b9d148d33637",
+    "reconciliation_confirmed": {
+      "both_organization_gets404": true,
+      "all_four_membership_gets404": true,
+      "both_remaining_users_owned": true,
+      "no_fixture_settings": true,
+      "no_other_or_pending_operation": true,
+      "sole_applied_receipt_unchanged": true
+    },
+    "separate_manager_approval_for_user_only_continuation": true,
+    "reviewed_continuation_helper_sha256": "a5924908ee5c66e049c2e8da8caf63be9296ce07d2ad31bd5ef7b90e215304c5",
+    "organization_delete_replayed": false,
+    "user_only_continuation_completed_at": "2026-10-26T19:18:59.787Z",
+    "phase": "complete",
+    "held": false,
+    "final_readback": {
+      "two_users404": true,
+      "two_organizations404": true,
+      "four_memberships404": true,
+      "no_fixture_logging_settings": true,
+      "operation_rows_unchanged": true
+    },
+    "passwords_removed": true
+  },
+  "helper_correction": {
+    "manager_approved": true,
+    "reviewed_helper_sha256": "27f6b6629dadf3e86551fb326cbb437a41b51245e8a34f82cf6f5ed064e08b99",
+    "source_record_sha256": "300b6b547ecfaa3c202e3d5ff216d3fb5fc4b3b408277df2f39a7c3a4ea26029",
+    "reason": "Remove the invented inline Sign in link requirement. Existing Sign-in required notice has no inline link. Keep actual401 and cookie-present/cleared checks; the public portal-home Sign in link is the observed recovery entry.",
+    "product_source_change": false
+  },
+  "history": {
+    "original_c9_defect": "After removed-User session expiry, /session and /organizations returned500; fresh sign-in was a workaround. Core removal, same-valid-token MCP denial and actual Audit receipts passed separately.",
+    "pr261_correction": "Existing terminal-refusal recovery restored; exact live /organizations401 with cookie clearing and a real fresh callback/Retained200 were observed.",
+    "human_check": "Completed by the user; no bypass",
+    "first_cleanup_readback_wait": "Confirmed organization deletes were not replayed. A read-only exact reconciliation preceded separately approved one-time remaining-user cleanup.",
+    "prior_reports_unchanged": true
+  },
+  "housekeeping": {
+    "temporary_production_workos_key_copy_deleted": true,
+    "shared_credentials_changed": false,
+    "browser_guide_password_field": "Static pointer only; actual passwords were never stored there",
+    "both_fixture_browser_contexts_closed": true,
+    "task_vm_stopped": true,
+    "source_worktree_archived": true,
+    "ignored_files_preserved_and_verified": 876,
+    "quality_worktree": "Retained because the app refused ownership-based archive attempts from root, parent and child. No bypass. This is local housekeeping only, not remaining production work.",
+    "pre_existing_untracked_user_document_untouched": true,
+    "source": "Manager final operations handoff"
+  },
+  "private_values_published": false
+}

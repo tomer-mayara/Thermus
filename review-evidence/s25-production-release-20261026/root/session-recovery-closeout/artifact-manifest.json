@@ -1,0 +1,29 @@
+{
+  "state": "Manager-reviewed production closeout",
+  "release_complete": true,
+  "cleanup_complete": true,
+  "preserve_prior_evidence": "b46abfeb90d77330154c08a513f3eae90d07de22",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5140,
+      "sha256": "3e0be4b84931a42fd84aec7c32f084b88636e1742a2d3c7c4d863954e585b763"
+    },
+    {
+      "path": "closeout.json",
+      "bytes": 6699,
+      "sha256": "1e7437cd32765703ef1a1dab820d4b69fca66e23a1abe86f2b7e74c5ac88ac74"
+    },
+    {
+      "path": "secret-scan.json",
+      "bytes": 727,
+      "sha256": "5f154f16dc9471ecaa13119374b0b35cb0be35e335c46a3122f05a019b5c2fff"
+    },
+    {
+      "path": "source-manifest.json",
+      "bytes": 1424,
+      "sha256": "c9aa5d35234e230590e395717e680371723e18ee1e305659e4e7f9606aef0c6e"
+    }
+  ],
+  "manager_review_pending": false
+}

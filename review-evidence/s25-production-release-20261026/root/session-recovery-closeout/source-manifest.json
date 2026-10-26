@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "source_records": [
+    {
+      "basename": "pr261-deploy.json",
+      "bytes": 673,
+      "sha256": "f9f36bb962d2beb397ebb39cf315ca3e3ce39ff9149612c711276141be433ce4",
+      "raw_published": false
+    },
+    {
+      "basename": "cleanup-readback.json",
+      "bytes": 381,
+      "sha256": "970ebfd0f15d61bfe17dfd705d3969bc6631727bbe4ade55bd64fb9541312816",
+      "raw_published": false
+    },
+    {
+      "basename": "session-recovery-notice-correction-review.json",
+      "bytes": 739,
+      "sha256": "300b6b547ecfaa3c202e3d5ff216d3fb5fc4b3b408277df2f39a7c3a4ea26029",
+      "raw_published": false
+    },
+    {
+      "basename": "recovery-browser-evidence.json",
+      "bytes": 1474,
+      "sha256": "7c30fb030f560b723de098c5455a9121f71d578151e5b10f8b2057976feccec5",
+      "raw_published": false
+    }
+  ],
+  "source_distinctions": "Exact Render connector readback; actual manager DevTools/browser flow; guarded verify-recovery; exact read-only reconciliation; separately approved user-only cleanup; manager operational handback. No private raw source is copied.",
+  "prior_full_review_evidence": "7e64c3c2fb0f2875c0bf1109f4bc479ef1303ec1",
+  "prior_core_canary_evidence": "b46abfeb90d77330154c08a513f3eae90d07de22",
+  "manager_review_pending": false,
+  "manager_review": "Manager accepted facts, scope, history and cleanup; the four requested corrections in that review message have been applied"
+}
