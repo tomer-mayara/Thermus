@@ -16,8 +16,8 @@ The expanded Slice 2.5 tickets were reviewed on 24 October 2026. S2.5-01a is
 implemented in [PR #251](https://github.com/tomer-mayara/Thermus/pull/251).
 S2.5-01b adds durable removal coordination in stacked
 [PR #253](https://github.com/tomer-mayara/Thermus/pull/253). Its original candidate
-passed local validation; checks for the rebased candidate remain pending. Merge
-still requires the parent, resolution of S2.5-R1 in this PR, and independent
+passed local validation; its maintained PR comments record the rebased checks.
+Merge still requires the parent, resolution of S2.5-R1 in this PR, and independent
 architect approval. S2.5-01c and S2.5-02 remain planned.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use

@@ -1,12 +1,13 @@
 # S2.5-01b implementation record
 
-Date: 25 October 2026. Status: implementation and local review complete;
-the stacked parent and independent human architect approval still block merge.
+Date: 25 October 2026. Status: the original candidate completed local review.
+The maintained PR comments record the rebased checks and review. S2.5-R1, parent
+integration, and independent human architect approval still block merge.
 
 [PR #253](https://github.com/tomer-mayara/Thermus/pull/253) adds one owner for
 membership removal. It is stacked on
 [S2.5-01a, PR #251](https://github.com/tomer-mayara/Thermus/pull/251), at
-`122d65bf1f035fc195792cc083732aa05c423c58`, and follows the
+`f03a7b73b2c27dc26477d5378a3356f28744a367`, and follows the
 [approved ticket](../design/organization-admin-plan.md#s25-01b--one-removal-owner-with-durable-per-org-serialization).
 S2.5-01c supplies the browser action. This candidate adds no removal route or UI,
 role change, MFA, provider, paid service, or live database change.
@@ -158,8 +159,27 @@ The first self-hosted run failed because Docker had no free space. Removal of
 old, stopped Thermus test artifacts allowed the retry; no database volume was
 removed. The review record retains that failure and all earlier red steps.
 
-The checker reports T2 with no local eligibility blocker. Three new-file MI
+The original candidate's checker reported T2 with no local eligibility blocker.
+The later S2.5-R1 finding remains open in this PR. Three new-file MI
 exceptions retain the small removal owner, rule file, and lifetime owner.
 Existing low scores and hook findings have explicit reasons. One composition
 function has no exact source-mapped coverage; its one path bounds CRAP to 1–2,
 which meets the checker goal. A local eligibility result is not human approval.
+
+## Rebase onto updated S2.5-01a
+
+On 25 October 2026, PR #253 was rebased onto parent
+`f03a7b73b2c27dc26477d5378a3356f28744a367`. The source behavior of this increment
+stays the same. The document conflicts keep the parent's current Audit rollout
+and pending-event cleanup, plus this increment's removal-first shutdown order.
+The local passes recorded above belong to the original candidate
+`0ff3f6cdde5be4124df0ed2ab002844d5db1c502`; they do not validate the rebased head.
+The maintained PR comments record the rebased checks and review.
+
+S2.5-R1 remains open in this PR: removal's safety scan still uses display pages
+and reads unused email for each member. Controlled latency can exhaust the
+30-second deadline before deletion and retain a pending operation. The repair in
+[PR #257](https://github.com/tomer-mayara/Thermus/pull/257) is outside this rebase.
+Parent integration, that repair, and independent authorized architect approval
+of the current candidate remain merge holds.
+This rebase changes no production membership, database schema, rollout, or restore state.
