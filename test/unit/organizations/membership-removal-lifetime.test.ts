@@ -76,8 +76,8 @@ for (const stop of ['deadline', 'close'] as const) {
 test('Given a final member page that consumes the deadline, when its answer is returned, then the synchronous pre-send guard prevents deletion', async (t) => {
   const time = removalTime(t);
   const { administration, directory, deletes, store } = removalFixture();
-  const page = directory.memberPage.bind(directory);
-  directory.memberPage = async (query) => {
+  const page = directory.memberFactsPage.bind(directory);
+  directory.memberFactsPage = async (query) => {
     const result = await page(query);
     if (result.next === undefined) time.advance(30_000);
     return result;
@@ -141,7 +141,7 @@ test('Given slow authorization, admission, and current reads, when their combine
   store.admitRemoval = async intent => { time.advance(10_000); return admit(intent); };
   assert.equal(await administration.removeMember(actor, request), 'unknown');
   assert.deepEqual(deletes, []);
-  assert.equal(directory.memberPageReads.length, 0);
+  assert.equal(directory.memberFactsPageReads.length, 0);
   assert.equal(store.operations.get('org-a')?.outcome, null);
 });
 
@@ -187,10 +187,10 @@ test('Given all current removal reads, when the operation completes, then they s
   const signals: (AbortSignal | undefined)[] = [];
   const memberships = directory.membershipsOf.bind(directory);
   const member = directory.member.bind(directory);
-  const page = directory.memberPage.bind(directory);
+  const page = directory.memberFactsPage.bind(directory);
   directory.membershipsOf = async (user, signal) => { signals.push(signal); return memberships(user); };
   directory.member = async (id, signal) => { signals.push(signal); return member(id); };
-  directory.memberPage = async query => { signals.push(query.signal); return page(query); };
+  directory.memberFactsPage = async query => { signals.push(query.signal); return page(query); };
   directory.deleteMembership = async () => ({ outcome: 'applied' });
   assert.equal(await fixture.administration.removeMember(actor, request), 'applied');
   assert.equal(signals.length, 4);

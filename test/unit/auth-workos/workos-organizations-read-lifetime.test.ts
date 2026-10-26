@@ -4,7 +4,7 @@ import { acme, globex, membership, roles, WorkOSOrganizationsDouble } from './fi
 
 const user = { authority: 'workos:client_test', subject: 'user_01ALICE' };
 
-for (const operation of ['memberships', 'member', 'page'] as const) {
+for (const operation of ['memberships', 'member', 'page', 'facts-page'] as const) {
   test(`Given an aborted ${operation} read, when the directory is called, then it sends no provider request`, async () => {
     const double = new WorkOSOrganizationsDouble();
     const directory = double.directory();
@@ -13,7 +13,8 @@ for (const operation of ['memberships', 'member', 'page'] as const) {
     controller.abort(reason);
     const reading = operation === 'memberships' ? directory.membershipsOf(user, controller.signal)
       : operation === 'member' ? directory.member('member-a', controller.signal)
-        : directory.memberPage({ organizationId: acme, statuses: ['active'], signal: controller.signal });
+        : operation === 'page' ? directory.memberPage({ organizationId: acme, statuses: ['active'], signal: controller.signal })
+          : directory.memberFactsPage({ organizationId: acme, statuses: ['active'], signal: controller.signal });
     await assert.rejects(reading, error => error === reason);
     assert.deepEqual(double.calls, []);
   });
@@ -89,3 +90,26 @@ test('Given two members on one page, when the first user read aborts the signal,
   await assert.rejects(double.directory().memberPage({ organizationId: acme, statuses: ['active'], signal: controller.signal }), error => error === reason);
   assert.deepEqual(double.calls.filter(call => call.method === 'getUser'), [{ method: 'getUser', input: first.userId }]);
 });
+
+for (const stopAt of ['memberships', 'roles'] as const) {
+  test(`Given a safety facts page, when its signal stops during ${stopAt}, then no later remote read or complete page is returned`, async () => {
+    const double = new WorkOSOrganizationsDouble();
+    double.membershipList = { data: [membership()], after: 'later' };
+    const controller = new AbortController();
+    const reason = new Error('The owner stopped');
+    const memberships = double.userManagement.listOrganizationMemberships;
+    double.userManagement.listOrganizationMemberships = async query => {
+      const result = await memberships(query);
+      if (stopAt === 'memberships') controller.abort(reason);
+      return result;
+    };
+    const roleRead = double.authorization.listOrganizationRoles;
+    double.authorization.listOrganizationRoles = async id => {
+      const result = await roleRead(id);
+      if (stopAt === 'roles') controller.abort(reason);
+      return result;
+    };
+    await assert.rejects(double.directory().memberFactsPage({ organizationId: acme, statuses: ['active'], signal: controller.signal }), error => error === reason);
+    assert.deepEqual(double.methods(), ['listOrganizationMemberships', ...(stopAt === 'roles' ? ['listOrganizationRoles'] : [])]);
+  });
+}

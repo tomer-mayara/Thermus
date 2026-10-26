@@ -19,11 +19,16 @@ provider, and controlled recovery evidence in PRs
 [#253](https://github.com/tomer-mayara/Thermus/pull/253),
 [#254](https://github.com/tomer-mayara/Thermus/pull/254), and
 [#255](https://github.com/tomer-mayara/Thermus/pull/255). The 25 October
-[stack review](../implementation/admin-s2-5-stack-review.md) found one open P2
-at its reviewed head:
-the safety scan reads unused display email for every member and can exhaust the
-operation budget. [S2.5-R1](#s25-r1--read-safety-facts-without-display-hydration)
-records the then-planned repair. PRs #253 and #255 were returned to Draft. The
+[stack review](../implementation/admin-s2-5-stack-review.md) found a P2 at its
+reviewed head: the safety scan reads unused display email for every member and
+can exhaust the operation budget.
+[S2.5-R1](#s25-r1--read-safety-facts-without-display-hydration) implements the
+source repair in PR #257. Its earlier checks, pending-review statements and
+Draft actions are historical candidate records. On 26 October 2026, the user
+directly reported architect approval of the entire original Slice 2.5 stack.
+Current candidate pins, validation and approval reconciliation are in PR #257's
+[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
+[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871). The
 [S2.5-02 ledger](../implementation/admin-s2-5-02.md) is the sole current Slice 2.5
 release gate ledger. Removal is not released, and S2.5-02 is not Done.
 
@@ -2484,9 +2489,10 @@ identity mirror, or membership-reduction coordinator.
 ### Slice 2.5 — Password-only membership removal
 
 **Current status — 25 October 2026.** Ordinary User/Admin removal and self-removal
-are implemented under password authentication. Independent review found an open
-P2 in the safety scan; S2.5-R1 below must repair it before the final candidate is
-ready. Removal is not released. Role changes and MFA remain Slice 3 work;
+are implemented under password authentication. Independent review found a P2
+in the safety scan. S2.5-R1 completes the source repair and selected behavioral
+checks. Independent human architect review of the current candidate remains
+pending. Removal is not released. Role changes and MFA remain Slice 3 work;
 settings backup remains Slice 4 work.
 
 The [S2.5-02 ledger](../implementation/admin-s2-5-02.md) alone owns the current
@@ -2501,10 +2507,10 @@ planned red steps are not evidence of an observed test failure.
 | Ticket | Functional dependencies | Current state and evidence |
 | --- | --- | --- |
 | S2.5-01a | Existing S1-04a member/provider boundary | Implemented: narrow deletion and current management facts. [Record](../implementation/admin-s2-5-01a.md), PR #251. |
-| S2.5-01b | S2.5-01a; S2-01a store; S2-03a safe recording | Implemented: durable admission, last-Admin checks and bounded lifetime. The safety scan needs S2.5-R1; PR #253 is Draft again. [Record](../implementation/admin-s2-5-01b.md). |
+| S2.5-01b | S2.5-01a; S2-01a store; S2-03a safe recording | Implemented: durable admission, last-Admin checks and bounded lifetime. S2.5-R1 supplies the safety-scan repair; PR #253 is Draft again. [Record](../implementation/admin-s2-5-01b.md). |
 | S2.5-01c | S2.5-01b | Implemented: checked Members removal and safe self-removal navigation. [Record](../implementation/admin-s2-5-01c.md), PR #254. |
-| S2.5-R1 | Existing S2.5-01a/b/c implementation | Open: remove display-only hydration from safety reads without weakening checks or bounds. |
-| S2.5-02 | S2.5-01c and S2.5-R1; actual S2-04 release before rollout | Integrated and staging proof exists; PR #255 is Draft. Final repaired-candidate checks, review and release gates remain. [Current ledger](../implementation/admin-s2-5-02.md). |
+| S2.5-R1 | Existing S2.5-01a/b/c implementation | Source repair and selected behavioral checks complete in PR #257. Current-head human architect approval remains pending. [Record](../implementation/admin-s2-5-r1.md). |
+| S2.5-02 | S2.5-01c and S2.5-R1; actual S2-04 release before rollout | Repaired-candidate behavioral gates pass; PR #255 is Draft. Current-head human review and release gates remain. [Current ledger](../implementation/admin-s2-5-02.md). |
 
 There is no circular implementation dependency. Development uses the existing
 Slice 2 store and safe recording contract. Actual Slice 1/2 release is a removal
@@ -2587,10 +2593,17 @@ client workflow or extra recovery page is needed.
 
 #### S2.5-R1 — Read safety facts without display hydration
 
-**Open P2; repair not implemented.** The coordinator uses `memberPage`, whose
-WorkOS adapter serially fetches every member's email. Safety checks do not use
-email. A cache-only probe models 100 active memberships, including one acting
-Admin and an ordinary User target, and successful 300 ms user reads: display hydration consumes the 30-second budget after admission; the
+**Source repair and selected behavioral checks complete; human review pending.**
+The [R1 record](../implementation/admin-s2-5-r1.md) records observed red/green
+steps, current behavioral gates, cleanup and limits. The maintained PR Validation
+and Quality review records give current candidate pins, coverage/metrics,
+eligibility and review holds. Removal now scans `memberFactsPage` without per-member
+email reads; `member()` and display pages keep their current contract. The
+original P2 occurred because the coordinator used `memberPage`, whose WorkOS
+adapter serially fetches every member's email. Safety checks do not use email.
+A cache-only probe models 100 active memberships, including one acting Admin and
+an ordinary User target, and successful 300 ms user reads: display hydration
+consumes the 30-second budget after admission; the
 request returns unknown with no DELETE, keeps its pending row, and the next
 valid request returns busy. This is conditional simulated-latency evidence,
 not a production benchmark or a guaranteed organization-capacity threshold.

@@ -4,12 +4,17 @@ Reviewed implementation head: `806ccc573c6ae09c411a47a755d6dd9316343f8f`.
 Actual S2.5-02 parent: `2271545702a8f1ec28c6f7dd913fec7024ecadeb`.
 Complete-stack main base: `9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546`.
 
-**One confirmed P2 remains open.** PRs #253 and #255 are Draft again. The source repair is
-planned as [S2.5-R1](../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration),
-not implemented. The [S2.5-02 ledger](admin-s2-5-02.md) is the sole current
-removal release gate ledger. This review does not mark the stack ready or released.
+Historical record: the finding, repair requirements and Draft actions below
+cover the pinned 25 October candidate. The P2 source repair is implemented in
+[S2.5-R1 / PR #257](admin-s2-5-r1.md). On 26 October 2026, the user directly
+reported architect approval of the entire original Slice 2.5 stack. Current
+candidate validation and approval reconciliation are in PR #257's
+[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
+[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871).
+The [S2.5-02 ledger](admin-s2-5-02.md) remains the sole current removal release
+gate ledger. This historical review supplies no new gate pass, merge or release.
 
-## Finding and required repair
+## Original finding and required repair
 
 The coordinator's complete active-member safety scan calls the display-oriented
 `memberPage`. The [WorkOS adapter](../../src/accounts/providers/workos/workos-organizations.ts)

@@ -5,9 +5,9 @@ import type { RemovalIntent, RemovalOperationStore } from '../../../src/accounts
 import { WorkOSOrganizations, type WorkOSOrganizationsOptions } from '../../../src/accounts/providers/workos/workos-organizations.ts';
 import { hostedRolePermissions } from '../../support/fixtures/hosted-roles.ts';
 
-type ReadStage = 'actor-pages' | 'target-roles' | 'member-users';
+type ReadStage = 'actor-pages' | 'target-roles' | 'target-user' | 'facts-roles';
 
-for (const stage of ['actor-pages', 'target-roles', 'member-users'] satisfies ReadStage[]) {
+for (const stage of ['actor-pages', 'target-roles', 'target-user', 'facts-roles'] satisfies ReadStage[]) {
   for (const stop of ['deadline', 'close'] as const) {
     test(`Given removal paused during WorkOS ${stage}, when ${stop} stops its owner, then an in-flight read can finish but no next provider read or DELETE starts`, async t => {
       let now = 0;
@@ -22,9 +22,10 @@ for (const stage of ['actor-pages', 'target-roles', 'member-users'] satisfies Re
       let roleReads = 0;
       let userReads = 0;
       let deletes = 0;
+      let removingStarted = false;
       const pause = async (name: string, shouldPause: boolean) => {
         reads.push(name);
-        if (shouldPause) { reached.resolve(); await release.promise; }
+        if (shouldPause && removingStarted) { reached.resolve(); await release.promise; }
       };
       const unused = async (): Promise<never> => { throw new Error('Unexpected provider operation'); };
       const options: WorkOSOrganizationsOptions = {
@@ -39,11 +40,11 @@ for (const stage of ['actor-pages', 'target-roles', 'member-users'] satisfies Re
         },
         authorization: { listOrganizationRoles: async () => {
           roleReads++;
-          await pause('roles', stage === 'target-roles' && roleReads === 3);
+          await pause('roles', (stage === 'target-roles' && roleReads === 3) || (stage === 'facts-roles' && roleReads === 4));
           return { data: Object.entries(hostedRolePermissions).map(([slug, permissions]) => ({ slug, permissions })) };
         } },
         userManagement: {
-          getUser: async () => { userReads++; await pause('user', stage === 'member-users' && userReads === 2); return { email: 'member@example.com' }; },
+          getUser: async () => { userReads++; await pause('user', stage === 'target-user' && userReads === 1); return { email: 'member@example.com' }; },
           deleteOrganizationMembership: async () => { deletes++; },
           listInvitations: unused, getInvitation: unused, sendInvitation: unused, resendInvitation: unused, revokeInvitation: unused,
         },
@@ -64,6 +65,7 @@ for (const stage of ['actor-pages', 'target-roles', 'member-users'] satisfies Re
       };
       const administration = new OrganizationAdministration({ directory, removalStore: store, records: { record: () => {} }, billing: { stateOf: unused, updateSeats: unused } });
       t.after(() => administration.close());
+      removingStarted = true;
       const removing = administration.removeMember({ user: actor }, { organizationId: 'org-a', membershipId: 'member-b', revision });
       await reached.promise;
       const readsAtStop = [...reads];

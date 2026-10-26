@@ -19,6 +19,7 @@ import type {
   OrganizationDirectory,
   OrganizationInvitation,
   OrganizationMember,
+  OrganizationMemberFacts,
   OrganizationMembership,
   Page,
 } from '../../organizations/organization-directory.ts';
@@ -157,6 +158,15 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     return pageOf(members, page.listMetadata.after);
   }
 
+  async memberFactsPage(request: MemberPageRequest): Promise<Page<OrganizationMemberFacts>> {
+    const { organizationId, statuses, cursor, signal } = request;
+    if (statuses.length === 0) throw new Error('A member read must name at least one membership status');
+    const page = await readWhileActive(signal, () => this.memberships.listOrganizationMemberships({ organizationId, statuses: [...statuses], limit: PAGE_SIZE, ...afterOf(cursor) }));
+    const records = page.data.map(record => checkedMemberRecord(record, request));
+    const organizationRoles = records.length === 0 ? [] : await this.organizationRoles(organizationId, signal);
+    return pageOf(records.map(record => memberFactsOf(record, organizationRoles)), page.listMetadata.after);
+  }
+
   async member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined> {
     const record = await this.currentMembership(membershipId, signal);
     return record === undefined ? undefined : this.memberOf(record, await this.organizationRoles(record.organizationId, signal), signal);
@@ -258,12 +268,11 @@ export class WorkOSOrganizations implements OrganizationDirectory {
   }
 
   // A WorkOS membership has no email, and the user list of an organization gives only the users with an active
-  // membership. Thus each member read also reads its user.
+  // membership. Thus each display member read also reads its user.
   private async memberOf(record: MembershipRecord, organizationRoles: readonly RoleRecord[], signal?: AbortSignal): Promise<OrganizationMember> {
-    const { id: membershipId, userId: subject, organizationId, status } = record;
-    const grants = grantsOfRoles(roleListOf(record), organizationRoles, organizationId);
+    const facts = memberFactsOf(record, organizationRoles);
     const { email } = await readWhileActive(signal, () => this.userManagement.getUser(record.userId));
-    return Object.freeze({ membershipId, subject, organizationId, email, status, management: managementOf(record), grants, revision: revisionOf(record) });
+    return Object.freeze({ ...facts, email });
   }
 
   // The membership with this ID in any organization. A WorkOS 404 gives undefined.
@@ -299,6 +308,12 @@ export class WorkOSOrganizations implements OrganizationDirectory {
     if (record !== undefined && record.id !== invitationId) throw new Error('WorkOS answered an invitation that the read did not ask for');
     return record;
   }
+}
+
+function memberFactsOf(record: MembershipRecord, organizationRoles: readonly RoleRecord[]): OrganizationMemberFacts {
+  const { id: membershipId, userId: subject, organizationId, status } = record;
+  const grants = grantsOfRoles(roleListOf(record), organizationRoles, organizationId);
+  return Object.freeze({ membershipId, subject, organizationId, status, management: managementOf(record), grants, revision: revisionOf(record) });
 }
 
 // Stop later reads without claiming that the provider cancelled a request already sent.
