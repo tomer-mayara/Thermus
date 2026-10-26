@@ -2,8 +2,11 @@
 
 Candidate: [PR #263](https://github.com/tomer-mayara/Thermus/pull/263).
 Scope: [UI-01](../design/organization-admin-plan.md#ui-01--shared-admin-shell-and-layout)
-of the Refined tabs plan. Implementation and validation are in progress. This
-record does not claim a merge or deployment.
+of the Refined tabs plan. UI-01 is implemented. This record does not claim a
+merge or deployment. Current candidate pins and full evidence are in the PR's
+[Validation](https://github.com/tomer-mayara/Thermus/pull/263#issuecomment-6426553537)
+and [Quality review](https://github.com/tomer-mayara/Thermus/pull/263#issuecomment-6426553900)
+comments.
 
 ## Behavior
 
@@ -41,19 +44,47 @@ guards. They retain all of the original behavior checks.
 
 Existing behavior uses passing characterization. No failure was manufactured
 for an unchanged form, access rule or provider behavior. Full red/green logs,
-screenshots, check results and quality reports will be linked from the PR's
+screenshots, check results and quality reports are linked from the PR's
 maintained Validation and Quality review comments.
 
 ## Validation and review
 
-Validation is in progress. The complete source candidate requires the ordinary
-suite, typecheck, portal build, Members browser, self-hosted container, hosted
-offline build and Linux AMD64 image gates. Changes to shared test support also
-require tracing its consuming groups. The final PR comments record selection,
-results, failures/retries and any limits.
+| Check | Result |
+| --- | --- |
+| Full ordinary suite (`npm test`) | 5,129 ordinary tests and 49 portal tests passed. |
+| Typecheck and portal build | Passed. |
+| Members browser | 7 passed, with JavaScript on/off, 320/1280px, and Audit at 800/860px. |
+| Focused Members and Audit route/rendering checks | 82 passed. |
+| Other consumers of the changed test site | 25 passed; no SQL, Collector or hosted-live consumer. |
+| Self-hosted container | 11 passed with outbound access denied. |
+| Hosted offline build and Linux AMD64 image | Build/runtime totals and full logs are in the pinned Validation record above. The image runs the hosted build with outbound access denied. |
+| Verified unit coverage for metrics | 3,301 emitted tests and 29 portal unit tests passed. |
+| Habit-hooks | Passed; two comments retained because they explain read failure atomicity and CSP hash ownership. No snooze or suppression. |
+
+The first ordinary run was stopped after review found the tablet regression.
+It is not a pass. The complete repeat on the corrected source passed. The PR
+evidence retains this history and the expected BDD/TDD failures. Hosted-live,
+PostgreSQL, Collector and production release checks are not selected: this
+increment changes no provider behavior, storage, transport or deployment.
 
 The change remains inside the existing Web component. The component registry's
 hosted authentication, member-read, removal and Audit settings views remain
-accurate. No new component, dependency, provider call, storage or deployment
-boundary is planned. Final metrics, declaration checks, habit-hooks and review
-tier are pending on the complete candidate.
+accurate. All 15 registry drawings and the registry prose stay unchanged. No
+component, dependency, public declaration, provider call, storage or deployment
+boundary changes. The private layout options gain an escaped display name;
+the existing component views and these notes explain that change without an
+extra diagram.
+
+Metrics completed with retained findings. The two existing template files remain
+below the MI goal (61.25 and 80.37); each drop is less than one point. Their
+cohesive markup and escaping need no further helper layer. The high test-file MI
+finding and two low test-size estimates are retained with reasons in Quality
+review; test files have no production MI goal. Required changed-function CRAP
+goals pass, with no exception. The full graph report retains the unchanged
+unresolved CSS-import limit; it does not prove a globally complete graph.
+
+Independent agent and manager review found no remaining actionable issue.
+The updated browser inventory row in the test-gate document selects T1 Team
+review through the policy's read-path rule. It changes no gate command or
+decision authority. Current-candidate owner/team approval is required before
+merge; agent review is not human approval.
