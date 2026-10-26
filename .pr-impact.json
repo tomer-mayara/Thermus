@@ -15,21 +15,20 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Probe tooling only: script/spike/render-tenant-lifecycle.ts and its helper modules under script/spike/render-tenant-lifecycle/ probe the Render private service lifecycle through the Render REST API (create, internal address, image deploy, plan change and back, suspend and resume, delete), with a dry-run mode, a reads-only preflight, and a client guard that touches only the thermus-spike-* service of the run and never the production service; knip lists the script as an entry point. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md gains the section SO-01c: Render private service lifecycle, and the Slice 1 preamble of docs/implementation/self-onboarding-plan.md records the owner decision that Render probes run in the Thermus AI workspace. No source, runtime, registry view, declaration, or deployment change.",
+    "summary": "Record the reviewed Refined tabs plan before UI-01 implementation. This initial draft changes documentation only; production architecture, contracts, access rules and deployment remain unchanged. The complete implementation candidate will refresh this declaration and its evidence.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
       "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted membership removal in the Node server",
-      "Collaboration overview",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
       "Scenario: hosted member read",
-      "Deployment view",
-      "Behavior and resource ownership"
+      "Deployment view"
     ],
     "evidence": [
-      "script/spike/render-tenant-lifecycle.ts",
-      "docs/implementation/self-onboarding-s1.md",
-      "docs/implementation/self-onboarding-plan.md"
+      "docs/design/organization-admin-plan.md",
+      "docs/design/portal-design.md",
+      "architecture/components.md"
     ]
   }
 }
