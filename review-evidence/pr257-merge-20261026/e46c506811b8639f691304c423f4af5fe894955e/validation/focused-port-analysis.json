@@ -1,0 +1,2854 @@
+{
+  "recorded": "2026-10-26T08:52:37.577Z",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parserVersion": "6.0.3",
+  "parserNote": "The initial ad-hoc probe used the TypeScript 7 package, which has no compiler AST API. This read-only trace uses the installed workspace TypeScript 6 compiler API. No gate was run by either probe.",
+  "focusedFiles": [
+    "test/acceptance/auth/hosted-invitations.test.ts",
+    "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+    "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+    "test/acceptance/auth/hosted-member-removal.test.ts",
+    "test/acceptance/auth/hosted-member-self-removal.test.ts",
+    "test/acceptance/auth/hosted-members.test.ts",
+    "test/acceptance/auth/hosted-membership-deletion.test.ts",
+    "test/acceptance/auth/hosted-workos-administration.test.ts",
+    "test/integration/auth/hosted-storage-lifecycle.test.ts",
+    "test/integration/auth/workos-connection.test.ts",
+    "test/integration/auth/workos-google-onboarding.test.ts",
+    "test/integration/auth/workos-member-facts.test.ts",
+    "test/integration/auth/workos-provider-administration.test.ts",
+    "test/integration/auth/workos-provider-directory.test.ts",
+    "test/integration/auth/workos-provider-organizations.test.ts",
+    "test/integration/auth/workos-removal-lifetime.test.ts",
+    "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+    "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+    "test/integration/hosted-admin/account-routes-removal-audit.test.ts",
+    "test/integration/hosted-admin/account-routes-removal.test.ts",
+    "test/unit/auth-workos/workos-membership-reads.test.ts",
+    "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+    "test/unit/auth-workos/workos-organizations-member-facts.test.ts",
+    "test/unit/auth-workos/workos-organizations-members.test.ts",
+    "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+    "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts",
+    "test/unit/auth-workos/workos-organizations.test.ts",
+    "test/unit/logging/audit/audit-removal.test.ts",
+    "test/unit/logging/audit/pg-removal-operation-store.test.ts",
+    "test/unit/organizations/membership-removal-lifetime.test.ts",
+    "test/unit/organizations/membership-removal-outcomes.test.ts",
+    "test/unit/organizations/membership-removal-rules.test.ts",
+    "test/unit/organizations/organization-administration-members.test.ts"
+  ],
+  "focusedCount": 33,
+  "runtimeReachableFiles": [
+    "src/accounts/billing/billing-free.ts",
+    "src/accounts/identity/access-context.ts",
+    "src/accounts/identity/identity-verifier.ts",
+    "src/accounts/organizations/administration-overviews.ts",
+    "src/accounts/organizations/change-records.ts",
+    "src/accounts/organizations/customer-roles.ts",
+    "src/accounts/organizations/directory-reads.ts",
+    "src/accounts/organizations/membership-removal-checks.ts",
+    "src/accounts/organizations/membership-removal-lifetime.ts",
+    "src/accounts/organizations/membership-removal.ts",
+    "src/accounts/organizations/organization-administration.ts",
+    "src/accounts/organizations/signup-activation.ts",
+    "src/accounts/providers/better-auth/better-auth-provider.ts",
+    "src/accounts/providers/better-auth/better-auth-runtime.ts",
+    "src/accounts/providers/better-auth/data-directory-lock.ts",
+    "src/accounts/providers/better-auth/local-installation.ts",
+    "src/accounts/providers/workos/hosted-role-mapping.ts",
+    "src/accounts/providers/workos/session-cookies.ts",
+    "src/accounts/providers/workos/workos-auth-provider.ts",
+    "src/accounts/providers/workos/workos-browser-session.ts",
+    "src/accounts/providers/workos/workos-google-onboarding.ts",
+    "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+    "src/accounts/providers/workos/workos-organizations.ts",
+    "src/accounts/providers/workos/workos-session-client.ts",
+    "src/accounts/providers/workos/workos-settings.ts",
+    "src/accounts/providers/workos/workos-sign-in.ts",
+    "src/accounts/providers/workos/workos-signup-documents.ts",
+    "src/accounts/providers/workos/workos-signup-settings.ts",
+    "src/accounts/providers/workos/workos-signup.ts",
+    "src/app/application.ts",
+    "src/app/fetch-tool.ts",
+    "src/app/hosted-portal.ts",
+    "src/app/hosted-renderer-startup.ts",
+    "src/app/hosted-workos-application.ts",
+    "src/app/logging-storage.ts",
+    "src/app/operation-capacity.ts",
+    "src/interfaces/mcp/fetch-tool-schema.ts",
+    "src/interfaces/mcp/fetch-tool-server.ts",
+    "src/interfaces/mcp/get-url-as-markdown.ts",
+    "src/interfaces/mcp/identity-verifier-sdk-adapter.ts",
+    "src/interfaces/mcp/mcp-server.ts",
+    "src/interfaces/mcp/protected-resource-endpoint.ts",
+    "src/interfaces/mcp/search-tool-schema.ts",
+    "src/interfaces/mcp/search.ts",
+    "src/interfaces/mcp/tool-completion-record.ts",
+    "src/interfaces/web/account/account-form.ts",
+    "src/interfaces/web/account/account-pages.ts",
+    "src/interfaces/web/account/account-routes.ts",
+    "src/interfaces/web/account/administration-pages.ts",
+    "src/interfaces/web/account/administration-routes.ts",
+    "src/interfaces/web/account/billing-page.ts",
+    "src/interfaces/web/account/logging-form.ts",
+    "src/interfaces/web/account/logging-page.ts",
+    "src/interfaces/web/account/logging-routes.ts",
+    "src/interfaces/web/account/logging-test-page.ts",
+    "src/interfaces/web/account/members-page-layout.ts",
+    "src/interfaces/web/account/members-style.ts",
+    "src/interfaces/web/account/organization-selection-page.ts",
+    "src/interfaces/web/account/organization-selection-style.ts",
+    "src/interfaces/web/account/portal-access.ts",
+    "src/interfaces/web/auth/better-auth/local-auth-page-form.ts",
+    "src/interfaces/web/auth/better-auth/local-auth-page-html.ts",
+    "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+    "src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts",
+    "src/interfaces/web/auth/workos/sign-out-form.ts",
+    "src/interfaces/web/auth/workos/workos-session-pages.ts",
+    "src/interfaces/web/auth/workos/workos-session-routes.ts",
+    "src/interfaces/web/auth/workos/workos-signup-document-reader.ts",
+    "src/interfaces/web/auth/workos/workos-signup-form.ts",
+    "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+    "src/interfaces/web/auth/workos/workos-signup-style.ts",
+    "src/interfaces/web/html-escape.ts",
+    "src/interfaces/web/page-html.ts",
+    "src/logs/audit/audit-collector-state.ts",
+    "src/logs/audit/audit-collector.ts",
+    "src/logs/audit/audit-content.ts",
+    "src/logs/audit/audit-event-projection.ts",
+    "src/logs/audit/audit-https-connection.ts",
+    "src/logs/audit/audit-log.ts",
+    "src/logs/audit/audit-send.ts",
+    "src/logs/audit/audit-snapshot-state.ts",
+    "src/logs/audit/audit-snapshots.ts",
+    "src/logs/audit/bounded-sql-runtime.ts",
+    "src/logs/audit/destination-credential-codec.ts",
+    "src/logs/audit/destination-endpoint.ts",
+    "src/logs/audit/destination-settings-service.ts",
+    "src/logs/audit/destination-test.ts",
+    "src/logs/audit/otlp-audit-encoding.ts",
+    "src/logs/audit/otlp-audit-request.ts",
+    "src/logs/audit/otlp-audit-response.ts",
+    "src/logs/audit/otlp-audit-sender.ts",
+    "src/logs/audit/pg-destination-settings-store.ts",
+    "src/logs/audit/public-audit-destination.ts",
+    "src/pipelines/execution/execution-context.ts",
+    "src/pipelines/execution/observe-request-step.ts",
+    "src/pipelines/execution/step-record.ts",
+    "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+    "src/pipelines/html-processing/ad-cleaner/adb/source-line-index.ts",
+    "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts",
+    "src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts",
+    "src/pipelines/html-processing/html-input-limit.ts",
+    "src/pipelines/html-processing/html-to-markdown-pipeline.ts",
+    "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts",
+    "src/pipelines/html-processing/html-to-markdown/plain-text-input.ts",
+    "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts",
+    "src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts",
+    "src/pipelines/html-processing/process-html-step.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-animation-declarations.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-opacity-keyframes.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-selector-predicates.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-ranges.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-counts.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/html-text-source-ranges.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts",
+    "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+    "src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts",
+    "src/pipelines/html-processing/search-results/brave-result-document.ts",
+    "src/pipelines/html-processing/search-results/brave-result-fields.ts",
+    "src/pipelines/page-fetch/execute-incoming-step.ts",
+    "src/pipelines/page-fetch/execute-outgoing-step.ts",
+    "src/pipelines/page-fetch/fetch-failure.ts",
+    "src/pipelines/page-fetch/fetch-page.ts",
+    "src/pipelines/page-fetch/fetch-url.ts",
+    "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+    "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+    "src/pipelines/providers/website-fetcher/network-policy.ts",
+    "src/pipelines/providers/website-fetcher/renderer-failure-reports.ts",
+    "src/pipelines/providers/website-fetcher/renderer-result.ts",
+    "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+    "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+    "src/pipelines/search/execute-incoming-step.ts",
+    "src/pipelines/search/execute-outgoing-step.ts",
+    "src/pipelines/search/search-cancellation.ts",
+    "src/pipelines/search/search-failure.ts",
+    "src/pipelines/search/search-pipeline.ts",
+    "src/pipelines/search/search-query.ts",
+    "src/runtime/config/ad-rules-file.ts",
+    "src/runtime/config/deployment-config.ts",
+    "src/runtime/config/logging-storage-config.ts",
+    "src/runtime/http/client-address.ts",
+    "src/runtime/http/fetch-exchange.ts",
+    "src/runtime/http/request-cancellation.ts",
+    "src/runtime/http/server.ts",
+    "test/acceptance/auth/hosted-invitations.test.ts",
+    "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+    "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+    "test/acceptance/auth/hosted-member-removal.test.ts",
+    "test/acceptance/auth/hosted-member-self-removal.test.ts",
+    "test/acceptance/auth/hosted-members.test.ts",
+    "test/acceptance/auth/hosted-membership-deletion.test.ts",
+    "test/acceptance/auth/hosted-workos-administration.test.ts",
+    "test/integration/auth/hosted-storage-lifecycle.test.ts",
+    "test/integration/auth/workos-connection.test.ts",
+    "test/integration/auth/workos-google-onboarding.test.ts",
+    "test/integration/auth/workos-member-facts.test.ts",
+    "test/integration/auth/workos-provider-administration.test.ts",
+    "test/integration/auth/workos-provider-directory.test.ts",
+    "test/integration/auth/workos-provider-organizations.test.ts",
+    "test/integration/auth/workos-removal-lifetime.test.ts",
+    "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+    "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+    "test/integration/hosted-admin/account-routes-removal-audit.test.ts",
+    "test/integration/hosted-admin/account-routes-removal.test.ts",
+    "test/integration/hosted-admin/fixtures/account-operation-double.ts",
+    "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+    "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts",
+    "test/integration/hosted-admin/fixtures/organization-administration-double.ts",
+    "test/support/doubles/application/operator-log-spy.ts",
+    "test/support/doubles/auth/access-resolver-spy.ts",
+    "test/support/doubles/auth/browser-session-double.ts",
+    "test/support/doubles/auth/browser-session-store.ts",
+    "test/support/doubles/auth/identity-verifier-spy.ts",
+    "test/support/doubles/billing/billing-recorder.ts",
+    "test/support/doubles/hosted-admin/account-operation-spy.ts",
+    "test/support/doubles/logging/destination-settings-fake.ts",
+    "test/support/doubles/mcp/protected-tool-spy.ts",
+    "test/support/doubles/organizations/change-answers.ts",
+    "test/support/doubles/organizations/directory-double-records.ts",
+    "test/support/doubles/organizations/membership-directory-double.ts",
+    "test/support/doubles/organizations/organization-directory-double.ts",
+    "test/support/doubles/organizations/removal-operation-store-fake.ts",
+    "test/support/doubles/workos/jwt-signing-key.ts",
+    "test/support/doubles/workos/workos-fake-api.ts",
+    "test/support/doubles/workos/workos-fake-directory.ts",
+    "test/support/doubles/workos/workos-fake-invitations.ts",
+    "test/support/doubles/workos/workos-fake-sessions.ts",
+    "test/support/doubles/workos/workos-fake-wire.ts",
+    "test/support/doubles/workos/workos-fake.ts",
+    "test/support/doubles/workos/workos-signup-fake.ts",
+    "test/support/drivers/browser/cookie-jar.ts",
+    "test/support/drivers/browser/hosted-browser.ts",
+    "test/support/drivers/browser/html-entities.ts",
+    "test/support/drivers/mcp/mcp-http-request.ts",
+    "test/support/dsl/hosted-access.ts",
+    "test/support/dsl/hosted-administration.ts",
+    "test/support/dsl/hosted-member-removal.ts",
+    "test/support/dsl/workos-sign-in.ts",
+    "test/support/fixtures/ad-rules.ts",
+    "test/support/fixtures/hosted-config.ts",
+    "test/support/fixtures/hosted-members.ts",
+    "test/support/fixtures/hosted-placeholder.ts",
+    "test/support/fixtures/hosted-roles.ts",
+    "test/support/fixtures/signup-documents.ts",
+    "test/support/in-process/hosted-member-removal-site.ts",
+    "test/support/in-process/hosted-organization-site.ts",
+    "test/support/in-process/workos-site.ts",
+    "test/support/processes/module-paths.ts",
+    "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+    "test/unit/auth-workos/workos-membership-reads.test.ts",
+    "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+    "test/unit/auth-workos/workos-organizations-member-facts.test.ts",
+    "test/unit/auth-workos/workos-organizations-members.test.ts",
+    "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+    "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts",
+    "test/unit/auth-workos/workos-organizations.test.ts",
+    "test/unit/logging/audit/audit-removal.test.ts",
+    "test/unit/logging/audit/pg-removal-operation-store.test.ts",
+    "test/unit/organizations/fixtures/administration-fixtures.ts",
+    "test/unit/organizations/fixtures/billing-double.ts",
+    "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+    "test/unit/organizations/membership-removal-lifetime.test.ts",
+    "test/unit/organizations/membership-removal-outcomes.test.ts",
+    "test/unit/organizations/membership-removal-rules.test.ts",
+    "test/unit/organizations/organization-administration-members.test.ts"
+  ],
+  "runtimeModuleEdges": [
+    {
+      "from": "test/acceptance/auth/hosted-invitations.test.ts",
+      "to": "test/support/dsl/hosted-access.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-invitations.test.ts",
+      "to": "test/support/dsl/hosted-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-invitations.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-invitations.test.ts",
+      "to": "test/support/fixtures/hosted-members.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-invitations.test.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+      "to": "test/support/doubles/organizations/removal-operation-store-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "to": "src/logs/audit/audit-log.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "to": "test/support/dsl/workos-sign-in.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "to": "test/support/dsl/hosted-member-removal.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "to": "test/support/in-process/hosted-member-removal-site.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal.test.ts",
+      "to": "test/support/dsl/workos-sign-in.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal.test.ts",
+      "to": "test/support/dsl/hosted-member-removal.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-removal.test.ts",
+      "to": "test/support/in-process/hosted-member-removal-site.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-self-removal.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-self-removal.test.ts",
+      "to": "test/support/dsl/workos-sign-in.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-self-removal.test.ts",
+      "to": "test/support/dsl/hosted-member-removal.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-member-self-removal.test.ts",
+      "to": "test/support/in-process/hosted-member-removal-site.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-members.test.ts",
+      "to": "test/support/dsl/hosted-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-members.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-members.test.ts",
+      "to": "test/support/fixtures/hosted-members.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "to": "src/accounts/providers/workos/workos-settings.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "to": "test/support/doubles/workos/workos-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "to": "test/support/doubles/workos/workos-fake-wire.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "to": "test/support/fixtures/hosted-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "to": "test/support/dsl/workos-sign-in.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/acceptance/auth/hosted-workos-administration.test.ts",
+      "to": "test/support/in-process/workos-site.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/hosted-storage-lifecycle.test.ts",
+      "to": "src/app/application.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/hosted-storage-lifecycle.test.ts",
+      "to": "src/accounts/billing/billing-free.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/hosted-storage-lifecycle.test.ts",
+      "to": "test/support/doubles/auth/browser-session-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/hosted-storage-lifecycle.test.ts",
+      "to": "test/support/doubles/organizations/membership-directory-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/hosted-storage-lifecycle.test.ts",
+      "to": "test/support/fixtures/hosted-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-connection.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-connection.test.ts",
+      "to": "test/support/doubles/workos/workos-fake-api.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-connection.test.ts",
+      "to": "src/app/hosted-workos-application.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-connection.test.ts",
+      "to": "test/support/fixtures/hosted-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-connection.test.ts",
+      "to": "test/support/fixtures/hosted-placeholder.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-google-onboarding.test.ts",
+      "to": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-google-onboarding.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-google-onboarding.test.ts",
+      "to": "test/support/doubles/workos/workos-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-member-facts.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-member-facts.test.ts",
+      "to": "src/accounts/providers/workos/workos-settings.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-member-facts.test.ts",
+      "to": "test/support/doubles/workos/workos-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-member-facts.test.ts",
+      "to": "test/support/doubles/workos/workos-fake-wire.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-member-facts.test.ts",
+      "to": "test/support/fixtures/hosted-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "src/accounts/providers/workos/workos-settings.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "src/accounts/organizations/change-records.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "test/support/doubles/billing/billing-recorder.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "test/support/doubles/workos/workos-fake-api.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-administration.test.ts",
+      "to": "test/support/doubles/workos/workos-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-directory.test.ts",
+      "to": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-directory.test.ts",
+      "to": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-directory.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-directory.test.ts",
+      "to": "src/accounts/providers/workos/workos-settings.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-directory.test.ts",
+      "to": "test/support/doubles/workos/jwt-signing-key.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-directory.test.ts",
+      "to": "test/support/doubles/workos/workos-fake-api.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-directory.test.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/app/application.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/accounts/providers/workos/workos-browser-session.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/accounts/providers/workos/workos-settings.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/accounts/billing/billing-free.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/interfaces/web/account/portal-access.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/interfaces/mcp/mcp-server.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/doubles/hosted-admin/account-operation-spy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/doubles/mcp/protected-tool-spy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/doubles/workos/workos-fake-api.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/dsl/workos-sign-in.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/doubles/workos/workos-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/drivers/mcp/mcp-http-request.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/fixtures/hosted-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-provider-organizations.test.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-removal-lifetime.test.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-removal-lifetime.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/auth/workos-removal-lifetime.test.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "to": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "to": "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+      "to": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-grant-retirement.test.ts",
+      "to": "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-removal-audit.test.ts",
+      "to": "src/logs/audit/audit-log.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-removal-audit.test.ts",
+      "to": "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-removal.test.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-removal.test.ts",
+      "to": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/account-routes-removal.test.ts",
+      "to": "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-membership-reads.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+      "to": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations-member-facts.test.ts",
+      "to": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations-members.test.ts",
+      "to": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "to": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations-memberships.test.ts",
+      "to": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts",
+      "to": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations.test.ts",
+      "to": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations.test.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/workos-organizations.test.ts",
+      "to": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/logging/audit/audit-removal.test.ts",
+      "to": "src/logs/audit/audit-log.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/logging/audit/audit-removal.test.ts",
+      "to": "src/logs/audit/otlp-audit-encoding.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/logging/audit/pg-removal-operation-store.test.ts",
+      "to": "src/logs/audit/bounded-sql-runtime.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/logging/audit/pg-removal-operation-store.test.ts",
+      "to": "src/logs/audit/pg-destination-settings-store.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/membership-removal-lifetime.test.ts",
+      "to": "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/membership-removal-outcomes.test.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/membership-removal-outcomes.test.ts",
+      "to": "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/membership-removal-rules.test.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/membership-removal-rules.test.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/membership-removal-rules.test.ts",
+      "to": "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/organization-administration-members.test.ts",
+      "to": "test/unit/organizations/fixtures/administration-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/dsl/hosted-administration.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/dsl/hosted-administration.ts",
+      "to": "test/support/fixtures/hosted-members.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/dsl/hosted-administration.ts",
+      "to": "test/support/in-process/hosted-organization-site.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/drivers/browser/hosted-browser.ts",
+      "to": "test/support/drivers/browser/cookie-jar.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/drivers/browser/hosted-browser.ts",
+      "to": "test/support/drivers/browser/html-entities.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/fixtures/hosted-members.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/organization-administration.ts",
+      "to": "src/accounts/organizations/administration-overviews.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/organization-administration.ts",
+      "to": "src/accounts/organizations/change-records.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/organization-administration.ts",
+      "to": "src/accounts/organizations/customer-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/organization-administration.ts",
+      "to": "src/accounts/organizations/directory-reads.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/organization-administration.ts",
+      "to": "src/accounts/organizations/membership-removal.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-organizations.ts",
+      "to": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-log.ts",
+      "to": "src/logs/audit/audit-event-projection.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-log.ts",
+      "to": "src/logs/audit/audit-content.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/dsl/workos-sign-in.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/dsl/hosted-member-removal.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-member-removal-site.ts",
+      "to": "test/support/doubles/logging/destination-settings-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-member-removal-site.ts",
+      "to": "test/support/doubles/organizations/removal-operation-store-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-member-removal-site.ts",
+      "to": "test/support/in-process/workos-site.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-member-removal-site.ts",
+      "to": "test/support/fixtures/signup-documents.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake.ts",
+      "to": "test/support/doubles/workos/jwt-signing-key.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake.ts",
+      "to": "test/support/doubles/workos/workos-fake-api.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake.ts",
+      "to": "test/support/doubles/workos/workos-fake-directory.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake.ts",
+      "to": "test/support/doubles/workos/workos-fake-invitations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake.ts",
+      "to": "test/support/doubles/workos/workos-fake-sessions.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake.ts",
+      "to": "test/support/doubles/workos/workos-fake-wire.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-wire.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/fixtures/hosted-config.ts",
+      "to": "src/runtime/config/deployment-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "src/app/hosted-workos-application.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "src/runtime/http/server.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "test/support/doubles/application/operator-log-spy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "test/support/doubles/workos/workos-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "test/support/doubles/workos/workos-signup-fake.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "test/support/drivers/mcp/mcp-http-request.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/workos-site.ts",
+      "to": "test/support/fixtures/hosted-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/logs/audit/audit-log.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/interfaces/web/account/account-routes.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/interfaces/mcp/mcp-server.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/app/fetch-tool.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/application.ts",
+      "to": "src/app/hosted-workos-application.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "test/support/doubles/organizations/membership-directory-double.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/organizations/membership-directory-double.ts",
+      "to": "test/support/doubles/organizations/organization-directory-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/logs/audit/audit-log.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/logs/audit/audit-snapshots.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/app/application.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/interfaces/web/account/portal-access.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/interfaces/mcp/mcp-server.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-signup-settings.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/app/fetch-tool.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/app/hosted-renderer-startup.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/app/hosted-portal.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/app/logging-storage.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-settings.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/app/fetch-tool.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/billing/billing-free.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-browser-session.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-signup.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-settings.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/interfaces/mcp/protected-resource-endpoint.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/app/hosted-workos-application.ts",
+      "to": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "test/support/fixtures/hosted-placeholder.ts",
+      "to": "test/support/fixtures/ad-rules.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/fixtures/hosted-placeholder.ts",
+      "to": "test/support/processes/module-paths.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "to": "src/accounts/organizations/administration-overviews.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "to": "src/accounts/organizations/change-records.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-google-onboarding.ts",
+      "to": "src/accounts/providers/workos/workos-session-client.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-auth-provider.ts",
+      "to": "src/accounts/identity/identity-verifier.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/billing/billing-recorder.ts",
+      "to": "src/accounts/billing/billing-free.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-browser-session.ts",
+      "to": "src/accounts/providers/workos/session-cookies.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-browser-session.ts",
+      "to": "src/accounts/providers/workos/workos-session-client.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-browser-session.ts",
+      "to": "src/accounts/providers/workos/workos-sign-in.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "to": "src/runtime/http/request-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "to": "src/accounts/providers/workos/session-cookies.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "to": "src/interfaces/web/auth/workos/sign-out-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "to": "src/interfaces/web/account/portal-access.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-session-routes.ts",
+      "to": "src/interfaces/web/auth/workos/workos-session-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/portal-access.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/portal-access.ts",
+      "to": "src/runtime/http/request-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/portal-access.ts",
+      "to": "src/interfaces/web/account/account-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/mcp-server.ts",
+      "to": "src/runtime/http/request-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/mcp-server.ts",
+      "to": "src/interfaces/mcp/identity-verifier-sdk-adapter.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/hosted-admin/account-operation-spy.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/mcp/protected-tool-spy.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "to": "src/interfaces/web/account/account-routes.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "to": "test/support/doubles/auth/access-resolver-spy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "to": "test/integration/hosted-admin/fixtures/account-operation-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "to": "test/support/doubles/auth/browser-session-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "to": "test/integration/hosted-admin/fixtures/organization-administration-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts",
+      "to": "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "to": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/auth-workos/fixtures/workos-organizations-double.ts",
+      "to": "src/accounts/providers/workos/workos-organizations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-encoding.ts",
+      "to": "src/logs/audit/audit-content.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-encoding.ts",
+      "to": "src/logs/audit/audit-send.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/pg-destination-settings-store.ts",
+      "to": "src/logs/audit/bounded-sql-runtime.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+      "to": "test/support/doubles/organizations/organization-directory-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/membership-removal-fixtures.ts",
+      "to": "test/unit/organizations/fixtures/billing-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/administration-fixtures.ts",
+      "to": "src/accounts/organizations/organization-administration.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/administration-fixtures.ts",
+      "to": "test/support/doubles/organizations/organization-directory-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/administration-fixtures.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/administration-fixtures.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/unit/organizations/fixtures/administration-fixtures.ts",
+      "to": "test/unit/organizations/fixtures/billing-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "src/app/application.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "src/accounts/billing/billing-free.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "src/runtime/http/server.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "src/interfaces/mcp/mcp-server.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/doubles/auth/identity-verifier-spy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/drivers/mcp/mcp-http-request.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/doubles/hosted-admin/account-operation-spy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/doubles/auth/browser-session-store.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/drivers/browser/hosted-browser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/doubles/organizations/membership-directory-double.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/doubles/mcp/protected-tool-spy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/fixtures/hosted-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/in-process/hosted-organization-site.ts",
+      "to": "test/support/fixtures/hosted-members.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/administration-overviews.ts",
+      "to": "src/accounts/organizations/directory-reads.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/administration-overviews.ts",
+      "to": "src/accounts/organizations/membership-removal-checks.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/membership-removal.ts",
+      "to": "src/accounts/organizations/membership-removal-checks.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/membership-removal.ts",
+      "to": "src/accounts/organizations/membership-removal-lifetime.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-event-projection.ts",
+      "to": "src/logs/audit/audit-content.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-directory.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-directory.ts",
+      "to": "test/support/doubles/workos/workos-fake-wire.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-invitations.ts",
+      "to": "test/support/doubles/workos/workos-fake-directory.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-invitations.ts",
+      "to": "test/support/doubles/workos/workos-fake-wire.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-sessions.ts",
+      "to": "test/support/doubles/workos/jwt-signing-key.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-sessions.ts",
+      "to": "test/support/doubles/workos/workos-fake-api.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-sessions.ts",
+      "to": "test/support/doubles/workos/workos-fake-wire.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-fake-sessions.ts",
+      "to": "test/support/doubles/workos/workos-fake-directory.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/runtime/http/server.ts",
+      "to": "src/runtime/http/fetch-exchange.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-signup-fake.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/workos/workos-signup-fake.ts",
+      "to": "test/support/doubles/workos/workos-fake-wire.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-routes.ts",
+      "to": "src/interfaces/web/account/logging-routes.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-routes.ts",
+      "to": "src/runtime/http/request-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-routes.ts",
+      "to": "src/interfaces/web/account/account-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-routes.ts",
+      "to": "src/interfaces/web/account/account-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-routes.ts",
+      "to": "src/interfaces/web/account/administration-routes.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/runtime/config/ad-rules-file.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/html-processing/html-to-markdown-pipeline.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/html-processing/process-html-step.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/interfaces/mcp/fetch-tool-server.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/interfaces/mcp/get-url-as-markdown.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/app/operation-capacity.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/providers/search-engine/search-engine-brave-http.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/search/search-pipeline.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/page-fetch/fetch-page.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/execution/observe-request-step.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/fetch-tool.ts",
+      "to": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "to": "src/runtime/http/client-address.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "to": "src/accounts/providers/better-auth/data-directory-lock.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/better-auth/better-auth-runtime.ts",
+      "to": "src/accounts/providers/better-auth/local-installation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "to": "src/runtime/http/client-address.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/better-auth/better-auth-provider.ts",
+      "to": "src/accounts/identity/identity-verifier.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "to": "src/interfaces/web/auth/better-auth/local-auth-page-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "to": "src/interfaces/web/auth/better-auth/local-auth-page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/better-auth/local-auth-pages.ts",
+      "to": "src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/organizations/organization-directory-double.ts",
+      "to": "test/support/doubles/organizations/change-answers.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/organizations/organization-directory-double.ts",
+      "to": "test/support/doubles/organizations/directory-double-records.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-snapshots.ts",
+      "to": "src/logs/audit/audit-snapshot-state.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-organization-audit-documents.ts",
+      "to": "src/accounts/providers/workos/workos-signup-documents.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/logging-storage.ts",
+      "to": "src/logs/audit/audit-collector.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/logging-storage.ts",
+      "to": "src/logs/audit/otlp-audit-sender.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/logging-storage.ts",
+      "to": "src/logs/audit/destination-settings-service.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/logging-storage.ts",
+      "to": "src/runtime/config/logging-storage-config.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/app/logging-storage.ts",
+      "to": "src/logs/audit/pg-destination-settings-store.ts",
+      "kind": "dynamic"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-signup.ts",
+      "to": "src/accounts/organizations/signup-activation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-signup.ts",
+      "to": "src/accounts/providers/workos/hosted-role-mapping.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-signup.ts",
+      "to": "src/accounts/providers/workos/workos-signup-documents.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "to": "src/runtime/http/request-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "to": "src/interfaces/web/account/account-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "to": "src/interfaces/web/auth/workos/workos-session-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "to": "src/accounts/providers/workos/workos-signup-documents.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "to": "src/interfaces/web/auth/workos/workos-signup-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-routes.ts",
+      "to": "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/fixtures/ad-rules.ts",
+      "to": "test/support/processes/module-paths.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-sign-in.ts",
+      "to": "src/accounts/providers/workos/session-cookies.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/providers/workos/workos-sign-in.ts",
+      "to": "src/accounts/providers/workos/workos-session-client.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-session-pages.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-pages.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-pages.ts",
+      "to": "src/interfaces/web/page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/account-pages.ts",
+      "to": "src/interfaces/web/account/organization-selection-page.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/identity-verifier-sdk-adapter.ts",
+      "to": "src/accounts/identity/identity-verifier.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/auth/identity-verifier-spy.ts",
+      "to": "src/accounts/identity/identity-verifier.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/accounts/organizations/membership-removal-checks.ts",
+      "to": "src/accounts/organizations/directory-reads.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/runtime/http/fetch-exchange.ts",
+      "to": "src/runtime/http/client-address.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-routes.ts",
+      "to": "src/interfaces/web/account/logging-test-page.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-routes.ts",
+      "to": "src/interfaces/web/account/account-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-routes.ts",
+      "to": "src/interfaces/web/account/account-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-routes.ts",
+      "to": "src/interfaces/web/account/logging-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-routes.ts",
+      "to": "src/interfaces/web/account/logging-page.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-routes.ts",
+      "to": "src/accounts/organizations/change-records.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-routes.ts",
+      "to": "src/interfaces/web/account/account-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-routes.ts",
+      "to": "src/interfaces/web/account/account-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-routes.ts",
+      "to": "src/interfaces/web/account/administration-pages.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "to": "src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "to": "src/pipelines/html-processing/ad-cleaner/adb/source-line-index.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts",
+      "to": "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/process-html-step.ts",
+      "to": "src/pipelines/html-processing/html-input-limit.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts",
+      "to": "src/pipelines/html-processing/html-to-markdown/plain-text-input.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts",
+      "to": "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "to": "src/pipelines/html-processing/html-input-limit.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts",
+      "to": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/fetch-tool-server.ts",
+      "to": "src/pipelines/search/search-failure.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/fetch-tool-server.ts",
+      "to": "src/interfaces/mcp/search.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/fetch-tool-server.ts",
+      "to": "src/interfaces/mcp/search-tool-schema.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/fetch-tool-server.ts",
+      "to": "src/interfaces/mcp/fetch-tool-schema.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/fetch-tool-server.ts",
+      "to": "src/interfaces/mcp/tool-completion-record.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/fetch-tool-server.ts",
+      "to": "src/pipelines/page-fetch/fetch-failure.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/execution/execution-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/providers/website-fetcher/renderer-failure-reports.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/search/search-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/search/search-query.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/search/search-failure.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/search/execute-outgoing-step.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/search-pipeline.ts",
+      "to": "src/pipelines/search/execute-incoming-step.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/accounts/identity/access-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/pipelines/page-fetch/fetch-url.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/pipelines/execution/execution-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/pipelines/providers/website-fetcher/renderer-failure-reports.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/pipelines/page-fetch/execute-outgoing-step.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/pipelines/page-fetch/execute-incoming-step.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/fetch-page.ts",
+      "to": "src/pipelines/page-fetch/fetch-failure.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "to": "src/pipelines/providers/website-fetcher/renderer-result.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "to": "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "to": "src/pipelines/providers/website-fetcher/network-policy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "to": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/better-auth/local-auth-page-form.ts",
+      "to": "src/interfaces/web/auth/better-auth/local-auth-page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/better-auth/local-auth-page-html.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts",
+      "to": "src/runtime/http/client-address.ts",
+      "kind": "module"
+    },
+    {
+      "from": "test/support/doubles/organizations/directory-double-records.ts",
+      "to": "test/support/fixtures/hosted-roles.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-collector.ts",
+      "to": "src/logs/audit/audit-collector-state.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-collector.ts",
+      "to": "src/logs/audit/audit-snapshot-state.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-sender.ts",
+      "to": "src/logs/audit/audit-send.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-sender.ts",
+      "to": "src/logs/audit/otlp-audit-encoding.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-sender.ts",
+      "to": "src/logs/audit/public-audit-destination.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-sender.ts",
+      "to": "src/logs/audit/audit-https-connection.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-sender.ts",
+      "to": "src/logs/audit/otlp-audit-request.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/destination-settings-service.ts",
+      "to": "src/logs/audit/audit-content.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/destination-settings-service.ts",
+      "to": "src/logs/audit/destination-credential-codec.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/destination-settings-service.ts",
+      "to": "src/logs/audit/destination-endpoint.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/destination-settings-service.ts",
+      "to": "src/logs/audit/destination-test.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-form.ts",
+      "to": "src/accounts/providers/workos/session-cookies.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-form.ts",
+      "to": "src/accounts/organizations/signup-activation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+      "to": "src/interfaces/web/page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+      "to": "src/interfaces/web/auth/workos/workos-signup-document-reader.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-pages.ts",
+      "to": "src/interfaces/web/auth/workos/workos-signup-style.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/page-html.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/organization-selection-page.ts",
+      "to": "src/interfaces/web/page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/organization-selection-page.ts",
+      "to": "src/interfaces/web/account/organization-selection-style.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-form.ts",
+      "to": "src/interfaces/web/account/account-form.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-page.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-page.ts",
+      "to": "src/interfaces/web/page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/logging-page.ts",
+      "to": "src/interfaces/web/account/members-page-layout.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-pages.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-pages.ts",
+      "to": "src/interfaces/web/page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-pages.ts",
+      "to": "src/interfaces/web/account/members-page-layout.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/administration-pages.ts",
+      "to": "src/interfaces/web/account/billing-page.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts",
+      "to": "src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/search-results/brave-result-document.ts",
+      "to": "src/pipelines/html-processing/search-results/brave-result-fields.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/search-tool-schema.ts",
+      "to": "src/pipelines/search/search-query.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/mcp/fetch-tool-schema.ts",
+      "to": "src/pipelines/page-fetch/fetch-url.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "to": "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "to": "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/renderer-failure-reports.ts",
+      "to": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/execute-outgoing-step.ts",
+      "to": "src/pipelines/search/search-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/execute-outgoing-step.ts",
+      "to": "src/pipelines/execution/step-record.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/execute-incoming-step.ts",
+      "to": "src/pipelines/search/search-cancellation.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/search/execute-incoming-step.ts",
+      "to": "src/pipelines/execution/step-record.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/execute-outgoing-step.ts",
+      "to": "src/pipelines/execution/step-record.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/page-fetch/execute-incoming-step.ts",
+      "to": "src/pipelines/execution/step-record.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/renderer-result.ts",
+      "to": "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/renderer-result.ts",
+      "to": "src/pipelines/providers/website-fetcher/website-fetcher.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/providers/website-fetcher/network-policy.ts",
+      "to": "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/public-audit-destination.ts",
+      "to": "src/logs/audit/audit-send.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-https-connection.ts",
+      "to": "src/logs/audit/audit-send.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/audit-https-connection.ts",
+      "to": "src/logs/audit/public-audit-destination.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-request.ts",
+      "to": "src/logs/audit/audit-send.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-request.ts",
+      "to": "src/logs/audit/otlp-audit-response.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/auth/workos/workos-signup-document-reader.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/members-page-layout.ts",
+      "to": "src/interfaces/web/html-escape.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/members-page-layout.ts",
+      "to": "src/interfaces/web/page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/members-page-layout.ts",
+      "to": "src/interfaces/web/account/members-style.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/interfaces/web/account/billing-page.ts",
+      "to": "src/interfaces/web/page-html.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-counts.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-selector-predicates.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-ranges.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/logs/audit/otlp-audit-response.ts",
+      "to": "src/logs/audit/audit-send.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/html-text-source-ranges.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-animation-declarations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-keyframes.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-animation-declarations.ts",
+      "kind": "module"
+    },
+    {
+      "from": "src/pipelines/html-processing/prompt-injection-remover/css-opacity-keyframes.ts",
+      "to": "src/pipelines/html-processing/prompt-injection-remover/css-animation-declarations.ts",
+      "kind": "module"
+    }
+  ],
+  "unresolvedRelativeImports": [],
+  "nonLiteralDynamicImports": [],
+  "fixedLiveHelperReach": [],
+  "listenerSites": [
+    {
+      "path": "test/support/in-process/workos-site.ts",
+      "line": 80,
+      "text": "const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });"
+    },
+    {
+      "path": "test/support/doubles/workos/workos-fake-api.ts",
+      "line": 182,
+      "text": "server.listen({ host: '127.0.0.1', port: 0 }, resolve);"
+    },
+    {
+      "path": "test/support/in-process/hosted-organization-site.ts",
+      "line": 68,
+      "text": "const server = await startHttpServer(parts.application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: hostedConfig.publicBaseUrl });"
+    },
+    {
+      "path": "src/runtime/http/server.ts",
+      "line": 24,
+      "text": "export async function startHttpServer(handler: FetchHandler, options: HttpServerOptions): Promise<HttpServer> {"
+    },
+    {
+      "path": "src/runtime/http/server.ts",
+      "line": 35,
+      "text": "server.listen({ host: options.listen.host, port: options.listen.port });"
+    }
+  ],
+  "fixedPortMentions": [
+    {
+      "path": "test/integration/auth/workos-provider-directory.test.ts",
+      "line": 18,
+      "text": "const mcpResourceUrl = 'https://localhost:46443/mcp';"
+    }
+  ],
+  "childProcessCalls": [
+    {
+      "path": "src/app/hosted-renderer-startup.ts",
+      "line": 12,
+      "text": "execFile(executable, ['version'], {"
+    },
+    {
+      "path": "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts",
+      "line": 144,
+      "text": "return execFile(executable, rendererArguments(url), {"
+    }
+  ],
+  "files": {
+    "test/acceptance/auth/hosted-invitations.test.ts": "de0ee7f38ea24c3003b93cb3466764cc7c92bea20eea5bd8cc2b0f465c415303",
+    "test/acceptance/auth/hosted-member-removal-budget.test.ts": "d45133c24f32360ff8710524baad6b8630d839cf4c83521e180f89e2366a4434",
+    "test/acceptance/auth/hosted-member-removal-scope.test.ts": "0dbfe8c5634a30efe3cd063be0bb5846f023cb479a76aa0bad9a64f0294a270e",
+    "test/acceptance/auth/hosted-member-removal.test.ts": "fb6d7d4f5186fe6fe108a5773cacb6b82a62e47da550a6d1abe0f0cc9efce2fd",
+    "test/acceptance/auth/hosted-member-self-removal.test.ts": "5b0cf72a43a4937795d235e944b70a3a60e91fcbba0a9df6f4841835b235eb0e",
+    "test/acceptance/auth/hosted-members.test.ts": "f23238ff8e01e5506e59ce757a4eca40dba2e024e5e770c47e9d69fb900b6b87",
+    "test/acceptance/auth/hosted-membership-deletion.test.ts": "4d7d1aefc5e2d3440e523dbd45bf1f2e087447f649cac2def7efd6b95e05175c",
+    "test/acceptance/auth/hosted-workos-administration.test.ts": "276940730280251dd4bc04ef3870fdc8a9ba101f6f5155cfa5f729754b5e3fc7",
+    "test/integration/auth/hosted-storage-lifecycle.test.ts": "2fe8a3e98973a1fa63a8ffe1d1459e9eef82d9b4d736de560327b264ed31420b",
+    "test/integration/auth/workos-connection.test.ts": "c4b07d64fcb18738b8300c11beddd7e898af35573a781aac9769e30a5c163f46",
+    "test/integration/auth/workos-google-onboarding.test.ts": "73be3823b9021d33d715701eca79772f12ffc40690042c5fa0c148c346ee237c",
+    "test/integration/auth/workos-member-facts.test.ts": "e41233d9990b91e9afce6c43d9d4f366876ff467278245b036040263f5045a12",
+    "test/integration/auth/workos-provider-administration.test.ts": "ce4238ee6bf2e0134f03c1297507a5bcd5f5c7ce610d821e1aa8ed6b9791c105",
+    "test/integration/auth/workos-provider-directory.test.ts": "1d56190ddf1392901e9bbcb441ca3dba921f57e005bc4dc29662a11390402a08",
+    "test/integration/auth/workos-provider-organizations.test.ts": "12f0e790396bbc51e1a949a99e0d656c8ae9911f2ef68ada1fd8e58a86949e41",
+    "test/integration/auth/workos-removal-lifetime.test.ts": "12f1fa7d78e2afcff6f48ca744599ca63a8f4e3631c5e74c7c632893a9675960",
+    "test/integration/hosted-admin/account-routes-administration-pages.test.ts": "4c10e263e12a4c7857e66acc972e08822316080977810645999424172d50ae0b",
+    "test/integration/hosted-admin/account-routes-grant-retirement.test.ts": "c2e64dba6943919bf32d9c95a2dfcaeede7ee3a71f9ccbdbe152e063ce08b131",
+    "test/integration/hosted-admin/account-routes-removal-audit.test.ts": "a0d73e177ace9b1d0180cd61c7f92aecd17f97fb12c9762459c6e93ebc7c8d66",
+    "test/integration/hosted-admin/account-routes-removal.test.ts": "cf4e6c915ee84d160b3e3a6826f0c68f1cbc6202c8591420bb697cf8c0c0c4b9",
+    "test/unit/auth-workos/workos-membership-reads.test.ts": "86048a825a0e3170c681d7d3fe26ccc74d95b7d6ca7596919f9539cdd17936bb",
+    "test/unit/auth-workos/workos-organizations-deletion.test.ts": "51dff4f467810b72bc8d989c2c263c54f18c490760b661188c9bd05d4c860364",
+    "test/unit/auth-workos/workos-organizations-member-facts.test.ts": "cd2d06e986398c879970e005298af9d413e862cd112cc3a62571cfcba56ab48f",
+    "test/unit/auth-workos/workos-organizations-members.test.ts": "498e325e3df07138bf3230cb6f2c6e77a098fa1312f15e5496b05b765e82085e",
+    "test/unit/auth-workos/workos-organizations-memberships.test.ts": "f1a26a0f4d9c19ef49ee9066de57ba44da0031e4daee7e075f0a334d6d173772",
+    "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts": "2eb7f785eed7ceb2f93e185db0b0ee0a75c8d63a8019f1a04f05c7a7808269de",
+    "test/unit/auth-workos/workos-organizations.test.ts": "ef4a01e0e530171fed6734f1cd8688429e50827527315bde06405671a990718b",
+    "test/unit/logging/audit/audit-removal.test.ts": "6794e9d156ecac3fe8fe903a1fc0f40156e58157d33f46587590e569ead55379",
+    "test/unit/logging/audit/pg-removal-operation-store.test.ts": "926273afb4ef0fb011bbb7c0cd1dcf006e790ead1ed3fff990314919e94e7c96",
+    "test/unit/organizations/membership-removal-lifetime.test.ts": "81c72a9931c0fcb474a8139cd315c624471baee5be31a9cfbb0ad52878823ddd",
+    "test/unit/organizations/membership-removal-outcomes.test.ts": "23f7a9927829764cceb9df368df7c4b6cce947a47760078cd460629670cfe46a",
+    "test/unit/organizations/membership-removal-rules.test.ts": "7e5d9e45af448756c5573636bf02b23b48d96fab7257073379f641e4fca56b5a",
+    "test/unit/organizations/organization-administration-members.test.ts": "7f0e67045aa09df85818d30601482534e54448c19a5fd79efbdd2ad0040b3fd2",
+    "test/support/dsl/hosted-access.ts": "9443b354f53b68de2cadff8d2bb032d94158a85aaed3fd3acfb78b35f3a40f48",
+    "test/support/dsl/hosted-administration.ts": "a8c6815e874c468125fbd40035e374859c3a9efc990187c2537c2f5c3ad32482",
+    "test/support/drivers/browser/hosted-browser.ts": "4a647376e3e787ddb752e61dbb34abbb80221e47f81c16a3e24f1fbf140cb5c6",
+    "test/support/fixtures/hosted-members.ts": "be2be581e9cd6f999d0c577844142fdb0032c402e5a2eba21e8b76b7f53d0428",
+    "test/support/fixtures/hosted-roles.ts": "d70b1805409f01828f629bcf6a60be03e9561deb5e414b7cbde8feb973666703",
+    "src/accounts/organizations/organization-administration.ts": "63137fcf061c5d831371cc43e6f32671522e51b4268f871f529a79eb0564bc95",
+    "src/accounts/providers/workos/workos-organizations.ts": "48b79aef80e4803eed36fcafbec343fafdfe05ce8256c8c73740dc256b355cd5",
+    "test/support/doubles/organizations/removal-operation-store-fake.ts": "554c7d176e2ad155e27be4cdae772698b0cc790196b4a844764f396b3ca02311",
+    "src/logs/audit/audit-log.ts": "3328ba39ed8ea264ec0c50aec5125f7d7aad215954bbdf7b8b2ee18b86617c70",
+    "test/support/dsl/workos-sign-in.ts": "fff4e50c3933ff69e514ff1332c2f5698d918db24e1fcceba8afc09e03936631",
+    "test/support/dsl/hosted-member-removal.ts": "63f3b9a4bdac1804ae8df37fe4355cda700b101e0acc0e5b87b0bcf18e3b93ad",
+    "test/support/in-process/hosted-member-removal-site.ts": "17e5988d70110bf6fa5af555dea12775b1fdd65c9fc6450823f2a7d2186b0fc1",
+    "src/accounts/providers/workos/workos-settings.ts": "c1c991346424c402d3b57568cc537b12296c8d37174f9c16daff639df6dc728e",
+    "test/support/doubles/workos/workos-fake.ts": "20770a191f2148e59c7688fc1ae60bc24a98f85af18efecd29ef346d2cbac3df",
+    "test/support/doubles/workos/workos-fake-wire.ts": "0bea9c81a0aeee5c9bebfcf201644b9657672c442f8959d89a7024ad38d7d214",
+    "test/support/fixtures/hosted-config.ts": "07f29e6e9afdb58b64a95f545c72313c8287d5708f70d8ae626d53f009c74dbd",
+    "test/support/in-process/workos-site.ts": "244504d681a36ebd91baf8659f796b07deda944c1a1e59db7d2afe4dc836894c",
+    "src/app/application.ts": "2a6e65ec44be8070b7894cf2ae35eefa4df831c086cc7ddbfc807cfa735f1a05",
+    "src/accounts/billing/billing-free.ts": "6352b61bf95a2cb06f2c54e6d28abc1a501eb139f0eac76a465ec42d51bfc87f",
+    "test/support/doubles/auth/browser-session-double.ts": "3cabb237162b94bfb26689b100baf252d84a632c3c5806e2841962b5b50672d3",
+    "test/support/doubles/organizations/membership-directory-double.ts": "b2b5a158554d5d0aa3977d58cf5fb93df519e784b6d1ae3b3cdfd374b35f22a7",
+    "test/support/doubles/workos/workos-fake-api.ts": "c0ea8db0c3e8dc9c8d18335ad3bc0c6b7462ec472b5bdc2b98e0d6b97320cee9",
+    "src/app/hosted-workos-application.ts": "95c8537ce3de21f74c64a4c8da0f586e4a491649db8f6581cfbd70824ad2f664",
+    "test/support/fixtures/hosted-placeholder.ts": "fbe46d653d5f8701f507e050ed624b4e375423289e45fa485944a0734141f838",
+    "src/accounts/providers/workos/workos-google-onboarding.ts": "3f33a07d98edf8bbeadf34e3091a57decc186a77df326441efa6536762fd575b",
+    "src/accounts/providers/workos/workos-auth-provider.ts": "7c0314b9b56611ea0e57d70c4e3c5384c799f84c2135057f876e035b9f8fb889",
+    "src/accounts/organizations/change-records.ts": "e2a81cacc0354221519cfe14b03b2c87bc030fed6c29b74f74a32e12bcd5e7a9",
+    "test/support/doubles/billing/billing-recorder.ts": "83402123e7f4a6c487f75a0f6d2f29a43efdce68f53928be525b82df05894592",
+    "src/accounts/providers/workos/hosted-role-mapping.ts": "854234ec28ab62f83cd58353f716192771d9c07c4c538aa1b9a22608902fc975",
+    "test/support/doubles/workos/jwt-signing-key.ts": "fe17e23d17a3f155d1cc40eb84afc1dc27654b3a3c9553b3c519981c0ebca44f",
+    "src/accounts/providers/workos/workos-browser-session.ts": "cfbadadb66078c2d2afbf1fe6d4c54cf4065abf1c0e5ab0c62912734c10551d5",
+    "src/interfaces/web/auth/workos/workos-session-routes.ts": "862a8bd03f4ccc2d42e8a5da9a87731703a9d99a68e4006fc6613a51926bb6e5",
+    "src/interfaces/web/account/portal-access.ts": "8fe6dfaf5272ba7cda6cf6617ccc76d885baf869da5d98fb5fff41c3562f2cbe",
+    "src/interfaces/mcp/mcp-server.ts": "f81ffbdcf5616e080406b88b329295bfbb2c39be4fcee3641e1b1bb1d3b4f0df",
+    "test/support/doubles/hosted-admin/account-operation-spy.ts": "e5171a0403a4265fad5ba3fb9715c80a66a03cef5f78ad8933a62e99e3cbf4be",
+    "test/support/doubles/mcp/protected-tool-spy.ts": "2f9907257e39b15f28f9abd319dcd244034926a28c1797fe643b2699037da67c",
+    "test/support/drivers/mcp/mcp-http-request.ts": "1823e42349472bcc559970c518feca91608fd249b69a8ab8f42fbccd1008d041",
+    "test/integration/hosted-admin/fixtures/account-routes-fixtures.ts": "0b85b240c5c97dbc299384a40a533c8f9625df2dde937633b3f0e8e30d9358f5",
+    "test/integration/hosted-admin/fixtures/administration-routes-fixtures.ts": "6874281bac0f26ef93871664fb97a58fb65a7d22508e460ef3f1eeae014c6c86",
+    "test/unit/auth-workos/fixtures/workos-organizations-double.ts": "88af0fdcdbc4ffd036bd5c1719a53b96a4475d1bb5b127fbbb714b073098f681",
+    "src/logs/audit/otlp-audit-encoding.ts": "76ddb5936f9e0128822a7ea94eea683f1da5635391333ca4e7f8c2fd96849a6b",
+    "src/logs/audit/bounded-sql-runtime.ts": "ae53d0fc278d33f4918e1e1424b6b6705e7719125dd4d89b6e7fe47e5602bc90",
+    "src/logs/audit/pg-destination-settings-store.ts": "7e736e4e527f851eb9dcd975fdf54d3e94ceef060f51d86fa7104e9c7142f915",
+    "test/unit/organizations/fixtures/membership-removal-fixtures.ts": "112ad4b7c35beba8049a206fd2e2098d9125c2cbe87f116825c14ec126243de9",
+    "test/unit/organizations/fixtures/administration-fixtures.ts": "d05d321ba1a3cf575eae418dfa2f25e179ded20a54fe7ee3251f797ce47be550",
+    "test/support/in-process/hosted-organization-site.ts": "769ee1df9d1786a690fce745545e0d5b293d4c02d6fc0d0231692195f872345e",
+    "test/support/drivers/browser/cookie-jar.ts": "46936faf9a99cd547ce83a619bc7e3853975c974bf0b2c1344b26a4b03e6c61f",
+    "test/support/drivers/browser/html-entities.ts": "d33b36a04ce0a50a42014d8a342d73800abf3c067a58f28df5fe9d2d0579c12e",
+    "src/accounts/organizations/administration-overviews.ts": "956476167443458f081ce9599b19b7dd2b9f18d1817aa9c70084f28c7c6bc9b3",
+    "src/accounts/organizations/customer-roles.ts": "07604a00cb2ffa7c7c54f914362136856ab10fa1a53a3f49ce3da158295d5fa4",
+    "src/accounts/organizations/directory-reads.ts": "163386a8605d211ebabd1d4d6a103cd8018a7ce6187605adcac260b154677301",
+    "src/accounts/organizations/membership-removal.ts": "1679eae1caad8768b53f99b78658b70033cdd608246f3b88b34c059ef826febd",
+    "src/logs/audit/audit-event-projection.ts": "de80bad3a72c44f26cac5e9c067613fdfbfa2224cdb25dd9576df95b0d2692db",
+    "src/logs/audit/audit-content.ts": "a17526e8c0680028d9c6b553d9643681633ba91f08fb05b26b6584dddbf6ef4e",
+    "test/support/doubles/logging/destination-settings-fake.ts": "3cb55be9bb1b29f60daf3bff4ea1258576af8365b3dae8e30a15a56efb316253",
+    "test/support/fixtures/signup-documents.ts": "a82f3d645f9be4e26a3f7df9ee8fed1befad5f69b7adba040e9145d80c1e73d8",
+    "test/support/doubles/workos/workos-fake-directory.ts": "d97297a7437095cf2f88e9f828d7468084724225f9ea174722568298e284653f",
+    "test/support/doubles/workos/workos-fake-invitations.ts": "db402898a1fa99ece93ca98a7bcb9203f10b0fd7614b782ab9a074b8adfb7cc8",
+    "test/support/doubles/workos/workos-fake-sessions.ts": "4496d3af297334c1d4281926b6ef218e927d85acc7b64f3ebff1c4b30b43dca9",
+    "src/runtime/config/deployment-config.ts": "979dca31512c928fa99f60905eff06bc8033a1d9154e2a03290919568a44321e",
+    "src/runtime/http/server.ts": "54b069834665bf6ff6f2a442b971de15319ff8cd16903284e7438d297ee0bc93",
+    "test/support/doubles/application/operator-log-spy.ts": "8fbb4d454db6a40fbe7104dff56b43d47208d6096414858d03ec608d8cebceff",
+    "test/support/doubles/workos/workos-signup-fake.ts": "8ed02124c9122bb2fb719c2bca2dc20ef873a732833563067a905a0461c6ab02",
+    "src/interfaces/web/account/account-routes.ts": "34b35964982b22f6be0e1c3147fbdf4ba0b568ced466440b9ac986b6a443f463",
+    "src/app/fetch-tool.ts": "c1389df60209fc51691edbcd08af61d446d3b7d8e244ae43e3a1b40d58602615",
+    "src/accounts/providers/better-auth/better-auth-runtime.ts": "6aed238ae2c251073f7d0ac65dbefa79b9d31116a7190c42a06dde5033947f66",
+    "src/accounts/providers/better-auth/better-auth-provider.ts": "7eb4fcbcb5884104b7f262faed2090d5c3056accc1d934e18d24ca524c96e2a6",
+    "src/interfaces/web/auth/better-auth/local-auth-pages.ts": "b935f5b925ab4d39cb02756b0a9e56439303524d8e8fc0d9bc52c9c52ce1cba7",
+    "src/accounts/identity/access-context.ts": "5c717112f0b24ace35a54dbbdb604fa9c8c52b5855fdec2041f40a93591996b0",
+    "test/support/doubles/organizations/organization-directory-double.ts": "956cbe28017bd6ffeaaed1300a76d06474f71919d3596abbef9fd2c3f4c12d3f",
+    "src/logs/audit/audit-snapshots.ts": "c586608a6b78396bbf528cb50d7661ae6519a0ec1951a87c1698867455df9ac8",
+    "src/accounts/providers/workos/workos-signup-settings.ts": "3fdb3c6fd660325de0dd3cda3ca89a5db78b54b95444397533d4c2ce36411aa7",
+    "src/accounts/providers/workos/workos-organization-audit-documents.ts": "59ab755b0a45912020b1d037c84c62b93ce87516ce82e35d31680c4ac2961c41",
+    "src/app/hosted-renderer-startup.ts": "0baf1c7dc7995694680239191e70e64d63cc50b9eac77e037925bcd577828ee1",
+    "src/app/hosted-portal.ts": "b7c7a79755667cb1a93080006b4520d786fe9ee42d72aad9bdfa5997a1c50fd7",
+    "src/app/logging-storage.ts": "897a3ff18ff216394143f33295912722ac7ebe5359243e618743c55c1fe63359",
+    "src/accounts/providers/workos/workos-signup.ts": "d4e5da1c9dbc4ee088df62727f76f0fb32ab8e10df39895c9a53f6851f723f28",
+    "src/interfaces/web/auth/workos/workos-signup-routes.ts": "20a8c0d00c688dc67ce4b236654241f56ccd4511ef36ee4696c3f596028cde54",
+    "src/interfaces/mcp/protected-resource-endpoint.ts": "8c108a01ecef6763b61f15c1cfe8629468edbb820c408faeed5cec43085d0b4d",
+    "test/support/fixtures/ad-rules.ts": "c546ee0f736afc8675a3850dc75cd78d66a91cc4428dca8707518d74c90d00e9",
+    "test/support/processes/module-paths.ts": "9c769c570f0a8a822ece453db96ad77be78d302d605861f7b6fb45377e0e3007",
+    "src/accounts/providers/workos/workos-session-client.ts": "4abe84f87e24a98c62b628f55723ddb0378cdbec5c577b42216462d3b0c8e9cd",
+    "src/accounts/identity/identity-verifier.ts": "058d9015f9086019f5c7b1eb5ac508346127912a4891a89242e7ca19bd349922",
+    "src/accounts/providers/workos/session-cookies.ts": "1120944a557fa0c8c39b6677cf3752eefd830a709e477b7afa9ad441d03a370e",
+    "src/accounts/providers/workos/workos-sign-in.ts": "f60e1c940cda1faf325687945905498a2afc223aee4187aa664456c04dd55618",
+    "src/runtime/http/request-cancellation.ts": "3cb9bf6d3c053c13a3940c1ba73e8266c51c5c7872c29370202bd42e53ec3efc",
+    "src/interfaces/web/auth/workos/sign-out-form.ts": "15aff973b601d08f7113e14b38a20098f26f2e4865d69ebb99428615be8b09ca",
+    "src/interfaces/web/auth/workos/workos-session-pages.ts": "4ec7e407bbb424c1077982cf23d8e43d0500a4e33637617aaffe891f7b75b1c3",
+    "src/interfaces/web/account/account-pages.ts": "909cde13ceccd4d91f393ccd17e331f8dc59fc1b3c4675bc65a4f602b752d87c",
+    "src/interfaces/mcp/identity-verifier-sdk-adapter.ts": "6aa35f77a83234b3cf599acf7cdfafbed04186d0f0107f19951823a12ad886af",
+    "test/support/doubles/auth/access-resolver-spy.ts": "a45bb09cf53941dc127406916c4ffd97feba4304ff390f1ea6fbae99c3c4254f",
+    "test/integration/hosted-admin/fixtures/account-operation-double.ts": "b4e8a8e4e97c05390bd71add621fa1e6beb83649f6206eb52f2b8c93174254f3",
+    "test/integration/hosted-admin/fixtures/organization-administration-double.ts": "bcf7a960ab438f8aafed49febd0fd6e29dc7cfc8bbfdc3a5ef222d0178a6d21c",
+    "src/logs/audit/audit-send.ts": "039ada2b8d9cdee3815c3e5f78443eba6c12e74ab29361dc54c6bd8d5f581377",
+    "test/unit/organizations/fixtures/billing-double.ts": "e169082abf572a6e5243780397819a441e0a25da636956f31b5150b47a80a97d",
+    "test/support/doubles/auth/identity-verifier-spy.ts": "c314633a2753ad8254382fa5bff124ccdfa402ac912bc9a58e6d81416b678c87",
+    "test/support/doubles/auth/browser-session-store.ts": "0ad94aec8f573c77db71354b4029cd512694781b4d6e4ad979ddba6489b53984",
+    "src/accounts/organizations/membership-removal-checks.ts": "22697d95d43749739820ffd59dbf04d7c1acdf3abd748d5367455d756235154f",
+    "src/accounts/organizations/membership-removal-lifetime.ts": "79a0050baa0dea9a135bc009f4dbb20ff0bf9ac54aa00412b6b6c667369d9830",
+    "src/runtime/http/fetch-exchange.ts": "6e783205b9863da4d787b6cff0db4837e19a1b6f74effb76f989561aa099b7e8",
+    "src/interfaces/web/account/logging-routes.ts": "b7751ea7964e6cd217c1bbf7821fd423e222eff878dc2664ed9220d27a0aae88",
+    "src/interfaces/web/account/account-form.ts": "be834f69551f637515ed7ee39e384cf1de464de92a9dae9d834254ee6c14e6cf",
+    "src/interfaces/web/account/administration-routes.ts": "8a9e3bb52d790f47008e57259c23da07ce56ec195d1b5b42f4092fc7289d5726",
+    "src/runtime/config/ad-rules-file.ts": "af466002be535eabc9c581ce3d6ded3ac45c1c7aa345c8d2b31ac8eac385d74d",
+    "src/pipelines/html-processing/ad-cleaner/adb/clean-html-ads-adblock-rs.ts": "88efad1dbc0863e316bf509a1d4c7af0c9909b03c68a48ee6d264f1b5736bed2",
+    "src/pipelines/html-processing/html-to-markdown-pipeline.ts": "b6ddf1b8b0998b1a27937a5293207094f6de317976aa2ee47efb112f2f38f964",
+    "src/pipelines/html-processing/process-html-step.ts": "40339a0d6c1b6c1bc09d417c08fcb362b137a7f71006b15c028f759b64ddb70a",
+    "src/pipelines/html-processing/html-to-markdown/clean-html-to-markdown-defuddle.ts": "fad6c91d441df2692a68aa5e274fb453b818b9c3b9513965b6d26af257258030",
+    "src/pipelines/html-processing/prompt-injection-remover/prompt-injection-remover-sanitizer.ts": "ddbb2a8e1c6bb25f51f0c2ec3c3d279146484e17793d8bcfe421a6183c3ddaf9",
+    "src/pipelines/html-processing/search-results/brave-http-result-cleanup.ts": "0b8a806f235a893ed90cab58c26751623c2563b7da2304f1090cc9e65c2c4ed2",
+    "src/interfaces/mcp/fetch-tool-server.ts": "0e4cc46bf97d344dcfb4b722448cb195b8d0dbfa3ff89a2e23b05ff5581a0f52",
+    "src/interfaces/mcp/get-url-as-markdown.ts": "2395b4b4b0acd1bb225ca9bb62b77d6980dc9a4baa53bbc615980a3c7e197904",
+    "src/app/operation-capacity.ts": "28afcced9ec6f922b5a50502de7f6d5e07ed1dac9b3cd010c803ed59739ecd0a",
+    "src/pipelines/providers/search-engine/search-engine-brave-http.ts": "d76e3ef2161e8d2863def048796117f31560333e3148cd4e0b2bf87b95d3a8ba",
+    "src/pipelines/search/search-pipeline.ts": "f86076b76e9842d76b45c0ab0e28f29fd0ff799899c98c22e7795dbbb3c1ab69",
+    "src/pipelines/page-fetch/fetch-page.ts": "f5aac48389f399ac5cba0812c2d0eeed0cad67f2344df5e7486aa8e6c73563c0",
+    "src/pipelines/execution/observe-request-step.ts": "0b11e98d0507f46c2e0492196e036ba4e5192f69e134cf8cd671edb237b38f0d",
+    "src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts": "01892fb9acdd02c520c14f41a93150113cf9d284d5b87b7bcc85cc205c190109",
+    "src/runtime/http/client-address.ts": "03402b6532ad158b283e031b36b700a80034d8b21ba10ceb5e1239b79315eed8",
+    "src/accounts/providers/better-auth/data-directory-lock.ts": "dd56da98b0e9dc1dca6be867e694e3ba88dc7dd71908d5c161cba14774975abd",
+    "src/accounts/providers/better-auth/local-installation.ts": "778df04f63c9dd6219f15b163c51c33735daf3a0745fa3c4fb8e99295424f65a",
+    "src/interfaces/web/auth/better-auth/local-auth-page-form.ts": "d97abe11133705cf71b71f25b9cb69f6055a94a53af8c310bf91ec12feef6f26",
+    "src/interfaces/web/auth/better-auth/local-auth-page-html.ts": "cf4cc6cffd761f9ece3e19a6165c8dadc2339028a1a614bac8b4629b3cd8cf0a",
+    "src/interfaces/web/auth/better-auth/local-auth-provider-routes.ts": "57ef8f4562ad85210ea31fc9951d3cff364e9b660fcdf314cf452b10761eec69",
+    "test/support/doubles/organizations/change-answers.ts": "1563a2cf5c4d507918acc6dc674944c9c63812e9404f3b136f212f7d16ad034e",
+    "test/support/doubles/organizations/directory-double-records.ts": "2edcf701011a2bd0d68ea4c93138386b44b55598ac3adbbde56c92400166a0f4",
+    "src/logs/audit/audit-snapshot-state.ts": "509332c628b4c01c117f0a5c9ab3a940480846fc8bbbd379605563157496572a",
+    "src/accounts/providers/workos/workos-signup-documents.ts": "990f42b8436146794c9326fa971463f7a0fa386a51f3ce099646308354172b59",
+    "src/logs/audit/audit-collector.ts": "d1834b3e15c629dbc1d768c82b7307211194e1f0faf2693db40fed08bbc2d1b6",
+    "src/logs/audit/otlp-audit-sender.ts": "d9ae23a2d724d5f0561751493b2bd0a1dee4a251a632376d9529cd2c22d43636",
+    "src/logs/audit/destination-settings-service.ts": "572bee5dc48c067f8d8d6d1b1eb53ffc37c671a2f47af43061d6b6479cce84ee",
+    "src/runtime/config/logging-storage-config.ts": "a2c65b076c2368a2977b2243c1d94dfdbe5a2bf345cd398ceefdcfd7389c406f",
+    "src/accounts/organizations/signup-activation.ts": "2409465721dd3abd9c56dc57c63ac52ff2dff31f79bf4f83b3f69545a5960f8d",
+    "src/interfaces/web/auth/workos/workos-signup-form.ts": "768d264d1de051da902dded127683b804196628369b8485aef3a18188d4c6432",
+    "src/interfaces/web/auth/workos/workos-signup-pages.ts": "16cb3a057494d001bb4d6192e0f75dddddc418110a1bde080c8881f1a3068981",
+    "src/interfaces/web/html-escape.ts": "80d00fbec6b03942758a28ffab458d0a863af30c8c797b8397c01fdb096576e1",
+    "src/interfaces/web/page-html.ts": "fe3bf8902f85ca5c451b882f678eee85501e2f7eaf0cd7448472c83034ea6dce",
+    "src/interfaces/web/account/organization-selection-page.ts": "8192c4c2d4d0fd6bcd6c8ddf73064b0071b3d55e665b54546f6a9776a7b2c824",
+    "src/interfaces/web/account/logging-test-page.ts": "5a57a20dde037d0bc956cc825c9a661ac8bd12dadeb3222e13a842c0ebd53e83",
+    "src/interfaces/web/account/logging-form.ts": "7a236011320e8a6e4bf5450af9e92cbd8cd16aa61e30d289d011c010a826001d",
+    "src/interfaces/web/account/logging-page.ts": "89c14d74147178f8448d38cf0ffa708c313e7f54fb198b766174b1334b1ffc00",
+    "src/interfaces/web/account/administration-pages.ts": "99e6b83db97015db92195f42bb8041f2c78f0e9cb90d0ab099f7220176cd74c3",
+    "src/pipelines/html-processing/ad-cleaner/html-depth-limit-error.ts": "656a619caaf05724f5b2658da35491b0bcbab8cd54f30048125cae125a24c008",
+    "src/pipelines/html-processing/ad-cleaner/adb/source-line-index.ts": "d038c9d3c44236569a0ab029e8715999bf37549208b0963498f0f7a8e57e2436",
+    "src/pipelines/html-processing/ad-cleaner/adb/source-range-parser.ts": "11eff38802170ef824d296b35ca7cf3c49bc9b34898292cbb008c52c85c52bb0",
+    "src/pipelines/html-processing/html-input-limit.ts": "7ac0ca2d68d0cffa1d403902bb51fcee28b3cd7b561e269124be5067a3c33391",
+    "src/pipelines/html-processing/html-to-markdown/plain-text-input.ts": "bc1611e3b5dc0131b6ca237184acf721cdcdf12a9810343223cd6379d6d2b4aa",
+    "src/pipelines/html-processing/html-to-markdown/prepare-html-document.ts": "6995a8cd8ac6745f0f6d44c2233b7e6ecf851d4a99bb1cc43af1efa0306fd08d",
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-session.ts": "e46ec1c534edc94da3f42597f29f0725cc32ec9b9c067e5db8fe8bde50f5028d",
+    "src/pipelines/html-processing/prompt-injection-remover/sanitize-html-controls.ts": "c6dc3eabc54d19e6ff5bd657e50165cb6687c2876fab22bec77ba57aa5628af8",
+    "src/pipelines/html-processing/prompt-injection-remover/small-text-policy.ts": "c1e3406053f6dc31e7661f7d01d7f144800346c1c181590597ba54068b5b6ad3",
+    "src/pipelines/html-processing/search-results/brave-result-document.ts": "281c88a326201caf336d457007d5176cf62583ca05bfbde0506295e071d8b24d",
+    "src/pipelines/search/search-failure.ts": "507894af4ed460aa49ac60bbfc4de360411b9ca87cd7e6851e379eae7b1a43b8",
+    "src/interfaces/mcp/search.ts": "d09c478191dbd93c8176fa58f11cae4b1cff381eccaa188daf94a70af8335ceb",
+    "src/interfaces/mcp/search-tool-schema.ts": "89b1995a1c3dce533ed157565636d0d61dac06805a7ac8b38ef23f19525e7d83",
+    "src/interfaces/mcp/fetch-tool-schema.ts": "cd890714f64cc4d5ff73058707ae23a8c24df98d599fc1f23b831066b1aefb35",
+    "src/interfaces/mcp/tool-completion-record.ts": "5d33b2703aaf0a687f0736d68c0a48b89b64fd8f1bc85dcbdddd0b9761ed7a05",
+    "src/pipelines/page-fetch/fetch-failure.ts": "41b0f2853fb2c1602aadf1fb2a1e754e30947533d5855c9f4a311a4892b140ca",
+    "src/pipelines/providers/website-fetcher/website-fetcher.ts": "6b6f752708261c697b47ae8c0dfc9addb81a4f5814de4ffb527fe893f3a805fe",
+    "src/pipelines/execution/execution-context.ts": "4a47fcd3356743b08f15592d7dc3b50b61877c9d22e55ce943c8ae7ca8a7bbc0",
+    "src/pipelines/providers/website-fetcher/renderer-failure-reports.ts": "89b5e7e7814f8e073657755e12dd8117f4493c2affb8bd1a6e651f57a9dac0b9",
+    "src/pipelines/search/search-cancellation.ts": "faf5b2041c926dd92e0fe67932d7386724ff7c30ba1df6f54de5a1547e893e8d",
+    "src/pipelines/search/search-query.ts": "d7832ce9faae74138684330a62b5276c2f8a07c1e36e6b8ff737dcc0ecca3d10",
+    "src/pipelines/search/execute-outgoing-step.ts": "f25afc136991507c03aa791463a2f668cd1baf146053a0ca955266800541a59f",
+    "src/pipelines/search/execute-incoming-step.ts": "566a92a02e2401de09b4da83acd37c7ebb16fde407995f7ceae2231020145a48",
+    "src/pipelines/page-fetch/fetch-url.ts": "897c0fef16ce4640bead5da1978389d158e958c6806912be6fee5b2e013772f7",
+    "src/pipelines/page-fetch/execute-outgoing-step.ts": "179990b96a345b73a4e2c97b6c529a0608effa3734647c0cacb37e630bec67d6",
+    "src/pipelines/page-fetch/execute-incoming-step.ts": "d3cf135d4c078bcc33d9f6662fcd6ff2b5cbe5c57653c01a31275bd3c287fc57",
+    "src/pipelines/providers/website-fetcher/renderer-result.ts": "b43fd1ecbb94699ba72def028d13c8f18a3bc3bbf75222239d8ca560b5cf6130",
+    "src/pipelines/providers/website-fetcher/fetch-diagnostic.ts": "ed330b64ebbf1fbbc8c790b44ca01caa55bf4a94a5fb7237885cd6c5490ebdf1",
+    "src/pipelines/providers/website-fetcher/network-policy.ts": "a78736d968500f37385ab34fbb1f77d51192edf4f8061406d235b4ef18b25e22",
+    "src/logs/audit/audit-collector-state.ts": "80bdc92bd61fb82dc4518e1cd583d4e6be3b3d2dad0aef780762a6038c599e52",
+    "src/logs/audit/public-audit-destination.ts": "edca6ea8be1d18c749fd259439430bcc9d576f3300616d2ec0919b79eeff2133",
+    "src/logs/audit/audit-https-connection.ts": "0012a9f7a4a5950cc166cf91d1744c5d14bf64165cb9ec0d962d99c2073117b6",
+    "src/logs/audit/otlp-audit-request.ts": "6218836a8d49503624fc650cdf08a09517de9f75b252b1bda5714a12904b4dfb",
+    "src/logs/audit/destination-credential-codec.ts": "f4b34b8b06bc870eb7649b74ea4b25937ab8a2c33ca0716c8c44c4f8dbb556e1",
+    "src/logs/audit/destination-endpoint.ts": "f20716d11ce0cada18b04ac74281702e65a95c31d2fcaf09673b8ebd3c595e79",
+    "src/logs/audit/destination-test.ts": "732fa05669e257e3d4f71980f8835e243ea65b67d148b5fdcd1205dfbd374389",
+    "src/interfaces/web/auth/workos/workos-signup-document-reader.ts": "03c9c42c42e6ae8764393abe1ddf8141262db34c5191e4f1f0157c8681686757",
+    "src/interfaces/web/auth/workos/workos-signup-style.ts": "43a1f3e2c81f58d1181bff718fa8942c6b519e015b375c2acddae95f6103f623",
+    "src/interfaces/web/account/organization-selection-style.ts": "df03acb0bdd2bfcd01a0836fcdd3b236d2e833a62567265374c968b503fddcd4",
+    "src/interfaces/web/account/members-page-layout.ts": "7dfc081c714a0722a8c0a436f9ae1ad63bd649e7aab1319c32ed6887947146aa",
+    "src/interfaces/web/account/billing-page.ts": "fbea6d5926d5f00fee55c8bbb06e62833942cfdb4345037a7a0339d1a0ae2567",
+    "src/pipelines/html-processing/html-to-markdown/sanitize-html-document.ts": "c0df2538afee83abc02e1d30c27de672e4db167da6a89d2de74bcb5b3b5d872c",
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-scanner.ts": "2b228ef73188ed508ee7525c2f6b304e380cde07998127679e12f8004af53f33",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-selectors.ts": "c8acdcb8fe3259013131d8c502012c53748a066069e90f0a11bf0a24e4dd9377",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-provenance.ts": "8b089541bb1fa8101ccfa6c30d53e841eaf9dfdd928cbfc89d5d1107b3de40cd",
+    "src/pipelines/html-processing/prompt-injection-remover/html-control-context.ts": "43e6138f8451208d5a9240dd37c6557186849aa2ddb54099a9c7b9d2dea44698",
+    "src/pipelines/html-processing/search-results/brave-result-fields.ts": "dde42798bb8101bb4ab40932a4d6db25f3a48b827090da6e86ac02b3fd74274e",
+    "src/pipelines/execution/step-record.ts": "b025ce9afc441fa61438dd6b64b183a6863319f3bb39db5eb839367c646a8dbc",
+    "src/logs/audit/otlp-audit-response.ts": "52191b4580b4ada797f86263638a5caf126b7dd0468072acf26ce244c68b8bb1",
+    "src/interfaces/web/account/members-style.ts": "962f5d34f6b6f5c99e32ee450b374b3f6abb8c7378a4cd33666634e807154da2",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility.ts": "0fb1eafe51a97fc5cef7e5474df59afcff3022c26f5d7a38dd7a6acce3e25b4e",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-tree.ts": "577b93767c37b15ab6dd0510bb2e77b171346a89892403c31dd623c8ca6f75e6",
+    "src/pipelines/html-processing/prompt-injection-remover/hidden-html-removal-counts.ts": "0d25b9896b4c08cab695303c018998eb4f91f3ddd28568073d191caf4bcf3f6d",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-rules.ts": "f9e5faf82222d059a26cf021fefd1e0bb16a887067982f722f1832d34bd1e923",
+    "src/pipelines/html-processing/prompt-injection-remover/css-selector-predicates.ts": "6151bb4e4e14e9198060236103741fccc2c134bdbebcc25a0b7f7a364f0a37a9",
+    "src/pipelines/html-processing/prompt-injection-remover/css-selector-index.ts": "78b31ce2836bf503abff1f467bb7a5e22301a5837cacb1fb39ef308e920f8442",
+    "src/pipelines/html-processing/prompt-injection-remover/css-visibility-ranges.ts": "7c987ec4ab0be1b38fefcf4d1035ebee8266283423ce7b92c6a9787fe71a5e53",
+    "src/pipelines/html-processing/prompt-injection-remover/css-opacity-animations.ts": "74015e0ec116ed0d6e21e122da0a59e0e8c2f95774e012fbcc63efe4a6470242",
+    "src/pipelines/html-processing/prompt-injection-remover/html-text-source-ranges.ts": "b36d00897ef0ce0f0d1cedd684f9b4309c4d72bb047488cce1aa94960b7c9169",
+    "src/pipelines/html-processing/prompt-injection-remover/css-animation-declarations.ts": "fa95e383dd9ec041927eec3d0173520017f283c77f2c84fff3bab678ad49eaa0",
+    "src/pipelines/html-processing/prompt-injection-remover/css-opacity-keyframes.ts": "c0e3fa002929cbb6bcc6177131dc03bbafb7ad6a65928eeb7a9d479d5a229bf9"
+  },
+  "assessment": {
+    "safeForChangedOrdinaryUnion": true,
+    "scope": "Only the 33 changed .test.ts files and their runtime imports. This does not authorize the broader npm test suite while ports are reserved.",
+    "listenerOwners": [
+      "serveWorkOSSite calls startHttpServer with loopback port 0",
+      "WorkOSFakeApi listenOnLoopback uses port 0",
+      "serveOrganizationSite calls startHttpServer with loopback port 0",
+      "startHttpServer binds only the caller-supplied port"
+    ],
+    "singleFixedMention": "workos-provider-directory mcpResourceUrl is the expected JWT resource audience; it is not passed to listen. Its fake provider uses WorkOSFakeApi port 0.",
+    "childCalls": "Reachable renderer version/fetch execFile calls do not bind the reserved live ports. No test child server is started by this focused union.",
+    "broaderSuiteHold": "Unchanged integration/auth/hosted-live-site.test.ts is outside the changed-file union but inside npm test. It calls LocalHttpsSite and binds 46443. Ordinary and all live groups stay held until manager release.",
+    "postgresGate": "The seven-file 26-case group uses port-0 hosted HTTP/provider sites, dynamic Docker publication for PostgreSQL and the restart child with no listener. Its new integrated site uses serveWorkOSSite; it does not load LocalHttpsSite."
+  }
+}

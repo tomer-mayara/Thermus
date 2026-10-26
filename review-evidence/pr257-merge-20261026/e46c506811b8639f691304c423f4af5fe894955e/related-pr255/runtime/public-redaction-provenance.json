@@ -1,0 +1,319 @@
+{
+  "created": "2026-10-26T09:33:05.073175+00:00",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "rawRetention": "Private originals stay at their original cache paths; no raw live/provider errors, private resource inventories or private cleanup outcomes are uploaded.",
+  "publicCopiesNotByteIdentical": true,
+  "copies": [
+    {
+      "publicPath": "runtime/attempt-2/hosted-live.public-redacted.log",
+      "privateSource": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/runtime/attempt-2/hosted-live.log",
+      "rawSha256": "9f85bb8fe0ac7461c6d09bb4e481692fde450b351777ebe2335a98d978ad8dab",
+      "rawBytes": 19216,
+      "publicSha256": "a54853f65494dca52c77bf3b7b2429b11f4fd88a495198a10a46487c37785d3a",
+      "publicBytes": 12201,
+      "rawLineCount": 159,
+      "omittedLineCount": 110,
+      "redactionBlockCount": 25,
+      "omittedLineRanges": [
+        [
+          1,
+          25
+        ],
+        [
+          29,
+          30
+        ],
+        [
+          32,
+          33
+        ],
+        [
+          35,
+          35
+        ],
+        [
+          37,
+          38
+        ],
+        [
+          40,
+          42
+        ],
+        [
+          45,
+          49
+        ],
+        [
+          51,
+          53
+        ],
+        [
+          57,
+          57
+        ],
+        [
+          60,
+          61
+        ],
+        [
+          64,
+          64
+        ],
+        [
+          67,
+          68
+        ],
+        [
+          71,
+          71
+        ],
+        [
+          74,
+          75
+        ],
+        [
+          79,
+          80
+        ],
+        [
+          83,
+          83
+        ],
+        [
+          86,
+          86
+        ],
+        [
+          89,
+          89
+        ],
+        [
+          92,
+          93
+        ],
+        [
+          97,
+          98
+        ],
+        [
+          107,
+          110
+        ],
+        [
+          112,
+          127
+        ],
+        [
+          129,
+          137
+        ],
+        [
+          139,
+          150
+        ],
+        [
+          152,
+          159
+        ]
+      ],
+      "notByteIdentical": true,
+      "rule": "Allowlisted static test outcomes only. Every other line omitted, including all raw error/header/query and fixture-detail surfaces. Material phases retained in separate safe diagnosis/manager reviews."
+    },
+    {
+      "publicPath": "runtime/attempt-3/hosted-live.public-redacted.log",
+      "privateSource": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/runtime/attempt-3/hosted-live.log",
+      "rawSha256": "2043bf8595270eae70177bd9d79f7b49f16274e165514cf2d02788e4584e76e0",
+      "rawBytes": 23751,
+      "publicSha256": "d397d3fe13381ab3cf5f22e3f4ecff05b50aef529d861aa56fadc9d94e3dd0c5",
+      "publicBytes": 11845,
+      "rawLineCount": 182,
+      "omittedLineCount": 134,
+      "redactionBlockCount": 25,
+      "omittedLineRanges": [
+        [
+          1,
+          25
+        ],
+        [
+          29,
+          30
+        ],
+        [
+          32,
+          33
+        ],
+        [
+          35,
+          35
+        ],
+        [
+          37,
+          38
+        ],
+        [
+          40,
+          42
+        ],
+        [
+          45,
+          49
+        ],
+        [
+          51,
+          53
+        ],
+        [
+          57,
+          57
+        ],
+        [
+          60,
+          61
+        ],
+        [
+          64,
+          64
+        ],
+        [
+          67,
+          68
+        ],
+        [
+          71,
+          71
+        ],
+        [
+          74,
+          75
+        ],
+        [
+          79,
+          80
+        ],
+        [
+          83,
+          83
+        ],
+        [
+          86,
+          86
+        ],
+        [
+          88,
+          89
+        ],
+        [
+          91,
+          93
+        ],
+        [
+          96,
+          97
+        ],
+        [
+          101,
+          103
+        ],
+        [
+          112,
+          115
+        ],
+        [
+          117,
+          126
+        ],
+        [
+          128,
+          136
+        ],
+        [
+          138,
+          182
+        ]
+      ],
+      "notByteIdentical": true,
+      "rule": "Allowlisted static test outcomes only. Every other line omitted, including all raw error/header/query and fixture-detail surfaces. Material phases retained in separate safe diagnosis/manager reviews."
+    },
+    {
+      "publicPath": "runtime/attempt-2/scoped-journal.public-redacted.jsonl",
+      "privateSource": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/runtime/attempt-2/s25-02-mvp0llvk-74dcb7.jsonl",
+      "rawSha256": "e0edea734ae2e68c4f37eca1c5da1923173d7c699eee988dd9c22d46afe55a9d",
+      "rawBytes": 6929,
+      "publicSha256": "9a0e77b6144cc8f771ed50fdc7a27a306522beaf5686a5dc0921400812fd4a20",
+      "publicBytes": 4680,
+      "rawRows": 33,
+      "publicRows": 33,
+      "identifierReplacements": 38,
+      "omittedFieldCount": 49,
+      "eventCounts": {
+        "proof-started": 1,
+        "resource-created": 7,
+        "membership-created": 5,
+        "password-profile-confirmed": 1,
+        "management-observed": 5,
+        "management-limit": 1,
+        "cleanup-started": 1,
+        "cleanup-verification-limit": 1,
+        "cleanup-verified": 10,
+        "cleanup-failed": 1
+      },
+      "notByteIdentical": true,
+      "rule": "Allowlist fixed event/status/time fields. Private IDs replaced with stable opaque aliases; mapping stays private. All other fields omitted. Summaries retain bounded read/DELETE counts and final outcomes."
+    },
+    {
+      "publicPath": "runtime/attempt-3/scoped-journal.public-redacted.jsonl",
+      "privateSource": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/runtime/attempt-3/s25-02-mvp18jhg-41d08a.jsonl",
+      "rawSha256": "81dd8f885b4f85fd680ce8deacf6d77275788e78d4aa467e0c41562117e8903e",
+      "rawBytes": 7070,
+      "publicSha256": "36e2432e36be9239a7ba03dabdc2a8555a68ba352d7755e3a9a4c904a148aa3a",
+      "publicBytes": 4942,
+      "rawRows": 35,
+      "publicRows": 35,
+      "identifierReplacements": 40,
+      "omittedFieldCount": 51,
+      "eventCounts": {
+        "proof-started": 1,
+        "resource-created": 7,
+        "membership-created": 5,
+        "password-profile-confirmed": 1,
+        "management-observed": 5,
+        "management-limit": 1,
+        "cleanup-started": 1,
+        "cleanup-verification-limit": 1,
+        "cleanup-verified": 12,
+        "cleanup-complete": 1
+      },
+      "notByteIdentical": true,
+      "rule": "Allowlist fixed event/status/time fields. Private IDs replaced with stable opaque aliases; mapping stays private. All other fields omitted. Summaries retain bounded read/DELETE counts and final outcomes."
+    },
+    {
+      "publicPath": "runtime/cleanup-final/cleanup-journal.public-redacted.jsonl",
+      "privateSource": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr255/runtime/cleanup-final/cleanup-journal-private.jsonl",
+      "rawSha256": "d0f7250f935301f903714f15d045780f09374167159527c891e20f216aad20a8",
+      "rawBytes": 35642,
+      "publicSha256": "40a577182ac58adeca8bee64c28ab88e892e11343eadd4207781836212be6cf7",
+      "publicBytes": 20093,
+      "rawRows": 135,
+      "publicRows": 135,
+      "identifierReplacements": 131,
+      "omittedFieldCount": 239,
+      "eventCounts": {
+        "intended-delete": 40,
+        "delete-result": 40,
+        "exact-id-readback": 50,
+        "cleanup-stopped": 3,
+        "post-stop-read-reconciliation": 1,
+        "extended-cleanup-complete": 1
+      },
+      "notByteIdentical": true,
+      "rule": "Allowlist fixed event/status/time fields. Private IDs replaced with stable opaque aliases; mapping stays private. All other fields omitted. Summaries retain bounded read/DELETE counts and final outcomes."
+    }
+  ],
+  "privateAliasMappingPublished": false,
+  "redactionTypes": [
+    "all non-outcome log lines omitted",
+    "private resource IDs replaced",
+    "non-allowlisted journal fields omitted"
+  ],
+  "scope": "Redaction is publication hygiene only, not a new product run or corrected outcome. Safe phase reviews and final summary retain material failure/count/order/cleanup history."
+}

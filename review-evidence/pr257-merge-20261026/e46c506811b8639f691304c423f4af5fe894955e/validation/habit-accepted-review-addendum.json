@@ -1,0 +1,28 @@
+{
+  "recorded": "2026-10-26T09:44:52.997Z",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "parent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "managerReview": {
+    "path": ".cache/s25-merge-20261026/pr257/validation/manager-habit-review.json",
+    "sha256": "0fc8649402934a10325bcf7681003b3fddb1447d01f5a4aef5525a5c7b2bf09d"
+  },
+  "originalProposal": {
+    "path": ".cache/s25-merge-20261026/pr257/validation/habit-dispositions-proposed-v2.json",
+    "sha256": "058a8847e51adf84d7d82a95d7e7baf4e12f9629b0d3169e15a3141ad45b2868"
+  },
+  "originalOfflineBinding": {
+    "path": ".cache/s25-merge-20261026/pr257/validation/offline-final-binding-e46c5068.json",
+    "sha256": "c1216c0e4cab489f92f5402228ca136dda00ed07a92d5eb5967edc0712ded1a4"
+  },
+  "decision": "Manager accepted all 465 retained reasons after independent source/provenance review. Raw Habit exit remains 1. The original proposal and offline binding retain their original pending-at-capture state; this later addendum records acceptance.",
+  "verifiedScope": {
+    "findings": 465,
+    "owners": 54,
+    "priorOwnerBlobMatches": 464,
+    "unchangedReportedScenarioBlocks": 1
+  },
+  "offlineProductChecks": "passed",
+  "requiredLiveGroups": "unrun/deferred",
+  "overallStatus": "blocked",
+  "scope": "Habit review acceptance only; no live pass, human approval, deployment or merge authorization."
+}

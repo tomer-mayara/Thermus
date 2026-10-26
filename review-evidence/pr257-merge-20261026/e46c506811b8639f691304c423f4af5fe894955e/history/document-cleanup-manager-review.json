@@ -1,0 +1,7 @@
+{
+  "base": "3cd6eb0e1ebbdab3292d1b411f706a6c5749d604",
+  "approvedToApply": true,
+  "scope": "Four top-status sections only. Labels original P2 and past review/Draft actions as history, links implemented R1/current maintained PR records, retains direct user attestation and all separate release gates.",
+  "checked": "Read exact patch and manual checklist; no frozen legal bytes, source, tests or current release requirements change.",
+  "limits": "No claim current tests passed, named human approval, Ready, merge or release. Recheck patch against tip before applying; commit before tip validation and refresh its head pin."
+}

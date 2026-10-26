@@ -1,0 +1,40 @@
+{
+  "candidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "status": "Stopped after required PostgreSQL failure; overall selected validation blocked.",
+  "integration": {
+    "tests": 1149,
+    "pass": 1149,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "postgres": {
+    "tests": 26,
+    "pass": 25,
+    "fail": 1,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "failure": {
+    "test": "Given password-only access and enabled SQL-backed customer export, when Members confirms removal while the export sender fails, then the durable deletion stays confirmed without replay or an MFA or paid-feature requirement",
+    "source": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+    "observed": "sender.attempts[0].event.eventName is audit.destination.changed; assertion expects organization.changed.",
+    "phase": "The test saves enabled destination settings before removal, then assumes the first queued export is the removal event. The current retained cold event is the settings-save event.",
+    "limit": "Observed event mismatch identifies the selected sender attempt; later assertions in that case were not reached. No production defect or successful removal-export proof is claimed by this failure disposition.",
+    "codeChange": false
+  },
+  "notStarted": [
+    "hosted-live pair",
+    "Public Connect pair"
+  ],
+  "liveFixtures": "No live command started and no live fixture journal was created in this attempt. Disposable local PostgreSQL/fake provider tests ran only.",
+  "nextAction": "Manager reviews/fixes the fixture expectation before a new committed-candidate retry or any next group. Keep existing failed run unmodified; no code/ports/timeout/assertion change by this worker.",
+  "headAfter": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "branchAfter": "codex/s2-5-02-removal-verification",
+  "trackedStatusAfter": "",
+  "prospectiveReadyScope": "Actual-parent increment is source-free; current full-main candidate still inherits source. These selected-group runs do not certify full-main/Ready/merge."
+}

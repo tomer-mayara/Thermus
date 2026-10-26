@@ -1,0 +1,89 @@
+## CRAP goals
+
+Goals: CRAP < 30; new functions also CRAP ≤ 15.
+
+| File | Function | Change | Paths | Coverage | CRAP | To do |
+| --- | --- | --- | --- | --- | --- | --- |
+| src/accounts/organizations/membership-removal-checks.ts | checkRemoval | changed | 9 | 100% | 9.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.activeMembership | unchanged | 7 | 100% | 7.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.changeInvitation | unchanged | 6 | 100% | 6.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | targetRefusal | changed | 5 | 100% | 5.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | checkedActiveRecord | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.invitationPage | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.sendInvitation | unchanged | 5 | 100% | 5.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | removalSupported | changed | 4 | 100% | 4.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | hasCode | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | hasStatus | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | invitationStateOf | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | isInvitationOf | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.activeMembershipsOf | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.deleteMembership | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.memberPage | unchanged | 4 | 100% | 4.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | checkedMemberRecord | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | getOrganizationMembership | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | managementOf | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | pageOf | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | unlessNotFound | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.currentInvitation | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.currentMembership | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.memberFactsPage | new | 3 | 100% | 3.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.membershipsOf | unchanged | 3 | 100% | 3.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | adminGrants | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | afterOf | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | eachOrganizationOnce | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | invitationOf | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | listOrganizationMemberships | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | roleListOf | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | new | 1 | 0% | 2.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.activeGrants | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.activeOrganizationName | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.invitation | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.isNoLongerPending | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.member | unchanged | 2 | 100% | 2.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | new | 1 | 100% | 1.0 | ok |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | currentAdmin | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/organizations/membership-removal-checks.ts | targetFacts | changed | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | (anonymous) | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | memberFactsOf | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | membershipRecordOf | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | readWhileActive | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | revisionOf | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | new | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations. | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.constructor | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.grantsOf | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.memberOf | changed | 1 | 100% | 1.0 | ok |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.organizationRoles | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.resendInvitation | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workos-organizations\WorkOSOrganizations.revokeInvitation | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+| src/accounts/providers/workos/workos-organizations.ts | workosMembershipReads | unchanged | 1 | 100% | 1.0 | ok; unchanged by this PR |
+
+Known limit violations: 0. Measured target misses: 0. Unmeasured functions: 0. Required functions with unknown assessment or identity: 0.

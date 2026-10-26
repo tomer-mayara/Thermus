@@ -1,0 +1,25 @@
+{
+  "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "reviewer": "Codex manager /root",
+  "reviewedAt": "2026-10-26T08:11:26.746066+00:00",
+  "image": "members-remove-narrow.png",
+  "sha256": "b00c70386032d54365839eead1caed3a165e5cc5d9e2926d2314fa2c07562849",
+  "imagePixels": [
+    390,
+    2060
+  ],
+  "browserViewport": [
+    390,
+    844
+  ],
+  "imageKind": "Full page screenshot from the narrow viewport.",
+  "observations": [
+    "The page, form labels and controls fit the narrow width.",
+    "The selected User removal confirmation names the exact member and workspace.",
+    "The notice clearly limits removal to this workspace and preserves the account and other memberships.",
+    "Keyboard focus is visible on the confirming Remove button; Cancel remains separate and readable.",
+    "Active member count and roles remain visible; the current Admin is marked You.",
+    "No horizontal clipping or overlapping text was visible in the captured full page."
+  ],
+  "limits": "A static image does not prove focus behavior or mutation results; the separate passing Chromium test supplies that evidence."
+}

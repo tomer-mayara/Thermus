@@ -1,0 +1,186 @@
+{
+  "checked": "2026-10-26T08:59:22.790Z",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "parent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "trackedStatus": "",
+  "inputFingerprint": "4359c068e14f96e59c46d6bd36ed2cbdac35b513ded0a63412d784ddb688a152",
+  "allTrackedHashesMatch": true,
+  "primaryRunnerProcessCount": 0,
+  "executed": [
+    {
+      "name": "install",
+      "command": [
+        "pnpm",
+        "install",
+        "--frozen-lockfile"
+      ],
+      "actualChildExit": 0,
+      "log": "install-1.log",
+      "sha256": "4a821eac0193ed468192bf8bf247a25934c56c6bc491ac02084257b794c0cbb5",
+      "summaries": []
+    },
+    {
+      "name": "runtime",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "--version"
+      ],
+      "actualChildExit": 0,
+      "log": "runtime-1.log",
+      "sha256": "b67d0ced059f9313d861ddbbe734d2d1f9219106a9e036ae6d88407afa0846e6",
+      "summaries": []
+    },
+    {
+      "name": "api-surface",
+      "command": [
+        "pnpm",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "actualChildExit": 0,
+      "log": "api-surface-1.log",
+      "sha256": "200f9cc6ec11155d6b135f8f2b03843af4bb1d4d739db86235689978505e35f3",
+      "summaries": []
+    },
+    {
+      "name": "focused-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "actualChildExit": 0,
+      "log": "focused-build-1.log",
+      "sha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a",
+      "summaries": []
+    },
+    {
+      "name": "early-portal",
+      "command": [
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "actualChildExit": 0,
+      "log": "early-portal-1.log",
+      "sha256": "3ef133e61a7d803d37cfd080e5d2eb486be488abcfe48b4eaa1602efe48e44ee",
+      "summaries": []
+    },
+    {
+      "name": "members-browser",
+      "command": [
+        "sh",
+        "-c",
+        "npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "actualChildExit": 0,
+      "log": "members-browser-1.log",
+      "sha256": "d34ab5257332a4e4e8ff9ade148b5d3c4a9b6596f6d28f3c3574ca3d60bf4933",
+      "summaries": [
+        "ℹ tests 1",
+        "ℹ suites 0",
+        "ℹ pass 1",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 1305.836417"
+      ]
+    },
+    {
+      "name": "logging-postgres",
+      "command": [
+        "npm",
+        "run",
+        "test:logging:postgres"
+      ],
+      "actualChildExit": 0,
+      "log": "logging-postgres-1.log",
+      "sha256": "3081e402468554173d2ecf964824ef59db2b41187fbdd14cd689f34780022c81",
+      "summaries": [
+        "ℹ tests 26",
+        "ℹ suites 0",
+        "ℹ pass 26",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 61038.210167"
+      ]
+    },
+    {
+      "name": "focused",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "dist/test/acceptance/auth/hosted-invitations.test.js",
+        "dist/test/acceptance/auth/hosted-member-removal-budget.test.js",
+        "dist/test/acceptance/auth/hosted-member-removal-scope.test.js",
+        "dist/test/acceptance/auth/hosted-member-removal.test.js",
+        "dist/test/acceptance/auth/hosted-member-self-removal.test.js",
+        "dist/test/acceptance/auth/hosted-members.test.js",
+        "dist/test/acceptance/auth/hosted-membership-deletion.test.js",
+        "dist/test/acceptance/auth/hosted-workos-administration.test.js",
+        "dist/test/integration/auth/hosted-storage-lifecycle.test.js",
+        "dist/test/integration/auth/workos-connection.test.js",
+        "dist/test/integration/auth/workos-google-onboarding.test.js",
+        "dist/test/integration/auth/workos-member-facts.test.js",
+        "dist/test/integration/auth/workos-provider-administration.test.js",
+        "dist/test/integration/auth/workos-provider-directory.test.js",
+        "dist/test/integration/auth/workos-provider-organizations.test.js",
+        "dist/test/integration/auth/workos-removal-lifetime.test.js",
+        "dist/test/integration/hosted-admin/account-routes-administration-pages.test.js",
+        "dist/test/integration/hosted-admin/account-routes-grant-retirement.test.js",
+        "dist/test/integration/hosted-admin/account-routes-removal-audit.test.js",
+        "dist/test/integration/hosted-admin/account-routes-removal.test.js",
+        "dist/test/unit/auth-workos/workos-membership-reads.test.js",
+        "dist/test/unit/auth-workos/workos-organizations-deletion.test.js",
+        "dist/test/unit/auth-workos/workos-organizations-member-facts.test.js",
+        "dist/test/unit/auth-workos/workos-organizations-members.test.js",
+        "dist/test/unit/auth-workos/workos-organizations-memberships.test.js",
+        "dist/test/unit/auth-workos/workos-organizations-read-lifetime.test.js",
+        "dist/test/unit/auth-workos/workos-organizations.test.js",
+        "dist/test/unit/logging/audit/audit-removal.test.js",
+        "dist/test/unit/logging/audit/pg-removal-operation-store.test.js",
+        "dist/test/unit/organizations/membership-removal-lifetime.test.js",
+        "dist/test/unit/organizations/membership-removal-outcomes.test.js",
+        "dist/test/unit/organizations/membership-removal-rules.test.js",
+        "dist/test/unit/organizations/organization-administration-members.test.js"
+      ],
+      "actualChildExit": 0,
+      "log": "focused-1.log",
+      "sha256": "7ef447082bbba5f919ce6573c7eb9c457aa0b8bdb3a44271e6100413389e1bfa",
+      "summaries": [
+        "ℹ tests 445",
+        "ℹ suites 21",
+        "ℹ pass 445",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 12070.974458"
+      ]
+    }
+  ],
+  "focusedPortTrace": "validation/focused-port-analysis.json",
+  "browserReview": "validation/browser-visual-review.json",
+  "held": [
+    "ordinary",
+    "typecheck",
+    "portal",
+    "hosted-live",
+    "public-connect",
+    "native-container",
+    "hosted-container",
+    "logging-collector",
+    "habit-hooks",
+    "diff-check"
+  ],
+  "state": "Safe early range complete. Ordinary and live proofs have not started. Secondary owns reserved ports. Manager release is required before continuation; no next range was launched."
+}

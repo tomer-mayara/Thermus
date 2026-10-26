@@ -1,0 +1,60 @@
+diff --git a/docs/implementation/admin-s2-5-02.md b/docs/implementation/admin-s2-5-02.md
+index d4de9187..ae533763 100644
+--- a/docs/implementation/admin-s2-5-02.md
++++ b/docs/implementation/admin-s2-5-02.md
+@@ -93,6 +93,18 @@ predecessor increment, production source, public declarations,
+ dependencies, deployment and registry views stayed unchanged from its actual
+ parent. R1 changes the directory contract and safety scan as its record states.
+ 
++## Fixture correction — 26 October 2026
++
++The enabled-export fixture first observed the retained settings-save event and
++treated it as the removal event. The first current PostgreSQL run passed 25 of
++26 cases and retained that mismatch. The fixture now checks the saved event's
++tenant, action and outcome, completes that export successfully, and then checks
++the separate removal export with a controlled transport failure. It keeps both
++attempts and all removal, receipt, count and single-DELETE assertions. Production
++code and per-tenant FIFO behavior remain unchanged. The PR Validation record
++holds the original failure and current candidate checks; the results below stay
++historical.
++
+ ## Behavioral gate evidence
+ 
+ The [R1 record](admin-s2-5-r1.md#selected-behavioral-checks) gives the repaired
+diff --git a/test/acceptance/auth/hosted-member-removal-integrated.runtime.ts b/test/acceptance/auth/hosted-member-removal-integrated.runtime.ts
+index 2e9d479d..8e435326 100644
+--- a/test/acceptance/auth/hosted-member-removal-integrated.runtime.ts
++++ b/test/acceptance/auth/hosted-member-removal-integrated.runtime.ts
+@@ -119,13 +119,21 @@ test('Given password-only access and enabled SQL-backed customer export, when Me
+   const enabled = await site.store.read(site.tenant);
+   assert.equal(enabled.status, 'found');
+   assert.equal(enabled.settings.enabled, true);
++  await sender.untilAttempts(1);
++  const saveAttempt = sender.attempts[0];
++  const savedEvent = saveAttempt.event;
++  assert.equal(savedEvent.organizationId, site.tenant);
++  assert.equal(savedEvent.eventName, 'audit.destination.changed');
++  assert.ok(savedEvent.eventName === 'audit.destination.changed');
++  assert.deepEqual([savedEvent.action, savedEvent.outcome], ['save', 'saved']);
++  saveAttempt.complete({ kind: 'accepted' });
+   const target = site.world.membershipId(ordinaryUser, organization);
+   const form = await removalForm(browser, target);
+   site.world.fake.takeRequests();
+ 
+   const removed = await browser.submit(form);
+-  await sender.untilAttempts(1);
+-  const attempt = sender.attempts[0];
++  await sender.untilAttempts(2);
++  const attempt = sender.attempts[1];
+   attempt.complete(failure);
+   const exported = attempt.event;
+ 
+@@ -142,7 +150,7 @@ test('Given password-only access and enabled SQL-backed customer export, when Me
+   assert.match((await browser.open('members')).body, /Active product members: 2/);
+   assert.deepEqual(await site.store.readRemoval(organization), receipt);
+   assert.deepEqual(await site.store.read(site.tenant), enabled);
+-  assert.equal(sender.attempts.length, 1);
++  assert.equal(sender.attempts.length, 2);
+   assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'DELETE').length, 1);
+   t.diagnostic('Enabled snapshots, Collector authorization and removal use real PostgreSQL. The external export sender returns a controlled permanent transport failure. No live Collector or provider claim.');
+ });

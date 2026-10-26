@@ -1,0 +1,38 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:52:34.987538+00:00",
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "decision": "Accepted fresh offline quality evidence. Mechanical eligibility does not close live, approval or deployment blockers.",
+  "manifestSha256": "c7057c794e976b7d66a33e2730b14e81f7536b1980ef943a5cdf9ae76e95f9ac",
+  "copiedFilesVerified": 90,
+  "tier": "T2 Need architect",
+  "architectureSummary": "T2: declarations changed in 1 public module",
+  "review": [
+    "Read handback, all current file dispositions, every required function row, all checker notes and the contract answer.",
+    "Verified exact copied report hashes and source owner hashes against the committed head.",
+    "Fresh full unit capture covers 155 source files and resolves all 14 required rows; no broader capture was needed.",
+    "Thirteen required rows have 100% coverage. The existing default clock callback has known 0% coverage and CRAP 2; its machine-new classification after offset change is retained and explained.",
+    "Current native comparison has no regressions. Keep the two existing low-MI files with their specific safety-order and adapter ownership reasons. No new or expanded exception is used.",
+    "Type-only OrganizationDirectory has no runtime MI. Its one declaration change and internalInterface flag require T2; sensitiveBehavior is retained as a T1 reason.",
+    "The unresolved CSS import limits native global edge/cycle output; head-derived base coverage is an estimate. No missing global proof is silently claimed.",
+    "Parent 1a3e5a66 is not on origin/main; no new metric history record was generated.",
+    "All 465 Habit findings have current retained reasons; the independent primary manager Habit receipt also verifies current source hashes and the changed test context."
+  ],
+  "requiredGoals": {
+    "count": 14,
+    "new": 9,
+    "changed": 5,
+    "at100percent": 13,
+    "known0percent": 1,
+    "maxNew": 3,
+    "maxChanged": 9,
+    "unknown": 0,
+    "misses": 0
+  },
+  "limits": [
+    "Required WorkOS live and Public Connect groups at this head remain unrun.",
+    "Related #255 failures are not #257 test executions.",
+    "Independent human approval and main deployment containment remain required for merge."
+  ]
+}

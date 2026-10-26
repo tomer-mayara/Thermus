@@ -1,0 +1,14 @@
+{
+  "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "files": {
+    ".pr-impact.json": "ee49ee175e2b037136f3a03ff7f75f287c7d4c1a5caa8a2373e5d4a305f6b9b2",
+    "docs/implementation/admin-s2-5-02.md": "b1f229bc46d59fbd7a46aec57c4dd1022bb50fb0f11563c0decb6ebd48ad138b",
+    "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts": "1a716aeb66145daea7dc171e765c62dd3cfe89164fae9be83f7ab80e5eb39bcb"
+  },
+  "classification": "Source-free test/doc/impact correction; no production change. Existing26-case25/26failure is the red acceptance evidence.",
+  "sourceTreeUnchanged": true,
+  "commit": "Not created; manager review required."
+}

@@ -1,0 +1,16 @@
+{
+  "oldCommittedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "newCommittedHead": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "reviewedPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "started": "2026-10-26T08:44:54.806928+00:00",
+  "finished": "2026-10-26T08:44:54.899242+00:00",
+  "commitExit": 0,
+  "exactWorkingFilesMatchReviewedPrecommitInputs": true,
+  "files": {
+    ".pr-impact.json": "ee49ee175e2b037136f3a03ff7f75f287c7d4c1a5caa8a2373e5d4a305f6b9b2",
+    "docs/implementation/admin-s2-5-02.md": "b1f229bc46d59fbd7a46aec57c4dd1022bb50fb0f11563c0decb6ebd48ad138b",
+    "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts": "1a716aeb66145daea7dc171e765c62dd3cfe89164fae9be83f7ab80e5eb39bcb"
+  },
+  "meaning": "Precommit4/4and26/26/typecheck/Habit runs remain labeled as working-patch evidence. This separate bridge binds their identical input bytes to the new committed head; no old run is relabeled."
+}

@@ -1,0 +1,13 @@
+{
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "priorReviewedCandidate": "076e661d830b969bf233522e1163c22cd1934361",
+  "path": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+  "finding": {
+    "category": "high-complexity",
+    "line": 18
+  },
+  "wholeFileDiffers": true,
+  "reportedScenarioBlockByteIdentical": true,
+  "scenarioBlockSha256": "a905fb44b0b1deec945461326129cc40c924a465b4e3ed828984dee01ba5d66a",
+  "scope": "The complete for-loop and first scenario callback, including both reauthentication variants, are byte-identical. The approved fixture change belongs to the later enabled-export case. This supports the prior complexity reason but does not supply manager acceptance."
+}

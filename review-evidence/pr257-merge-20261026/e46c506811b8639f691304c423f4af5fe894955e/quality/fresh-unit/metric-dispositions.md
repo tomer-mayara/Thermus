@@ -1,0 +1,13 @@
+# Fresh R1 metric review
+
+Head: `e46c506811b8639f691304c423f4af5fe894955e`. Actual parent: `1a3e5a6638d71e03485e0280848ee5e025335382`.
+
+Fresh unit coverage passed 3,292 backend and 29 portal tests. It covers 155 source files and 447 processes. All 14 required function goals pass: nine machine-classified new and five changed. Maximum new CRAP is 3; maximum changed CRAP is 9. Thirteen rows have measured 100% coverage. The default-clock callback has known 0% coverage and CRAP 2. Its body, signature and owner match the parent; preserve its machine classification without calling it new authorship. No required identity or coverage is unknown. Integration and acceptance coverage were unnecessary. No exception is needed.
+
+Removal checks retain MI 61.0176505578 and 43 paths. WorkOS MI changes from 47.0842295268 to 45.1418668103, a drop of 1.94236; paths increase from 124 to 131. Both are existing files. Keep the complete current-authority and target-agreement checks in one safety owner. Keep the adapter's explicit facts page and shared projection with its wire, catalog, management, revision and stop rules. A generic reader or separate files for individual guards would hide the facts/display distinction and ordering. The directory contract is type-only; runtime MI is N/A. The JSON records each file and function reason and identity.
+
+The actual-parent native review reports zero regressions and highs. This is a valid tool result, not a substitute empty report. Earlier full-main reports remain historical context. All four process sections completed: Delta has retained existing-file MI goal misses; Review, CRAP and Architecture passed. Process exit 1 records the Delta goal miss, not a tool failure. No metric record was created because parent `1a3e5a66` is not on `origin/main`.
+
+The same unresolved portal CSS import remains on both sides. The native global report withholds edge and cycle changes; a missing pair does not prove an import change. Global unit-coverage bands remain incomplete for untouched functions. Base values derived from head coverage are estimates. These limits, legends and notices remain in the complete process report.
+
+The checker reports T2 Need architect, with reason `T2: declarations changed in 1 public module`. The internal-interface flag also selects T2, and sensitive behavior retains its T1 reason. Local eligibility is preliminary. The contract policy answer, five informational notes and eligibility note are individually reasoned in `checker-notes.json`. Manager verification of complete-candidate gates, current approval evidence and deployment holds remains separate. Required live validation and Public Connect remain incomplete.

@@ -1,0 +1,3435 @@
+{
+  "checked": "2026-10-26T10:00:50.025041+00:00",
+  "authoredArtifactLinks": [
+    {
+      "from": "README.md",
+      "target": "validation/manager-offline-validation-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/manager-quality-review-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation-draft.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "gate-ledger.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "gated-inputs.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/final-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/offline-status-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/quality-handback.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/metric-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/pr-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/checker-notes.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/process.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/process.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/crap.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/snapshot-base.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/native-html/index.html",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/coverage.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/capture-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/coverage-capture.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/coverage-build.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/unit-listener-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/fresh-unit/habit-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/manager-habit-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/habit-accepted-review-addendum.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/fixture-integration-bridge-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/manager-bridge-review-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/summary-comparison-e46c5068.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/comparison-current.mmd",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "restack-after-255-fixture/restack-proof.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "related-pr255/runtime/final-handback-1a3e5a66/blocked-runtime-handback.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "related-pr255/runtime/manager-first-live-failure-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "related-pr255/runtime/manager-second-live-failure-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "related-pr255/runtime/manager-final-cleanup-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "related-pr255/runtime/public-redaction-provenance.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication/render-publication-preflight.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication/source-publication-attempt.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "history/initial-pr-stack-state.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/main-body.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/validation-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/quality-review-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "provenance.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "inventory.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "link-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/pr-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/manager-quality-review-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/metric-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/snapshot-base.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/crap.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/process.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/process.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/native-html/index.html",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/native-html/compare.html",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/checker-notes.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/habit-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/habit-hooks.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/habit-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/manager-habit-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/habit-accepted-review-addendum.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/fixture-integration-bridge-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/manager-bridge-review-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/source-contract-caller-provenance.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/comparison-current.mmd",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/publication/render-publication-preflight.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/quality-review-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/publication/source-publication-attempt.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/main-body.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/pr-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/main-body.md",
+      "target": "%%EVIDENCE_ROOT%%/publication/render-publication-preflight.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/main-body.md",
+      "target": "%%EVIDENCE_ROOT%%/publication/source-publication-attempt.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/main-body.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/fixture-integration-bridge-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/main-body.md",
+      "target": "%%EVIDENCE_ROOT%%/architecture/manager-bridge-review-e46c5068.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation-draft.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/gate-ledger.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/gated-inputs.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/final-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/manager-offline-validation-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/install-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/runtime-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/api-surface-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/focused-build-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/focused-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/focused-files.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/members-browser-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/browser-visual-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/logging-postgres-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/native-container-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/hosted-container-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-offline-evidence.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/logging-collector-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/ordinary-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/typecheck-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/portal-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/habit-hooks-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/manager-habit-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/habit-accepted-review-addendum.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/diff-check-1.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/final-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/selection.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/focused-port-analysis.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/ordinary-authorization.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/ordinary-port-release.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/container-port-analysis.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/browser/members-remove-narrow.png",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/pr254-browser-manager-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/pr251-fixture/postgres-fixture-review.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/history/pr255-fixture/history/runtime-attempt-1/failure-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/restack-after-255-fixture/restack-proof.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/docker-build-1793005335626-hosted-container-1793005513201-64482.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/hosted-offline-evidence.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/container-range-build-history.jsonl",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/capture-commands.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/coverage-capture.log",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/coverage.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/coverage-build.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/quality/fresh-unit/capture-binding.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/validation/habit-accepted-review-addendum.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/related-pr255/runtime/manager-first-live-failure-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/related-pr255/runtime/manager-second-live-failure-review.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/related-pr255/runtime/final-handback-1a3e5a66/blocked-runtime-handback.md",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/related-pr255/runtime/public-redaction-provenance.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/publication/render-publication-preflight.json",
+      "exists": true
+    },
+    {
+      "from": "publication-drafts/validation-comment.md",
+      "target": "%%EVIDENCE_ROOT%%/publication/source-publication-attempt.json",
+      "exists": true
+    }
+  ],
+  "nativeHtmlStaticAssets": [
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_Python.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "compare.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_Python.html",
+      "target": "compare_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_Python.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality_Python.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_Python.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/compare_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "data/linters.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/busfactor_Python.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/risks_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "data/linters.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "explorer_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "classification_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "risks_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "busfactor_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "data/data_TypeScript.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classes_TypeScript.html",
+      "target": "classes_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/testquality.html",
+      "target": "testquality_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "index_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/index_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "data/linters.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/linters_Python.html",
+      "target": "linters_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/classification_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/communities_Python.html",
+      "target": "communities_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "index_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "explorer_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "classes_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "testquality_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "metrics_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "dependencies_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "communities_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "classification_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "linters_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "risks_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "busfactor_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "compare_Python.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/explorer_Python.html",
+      "target": "data/data_Python.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/dependencies.html",
+      "target": "dependencies_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "images/logo-ast-metrics-small.png",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "index.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "explorer.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "classes.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "testquality.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "dependencies.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "communities.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "classification.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "linters.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "risks.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "busfactor.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "data/data_All.js",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "metrics.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "metrics_TypeScript.html",
+      "exists": true
+    },
+    {
+      "from": "quality/fresh-unit/native-html/metrics.html",
+      "target": "classes.html",
+      "exists": true
+    }
+  ],
+  "allResolveLocally": true,
+  "networkLookupPerformed": false,
+  "originalReportLinks": "Original execution/cache/private paths retain provenance. Authored current index/comments supply accessible curated links. Bound :href expressions are not file paths."
+}

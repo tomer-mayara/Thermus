@@ -1,0 +1,8 @@
+{
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "parent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "dockerContext": "colima-thermus-s25-merge",
+  "reviewed": true,
+  "authorization": "Manager authorized safe early gates through focused only after port analysis. npm test and every live proof are held pending explicit release. Primary detached only; secondary owns its named branch."
+}

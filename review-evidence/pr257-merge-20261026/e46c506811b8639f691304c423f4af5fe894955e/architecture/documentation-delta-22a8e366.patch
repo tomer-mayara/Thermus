@@ -1,0 +1,125 @@
+diff --git a/.pr-impact.json b/.pr-impact.json
+index 5db6553f..de803f5b 100644
+--- a/.pr-impact.json
++++ b/.pr-impact.json
+@@ -41,7 +41,8 @@
+       "test/unit/organizations/membership-removal-rules.test.ts",
+       "docs/implementation/admin-s2-5-r1.md",
+       "docs/design/organization-admin-plan.md",
+-      "docs/implementation/admin-s2-5-02.md"
++      "docs/implementation/admin-s2-5-02.md",
++      "docs/implementation/admin-s2-5-stack-review.md"
+     ]
+   }
+ }
+diff --git a/docs/design/organization-admin-plan.md b/docs/design/organization-admin-plan.md
+index edde33e8..949ffc28 100644
+--- a/docs/design/organization-admin-plan.md
++++ b/docs/design/organization-admin-plan.md
+@@ -22,10 +22,13 @@ provider, and controlled recovery evidence in PRs
+ [stack review](../implementation/admin-s2-5-stack-review.md) found a P2 at its
+ reviewed head: the safety scan reads unused display email for every member and
+ can exhaust the operation budget.
+-[S2.5-R1](#s25-r1--read-safety-facts-without-display-hydration) records the source
+-repair and selected behavioral checks for the original PR #257 candidate.
+-That record kept independent human architect review pending and returned
+-PRs #253 and #255 to Draft. These are historical candidate results. The
++[S2.5-R1](#s25-r1--read-safety-facts-without-display-hydration) implements the
++source repair in PR #257. Its earlier checks, pending-review statements and
++Draft actions are historical candidate records. On 26 October 2026, the user
++directly reported architect approval of the entire original Slice 2.5 stack.
++Current candidate pins, validation and approval reconciliation are in PR #257's
++[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
++[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871). The
+ [S2.5-02 ledger](../implementation/admin-s2-5-02.md) is the sole current Slice 2.5
+ release gate ledger. Removal is not released, and S2.5-02 is not Done.
+ 
+diff --git a/docs/implementation/admin-s2-5-02.md b/docs/implementation/admin-s2-5-02.md
+index 62fb4be7..d4de9187 100644
+--- a/docs/implementation/admin-s2-5-02.md
++++ b/docs/implementation/admin-s2-5-02.md
+@@ -1,17 +1,19 @@
+ # S2.5-02 integrated verification and release controls
+ 
+-Status: S2.5-R1 completes the source repair and selected behavioral checks in
+-PR #257. Independent human architect review of the current candidate remains
+-pending. PRs #253 and #255 are Draft again. The
+-[stack review](admin-s2-5-stack-review.md) records the finding and focused checks;
+-[S2.5-R1](../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration)
+-is implemented on its repair branch; its [record](admin-s2-5-r1.md) gives the
+-current behavioral gate results, red/green history, cleanup and limits. The PR
+-Validation and Quality review records retain earlier candidate evidence and
+-review status. Actual release remains pending. This is
+-[PR #255](https://github.com/tomer-mayara/Thermus/pull/255), stacked on
+-[S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254) at
+-`2271545702a8f1ec28c6f7dd913fec7024ecadeb`. The ticket is not released or Done.
++Status on 26 October 2026: the [S2.5-R1 source repair](admin-s2-5-r1.md) is
++implemented in PR #257. The check results and Draft/review holds below retain
++their original candidate scope. The user directly reported architect approval
++of the entire original Slice 2.5 stack on 26 October. Current repaired-candidate
++pins, validation and approval reconciliation are in PR #257's
++[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
++[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871).
++The [stack review](admin-s2-5-stack-review.md) preserves the original finding;
++the [R1 record](admin-s2-5-r1.md) preserves its red/green history, earlier checks,
++cleanup and limits. Actual release remains pending. This records the original
++[PR #255](https://github.com/tomer-mayara/Thermus/pull/255) increment, whose
++original [S2.5-01c / PR #254](https://github.com/tomer-mayara/Thermus/pull/254)
++parent was `2271545702a8f1ec28c6f7dd913fec7024ecadeb`.
++The ticket is not released or Done.
+ The [plan](../design/organization-admin-plan.md#s25-02--integrated-verification-runbooks-and-release)
+ retains the release exit. This document is the sole current Slice 2.5 release
+ gate ledger. The actual Slice 1/S2-04 release and owner notice decisions remain
+diff --git a/docs/implementation/admin-s2-5-r1.md b/docs/implementation/admin-s2-5-r1.md
+index 8c765a24..a95f4eb0 100644
+--- a/docs/implementation/admin-s2-5-r1.md
++++ b/docs/implementation/admin-s2-5-r1.md
+@@ -1,11 +1,14 @@
+ # S2.5-R1 — Membership safety facts
+ 
+-Status: the source repair and selected behavioral checks are complete.
+-Independent human architect review of the current candidate remains pending.
+-This increment is
+-[PR #257](https://github.com/tomer-mayara/Thermus/pull/257), stacked on S2.5-02 at
+-`0530dd634fe8302b55d4a0669463ef733199cc40`. This is branch implementation status,
+-not a claim that the repair is on main or released.
++Status on 26 October 2026: the source repair is implemented in
++[PR #257](https://github.com/tomer-mayara/Thermus/pull/257). The checks and
++review holds below retain their original candidate scope. The user directly
++reported architect approval of the entire original Slice 2.5 stack on 26 October.
++Current candidate pins, validation and approval reconciliation are in the PR's
++[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
++[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871).
++The original S2.5-02 parent was `0530dd634fe8302b55d4a0669463ef733199cc40`.
++This implementation record claims no current gate pass, merge or release.
+ 
+ ## Problem and result
+ 
+diff --git a/docs/implementation/admin-s2-5-stack-review.md b/docs/implementation/admin-s2-5-stack-review.md
+index d27f8516..05062973 100644
+--- a/docs/implementation/admin-s2-5-stack-review.md
++++ b/docs/implementation/admin-s2-5-stack-review.md
+@@ -4,12 +4,17 @@ Reviewed implementation head: `806ccc573c6ae09c411a47a755d6dd9316343f8f`.
+ Actual S2.5-02 parent: `2271545702a8f1ec28c6f7dd913fec7024ecadeb`.
+ Complete-stack main base: `9d0546b93d37e74ee9ddc7d9f7f4a66b18de0546`.
+ 
+-**One confirmed P2 remains open.** PRs #253 and #255 are Draft again. The source repair is
+-planned as [S2.5-R1](../design/organization-admin-plan.md#s25-r1--read-safety-facts-without-display-hydration),
+-not implemented. The [S2.5-02 ledger](admin-s2-5-02.md) is the sole current
+-removal release gate ledger. This review does not mark the stack ready or released.
+-
+-## Finding and required repair
++Historical record: the finding, repair requirements and Draft actions below
++cover the pinned 25 October candidate. The P2 source repair is implemented in
++[S2.5-R1 / PR #257](admin-s2-5-r1.md). On 26 October 2026, the user directly
++reported architect approval of the entire original Slice 2.5 stack. Current
++candidate validation and approval reconciliation are in PR #257's
++[Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
++[Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871).
++The [S2.5-02 ledger](admin-s2-5-02.md) remains the sole current removal release
++gate ledger. This historical review supplies no new gate pass, merge or release.
++
++## Original finding and required repair
+ 
+ The coordinator's complete active-member safety scan calls the display-oriented
+ `memberPage`. The [WorkOS adapter](../../src/accounts/providers/workos/workos-organizations.ts)

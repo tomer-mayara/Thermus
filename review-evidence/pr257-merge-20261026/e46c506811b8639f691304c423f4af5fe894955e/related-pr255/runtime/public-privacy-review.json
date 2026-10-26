@@ -1,0 +1,12 @@
+{
+  "reviewed": "2026-10-26T09:39:34.418018+00:00",
+  "method": "Inspected safe reports and allowlisted public log/journal extracts. Compared all public bytes with current raw runtime exact-owned identifier/scalar credential candidates without printing values. Final configured-secret/pattern manager scan remains required.",
+  "privateIdentifiersChecked": 60,
+  "privateCredentialCandidatesChecked": 0,
+  "matchingPublicFiles": [],
+  "rawLiveLogsIncluded": false,
+  "privateCleanupInventoriesIncluded": false,
+  "redactedCopies": 5,
+  "noClaimOfByteIdentityForRedactedCopies": true,
+  "scope": "Worker manual/publication privacy review, not a product test or exhaustive secret scan."
+}

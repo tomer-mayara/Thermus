@@ -1,0 +1,30 @@
+{
+  "checked": "2026-10-26T09:29:56.331Z",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "ordinary": {
+    "backendPass": 5115,
+    "portalPass": 49,
+    "exit": 0,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "typecheckExit": 0,
+  "finalPortalBuildExit": 0,
+  "observations": [
+    {
+      "port": 46443,
+      "listeners": 0
+    },
+    {
+      "port": 46480,
+      "listeners": 0
+    },
+    {
+      "port": 46481,
+      "listeners": 0
+    }
+  ],
+  "ownership": "Primary ordinary has exited and releases all three reserved ports. No listener was stopped. WorkOS live and Public Connect remain unstarted; any next use requires manager coordination."
+}

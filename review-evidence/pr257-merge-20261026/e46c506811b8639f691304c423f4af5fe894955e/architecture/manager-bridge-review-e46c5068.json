@@ -1,0 +1,31 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:01:49.763375+00:00",
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "priorReviewedCandidate": "22a8e3666a0e54a7ca49580ec3f111e61bd42566",
+  "verifiedChangedPaths": [
+    "docs/implementation/admin-s2-5-02.md",
+    "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts"
+  ],
+  "verifiedProtectedPaths": [
+    "src",
+    "architecture",
+    "docs/api-surface",
+    "docs/legal",
+    "migrations",
+    "docs/metrics"
+  ],
+  "decision": "Architecture bridge accepted. The inherited fixture correction changes no production authority, contract, registry or legal bytes.",
+  "review": [
+    "Independently compared pinned Git objects; actual merge base equals the stated parent.",
+    "The reviewed fixture settles and checks the retained Save event before checking the distinct removal attempt; no removal assertion or deadline is removed.",
+    "Read the fresh bridge and its limitations. All 15 registry sources stay identical across the bridge.",
+    "For R1, the production/API/registry increment patch is also byte-identical after rebase. Existing comparison and visual review remain applicable."
+  ],
+  "limits": [
+    "This accepts architecture evidence only. It does not restamp old test, coverage or checker execution.",
+    "New runtime evidence and fresh candidate classification remain separate.",
+    "No independent human approval or release approval is supplied by this agent review."
+  ]
+}

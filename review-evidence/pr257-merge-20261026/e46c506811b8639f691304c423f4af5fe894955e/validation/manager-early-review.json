@@ -1,0 +1,38 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:05:33.204312+00:00",
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "completeMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "receiptSha256": "9f7d98e0eb39e5f9349ac415ccfb04f852740836414324b287de34f66fe420b9",
+  "decision": "Eight early selected commands accepted. Full validation remains incomplete.",
+  "verified": [
+    "install",
+    "runtime",
+    "api-surface",
+    "focused-build",
+    "early-portal",
+    "members-browser",
+    "logging-postgres",
+    "focused"
+  ],
+  "results": {
+    "Members Chromium": 1,
+    "PostgreSQL": 26,
+    "focused": 445
+  },
+  "review": [
+    "Verified exact eight log hashes and child exit statuses. Focused, browser and PostgreSQL summaries have zero failures, cancellation, skip or todo.",
+    "Reviewed focused port trace outcome and browser screenshot identity to the already inspected254image; no new UI pixels are claimed.",
+    "Current R1 head and parent match the accepted rebase bridge."
+  ],
+  "pending": [
+    "ordinary suite",
+    "types and final portal build",
+    "hosted-live",
+    "Public Connect",
+    "container and Collector gates in progress",
+    "Habit and final diff/input reconciliation",
+    "fresh R1 metrics and tier review"
+  ]
+}

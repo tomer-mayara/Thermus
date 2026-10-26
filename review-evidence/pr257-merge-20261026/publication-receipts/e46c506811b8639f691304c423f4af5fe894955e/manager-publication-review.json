@@ -1,0 +1,28 @@
+{
+  "reviewer": "manager agent; not independent human approval",
+  "reviewedAt": "2026-10-26T10:09:39.136856+00:00",
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "inventorySha256": "9817a22d53ac35ae79e8014565dd0a82df6ec0794e49ccdc0e8677565697a53b",
+  "approvedForPublication": true,
+  "texts": {
+    "quality-review-comment.md": "b26e0fbfd55b53bc37ef606c045ad47ae5cc2e7a665bc960e9ddb5aade63c925",
+    "main-body.md": "541f3b0b56feb8bb47846b09d95fc91043a652f70180df6b6100f6e32e883c93",
+    "validation-comment.md": "b60d74b76945105bcfde3d009447b4c155456d5819f1ce8880a657ea2e92de47"
+  },
+  "review": [
+    "Read all three exact texts. Offline product success is separate from required live groups unrun at e46 and related #255 failures at 1a.",
+    "Verified every inventory content hash and byte count, exact text copies, configured-value scan map and all two heuristic groups. All heuristic matches are pinned invalid-URL fixture content.",
+    "Reviewed fresh current-parent metrics: 14 known passing required function goals, two retained existing-file MI reasons, the current Habit review/addendum, and unchanged architecture/render bridge.",
+    "Related private provider data remains excluded. Public redacted copies retain their raw/public provenance, not a claim to be full raw logs.",
+    "Publication preflight and source push receipts are current. No main or release claim is made.",
+    "Execution cwd and earlier raw capture paths remain historical. Current PR overlay will name the verified retained-secondary preservation mapping after archival."
+  ],
+  "publicationScope": "Only truthful Draft/evidence publication under the existing request; full transport scan and exact ref leases still apply.",
+  "holds": [
+    "Required live checks remain incomplete.",
+    "Current human approval identity/scope remains to reconcile.",
+    "Main deployment containment must precede any main update.",
+    "Separate release, storage and legal gates remain."
+  ]
+}

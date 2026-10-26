@@ -1,0 +1,32 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:44:05.201880+00:00",
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "completeMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "decision": "Accept all 465 retained Habit findings and current reasons. Raw exit 1 remains reported; this is reviewed retention, not a clean lint result.",
+  "counts": {
+    "high-complexity": 7,
+    "too-many-parameters": 5,
+    "non-essential-comment": 436,
+    "oversized-file": 17
+  },
+  "ownerFiles": 54,
+  "exactPriorOwnerMatches": 464,
+  "contextReview": {
+    "path": "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts",
+    "scope": "The whole first reauthentication loop and scenario callback are byte-identical to the prior reviewed R1 candidate. The approved FIFO export fixture correction is in the later case.",
+    "independentBlockSha256": "0dd7acdbbdff7908ffce4dc52260e54ddc39f52bb4dc3e581f9792038610ef53",
+    "reason": "Keep the ordered removal, SQL receipt, scope, access and recovery assertions together. Splitting this single test story would hide its identity and state transitions. It adds no production branching."
+  },
+  "verified": [
+    "Every current owner blob matches the reported source hash.",
+    "Every retained reason is nonempty and its original reason-source file hash is exact.",
+    "All findings are mapped; the snooze list is empty.",
+    "Version 1 mapping failure remains history; the corrected schema interpretation did not rerun or alter the hook."
+  ],
+  "proposalSha256": "058a8847e51adf84d7d82a95d7e7baf4e12f9629b0d3169e15a3141ad45b2868",
+  "limits": [
+    "This accepts Habit review only. Required provider live groups remain incomplete."
+  ]
+}

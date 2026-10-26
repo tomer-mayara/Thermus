@@ -1,0 +1,22 @@
+{
+  "checked": "2026-10-26T09:02:15.229Z",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "verifiedDriverBase": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "sameContainerDriversAndGateDefinitions": true,
+  "hostListeners": {
+    "native": "ContainerSite publishes 127.0.0.1::8080, selecting a dynamic host port.",
+    "hosted": "HostedImageGate publishes 127.0.0.1::8080, selecting a dynamic host port.",
+    "collector": "Receiver/client containers communicate in a private internal Docker bridge; no fixed host publication."
+  },
+  "containedListeners": "Edge/page/TLS receivers bind inside their containers. Nested hosted offline integration can use 46443 only in the image-build network namespace under RUN --network=none.",
+  "reservedHostPortsUsed": [],
+  "files": {
+    "test/support/container/container-site.ts": "20af80231b84e9ef949b14101dd5e99727695458e3e08c65e2fd5ff23f5dacd2",
+    "test/support/container/hosted-image-gate.ts": "98e8df320f1afe3d885656f62b5cf789e7d91e120fde8ca3d3acabdee7781bfa",
+    "test/support/container/audit-sender-site.ts": "20857c3489c703e1f25817f97ac7f9bf107dba7e1ca65fd27453b31a00db2bcf",
+    "test/support/container/container-edge.ts": "9a510c185e7a493347029089d4f60cfa784274280ba1fae906bec93a31d8d967",
+    "test/support/container/audit-tls-receiver.ts": "18521e4b56f71360f5688f49c86b2332d5f19e6c12609dd143a2bdc7d13f8a8b",
+    "Dockerfile.hosted": "62aa39a803d30cd2c73bd0fe6ebba963f1e7ea3006ef88493875e3dd9acba21d"
+  },
+  "scope": "Manager authorized only native-container through logging-collector now. Ordinary and every live proof remain held. No process was stopped or port changed."
+}

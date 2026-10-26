@@ -1,0 +1,60 @@
+{
+  "checked": "2026-10-26T09:39:59.617Z",
+  "scope": "Complete authorized offline validation only. Required WorkOS live/Public Connect remain unrun and deferred; no full validation or merge approval.",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "parent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "currentOriginMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "trackedStatus": "",
+  "allTrackedHashesMatch": true,
+  "trackedFiles": 1478,
+  "inputFingerprint": "4359c068e14f96e59c46d6bd36ed2cbdac35b513ded0a63412d784ddb688a152",
+  "completedCommands": 16,
+  "offlineProductGatesPassed": true,
+  "habit": {
+    "actualExit": 1,
+    "findings": 465,
+    "ownerFiles": 54,
+    "managerReview": "pending"
+  },
+  "liveGroupsRun": 0,
+  "requiredLiveGroups": [
+    {
+      "name": "hosted-live",
+      "status": "not-run/deferred"
+    },
+    {
+      "name": "public-connect",
+      "status": "not-run/deferred"
+    }
+  ],
+  "overallStatus": "blocked",
+  "blocker": "Required provider-live validation remains failed in related PR 255 attempts; direct WorkOS 502 observed, earlier failure causes remain unproven. Neither required group was run at this head.",
+  "primaryRunnerProcessCount": 0,
+  "ownLabelledContainers": [
+    {
+      "label": "thermus.container-gate=99d8deab",
+      "containers": ""
+    },
+    {
+      "label": "thermus.hosted-image-gate=765a80073a71",
+      "containers": ""
+    }
+  ],
+  "ownCollectorContainers": 0,
+  "sharedProfileRunningContainers": [],
+  "dockerProfileRetained": "colima-thermus-s25-merge",
+  "fixedPorts": "Explicitly released after ordinary; root/quality worker notified. No later live group was started.",
+  "artifactHashes": {
+    "gate-ledger.json": "f4d40c38d55685ebcc216f9c9465e187d29752de34b83a94df1ce05f516a8437",
+    "gated-inputs.json": "14dc9ba34ce3afa496b619ed724a759b630e0799fed1d04f2ccd01d01eb9c48f",
+    "validation-draft.md": "e4eaadb21e51f57cf118d18ab6788b5adfb87ded5ce6ec0046bb2f17626b7899",
+    "offline-validation-e46c5068.md": "e4eaadb21e51f57cf118d18ab6788b5adfb87ded5ce6ec0046bb2f17626b7899",
+    "validation/offline-status-e46c5068.json": "37d5805a2b9abaecea6ea0ba87510793293446fcac4c01c4df1fc8654fc21ac8",
+    "validation/hosted-offline-evidence.json": "9021659eea1a86bd22572eae49b56845fb29342cf4aec524678f860d0e6b32a2",
+    "validation/habit-dispositions-proposed-v2.json": "058a8847e51adf84d7d82a95d7e7baf4e12f9629b0d3169e15a3141ad45b2868",
+    "validation/habit-current-context.json": "1962db38f7a58997234855f7f1964544eaa18116a3f6ea44972244f8651321da",
+    "validation/ordinary-port-release.json": "6428fab2c7dbb318bde2860ebc70a87bcc6d9a09b0d5f7c0afcc6ea0b562da3b",
+    "browser/members-remove-narrow.png": "b00c70386032d54365839eead1caed3a165e5cc5d9e2926d2314fa2c07562849"
+  }
+}

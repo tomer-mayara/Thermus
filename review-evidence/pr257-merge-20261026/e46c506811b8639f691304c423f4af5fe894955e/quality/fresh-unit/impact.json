@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "S2.5-R1 adds OrganizationMemberFacts and memberFactsPage to the existing OrganizationDirectory public module and moves only the removal safety scan to that facts-only operation. The WorkOS adapter retains membership, role-catalog, raw management, grant, revision, scope, cursor and stop rules without per-member user enrichment. The direct target member() read and Members display/seat pages keep their email reads. Current authority, complete pagination, target agreement, last-Admin checks, exact deletion, durable admission and matching receipts keep their rules. The existing ten-page scan limit, 30-second lifetime, five-second WorkOS timeout and no-retry settings remain. This changes an interface and sensitive removal collaboration between existing Organizations and WorkOS components in the hosted Node server. Registry prose records facts versus display; all Mermaid views remain accurate and unchanged. No component, dependency edge, public module membership, client or cross-container contract, external integration, deployment, schema, recovery, notice selection or policy changes against the actual S2.5-02 parent. Controlled latency evidence is a regression case, not a capacity guarantee. Independent current-candidate architect approval, complete-candidate checks and the separate S2.5-02 release/owner gates remain required.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted member read",
+      "Deployment view",
+      "Behavior and resource ownership"
+    ],
+    "evidence": [
+      "architecture/components.md",
+      "src/accounts/organizations/organization-directory.ts",
+      "src/accounts/organizations/membership-removal-checks.ts",
+      "src/accounts/organizations/directory-reads.ts",
+      "src/accounts/organizations/membership-removal-lifetime.ts",
+      "src/accounts/providers/workos/workos-organizations.ts",
+      "src/app/hosted-workos-application.ts",
+      "test/acceptance/auth/hosted-member-removal-budget.test.ts",
+      "test/unit/auth-workos/workos-organizations-member-facts.test.ts",
+      "test/integration/auth/workos-member-facts.test.ts",
+      "test/integration/auth/workos-removal-lifetime.test.ts",
+      "test/unit/organizations/membership-removal-rules.test.ts",
+      "docs/implementation/admin-s2-5-r1.md",
+      "docs/design/organization-admin-plan.md",
+      "docs/implementation/admin-s2-5-02.md",
+      "docs/implementation/admin-s2-5-stack-review.md"
+    ]
+  },
+  "base": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e"
+}

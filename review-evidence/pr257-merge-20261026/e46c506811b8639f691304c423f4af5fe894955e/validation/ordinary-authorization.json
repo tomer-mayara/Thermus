@@ -1,0 +1,23 @@
+{
+  "recorded": "2026-10-26T09:23:20.938Z",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "parent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "managerAuthorization": "After explicit quality-worker release at 09:22:09 UTC, run npm test, typecheck, final portal build, Habit and current-input/diff checks at unchanged pins. No WorkOS live or Public Connect.",
+  "portPreflight": [
+    {
+      "port": 46443,
+      "listeners": 0
+    },
+    {
+      "port": 46480,
+      "listeners": 0
+    },
+    {
+      "port": 46481,
+      "listeners": 0
+    }
+  ],
+  "coordination": "Quality worker notified that primary reserves 46443/46480/46481 during ordinary. Only direct API cleanup remains; later unit-only coverage must prove no fixed binding and use a separate checkout.",
+  "liveDisposition": "Not run at this head; deferred due to two failed PR 255 provider-live attempts with WorkOS HTTP 502. Other causes remain unproven; overall validation/merge status is blocked."
+}

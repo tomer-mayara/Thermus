@@ -1,0 +1,28 @@
+{
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "base": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "mergeBase": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr257/validation/selection.md",
+  "selectionSha256": "7d34041dce4ba0040662de7004fc7165e61dfab69863eaa0be67d0c40b8b5d27",
+  "identity": {
+    "sourceFingerprint": "03f5d8152b372119dc68e837189fe0b7e9649b4c8b6049fae1f9748b96c58191",
+    "inputsFingerprint": "49a3c1ecfd8b62cd4472645bbfb00874420fa2798409f594663dc6fa684b9196",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T09:32:15.514779+00:00",
+  "outputs": {
+    "coverage-capture.log": "0e579513722f0899f5f6e9fd5b6a3d7f037d6e6c5ac8219b35b6d8b3b65063b5",
+    "candidate-pin.json": "a24a78e5549c34738e1ef155673bda18679a5ed1c3e0d800df52d6b7667a2a51",
+    "unit-listener-review.json": "87d31d6d15dff2943ccc06cae39bb436c7bc4708c7ec78fd22d0944e3453155c",
+    "frozen-install.log": "e2a4bccfc8d545b935ae3f97db7d5423d8ff806bfde9fe1d4176c13e691bc64a",
+    "unit-port-analysis.json": "1e98cb40c66ea99efc374d4923abc7b00892d5fe3bde2d035f592ad79349f663",
+    "capture-commands.json": "3a066db47cf25128d39940957221816d9a6439e566c52114c566a3053ee0d83b",
+    "trace-unit-ports.mjs": "122c817be57c5ed41108307ca2748e6893612abdb5aedc243ab5362a434b2675",
+    "coverage.json": "8dfd9fe532f4c39e654c6161286a7c3ae669c6ca79822ba13345e27a21efe0af",
+    "install-receipt.json": "d1eada4872b6cdb752cfab762c3882b75c0a26b137edbf70429cde6cdb1bd549"
+  }
+}

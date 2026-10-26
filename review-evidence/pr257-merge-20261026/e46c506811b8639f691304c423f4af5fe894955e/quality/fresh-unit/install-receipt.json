@@ -1,0 +1,14 @@
+{
+  "command": [
+    "pnpm",
+    "install",
+    "--frozen-lockfile"
+  ],
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "started": "2026-10-26T09:27:46.618278+00:00",
+  "finished": "2026-10-26T09:27:46.757559+00:00",
+  "node": "v24.20.0",
+  "exit": 0,
+  "logSha256": "e2a4bccfc8d545b935ae3f97db7d5423d8ff806bfde9fe1d4176c13e691bc64a"
+}

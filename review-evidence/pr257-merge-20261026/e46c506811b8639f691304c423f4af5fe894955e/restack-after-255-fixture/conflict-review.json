@@ -1,0 +1,13 @@
+{
+  "recordedAt": "2026-10-26T08:46:09.905214+00:00",
+  "oldParent": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "newParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "oldTip": "22a8e3666a0e54a7ca49580ec3f111e61bd42566",
+  "conflictPath": ".pr-impact.json",
+  "resolution": "Keep the replayed R1 declaration. It classifies the R1 increment against its actual S2.5-02 parent. The parent fixture correction is inherited, not a new R1 architecture change. The parent implementation note and test fix merged without conflict.",
+  "sourceConflict": false,
+  "ledgerConflict": {
+    "path": "docs/implementation/admin-s2-5-02.md",
+    "resolution": "Keep the exact parent fixture-correction section and the replayed R1 Behavioral gate evidence / Historical S2.5-02 headings and text. The old Latest heading is superseded by the R1 historical label. No release/owner gate or frozen legal text is edited."
+  }
+}

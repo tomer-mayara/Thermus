@@ -1,0 +1,24 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:30:16.235347+00:00",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "cleanupDecision": "All40proven legacy run resources have a404receipt; earlier scoped12alreadyconfirmed404.",
+  "independentChecks": [
+    "Verified all19copiedcleanupfilehashes.",
+    "Read exact-prefix/known-label/creation-window inventory implementation; unrelated records were neither selected nor retained.",
+    "Inventory complete,40uniqueownedIDs,noexclusions; journal contains exactly40intendeddeletes ontheexactsameIDs,eachonce.",
+    "Independently matched404readbackIDs toall40ownedIDs; noDELETEretry.",
+    "Originalfailed/laggedcleanupreceipts remain unchanged; finalsafe-summary supersedes historicalruntime-handback.md."
+  ],
+  "runtimeDecision": "Both full live runs remainfailed; cleanup successdoesnotpassruntime. PublicConnectunrun.",
+  "limitations": [
+    "No announcedprovideroutageproved. Originalportal500 andnavigationcausesunresolved.",
+    "No independenthumanapproval, Ready,mergeordeploymentclaim."
+  ],
+  "hashes": {
+    "cleanupManifest": "e5e3674336127fa91845effac8770bfa21f3b96f7de6ff51b656daa1e9fb0f04",
+    "finalSafeSummary": "1ac2ac9d2ed45c420a90f2bb0938ce260c8b00f5fe8c145c4c178eaf85c94808",
+    "privateJournal": "d0f7250f935301f903714f15d045780f09374167159527c891e20f216aad20a8"
+  }
+}

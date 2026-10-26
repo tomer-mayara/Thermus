@@ -1,0 +1,17 @@
+{
+  "candidate": "22a8e3666a0e54a7ca49580ec3f111e61bd42566",
+  "mergeBase": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "priorSourceCandidate": "3cd6eb0e1ebbdab3292d1b411f706a6c5749d604",
+  "reviewedAt": "2026-10-26T07:50:31.139670+00:00",
+  "reviewer": "Codex manager /root",
+  "reviewed": true,
+  "scope": "Architecture/source-contract equivalence and final documentation cleanup; not test/quality/human approval/merge approval.",
+  "evidence": "source-doc-bridge-22a8e366.json",
+  "assessment": [
+    "896 production/test/declaration/registry files have the same path set and Git blobs.",
+    "All 15 registry views and reviewed comparison source/pixels unchanged; L3 plus caller/field/lifetime notes still answer strongest memberFactsPage contract question.",
+    "Four cleanup documents exactly match the manager-reviewed proposal; complete release ledger and legal bytes remain unchanged.",
+    "Impact flags and architecture summary unchanged; additional evidence path only.",
+    "Prior source/architecture manager assessment carries forward through explicit equality, not relabeled execution. Current head validation and quality remain pending."
+  ]
+}

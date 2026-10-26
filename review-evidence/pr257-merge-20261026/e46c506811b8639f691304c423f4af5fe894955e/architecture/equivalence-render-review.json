@@ -1,0 +1,61 @@
+{
+  "head": "3cd6eb0e1ebbdab3292d1b411f706a6c5749d604",
+  "parent": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "mainMergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "oldHead": "076e661d830b969bf233522e1163c22cd1934361",
+  "oldParent": "0530dd634fe8302b55d4a0669463ef733199cc40",
+  "registryDiff": {
+    "added": [],
+    "removed": [],
+    "changed": [],
+    "unchanged": [
+      "C4 containers: hosted edition",
+      "C4 containers: local edition",
+      "Collaboration overview",
+      "Context",
+      "Recorded hosted Render target",
+      "Scenario: MCP page fetch and renderer cancellation",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: local authentication in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Selected C4 components: tool processing in the Node server",
+      "Self-hosted Compose"
+    ]
+  },
+  "currentParentDiagramsMatchReviewedParent": true,
+  "currentCandidateDiagramsMatchReviewedCandidate": true,
+  "managerReview": "Pending current comparison and exact final candidate check",
+  "testsBuildsMetricsRun": false,
+  "claimOfHumanApprovalMergeRelease": false,
+  "evidenceCommit": "7f70c30476004ff13b10d75b7b23765cfdd80c96",
+  "evidencePrefix": "review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/architecture/",
+  "renderReportUrl": "https://github.com/tomer-mayara/Thermus/blob/7f70c30476004ff13b10d75b7b23765cfdd80c96/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/architecture/render-report-final.json",
+  "mermaidSha256": "9372ee58c60292ebf480adf228bb47ec8d570cd9712fed135fc24980cf46811a",
+  "initialPRMermaidByteIdentical": true,
+  "sourceReused": true,
+  "newRenderRun": false,
+  "assets": [
+    {
+      "name": "comparison-v2",
+      "sourceSha256": "9372ee58c60292ebf480adf228bb47ec8d570cd9712fed135fc24980cf46811a",
+      "sourceUrl": "https://github.com/tomer-mayara/Thermus/blob/7f70c30476004ff13b10d75b7b23765cfdd80c96/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/architecture/comparison-final.mmd",
+      "pngSha256": "c6385fe2cd2aa2217de328437503171fc608df8216f35dfa6b0d54d43af7920d",
+      "svgSha256": "92bf243c16587082e8b2d65bbb11caac215286c8ca1257d10c46df22e187995a",
+      "imageUrl": "https://github.com/tomer-mayara/Thermus/blob/7f70c30476004ff13b10d75b7b23765cfdd80c96/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/architecture/renders-v2/comparison-v2-800.png",
+      "vectorUrl": "https://github.com/tomer-mayara/Thermus/blob/7f70c30476004ff13b10d75b7b23765cfdd80c96/review-evidence/s2-5-r1/076e661d830b969bf233522e1163c22cd1934361/architecture/renders-v2/comparison-v2-800.svg",
+      "dimensions": {
+        "x": 0,
+        "y": 0,
+        "width": 800,
+        "height": 752.484375
+      },
+      "fresh800pxVisualInspection": "Passed on 26 October 2026: readable text, titles clear, truthful owner/container boundaries, arrow targets and relation types clear, neutral label backgrounds; no unrelated box/label crossing."
+    }
+  ],
+  "currentSummaryEmbeddedByteIdentical": true,
+  "currentSummarySha256": "d9778949ad0ab6a7933a037eac220838171ab948fccb10d075c133d99219698a"
+}

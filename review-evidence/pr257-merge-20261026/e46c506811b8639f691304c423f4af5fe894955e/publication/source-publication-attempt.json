@@ -1,0 +1,50 @@
+{
+  "startedAt": "2026-10-26T09:45:50.330704+00:00",
+  "scope": "Atomic update of five existing Draft PR source branches only. No main ref, PR merge, Ready transition, deployment or cloud setting change.",
+  "authorization": "User requested review, rebase, conflict resolution and integration of this exact stack. Draft publication makes the current candidate reviewable; it does not waive failed live gates or human merge approval.",
+  "renderPreflightSha256": "0c75b9174012eef2cd4d10e91e5910c7811a84ce88679b99ad665c4d4d5778df",
+  "expectedMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "branches": [
+    {
+      "pr": 251,
+      "branch": "codex/s2-5-01a-membership-deletion",
+      "expectedRemote": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+      "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d"
+    },
+    {
+      "pr": 253,
+      "branch": "codex/s2-5-01b-removal-coordinator",
+      "expectedRemote": "790fa3e1f85ab3ed9a5228300cc90373117a2793",
+      "candidate": "b630a76275d5809a498ae63e1cbc322086f4194f"
+    },
+    {
+      "pr": 254,
+      "branch": "codex/s2-5-01c-members-removal",
+      "expectedRemote": "2271545702a8f1ec28c6f7dd913fec7024ecadeb",
+      "candidate": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70"
+    },
+    {
+      "pr": 255,
+      "branch": "codex/s2-5-02-removal-verification",
+      "expectedRemote": "0530dd634fe8302b55d4a0669463ef733199cc40",
+      "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382"
+    },
+    {
+      "pr": 257,
+      "branch": "codex/s2-5-r1-removal-facts",
+      "expectedRemote": "076e661d830b969bf233522e1163c22cd1934361",
+      "candidate": "e46c506811b8639f691304c423f4af5fe894955e"
+    }
+  ],
+  "state": "All five rebased Draft PR source refs confirmed; main unchanged.",
+  "pushExit": 0,
+  "finishedAt": "2026-10-26T09:45:52.374751+00:00",
+  "readback": {
+    "refs/heads/codex/s2-5-01a-membership-deletion": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+    "refs/heads/codex/s2-5-01b-removal-coordinator": "b630a76275d5809a498ae63e1cbc322086f4194f",
+    "refs/heads/codex/s2-5-01c-members-removal": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+    "refs/heads/codex/s2-5-02-removal-verification": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "refs/heads/codex/s2-5-r1-removal-facts": "e46c506811b8639f691304c423f4af5fe894955e",
+    "refs/heads/main": "8c6d204e8588a664438ba8934ab36670b802525f"
+  }
+}

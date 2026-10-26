@@ -1,0 +1,40 @@
+{
+  "recordedAt": "2026-10-26T09:30:35.923963+00:00",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "completeSelectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectedCoverageSuites": [
+    "unit"
+  ],
+  "unitRootFiles": 215,
+  "runtimeGraphFiles": 439,
+  "traceSha256": "1e98cb40c66ea99efc374d4923abc7b00892d5fe3bde2d035f592ad79349f663",
+  "conclusion": "Unit capture has no consumer of46443/46480/46481; safe to run alongside primaryordinary in separatecheckout/dist. No live/container/APIsecret needed.",
+  "listenerReview": [
+    "HTTP unitfixture loopback is127.0.0.1:0; IPv6case::1:0. Occupied-portcase retries only the ephemeral blockerport allocatedbyserve, never a fixedhostport. Addressmock8080 changes reportedaddress after the actualport0bind.",
+    "workos-site and WorkOSFake API listener bindings use127.0.0.1:0. Graph has no LocalHttpsSite, LiveRun or PublicConnect helper.",
+    "src/index is reached only by stop-signal unitimport; entryguard compares argv1withimport.meta.url, so importing stopSignal doesnot callrun/serve. No unitcalls serve/serveApplication.",
+    "Childlocks operate filesystem+IPC; parser/csschildren evaluate parsingpipelinework and have no listener. Realrenderer versions/exec sites are productionfunction definitions reached by conservative graph, not fixedportservers. Capturepreloads/children add no localserver."
+  ],
+  "suiteBoundary": "Package test:unit is backendbuild then direct dist/test/unit/**/*.test.js and test/unit/user-portal/**/*.test.ts. Collector accepts only packagebuild+directsameunitglob commands. No npmtest/check/integration/acceptance/live nestedcommand selected.",
+  "proofFiles": {
+    "package.json": "5198217fb0b6508ced5e041d6ee569a108038e27287382e4f8497ce78b602f97",
+    "script/code-quality/coverage/suites.ts": "0206042e1712f0d730e32e5b80079884a1f6d80d090e4796e9d85304da51dd67",
+    "script/code-quality/coverage/build.ts": "4d9a5ff5357fe7b148a34249b9933e4936509102d2516309b143fce5a7d93806",
+    "script/code-quality/coverage/run.ts": "e1302ac53076597a9e4e171e7f7daafe32774ca3913b22ca9311a514a91bb23d",
+    "test/unit/http/fixtures/http-server-fixtures.ts": "2fe8174f025bb82debea43041743f87e664c24912c791e5c198294034c5a7a4d",
+    "test/unit/http/server-lifecycle.test.ts": "797e0c43efc089b69edba12dc3c255307222ef76b657cda660813da2ec01a703",
+    "test/unit/http/server-close.test.ts": "d7ead0ec383b19e74b2fb1cc255b129356b07373e520876a33a3b4b615afa3b7",
+    "test/unit/stop-signal.test.ts": "6daa562cfef39c3c9716049bdee8811f52c7c82b3b5bb6ed377f68ef769b604b",
+    "src/index.ts": "1314f30f9e5e6ddaebeaa2a7494adda20773d83db2e0ca6cedbb78c7c7177d97",
+    "test/support/in-process/workos-site.ts": "244504d681a36ebd91baf8659f796b07deda944c1a1e59db7d2afe4dc836894c",
+    "test/support/doubles/workos/workos-fake-api.ts": "c0ea8db0c3e8dc9c8d18335ad3bc0c6b7462ec472b5bdc2b98e0d6b97320cee9",
+    "test/unit/auth-better-auth/data-directory-lock.test.ts": "f7f1f1ba47967a6b5760ccf805194d9bc3e104ae2766f05a83a28b50ccf746a8",
+    "test/unit/html-cleaner-pipeline/ad-cleaner/fixtures/parser-child.ts": "091c12668bae3b25655a999c84fad09b3ea35396ccaa55e1d070c93654fc1e3d",
+    "test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/fixtures/pipeline-child.ts": "6240467fc3f6855333411dd7de146147b99cdeec8f61de64aa119cd8ec02c157"
+  },
+  "frozenInstallReceiptSha256": "d1eada4872b6cdb752cfab762c3882b75c0a26b137edbf70429cde6cdb1bd549",
+  "branch": "codex/s2-5-r1-removal-facts",
+  "status": ""
+}

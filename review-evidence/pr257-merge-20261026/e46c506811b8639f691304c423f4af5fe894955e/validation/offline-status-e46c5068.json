@@ -1,0 +1,34 @@
+{
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "parent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "completeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "inputFingerprint": "4359c068e14f96e59c46d6bd36ed2cbdac35b513ded0a63412d784ddb688a152",
+  "completedCommands": 16,
+  "offlineProductGatesPassed": true,
+  "habit": {
+    "actualExit": 1,
+    "findings": 465,
+    "ownerFiles": 54,
+    "proposedReasons": 465,
+    "exactPriorOwnerBlobFindings": 464,
+    "unchangedReportedScenarioFinding": 1,
+    "managerAcceptance": "pending",
+    "proposal": "validation/habit-dispositions-proposed-v2.json",
+    "contextEvidence": "validation/habit-current-context.json",
+    "snooze": []
+  },
+  "requiredLiveGroups": [
+    {
+      "name": "hosted-live",
+      "status": "not-run/deferred",
+      "reason": "Manager hold after two failed required PR 255 provider-live attempts; observed WorkOS 502 and unresolved earlier failures."
+    },
+    {
+      "name": "public-connect",
+      "status": "not-run/deferred",
+      "reason": "Required preceding live group remains failed; no paired proof executed at this head."
+    }
+  ],
+  "overallStatus": "blocked",
+  "limits": "Offline passes do not establish successful live validation or merge eligibility. Other causes of the PR 255 failures remain unproven. Current human approval, architecture/quality and deployment containment remain manager responsibilities."
+}

@@ -1,0 +1,37 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:52:34.987538+00:00",
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "validationMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "decision": "Accepted complete authorized offline validation; overall validation remains blocked.",
+  "bindingSha256": "c1216c0e4cab489f92f5402228ca136dda00ed07a92d5eb5967edc0712ded1a4",
+  "verifiedArtifactHashes": 10,
+  "commands": 16,
+  "results": {
+    "ordinaryBackend": 5115,
+    "ordinaryPortal": 49,
+    "focused": 445,
+    "PostgreSQL": 26,
+    "MembersChromium": 1,
+    "nativeContainer": 11,
+    "hostedContainer": 7,
+    "Collector": 10,
+    "typecheck": "passed",
+    "portalBuild": "passed"
+  },
+  "review": [
+    "Accepted earlier exact-log early range and fresh container proof; all corresponding binding hashes remain exact.",
+    "Ordinary, types, final portal and diff checks pass on unchanged e46c5068.",
+    "Raw Habit exit 1 remains in the original binding. Its later separate manager-habit-review.json now accepts all 465 reasons; no original timestamp is changed.",
+    "The screenshot is byte-identical to the manager-inspected #254 image.",
+    "Neither required live group ran at this head. Related mixed HTTP 500/navigation failures and direct WorkOS 502 responses in #255 remain described with their limits.",
+    "No process or task-owned container remains; raw captures and reports are retained."
+  ],
+  "overall": "blocked",
+  "remaining": [
+    "Required WorkOS live and Public Connect validation",
+    "Independent current-candidate human approval",
+    "Deployment hold before main updates"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:32:31.351838+00:00",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "actualParent": "ddad19589a13e40b1aea516b2e5e3b90ea3aec70",
+  "completeSelectionMain": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "decision": "Accepted current BLOCKED validation handback. Required live validation is incomplete.",
+  "manifestSha256": "2ccab559eaec4e0f0613098f000ca1d10fe17b644d3200fd94eb8cb3f4296a9b",
+  "review": [
+    "Read handback and verified exact manifest copies.",
+    "Green integration1149 andPG26exactprecommitbridge retain correct executionprovenance.",
+    "Both redliveattempts andallcleanupfailuresremain; no thirdunchangedretry.",
+    "Rawsecondsummary26/30 includesafterhooksyntheticcase; live29case selection isnot misrepresented.",
+    "Later exactcleanup of52retryresources isverifiedseparatelyanddoesnotturnredruntimegreen.",
+    "AssembledafterR1checkoutfromcaptured1areceipts; nofalsefresh1acheckclaim.",
+    "SourcefreeReadyselectionremainsprospectiveuntilparentintegration; noReadyormergeclaim."
+  ],
+  "blockers": [
+    "Hostedlivefailed",
+    "PublicConnectnotrun",
+    "Currenthumanapprovalscope/identityreconciliation",
+    "Renderworkspace anddeploymentcontainment"
+  ],
+  "privateEvidence": "KeepprivateIDsandrawproviderheaderslocal; anypublicredactedcopiesmustretainoriginalhash/redactionprovenance."
+}

@@ -1,0 +1,122 @@
+{
+  "checked": "2026-10-26T09:21:46.787Z",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "parent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "trackedStatus": "",
+  "allTrackedHashesMatch": true,
+  "inputFingerprint": "4359c068e14f96e59c46d6bd36ed2cbdac35b513ded0a63412d784ddb688a152",
+  "primaryRunnerProcessCount": 0,
+  "ownLabelledContainers": [
+    {
+      "label": "thermus.container-gate=99d8deab",
+      "containers": ""
+    },
+    {
+      "label": "thermus.hosted-image-gate=765a80073a71",
+      "containers": ""
+    }
+  ],
+  "ownCollectorContainers": 0,
+  "sharedProfileRunningContainers": [],
+  "restackDiffIndependentlyChecked": [
+    "docs/implementation/admin-s2-5-02.md",
+    "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts"
+  ],
+  "executedContainerRange": [
+    {
+      "name": "native-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "childExit": 0,
+      "validatorExit": 0,
+      "log": "native-container-1.log",
+      "sha256": "4ace4e6c81b2b5da75888d8b6b6fb978a7341863f0287566d11225212750f5c0",
+      "summaries": [
+        "ℹ tests 11",
+        "ℹ suites 1",
+        "ℹ pass 11",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 173353.705083"
+      ],
+      "buildLogs": [
+        {
+          "path": "docker-build-1793005335626-native-container-1793005338473-58289.log",
+          "sha256": "71bbc0bb270e4d64798e1df3f8b8010f021db301ea7d735206c324e6dffd0345"
+        },
+        {
+          "path": "docker-build-1793005335626-native-container-1793005419088-59497.log",
+          "sha256": "8ad18dba37e8334ed77dbec77a7dc2888f9b0a0d51797bc3169e752b7c7d6d0e"
+        }
+      ]
+    },
+    {
+      "name": "hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container:hosted"
+      ],
+      "childExit": 0,
+      "validatorExit": 0,
+      "log": "hosted-container-1.log",
+      "sha256": "d7cb2ac4d5d2e3ca86d0dea9345be70fc6c4a878fb45303e7799877cadf82ada",
+      "summaries": [
+        "ℹ tests 7",
+        "ℹ suites 0",
+        "ℹ pass 7",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 862870.414458"
+      ],
+      "buildLogs": [
+        {
+          "path": "docker-build-1793005335626-hosted-container-1793005513201-64482.log",
+          "sha256": "75290381f8d52ac6c2fd5dcb0aa803c02f57558393093f9e41a3dd89e49f7afc"
+        }
+      ]
+    },
+    {
+      "name": "logging-collector",
+      "command": [
+        "npm",
+        "run",
+        "test:logging:collector"
+      ],
+      "childExit": 0,
+      "validatorExit": 0,
+      "log": "logging-collector-1.log",
+      "sha256": "e8c8041545de8c422b901af24be944c7a7e3cb2161777c09c812b33b637a18ab",
+      "summaries": [
+        "ℹ tests 10",
+        "ℹ suites 0",
+        "ℹ pass 10",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 17152.39525"
+      ],
+      "buildLogs": []
+    }
+  ],
+  "completedTotalCommands": 11,
+  "remainingUnstarted": [
+    "ordinary",
+    "typecheck",
+    "portal",
+    "hosted-live",
+    "public-connect",
+    "habit-hooks",
+    "diff-check"
+  ],
+  "state": "Stop after the authorized dynamic container range. Keep exact e46c5068 pins and primary stable. Secondary AuthKit/fixture diagnosis and manager release control continuation. No fresh metrics, checkout, source edit or live proof started."
+}

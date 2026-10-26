@@ -1,0 +1,17 @@
+{
+  "reviewer": "manager agent",
+  "reviewedAt": "2026-10-26T09:14:28.775567+00:00",
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "copyManifestSha256": "a7811c70dee76fa3a5ced5b00cdf280a1459313957cb99ea41fe13ca319546a6",
+  "exactFilesVerified": 17,
+  "decision": "First hosted-live failure and separate cleanup readback accepted as failure evidence, not a passing gate.",
+  "observations": [
+    "25 of29 live tests passed; four failures remain reported.",
+    "Scoped proof failed its initial access200assertion before a removal action.500body/actor/operatorcause were not retained, so the cause remains unknown.",
+    "Invitation and Connect failures were at AuthKit email navigation; signout scenario failed during initial portal readiness. Test names do not prove later signout/expiry actions failed.",
+    "Original scoped cleanup-failed journal is preserved; a later separate read-only exact-ID GET receipt returned404for both remaining users. No diagnosis DELETE or broad list was performed.",
+    "All12scoped resources are reconciled absent across original and later receipts; no blanket claim about unjournaled legacy fixtures.",
+    "Independent source review excludes SQL from the failing accessGETpath but does not establish a provider failure."
+  ],
+  "approvedNextStep": "One unchanged-input full hosted-live retry, preserving this failure. On repeatfailure stop and diagnose; no third unchanged retry. Public Connect only after the full live group passes with cleanup."
+}

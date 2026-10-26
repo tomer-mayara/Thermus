@@ -1,0 +1,80 @@
+{
+  "observedAt": "2026-10-26 09:44:48 UTC",
+  "source": "Render connector get_service by exact known service ID; no workspace selection was changed.",
+  "service": {
+    "autoDeploy": "yes",
+    "autoDeployTrigger": "commit",
+    "branch": "main",
+    "createdAt": "2026-10-16T00:12:26.508806Z",
+    "dashboardUrl": "https://dashboard.render.com/web/srv-db8mnqg473hc739d529g",
+    "environmentId": "evm-db8mnqavcj2c73cmoib0",
+    "id": "srv-db8mnqg473hc739d529g",
+    "name": "Thermus",
+    "notifyOnFail": "default",
+    "ownerId": "tea-db8i6ceq1p3s73dev9og",
+    "repo": "https://github.com/tomer-mayara/Thermus",
+    "rootDir": "",
+    "serviceDetails": {
+      "buildPlan": "starter",
+      "cache": {
+        "profile": "no-cache"
+      },
+      "env": "docker",
+      "envSpecificDetails": {
+        "dockerCommand": "",
+        "dockerContext": ".",
+        "dockerfilePath": "./Dockerfile.hosted"
+      },
+      "healthCheckPath": "/healthz",
+      "ipAllowList": [
+        {
+          "cidrBlock": "0.0.0.0/0",
+          "description": "everywhere"
+        }
+      ],
+      "maintenanceMode": {
+        "enabled": false,
+        "uri": ""
+      },
+      "numInstances": 1,
+      "openPorts": [
+        {
+          "port": 8080,
+          "protocol": "TCP"
+        }
+      ],
+      "plan": "1c-2g",
+      "previews": {
+        "generation": "off"
+      },
+      "pullRequestPreviewsEnabled": "no",
+      "region": "oregon",
+      "renderSubdomainPolicy": "disabled",
+      "runtime": "docker",
+      "sshAddress": "srv-db8mnqg473hc739d529g@ssh.oregon.render.com",
+      "url": "https://thermus.onrender.com"
+    },
+    "slug": "thermus",
+    "suspended": "not_suspended",
+    "suspenders": [],
+    "type": "web_service",
+    "updatedAt": "2026-10-26T03:53:33.019589Z"
+  },
+  "publicationScope": {
+    "allowed": "Only the five existing codex source branches and create-only codex evidence refs. Main remains unchanged.",
+    "basis": [
+      "The service watches main only.",
+      "PR preview generation is off.",
+      "The repository has no custom webhooks or GitHub workflow files.",
+      "No executable pre-push hook is present."
+    ],
+    "mainMerge": "Still blocked. Hold automatic/intermediate deployments before any main update, as the release ledger requires.",
+    "workspaceQuestion": "The direct service read resolves its owner ID without guessing or changing workspace."
+  },
+  "liveDeploy": {
+    "id": "dep-dbfcrtajnfac73ekqqs0",
+    "commit": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "status": "live",
+    "source": "Render list_deploys by exact service ID, latest three records"
+  }
+}

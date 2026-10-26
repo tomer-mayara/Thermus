@@ -1,0 +1,19 @@
+{
+  "recordedAt": "2026-10-26T08:47:50.586943+00:00",
+  "oldParent": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "newParent": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "oldHead": "22a8e3666a0e54a7ca49580ec3f111e61bd42566",
+  "newHead": "e46c506811b8639f691304c423f4af5fe894955e",
+  "changedFromOldTip": [
+    "docs/implementation/admin-s2-5-02.md",
+    "test/acceptance/auth/hosted-member-removal-integrated.runtime.ts"
+  ],
+  "checks": {
+    "allProductionRegistryDeclarationsLegalAndImpactBytesUnchanged": true,
+    "runtimeTestExactlyMatchesReviewedParentFix": true,
+    "ledgerEqualsOldTipPlusExactParentFixtureNote": true,
+    "actualMergeBaseMatchesNewParent": true,
+    "trackedStatusClean": true
+  },
+  "scope": "Restack preserves the full reviewed R1 implementation and prior cleanup. Only the approved inherited test fixture and dated note differ. Conflicts were impact-summary ownership and document-section adjacency; no source conflict."
+}

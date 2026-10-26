@@ -1,0 +1,17 @@
+{
+  "reviewer": "Codex manager /root",
+  "reviewedAt": "2026-10-26T08:44:53.363870+00:00",
+  "parentCandidate": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+  "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+  "reviewed": true,
+  "commitAuthorized": true,
+  "scope": "Three-file fixture correction, implementation note and impact summary; no production source change.",
+  "accepted": [
+    "The red 26-case group passed 25 and failed the export event assertion because the save event is retained.",
+    "Setup now verifies the save event tenant, kind, action and outcome and completes it successfully.",
+    "Removal uses the next held attempt, fails it permanently, and keeps all original result, receipt, scope, counts, settings and one-DELETE checks.",
+    "Exactly two export attempts are expected. None is cleared or silently discarded. Timeouts remain intact.",
+    "Focused 4 and complete PostgreSQL 26 passed on the exact unstaged patch. Keep their original commit and precommit status in the final binding.",
+    "Typecheck and backend build passed. The final committed checker follows this reviewed commit."
+  ]
+}

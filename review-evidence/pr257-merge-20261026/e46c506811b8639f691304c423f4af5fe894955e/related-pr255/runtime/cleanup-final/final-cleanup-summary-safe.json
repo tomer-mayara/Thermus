@@ -1,0 +1,14 @@
+{
+  "candidate": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "originalCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "runId": "mvp19y06e23ec8",
+  "finalCleanup": "All40proven exact-run legacy resources confirmed404:32users,2apps,6orgs. All12scoped resources already404in original retryjournal.",
+  "intendedDeleteCalls": 40,
+  "deleteRetries": 0,
+  "preservedHistory": "Initial strict inventory/date normalization, first35resourcecleanupstop, firstorgGET404reconciliation, secondorgstop, bounded3readstop, explicit managerextension with2independentorgDELETEs and>=30/60sreadreconciliation are separate unchangedreceipts.",
+  "extension": "One previouspendingorg404; one neworg[200,200,200,404at>=30s]; otherneworg[200,200,404]. No60sreadneededafter404.",
+  "fixedPorts": "Released09:22:09UTC; no localserver/teststartsince. Primary owns46443/80/81.",
+  "runtimeStatus": "BLOCKED: originalhosted-live25/29; retryraw26/30includesafterhooksynthetictest; PublicConnectunrun. Cleanupreconciliationdoesnotgreenruntime. ExplicitWorkOS502observed; navigationandinitial500causesunproven. No diagnosticpatch/thirdretry.",
+  "checkout": "Clean named1a3e5a6638d71e03485e0280848ee5e025335382beforeauthorizedoffline257checkout.",
+  "finished": "2026-10-26T09:26:32.156Z"
+}

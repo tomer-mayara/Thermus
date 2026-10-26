@@ -1,0 +1,18 @@
+[
+  {
+    "name": "habit-hooks",
+    "command": [
+      "habit-hooks",
+      "--branch",
+      "8c6d204e8588a664438ba8934ab36670b802525f"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "e46c506811b8639f691304c423f4af5fe894955e",
+    "base": "1a3e5a6638d71e03485e0280848ee5e025335382",
+    "started": "2026-10-26T09:34:14.823429+00:00",
+    "finished": "2026-10-26T09:34:16.941962+00:00",
+    "exit": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr257-quality/fresh-unit/habit-hooks.log",
+    "logSha256": "d897bab2d03314b9590fc422a1d99a69ba2e0ea0b17db02ffbea55c6d0b66a5a"
+  }
+]

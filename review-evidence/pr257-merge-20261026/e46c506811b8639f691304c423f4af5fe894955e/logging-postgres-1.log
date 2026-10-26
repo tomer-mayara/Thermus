@@ -1,0 +1,46 @@
+
+> thermus@0.0.0 test:logging:postgres
+> npm run build && node --test --test-concurrency=1 dist/test/acceptance/logging/audit/destination-settings.runtime.js dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js dist/test/integration/logging/audit/destination-settings.runtime.js dist/test/integration/logging/audit/removal-operations.runtime.js dist/test/acceptance/auth/membership-removal.runtime.js dist/test/acceptance/auth/membership-removal-restart.runtime.js dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin with its session retained, then current SQL receipts, counts, access denial, scope and usable selection agree (3635.148833ms)
+ℹ Real hosted HTTP composition and disposable verified-TLS PostgreSQL; WorkOS Password sessions and personal-factor sentinels are controlled. Factor preservation proves adapter scope only, not live provider semantics or MFA feasibility.
+✔ Given a password-only hosted composition with two Admins, a User, other memberships and personal factors, when Members removes the User and then its Admin and the provider requires reauthentication, then current SQL receipts, counts, access denial, scope and usable selection agree (2726.047167ms)
+ℹ Real hosted HTTP composition and disposable verified-TLS PostgreSQL; WorkOS Password sessions and personal-factor sentinels are controlled. Factor preservation proves adapter scope only, not live provider semantics or MFA feasibility.
+✔ Given password-only access and enabled SQL-backed customer export, when Members confirms removal while the export sender fails, then the durable deletion stays confirmed without replay or an MFA or paid-feature requirement (2075.88425ms)
+ℹ Enabled snapshots, Collector authorization and removal use real PostgreSQL. The external export sender returns a controlled permanent transport failure. No live Collector or provider claim.
+✔ Given an authorized password-only Admin and unavailable Slice 2 PostgreSQL, when Members submits removal and ordinary product and MCP requests run, then removal is refused without deletion and product access still works (2128.60275ms)
+ℹ The disposable PostgreSQL container is stopped before the HTTP removal POST. WorkOS and the renderer are controlled; the hosted HTTP/MCP composition, removal refusal and product pipeline are real.
+✔ Given a removal process paused after-admission, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2266.494ms)
+✔ Given a removal process paused during-provider, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2113.616125ms)
+✔ Given a removal process paused before-completion, when it is killed and a fresh process checks unchanged provider state, then the same durable hold refuses a conflicting removal (2133.354125ms)
+✔ Given two password-only Admins and separate SQL pools, when one removal is admitted, then another instance is busy, another organization proceeds, and the remaining Admin cannot remove itself (2138.837458ms)
+✔ Given a committed removal whose provider reply is lost and whose recorder fails, when SQL and the coordinator reopen, then the same organization stays busy without replaying deletion (1870.754791ms)
+✔ Given tenant settings, when the SQL runtime reopens, then committed settings persist and other tenants stay isolated (1867.343375ms)
+✔ Given competing first saves, when both expect absence, then one commits and the other conflicts (2062.402875ms)
+✔ Given a real SQL query that stalls, when a storage deadline passes, then callers return and late work stays bounded (2219.444791ms)
+✔ Given a table lock in real PostgreSQL, when public settings calls stall, then reads fail safely and writes remain unconfirmed (2571.764709ms)
+✔ Given a current WorkOS Admin and locked settings and removal tables, when removal and an admitted MCP request run, then unavailable admission and unknown writes send no deletion while product and health stay usable (4368.589542ms)
+✔ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (2099.740792ms)
+✔ Given persisted generic settings, when an Axiom dataset is added, repeated, changed, and cleared, then each real change advances its tenant revision (1938.969958ms)
+✔ Given real PostgreSQL, when saves compete or repeat, then only actual changes advance the scoped revision (2154.954666ms)
+✔ Given an untrusted certificate, when settings are read, then verified TLS rejects the connection safely (2136.347917ms)
+✔ Given conflicting ambient PostgreSQL variables, when an explicit runtime connects, then its scoped verified configuration wins (1910.930542ms)
+✔ Given a live PostgreSQL query, when local shutdown closes its socket, then the caller settles and late server work ends within its statement deadline (3518.659292ms)
+✔ Given a trusted certificate for a different hostname, when settings are read, then hostname verification rejects it (1938.0055ms)
+✔ Given an idle database disconnect, when PostgreSQL terminates the connection, then later explicit reads can recover (2028.694292ms)
+✔ Given independent SQL pools, when removals contend, then one pending intent wins and another organization proceeds (1978.4445ms)
+✔ Given persisted pending and terminal operations, when pools reopen and stale completions arrive, then only the same intent can settle (1919.103ms)
+✔ Given committed writes whose replies are lost, when reread through a new pool, then the pending intent and same terminal receipt survive (1930.797ms)
+✔ Given production logging storage configuration, when settings and removal intent are used and storage closes, then both public roles share the same concrete store and closure (1960.053792ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 61038.210167

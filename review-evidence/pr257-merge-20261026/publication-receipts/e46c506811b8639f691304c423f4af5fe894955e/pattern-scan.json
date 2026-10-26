@@ -1,0 +1,114 @@
+{
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "inventorySha256": "9817a22d53ac35ae79e8014565dd0a82df6ec0794e49ccdc0e8677565697a53b",
+  "scope": "Heuristic credential-pattern scan; values omitted. Exact configured values have a separate scan. Not exhaustive.",
+  "findings": [
+    {
+      "file": "docker-build-1793005335626-hosted-container-1793005513201-64482.log",
+      "rule": "credential-url",
+      "matches": 2,
+      "lineNumbers": [
+        5263,
+        5469
+      ],
+      "dispositions": [
+        {
+          "origins": [
+            {
+              "path": "test/integration/mcp/fetch-tool-server.test.ts",
+              "line": 73
+            },
+            {
+              "path": "test/integration/page-fetch/fetch-page.test.ts",
+              "line": 79
+            },
+            {
+              "path": "test/unit/application.test.ts",
+              "line": 162
+            },
+            {
+              "path": "test/unit/config/logging-storage-config.test.ts",
+              "line": 23
+            }
+          ],
+          "assessment": "Exact userinfo prefix appears in committed invalid-URL fixtures."
+        },
+        {
+          "origins": [
+            {
+              "path": "test/integration/mcp/fetch-tool-server.test.ts",
+              "line": 73
+            },
+            {
+              "path": "test/integration/page-fetch/fetch-page.test.ts",
+              "line": 79
+            },
+            {
+              "path": "test/unit/application.test.ts",
+              "line": 162
+            },
+            {
+              "path": "test/unit/config/logging-storage-config.test.ts",
+              "line": 23
+            }
+          ],
+          "assessment": "Exact userinfo prefix appears in committed invalid-URL fixtures."
+        }
+      ]
+    },
+    {
+      "file": "ordinary-1.log",
+      "rule": "credential-url",
+      "matches": 2,
+      "lineNumbers": [
+        1593,
+        1799
+      ],
+      "dispositions": [
+        {
+          "origins": [
+            {
+              "path": "test/integration/mcp/fetch-tool-server.test.ts",
+              "line": 73
+            },
+            {
+              "path": "test/integration/page-fetch/fetch-page.test.ts",
+              "line": 79
+            },
+            {
+              "path": "test/unit/application.test.ts",
+              "line": 162
+            },
+            {
+              "path": "test/unit/config/logging-storage-config.test.ts",
+              "line": 23
+            }
+          ],
+          "assessment": "Exact userinfo prefix appears in committed invalid-URL fixtures."
+        },
+        {
+          "origins": [
+            {
+              "path": "test/integration/mcp/fetch-tool-server.test.ts",
+              "line": 73
+            },
+            {
+              "path": "test/integration/page-fetch/fetch-page.test.ts",
+              "line": 79
+            },
+            {
+              "path": "test/unit/application.test.ts",
+              "line": 162
+            },
+            {
+              "path": "test/unit/config/logging-storage-config.test.ts",
+              "line": 23
+            }
+          ],
+          "assessment": "Exact userinfo prefix appears in committed invalid-URL fixtures."
+        }
+      ]
+    }
+  ],
+  "unresolved": 0
+}

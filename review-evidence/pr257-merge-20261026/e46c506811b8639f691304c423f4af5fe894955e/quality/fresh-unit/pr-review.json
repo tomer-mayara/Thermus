@@ -1,0 +1,179 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "e46c506811b8639f691304c423f4af5fe894955e",
+  "mergeBase": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/accounts/organizations/organization-directory.ts (+5 -2 lines)",
+        "detail": "diff --git a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\nindex 614af3d0..2e722e72 100644\n--- a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n@@ -7,16 +7,18 @@ export interface OrganizationMembership {\n }\n export type MembershipStatus = 'active' | 'inactive' | 'pending';\n export type MembershipManagement = 'ordinary' | 'external' | 'unknown';\n-export interface OrganizationMember {\n+export interface OrganizationMemberFacts {\n     readonly membershipId: string;\n     readonly subject: string;\n     readonly organizationId: string;\n-    readonly email: string;\n     readonly status: MembershipStatus;\n     readonly management: MembershipManagement;\n     readonly grants: readonly RoleGrant[];\n     readonly revision: string;\n }\n+export interface OrganizationMember extends OrganizationMemberFacts {\n+    readonly email: string;\n+}\n export type InvitationState = 'pending' | 'accepted' | 'revoked' | 'expired';\n export interface OrganizationInvitation {\n     readonly invitationId: string;\n@@ -60,6 +62,7 @@ export interface MembershipDeletionResult {\n export interface OrganizationDirectory {\n     membershipsOf(user: AuthenticatedUser, signal?: AbortSignal): Promise<readonly OrganizationMembership[]>;\n     memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;\n+    memberFactsPage(request: MemberPageRequest): Promise<Page<OrganizationMemberFacts>>;\n     member(membershipId: string, signal?: AbortSignal): Promise<OrganizationMember | undefined>;\n     deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;\n     invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;\n"
+      }
+    ],
+    "summary": "T2: declarations changed in 1 public module"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-directory.ts (+5 -2 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "S2.5-R1 adds OrganizationMemberFacts and memberFactsPage to the existing OrganizationDirectory public module and moves only the removal safety scan to that facts-only operation. The WorkOS adapter retains membership, role-catalog, raw management, grant, revision, scope, cursor and stop rules without per-member user enrichment. The direct target member() read and Members display/seat pages keep their email reads. Current authority, complete pagination, target agreement, last-Admin checks, exact deletion, durable admission and matching receipts keep their rules. The existing ten-page scan limit, 30-second lifetime, five-second WorkOS timeout and no-retry settings remain. This changes an interface and sensitive removal collaboration between existing Organizations and WorkOS components in the hosted Node server. Registry prose records facts versus display; all Mermaid views remain accurate and unchanged. No component, dependency edge, public module membership, client or cross-container contract, external integration, deployment, schema, recovery, notice selection or policy changes against the actual S2.5-02 parent. Controlled latency evidence is a regression case, not a capacity guarantee. Independent current-candidate architect approval, complete-candidate checks and the separate S2.5-02 release/owner gates remain required."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "S2.5-R1 adds OrganizationMemberFacts and memberFactsPage to the existing OrganizationDirectory public module and moves only the removal safety scan to that facts-only operation. The WorkOS adapter retains membership, role-catalog, raw management, grant, revision, scope, cursor and stop rules without per-member user enrichment. The direct target member() read and Members display/seat pages keep their email reads. Current authority, complete pagination, target agreement, last-Admin checks, exact deletion, durable admission and matching receipts keep their rules. The existing ten-page scan limit, 30-second lifetime, five-second WorkOS timeout and no-retry settings remain. This changes an interface and sensitive removal collaboration between existing Organizations and WorkOS components in the hosted Node server. Registry prose records facts versus display; all Mermaid views remain accurate and unchanged. No component, dependency edge, public module membership, client or cross-container contract, external integration, deployment, schema, recovery, notice selection or policy changes against the actual S2.5-02 parent. Controlled latency evidence is a regression case, not a capacity guarantee. Independent current-candidate architect approval, complete-candidate checks and the separate S2.5-02 release/owner gates remain required."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/accounts/organizations/organization-directory.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-5-02.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-r1.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/admin-s2-5-stack-review.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/organizations/membership-removal-checks.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/organizations/organization-directory.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/providers/workos/workos-organizations.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-member-removal-budget.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/integration/auth/workos-member-facts.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-removal-lifetime.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/auth-workos/workos-organizations-member-facts.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/auth-workos/workos-organizations-read-lifetime.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/organizations/membership-removal-lifetime.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/organizations/membership-removal-rules.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 42,
+    "productionLimit": 400,
+    "total": 745,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 13,
+    "removed": 0,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/accounts/organizations/membership-removal-checks.ts: 61.01765055781432 to 61.01765055781432",
+    "not applicable: src/accounts/organizations/organization-directory.ts: no raw MI in the base snapshot",
+    "changed: src/accounts/providers/workos/workos-organizations.ts: 47.08422952684704 to 45.14186681028025"
+  ],
+  "crap": [
+    "src/accounts/organizations/membership-removal-checks.ts: checkRemoval: 9.0",
+    "src/accounts/organizations/membership-removal-checks.ts: targetRefusal: 5.0",
+    "src/accounts/organizations/membership-removal-checks.ts: removalSupported: 4.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.memberFactsPage: 3.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.: 2.0",
+    "src/accounts/organizations/membership-removal-checks.ts: (anonymous): 1.0",
+    "src/accounts/organizations/membership-removal-checks.ts: (anonymous): 1.0",
+    "src/accounts/organizations/membership-removal-checks.ts: targetFacts: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: memberFactsOf: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.memberOf: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: passed",
+    "CRAP: passed",
+    "Architecture: passed",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/membership-removal-checks.ts)",
+    "src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "src/accounts/organizations/customer-roles.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "src/accounts/organizations/organization-directory.ts"
+  ],
+  "informational": [
+    "49 public modules, 1 snapshot changed",
+    "public module touched, declarations unchanged: src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/membership-removal-checks.ts)",
+    "public module touched, declarations unchanged: src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "public module touched, declarations unchanged: src/accounts/organizations/customer-roles.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "public module touched, declarations unchanged: src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/organization-directory.ts)"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

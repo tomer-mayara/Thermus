@@ -1,0 +1,26 @@
+1:  f80b2903 = 1:  a7f6ba5e Record membership safety scan repair scope
+2:  1fcb7c11 ! 2:  18bef84d Read membership safety facts without display lookups
+    @@ .pr-impact.json
+        },
+        "architecture": {
+     -    "modelUpdated": false,
+    --    "summary": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates.",
+    +-    "summary": "S2.5-02 adds controlled hosted/PostgreSQL and exact-fixture WorkOS acceptance proof, a disposable restore-control drill, operational guidance, and a complete unapproved successor notice/help proposal. Tests use the existing hosted application, provider adapter, removal coordinator and SQL store. Two live test helpers accept a scoped site factory and disposable SQL settings; defaults remain unchanged. Dedicated gate commands select the new cases. No production source, component, dependency edge, callable contract, public declaration, registry view, database schema, deployment topology or runtime notice selection changes against the actual parent. Restore guidance holds SQL write privileges outside restored rows and contains old senders; it adds no production backup prerequisite. The scope remains unreleased pending earlier release gates, independent human review and exact owner-approved notice integration/publication. The notice/help proposal is unapproved and unpublished; it changes no current client or legal-runtime guarantee. The policy flag records only the expanded selected verification gates. The enabled-export fixture first verifies and accepts the retained settings-save event, then checks the separate removal event and its transport failure.",
+     +    "modelUpdated": true,
+     +    "summary": "S2.5-R1 adds OrganizationMemberFacts and memberFactsPage to the existing OrganizationDirectory public module and moves only the removal safety scan to that facts-only operation. The WorkOS adapter retains membership, role-catalog, raw management, grant, revision, scope, cursor and stop rules without per-member user enrichment. The direct target member() read and Members display/seat pages keep their email reads. Current authority, complete pagination, target agreement, last-Admin checks, exact deletion, durable admission and matching receipts keep their rules. The existing ten-page scan limit, 30-second lifetime, five-second WorkOS timeout and no-retry settings remain. This changes an interface and sensitive removal collaboration between existing Organizations and WorkOS components in the hosted Node server. Registry prose records facts versus display; all Mermaid views remain accurate and unchanged. No component, dependency edge, public module membership, client or cross-container contract, external integration, deployment, schema, recovery, notice selection or policy changes against the actual S2.5-02 parent. Controlled latency evidence is a regression case, not a capacity guarantee. Independent current-candidate architect approval, complete-candidate checks and the separate S2.5-02 release/owner gates remain required.",
+          "views": [
+3:  3cd6eb0e ! 3:  8b22051b Record verified membership safety repair and release holds
+    @@ docs/implementation/admin-s2-5-02.md: poll now accounts for that visibility dela
+     +dependencies, deployment and registry views stayed unchanged from its actual
+     +parent. R1 changes the directory contract and safety scan as its record states.
+      
+    + ## Fixture correction — 26 October 2026
+    + 
+    +@@ docs/implementation/admin-s2-5-02.md: code and per-tenant FIFO behavior remain unchanged. The PR Validation record
+    + holds the original failure and current candidate checks; the results below stay
+    + historical.
+    + 
+     -## Latest complete-candidate gate results
+     +## Behavioral gate evidence
+     +
+4:  22a8e366 = 4:  e46c5068 Refresh Slice 2.5 implementation and historical review status

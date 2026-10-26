@@ -1,0 +1,77 @@
+[
+  {
+    "name": "build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+    "started": "2026-10-26T08:40:29.040688+00:00",
+    "finished": "2026-10-26T08:40:30.673025+00:00",
+    "exit": 0,
+    "logSha256": "c7a99e5ac241997663f32c77b8a7bf3acb55bf55b26182db291efa4fd5b6655a"
+  },
+  {
+    "name": "integrated-focused",
+    "command": [
+      "node",
+      "--test",
+      "dist/test/acceptance/auth/hosted-member-removal-integrated.runtime.js"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+    "started": "2026-10-26T08:40:30.722388+00:00",
+    "finished": "2026-10-26T08:40:39.481732+00:00",
+    "exit": 0,
+    "logSha256": "982436d518fba02f8ec8d8e1cfc9d8cdd2715ed862df0eee33026bd7e884ab52"
+  },
+  {
+    "name": "postgres-full",
+    "command": [
+      "npm",
+      "run",
+      "test:logging:postgres"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+    "started": "2026-10-26T08:40:39.537245+00:00",
+    "finished": "2026-10-26T08:41:28.812172+00:00",
+    "exit": 0,
+    "logSha256": "b15da8ded1b02698a6c8e53e8e1e5d03d3b259210b19225f49c1ee3482213543"
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+    "started": "2026-10-26T08:41:28.876823+00:00",
+    "finished": "2026-10-26T08:41:30.381340+00:00",
+    "exit": 0,
+    "logSha256": "3e7da0f72fb1e2186aff4be23f6142b0b6bf87499450f1c180578697a5468c62"
+  },
+  {
+    "name": "habit",
+    "command": [
+      "habit-hooks",
+      "--branch",
+      "8c6d204e8588a664438ba8934ab36670b802525f"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "committedHead": "adf3369a953792208b5c48b8776d3bfeb89c3fb7",
+    "workingPatchSha256": "1147c79b5950653cb3785ad071a38f5e4c5dbbf67ea0f1eacb341983d70fccda",
+    "started": "2026-10-26T08:41:30.422905+00:00",
+    "finished": "2026-10-26T08:41:32.262814+00:00",
+    "exit": 1,
+    "logSha256": "ac701cb08480d0eecf431aa562708fb16226117e2ede27ff091190c69f3d49fb"
+  }
+]
