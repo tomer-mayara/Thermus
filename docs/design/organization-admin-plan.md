@@ -1,7 +1,8 @@
 # Organization administration plan
 
-UI design selected: 26 October 2026 — Refined tabs. Implementation has not started;
-see the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
+UI design selected: 26 October 2026 — Refined tabs. UI-01 is in implementation in
+[PR #263](https://github.com/tomer-mayara/Thermus/pull/263); UI-02/03/04 remain planned.
+See the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
 
 Plan reviewed: 25 October 2026. Slice 1 and Slice 2 are merged, and the internal
 Thermus AI rollout is live. [PR #252](https://github.com/tomer-mayara/Thermus/pull/252)
@@ -224,7 +225,8 @@ Organization unclear with multiple memberships: [Choose workspace]
 
 ### Members and invitations — Refined tabs
 
-**Approved design direction — 26 October 2026. Implementation not started.**
+**Approved design direction — 26 October 2026. UI-01 is in implementation; later
+UI tickets remain planned.**
 The owner selected Refined tabs. The following wireframes replace the earlier
 conceptual Members layout; they do not claim that the application has changed.
 Follow [portal design](portal-design.md#members) and the
@@ -1216,7 +1218,7 @@ complete only when both of its child tickets are complete.
 
 ### Refined tabs UI — approved design, 26 October 2026
 
-**Status: design selected; implementation not started.** These four small,
+**Status: UI-01 is in implementation in PR #263; UI-02/03/04 remain planned.** These four small,
 plan-local tickets implement the selected Members presentation against existing
 member, invitation, and removal behavior. They add no provider or MFA feature
 and have no Slice 3 dependency. They do not reopen completed Slice 2.5 release

@@ -27,7 +27,7 @@ export function membersPage(form: MembersPageForm): Response {
   const members = form.members.members.filter(({ status }) => status === 'active');
   const invitations = form.invitations.invitations.filter(({ state }) => state === 'pending');
   const memberRows = members.map((member) => `<li class="member-row"><div class="member-identity"><p>${escapeHtml(member.email)}: active. Roles: ${rolesText(member.roles)}.</p>${member.subject === form.subject ? '<span class="you-label">You</span>' : ''}</div>${member.removable ? removalForm(form, member) : ''}</li>`);
-  const content = `<div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1><p>${escapeHtml(form.members.organizationName)}</p></div>
+  const content = `<div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1></div>
 <section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to ${escapeHtml(form.members.organizationName)}</h2>
 <p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>
 ${sendForm(form).join('\n')}
@@ -38,7 +38,7 @@ ${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">
 <section class="members-card" aria-labelledby="pending-heading"><h2 id="pending-heading">Pending invitations</h2>
 ${invitations.length === 0 ? '<p class="list-note">No pending invitations.</p>' : `<ul class="invitation-list">${invitations.map((invitation) => invitationRow(form, invitation)).join('\n')}</ul>`}
 </section></div>`;
-  return membersPageLayout(form.navigation, content);
+  return membersPageLayout(form.navigation, content, { title: 'Members', current: 'members', organizationName: form.members.organizationName });
 }
 
 function removalForm(form: MembersPageForm, member: MemberOverview['members'][number]): string {
