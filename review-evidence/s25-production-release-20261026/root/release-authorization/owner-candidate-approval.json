@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "recordedAt": "2026-10-26T17:25:49Z",
+  "source": "Direct human user reply in this Codex conversation",
+  "role": "repository owner",
+  "pullRequest": "https://github.com/tomer-mayara/Thermus/pull/260",
+  "head": "2c7b8763025660d3fe3902af7a8433d2741fcb82",
+  "base": "9f07c04bba0813358274212b21316165dc3e308b",
+  "question": "PR #260 is Ready at 2c7b8763, with all required checks complete and the full review evidence published: https://github.com/tomer-mayara/Thermus/pull/260. It integrates your approved notices and adds expandable Members/Audit help. Do you approve this exact candidate as owner so I can merge and deploy it? AGENTS.md requires T1 owner/team approval that \u201cmust cover the current head SHA and scope\u201d; this is the additional application integration after the already-approved stack, not another request to approve the notice text.",
+  "answer": "Approve 2c7b8763; merge and deploy",
+  "scope": "Current release candidate T1 owner approval, merge and deployment",
+  "note": "Recorded time is tool readback time after the reply, not a fabricated message timestamp. This records direct human approval; it is not a submitted GitHub review or an agent approval."
+}

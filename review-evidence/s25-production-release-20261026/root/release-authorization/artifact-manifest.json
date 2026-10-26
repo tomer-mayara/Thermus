@@ -1,0 +1,27 @@
+{
+  "parent_evidence": "4761b578a79ab829e911778193e81c89851e4c56",
+  "approved_head": "2c7b8763025660d3fe3902af7a8433d2741fcb82",
+  "merge_commit": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1710,
+      "sha256": "9f2a3aa4ccb8aa5586d61ed8faddd10949a6823a8e69555495ee2fbd39c33533"
+    },
+    {
+      "path": "merge-receipt.json",
+      "bytes": 1164,
+      "sha256": "751271505f4a88cc75166e05e025d7dc69519680afb880568c5b1f29611fb645"
+    },
+    {
+      "path": "owner-candidate-approval.json",
+      "bytes": 1211,
+      "sha256": "5045dd2f878be738230e0282173ddbfa730c9119141d19933735c252ac9d9cb5"
+    },
+    {
+      "path": "secret-scan.json",
+      "bytes": 659,
+      "sha256": "f336af358cc4709f6b75432f6164544b5de19737a35ad4a48536031ece8c4d28"
+    }
+  ]
+}

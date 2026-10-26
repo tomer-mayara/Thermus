@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "verified_at": "2026-10-26T17:37:08.884750+00:00",
+  "read_via": "Read-only GitHub connector get_pr_info",
+  "pull_request": "https://github.com/tomer-mayara/Thermus/pull/260",
+  "number": 260,
+  "state": "closed",
+  "merged": true,
+  "approved_head": "2c7b8763025660d3fe3902af7a8433d2741fcb82",
+  "merge_commit": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+  "merged_at": "2026-10-26T17:27:25Z",
+  "base_before_merge": "9f07c04bba0813358274212b21316165dc3e308b",
+  "merge_tree": "a9f7526b049278fdedb5d4da6c070c63e3ed037e",
+  "approved_and_merge_trees_identical": true,
+  "diff_against_approved_head_empty": true,
+  "production_build": {
+    "commit": "c9da79e63406e71dd15032d4ab9dfb85f2766918",
+    "started_at": "2026-10-26T17:33:43Z",
+    "state_at_manager_handoff": "building",
+    "source": "Manager deployment handoff; no new live claim from this evidence task",
+    "live_verified": false,
+    "production_complete": false
+  },
+  "limits": "Approval and merge do not prove a live production image or scoped production behavior. Production proof remains pending; provider deployment identifiers and private runtime files are excluded."
+}
