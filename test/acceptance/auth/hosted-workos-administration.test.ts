@@ -1,3 +1,4 @@
+import { parseHTML } from 'linkedom';
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
@@ -29,7 +30,7 @@ const hal = person('hal');
 const eve = person('eve');
 const gus = person('gus');
 const pia = person('pia');
-const removalLabels = [sam, dan, cal, ada, bea, hal].map(person => `Remove ${person.email}`);
+const removalLabels = (actor: FakeUser) => [sam, dan, cal, ada, bea, hal].map(person => person.id === actor.id ? 'Leave Acme' : `Remove ${person.email}`);
 
 // Acme: Sam, Dan, and Cal have Admin; Ada and Hal have User and Admin; Bea has User. Gus has only the default role,
 // and Eve is inactive. Globex: Bea and Pia have User. Acme has six active product members.
@@ -175,7 +176,8 @@ describe('Hosted WorkOS edition: current grants and revocation at the next reque
 
     assert.deepEqual(site.world.rolesOf(bea, acme), ['member']);
     assert.equal(site.world.statusOf(bea, acme), 'active');
-    assert.match(members.body, /bea@example\.com: active\. Roles: none\./);
+    const beaRow = [...parseHTML(members.body).document.querySelectorAll('.member-list > li')].find(row => row.querySelector('.member-email')?.textContent === 'bea@example.com');
+    assert.equal(beaRow?.querySelector('.member-role dd')?.textContent, 'none');
     assert.equal(seatsIn(members.body), 5);
     assert.equal((await beaBrowser.open('portal/access')).status, 403);
     assert.equal(await mcpStatusWith(site, acmeToken), 403);
@@ -233,8 +235,8 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     assert.ok(invitation, 'WorkOS has no invitation for new@example.com.');
     const { token, acceptInvitationUrl } = await site.world.connection().workos.userManagement.getInvitation(invitation.id);
 
-    assert.deepEqual(labelsOf(first.forms), ['Invite', ...removalLabels]);
-    assert.deepEqual(first.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
+    assert.deepEqual(labelsOf(first.forms), ['Invite', ...removalLabels(dan)]);
+    assert.deepEqual(first.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels(dan));
     assert.match(first.body, /The sign-in service decides who can accept the invitation\. It can accept a sign-in with another address, for example an address of the same domain\./);
     assert.doesNotMatch(first.body, /Only a sign-in with the invited email address can accept the invitation\./);
     assertRedirectTo(sent, 'members');
@@ -282,7 +284,8 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     assert.equal(seatsIn(pendingMembers.body), 6);
     assert.deepEqual(site.world.rolesOf(eve, acme), ['user']);
     assert.equal(site.world.statusOf(eve, acme), 'active');
-    assert.match(members.body, /eve@example\.com: active\. Roles: User\./);
+    const eveRow = [...parseHTML(members.body).document.querySelectorAll('.member-list > li')].find(row => row.querySelector('.member-email')?.textContent === 'eve@example.com');
+    assert.equal(eveRow?.querySelector('.member-role dd')?.textContent, 'User');
     assert.equal(seatsIn(members.body), 7);
     assert.doesNotMatch(members.body, /eve@example\.com: User invitation/);
     assert.equal(await mcpStatus(site, eve, acme), 200);
@@ -303,8 +306,8 @@ describe('Hosted WorkOS edition: organization invitations', () => {
     const adminInvite = await browser.submit({ ...userForm, fields: { ...userForm.fields, role: 'admin', email: 'x@example.com' } });
     const resend = await browser.post('invitations/resend', { csrf_token: userForm.fields.csrf_token ?? '', organization_id: acme, invitation_id: 'invitation_01OLD' });
 
-    assert.deepEqual(labelsOf(page.forms), ['Invite', ...removalLabels, 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
-    assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels);
+    assert.deepEqual(labelsOf(page.forms), ['Invite', ...removalLabels(cal), 'Resend the invitation to boss@example.com', 'Revoke the invitation to boss@example.com']);
+    assert.deepEqual(page.forms.filter(form => form.action === '/team/members/remove').map(form => form.label), removalLabels(cal));
     assert.doesNotMatch(page.body, /old@example\.com/);
     assert.match(page.body, /boss@example\.com: Admin invitation, pending\./);
     assertRedirectTo(adminInvite, 'members');
@@ -330,7 +333,7 @@ describe('Hosted WorkOS edition: the active product member count from every Work
     assert.equal(seatsIn(page.body), 6);
     assert.ok(pageReads.length >= 5, `WorkOS gave the members on ${pageReads.length} pages.`);
     for (const path of pageReads) assert.match(path, new RegExp(`organization_id=${acme}.*statuses=active,inactive,pending|statuses=active,inactive,pending.*organization_id=${acme}`));
-    assert.equal(page.body.split('ada@example.com: active').length, 2, 'A repeated membership is listed more than once.');
+    assert.equal([...parseHTML(page.body).document.querySelectorAll('.member-email')].filter(email => email.textContent === 'ada@example.com').length, 1, 'A repeated membership must be listed once.');
     assert.match(page.body, /newcomer@example\.com: User invitation, pending\./);
   });
 

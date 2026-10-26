@@ -41,12 +41,12 @@ async function memberForm(page: Page, membershipId: string): Promise<PageForm> {
   return form;
 }
 
-async function removeThroughMembers(page: Page, membershipId: string): Promise<{ readonly workspace: string; readonly signIn: string }> {
+async function removeThroughMembers(page: Page, membershipId: string, confirmation: RegExp): Promise<{ readonly workspace: string; readonly signIn: string }> {
   await page.goto(`${localOrigin}/members`);
   const details = page.locator('details').filter({ has: page.locator(`input[name="membership_id"][value="${membershipId}"]`) });
   assert.equal(await details.count(), 1);
   await details.locator('summary').click();
-  await Promise.all([page.waitForNavigation(), details.getByRole('button', { name: /^Remove / }).click()]);
+  await Promise.all([page.waitForNavigation(), details.getByRole('button', { name: confirmation }).click()]);
   await page.getByRole('heading', { name: 'Member removed', exact: true }).waitFor();
   assert.equal(await page.locator('form').count(), 0, 'The confirmed result must not repeat the removal form.');
   const workspace = await page.getByRole('link', { name: 'Choose a workspace or check access', exact: true }).getAttribute('href');
@@ -150,7 +150,7 @@ test('Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with 
   assert.equal((await run.workos.userManagement.getOrganizationMembership(userOtherMembership)).status, 'active');
   await fixtures.note('safe-refusals-confirmed', { cases: ['stale revision', 'foreign membership', 'User actor', 'forged form token'], statuses: refusals.map(answer => answer.status), retainedMemberships: [userMembership, userOtherMembership] });
 
-  await removeThroughMembers(adminVisit.page, userMembership);
+  await removeThroughMembers(adminVisit.page, userMembership, /^Remove /);
   assert.equal(await run.workos.userManagement.getOrganizationMembership(userMembership).then(() => 200, statusOf), 404);
   const userPortal = await serverGet(userVisit.page, 'portal/access');
   assertRemovedAccess(userPortal);
@@ -158,7 +158,7 @@ test('Given fresh password-only WorkOS fixtures and disposable Slice 2 SQL with 
   await seatsOn(adminVisit.page, 2);
   await fixtures.note('user-removal-confirmed', { membershipId: userMembership, providerRead: 404, portalStatus: userPortal.status, mcpStatus: 403, seats: 2 });
 
-  const selfRemoval = await removeThroughMembers(adminVisit.page, adminMembership);
+  const selfRemoval = await removeThroughMembers(adminVisit.page, adminMembership, /^Leave /);
   assert.equal(await run.workos.userManagement.getOrganizationMembership(adminMembership).then(() => 200, statusOf), 404);
   const adminPortal = await serverGet(adminVisit.page, 'portal/access');
   assertRemovedAccess(adminPortal);
