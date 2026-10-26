@@ -71,6 +71,11 @@ weaken guarantees to fit a free tier. Use the selected existing Supabase project
 Schemas and fixed numeric/protocol bounds are engineering choices to validate
 under this rule.
 
+The free-only rule no longer applies to the tenant containers and the paid tier,
+because the [self on-boarding plan](../implementation/self-onboarding-plan.md)
+of 26 October 2026, in [PR #259](https://github.com/tomer-mayara/Thermus/pull/259),
+supersedes it for them.
+
 ## Existing code, boundaries, and ownership
 
 Planning baseline, before S1-01: signup was disabled by default and created a
