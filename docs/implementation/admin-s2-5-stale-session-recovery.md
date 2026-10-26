@@ -42,12 +42,41 @@ selection of only retained access, continued refusal of the old MCP workspace,
 and an unchanged durable removal receipt with no repeated provider deletion.
 Unit near misses keep error identity for other names, statuses, codes and fields.
 
-The source change selects the full ordinary suite, typecheck, portal build,
-native container and hosted Linux AMD64 image gates under the test gate policy.
-The hosted build checks run inside that image. Complete quality metrics,
-Habit Hooks, declaration verification and independent review are recorded in
-the draft pull request. A live staging gate needs the manager's separate fixture
-authorization; this work makes no production or staging changes.
+The source candidate `c8b12419a812534d93343eb24248d70de7cf828e` passed the full
+ordinary suite (5,127 backend and 49 portal tests), typecheck and portal build.
+The native container gate passed all 11 tests. Its first attempt passed 9 and
+failed 2 because the private-evidence umask made copied test preloads unreadable
+inside the container. The runner now gives builds their normal readable fixture
+permissions and keeps evidence files private. The complete unchanged gate then
+passed; the failed attempt remains in the evidence.
+
+The hosted Linux AMD64 image gate passed all 7 tests. Its fresh build ran the
+hosted checks with outbound network access disabled: groups of 3,301, 29, 20,
+1,156, 119 and 13 tests passed. These are separate emitted counts, not unique
+scenario counts. No earlier candidate's image check is used for this source fix.
+
+The manager authorized the existing guarded staging suite. All 29 tests passed,
+including real token expiry, and both expected fixture-ownership guards were
+active. All 48 created roots had successful owned cleanup. One subsequent GET
+per exact journaled root returned 404 for all 48, with no list, mutation or SDK
+retry. This run changed only its owned staging fixtures; it changed no production
+fixture, setting, credential or deployment.
+
+Fresh quality coverage passed 3,301 emitted unit and 29 portal unit tests.
+Review and CRAP passed; changed/new function scores are 4, about 3 and 3. The
+complete process exits 1 only for the existing browser-session file MI of 62.6.
+The narrow catch stays at its lifecycle owner; no wider refactor or metric
+exception is added. Both low test-volume findings have retained reasons.
+Habit Hooks exits 0 with 29 comment advisories, each with a retained reason, and
+an empty snooze file. All 49 public declaration snapshots and 15 registry Mermaid
+views remain unchanged. The checker selects T1 Team review with no local blocker.
+
+The [draft PR #261](https://github.com/tomer-mayara/Thermus/pull/261) retains
+the red/green cases, complete command provenance, failures and retries, metrics
+and independent review. The final documentation-only commit adds the untouched
+generated base record under `docs/metrics/` and this status update. Its source,
+test, package and image inputs stay identical to the tested source candidate;
+quality provenance is refreshed with the compatible measured coverage.
 
 ## Architecture and release limits
 
