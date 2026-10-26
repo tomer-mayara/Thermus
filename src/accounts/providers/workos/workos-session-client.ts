@@ -57,7 +57,7 @@ export function sealedSessionOf(result: { readonly sealedSession?: string }): st
 
 // The SDK inlines its own copy of jose, so the error classes of the jose package do not match its errors. Thus the
 // failures are told apart by their name, code, and status.
-function fieldOf(error: unknown, field: 'name' | 'code' | 'status'): unknown {
+function fieldOf(error: unknown, field: 'name' | 'code' | 'status' | 'error'): unknown {
   return typeof error === 'object' && error !== null ? (error as Readonly<Record<string, unknown>>)[field] : undefined;
 }
 
@@ -76,4 +76,9 @@ export function isDamagedSeal(error: unknown): boolean {
 export function isOAuthRefusal(error: unknown): boolean {
   const status = fieldOf(error, 'status');
   return fieldOf(error, 'name') === 'OauthException' && typeof status === 'number' && status >= 400 && status < 500;
+}
+
+export function isMissingOrganizationMembership(error: unknown): boolean {
+  return fieldOf(error, 'name') === 'OauthException' && fieldOf(error, 'status') === 400
+    && fieldOf(error, 'error') === 'organization_membership_not_found';
 }

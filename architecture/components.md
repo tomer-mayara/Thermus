@@ -1009,6 +1009,13 @@ sequenceDiagram
 before access resolution. Signed-in route failures are reported and become a
 request-failed page with the session cookie effects; a failure during initial
 session authentication follows the outer failure handler instead.
+An automatic WorkOS refresh that returns OAuth 400
+`organization_membership_not_found` ends the local browser session and clears its
+cookie. A new sign-in can then show current workspace choices. Other errors and
+refresh refusal results keep their existing handling. Retryable outages and
+unrecognized thrown errors retain the cookie; an explicit refused workspace
+switch keeps its session. Membership removal and current-access checks remain
+separate.
 [Administration routes](../src/interfaces/web/account/administration-routes.ts)
 permit GET/HEAD reads without a CSRF check.
 [OrganizationAdministration](../src/accounts/organizations/organization-administration.ts)
