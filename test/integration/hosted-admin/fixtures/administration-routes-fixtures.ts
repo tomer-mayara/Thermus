@@ -11,9 +11,9 @@ export const acmeMembers: MemberOverview = {
   organizationName: 'Acme',
   activeUserSeats: 1,
   members: [
-    { membershipId: 'membership-ann', subject: 'user-ann', email: 'ann@example.com', status: 'active', roles: ['user', 'admin'], revision: 'r7' },
-    { membershipId: 'membership-dora', subject: 'user-dora', email: 'dora@example.com', status: 'active', roles: [], revision: 'r2' },
-    { membershipId: 'membership-ivy', subject: 'user-ivy', email: 'ivy@example.com', status: 'inactive', roles: ['user'], revision: 'r3' },
+    { membershipId: 'membership-ann', subject: 'user-ann', email: 'ann@example.com', status: 'active', roles: ['user', 'admin'], revision: 'r7', removable: true },
+    { membershipId: 'membership-dora', subject: 'user-dora', email: 'dora@example.com', status: 'active', roles: [], revision: 'r2', removable: false },
+    { membershipId: 'membership-ivy', subject: 'user-ivy', email: 'ivy@example.com', status: 'inactive', roles: ['user'], revision: 'r3', removable: false },
   ],
 };
 

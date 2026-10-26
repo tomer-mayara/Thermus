@@ -6,6 +6,7 @@ interface MemberEntry {
     readonly status: MembershipStatus;
     readonly roles: readonly string[];
     readonly revision: string;
+    readonly removable: boolean;
 }
 export interface MemberOverview {
     readonly organizationId: string;

@@ -37,6 +37,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Hosted live | `npm run test:hosted-live` | `dist/test/acceptance/auth/hosted.live.js` only, after a build of the portal | A WorkOS staging environment with its settings and dashboard configuration, public network access, Playwright Chromium, OpenSSL, and free local ports 46443 and 46480. The [hosted live gate](#hosted-live-gate-auth-06) gives the details. |
 | Search live | `npm run test:mcp:search:live` | `dist/test/acceptance/mcp/search-pipeline.live.js` only | Absolute pinned `LIGHTPANDA_BIN` and public Brave access. No API key or Axiom credential. |
 | Private PostgreSQL | `npm run test:logging:postgres` | Settings and removal-store integration, settings and hosted storage-failure acceptance, and membership-removal overlap/restart acceptance `.runtime.js` files | Docker Engine and OpenSSL. Uses disposable local PostgreSQL 17 with verified test TLS and the scoped runtime role; no Supabase or other live credentials. |
+| Members browser | `npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js` | Keyboard open, cancel, and confirm at a 390 × 844 viewport | Playwright Chromium and the built portal assets. Uses a local HTTP site and provider doubles; no live credentials. |
 | Renderer | `npm run test:mcp:renderer` | `dist/test/acceptance/mcp/get-url-as-markdown.runtime.js` and `dist/test/acceptance/mcp/search-pipeline.runtime.js` | `LIGHTPANDA_BIN` with the absolute path of the pinned Lightpanda 1.0.0 executable. No public network access and no Axiom credentials: the pages are local fixtures on `127.0.0.1`. |
 
 `npm run check` runs `npm run typecheck`, `npm run test:unit`,
@@ -301,6 +302,11 @@ changed source affects their behavior:
   do not select its `.runtime.ts` files; image builds do not start nested Collector
   containers. Run it for the Slice 2 release too. An actual destination smoke
   check remains a separate release requirement.
+- Run the Members browser command for source that affects its removal form,
+  confirmation, or result navigation. It checks keyboard use and narrow layout
+  in Chromium; route tests alone cannot establish these results. Set
+  `THERMUS_BROWSER_EVIDENCE_DIR` to keep a screenshot for visual review. A custom
+  Chromium path can be supplied through `PLAYWRIGHT_CHROMIUM_EXECUTABLE`.
 
 The ordinary full suite includes the offline Better Auth interface proofs.
 No separate whole interface run is needed after `npm test` passes.

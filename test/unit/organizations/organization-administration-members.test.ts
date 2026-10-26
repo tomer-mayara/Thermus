@@ -10,6 +10,24 @@ function overviewOf(overview: MemberOverview | string): MemberOverview {
 }
 
 describe('OrganizationAdministration members and the product member count', () => {
+  test('Given active ordinary and unsupported members, when the overview is read, then only ordinary active memberships with known grants offer removal', async () => {
+    const { administration, directory } = administrationWith([
+      { subject: 'user-eve', organizationId: 'org-a', grants: [adminGrant] },
+      { subject: 'user-ordinary', organizationId: 'org-a', grants: [userGrant] },
+      { subject: 'user-unknown', organizationId: 'org-a', grants: [userGrant, { role: 'custom', permissions: [] }] },
+      { subject: 'user-empty', organizationId: 'org-a', grants: [] },
+      { subject: 'user-inactive', organizationId: 'org-a', grants: [userGrant], status: 'inactive' },
+    ]);
+    const read = directory.memberPage.bind(directory);
+    directory.memberPage = async request => {
+      const page = await read(request);
+      return { ...page, items: page.items.map(member => member.subject === 'user-ordinary' ? { ...member, management: 'external' as const } : member) };
+    };
+    const overview = overviewOf(await administration.memberOverview(actorOf('user-eve'), 'org-a'));
+    assert.deepEqual(overview.members.map(member => [member.subject, member.removable]), [
+      ['user-eve', true], ['user-ordinary', false], ['user-unknown', false], ['user-empty', false], ['user-inactive', false],
+    ]);
+  });
   test('Given an Admin in two organizations, when the Admin reads members in one organization, then the name comes from the same current membership read that authorizes that organization', async () => {
     const { administration, directory } = administrationWith([
       { subject: 'user-eve', organizationId: 'org-a', organizationName: 'Acme <current>', grants: [adminGrant] },
@@ -43,7 +61,7 @@ describe('OrganizationAdministration members and the product member count', () =
 
     const overview = overviewOf(await administration.memberOverview(actorOf('user-eve'), 'org-a'));
 
-    assert.deepEqual(overview.members.map(({ roles: _roles, revision: _revision, status: _status, ...member }) => member), [
+    assert.deepEqual(overview.members.map(({ roles: _roles, revision: _revision, status: _status, removable: _removable, ...member }) => member), [
       { membershipId: 'membership-user-eve-org-a', subject: 'user-eve', email: 'shared@example.com' },
       { membershipId: 'membership-user-other-org-a', subject: 'user-other', email: 'shared@example.com' },
     ]);

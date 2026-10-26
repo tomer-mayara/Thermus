@@ -1,5 +1,6 @@
 import type { TestContext } from 'node:test';
 import type { Application } from '../../../src/app/application.ts';
+import type { HostedPortal } from '../../../src/app/hosted-portal.ts';
 import { composeWorkOSApplication, type WorkOSApplicationParts } from '../../../src/app/hosted-workos-application.ts';
 import { startHttpServer } from '../../../src/runtime/http/server.ts';
 import type { RequestServerBuilder } from '../../../src/interfaces/mcp/mcp-server.ts';
@@ -20,6 +21,8 @@ export interface WorkOSServerSite {
 interface WorkOSSiteOptions {
   // The hosted configuration of the site. Without it, the site uses hostedConfig.
   readonly config?: typeof hostedConfig;
+  // Browser layout checks use the real loaded portal build and its fonts and images.
+  readonly portal?: HostedPortal;
   // The organizations that a new fake knows. Each gets the environment roles.
   readonly organizations: readonly string[];
   // Reuse provider state for a fresh application. Install the signup fake only on the first site.
@@ -72,7 +75,8 @@ export async function serveWorkOSSite(t: TestContext, options: WorkOSSiteOptions
   const signupFake = options.signupFake === true ? new WorkOSSignupFake(world) : undefined;
   setUp?.(world);
   const log = new OperatorLogSpy();
-  const application = await composeApplicationWithWorkOSFake(config, world, { logger: log, buildServer, signup, loggingStorage, audit, toolOperations, auditSink, snapshotOptions });
+  const backend = await composeApplicationWithWorkOSFake(config, world, { logger: log, buildServer, signup, loggingStorage, audit, toolOperations, auditSink, snapshotOptions });
+  const application = options.portal?.withApplication(backend) ?? backend;
   const server = await startHttpServer(application.handle, { listen: { host: '127.0.0.1', port: 0 }, publicBaseUrl: config.publicBaseUrl, logger: log });
   let closing: Promise<void> | undefined;
   const close = () => (closing ??= server.close().then(() => application.close()));

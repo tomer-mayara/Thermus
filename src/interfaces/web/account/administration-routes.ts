@@ -7,15 +7,17 @@ import type {
   OrganizationAdministration,
   InvitationSendRequest,
   InvitationChangeRequest,
+  MemberRemovalRequest,
+  RemovalResult,
 } from '../../../accounts/organizations/organization-administration.ts';
-import { invitationChangeIn, invitationIn, readForm, type FormRefusal } from './account-form.ts';
-import { accessDeniedPage, noticePage, seeOther, unconfirmedInvitationPage, type NoticeName } from './account-pages.ts';
+import { invitationChangeIn, invitationIn, memberRemovalIn, readForm, type FormRefusal } from './account-form.ts';
+import { accessDeniedPage, noticePage, removalResultPage, seeOther, unconfirmedInvitationPage, type NoticeName } from './account-pages.ts';
 import { billingPage, membersPage } from './administration-pages.ts';
 import type { SignedInBrowserSession } from '../../../accounts/identity/browser-session.ts';
 
 export type AdministrationService = Pick<
   OrganizationAdministration,
-  'memberOverview' | 'invitationOverview' | 'sendInvitation' | 'resendInvitation' | 'revokeInvitation' | 'billingState'
+  'memberOverview' | 'invitationOverview' | 'sendInvitation' | 'resendInvitation' | 'revokeInvitation' | 'removeMember' | 'billingState'
 >;
 
 export type AdministrationHandler = (request: Request, session: SignedInBrowserSession, context: RequestContext) => Promise<Response>;
@@ -50,6 +52,8 @@ interface AdministrationPaths {
   readonly send: string;
   readonly resend: string;
   readonly revoke: string;
+  readonly remove: string;
+  readonly login: string;
   readonly billing: string;
   readonly logging: string;
 }
@@ -79,6 +83,8 @@ export class AdministrationRoutes {
     this.organizationsPage = options.organizationsPage;
     this.publicOrigin = new URL(options.publicBaseUrl).origin;
     const pathOf = (relative: string) => new URL(relative, options.publicBaseUrl).pathname;
+    const login = new URL('login', options.publicBaseUrl);
+    login.searchParams.set('return_to', this.organizationsPage);
     this.paths = {
       product: pathOf(''),
       members: pathOf('members'),
@@ -86,6 +92,8 @@ export class AdministrationRoutes {
       send: pathOf('invitations/send'),
       resend: pathOf('invitations/resend'),
       revoke: pathOf('invitations/revoke'),
+      remove: pathOf('members/remove'),
+      login: login.pathname + login.search,
       billing: pathOf('billing'),
       logging: pathOf('logging'),
     };
@@ -95,6 +103,7 @@ export class AdministrationRoutes {
       [this.paths.send, (request, scope) => this.sendInvitation(request, scope)],
       [this.paths.resend, (request, scope) => this.resendInvitation(request, scope)],
       [this.paths.revoke, (request, scope) => this.revokeInvitation(request, scope)],
+      [this.paths.remove, (request, scope) => this.removeMember(request, scope)],
       [this.paths.billing, (request, scope) => this.billingPage(request, scope)],
     ]);
   }
@@ -119,7 +128,7 @@ export class AdministrationRoutes {
       return typeof invitations === 'string' ? invitations : { members, invitations };
     }, (overview) => membersPage({
       ...overview, subject: scope.actor.user.subject, csrfToken: scope.csrfToken,
-      actions: { send: this.paths.send, resend: this.paths.resend, revoke: this.paths.revoke },
+      actions: { send: this.paths.send, resend: this.paths.resend, revoke: this.paths.revoke, remove: this.paths.remove },
       navigation: { product: this.paths.product, members: this.paths.members, organizations: this.organizationsPage, logging: this.paths.logging },
     }));
   }
@@ -142,6 +151,21 @@ export class AdministrationRoutes {
 
   private revokeInvitation(request: Request, scope: AdministrationScope): Promise<Response> {
     return this.changeOnPost(request, scope, { action: 'revoke-invitation', parse: invitationChangeIn, change: (actor, fields) => this.organizations.revokeInvitation(actor, fields) });
+  }
+
+  private async removeMember(request: Request, scope: AdministrationScope): Promise<Response> {
+    if (request.method !== 'POST') return noticePage('methodNotAllowed', { Allow: 'POST' });
+    if (request.headers.get('Origin') !== this.publicOrigin) return noticePage('forgedRequest');
+    const form = await readForm(request);
+    const fields = typeof form === 'string' ? form : memberRemovalIn(form, scope.csrfToken);
+    if (typeof fields === 'string') return noticePage(fields);
+    let outcome: RemovalResult = 'stale';
+    if (fields.organizationId === scope.organizationId) {
+      try { outcome = await this.organizations.removeMember(scope.actor, fields); }
+      catch { outcome = 'unknown'; }
+    }
+    this.keep(scope, 'remove-member', fields, outcome);
+    return removalResultPage(outcome, { ...this.paths, organizations: this.organizationsPage });
   }
 
   private async page<Overview extends object>(request: Request, read: () => Promise<Overview | AdministrationRefusal>, render: (overview: Overview) => Response): Promise<Response> {
@@ -177,11 +201,11 @@ export class AdministrationRoutes {
     return noticePage(REFUSAL_NOTICES[outcome]);
   }
 
-  private keep(scope: AdministrationScope, action: AdministrationChange['action'], fields: InvitationSendRequest | InvitationChangeRequest, outcome: ChangeOutcome): void {
+  private keep(scope: AdministrationScope, action: AdministrationChange['action'], fields: InvitationSendRequest | InvitationChangeRequest | MemberRemovalRequest, outcome: ChangeOutcome): void {
     try {
       this.audit?.administrationChanged({
         timestamp: new Date().toISOString(), organizationId: scope.tenantId, actor: scope.actor.user, action, outcome,
-        target: 'email' in fields ? { email: fields.email } : { invitationId: fields.invitationId },
+        target: 'email' in fields ? { email: fields.email } : 'invitationId' in fields ? { invitationId: fields.invitationId } : { membershipId: fields.membershipId },
         ...('role' in fields && (fields.role === 'user' || fields.role === 'admin') ? { role: fields.role } : {}),
       });
     } catch {

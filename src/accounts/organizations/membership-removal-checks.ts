@@ -33,9 +33,14 @@ export async function checkRemoval(directory: OrganizationDirectory, user: Authe
 function targetRefusal(target: OrganizationMember, request: MemberRemovalRequest): RemovalRefusal | undefined {
   if (target.organizationId !== request.organizationId || target.membershipId !== request.membershipId) return 'denied';
   if (target.revision !== request.revision) return 'stale';
-  if (target.status !== 'active' || target.management !== 'ordinary') return 'unsupported';
-  if (target.grants.length === 0 || target.grants.some(grant => !['user', 'admin'].includes(grant.role))) return 'unsupported';
+  if (!removalSupported(target)) return 'unsupported';
   return undefined;
+}
+
+// The overview uses this snapshot only to offer the form. Removal checks current facts again.
+export function removalSupported(member: OrganizationMember): boolean {
+  return member.status === 'active' && member.management === 'ordinary'
+    && member.grants.length > 0 && member.grants.every(grant => ['user', 'admin'].includes(grant.role));
 }
 
 function adminGrants(grants: readonly RoleGrant[]): boolean {

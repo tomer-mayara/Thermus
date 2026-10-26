@@ -1,9 +1,33 @@
 # Test inventory
 
+## Current S2.5-01c inventory scope
+
+The [implementation record](../implementation/admin-s2-5-01c.md) records runs and
+limits. These cases connect browser forms to the real coordinator and current
+access paths; provider doubles and the store fake do not establish live provider
+or PostgreSQL durability guarantees. The retained dedicated gates cover those
+separately within their stated scope.
+
+- `hosted-member-removal.test.ts` checks valid confirmation, invalid forms,
+  last-Admin guidance, repeated unknown POSTs, current counts with multiple grants,
+  and a confirmed result followed by a failed read.
+- `hosted-member-self-removal.test.ts` checks another workspace, eligible signup,
+  saved-start recovery, actual sign-in-link traversal, and unknown self-removal.
+- `hosted-member-removal-scope.test.ts` checks account/factor/other-membership
+  preservation, fresh invitation role, throwing capture sinks, and forged tenants.
+- `hosted-member-removal-browser.runtime.ts` checks real Chromium keyboard use
+  at 390 × 844 with production logo/fonts, no cancellation write, and no overflow.
+  It uses the dedicated Members browser command in the test gate policy.
+- Removal route integration tests check exact form fields, result/navigation
+  mapping, cookies, and trusted Audit capture. Audit unit tests check safe removal
+  metadata and OTLP encoding. Organization unit tests check the display hint
+  while retaining current removal rules.
+
 ## Current S2.5-01b inventory scope
 
 The [implementation record](../implementation/admin-s2-5-01b.md) records actual
-runs and limits. Browser removal and customer Audit capture remain S2.5-01c.
+runs and limits. Browser removal and customer Audit capture are covered by the
+S2.5-01c increment above.
 
 - `test/acceptance/auth/membership-removal.runtime.ts` checks separate-pool
   contention, another organization's progress through the same one-slot pool,
@@ -40,7 +64,7 @@ they do not complete the live deletion proof or the Slice 2.5 release.
   after success, refusal, or a lost reply; the existing five-second timeout holds.
 
 S2.5-01a adds no browser removal path. S2.5-01b now supplies last-Admin and
-serialization checks; browser removal remains S2.5-01c. The changed live-test compositions use
+serialization checks; S2.5-01c now connects browser removal. The changed live-test compositions use
 the same raw membership reader as production, with their existing assertions.
 
 ## Current S1-05 inventory scope

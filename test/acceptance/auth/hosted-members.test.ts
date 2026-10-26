@@ -27,9 +27,10 @@ describe('Members through the hosted HTTP server', () => {
     assert.match(answer.body, /new@example\.com: User invitation, pending\./);
     assert.match(answer.body, /Expires <time datetime="[^"]+">/);
     assert.doesNotMatch(answer.body, /old@example\.com|other@example\.com|ivy@example\.com|pia@example\.com/);
-    assert.deepEqual(forms.map(({ label }) => label), ['Invite', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
+    assert.deepEqual(forms.filter(({ fields }) => fields.membership_id === undefined).map(({ label }) => label), ['Invite', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
+    assert.equal(forms.filter(({ fields }) => fields.membership_id !== undefined).length, 6);
     assert.equal(forms[0]?.fields.role, 'user');
-    assert.doesNotMatch(answer.body, /Change role|Remove member|Security|MFA|<script/);
+    assert.doesNotMatch(answer.body, /Change role|Security|MFA|<script/);
     assert.equal((await site.browserOf(userOf('user-una', 'org-a')).open('members')).status, 403);
   });
 

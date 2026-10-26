@@ -59,8 +59,15 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}
 .member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}
 .member-list li:last-child,.invitation-list li:last-child{padding-bottom:0}
-.member-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.member-row{display:grid;gap:12px}
+.member-identity{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
 .member-row p,.invitation-list p{margin:0}
+.member-removal summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 16px;border:1px solid #C66E76;border-radius:6px;color:#FFCDD2;background:#40282C;font-size:15px;cursor:pointer}
+.member-removal summary:hover{background:#533038;border-color:#E58F98}
+.removal-confirmation{margin-top:12px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#17181D}
+.removal-confirmation form{display:grid;gap:16px}
+.removal-confirmation button{background:#40282C;border-color:#C66E76;color:#FFCDD2}
+.removal-confirmation>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}
 .you-label{font-size:13px;color:#B4BAC0;flex-shrink:0}
 .expiry{font-size:13px;color:#B4BAC0;padding-top:8px}
 .invitation-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}

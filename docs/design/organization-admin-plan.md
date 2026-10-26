@@ -18,7 +18,14 @@ S2.5-01b adds durable removal coordination in stacked
 [PR #253](https://github.com/tomer-mayara/Thermus/pull/253). Its original candidate
 passed local validation; its maintained PR comments record the rebased checks.
 Merge still requires the parent, resolution of S2.5-R1 in this PR, and independent
-architect approval. S2.5-01c and S2.5-02 remain planned.
+architect approval. S2.5-01c adds checked Members removal and safe self-removal
+navigation in stacked [PR #254](https://github.com/tomer-mayara/Thermus/pull/254).
+Its recorded selected tests and build gates pass for the original candidate.
+The PR retains its historical final quality and review evidence. S2.5-02 remains
+planned.
+Ticket records describe their historical increments; their earlier missing
+features are not the status of the combined candidate. Merged does not mean
+released, and passing controlled tests does not complete owner gates.
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
 the exact approved documents and agreement.
@@ -2768,6 +2775,11 @@ by the runbook. No second store, queue, lease, recovery product, or replay mecha
 
 #### S2.5-01c — Checked Members removal and self-removal
 
+**Implementation:** [PR #254](https://github.com/tomer-mayara/Thermus/pull/254),
+stacked on S2.5-01b. The [implementation record](../implementation/admin-s2-5-01c.md)
+records behavior, validation, and remaining release prerequisites. The following
+specifications describe the increment; the former gap is historical.
+
 **Acceptance specifications first.**
 
 ```gherkin
@@ -2832,8 +2844,8 @@ Scenario: Preserve account scope and rejoin only by invitation
   Then access returns only with the new invited role
 ```
 
-**Current gap and characterization.** Members and `AdministrationRoutes` expose
-invitation forms only. Rows already have revisions. Existing current-access checks,
+**Historical gap and characterization.** Before this ticket, Members and
+`AdministrationRoutes` exposed invitation forms only. Rows already have revisions. Existing current-access checks,
 seat counting, and identity-only selector remain passing characterization; add
 removal-triggered journeys rather than new access/count/selection mechanisms.
 Provider refresh is scoped to its selected organization: membership/account/factor
@@ -2933,6 +2945,12 @@ a live test cannot prove absence of every arbitrary late effect.
    and restore holds. Review architecture/component registry impact, required quality
    evidence, review tier, and applicable approvals under repository policy. Release only
    after actual S2-04 release and all applicable gates pass.
+   Prepare a new version of the hosted terms/privacy bundle before rollout: the
+   current prepared version says the portal has no member removal and describes
+   invitation-only Audit events. Preserve its existing bytes and hashes. Obtain
+   owner approval of the changed notice/help, publish the approved version, and
+   verify its actual presentation. S2.5-01c's implementation does not complete
+   these release steps.
 
 **Homes.** Existing acceptance/hosted-live cases, storage/provider integration tests,
 and established support sites/drivers. Update this plan, user/operator help, and

@@ -3,8 +3,8 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": false,
-    "deployment": true,
+    "contract": true,
+    "deployment": false,
     "crossCutting": false,
     "component": true,
     "internalInterface": true,
@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": true,
-    "summary": "S2.5-01b adds organization-owned removal admission, current authority and exact target checks, last-active-Admin protection, and conditional completion. The existing private SQL adapter implements a new public RemovalOperationStore on the same bounded pool, with one pending operation per organization and retained terminal receipts. Uncertain effects remain held without replay. A 30-second owner lifetime and ten-page bound guard dispatch; optional neutral read signals stop further WorkOS read substeps while in-flight calls retain their existing five-second timeout. App supplies and closes the removal owner before shared SQL. Public request/result/store and directory stop contracts are snapshot-visible; invitation results and unrelated callers stay compatible. Organizations and audit-logs gain responsibilities and shared storage/recovery guarantees change, but the component set, source dependency pairs, C4 container topology, provider selection, and runtime configuration remain. Updated registry views describe the new runtime call separately from the existing opposite type dependency. No browser removal route, customer removal export, MFA, or live migration is added. The policy change registers the new public module and extends the existing PostgreSQL gate without weakening checks.",
+    "summary": "S2.5-01c connects Members to the existing removal coordinator through one checked browser POST. A domain-owned removable hint controls native confirmation visibility; current authority, target, revision, last-Admin, durable admission, and bounded provider work remain in the coordinator. Fixed responses separate completion from later reads and use existing identity-only selection, signup recovery, and sign-in guidance. Trusted tenant capture adds removal action, membership ID, and outcomes to the existing AuditLog and OTLP contract; capture failure cannot alter results, settle holds, or replay deletion. The public overview, form parser, and AuditLog declarations change, and two registry views describe the caller and capture. No component, dependency pair, container, provider, datastore, configuration, or deployment topology is added. A dedicated Chromium gate checks the native keyboard flow at a narrow viewport. No MFA, role changes, live migration, legal publication, or release is included.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -26,30 +26,27 @@
       "Collaboration overview",
       "Scenario: hosted member read",
       "Deployment view",
-      "Self-hosted Compose",
-      "Recorded hosted Render target",
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "src/accounts/organizations/organization-administration.ts",
-      "src/accounts/organizations/removal-operation-store.ts",
-      "src/accounts/organizations/membership-removal.ts",
+      "src/interfaces/web/account/administration-routes.ts",
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/account-form.ts",
+      "src/interfaces/web/account/account-pages.ts",
+      "src/accounts/organizations/administration-overviews.ts",
       "src/accounts/organizations/membership-removal-checks.ts",
-      "src/accounts/organizations/membership-removal-lifetime.ts",
-      "src/accounts/organizations/organization-directory.ts",
-      "src/accounts/providers/workos/workos-organizations.ts",
-      "src/logs/audit/pg-destination-settings-store.ts",
-      "src/app/application.ts",
-      "src/app/logging-storage.ts",
-      "sql/migrations/20261025082850_membership_removal_operations.sql",
+      "src/logs/audit/audit-log.ts",
+      "src/logs/audit/audit-event-projection.ts",
+      "src/logs/audit/otlp-audit-encoding.ts",
       "architecture/components.md",
-      "docs/design/organization-admin-plan.md",
-      "docs/implementation/admin-s2-5-01b.md",
-      "test/acceptance/auth/membership-removal.runtime.ts",
-      "test/acceptance/auth/membership-removal-restart.runtime.ts",
-      "test/integration/auth/workos-removal-lifetime.test.ts",
-      "test/integration/logging/audit/removal-operations.runtime.ts",
-      "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts"
+      "docs/implementation/admin-s2-5-01c.md",
+      "docs/implementation/test-gate-policy.md",
+      "test/acceptance/auth/hosted-member-removal.test.ts",
+      "test/acceptance/auth/hosted-member-self-removal.test.ts",
+      "test/acceptance/auth/hosted-member-removal-scope.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/integration/hosted-admin/account-routes-removal.test.ts",
+      "test/integration/hosted-admin/account-routes-removal-audit.test.ts"
     ]
   }
 }
