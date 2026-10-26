@@ -8,32 +8,27 @@
     "crossCutting": false,
     "component": false,
     "internalInterface": false,
-    "sensitiveBehavior": true,
+    "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "Treat only the pinned WorkOS OAuth 400 organization_membership_not_found error during automatic expired-session refresh as the existing local signed-out result. Clear the Thermus cookie so a new sign-in can recover current identity and explicitly choose a retained workspace. Other errors and refresh refusal results keep their existing handling. Retryable outages and unrecognized thrown errors retain the cookie; existing terminal refusals still clear it. Explicit workspace-switch refusal still retains its session. No fail-open, automatic workspace choice, role/MFA/CSRF/acceptance change, provider write, removal receipt/replay change, storage/deployment change, new component, component edge, public module or declaration change. All 15 registry Mermaid views remain byte-identical; registry prose records the known terminal branch in the existing WorkOS owner. This restores the existing sign-in-required contract for a known provider refusal and changes sensitive session recovery within the approved architecture guarantees. Current-head independent human approval remains required.",
+    "modelUpdated": false,
+    "summary": "Record the reviewed Refined tabs plan before UI-01 implementation. This initial draft changes documentation only; production architecture, contracts, access rules and deployment remain unchanged. The complete implementation candidate will refresh this declaration and its evidence.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
       "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted membership removal in the Node server",
-      "Collaboration overview",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
       "Scenario: hosted member read",
-      "Deployment view",
-      "Behavior and resource ownership"
+      "Deployment view"
     ],
     "evidence": [
-      "src/accounts/providers/workos/workos-browser-session.ts",
-      "src/accounts/providers/workos/workos-session-client.ts",
-      "test/acceptance/auth/hosted-member-session-recovery.test.ts",
-      "test/unit/auth-workos/workos-browser-session-refresh.test.ts",
-      "test/integration/auth/workos-browser-session.test.ts",
-      "architecture/components.md",
-      "docs/implementation/admin-s2-5-stale-session-recovery.md"
+      "docs/design/organization-admin-plan.md",
+      "docs/design/portal-design.md",
+      "architecture/components.md"
     ]
   }
 }
