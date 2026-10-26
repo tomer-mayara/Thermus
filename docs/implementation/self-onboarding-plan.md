@@ -232,7 +232,7 @@ One new setting, `THERMUS_ROLE`, selects the role of the hosted image.
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM` | new, required | not set |
 | `LIGHTPANDA_BIN`, `AD_RULES_FILE` | set by the image; read until SO-16 removes the tools | read, as today |
 | Routes | today's routes, plus `/billing/*`, `/billing/events`, `/workspace/status`, and `/internal/audit`; `/mcp` is the gateway when the switch is on | `/healthz` and `/mcp` only |
-| `OPERATION_CAPACITY` | new, default 10; applies while the control plane still serves tools | new, default 10: the calls that run at the same time (D-15) |
+| `OPERATION_CAPACITY` | new in SO-01a, default 10; applies while the control plane still serves tools | the same setting: the calls that run at the same time (D-15) |
 | Tools and renderer | until SO-16: the tools of today, used when the switch is off | the fetch and search tools with the capacity above and today's page limits |
 
 The signed access context is one request header. The control plane signs it
@@ -453,7 +453,7 @@ New edges, at least: `app` to `tenants`, `render`, `stripe`, and `sql`;
 | ID | Decision | Answer | Effect on the plan |
 | --- | --- | --- | --- |
 | D-1 | Tenant reachability | One public origin, gateway, private tenant services. | Sections 2 and 4. Section 9 keeps per-tenant hostnames as a later option. |
-| D-2 | Free tenant instance | `0.5c-512mb` as is, with today's page limits. A very large page can be killed; Render restarts the container, and the client gets a failure for that call. | SO-01 measures how often that happens on the recorded protocol and sets the alert threshold. No page-limit setting is added. |
+| D-2 | Free tenant instance | `0.5c-512mb` as is, with today's page limits. A very large page can be killed; Render restarts the container, and the client gets a failure for that call. | SO-01e measures how often that happens on the recorded protocol and sets the alert threshold. No page-limit setting is added. |
 | D-3 | Team price model | A price for each active member through the WorkOS Stripe Seat Sync meter. | The upgrade sets the WorkOS `stripe_customer_id` field and uses a metered Stripe price. No seat code in Thermus. The count includes every active membership. |
 | D-4 | Price, currency, trial, tax | The amount is set later in Stripe. USD, no trial, Stripe Tax on with address and tax ID collection. The code reads a price ID. | `STRIPE_PRICE_TEAM`. The published price on `thermus.ai` must match the Stripe price before signup opens. |
 | D-5 | A free organization at 5 members | Do not allow more members at 5. Members keep access after a downgrade; new invitations are refused. | No access denial for an over-limit organization. Pending invitations above the limit are revoked at a downgrade. An organization keeps the members that it added while it paid. |
@@ -466,7 +466,7 @@ New edges, at least: `app` to `tenants`, `render`, `stripe`, and `sql`;
 | D-12 | Team container | A larger instance, `1c-2g`, with the same capacity. | The tier change resizes the container. Costs about 25 USD a month for each team tenant. |
 | D-13 | Payment provider | Stripe. | Closes D1 of the billing design. |
 | D-14 | Tenant credentials | No credential in a tenant: signed access context and audit relay. | Sections 4.1 and 4.2. |
-| D-15 | Calls at the same time in a container | 10, instead of today's 1. | `OperationCapacity` takes a limit from the new setting `OPERATION_CAPACITY`, default 10. The 11th call gets `Server busy`. One render reached 631 MiB, so 10 renders at once can exceed 512 MB and also 2 GB; SO-01 measures the real concurrent peak on both instances, and the owner then confirms the free and team values or lowers the free one. |
+| D-15 | Calls at the same time in a container | 10, instead of today's 1. | `OperationCapacity` takes a limit from the new setting `OPERATION_CAPACITY`, default 10. The 11th call gets `Server busy`. One render reached 631 MiB, so 10 renders at once can exceed 512 MB and also 2 GB; SO-01e measures the real concurrent peak on both instances, and the owner then confirms the free and team values or lowers the free one. |
 
 Mapping to the billing design: D1 Stripe; D2 monthly, billed at the end of
 each period from the meter; D3 automatic charge; D4 no proration, because the
@@ -484,50 +484,260 @@ records all of this in the billing design.
 Each ticket writes its Given-When-Then acceptance specification first, then
 uses TDD, and runs the gates of the test gate policy. Sizes: S is a day or
 two, M is about a week, L is more. Each slice ends with something the owner
-can use. The longest chain is SO-01, SO-04, SO-06, SO-07, SO-12 for the free
-tier, then SO-13, SO-14, SO-15 for the paid tier.
+can use. The longest chain is SO-01b, SO-01c, SO-01e, SO-04, SO-06, SO-07, SO-12
+for the free tier, then SO-13, SO-14, SO-15 for the paid tier.
 
 ### Slice 1: decisions and spike
 
-**SO-00 Decision records.** Two records under `architecture/decisions/`:
-one for the container design (one public origin, gateway inside `MCPServer`,
-private tenant services without credentials, signed access context, audit
-relay, one image with two roles, tenant on first need, the instance and the
-capacity of each tier) and one for tiers and billing (tiers, the per-member
-price through the WorkOS meter, Stripe, PostgreSQL state, the behavior at 5
-members). Context, Decision, Consequences, with the answers of section 5. The
-same pull request records in the organization administration plan that the
-free-only rule no longer applies to the containers and the paid tier. The
-owner merges. Size S.
+Slice 1 has one document ticket, one small source ticket, and five probes.
+The source ticket, the capacity setting, moves here from Slice 2 because the
+memory probe needs 10 calls at a time and today's code allows one. The
+tickets below are expanded: each names its acceptance specification first,
+then the small test-first steps that reach it.
 
-**SO-01 Spike.** Evidence only, in the My Workspace workspace, the WorkOS
-Staging environment, and Stripe test mode, with every resource deleted at
-the end. Size M.
+A probe is a TypeScript script under `script/spike/` with assertions. The
+script is the executable specification: it fails until the probe exists, and
+it records evidence. No test under `test/` covers a script; the rules of
+[AGENTS.md](../../AGENTS.md) keep tests for behavior under `src/`. Each probe
+writes its evidence into one record, `docs/implementation/self-onboarding-s1.md`,
+with one section for each probe: durations, limits, and what the client saw,
+and never a secret. Every probe runs in the My Workspace Render workspace, the
+WorkOS Staging environment, and Stripe test mode, never in production, and
+deletes what it creates, also after a failure.
 
-- Render and image: build the hosted image for `linux/amd64` on a native
-  AMD64 runner, push it to GHCR, create a registry credential, create an
-  image-backed private service on `0.5c-512mb` with every variable in the
-  create call, read its internal address from the API answer, deploy a second
-  digest with `imageUrl`, change its plan to `1c-2g` and back, suspend,
-  resume, and delete it. Record each duration and each API field that the
-  provisioner needs. Proxy one streamed MCP call from a Node process to the
-  private service with a signed header, and relay one event back; confirm
-  that SSE and cancellation pass through.
-- Capacity: run the RHD-05 protocol against that service on `0.5c-512mb` and
-  on `1c-2g`, with 1, 5, and 10 parallel calls: the 9 MiB page, the
-  JavaScript page, Brave search, overlap, and shutdown. Record memory, kills,
-  restart time, and what the client sees. The result confirms or lowers the
-  capacity of each tier (D-15) and sets the alert threshold and the words of
-  the failure message.
-- Stripe and WorkOS, needed before Slice 3: connect the WorkOS Stripe add-on
-  in Staging to the standard Stripe account in test mode, create a product
-  with a metered price on the "User Seat Count" meter, set
-  `stripe_customer_id` on a disposable organization, add and remove a
-  membership, and confirm the meter events. Run Checkout with required terms
-  acceptance and Stripe Tax, the Customer Portal, the webhook signature check
-  with the Stripe CLI, the dunning setting, and a test clock through a period
-  end, a failed payment, and a cancellation. Confirm a restricted API key
-  with only the needed permissions.
+Order: SO-00, SO-01a, SO-01b, and SO-01f can start at once. SO-01c needs the
+image of SO-01b. SO-01d needs the private service of SO-01c. SO-01e needs
+SO-01a, SO-01b, and SO-01c.
+
+**SO-00 Decision records.** Size S. Documents only; the owner merges.
+
+- Outcome: two records under `architecture/decisions/`, with Context,
+  Decision, and Consequences, that carry the answers of section 5. One
+  record covers the container design: one public origin, the gateway inside
+  `MCPServer`, private tenant services without credentials, the signed
+  access context, the audit relay, one image with two roles, tenant on first
+  need, the instance and the capacity of each tier, and the rejected
+  alternative of one hostname for each tenant with the WorkOS facts. The
+  other covers tiers and billing: the two tiers, the per-member price through
+  the WorkOS meter, Stripe, PostgreSQL state on Supabase Free for now, and
+  the 5-member rule with kept access after a downgrade and its accepted
+  consequence. The same pull request adds one dated sentence to the
+  [organization administration plan](../design/organization-admin-plan.md):
+  the free-only rule no longer applies to the containers and the paid tier.
+- Acceptance, checked by reading and by the pull request checker:
+  - Given the two records, when the checker runs, then it reports the fact
+    "decision record added" and the tier T2 Need architect, and the owner
+    merges.
+  - Given a reader of the container record, when they look for a design
+    choice of section 4, then the record names it and the reason, and names
+    the alternative that lost.
+  - Given a reader of the tiers record, when they look for a rule of
+    section 4.4 or an answer of section 5, then the record names it with
+    its date.
+  - Given the organization administration plan, when a reader finds the
+    free-only rule, then the next sentence says that this plan supersedes it
+    for the containers and the paid tier, with the date.
+- Test-first steps: none; the subject is a document. Checks: the link check,
+  habit-hooks, and the checker. No metrics.
+
+**SO-01a Capacity setting.** Size M. Source change under `src/`.
+
+- Outcome: the hosted edition reads `OPERATION_CAPACITY` at startup: a whole
+  number from 1 to 100, default 10 when the setting is missing or empty. It
+  is the number of fetch or search calls that run at the same time in one
+  process; the next call gets today's `Server busy` answer and `busy`
+  completion. An invalid value stops startup before the server listens, with
+  a message that names the setting and the rule, never the value. The
+  self-hosted edition keeps no capacity wrapper, as today.
+- Acceptance test first, in `test/acceptance/mcp/hosted-capacity-setting.test.ts`,
+  with the renderer double and the gate pattern of the existing
+  [capacity test](../../test/acceptance/mcp/hosted-search-capacity.test.ts).
+  It fails before the change because the setting is not read and the third
+  call of the first case runs:
+  - Given `OPERATION_CAPACITY=2` and a renderer that holds each call, when
+    three calls arrive, then two run and the third gets `Server busy` with
+    completion `busy`; when one held call settles with success, failure, or
+    abort, then a new call runs.
+  - Given no `OPERATION_CAPACITY`, when ten held calls arrive, then all ten
+    run and the eleventh gets `Server busy`.
+  - Given `OPERATION_CAPACITY` is `0`, `101`, `1.5`, `abc`, or ` 5`, when the
+    hosted application starts, then it stops before it listens, and the
+    message says "OPERATION_CAPACITY must be a whole number from 1 to 100."
+    without the value. This case goes into the existing
+    [hosted startup test](../../test/acceptance/auth/hosted-startup.test.ts).
+  - Given a hosted server with the default, when a call is refused as busy,
+    then the audit event and the completion record are the same as today.
+- Test-first steps:
+  1. Unit, `test/unit/app/operation-capacity.test.ts`: `new OperationCapacity(3)`
+     runs three calls at once, refuses the fourth with `Server busy`, and
+     runs the next call after one settles with success, failure, or abort;
+     `new OperationCapacity(1)` keeps today's behavior. Make it pass: the
+     class takes a limit and counts the active calls.
+  2. Unit, `test/unit/config/operation-capacity-config.test.ts`:
+     `loadOperationCapacity(environment)` gives 10 for a missing or empty
+     value, the number for `1` to `100`, and throws for each invalid value
+     with the rule and without the value. Make it pass with a new module
+     `src/runtime/config/operation-capacity-config.ts`, read by app only, so
+     that no public declaration changes.
+  3. Integration, `test/integration/mcp/fetch-tool-server.test.ts`: the
+     hosted tool operations of `createHostedToolOperations(environment, logger)`
+     use the configured limit. Make it pass in
+     [fetch-tool.ts](../../src/app/fetch-tool.ts).
+  4. Run the acceptance test: green. Refactor the three places; keep the
+     `busy` audit event.
+  5. Documents in the same pull request: `.env.example` after the renderer
+     setting, the hosted edition section of the README, the capacity sentence
+     of the registry prose (no Mermaid view changes), and the test inventory.
+- Pull request: metrics process on the changed files, `npm test`, typecheck,
+  the portal build, habit-hooks, and the checker. Expected tier: T0 or T1,
+  because no public declaration changes; the checker decides.
+
+**SO-01b Hosted image on a native AMD64 runner.** Size M. Tooling; no test
+under `test/` is added, and the existing hosted image gate is the executable
+check.
+
+- Outcome: a GitHub Actions workflow, `.github/workflows/hosted-image.yml`,
+  with manual dispatch only in this slice. It checks out the repository with
+  its submodule, runs the hosted image gate, `npm run test:container:hosted`,
+  on the AMD64 runner, builds `Dockerfile.hosted` for `linux/amd64`, and
+  pushes `ghcr.io/tomer-mayara/thermus-hosted:<sha>`, recording the digest.
+  A Render registry credential with a read-only token is created in the My
+  Workspace workspace. SO-02 later makes the workflow the release path.
+- Acceptance:
+  - Given the workflow on the branch, when it is dispatched, then the hosted
+    image gate passes on the runner, the GHCR package has the image by
+    digest, and the record has the build time, the compressed size, and the
+    digest.
+  - Given a throwaway branch with one failing offline test, when the
+    workflow is dispatched, then no image is pushed.
+  - Given the registry credential, when a Render service in My Workspace
+    pulls the digest, then it starts and `/healthz` answers `200` (SO-01c
+    shows it).
+- Steps: 1. the workflow builds only; 2. it runs the gate and stops the
+  build on a failure; 3. it pushes by digest; 4. record the GHCR quota, the
+  retention of old images, and the visibility of the package.
+
+**SO-01c Render private service lifecycle probe.** Size M. Depends on
+SO-01b.
+
+- Outcome: `script/spike/render-tenant-lifecycle.ts`, run with a Render API
+  key of My Workspace, the owner ID, the registry credential ID, and two
+  image digests. It records every API field that the provisioner of Slice 2
+  needs, each duration, and the rate-limit headers of each write.
+- Acceptance, each step an assertion of the script:
+  - Given the inputs, when the probe runs, then it creates an image-backed
+    private service named `thermus-spike-<time>` on `0.5c-512mb` with every
+    variable in the create call, with placeholder WorkOS values that pass the
+    startup checks, and the first deploy reaches `live` within a recorded
+    time.
+  - Given the live service, when the probe reads it, then the API answer
+    holds the internal address, and the record names the field.
+  - Given the second digest, when the probe deploys it with `imageUrl`, then
+    the deploy reaches `live` and the service reports the new image.
+  - Given the live service, when the probe updates its plan to `1c-2g` and
+    back, then each answer shows the new plan, and the record says whether
+    the container restarted.
+  - Given the live service, when the probe suspends and resumes it, then the
+    state changes each time and resume reaches `live` within a recorded time.
+  - Given any step, when the probe fails or ends, then it deletes the service
+    and reports the step; after the run, no service of the probe exists.
+- Steps: one assertion at a time, in the order above; a `--dry-run` option
+  prints the calls without a write; the calls become the Render adapter of
+  SO-06.
+
+**SO-01d Gateway proxy and private network probe.** Size M. Depends on
+SO-01c for its second part.
+
+- Outcome, part one: `script/spike/gateway-proxy-probe.ts` runs three local
+  parts. A stand-in MCP upstream, built with the SDK handler, has one tool,
+  `slow`, that sends a progress notification every 200 ms for 3 seconds and
+  then answers, and it refuses a request whose `Thermus-Access` header is
+  missing or has a bad Ed25519 signature with `403`. A proxy forwards
+  `POST /mcp` with a streamed body, adds the signed header, removes
+  hop-by-hop headers, and streams the answer back. An MCP client calls the
+  upstream through the proxy.
+- Acceptance, part one:
+  - Given the three parts, when the client lists the tools and calls `slow`,
+    then it receives the progress notifications before the result, and the
+    record shows their arrival times.
+  - Given a second `slow` call, when the client aborts it after 500 ms, then
+    the upstream handler sees its signal within 100 ms.
+  - Given a request without the header, or with a header signed by another
+    key, when it reaches the upstream, then the answer is `403`.
+- Acceptance, part two, manual with a transcript in the record:
+  - Given the private service of SO-01c live and a disposable web service
+    from the same image in the same workspace and region, when the operator
+    opens a Render shell on the web service and requests the internal
+    address of the private service with `/healthz`, then the answer is `200`
+    with `ok`; and from the public internet, the internal address does not
+    resolve.
+- Steps: 1. the upstream and the client without a proxy; 2. the proxy with
+  streaming; 3. the abort; 4. the signed header; 5. the Render shell check.
+
+**SO-01e Capacity and memory probe.** Size M. Depends on SO-01a, SO-01b,
+and SO-01c. Its result confirms or lowers the values of D-15 and sets the
+alert threshold and the words of the failure message.
+
+- Setup: a disposable web service in My Workspace on `0.5c-512mb` from the
+  image of SO-01b with the setting of SO-01a at 10, the WorkOS Staging
+  settings, and `PUBLIC_BASE_URL` set to its Render address. The probe adds
+  the service's `/mcp` as a Staging OAuth resource through the WorkOS API,
+  creates a disposable organization and a User with the hosted-live
+  fixtures, and gets a Connect token with the hosted-live Connect client.
+  The controlled pages of the RHD-05 protocol are served again from a
+  disposable static site.
+- Outcome: `script/spike/capacity-probe.ts` sends 1, 5, and 10 parallel
+  `getURLAsMarkdown` calls for the 9 MiB page and for the JavaScript page,
+  and 1, 5, and 10 parallel searches, waits for every answer, and reads the
+  Render memory and CPU metrics and the `server_failed` and
+  `server_restarted` events of the window. Then it changes the plan to
+  `1c-2g` and repeats.
+- Acceptance:
+  - Given the setup, when the probe runs, then the record has one row for
+    each instance, parallelism, and workload with the peak memory, the kill
+    count, the restart time, and the client outcomes and durations.
+  - Given a run with kills, when the probe ends, then the record names the
+    first parallelism that was killed on each instance.
+  - Given the end of the probe, when it cleans up, then the service, the
+    Staging resource, the organization, and the user are deleted, and the
+    static site is removed.
+- Steps: 1. one call on `0.5c-512mb` with the metrics read; 2. five and ten
+  calls; 3. the second workload and the searches; 4. the plan change and the
+  repeat; 5. the cleanup, also after a failure.
+
+**SO-01f Stripe and WorkOS seat sync probe.** Size M. Needed before Slice 3;
+it can run later than the other probes.
+
+- Owner steps in the dashboards, recorded without secrets: connect the
+  WorkOS Stripe add-on of the Staging environment to the Stripe account in
+  test mode, with Seat Sync and Entitlements on; create the Stripe product
+  with a metered monthly price in USD on the "User Seat Count" meter; set the
+  Customer Portal to allow cancellation at the period end and no quantity
+  change; set the dunning rule to cancel after the last retry; sign in the
+  Stripe CLI.
+- Outcome: `script/spike/stripe-seat-sync-probe.ts`, run with a restricted
+  Stripe test key, the price ID, and the WorkOS Staging key.
+- Acceptance, each step an assertion of the script:
+  - Given a new Stripe customer and a disposable WorkOS organization with
+    that `stripe_customer_id`, when the probe adds one membership, then a
+    second, and then removes one, then the meter shows the counts 1, 2, and
+    1, and the record has the delay of each event.
+  - Given the price, when the probe creates a Checkout Session in
+    subscription mode with required terms acceptance and Stripe Tax, and the
+    operator completes it with a Stripe test card, then the session shows the
+    accepted terms and an active subscription without a quantity.
+  - Given the Stripe CLI forwarding to the probe's local listener, when the
+    CLI triggers a subscription event, then the listener accepts the signed
+    event and refuses a changed payload.
+  - Given a test clock customer with the metered price and three reported
+    seats, when the clock passes the period end, then the invoice is three
+    times the price; when the payment method fails and the clock passes the
+    retries, then the subscription is `past_due` and then `canceled`.
+  - Given the end of the probe, when it cleans up, then the subscriptions,
+    the customers, the test clock, and the WorkOS organization and users are
+    deleted.
+- The record lists the permissions of the restricted key that the probe
+  needed, which SO-13 reuses.
 
 ### Slice 2: free tier end to end
 
@@ -543,15 +753,15 @@ and records the digest. Given a merge to `main`, when the workflow ends, then
 the image exists by digest, and a failed offline gate pushes nothing. The
 control plane service switches to that image, and the workflow deploys it
 through the deploy hook. Document the GHCR quota and the retention of old
-images. The workflow also gives the hosted image gate a native AMD64 runner.
-Size M. Depends on SO-01.
+images. The workflow of SO-01b becomes this path.
+Size M. Depends on SO-01b.
 
 **SO-03 Tenant role, signed context, and capacity.** The `identity` module
 that signs and verifies the access context. `THERMUS_ROLE=tenant` composes
 `/healthz` and `/mcp` only, pinned to `TENANT_ORGANIZATION_ID`, with the
 settings of section 4.1 and an access resolver that takes the grants from
-the verified context. The audit relay sink. `OperationCapacity` takes a limit
-from `OPERATION_CAPACITY`, default 10, in both roles. Given a request with a
+the verified context. The audit relay sink. The capacity setting of SO-01a
+applies in both roles. Given a request with a
 valid context and token for the pinned organization, when the client calls a
 tool, then it gets the cleaned Markdown and the relay receives one event; a
 context for another organization, an expired context, a bad signature, or a
@@ -564,7 +774,7 @@ runtime, the three tables of section 4.3, the migration, the control-plane
 role and grants, the registry store, the idempotent tenant request with the
 cap check, and an in-memory lookup with a refresh bound. Given a row, when the
 gateway asks for the organization, then it gets the state and the internal
-address; a stale copy never outlives its bound. Size M. Depends on SO-01.
+address; a stale copy never outlives its bound. Size M. Depends on SO-01c.
 
 **SO-05 MCP gateway.** Inside `MCPServer`, after the bearer and access checks,
 a supplied forward step replaces the local dispatch when `MCP_TENANTS_ENABLED`
@@ -676,7 +886,7 @@ pending invitations above the limit are revoked, the members keep access,
 the tenant row wants `0.5c-512mb`, and a new invitation is refused. Offline
 tests use a local double of the Stripe API and the Stripe signature helper.
 The paid billing gate runs the scenarios in Stripe test mode with test
-clocks and the Staging Seat Sync. Size L. Depends on SO-08, SO-01.
+clocks and the Staging Seat Sync. Size L. Depends on SO-08, SO-01f.
 
 **SO-14 Paid legal and marketing.** Paid Terms and Privacy with the next
 unused version, new hashes, and owner approval; the runtime bundle update;
@@ -706,14 +916,14 @@ consider a smaller instance for it. Size S. Depends on SO-12.
 
 | Risk | Fact | Mitigation |
 | --- | --- | --- |
-| Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. D-15 allows 10 renders at a time, which multiplies the peak. A kill ends every active call with a failure. | Accepted in D-2 and D-15 for the defaults. SO-01 measures the concurrent peak on both instances; if the free instance cannot hold 10, the owner lowers `OPERATION_CAPACITY` for free tenants or chooses a larger instance. Render restarts the container. SO-11 watches the failure emails. |
+| Memory on the free instance | 631 MiB peak recorded for one render against 512 MB. D-15 allows 10 renders at a time, which multiplies the peak. A kill ends every active call with a failure. | Accepted in D-2 and D-15 for the defaults. SO-01e measures the concurrent peak on both instances; if the free instance cannot hold 10, the owner lowers `OPERATION_CAPACITY` for free tenants or chooses a larger instance. Render restarts the container. SO-11 watches the failure emails. |
 | Render API rate limits | 20 creates, resizes, suspends, resumes, and modifies an hour for each Render user. | A dedicated user for the control plane. The provisioner is a queue. Suspend only after 14 idle days, so resumes are rare. Ask Render for a higher limit before a launch campaign. |
 | PostgreSQL on Supabase Free | Pauses after 7 idle days; a pause stops provisioning, billing, and the audit export. | Accepted in D-8. The daily reconciliation keeps the project active. A runbook resumes it. Revisit at the first paying customer. |
 | Cost of free tenants | 7 USD a month for each live free tenant. Signup needs only a verified email. | `FREE_TENANT_LIMIT`, idle suspension from creation, deletion of dead organizations, the admission limits, the global switch. |
 | Gateway on the request path | Every MCP call crosses one more hop. The control plane is one instance with process-local state: the signup counters, the registry copy, the provisioner, the sweeps. | The proxy is light. A second instance needs a shared claim for the loops; not planned. Keep `1c-2g` until SO-16. |
 | Member limit | Native acceptance cannot be refused. An organization keeps the members it added while it paid. Member removal and its verification merged on 26 October 2026 (PRs #251 to #257); the removal release itself is still pending in the S2.5-02 ledger. | The limit counts pending invitations. Pending invitations above the limit are revoked at a downgrade. The invariant on joining paths holds. The kept members are accepted in D-5. |
 | Billed count | WorkOS counts every active membership, also a membership with only the default role, which gives no product access. | Default-role memberships do not exist in normal use; the fleet summary reports one. |
-| Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01. Keep old digests for rollback. Prune GHCR under its quota. |
+| Image pull at each deploy | Render pulls the large hosted image at every tenant deploy. | Measure in SO-01c. Keep old digests for rollback. Prune GHCR under its quota. |
 | Legal | Paid fees are outside the approved Terms. The published price must match Stripe. | SO-14 before any customer reaches Checkout. |
 | WorkOS metadata is full | 10 of 10 keys used. | All tier and tenant facts live in PostgreSQL. |
 | Credentials in the control plane | The Render API key can change every service of the workspace. The Stripe key can create charges. | Render secret variables, a dedicated Render user, a Stripe restricted key, rotation runbooks, and no credential in any tenant. |
