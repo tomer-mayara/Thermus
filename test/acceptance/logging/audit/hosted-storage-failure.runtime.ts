@@ -166,7 +166,7 @@ test('Given enabled customer export and queue authorization blocked by PostgreSQ
   await readStarted.promise;
   assert.deepEqual(result.content, [{ type: 'text', text }]);
   assert.notEqual(result.isError, true);
-  const form = formLabelled(formsIn((await browser.open('members')).body), 'Invite');
+  const form = formLabelled(formsIn((await browser.open('members')).body), 'Send invitation');
   assert.equal((await browser.submit({ ...form, fields: { ...form.fields, email: 'during-export-sql@example.com', role: 'user' } })).status, 303);
   assert.equal(world.invitations.filter(invitation => invitation.email === 'during-export-sql@example.com').length, 1);
   assert.equal(settingsFinished, false, 'Product and Admin results complete while the queue attempt authorization still waits for SQL.');

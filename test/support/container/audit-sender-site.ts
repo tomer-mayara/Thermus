@@ -253,9 +253,15 @@ export async function openAuditSenderSite(t: TestContext, kind: 'receiver' | 'co
       const client = `${network}-test-client-${containers.length}`;
       containers.push(client);
       await writeFile(join(directory, 'destination-tests.json'), JSON.stringify(submissions));
+      const mounts = [
+        [auditSenderRuntime.source, '/workspace/src'],
+        [auditSenderRuntime.support, '/workspace/test/support'],
+        [fileURLToPath(new URL('node_modules', repositoryRoot)), '/workspace/node_modules'],
+        [fileURLToPath(new URL('package.json', repositoryRoot)), '/workspace/package.json'],
+      ].flatMap(([source, target]) => ['--mount', `type=bind,source=${source},target=${target},readonly`]);
       await command(['create', '--name', client, '--network', network,
-        '--add-host', `collector.audit.test:${address}`, '-e', 'NODE_EXTRA_CA_CERTS=/fixture/server.crt',
-        nodeImage, 'node', ...(auditSenderRuntime.extension === 'ts' ? ['--experimental-transform-types'] : []), `/fixture/app/test/support/processes/audit-destination-test-probe.${auditSenderRuntime.extension}`]);
+        '--add-host', `collector.audit.test:${address}`, '-e', 'NODE_EXTRA_CA_CERTS=/fixture/server.crt', ...mounts,
+        nodeImage, 'node', ...(auditSenderRuntime.extension === 'ts' ? ['--experimental-transform-types'] : []), `/workspace/test/support/processes/audit-destination-test-probe.${auditSenderRuntime.extension}`]);
       await command(['cp', directory, `${client}:/fixture`]);
       const result = await command(['start', '-a', client]);
       const exitCode = await command(['inspect', client, '--format', '{{.State.ExitCode}}']);

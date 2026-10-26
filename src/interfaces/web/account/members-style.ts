@@ -22,9 +22,17 @@ nav a{border-bottom:2px solid transparent}
 nav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}
 nav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}
 .members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}
-.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite" "lists";gap:24px;max-width:none;padding-top:32px}
+.members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "lists";gap:24px;max-width:none;padding-top:32px}
 .members-layout.logging-layout{grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "invite";max-width:none}
 .introduction{grid-area:intro}
+.members-introduction{display:grid;grid-template-columns:minmax(0,1fr)}
+.members-introduction>.eyebrow{grid-area:1/1}
+.members-introduction>h1,.member-invitation{grid-area:2/1}
+.member-invitation{min-width:0}
+.member-invitation>summary{width:fit-content;max-width:100%;min-height:48px;margin-left:auto;padding:12px 16px;border:1px solid #7B7E88;border-radius:6px;background:transparent;color:#F3F2EE;font-size:15px;cursor:pointer}
+.member-invitation>summary:hover{background:#2C2D34;border-color:#F3F2EE}
+.member-invitation>.invite-card{margin-top:24px}
+.member-invitation .invite-card>a{display:inline-flex;align-items:center;min-height:48px;margin-top:8px}
 .eyebrow{color:#E8552A;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px}
 h1,h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;letter-spacing:-.02em;line-height:1.2;margin:0;overflow-wrap:anywhere}
 h1{font-size:32px}h2{font-size:26px}
@@ -91,6 +99,6 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .invitation-actions form[action$="/invitations/revoke"] button:hover{background:#533038;border-color:#E58F98}
 .site-footer{padding:24px 0;border-top:1px solid #2C2D34;color:#B4BAC0;font-size:12px}
 @media(min-width:861px){.member-list .member-row{padding-block:10px}.member-facts>div{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:8px}.member-facts dt{display:flex;align-items:center;min-height:48px;margin:0}.member-facts dd{display:flex;align-items:center;min-height:48px}.member-action dd{display:block}}
-@media(max-width:860px){.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}
+@media(max-width:860px){.member-invitation{grid-area:3/1;margin-top:16px}.member-invitation>summary{margin-left:0}.member-facts{grid-template-columns:minmax(0,1fr);gap:16px}.members-layout.logging-layout{padding-top:32px}.header-content{gap:8px 16px}nav{gap:24px}}
 @media(max-width:480px){.header-content,.members-layout,.site-footer{width:calc(100% - 32px)}.brand img{width:120px}.workspace-context{grid-column:1/-1;justify-content:space-between}nav{gap:24px}nav a{font-size:15px}.invite-card,.members-card{padding:20px}h2{font-size:24px}.invitation-actions{display:grid;grid-template-columns:minmax(0,1fr)}}
 `;
