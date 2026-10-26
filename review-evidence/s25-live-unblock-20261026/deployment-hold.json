@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-10-26 14:01:36 UTC",
+  "workspace": "Thermus AI",
+  "workspaceId": "tea-db8i6ceq1p3s73dev9og",
+  "serviceId": "srv-db8mnqg473hc739d529g",
+  "autoDeploy": "no",
+  "autoDeployTrigger": "off",
+  "previewGeneration": "off",
+  "latestDeploy": {
+    "id": "dep-dbfcrtajnfac73ekqqs0",
+    "status": "live",
+    "commit": "8c6d204e8588a664438ba8934ab36670b802525f"
+  },
+  "holdMaintained": true,
+  "productionReleasePerformed": false
+}

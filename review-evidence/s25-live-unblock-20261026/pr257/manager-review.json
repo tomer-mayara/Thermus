@@ -1,0 +1,61 @@
+{
+  "reviewedAt": "2026-10-26T14:07:32.492534+00:00",
+  "reviewer": "manager agent",
+  "head": "e46c506811b8639f691304c423f4af5fe894955e",
+  "actualMergeBase": "1a3e5a6638d71e03485e0280848ee5e025335382",
+  "mainAtExecution": "83281acfaff309ab07dd4636053b5593bc4976aa",
+  "result": "Required live validation accepted. The current unchanged PR257 candidate is eligible with its accepted offline/quality evidence and user-confirmed architect approval. Final cleanup binding is recorded separately.",
+  "hostedLive": {
+    "command": [
+      "/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node",
+      "/Users/tomermayara/.config/thermus/with-workos-staging.cjs",
+      "npm",
+      "run",
+      "test:hosted-live"
+    ],
+    "exit": 0,
+    "summary": {
+      "tests": 29,
+      "suites": 8,
+      "pass": 29,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "started": "2026-10-26T13:54:31.800448+00:00",
+    "ended": "2026-10-26T14:05:08.686135+00:00",
+    "guardActiveWorkers": [
+      "hosted-removal.live.js",
+      "hosted.live.js"
+    ],
+    "deleteDenied": 0,
+    "cleanup": {
+      "journaledRootResources": 48,
+      "resourceKinds": {
+        "organization": 10,
+        "user": 35,
+        "application": 3
+      },
+      "deleteCallthroughs": 48,
+      "deleteComplete": 48,
+      "deleteFailed": 0,
+      "unknownIdsOutsideProof": true,
+      "exactGetReadbacks": 48,
+      "readbackStatusCounts": {
+        "404": 48
+      },
+      "allJournaledRootsAbsent": true
+    },
+    "rawLogSha256": "9fc80530b036c414d7ea70392986d27703cb0917ac4c549b8eabab39918735ec",
+    "privateOwnershipJournalSha256": "dd56851fa0513f028ee25a0598d3576e498b9d052b81b5c91d5cfe0b036ec410",
+    "privateAbsenceSha256": "39eda8835baf0f8b06fbd162600acb18e0f54154cc869fa0a101dea2aa231a81"
+  },
+  "trackedHashesIndependentlyRechecked": 1478,
+  "sdkHashesIndependentlyRechecked": 5,
+  "sourceAndTestInputsUnchanged": true,
+  "publicConnect": "N/A after exact parent integration; see selection-after-parent.md and merge-255.json. No PR257 Public Connect pass is claimed.",
+  "scope": "Full original command with unchanged assertions, deadlines, retries and SDK. The external cleanup guard was active in both expected workers and rejected zero deletes.",
+  "history": "Earlier failed and deferred runs remain at their original pins in the maintained PR comments and linked immutable evidence. The current pass does not establish why those earlier attempts failed.",
+  "parserCorrection": "None needed. Original runner and manager independently read the Node spec totals; actual child exit is zero."
+}
