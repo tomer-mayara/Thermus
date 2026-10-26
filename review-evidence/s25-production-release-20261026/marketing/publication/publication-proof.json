@@ -1,0 +1,31 @@
+{
+  "observed_at": "2026-10-26T16:37:17.169954+00:00",
+  "pr": {
+    "url": "https://github.com/tomer-mayara/Thermus-Marketing/pull/30",
+    "head": "b07ea8836e3a8df1a8766af81846b25251915549",
+    "merged": true,
+    "merge_commit": "9c35930d1d89d5560e331f1c8fc5bc2440c5c784",
+    "merged_at": "2026-10-26T16:30:49Z",
+    "read_via": "GitHub connector get_pr_info"
+  },
+  "netlify": {
+    "id": "6adf803c912d5fe402971f61",
+    "site_id": "9753c4f4-c917-400e-9cd7-f638f81743a8",
+    "state": "ready",
+    "commit_ref": "9c35930d1d89d5560e331f1c8fc5bc2440c5c784",
+    "branch": "main",
+    "context": "production",
+    "published_at": "2026-10-26T16:31:19.565Z",
+    "created_at": "2026-10-26T16:30:52.095Z",
+    "error_message": null,
+    "url": "https://thermus.ai",
+    "deploy_url": "https://main--thermus-marketing.netlify.app",
+    "netlify_admin_url": "https://app.netlify.com/projects/thermus-marketing",
+    "title": "Publish approved organization removal notices (#30)\n\nPublish the exact owner-approved 26 October 2026 Terms and Privacy package. Preserve the existing renderer and historical agreements."
+  },
+  "current_deploy_read": "Netlify get_project reported current deploy6adf803c912d5fe402971f61 ready; get_deploy returned the matching production/main merge commit",
+  "owner_approval": "https://github.com/tomer-mayara/Thermus/blob/7f2e22ff706c3c81da07ee70ec16bb7d6cf4a0ba/docs/legal/organization-removal-2026-10-26-proposal-v1/owner-approval.json",
+  "http_result": "All direct/slash URLs match approved complete policies after renderer normalization, metadata, links, tables, H1, anchors, mailto/footer and date. Direct URLs301 to slash; final200 HTML from Cloudflare.",
+  "live_browser_result": "Read-only cua_repl Brave, actual public site at375/1280. Full visible DOM text matches both approved sources, oneH1 and no horizontal overflow; screenshots inspected; viewport restored.",
+  "limits": "No product-runtime release claim. No production configuration/access changes, direct Playwright live browser, broad tests, or new pull request. HTTP HTML is transformed from approved Markdown, not byte-identical to it."
+}

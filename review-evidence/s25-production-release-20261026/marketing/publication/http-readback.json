@@ -1,0 +1,146 @@
+{
+  "checked_at": "2026-10-26T16:33:31.839762+00:00",
+  "scope": "Public HTTP; HTML transformation compared separately from exact approved Markdown bytes",
+  "results": [
+    {
+      "document": "terms",
+      "requested": "https://thermus.ai/terms",
+      "final_url": "https://thermus.ai/terms/",
+      "redirects": [
+        {
+          "status": 301,
+          "from": "https://thermus.ai/terms",
+          "to": "https://thermus.ai/terms/"
+        }
+      ],
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "server": "cloudflare",
+      "html_bytes": 36958,
+      "html_sha256": "77811a3e828d1ca5d6066f44059c8c417f18d33280057242554cafb6c89eb5db",
+      "source_bytes": 20941,
+      "source_sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+      "hash_attribute": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "complete_text_equals_source": true,
+      "source_links": 6,
+      "all_links_ordered": true,
+      "unexpected_links": [],
+      "all_table_cells_equal": true,
+      "table_rows": 0,
+      "all_anchors_resolve": true,
+      "anchor_count": 13,
+      "h1_count": 1,
+      "direct_mailto": true,
+      "cfemail_absent": true,
+      "effective_date": true,
+      "footer_links": [
+        "/",
+        "/privacy",
+        "/terms"
+      ]
+    },
+    {
+      "document": "terms",
+      "requested": "https://thermus.ai/terms/",
+      "final_url": "https://thermus.ai/terms/",
+      "redirects": [],
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "server": "cloudflare",
+      "html_bytes": 36958,
+      "html_sha256": "77811a3e828d1ca5d6066f44059c8c417f18d33280057242554cafb6c89eb5db",
+      "source_bytes": 20941,
+      "source_sha256": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "version": "hosted-terms-organization-removal-proposal-2026-10-26-v1",
+      "hash_attribute": "164e013e2cbf0889ad5aaaef14aac745acaed01023bc914c7adae1a4bf4ce048",
+      "complete_text_equals_source": true,
+      "source_links": 6,
+      "all_links_ordered": true,
+      "unexpected_links": [],
+      "all_table_cells_equal": true,
+      "table_rows": 0,
+      "all_anchors_resolve": true,
+      "anchor_count": 13,
+      "h1_count": 1,
+      "direct_mailto": true,
+      "cfemail_absent": true,
+      "effective_date": true,
+      "footer_links": [
+        "/",
+        "/privacy",
+        "/terms"
+      ]
+    },
+    {
+      "document": "privacy",
+      "requested": "https://thermus.ai/privacy",
+      "final_url": "https://thermus.ai/privacy/",
+      "redirects": [
+        {
+          "status": 301,
+          "from": "https://thermus.ai/privacy",
+          "to": "https://thermus.ai/privacy/"
+        }
+      ],
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "server": "cloudflare",
+      "html_bytes": 55563,
+      "html_sha256": "000efb2ef6bdda22b8ac823c05532eb502d815f8cc9ab7f6dbdaf6f8cec985ea",
+      "source_bytes": 38594,
+      "source_sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+      "hash_attribute": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "complete_text_equals_source": true,
+      "source_links": 13,
+      "all_links_ordered": true,
+      "unexpected_links": [],
+      "all_table_cells_equal": true,
+      "table_rows": 13,
+      "all_anchors_resolve": true,
+      "anchor_count": 11,
+      "h1_count": 1,
+      "direct_mailto": true,
+      "cfemail_absent": true,
+      "effective_date": true,
+      "footer_links": [
+        "/",
+        "/privacy",
+        "/terms"
+      ]
+    },
+    {
+      "document": "privacy",
+      "requested": "https://thermus.ai/privacy/",
+      "final_url": "https://thermus.ai/privacy/",
+      "redirects": [],
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "server": "cloudflare",
+      "html_bytes": 55563,
+      "html_sha256": "000efb2ef6bdda22b8ac823c05532eb502d815f8cc9ab7f6dbdaf6f8cec985ea",
+      "source_bytes": 38594,
+      "source_sha256": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "version": "hosted-privacy-organization-removal-proposal-2026-10-26-v1",
+      "hash_attribute": "df330cf3d905f4bd6f64d3a9dfd8dded5be476c39e40e05b87596e6678429b1c",
+      "complete_text_equals_source": true,
+      "source_links": 13,
+      "all_links_ordered": true,
+      "unexpected_links": [],
+      "all_table_cells_equal": true,
+      "table_rows": 13,
+      "all_anchors_resolve": true,
+      "anchor_count": 11,
+      "h1_count": 1,
+      "direct_mailto": true,
+      "cfemail_absent": true,
+      "effective_date": true,
+      "footer_links": [
+        "/",
+        "/privacy",
+        "/terms"
+      ]
+    }
+  ]
+}
