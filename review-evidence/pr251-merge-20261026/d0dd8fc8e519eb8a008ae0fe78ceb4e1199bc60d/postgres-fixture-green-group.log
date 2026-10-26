@@ -1,0 +1,29 @@
+
+> thermus@0.0.0 test:logging:postgres
+> npm run build && node --test --test-concurrency=1 dist/test/acceptance/logging/audit/destination-settings.runtime.js dist/test/acceptance/logging/audit/hosted-storage-failure.runtime.js dist/test/integration/logging/audit/destination-settings.runtime.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ Given tenant settings, when the SQL runtime reopens, then committed settings persist and other tenants stay isolated (1658.629334ms)
+✔ Given competing first saves, when both expect absence, then one commits and the other conflicts (1413.761167ms)
+✔ Given a real SQL query that stalls, when a storage deadline passes, then callers return and late work stays bounded (1680.367291ms)
+✔ Given a table lock in real PostgreSQL, when public settings calls stall, then reads fail safely and writes remain unconfirmed (1501.816417ms)
+✔ Given current WorkOS access and a settings read blocked by PostgreSQL, when an admitted client calls MCP, then the tool and health check succeed while storage times out and active storage closes within the shared shutdown deadline (2722.487167ms)
+✔ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (1552.566667ms)
+✔ Given persisted generic settings, when an Axiom dataset is added, repeated, changed, and cleared, then each real change advances its tenant revision (1339.995083ms)
+✔ Given real PostgreSQL, when saves compete or repeat, then only actual changes advance the scoped revision (1360.902458ms)
+✔ Given an untrusted certificate, when settings are read, then verified TLS rejects the connection safely (1404.650334ms)
+✔ Given conflicting ambient PostgreSQL variables, when an explicit runtime connects, then its scoped verified configuration wins (1319.861833ms)
+✔ Given a live PostgreSQL query, when local shutdown closes its socket, then the caller settles and late server work ends within its statement deadline (2884.948791ms)
+✔ Given a trusted certificate for a different hostname, when settings are read, then hostname verification rejects it (1338.723125ms)
+✔ Given an idle database disconnect, when PostgreSQL terminates the connection, then later explicit reads can recover (1503.751166ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22347.298209

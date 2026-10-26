@@ -1,0 +1,18 @@
+{
+  "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "qualityAccepted": true,
+  "coverage": "Fresh verified unit capture at exact candidate in isolated checkout;152files. Invalid detached process excluded; named-branch retry uses compatible original capture.",
+  "requiredFunctions": {
+    "count": 17,
+    "new": 9,
+    "changed": 8,
+    "maximumNewCRAP": 4,
+    "maximumChangedCRAP": 7,
+    "allMeetGoals": true
+  },
+  "retainedFindings": "Reviewed both native high findings, existing-provider MI drop, composition MI and all thirteen checker notes with specific reasons. No used exception. Unchanged/unmapped and CSS graph limits retained.",
+  "habit": "Fresh235 findings across18 unchanged source files; each exact finding/source hash matched and reason reviewed; snoozeempty.",
+  "mechanicalResult": "T2 Need architect; eligible/no staticblocker.",
+  "remaining": "Complete runtime gates, deployment preflight and human approval identity/revision reconciliation remain separate. No merge or release authorized by this quality record."
+}

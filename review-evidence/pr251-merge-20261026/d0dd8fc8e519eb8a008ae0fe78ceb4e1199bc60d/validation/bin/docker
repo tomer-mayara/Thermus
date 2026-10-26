@@ -1,0 +1,22 @@
+#!/Users/tomermayara/.nvm/versions/node/v24.20.0/bin/node
+import { spawn } from 'node:child_process';
+import { openSync, writeSync, closeSync } from 'node:fs';
+import { resolve } from 'node:path';
+const args = process.argv.slice(2);
+const build = args[0] === 'build' || (args[0] === 'buildx' && args[1] === 'build');
+const fd = build ? openSync(resolve(process.env.THERMUS_GATE_CACHE, `docker-build-${process.env.THERMUS_GATE_RUN_ID}-${process.env.THERMUS_GATE_STEP}-${Date.now()}-${process.pid}.log`), 'wx') : null;
+if (fd !== null) writeSync(fd, JSON.stringify({ command: '/opt/homebrew/bin/docker', args, started: new Date().toISOString(), context: process.env.DOCKER_CONTEXT }) + '\n');
+const child = spawn('/opt/homebrew/bin/docker', args, { env: process.env, stdio: ['pipe', 'pipe', 'pipe'] });
+process.stdin.pipe(child.stdin);
+child.stdin.on('error', () => {});
+child.stdout.on('data', chunk => { if (fd !== null) writeSync(fd, chunk); });
+child.stderr.on('data', chunk => { if (fd !== null) writeSync(fd, chunk); });
+child.stdout.pipe(process.stdout);
+child.stderr.pipe(process.stderr);
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(signal, () => child.kill(signal));
+child.on('error', error => { process.stderr.write(error.message + '\n'); process.exitCode = 1; });
+child.on('close', (code, signal) => {
+  if (fd !== null) { writeSync(fd, '\n' + JSON.stringify({ finished: new Date().toISOString(), code, signal }) + '\n'); closeSync(fd); }
+  if (signal) { process.removeAllListeners(signal); process.kill(process.pid, signal); }
+  else process.exitCode = code ?? 1;
+});

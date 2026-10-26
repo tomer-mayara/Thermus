@@ -1,0 +1,41 @@
+[
+  {
+    "name": "coverage-compatibility",
+    "command": [
+      "node",
+      "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/quality/check-coverage.mjs",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/coverage.json"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T06:49:58.823378+00:00",
+    "finished": "2026-10-26T06:49:58.960520+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/coverage-compatibility.log",
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/coverage-compatibility.json",
+    "stdoutSha256": "7f3f7aa234e2164b4be96f10c265e98529d5520664fbf8f50d9d2bc7231d6bd1"
+  },
+  {
+    "name": "snapshot-base",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-snapshot.ts",
+      "--base",
+      "8c6d204e8588a664438ba8934ab36670b802525f",
+      "--out",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/snapshot-base.json"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T06:49:59.244442+00:00",
+    "finished": "2026-10-26T06:49:59.650204+00:00",
+    "exit": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/snapshot-base.log",
+    "logSha256": "4ceccaed3a512c85ceb18c0d9eaa78a3ec41700f7845d7643c9f5f69e26ce8a5"
+  }
+]

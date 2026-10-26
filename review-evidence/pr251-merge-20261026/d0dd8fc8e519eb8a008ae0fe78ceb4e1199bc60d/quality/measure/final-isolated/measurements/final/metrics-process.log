@@ -1,0 +1,311 @@
+ast-metrics-architecture: Coverage was skipped with --no-coverage: the bands are withheld.
+# Code quality process
+
+## Delta
+
+Status: goal miss.
+
+```text
+  48.1  src/accounts/providers/workos/workos-organizations.ts  below 85
+  56.2  src/app/hosted-workos-application.ts  below 85
+  26.1  test/acceptance/logging/audit/hosted-storage-failure.runtime.ts  no goal
+  27.3  test/unit/auth-workos/workos-organizations-members.test.ts  no goal
+  31.2  test/integration/auth/workos-google-onboarding.test.ts  no goal
+  32.0  test/acceptance/auth/hosted-live/administration-server.ts  no goal
+  34.4  test/integration/auth/workos-provider-administration.test.ts  no goal
+  34.7  test/integration/auth/workos-connection.test.ts  no goal
+  36.6  test/unit/auth-workos/workos-organizations.test.ts  no goal
+  39.1  test/acceptance/auth/hosted-live/operator-setup.ts  no goal
+  40.4  test/unit/auth-workos/workos-organizations-memberships.test.ts  no goal
+  41.7  test/acceptance/auth/hosted-membership-deletion.test.ts  no goal
+  43.3  test/acceptance/auth/hosted-live/administration-proofs.ts  no goal
+  43.5  test/integration/auth/workos-provider-organizations.test.ts  no goal
+  47.4  test/integration/auth/workos-provider-directory.test.ts  no goal
+  49.3  test/support/doubles/organizations/organization-directory-double.ts  no goal
+  50.8  test/unit/auth-workos/workos-membership-reads.test.ts  no goal
+  54.1  test/unit/auth-workos/workos-organizations-deletion.test.ts  no goal
+  54.4  test/support/doubles/workos/workos-fake-directory.ts  no goal
+  65.2  test/unit/auth-workos/fixtures/workos-organizations-double.ts  no goal
+  68.4  test/support/doubles/organizations/directory-double-records.ts  no goal
+  79.1  test/support/doubles/workos/workos-fake.ts  no goal
+  not measured  docs/api-surface/src/accounts/organizations/organization-directory.d.ts
+  not measured  src/accounts/organizations/organization-directory.ts
+Result: 2 of 2 production files below 85. Goal: 85 or more for each production file. 20 other files without a goal. 2 files not measured.
+Comparison with 8c6d204e8588a664438ba8934ab36670b802525f: ast-report/compare.html
+```
+
+## Review
+
+Status: passed.
+
+## AST Metrics found no regression
+
+0 new critical issue(s), 0 other regression(s)
+
+### Summary
+
+- ➖ **Complexity: -**
+- ➖ **Ease of maintenance: -**
+- ➖ **Outgoing dependencies: -**
+- ➖ **Probability of bugs: -**
+
+No architectural change detected on modified code.
+
+## CRAP
+
+Status: passed.
+
+The coverage report is of another tree (d0dd8fc8): the bands are withheld. Run the coverage command again when the test selection permits it.
+
+No production files to assess.
+
+## Architecture
+
+Status: passed.
+
+## Architecture of src/: base 8c6d204e → head
+
+Modularity 0.34 → 0.34 · cross share 0.31 → 0.31 · cycles 1 → 1 · communities 4 → 4
+
+The coverage report is of another tree (d0dd8fc8): the bands are withheld. Run the coverage command again when the test selection permits it.
+
+The map did not change.
+
+```mermaid
+flowchart LR
+  c_accounts["accounts<br/>36 files · MI 57.0 · paths 948"]
+  c_app["app<br/>70 files · MI 60.0 · paths 1507"]
+  c_pipelines["pipelines<br/>62 files · MI 49.1 · paths 1401"]
+  c_shared_kernel["shared kernel<br/>3 files · MI 57.5 · paths 78"]
+  c_accounts -. "48 · cycle" .-> c_app
+  c_accounts -. "9 · cycle" .-> c_pipelines
+  c_accounts -- "1" --> c_shared_kernel
+  c_app -. "52 · cycle" .-> c_accounts
+  c_app -. "1 · cycle" .-> c_pipelines
+  c_app -- "3" --> c_shared_kernel
+  c_pipelines -. "11 · cycle" .-> c_accounts
+  c_pipelines -. "2 · cycle" .-> c_app
+  c_pipelines -- "2" --> c_shared_kernel
+  linkStyle 0 stroke:#d03b3b,stroke-width:2px
+  linkStyle 1 stroke:#d03b3b,stroke-width:2px
+  linkStyle 3 stroke:#d03b3b,stroke-width:2px
+  linkStyle 4 stroke:#d03b3b,stroke-width:2px
+  linkStyle 6 stroke:#d03b3b,stroke-width:2px
+  linkStyle 7 stroke:#d03b3b,stroke-width:2px
+  classDef touched stroke-width:3px
+  classDef gone stroke-dasharray:4 4,color:#999999
+```
+
+Legend: thick border = a community this pull request touched; `· new` and `· gone` = a community or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base.
+
+### Community edge evidence
+
+Tool references and deduplicated file pairs have different units. An unchanged import means the same normalized file pair, after proven path moves; evidence kinds can differ.
+
+Dependency evidence incomplete: base has 1 issue; head has 1 issue. A missing pair on an incomplete side does not prove an import change.
+
+- base: <code>src/interfaces/user-portal/main.ts</code> → <code>./style.css</code> — unresolved-local.
+- head: <code>src/interfaces/user-portal/main.ts</code> → <code>./style.css</code> — unresolved-local.
+
+No new or gone community edges.
+
+## Components of src/
+
+Component dependency evidence is incomplete: known head dependencies and proven cycles are shown; edge and cycle changes are withheld. Additional dependencies or cycles may exist.
+
+```mermaid
+flowchart LR
+  c_app["app<br/>9 files · MI 60.0 · paths 174"]
+  c_audit_logs["audit-logs<br/>21 files · MI 54.1 · paths 588"]
+  c_better_auth["better-auth<br/>5 files · MI 58.7 · paths 166"]
+  c_billing["billing<br/>2 files · MI 68.8 · paths 6"]
+  c_cli["cli<br/>2 files · MI 53.7 · paths 56"]
+  c_config["config<br/>3 files · MI 57.6 · paths 78"]
+  c_execution["execution<br/>4 files · MI 83.4 · paths 10"]
+  c_html_processing["html-processing<br/>37 files · MI 46.9 · paths 946"]
+  c_http["http<br/>4 files · MI 64.5 · paths 66"]
+  c_identity["identity<br/>5 files · MI 66.4 · paths 19"]
+  c_mcp["mcp<br/>9 files · MI 51.2 · paths 186"]
+  c_organizations["organizations<br/>7 files · MI 76.4 · paths 100"]
+  c_page_fetch["page-fetch<br/>5 files · MI 49.9 · paths 109"]
+  c_search["search<br/>6 files · MI 48.3 · paths 131"]
+  c_search_engine["search-engine<br/>2 files · MI 33.0 · paths 56"]
+  c_system_logs["system-logs<br/>3 files · MI 63.1 · paths 39"]
+  c_user_portal["user-portal<br/>8 files · MI 51.2 · paths 71"]
+  c_web["web<br/>29 files · MI 60.9 · paths 594"]
+  c_website_fetcher["website-fetcher<br/>6 files · MI 60.9 · paths 133"]
+  c_workos["workos<br/>15 files · MI 58.4 · paths 521"]
+  c_app -- "4" --> c_audit_logs
+  c_app -- "2" --> c_better_auth
+  c_app -- "2" --> c_billing
+  c_app -- "1" --> c_cli
+  c_app -- "4" --> c_config
+  c_app -- "2" --> c_execution
+  c_app -- "1" --> c_html_processing
+  c_app -- "2" --> c_http
+  c_app -- "2" --> c_identity
+  c_app -- "3" --> c_mcp
+  c_app -- "2" --> c_organizations
+  c_app -- "1" --> c_page_fetch
+  c_app -- "1" --> c_search
+  c_app -- "1" --> c_search_engine
+  c_app -- "5" --> c_system_logs
+  c_app -- "2" --> c_web
+  c_app -- "1" --> c_website_fetcher
+  c_app -- "1" --> c_workos
+  c_audit_logs -- "1" --> c_organizations
+  c_better_auth -- "2" --> c_http
+  c_better_auth -- "3" --> c_identity
+  c_cli -- "1" --> c_config
+  c_cli -- "2" --> c_identity
+  c_cli -- "1" --> c_system_logs
+  c_execution -- "1" --> c_website_fetcher
+  c_html_processing -- "1" --> c_execution
+  c_html_processing -- "2" --> c_website_fetcher
+  c_http -- "1" --> c_config
+  c_http -- "2" --> c_system_logs
+  c_mcp -- "1" --> c_audit_logs
+  c_mcp -- "2" --> c_execution
+  c_mcp -- "1" --> c_http
+  c_mcp -- "6" --> c_identity
+  c_mcp -- "3" --> c_page_fetch
+  c_mcp -- "3" --> c_search
+  c_mcp -- "1" --> c_system_logs
+  c_organizations -- "1" --> c_billing
+  c_organizations -- "4" --> c_identity
+  c_page_fetch -- "3" --> c_execution
+  c_page_fetch -- "1" --> c_identity
+  c_page_fetch -- "2" --> c_website_fetcher
+  c_search -- "3" --> c_execution
+  c_search -- "1" --> c_identity
+  c_search -- "1" --> c_search_engine
+  c_search -- "2" --> c_website_fetcher
+  c_search_engine -- "2" --> c_website_fetcher
+  c_web -- "6" --> c_audit_logs
+  c_web -- "1" --> c_billing
+  c_web -- "5" --> c_http
+  c_web -- "7" --> c_identity
+  c_web -- "9" --> c_organizations
+  c_web -- "3" --> c_workos
+  c_workos -- "1" --> c_billing
+  c_workos -- "6" --> c_identity
+  c_workos -- "4" --> c_organizations
+  classDef touched stroke-width:3px
+  classDef gone stroke-dasharray:4 4,color:#999999
+```
+
+Legend: thick border = a component this pull request touched; `· new` and `· gone` = a component or dependency that appeared or disappeared; red dashed edge = part of a cycle; thick edge = a new dependency; numbers = files · maintainability (LOC-weighted) · decision paths, with the change against the base. Edges count distinct importing files per target component.
+
+## Complexity of the changed files
+
+No production file changed.
+
+## Trend of src/ on main
+
+| Commit | PR | Date | Modularity | Cross share | Cycles | Maintainability | Functions ≥ 30 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| bb19a988 | – | 2026-10-23 | 0.39 | 0.15 | 1 | 55.9 | 59 (estimate) |
+| b03e2d2c | – | 2026-10-23 | 0.39 | 0.15 | 1 | 55.9 | 0 (estimate; integration + unit) |
+| 7d01d2fb | – | 2026-10-24 | 0.39 | 0.15 | 1 | 55.9 | 0 (estimate; integration + unit) |
+| 845cec30 | – | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| a7411fd0 | #248 | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 74f75656 | – | 2026-10-24 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 9d0546b9 | #250 | 2026-10-25 | 0.34 | 0.31 | 1 | 55.8 | 58 (estimate) |
+| 4d7f845b | – | 2026-10-25 | 0.34 | 0.31 | 1 | 55.7 | 0 (estimate; integration + unit) |
+| 581f30cf | #256 | 2026-10-25 | 0.34 | 0.31 | 1 | 55.7 | 59 (estimate) |
+| 8c6d204e | #258 | 2026-10-25 | 0.34 | 0.31 | 1 | 55.7 | – |
+| this pull request | #258 | | 0.34 | 0.31 | 1 | 55.7 | – |
+
+Historical estimates use head coverage from the first recording pull request. Later estimates for the same base can differ. Counts include known lower-bound violations; other unknown functions are not counted.
+
+### Maintainability trend
+
+Missing values are gaps; lines stop at each gap.
+
+Maintainability (maintainability), bb19a988 to this pull request.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Maintainability"
+    x-axis ["bb19a988", "b03e2d2c", "7d01d2fb", "845cec30", "a7411fd0", "74f75656", "9d0546b9", "4d7f845b", "581f30cf", "8c6d204e", "this pull request"]
+    y-axis "Maintainability" 55.7 --> 55.9
+    line [55.9, 55.9, 55.9, 55.8, 55.8, 55.8, 55.8, 55.7, 55.7, 55.7, 55.7]
+```
+
+
+### Functions ≥ 30 trend
+
+Missing values are gaps; lines stop at each gap or change of count basis.
+
+bb19a988: 59 (head-derived estimate). One point; no line.
+
+Functions ≥ 30 (head-derived estimate; integration + unit), b03e2d2c to 7d01d2fb.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate; integration + unit"
+    x-axis ["b03e2d2c", "7d01d2fb"]
+    y-axis "Functions at CRAP 30 or more" 0 --> 1
+    line [0, 0]
+```
+
+Functions ≥ 30 (head-derived estimate), 845cec30 to 9d0546b9.
+
+```mermaid
+---
+config:
+  xyChart:
+    xAxis:
+      labelRotation: 45
+---
+xychart-beta
+    title "Functions at CRAP 30 or more - head-derived estimate"
+    x-axis ["845cec30", "a7411fd0", "74f75656", "9d0546b9"]
+    y-axis "Functions at CRAP 30 or more" 57 --> 59
+    line [58, 58, 58, 58]
+```
+
+4d7f845b: 0 (head-derived estimate; integration + unit). One point; no line.
+
+581f30cf: 59 (head-derived estimate). One point; no line.
+
+
+### Trend by component
+
+| Component | bb19a988 | b03e2d2c | 7d01d2fb | 845cec30 | a7411fd0 | 74f75656 | 9d0546b9 | 4d7f845b | 581f30cf | 8c6d204e | this pull request |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| app | MI 60.9; functions ≥ 30: 0 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.0; functions ≥ 30: 0 (estimate) | MI 60.0; functions ≥ 30: – | MI 60.0; functions ≥ 30: – |
+| audit-logs | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 55.2; functions ≥ 30: 0 (estimate) | MI 54.8; functions ≥ 30: 0 (estimate) | MI 54.8; functions ≥ 30: 0 (estimate) | MI 54.7; functions ≥ 30: 0 (estimate) | MI 54.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 54.2; functions ≥ 30: 0 (estimate) | MI 54.1; functions ≥ 30: – | MI 54.1; functions ≥ 30: – |
+| better-auth | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 2 (estimate) | MI 58.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.7; functions ≥ 30: 2 (estimate) | MI 58.7; functions ≥ 30: – | MI 58.7; functions ≥ 30: – |
+| billing | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 68.8; functions ≥ 30: 0 (estimate) | MI 68.8; functions ≥ 30: – | MI 68.8; functions ≥ 30: – |
+| cli | MI 53.8; functions ≥ 30: 3 (estimate) | MI 53.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: 0 (estimate; integration + unit) | MI 53.7; functions ≥ 30: 3 (estimate) | MI 53.7; functions ≥ 30: – | MI 53.7; functions ≥ 30: – |
+| config | MI 56.8; functions ≥ 30: 0 (estimate) | MI 56.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 56.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 57.6; functions ≥ 30: 0 (estimate) | MI 57.6; functions ≥ 30: – | MI 57.6; functions ≥ 30: – |
+| execution | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 83.4; functions ≥ 30: 0 (estimate) | MI 83.4; functions ≥ 30: – | MI 83.4; functions ≥ 30: – |
+| html-processing | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 46.9; functions ≥ 30: 0 (estimate) | MI 46.9; functions ≥ 30: – | MI 46.9; functions ≥ 30: – |
+| http | MI 64.6; functions ≥ 30: 0 (estimate) | MI 64.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.6; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: 0 (estimate; integration + unit) | MI 64.5; functions ≥ 30: 0 (estimate) | MI 64.5; functions ≥ 30: – | MI 64.5; functions ≥ 30: – |
+| identity | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate) | MI 62.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 66.4; functions ≥ 30: 0 (estimate) | MI 66.4; functions ≥ 30: – | MI 66.4; functions ≥ 30: – |
+| logging | MI 62.4; functions ≥ 30: 0 (estimate) | MI 62.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 62.4; functions ≥ 30: 0 (estimate; integration + unit) | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – |
+| mcp | MI 51.1; functions ≥ 30: 5 (estimate) | MI 51.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 3 (estimate) | MI 51.2; functions ≥ 30: – | MI 51.2; functions ≥ 30: – |
+| organizations | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: 0 (estimate; integration + unit) | MI 76.4; functions ≥ 30: 1 (estimate) | MI 76.4; functions ≥ 30: – | MI 76.4; functions ≥ 30: – |
+| page-fetch | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 49.9; functions ≥ 30: 5 (estimate) | MI 49.9; functions ≥ 30: – | MI 49.9; functions ≥ 30: – |
+| search | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: 0 (estimate; integration + unit) | MI 48.3; functions ≥ 30: 7 (estimate) | MI 48.3; functions ≥ 30: – | MI 48.3; functions ≥ 30: – |
+| search-engine | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: 0 (estimate; integration + unit) | MI 33.0; functions ≥ 30: 0 (estimate) | MI 33.0; functions ≥ 30: – | MI 33.0; functions ≥ 30: – |
+| system-logs | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI –; functions ≥ 30: – | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: 0 (estimate; integration + unit) | MI 63.1; functions ≥ 30: 0 (estimate) | MI 63.1; functions ≥ 30: – | MI 63.1; functions ≥ 30: – |
+| user-portal | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: 0 (estimate; integration + unit) | MI 51.2; functions ≥ 30: 0 (estimate) | MI 51.2; functions ≥ 30: – | MI 51.2; functions ≥ 30: – |
+| web | MI 61.8; functions ≥ 30: 20 (estimate) | MI 61.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 61.8; functions ≥ 30: 0 (estimate; integration + unit) | MI 61.0; functions ≥ 30: 21 (estimate) | MI 61.0; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 21 (estimate) | MI 60.9; functions ≥ 30: – | MI 60.9; functions ≥ 30: – |
+| website-fetcher | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 60.9; functions ≥ 30: 1 (estimate) | MI 60.9; functions ≥ 30: – | MI 60.9; functions ≥ 30: – |
+| workos | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 15 (estimate) | MI 58.9; functions ≥ 30: 0 (estimate; integration + unit) | MI 58.4; functions ≥ 30: 16 (estimate) | MI 58.4; functions ≥ 30: – | MI 58.4; functions ≥ 30: – |
+
+1 commits of main between b03e2d2c and 7d01d2fb have no record.

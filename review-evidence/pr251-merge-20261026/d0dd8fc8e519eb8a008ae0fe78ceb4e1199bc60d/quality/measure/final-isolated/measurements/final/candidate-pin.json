@@ -1,0 +1,16 @@
+{
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/selection.md",
+  "selectionSha256": "8e440fa8f2c5994515f7702bbe020dd3f7ad7de4342b1763879f6796919c6f10",
+  "identity": {
+    "sourceFingerprint": "8d10b11e17dc6fd75427d20125a05851a9c3a90f7f991534d6b81ff06e337601",
+    "inputsFingerprint": "929ca62d82810ff037a19ce12f80530c6eac1b21adf8049570ab6aef1489f268",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  }
+}

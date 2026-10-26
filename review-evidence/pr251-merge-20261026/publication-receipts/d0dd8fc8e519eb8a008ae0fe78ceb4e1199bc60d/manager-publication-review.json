@@ -1,0 +1,31 @@
+{
+  "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "reviewedAt": "2026-10-26T07:50:31.135591+00:00",
+  "reviewer": "Codex manager /root (agent review, not independent human approval)",
+  "inventorySha256": "0b829cfabc0ce1705622a8bba633532608f4dabfce9e06699c0c66820f22b73a",
+  "approvedForPublication": true,
+  "publicationAuthorizationReady": false,
+  "scope": "Current curated evidence and three PR texts reviewed; publication remains gated on deployment preflight. This does not approve Ready or merge.",
+  "review": [
+    "Read current main, Validation and Quality review against accepted manager quality/architecture and gate ledger.",
+    "Canonical T2 Need architect reason and facts match current checker; changed declaration diff and exact reviewed Mermaid remain intact.",
+    "All selected gates and exact input-binding limits, original fixture failure/cancellation, native detached-checkout retry, and retained finding reasons remain visible.",
+    "Artifact inventory hash verified and exact configured WorkOS/Axiom values absent; heuristic URL matches are committed invalid-URL fixture literals.",
+    "No user draft, credentials/environment files, source copies or raw V8 profiles included.",
+    "Existing two comment IDs retained. Human identity/current-scope and deployment preflight holds remain stated."
+  ],
+  "texts": {
+    "main-body.md": "ab9fad712b642576cf09a42414ee17afe2e7714e053c644963b41f187def11de",
+    "validation-comment.md": "06dc76771455bc4ef4e44cae1533625944618b00ac59758b204bbf394e69ce0c",
+    "quality-review-comment.md": "aa192868a285e1e2a93017a796a9bd33d7923bfc21f9ccc4acf50337e0e92db4"
+  },
+  "scan": {
+    "configured": "secret-scan.json",
+    "pattern": "pattern-scan.json"
+  },
+  "remainingHolds": [
+    "Confirmed Render workspace/target and current automatic/intermediate deployment hold.",
+    "Independent qualified human architect identity and current-candidate approval-scope reconciliation."
+  ]
+}

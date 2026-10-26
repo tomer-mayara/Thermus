@@ -1,0 +1,23 @@
+[
+  {
+    "name": "coverage-capture",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-coverage.ts",
+      "--suite",
+      "unit",
+      "--out",
+      "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/coverage.json"
+    ],
+    "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+    "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "started": "2026-10-26T06:48:20.775676+00:00",
+    "finished": "2026-10-26T06:49:42.485120+00:00",
+    "exit": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/coverage-capture.log",
+    "logSha256": "29c85b12e4952db0ce165cfcf60377c55407b215561b9b3f8cbf157d76dd1474"
+  }
+]

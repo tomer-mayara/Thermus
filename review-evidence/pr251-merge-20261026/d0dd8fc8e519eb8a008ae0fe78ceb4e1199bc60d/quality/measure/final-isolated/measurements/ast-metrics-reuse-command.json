@@ -1,0 +1,21 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-install.ts"
+  ],
+  "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "sourceRuntime": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/ast-metrics/0.43.1-thermus.1/darwin-arm64",
+  "targetRuntime": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/ast-metrics/0.43.1-thermus.1/darwin-arm64",
+  "sourceFiles": {
+    "ast-metrics": "625270caac24a04da53c2e61b737e00f3e337a869a43202e513eb61380d3eaec",
+    "LICENSE.txt": "bff92c9773fb68f2b21f538ea9a2c7dd5bc3865b06577a141bc94f8b117fdcc1",
+    "install.json": "bc433f84987313f436a7bdb0646c271a86654da6d0a04805c514024d5f7f9835"
+  },
+  "started": "2026-10-26T06:50:49.973161+00:00",
+  "finished": "2026-10-26T06:50:51.045548+00:00",
+  "exit": 0,
+  "meaning": "Copied the intact pinned runtime; repository installer rechecks manifest, patch hash, binary hash and version. This is runtime reuse, not a new build."
+}

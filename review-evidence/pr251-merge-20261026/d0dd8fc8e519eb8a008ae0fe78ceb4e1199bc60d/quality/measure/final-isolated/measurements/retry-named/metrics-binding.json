@@ -1,0 +1,35 @@
+{
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/selection.md",
+  "selectionSha256": "8e440fa8f2c5994515f7702bbe020dd3f7ad7de4342b1763879f6796919c6f10",
+  "identity": {
+    "sourceFingerprint": "8d10b11e17dc6fd75427d20125a05851a9c3a90f7f991534d6b81ff06e337601",
+    "inputsFingerprint": "929ca62d82810ff037a19ce12f80530c6eac1b21adf8049570ab6aef1489f268",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T06:59:46.545075+00:00",
+  "outputs": {
+    "coverage-compatibility.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "metrics-commands.json": "6df711c7d874024966a00e4842dcea229abc478589c4591b5bb99c77f4e01fee",
+    "process.md": "f61bb4cdd8430c07f170bfaa1e6aab66c4c42968e1934b4027a10d0d93a48fde",
+    "candidate-pin.json": "bab716710a7d9a68e69774c21f23ccdca0d411ea0bcb06a2e57f5412b02c4e30",
+    "crap.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "snapshot-head.log": "8d3bad6ac02d92a696fc14c889e957a5de82271ac33f6595d54dc08074c64ea1",
+    "snapshot-base.log": "f694bfb52b4cda8b1a1794e80a5a1522ac91aae5fb53fddd315701541fbc4b43",
+    "snapshot.json": "1676d2ba06ebc572e9d3b476ac59aa3b77f3a5c2145bda5988ca083a0ea811b6",
+    "crap.json": "9009759d9fde3a5c0988caa7a2ffa40e05c12e1b5539f2e1c2b94b7c3fb1b273",
+    "snapshot-base.json": "8c7382c6370ba7986fce1158080dd94f8d11d97fc0408318806762d81049aae2",
+    "coverage-compatibility.json": "7f3f7aa234e2164b4be96f10c265e98529d5520664fbf8f50d9d2bc7231d6bd1",
+    "crap.md": "d653bf6238de645c619dc9a3f671800f31e49e9e6c2bdc709db7ce658c6e1c63",
+    "process.json": "2e078f5f223698c1a718c0422ccadab8c9fae1cd7728c860552d585347218cd8",
+    "review.md": "f016eec70d3dc1714fc515f3feb3b967d8c0eeb7ac761d388a02d4da4fea1dda",
+    "review.json": "ce9dbc0c94804d6828374803ab090b56a93be6fd8bb6b68753f18f80d767f3f9",
+    "metrics-process.log": "d430d7b31b20ba9baf2607c218759edfc354c623277ad75234ab67141e9be173"
+  }
+}

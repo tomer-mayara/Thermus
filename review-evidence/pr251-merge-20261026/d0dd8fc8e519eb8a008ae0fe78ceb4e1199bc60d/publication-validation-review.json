@@ -1,0 +1,26 @@
+{
+  "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "reviewed": "2026-10-26T07:38:05.029660+00:00",
+  "validationTextSha256": "06dc76771455bc4ef4e44cae1533625944618b00ac59758b204bbf394e69ce0c",
+  "review": "Read full authored Validation once against frozen ledger, PostgreSQL input-binding and current metric coverage. Counts and pre-commit/copy provenance agree. No raw report or validation text changed. Existing external holds remain blocked.",
+  "productCounts": {
+    "focused": 181,
+    "ordinaryBackend": 4911,
+    "ordinaryPortal": 49,
+    "workosStaging": 28,
+    "nativeContainer": 11,
+    "hostedAMD64": 7,
+    "collector": 10,
+    "postgresFocused": 2,
+    "postgresGroup": 13
+  },
+  "coverage": {
+    "files": 152,
+    "rawFiles": 433,
+    "lifecycleProcessIdentities": 219
+  },
+  "architectureLinePreserved": "Architecture: T2: declarations changed in 1 public module.",
+  "canonicalTier": "T2 Need architect",
+  "oldMetadataHistory": "publication/history/*-before-canonical-tier.*"
+}

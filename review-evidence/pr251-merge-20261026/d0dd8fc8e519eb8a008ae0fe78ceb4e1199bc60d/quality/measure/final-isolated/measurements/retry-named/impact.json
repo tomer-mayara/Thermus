@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": true,
+    "sensitiveBehavior": true,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": true,
+    "summary": "S2.5-01a extends the organizations-owned directory contract with portable ordinary/external/unknown management evidence and exact-ID membership deletion. WorkOS implements applied on normal void completion, unsupported only for its documented no-effect 422 refusal, and unchanged thrown errors with unknown effect otherwise. Hosted composition binds a required raw membership reader through the same SDK client so missing/null wire evidence is not defaulted to false; read queries, one-request reads, all role grants, and existing zero-retry/five-second limits remain. Member revisions include normalized management evidence. No application caller invokes deletion: admission, authorization, last-Admin safety, browser UI, storage, and recovery stay in later tickets. Registry prose describes the boundary and binding; all 13 registry diagrams, components, dependency edges, external service selection, and deployment remain unchanged. The shared public declaration and provider binding require internalInterface review; sensitiveBehavior covers membership deletion and unknown evidence.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Collaboration overview",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
+      "Deployment view"
+    ],
+    "evidence": [
+      "src/accounts/organizations/organization-directory.ts",
+      "src/accounts/providers/workos/workos-organizations.ts",
+      "src/app/hosted-workos-application.ts",
+      "docs/api-surface/src/accounts/organizations/organization-directory.d.ts",
+      "architecture/components.md",
+      "docs/design/organization-admin-plan.md",
+      "docs/implementation/admin-s2-5-01a.md",
+      "test/acceptance/auth/hosted-membership-deletion.test.ts",
+      "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts",
+      "test/integration/auth/workos-connection.test.ts",
+      "test/unit/auth-workos/workos-membership-reads.test.ts",
+      "test/unit/auth-workos/workos-organizations-deletion.test.ts",
+      "test/unit/auth-workos/workos-organizations-members.test.ts"
+    ]
+  },
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d"
+}

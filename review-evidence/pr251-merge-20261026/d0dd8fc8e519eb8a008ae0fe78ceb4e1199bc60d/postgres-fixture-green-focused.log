@@ -1,0 +1,10 @@
+✔ Given current WorkOS access and a settings read blocked by PostgreSQL, when an admitted client calls MCP, then the tool and health check succeed while storage times out and active storage closes within the shared shutdown deadline (2763.64175ms)
+✔ Given enabled customer export and queue authorization blocked by PostgreSQL, when MCP and Admin actions complete and the hosted app closes, then health stays available and active SQL/export cleanup fits the shared deadline (1646.492125ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4931.819833

@@ -1,0 +1,1 @@
+ast-metrics-snapshot: The local ast-metrics runtime is missing or invalid. Run pnpm exec node script/code-quality/ast-metrics-install.ts. ENOENT: no such file or directory, open '/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/ast-metrics/0.43.1-thermus.1/darwin-arm64/install.json'

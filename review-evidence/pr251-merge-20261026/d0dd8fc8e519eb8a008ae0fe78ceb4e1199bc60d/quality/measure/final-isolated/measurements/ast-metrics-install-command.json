@@ -1,0 +1,13 @@
+{
+  "command": [
+    "pnpm",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-install.ts"
+  ],
+  "cwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "started": "2026-10-26T06:50:20.798276+00:00",
+  "finished": "2026-10-26T06:50:21.222178+00:00",
+  "exit": 1
+}

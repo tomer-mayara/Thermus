@@ -1,0 +1,227 @@
+{
+  "tier": "T2",
+  "tierName": "T2 Need architect",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "architecture": {
+    "policy": "facts",
+    "facts": [
+      {
+        "key": "architecture.declarations_changed",
+        "fact": "src/accounts/organizations/organization-directory.ts (+6 -0 lines)",
+        "detail": "diff --git a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\nindex 59fd7de3..d1f5e593 100644\n--- a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n@@ -6,12 +6,14 @@ export interface OrganizationMembership {\n     readonly grants: readonly RoleGrant[];\n }\n export type MembershipStatus = 'active' | 'inactive' | 'pending';\n+export type MembershipManagement = 'ordinary' | 'external' | 'unknown';\n export interface OrganizationMember {\n     readonly membershipId: string;\n     readonly subject: string;\n     readonly organizationId: string;\n     readonly email: string;\n     readonly status: MembershipStatus;\n+    readonly management: MembershipManagement;\n     readonly grants: readonly RoleGrant[];\n     readonly revision: string;\n }\n@@ -51,10 +53,14 @@ export interface InvitationSendResult {\n export interface InvitationUpdateResult {\n     readonly outcome: 'applied' | 'not-pending' | 'unsupported';\n }\n+export interface MembershipDeletionResult {\n+    readonly outcome: 'applied' | 'unsupported';\n+}\n export interface OrganizationDirectory {\n     membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]>;\n     memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;\n     member(membershipId: string): Promise<OrganizationMember | undefined>;\n+    deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;\n     invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;\n     invitation(invitationId: string): Promise<OrganizationInvitation | undefined>;\n     sendInvitation(request: InvitationRequest): Promise<InvitationSendResult>;\n"
+      }
+    ],
+    "summary": "T2: declarations changed in 1 public module"
+  },
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-directory.ts (+6 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "S2.5-01a extends the organizations-owned directory contract with portable ordinary/external/unknown management evidence and exact-ID membership deletion. WorkOS implements applied on normal void completion, unsupported only for its documented no-effect 422 refusal, and unchanged thrown errors with unknown effect otherwise. Hosted composition binds a required raw membership reader through the same SDK client so missing/null wire evidence is not defaulted to false; read queries, one-request reads, all role grants, and existing zero-retry/five-second limits remain. Member revisions include normalized management evidence. No application caller invokes deletion: admission, authorization, last-Admin safety, browser UI, storage, and recovery stay in later tickets. Registry prose describes the boundary and binding; all 13 registry diagrams, components, dependency edges, external service selection, and deployment remain unchanged. The shared public declaration and provider binding require internalInterface review; sensitiveBehavior covers membership deletion and unknown evidence."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "S2.5-01a extends the organizations-owned directory contract with portable ordinary/external/unknown management evidence and exact-ID membership deletion. WorkOS implements applied on normal void completion, unsupported only for its documented no-effect 422 refusal, and unchanged thrown errors with unknown effect otherwise. Hosted composition binds a required raw membership reader through the same SDK client so missing/null wire evidence is not defaulted to false; read queries, one-request reads, all role grants, and existing zero-retry/five-second limits remain. Member revisions include normalized management evidence. No application caller invokes deletion: admission, authorization, last-Admin safety, browser UI, storage, and recovery stay in later tickets. Registry prose describes the boundary and binding; all 13 registry diagrams, components, dependency edges, external service selection, and deployment remain unchanged. The shared public declaration and provider binding require internalInterface review; sensitiveBehavior covers membership deletion and unknown evidence."
+    }
+  ],
+  "questions": [
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise."
+    }
+  ],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "architecture/components.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/api-surface/src/accounts/organizations/organization-directory.d.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-s2-5-01a.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-25-8c6d204e.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/testing/test-list.md"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/organizations/organization-directory.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/accounts/providers/workos/workos-organizations.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/app/hosted-workos-application.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-live/administration-proofs.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-live/administration-server.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-live/operator-setup.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/acceptance/auth/hosted-membership-deletion.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/logging/audit/hosted-storage-failure.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-connection.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-google-onboarding.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-provider-administration.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-provider-directory.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/auth/workos-provider-organizations.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/organizations/directory-double-records.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/organizations/organization-directory-double.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/workos/workos-fake-directory.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/doubles/workos/workos-fake.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/auth-workos/fixtures/workos-organizations-double.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/auth-workos/workos-membership-reads.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/unit/auth-workos/workos-organizations-deletion.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/auth-workos/workos-organizations-members.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/auth-workos/workos-organizations-memberships.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/unit/auth-workos/workos-organizations.test.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 98,
+    "productionLimit": 400,
+    "total": 1266,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 18,
+    "removed": 1,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "not applicable: src/accounts/organizations/organization-directory.ts: no raw MI in the base snapshot",
+    "changed: src/accounts/providers/workos/workos-organizations.ts: 53.483376839832225 to 48.11091770208057",
+    "changed: src/app/hosted-workos-application.ts: 56.18982766411584 to 56.150536356453514"
+  ],
+  "crap": [
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.activeMembership: 7.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.activeMembershipsOf: 4.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.deleteMembership: 4.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.memberPage: 4.0",
+    "src/app/hosted-workos-application.ts: workosProviderParts: 3.0",
+    "src/accounts/providers/workos/workos-organizations.ts: getOrganizationMembership: 3.0",
+    "src/accounts/providers/workos/workos-organizations.ts: managementOf: 3.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.currentMembership: 3.0",
+    "src/accounts/providers/workos/workos-organizations.ts: listOrganizationMemberships: 2.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.: 2.0",
+    "src/app/hosted-workos-application.ts: (anonymous): 2.0",
+    "src/accounts/providers/workos/workos-organizations.ts: membershipRecordOf: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: revisionOf: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.constructor: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workos-organizations\\WorkOSOrganizations.memberOf: 1.0",
+    "src/accounts/providers/workos/workos-organizations.ts: workosMembershipReads: 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "outside scopes.production: test/integration/auth/workos-connection.test.ts: Maintainability index: 41 -> 35 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [
+    "src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "src/accounts/organizations/customer-roles.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "src/accounts/organizations/organization-directory.ts"
+  ],
+  "informational": [
+    "48 public modules, 1 snapshot changed",
+    "public module touched, declarations unchanged: src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "public module touched, declarations unchanged: src/accounts/organizations/customer-roles.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "public module touched, declarations unchanged: src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+    "ratchet.maintainability_index.existing_file_drop_note_at: src/accounts/providers/workos/workos-organizations.ts: 53.483376839832225 to 48.11091770208057",
+    "ratchet.review_findings_high: src/accounts/providers/workos/workos-organizations.ts: Maintainability index: 53 -> 48 (below 85 is hard to maintain)"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T2 Need architect' --remove-label 'T1 Team review' --remove-label 'T0 Auto merge'"
+}

@@ -1,0 +1,81 @@
+{
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "dockerContext": "colima-thermus-s25-merge",
+  "stream": "docker-build-1792996652405-hosted-container-1792997991333-5682.log",
+  "sha256": "1d809aa9bcebb4c18c34ab650cbc9c8814e3cb53ec7e24ac67365b5234258669",
+  "step": "#27",
+  "network": "none",
+  "command": "npm run build:hosted",
+  "cached": false,
+  "completion": "#27 DONE 549.4s",
+  "summaries": [
+    {
+      "group": "backend unit",
+      "tests": 3164,
+      "suites": 164,
+      "pass": 3164,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 262535.955275
+    },
+    {
+      "group": "portal unit",
+      "tests": 29,
+      "suites": 0,
+      "pass": 29,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 1843.117789
+    },
+    {
+      "group": "portal acceptance",
+      "tests": 20,
+      "suites": 0,
+      "pass": 20,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 2025.575604
+    },
+    {
+      "group": "integration",
+      "tests": 1103,
+      "suites": 59,
+      "pass": 1103,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 124269.960503
+    },
+    {
+      "group": "hosted acceptance",
+      "tests": 119,
+      "suites": 6,
+      "pass": 119,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 68438.990189
+    },
+    {
+      "group": "renderer runtime",
+      "tests": 13,
+      "suites": 2,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "duration_ms": 69796.263408
+    }
+  ],
+  "reportNote": "Initial ad-hoc extraction expected seven summaries and stopped without writing evidence. The actual package command has six summary groups; the corrected extraction matches those six commands. No gate was rerun."
+}

@@ -1,0 +1,26 @@
+{
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "mergeBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "validationBase": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "selectionFile": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/selection.md",
+  "selectionSha256": "8e440fa8f2c5994515f7702bbe020dd3f7ad7de4342b1763879f6796919c6f10",
+  "identity": {
+    "sourceFingerprint": "8d10b11e17dc6fd75427d20125a05851a9c3a90f7f991534d6b81ff06e337601",
+    "inputsFingerprint": "929ca62d82810ff037a19ce12f80530c6eac1b21adf8049570ab6aef1489f268",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "completed": "2026-10-26T06:49:42.808411+00:00",
+  "outputs": {
+    "coverage-capture.log": "29c85b12e4952db0ce165cfcf60377c55407b215561b9b3f8cbf157d76dd1474",
+    "candidate-pin.json": "bab716710a7d9a68e69774c21f23ccdca0d411ea0bcb06a2e57f5412b02c4e30",
+    "selection.md": "8e440fa8f2c5994515f7702bbe020dd3f7ad7de4342b1763879f6796919c6f10",
+    "install-command.json": "d8a00c72807efaa603435776eb84725aff272fa6f2067c9e22f5ef0be1a21779",
+    "capture-commands.json": "c182469c358edd3dde00f59c33db2afea149d43063ff888f296eb1bf82fb57f1",
+    "coverage.json": "27ad6ea8d00d35f9f9766aac8a7561f1f3404f7482f4005e69cd338609cc13e7",
+    "install.log": "717b967f80f4ccf877c90831bfe6f36703e158dedfacf53b70169fba0647d2c3"
+  }
+}

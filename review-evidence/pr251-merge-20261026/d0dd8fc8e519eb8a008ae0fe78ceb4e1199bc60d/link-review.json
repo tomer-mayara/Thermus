@@ -1,0 +1,345 @@
+{
+  "artifactRelativeLinks": [
+    {
+      "from": "README.md",
+      "target": "validation-draft.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "gate-ledger.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "gated-inputs.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/final-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/selection.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "postgres-fixture-review.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/postgres-input-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "postgres-fixture-red-focused.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "postgres-fixture-green-focused.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "postgres-fixture-green-group.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "ordinary-1.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "hosted-live-1.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "native-container-1.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "hosted-container-1.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "logging-collector-1.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "docker-build-1792996652405-hosted-container-1792997991333-5682.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/hosted-offline-evidence.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/final-build-history.jsonl",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/run-gates.mjs",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/bin/docker",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/metrics-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/checker-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/pr-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/checker-notes.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/metric-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/metric-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/process.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/process.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/crap.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/snapshot-base.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/retry-named/snapshot.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/ast-report/index.html",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/ast-report/compare.html",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/ast-report/metrics.txt",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/coverage.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/capture-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/ast-report/coverage-captures/capture-unit-jNmzdx/capture-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/coverage-build.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/coverage-capture.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/manager-quality-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/habit-dispositions.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/habit-dispositions.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "validation/habit-run-bridge.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/failure-retry-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/final/process.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/measurements/final/process.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "quality/measure/final-isolated/invalid-process-generated-record.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "history/initial-pr-stack-state.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/assessment-current.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/manager-review-final.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/file-equivalence-final.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/registry-inventory-final.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/render-reuse-final.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "architecture/comparison-reviewed.mmd",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/main-body.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/validation-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "publication-drafts/quality-review-comment.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "provenance.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "inventory.json",
+      "exists": true
+    },
+    {
+      "from": "architecture/assessment-current.md",
+      "target": "manager-review-final.json",
+      "exists": true
+    },
+    {
+      "from": "architecture/assessment-current.md",
+      "target": "file-equivalence-final.json",
+      "exists": true
+    },
+    {
+      "from": "architecture/assessment-current.md",
+      "target": "registry-inventory-final.json",
+      "exists": true
+    },
+    {
+      "from": "architecture/assessment-current.md",
+      "target": "render-reuse-final.json",
+      "exists": true
+    },
+    {
+      "from": "architecture/assessment-current.md",
+      "target": "comparison-reviewed.mmd",
+      "exists": true
+    }
+  ],
+  "placeholderLinksResolve": true,
+  "nativeHtmlStaticLocalAssetsComplete": true,
+  "dynamicBindings": "Alpine/Vue :href/:src expressions are not static file paths. No raw HTML was changed.",
+  "remoteLinkMeaning": "Pinned original repository/artifact/PR URLs; no network lookup performed.",
+  "canonicalTierCorrectionChecked": true,
+  "architectureLinePreserved": true
+}

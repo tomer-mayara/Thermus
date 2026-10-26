@@ -1,0 +1,110 @@
+{
+  "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "tier": "T2 Need architect",
+  "architectureSummary": "T2: declarations changed in 1 public module",
+  "architectureFacts": [
+    {
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-directory.ts (+6 -0 lines)",
+      "detail": "diff --git a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\nindex 59fd7de3..d1f5e593 100644\n--- a/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n+++ b/docs/api-surface/src/accounts/organizations/organization-directory.d.ts\n@@ -6,12 +6,14 @@ export interface OrganizationMembership {\n     readonly grants: readonly RoleGrant[];\n }\n export type MembershipStatus = 'active' | 'inactive' | 'pending';\n+export type MembershipManagement = 'ordinary' | 'external' | 'unknown';\n export interface OrganizationMember {\n     readonly membershipId: string;\n     readonly subject: string;\n     readonly organizationId: string;\n     readonly email: string;\n     readonly status: MembershipStatus;\n+    readonly management: MembershipManagement;\n     readonly grants: readonly RoleGrant[];\n     readonly revision: string;\n }\n@@ -51,10 +53,14 @@ export interface InvitationSendResult {\n export interface InvitationUpdateResult {\n     readonly outcome: 'applied' | 'not-pending' | 'unsupported';\n }\n+export interface MembershipDeletionResult {\n+    readonly outcome: 'applied' | 'unsupported';\n+}\n export interface OrganizationDirectory {\n     membershipsOf(user: AuthenticatedUser): Promise<readonly OrganizationMembership[]>;\n     memberPage(request: MemberPageRequest): Promise<Page<OrganizationMember>>;\n     member(membershipId: string): Promise<OrganizationMember | undefined>;\n+    deleteMembership(membershipId: string): Promise<MembershipDeletionResult>;\n     invitationPage(request: InvitationPageRequest): Promise<Page<OrganizationInvitation>>;\n     invitation(invitationId: string): Promise<OrganizationInvitation | undefined>;\n     sendInvitation(request: InvitationRequest): Promise<InvitationSendResult>;\n"
+    }
+  ],
+  "reasons": [
+    {
+      "tier": "T2",
+      "key": "architecture.declarations_changed",
+      "fact": "src/accounts/organizations/organization-directory.ts (+6 -0 lines)"
+    },
+    {
+      "tier": "T2",
+      "key": "impact.internalInterface",
+      "fact": "S2.5-01a extends the organizations-owned directory contract with portable ordinary/external/unknown management evidence and exact-ID membership deletion. WorkOS implements applied on normal void completion, unsupported only for its documented no-effect 422 refusal, and unchanged thrown errors with unknown effect otherwise. Hosted composition binds a required raw membership reader through the same SDK client so missing/null wire evidence is not defaulted to false; read queries, one-request reads, all role grants, and existing zero-retry/five-second limits remain. Member revisions include normalized management evidence. No application caller invokes deletion: admission, authorization, last-Admin safety, browser UI, storage, and recovery stay in later tickets. Registry prose describes the boundary and binding; all 13 registry diagrams, components, dependency edges, external service selection, and deployment remain unchanged. The shared public declaration and provider binding require internalInterface review; sensitiveBehavior covers membership deletion and unknown evidence."
+    },
+    {
+      "tier": "T1",
+      "key": "impact.sensitiveBehavior",
+      "fact": "S2.5-01a extends the organizations-owned directory contract with portable ordinary/external/unknown management evidence and exact-ID membership deletion. WorkOS implements applied on normal void completion, unsupported only for its documented no-effect 422 refusal, and unchanged thrown errors with unknown effect otherwise. Hosted composition binds a required raw membership reader through the same SDK client so missing/null wire evidence is not defaulted to false; read queries, one-request reads, all role grants, and existing zero-retry/five-second limits remain. Member revisions include normalized management evidence. No application caller invokes deletion: admission, authorization, last-Admin safety, browser UI, storage, and recovery stay in later tickets. Registry prose describes the boundary and binding; all 13 registry diagrams, components, dependency edges, external service selection, and deployment remain unchanged. The shared public declaration and provider binding require internalInterface review; sensitiveBehavior covers membership deletion and unknown evidence."
+    }
+  ],
+  "mechanicalEligibility": "eligible",
+  "mechanicalBlockers": [],
+  "overallMergeEligibility": "Manager assessment required; worker does not replace gate and approval evidence.",
+  "policyQuestions": [
+    {
+      "key": "protected_paths.contracts",
+      "question": "Does a client, a user or an operator see a different input, output, error or default? Record the promise.",
+      "answer": "The internal directory adds ordinary/external/unknown management evidence and exact-ID deletion. Normal void completion proves applied; only the documented 422/code refusal proves no effect; all other failures throw with unknown effects. Revisions include normalized management evidence. Raw GET mapping preserves missing/null evidence before SDK defaults; read queries, current grants and existing transport limits remain. No browser/MCP removal caller is added; admission, current authority and last-Admin safety are later work."
+    }
+  ],
+  "informationalDispositions": [
+    {
+      "group": "informational",
+      "note": "48 public modules, 1 snapshot changed",
+      "reason": "Exactly one existing public module declaration changes: management evidence and exact-ID deletion. The other 47 public surfaces remain; this fact selects T2 and is declared."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/administration-overviews.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+      "reason": "The import-dependent public module is regenerated because it consumes OrganizationDirectory. Its emitted declaration stays identical. Existing view filtering and authorization semantics do not change from a type dependency alone."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/customer-roles.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+      "reason": "The import-dependent public module is regenerated because it consumes OrganizationDirectory. Its emitted declaration stays identical. Existing view filtering and authorization semantics do not change from a type dependency alone."
+    },
+    {
+      "group": "informational",
+      "note": "public module touched, declarations unchanged: src/accounts/organizations/organization-administration.ts (imports changed src/accounts/organizations/organization-directory.ts)",
+      "reason": "The import-dependent public module is regenerated because it consumes OrganizationDirectory. Its emitted declaration stays identical. Existing view filtering and authorization semantics do not change from a type dependency alone."
+    },
+    {
+      "group": "informational",
+      "note": "ratchet.maintainability_index.existing_file_drop_note_at: src/accounts/providers/workos/workos-organizations.ts: 53.483376839832225 to 48.11091770208057",
+      "reason": "The provider adapter MI drops 5.3725 points. Short raw-reader, management, revision and exact-ID deletion operations stay with the same provider contract; splitting the existing owner solely for a file score would expand the rebase. See the source-file metric disposition."
+    },
+    {
+      "group": "informational",
+      "note": "ratchet.review_findings_high: src/accounts/providers/workos/workos-organizations.ts: Maintainability index: 53 -> 48 (below 85 is hard to maintain)",
+      "reason": "Retain the cohesive provider adapter for the same current wire contract and bounded short functions. This high note is assessed, not suppressed, and does not independently select a higher review tier."
+    },
+    {
+      "group": "metrics",
+      "note": "Delta: goal miss",
+      "reason": "Two existing changed production files retain low file MI with explicit reasons; the contract-only directory has no runtime paths/raw MI. No new production file or used MI exception exists. Tests and ignored tooling have no production MI goal."
+    },
+    {
+      "group": "metrics",
+      "note": "Review: goal miss",
+      "reason": "The two current high findings each have a source hash, scope and retained provider/transport-test reason. No ignored helper/archive finding appears in this clean checkout inventory."
+    },
+    {
+      "group": "metrics",
+      "note": "CRAP: passed",
+      "reason": "All 17 required new/changed functions meet CRAP <30; all new functions also meet <=15. Highest new is 4 and highest changed is 7. Two one-path defaults have measured 0%/CRAP2; one unchanged cleanup callback remains unmapped."
+    },
+    {
+      "group": "metrics",
+      "note": "Architecture: passed",
+      "reason": "The process completes with the unresolved CSS import limit retained. Native edge/cycle deltas are withheld. The authoritative checker and manager review separately assess component, public surface and dependency facts."
+    },
+    {
+      "group": "metrics",
+      "note": "outside scopes.production: test/integration/auth/workos-connection.test.ts: Maintainability index: 41 -> 35 (below 85 is hard to maintain)",
+      "reason": "The connection test keeps independent real-client request, timeout, response-body and exact one-request DELETE outcomes with the scoped wire fixture. Its MI changes 41.2021 to 34.7201. Test code has no production MI goal. This high finding is retained with its reason."
+    },
+    {
+      "group": "metrics",
+      "note": "0 findings on unchanged files, reason unchanged by this PR",
+      "reason": "All current native findings are on changed committed files. This is the current clean-checkout inventory, not a claim that prior ignored-tool findings were production fixes."
+    },
+    {
+      "group": "notes",
+      "note": "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.",
+      "reason": "Current static checker is preliminarily eligible with no mechanical blocker. The manager owns the separate gate results, hold reconciliation and final merge decision. User attests independent architect approval of the full stack; no GitHub approval or reviewer identity is invented."
+    }
+  ],
+  "humanApprovalEvidence": "User directly attests independent architect approval of the entire Slice2.5 stack. Record as user attestation. No GitHub review, reviewer identity or approval timestamp is established by this worker.",
+  "checkerSha256": "a4c889a1c53a95a055b95348afdaaf76388051a9512349ab9d9de40b86304e65"
+}

@@ -1,0 +1,21 @@
+{
+  "checked": "2026-10-26T07:25:33.555Z",
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "trackedStatus": "",
+  "inputFingerprint": "9928dd7ba9de53d6257e9eb41b98dafd7fe5aaef8b244de97ff1ed5ddbce34c7",
+  "allTrackedFileHashesMatch": true,
+  "trackedFiles": 1427,
+  "runnerProcessCount": 0,
+  "runningTaskContainerCount": 0,
+  "dockerProfileRetained": "colima-thermus-s25-merge",
+  "artifactHashes": {
+    "gate-ledger.json": "cf79bdb52eaa03c274cc31687e8ae2612f1491b73d88b6a576371b59e21d539a",
+    "gated-inputs.json": "5359618dcfdfd8b136e548d9e707d7cbf275ef7d85f8671c924834eb1b1a4fbf",
+    "validation-draft.md": "b123606fbff9098e65cb841b136918de750f5b8e38dff5a6bce52cff1d621d50",
+    "validation/postgres-input-binding.json": "0f2e24a143ff68fa7f12fe7ac12cbc75586b0253c9e4148b56b88819bf67208b",
+    "validation/hosted-offline-evidence.json": "7912c2aa5269f9757998a7e09fb470d79672fd77059d905735634aae2883b1ea",
+    "validation/habit-run-bridge.json": "b981a6a7fa8ed71488166a181bfc7758bbf8f2e0154b17f741088ac2c776c9d8"
+  },
+  "scope": "Worker validation is complete. Manager owns the next checkout and complete-candidate sign-off."
+}

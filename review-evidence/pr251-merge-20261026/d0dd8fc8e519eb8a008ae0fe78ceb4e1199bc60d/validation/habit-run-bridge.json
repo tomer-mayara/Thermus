@@ -1,0 +1,69 @@
+{
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "earlierInventory": {
+    "path": ".cache/s25-merge-20261026/pr251/quality/habit-dispositions.json",
+    "sha256": "30de06a7ecb26cad298d49c2f3e37da9563bcd234bcf3cc8063024b0b675a68c"
+  },
+  "laterInventory": {
+    "path": ".cache/s25-merge-20261026/pr251/validation/habit-dispositions.json",
+    "sha256": "7a3d793700c5503c99d0f896c864e24fdf68634c54265e94b910098fe325feed"
+  },
+  "earlierRaw": {
+    "path": ".cache/s25-merge-20261026/pr251/quality/habit-hooks.log",
+    "sha256": "d21d5d27ee8877ff7cd621657a8a67812cb715f33047b6e3707d16813197f8bc"
+  },
+  "laterRaw": {
+    "path": ".cache/s25-merge-20261026/pr251/habit-hooks-1.log",
+    "sha256": "d21d5d27ee8877ff7cd621657a8a67812cb715f33047b6e3707d16813197f8bc"
+  },
+  "exactRawTextMatch": true,
+  "exactFindingAndReasonMatch": true,
+  "sourceHashesChecked": 18,
+  "findingsChecked": 235,
+  "counts": {
+    "high-complexity": 1,
+    "non-essential-comment": 224,
+    "oversized-file": 10
+  },
+  "earlierCommands": [
+    {
+      "name": "habit-hooks",
+      "command": [
+        "habit-hooks",
+        "--branch",
+        "8c6d204e8588a664438ba8934ab36670b802525f"
+      ],
+      "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+      "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+      "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+      "started": "2026-10-26T06:36:37.495028+00:00",
+      "finished": "2026-10-26T06:36:39.390738+00:00",
+      "exit": 1,
+      "log": "/Users/tomermayara/.codex/worktrees/c617/Thermus/.cache/s25-merge-20261026/pr251/quality/habit-hooks.log",
+      "logSha256": "d21d5d27ee8877ff7cd621657a8a67812cb715f33047b6e3707d16813197f8bc"
+    }
+  ],
+  "laterCommand": {
+    "summaries": [],
+    "logSha256": "d21d5d27ee8877ff7cd621657a8a67812cb715f33047b6e3707d16813197f8bc",
+    "buildLogs": [],
+    "name": "habit-hooks",
+    "attempt": 1,
+    "runId": "1792996652405",
+    "command": "habit-hooks",
+    "args": [],
+    "cwd": "/Users/tomermayara/.codex/worktrees/c617/Thermus",
+    "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "head": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+    "inputFingerprint": "9928dd7ba9de53d6257e9eb41b98dafd7fe5aaef8b244de97ff1ed5ddbce34c7",
+    "dockerContext": "colima-thermus-s25-merge",
+    "started": "2026-10-26T07:17:02.386Z",
+    "finished": "2026-10-26T07:17:04.170Z",
+    "log": "habit-hooks-1.log",
+    "code": 1,
+    "signal": null
+  },
+  "managerDisposition": "Manager states the earlier fresh inventory and all 235 retained reasons are reviewed. The later run has identical raw text, findings, reasons and source owner hashes; retain both runs and apply that review to the unchanged inventory. No habit-hooks repeat is needed.",
+  "snooze": []
+}

@@ -1,0 +1,25 @@
+{
+  "candidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "actualCwd": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus",
+  "history": [
+    "Frozen install passed with Node24.20.0/pnpm12.10.1.",
+    "Fresh unit capture passed and remains verified at d0dd8fc8.",
+    "Initial base snapshot failed because the isolated ast-metrics runtime was absent.",
+    "Installer failed because Go was unavailable. Intact pinned runtime copied from c617; installer hash/version verification passed.",
+    "Detached metrics attempt changed checkout to base during native --compare-with. It produced an invalid PR251 process report and a new untracked base record after leaving the candidate.",
+    "Detached cause is an inference supported by README lines405-410, timing and successful named-branch retry. No external actor is alleged.",
+    "Manager preserved the invalid generated record under ignored cache and restored the unchanged candidate on codex/s25-merge-quality-check.",
+    "Coverage compatibility passed after restore; no test recollection was needed.",
+    "Named-branch retry restored the candidate after native compare. Final process and standalone CRAP completed, current checker exit0/T2/eligible, no tracked changes."
+  ],
+  "invalidProcess": {
+    "path": "/Users/tomermayara/.codex/worktrees/slice-25-stack-merge/Thermus/.cache/pr251-quality/measure/final/process.json",
+    "head": "8c6d204e8588a664438ba8934ab36670b802525f",
+    "meaning": "Invalid for PR251, retained without modification. Do not cite its zero-change review as current."
+  },
+  "namedBranchAfterFinal": "codex/s25-merge-quality-check",
+  "headAfterFinal": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "statusAfterFinal": "",
+  "documentation": "script/code-quality/README.md:405-410 and docs/implementation/ast-metrics-review.md:390-395"
+}

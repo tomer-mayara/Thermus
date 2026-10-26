@@ -1,0 +1,2182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<title>
+AST Metrics - Overview
+</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+rel="stylesheet">
+<style>
+:root {
+--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+--font-mono: 'JetBrains Mono', monospace;
+}
+/* Quiet text is slate 500 (#64748b) on the white cards and on the
+slate 50 page wash, and slate 600 (#475569) on tinted pills and
+segmented tracks. Those are the lightest greys that still clear
+the 4.5:1 contrast ratio the report is asserted against. */
+body {
+font-family: var(--font-sans);
+background-color: #f8fafc;
+/* Slate 50 */
+color: #0f172a;
+/* Slate 900 */
+}
+.font-mono {
+font-family: var(--font-mono);
+}
+/* Page canvas: a very light wash so white cards still read as raised */
+.report-canvas {
+background:
+radial-gradient(1200px 500px at 12% -8%, #eef4ff 0%, rgba(238, 244, 255, 0) 60%),
+radial-gradient(900px 420px at 92% 4%, #f4f1ff 0%, rgba(244, 241, 255, 0) 55%),
+#f6f8fb;
+min-height: 100vh;
+}
+.card-graph {
+height: 135px;
+}
+/* Sortable tables. Only the headers enhanced by the sorting script
+(see the end of the body) become interactive. */
+.sortable th {
+cursor: default;
+}
+.sortable th.sort-header {
+cursor: pointer;
+}
+.sortable th .sort-btn {
+display: inline-flex;
+align-items: center;
+gap: 0.25rem;
+font: inherit;
+color: inherit;
+letter-spacing: inherit;
+text-transform: inherit;
+text-align: inherit;
+background: none;
+border: 0;
+padding: 0;
+cursor: pointer;
+}
+.sortable th .sort-btn:focus-visible {
+outline: 2px solid #93c5fd;
+/* Blue 300 */
+outline-offset: 2px;
+border-radius: 2px;
+}
+/* Direction indicator: idle (both ways), then ascending / descending */
+.sortable th .sort-arrow::after {
+content: '\2195';
+font-size: 0.85em;
+line-height: 1;
+opacity: 0.3;
+}
+.sortable th[aria-sort="ascending"] .sort-arrow::after {
+content: '\2191';
+opacity: 0.8;
+}
+.sortable th[aria-sort="descending"] .sort-arrow::after {
+content: '\2193';
+opacity: 0.8;
+}
+.progress {
+height: 10px;
+background-color: #e4e4e4;
+border-radius: 20px;
+overflow: hidden;
+}
+[x-cloak] {
+display: none !important;
+}
+/* Animations */
+@keyframes fadeInUp {
+from {
+opacity: 0;
+transform: translateY(10px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+.animate-fade-in-up {
+animation: fadeInUp 0.5s ease-out forwards;
+}
+.stagger-1 {
+animation-delay: 0.1s;
+}
+.stagger-2 {
+animation-delay: 0.2s;
+}
+.stagger-3 {
+animation-delay: 0.3s;
+}
+.stagger-4 {
+animation-delay: 0.4s;
+}
+.stagger-5 {
+animation-delay: 0.5s;
+}
+/* Clean Google Labs style tooltip */
+.graph-tooltip {
+position: fixed;
+pointer-events: none;
+z-index: 50;
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(4px);
+color: #1e293b;
+font-size: 12px;
+line-height: 1.5;
+padding: 8px 12px;
+border-radius: 8px;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+border: 1px solid #e2e8f0;
+transform: translate(-50%, calc(-100% - 12px));
+opacity: 0;
+transition: opacity 150ms ease, transform 150ms ease;
+white-space: normal;
+max-width: 280px;
+}
+.graph-tooltip.visible {
+opacity: 1;
+transform: translate(-50%, calc(-100% - 8px));
+}
+/* Navigation sidebar - hidden on mobile, overlay when toggled */
+@media (max-width: 1023px) {
+.nav-sidebar {
+position: fixed;
+left: 0;
+top: 0;
+z-index: 40;
+width: 260px;
+transform: translateX(-100%);
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+box-shadow: none;
+}
+.nav-sidebar.nav-open {
+display: flex;
+transform: translateX(0);
+box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+}
+}
+/* File explorer sidebar */
+.file-sidebar {
+position: fixed;
+right: 0;
+top: 0;
+height: 100vh;
+z-index: 40;
+background: white;
+border-left: 1px solid #e2e8f0;
+transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+transform: translateX(100%);
+display: flex;
+flex-direction: column;
+}
+.file-sidebar.translate-x-0 { transform: translateX(0); }
+.file-sidebar.translate-x-full { transform: translateX(100%); }
+@media (min-width: 1024px) { .file-sidebar { width: 320px; } }
+@media (max-width: 1023px) { .file-sidebar { width: 85vw; max-width: 360px; } }
+/* ------------------------------------------------------------------
+Shared report components.
+Every page is built from the same few pieces, in this order:
+1. .page-hero      the verdict: what this page found, in words
+2. .kpi-strip      the two to four numbers that back the verdict
+3. .soft-card      one card per idea, with .card-title/.card-sub
+4. .stat-tile      a single metric, with its meter and its target
+5. .insight        a one-sentence diagnosis, colored by severity
+Severity is always expressed with the same three words in class
+names and data attributes: good, warn, bad.
+------------------------------------------------------------------ */
+/* 1. Page hero: verdict sentence + supporting numbers */
+.page-hero {
+background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 45%, #ecfdf5 100%);
+border: 1px solid #e2e8f0;
+border-radius: 24px;
+padding: 2rem;
+}
+@media (min-width: 768px) {
+.page-hero { padding: 2.5rem; }
+}
+.page-kicker {
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.14em;
+text-transform: uppercase;
+color: #64748b;
+}
+.verdict-title {
+font-size: 1.875rem;
+line-height: 1.15;
+font-weight: 700;
+letter-spacing: -0.02em;
+color: #0f172a;
+}
+@media (min-width: 768px) {
+.verdict-title { font-size: 2.25rem; }
+}
+/* Second half of the verdict, deliberately quieter than the first */
+.verdict-muted { color: #64748b; }
+.verdict-lead {
+font-size: 0.9375rem;
+line-height: 1.65;
+color: #475569;
+max-width: 60ch;
+}
+.verdict-lead strong {
+font-weight: 600;
+color: #0f172a;
+}
+/* 2. KPI strip: big numbers, quiet labels, thin separators */
+.kpi-strip {
+display: flex;
+flex-wrap: wrap;
+gap: 2rem;
+}
+.kpi-value {
+font-size: 1.875rem;
+font-weight: 700;
+letter-spacing: -0.03em;
+line-height: 1.1;
+color: #0f172a;
+font-family: var(--font-mono);
+}
+.kpi-label {
+font-size: 11px;
+color: #64748b;
+margin-top: 0.25rem;
+line-height: 1.4;
+}
+.kpi-strip--divided > * + * {
+padding-left: 2rem;
+border-left: 1px solid #e2e8f0;
+}
+/* 3. Soft card: calmer than .dashboard-card, no hover lift */
+.soft-card {
+background: white;
+border: 1px solid #e2e8f0;
+border-radius: 20px;
+padding: 1.5rem;
+}
+.card-title {
+font-size: 1.0625rem;
+font-weight: 600;
+letter-spacing: -0.01em;
+color: #0f172a;
+}
+/* Every card says what it shows, in plain words */
+.card-sub {
+font-size: 0.8125rem;
+color: #64748b;
+margin-top: 0.125rem;
+}
+/* 4. Stat tile: one metric, its meter, its target */
+.stat-tile {
+background: white;
+border: 1px solid #e2e8f0;
+border-radius: 16px;
+padding: 1.125rem 1.25rem;
+}
+.stat-tile-label {
+font-size: 0.8125rem;
+color: #64748b;
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 0.5rem;
+}
+.stat-tile-value {
+font-size: 1.75rem;
+font-weight: 700;
+letter-spacing: -0.03em;
+line-height: 1.15;
+color: #0f172a;
+margin-top: 0.375rem;
+font-family: var(--font-mono);
+}
+.stat-tile-target {
+font-size: 11px;
+color: #64748b;
+margin-top: 0.5rem;
+}
+/* Meter: shared by stat tiles, verdict rows and list rows */
+.meter {
+height: 6px;
+border-radius: 999px;
+background: #e8ecf1;
+overflow: hidden;
+margin-top: 0.625rem;
+}
+.meter-fill {
+height: 100%;
+border-radius: 999px;
+transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Severity colors, one source of truth */
+.dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; display: inline-block; }
+.sev-good { background-color: #22c55e; }
+.sev-warn { background-color: #f59e0b; }
+.sev-bad { background-color: #ef4444; }
+.sev-none { background-color: #cbd5e1; }
+.text-good { color: #15803d; }
+.text-warn { color: #b45309; }
+.text-bad { color: #b91c1c; }
+.text-none { color: #64748b; }
+/* Level pill: "High risk", "Isolated", ... */
+.level-pill {
+display: inline-flex;
+align-items: center;
+gap: 0.5rem;
+font-size: 0.75rem;
+font-weight: 600;
+padding: 0.375rem 0.875rem;
+border-radius: 999px;
+background: white;
+border: 1px solid #e2e8f0;
+color: #334155;
+}
+.level-pill--good { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.level-pill--warn { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+.level-pill--bad { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+/* 5. Insight: a single sentence of diagnosis */
+.insight {
+display: flex;
+gap: 0.75rem;
+align-items: flex-start;
+font-size: 0.875rem;
+line-height: 1.6;
+padding: 0.875rem 1.125rem;
+border-radius: 14px;
+border: 1px solid #e2e8f0;
+background: #f8fafc;
+color: #334155;
+}
+.insight strong { font-weight: 600; color: #0f172a; }
+.insight--good { background: #f0fdf4; border-color: #bbf7d0; }
+.insight--warn { background: #fffbeb; border-color: #fde68a; }
+.insight--bad { background: #fef2f2; border-color: #fecaca; }
+.insight .dot { margin-top: 0.45rem; }
+/* List rows: name on the left, value on the right */
+.data-row {
+display: flex;
+align-items: center;
+gap: 0.875rem;
+padding: 0.75rem 0;
+border-bottom: 1px solid #f1f5f9;
+}
+.data-row:last-child { border-bottom: 0; }
+.row-name {
+font-size: 0.875rem;
+font-weight: 500;
+color: #0f172a;
+min-width: 0;
+}
+.row-meta {
+font-size: 0.75rem;
+color: #64748b;
+margin-top: 0.125rem;
+}
+.row-value {
+font-family: var(--font-mono);
+font-size: 0.875rem;
+font-weight: 600;
+color: #0f172a;
+text-align: right;
+flex-shrink: 0;
+}
+/* Code identifiers, wherever they appear in prose */
+.ident {
+font-family: var(--font-mono);
+font-size: 0.875em;
+background: rgba(148, 163, 184, 0.16);
+padding: 0.1em 0.4em;
+border-radius: 5px;
+}
+/* Summary rows on the dashboard: each one links to the screen where
+that metric can be acted on. */
+.summary-row {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+padding: 0.875rem 0.75rem;
+margin: 0 -0.75rem;
+border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+border-radius: 10px;
+transition: background 0.15s ease;
+}
+.summary-row:last-child { border-bottom: 0; }
+.summary-row:hover { background: rgba(255, 255, 255, 0.55); }
+.summary-row-label {
+display: flex;
+align-items: center;
+gap: 0.375rem;
+min-width: 0;
+font-size: 1rem;
+font-weight: 500;
+color: #0f172a;
+}
+.summary-row-arrow {
+width: 0.875rem;
+height: 0.875rem;
+flex-shrink: 0;
+color: #64748b;
+opacity: 0;
+transform: translateX(-3px);
+transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.summary-row:hover .summary-row-arrow,
+.summary-row-label:focus-visible .summary-row-arrow {
+opacity: 1;
+transform: translateX(0);
+}
+/* ---- Navigation ------------------------------------------------- */
+.nav-link, .nav-group-btn {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+width: 100%;
+padding: 0.5rem 0.75rem;
+border-radius: 10px;
+font-size: 0.875rem;
+font-weight: 500;
+color: #475569;
+text-align: left;
+background: none;
+border: 0;
+cursor: pointer;
+transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-link + .nav-link, .nav-group, .nav-link + .nav-group { margin-top: 0.125rem; }
+.nav-link:hover, .nav-group-btn:hover { background: #f1f5f9; color: #0f172a; }
+.nav-link--active {
+background: #eff6ff;
+color: #1d4ed8;
+font-weight: 600;
+}
+.nav-link--active:hover { background: #eff6ff; color: #1d4ed8; }
+.nav-link--quiet { color: #64748b; }
+.nav-icon { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }
+.nav-chevron {
+width: 0.875rem;
+height: 0.875rem;
+margin-left: auto;
+flex-shrink: 0;
+color: #cbd5e1;
+transition: transform 0.2s ease;
+}
+/* The groups are native <details>, so the menu paints in its final
+state without waiting for any script (no jump on load). */
+.nav-group > summary { list-style: none; }
+.nav-group > summary::-webkit-details-marker { display: none; }
+.nav-group[open] > summary .nav-chevron { transform: rotate(90deg); }
+.nav-sublist {
+margin: 0.125rem 0 0.25rem 0;
+padding-left: 2.1rem;
+display: flex;
+flex-direction: column;
+}
+.nav-sublink {
+padding: 0.375rem 0.75rem;
+border-radius: 8px;
+font-size: 0.8125rem;
+color: #64748b;
+transition: background 0.15s ease, color 0.15s ease;
+}
+.nav-sublink:hover { background: #f1f5f9; color: #0f172a; }
+/* A small badge after the entries that ask for more from the reader */
+.nav-sublink:has(.nav-badge) { white-space: nowrap; }
+/* The sidebar keeps a fixed width: a seventh of a wide screen is too
+much, a seventh of a laptop too little for the longest entries. */
+@media (min-width: 1024px) {
+body div.lg\:grid.lg\:grid-cols-7 { grid-template-columns: 14rem repeat(6, minmax(0, 1fr)) !important; }
+}
+.nav-badge {
+display: inline-block; vertical-align: super; margin-left: 0.2rem;
+font-size: 0.4375rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1;
+color: #7c3aed; background: #f5f3ff; border-radius: 999px; padding: 0.15rem 0.3rem;
+}
+.nav-sublink--active .nav-badge { color: #6d28d9; background: #ede9fe; }
+.nav-sublink--active {
+color: #1d4ed8;
+font-weight: 600;
+background: #eff6ff;
+}
+.nav-sublink--active:hover { background: #eff6ff; color: #1d4ed8; }
+/* Contributor chip: initials, overlaid by a Gravatar when one exists.
+Chips overlap slightly, like a stack of faces. */
+.contributor-chip {
+position: relative;
+width: 34px;
+height: 34px;
+border-radius: 999px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+font-size: 11px;
+font-weight: 600;
+color: white;
+flex-shrink: 0;
+overflow: hidden;
+border: 2px solid white;
+box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+.contributor-chip + .contributor-chip { margin-left: -10px; }
+.contributor-chip-img {
+position: absolute;
+inset: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+/* Segmented control, used for language tabs and small view switches */
+.seg {
+display: inline-flex;
+align-items: center;
+gap: 2px;
+padding: 3px;
+background: rgba(226, 232, 240, 0.7);
+border-radius: 999px;
+}
+.seg-item {
+font-size: 0.8125rem;
+font-weight: 500;
+color: #475569;
+padding: 0.375rem 0.875rem;
+border-radius: 999px;
+white-space: nowrap;
+transition: background 0.15s ease, color 0.15s ease;
+}
+.seg-item:hover { color: #0f172a; background: rgba(255, 255, 255, 0.6); }
+.seg-item--active {
+background: white;
+color: #0f172a;
+font-weight: 600;
+box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+.seg-item--active:hover { background: white; }
+/* Section heading between two groups of cards */
+.section-title {
+font-size: 0.75rem;
+font-weight: 600;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: #64748b;
+}
+/* One-line description of each section, shown beside the sidebar entry
+on hover and on focus. Positioned by script because the sidebar
+scrolls and would clip a CSS bubble. */
+.nav-tip {
+position: fixed; z-index: 70; pointer-events: none;
+background: #1e293b; color: #f8fafc; font-size: 11px; line-height: 1.5;
+padding: 6px 10px; border-radius: 8px; max-width: 260px;
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+opacity: 0; transition: opacity 0.12s ease;
+}
+.nav-tip.is-on { opacity: 1; }
+.nav-tip::before {
+content: ''; position: absolute; right: 100%; top: 50%; transform: translateY(-50%);
+border: 5px solid transparent; border-right-color: #1e293b;
+}
+/* Shared accessible CSS tooltips: any element with data-tip="..." shows a
+small dark bubble on hover and on keyboard focus. */
+[data-tip] { position: relative; cursor: help; }
+[data-tip]::after {
+content: attr(data-tip);
+position: absolute;
+bottom: calc(100% + 8px);
+left: 50%;
+transform: translateX(-50%) translateY(4px);
+background: #1e293b;
+color: #f8fafc;
+font-size: 11px;
+font-weight: 400;
+line-height: 1.5;
+text-transform: none;
+letter-spacing: 0;
+text-align: left;
+padding: 8px 10px;
+border-radius: 8px;
+width: max-content;
+max-width: 260px;
+white-space: normal;
+opacity: 0;
+visibility: hidden;
+transition: opacity 0.15s ease, transform 0.15s ease;
+z-index: 60;
+pointer-events: none;
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+}
+[data-tip]::before {
+content: '';
+position: absolute;
+bottom: calc(100% + 3px);
+left: 50%;
+transform: translateX(-50%);
+border: 5px solid transparent;
+border-top-color: #1e293b;
+opacity: 0;
+visibility: hidden;
+transition: opacity 0.15s ease;
+z-index: 60;
+pointer-events: none;
+}
+[data-tip]:hover::after, [data-tip]:focus-visible::after,
+[data-tip]:hover::before, [data-tip]:focus-visible::before {
+opacity: 1;
+visibility: visible;
+transform: translateX(-50%) translateY(0);
+}
+[data-tip]:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; border-radius: 4px; }
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+<!-- Mobile nav toggle -->
+<button id="nav-toggle" onclick="document.getElementById('nav-sidebar').classList.toggle('nav-open');document.getElementById('nav-backdrop').classList.toggle('hidden');"
+aria-label="Toggle navigation menu"
+class="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-white border border-slate-200 rounded-lg shadow flex items-center justify-center text-slate-600">
+<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+</svg>
+</button>
+<!-- Mobile nav backdrop -->
+<div id="nav-backdrop" class="hidden fixed inset-0 bg-black/30 z-30 lg:hidden"
+onclick="document.getElementById('nav-sidebar').classList.remove('nav-open');this.classList.add('hidden');"></div>
+<div class="lg:grid lg:grid-cols-7">
+<aside id="nav-sidebar"
+class="nav-sidebar hidden lg:flex self-start lg:sticky top-0 col-span-1 flex-col h-screen px-4 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l">
+<a href="https://github.com/ast-metrics/ast-metrics">
+<img src="images/logo-ast-metrics-small.png" alt="AST Metrics" class="h-auto mx-auto hover:opacity-70">
+</a>
+<div class="flex flex-col justify-between flex-1 mt-12">
+<!-- Navigation. Grouped by the question the reader is asking,
+rather than by the metric family. The group holding the
+current page opens itself. -->
+<nav aria-label="Report sections">
+<a href="index.html"
+class="nav-link nav-link--active"
+data-nav-tip="The verdict and the scores at a glance. Start here."
+aria-current="page">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h12A2.25 2.25 0 0 1 20.25 6v3H3.75V6ZM3.75 12h7.5v8.25H6A2.25 2.25 0 0 1 3.75 18v-6ZM14.25 12h6v6A2.25 2.25 0 0 1 18 20.25h-3.75V12Z" />
+</svg>
+<span>Overview</span>
+</a>
+<!-- What the code is made of -->
+<details class="nav-group" data-nav-group="code">
+<summary class="nav-group-btn">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25M6.75 17.25 1.5 12l5.25-5.25M14.25 3.75l-4.5 16.5" />
+</svg>
+<span>The code</span>
+<svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+</summary>
+<div class="nav-sublist">
+<a href="explorer.html" class="nav-sublink " data-nav-tip="Every file, with its size, complexity and risk."
+>Files</a>
+<a href="classes.html" class="nav-sublink " data-nav-tip="Every class, with its metrics."
+>Classes</a>
+<a href="testquality.html" class="nav-sublink " data-nav-tip="How isolated and how traceable the tests are."
+>Tests</a>
+<a href="metrics.html" class="nav-sublink " data-nav-tip="Every metric with its definition. For the curious."
+>All metrics <span class="nav-badge">advanced</span></a>
+</div>
+</details>
+<!-- How the pieces fit together -->
+<details class="nav-group" data-nav-group="archi">
+<summary class="nav-group-btn">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
+</svg>
+<span>Architecture</span>
+<svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+</summary>
+<div class="nav-sublist">
+<a href="dependencies.html" class="nav-sublink " data-nav-tip="Who depends on whom, package by package."
+>Dependencies</a>
+<a href="communities.html" class="nav-sublink " data-nav-tip="The modules the code forms on its own, where they leak, what to cut first. Advanced."
+>Natural groups <span class="nav-badge">advanced</span></a>
+<a href="classification.html" class="nav-sublink " data-nav-tip="What each class does: controller, repository, value object."
+>Roles</a>
+</div>
+</details>
+<!-- What may bite -->
+<details class="nav-group" data-nav-group="health">
+<summary class="nav-group-btn">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+</svg>
+<span>Health</span>
+<svg class="nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+</summary>
+<div class="nav-sublist">
+<a href="linters.html" class="nav-sublink " data-nav-tip="The rules the code breaks, and the ones it respects."
+>Rule violations</a>
+<a href="risks.html" class="nav-sublink " data-nav-tip="The files where complexity meets churn: where a change is most likely to hurt."
+>Observations</a>
+</div>
+</details>
+<a href="busfactor.html"
+class="nav-link "
+data-nav-tip="Who knows which part of the code, and what happens if they leave."
+>
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+</svg>
+<span>Team</span>
+</a>
+<a href="https://ast-metrics.dev/" class="nav-link nav-link--quiet">
+<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+<path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+</svg>
+<span>Help</span>
+</a>
+</nav>
+<script>
+// Reopen the groups the reader left open, and remember any
+// change. Runs synchronously, right after the menu markup,
+// so the state is settled before the first paint.
+(function () {
+var state = {};
+try { state = JSON.parse(localStorage.getItem('ast-nav-open') || '{}'); } catch (e) { }
+document.querySelectorAll('details[data-nav-group]').forEach(function (group) {
+var key = group.getAttribute('data-nav-group');
+if (state[key]) group.open = true;
+group.addEventListener('toggle', function () {
+state[key] = group.open;
+try { localStorage.setItem('ast-nav-open', JSON.stringify(state)); } catch (e) { /* private mode */ }
+});
+});
+})();
+</script>
+</div>
+<!-- Project links -->
+<div class="flex items-center gap-2 px-4 pt-4 border-t border-gray-100">
+<a aria-label="Visit Github repository of AST Metrics"
+href="https://github.com/ast-metrics/ast-metrics/"
+class="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors">
+<svg viewBox="0 0 24 24" aria-hidden="true" class="h-5 w-5 fill-current">
+<path fill-rule="evenodd" clip-rule="evenodd"
+d="M12 2C6.477 2 2 6.463 2 11.97c0 4.404 2.865 8.14 6.839 9.458.5.092.682-.216.682-.48 0-.236-.008-.864-.013-1.695-2.782.602-3.369-1.337-3.369-1.337-.454-1.151-1.11-1.458-1.11-1.458-.908-.618.069-.606.069-.606 1.003.07 1.531 1.027 1.531 1.027.892 1.524 2.341 1.084 2.91.828.092-.643.35-1.083.636-1.332-2.22-.251-4.555-1.107-4.555-4.927 0-1.088.39-1.979 1.029-2.675-.103-.252-.446-1.266.098-2.638 0 0 .84-.268 2.75 1.022A9.607 9.607 0 0 1 12 6.82c.85.004 1.705.114 2.504.336 1.909-1.29 2.747-1.022 2.747-1.022.546 1.372.202 2.386.1 2.638.64.696 1.028 1.587 1.028 2.675 0 3.83-2.339 4.673-4.566 4.92.359.307.678.915.678 1.846 0 1.332-.012 2.407-.012 2.734 0 .267.18.577.688.48 3.97-1.32 6.833-5.054 6.833-9.458C22 6.463 17.522 2 12 2Z">
+</path>
+</svg>
+</a>
+<a aria-label="Sponsor AST Metrics on GitHub"
+href="https://github.com/sponsors/Halleck45"
+class="flex items-center gap-1.5 p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-pink-600 transition-colors">
+<svg viewBox="0 0 16 16" aria-hidden="true" class="h-5 w-5 fill-current">
+<path d="M4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.565 20.565 0 0 0 8 13.393a20.561 20.561 0 0 0 3.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.749.749 0 0 1-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5ZM8 14.25l-.345.666a.752.752 0 0 0 .69 0L8 14.25Zm-.008-12.306C6.936 1.257 5.775.75 4.25.75 2.104.75 0 2.535 0 5.5c0 2.909 2.067 5.283 3.885 6.85a21.994 21.994 0 0 0 3.65 2.52l.028.014.008.004.001.001c.276.135.579.135.856 0l.001-.001.008-.004.028-.014a15.005 15.005 0 0 0 .459-.246 21.99 21.99 0 0 0 3.192-2.274C13.933 10.783 16 8.409 16 5.5c0-2.965-2.104-4.75-4.25-4.75-1.525 0-2.686.507-3.742 1.194Z" />
+</svg>
+<span class="text-sm">Sponsor</span>
+</a>
+</div>
+</aside>
+<div id="nav-tip" class="nav-tip" role="tooltip" aria-hidden="true"></div>
+<script>
+(function () {
+var tip = document.getElementById('nav-tip');
+if (!tip) return;
+function show(el) {
+tip.textContent = el.getAttribute('data-nav-tip');
+var r = el.getBoundingClientRect();
+tip.style.left = (r.right + 10) + 'px';
+tip.style.top = r.top + 'px';
+tip.classList.add('is-on');
+// centre on the entry once the bubble has a height
+tip.style.top = (r.top + (r.height - tip.offsetHeight) / 2) + 'px';
+}
+function hide() { tip.classList.remove('is-on'); }
+document.querySelectorAll('[data-nav-tip]').forEach(function (el) {
+el.addEventListener('mouseenter', function () { show(el); });
+el.addEventListener('focus', function () { show(el); });
+el.addEventListener('mouseleave', hide);
+el.addEventListener('blur', hide);
+});
+})();
+</script>
+<main class="col-span-full lg:col-span-6">
+<div class="report-canvas py-8 px-6 md:px-8">
+<script src="data/data_All.js"></script>
+<!-- Scope switcher: include with pageBase="classes". The available scopes are
+computed in Go (buildScopes in html_report_generator.go): the whole project,
+then one per language, then one per analyzed folder (only when several
+folders were given on the command line). The "All languages" view is always
+offered, so a single-language project still shows the distinction between
+the whole project and that language. -->
+<div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 mb-6">
+<div class="seg" role="tablist" aria-label="Filter by language">
+<a role="tab" href="index.html"
+class="seg-item seg-item--active"
+aria-selected="true" aria-current="page">All languages
+<span class="text-slate-600 font-normal">182</span></a><a role="tab" href="index_TypeScript.html"
+class="seg-item "
+aria-selected="false">TypeScript
+<span class="text-slate-600 font-normal">182</span></a>
+</div>
+</div>
+<!-- start alert -->
+<!-- end alert -->
+<!-- start: verdict / summary -->
+<script>
+// Raw aggregates injected by the template; the summary component below turns
+// them into a plain-language verdict and two "going well / needs attention" lists.
+window.__AST_SUMMARY_INPUT__ = {
+ccn: 2.80,
+locPerMethod: 7.3,
+lcom: 1.02,
+mi: 73.5,
+busFactor: 1,
+topCommitterPct: 100.0,
+isolation: 0.0,
+isolationLabel: "Coupled",
+godTests: 0,
+nbTestFiles: 0
+};
+function codeSummary() {
+const clamp = (v) => Math.max(0, Math.min(100, v));
+return {
+headline: '',
+subline: '',
+items: [],
+init() {
+const d = window.__AST_SUMMARY_INPUT__ || {};
+const items = [];
+// Each metric: plain-language label, technical name, judgment level,
+// and a 0-100 sub-score used both for the bar and the overall score.
+if (d.ccn > 0) {
+items.push({
+key: 'ccn', weight: 15,
+label: 'Complexity per method',
+href: 'classes.html?view=complex',
+detail: 'Cyclomatic complexity · target < 5',
+help: 'Average number of independent execution paths per method. Below 5 methods stay easy to read and test.',
+display: d.ccn.toFixed(2),
+level: d.ccn < 5 ? 'good' : (d.ccn < 10 ? 'warn' : 'bad'),
+score: clamp((15 - d.ccn) / 13 * 100),
+concern: d.ccn >= 10 ? 'methods are too complex' : null,
+});
+}
+if (d.locPerMethod > 0) {
+items.push({
+key: 'size', weight: 10,
+label: 'Method size',
+href: 'metrics.html',
+detail: 'Average lines per method · target < 20',
+help: 'Average number of lines per method. Short methods are easier to name, test and reuse.',
+display: d.locPerMethod.toFixed(0),
+level: d.locPerMethod < 20 ? 'good' : (d.locPerMethod < 40 ? 'warn' : 'bad'),
+score: clamp((60 - d.locPerMethod) / 50 * 100),
+concern: d.locPerMethod >= 40 ? 'methods are too long' : null,
+});
+}
+if (d.lcom > 0) {
+items.push({
+key: 'lcom', weight: 10,
+label: 'Focused classes',
+href: 'classes.html?view=cohesion',
+detail: 'LCOM4 cohesion · target close to 1',
+help: 'Average number of unrelated responsibility groups per class. 1 means each class does one thing.',
+display: d.lcom.toFixed(1),
+level: d.lcom <= 1.7 ? 'good' : (d.lcom <= 2.5 ? 'warn' : 'bad'),
+score: clamp((4 - d.lcom) / 3 * 100),
+concern: d.lcom > 2.5 ? 'classes mix several responsibilities' : null,
+});
+}
+if (d.mi > 0) {
+items.push({
+key: 'mi', weight: 25,
+label: 'Ease of maintenance',
+href: 'classes.html?view=maintainability',
+detail: 'Maintainability Index · target > 85',
+help: 'Composite of size, complexity and Halstead volume (0-128). Above 85 the code is comfortable to work with.',
+display: d.mi.toFixed(0),
+level: d.mi >= 85 ? 'good' : (d.mi >= 65 ? 'warn' : 'bad'),
+score: clamp((d.mi - 40) / 60 * 100),
+concern: d.mi < 65 ? 'maintainability is low' : (d.mi < 85 ? 'maintainability is slipping' : null),
+});
+}
+if (d.isolation !== null && d.nbTestFiles > 0) {
+const detail = [
+d.isolationLabel,
+`${d.nbTestFiles} test file${d.nbTestFiles === 1 ? '' : 's'}`,
+(d.godTests > 0 ? `${d.godTests} touching five structures or more` : null),
+].filter(Boolean).join(' · ');
+items.push({
+key: 'tests', weight: 25,
+label: 'Test isolation',
+href: 'testquality.html',
+detail: detail + ' · target ≥ 80',
+help: 'How few structures a single test touches. A focused test tells you precisely what broke; a test that touches everything breaks for unrelated reasons.',
+display: d.isolation.toFixed(0),
+level: d.isolation >= 80 ? 'good' : (d.isolation >= 50 ? 'warn' : 'bad'),
+score: clamp(d.isolation),
+concern: d.isolation < 50 ? 'the tests touch too much at once' : (d.isolation < 80 ? 'some tests touch too much at once' : null),
+});
+}
+if (d.busFactor > 0) {
+const bf = d.busFactor;
+items.push({
+key: 'bus', weight: 15,
+label: 'People who carry the project',
+href: 'busfactor.html',
+detail: 'Bus factor · target ≥ 3' + (d.topCommitterPct ? ` · top contributor: ${d.topCommitterPct.toFixed(0)}% of commits` : ''),
+help: 'Minimum number of people whose departure would endanger the project. The higher, the safer.',
+display: String(bf),
+level: bf >= 3 ? 'good' : (bf === 2 ? 'warn' : 'bad'),
+score: bf >= 4 ? 100 : ({ 1: 15, 2: 50, 3: 80 }[bf] || 0),
+concern: bf === 1 ? 'a single person carries it' : (bf === 2 ? 'only two people really know it' : null),
+});
+}
+// Single list, healthy metrics first, critical ones last (reads top-down
+// like a report: what holds, then what to fix).
+const order = { good: 0, warn: 1, bad: 2 };
+this.items = items.slice().sort((a, b) => order[a.level] - order[b.level]);
+// Headline: judge the code itself on the four structural metrics.
+const structural = items.filter(i => ['ccn', 'size', 'lcom', 'mi'].includes(i.key));
+const badCount = structural.filter(i => i.level === 'bad').length;
+const warnCount = structural.filter(i => i.level === 'warn').length;
+if (structural.length === 0) {
+this.headline = 'Not enough data to judge this codebase.';
+} else if (badCount === 0 && warnCount <= 1) {
+this.headline = 'Your code is in good shape.';
+} else if (badCount === 0) {
+this.headline = 'Your code is in decent shape.';
+} else {
+this.headline = 'Your code needs attention.';
+}
+// Subline: the concerns, phrased as one sentence. Tests and bus factor
+// first: they are the concerns a reader can act on most directly.
+const concernOrder = ['tests', 'bus', 'mi', 'ccn', 'size', 'lcom'];
+const concerns = concernOrder
+.map(k => items.find(i => i.key === k)?.concern)
+.filter(Boolean);
+if (concerns.length === 0) {
+this.subline = items.length ? 'No weak point stands out.' : '';
+} else {
+let sentence;
+if (concerns.length === 1) sentence = concerns[0];
+else sentence = concerns.slice(0, -1).join(', ') + ', and ' + concerns[concerns.length - 1];
+this.subline = sentence.charAt(0).toUpperCase() + sentence.slice(1) + '.';
+}
+},
+dotClass(level) { return 'sev-' + (level || 'none'); },
+barClass(level) { return 'sev-' + (level || 'none'); },
+}
+}
+</script>
+<div x-data="codeSummary()" x-init="init()" class="page-hero animate-fade-in-up">
+<p class="page-kicker mb-3">
+182 files
+&middot; analyzed on 2026-10-26 00:59
+</p>
+<h1 class="verdict-title max-w-4xl">
+<span x-text="headline"></span>
+<span class="verdict-muted block" x-show="subline" x-text="subline"></span>
+</h1>
+<!-- One row per metric, healthy ones first -->
+<div class="mt-8">
+<template x-if="items.length === 0">
+<p class="text-sm text-gray-500 py-2">Not enough data to summarize this codebase.</p>
+</template>
+<template x-for="it in items" :key="it.key">
+<div class="summary-row">
+<span class="dot" :class="dotClass(it.level)"></span>
+<a :href="it.href" class="summary-row-label group">
+<span class="truncate group-hover:underline" x-text="it.label"></span>
+<svg class="summary-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12l-7.5 7.5M21 12H3" />
+</svg>
+</a>
+<span class="text-slate-300 text-xs shrink-0" tabindex="0" :data-tip="it.help + ' ' + it.detail + '.'">&#9432;</span>
+<div class="w-28 md:w-44 shrink-0 ml-auto">
+<div class="meter" style="margin-top:0">
+<div class="meter-fill" :class="barClass(it.level)" :style="`width:${it.score}%`"></div>
+</div>
+</div>
+<span class="w-16 text-right font-mono text-lg font-bold text-gray-900" x-text="it.display"></span>
+</div>
+</template>
+</div>
+<!-- Who keeps this code alive -->
+<div class="mt-8 pt-6 border-t border-slate-200/60 flex flex-wrap items-center gap-x-4 gap-y-3">
+<p class="section-title">Team</p>
+<div class="flex items-center">
+<span class="contributor-chip" style="background-color: #7c3aed;"
+title="tomer-mayara &mdash; 373 commits (100.0%)">
+<img src="https://www.gravatar.com/avatar/86d04536e7bf5796a9ea59a7cc7a529f?s=64&amp;d=404" alt="" loading="lazy" decoding="async"
+onerror="this.remove()" class="contributor-chip-img">
+T
+</span>
+</div>
+<p class="text-sm text-gray-600 min-w-0">
+<span class="font-semibold text-gray-900">tomer-mayara</span>
+signs <strong class="font-semibold text-gray-900">100.0%</strong>
+of the commits.
+<a href="busfactor.html" class="text-blue-600 hover:underline font-medium whitespace-nowrap">See the team</a>
+</p>
+</div>
+</div>
+<!-- end: verdict / summary -->
+<!-- start: code map -->
+<div class="soft-card mt-6 animate-fade-in-up stagger-2">
+<div class="flex items-start justify-between gap-4 mb-4">
+<div>
+<h2 class="card-title">Code map</h2>
+<p class="card-sub">One bubble per class. Size = lines of code, color = complexity, ring = recent git activity.</p>
+</div>
+<a href="classes.html"
+class="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">Browse classes</a>
+</div>
+<script id="bubble-explorer-url" type="application/json">"explorer.html"</script>
+<!-- Bubble Chart: force-directed code health overview (PixiJS WebGL) -->
+<div id="bubble-chart-container">
+<div class="flex flex-wrap items-center gap-3 mb-4 text-xs font-medium text-gray-600">
+<span class="text-gray-500">Group by:</span>
+<label class="flex items-center gap-1.5 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+<input type="radio" name="bubble-group" value="all" checked class="w-3.5 h-3.5 text-blue-600">
+<span>All</span>
+</label>
+<label class="flex items-center gap-1.5 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+<input type="radio" name="bubble-group" value="folder" class="w-3.5 h-3.5 text-blue-600">
+<span>By folder</span>
+</label>
+<label class="flex items-center gap-1.5 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+<input type="radio" name="bubble-group" value="community" class="w-3.5 h-3.5 text-blue-600">
+<span>By community</span>
+</label>
+<input id="bubble-search" type="text" placeholder="Filter folders..."
+class="hidden border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40 transition-shadow ml-2">
+</div>
+<div id="bubble-chart-wrapper" class="relative w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100" style="height:450px;">
+<div id="bubble-chart-canvas" style="width:100%;height:100%;"></div>
+<!-- Loading skeleton -->
+<div id="bubble-chart-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-50" style="z-index:10;">
+<div class="relative" style="width:180px;height:180px;">
+<div style="position:absolute;inset:0;border-radius:50%;border:3px solid #e2e8f0;"></div>
+<div style="position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:#3b82f6;animation:bubble-spin 0.8s linear infinite;"></div>
+<div style="position:absolute;top:28%;left:22%;width:18%;height:18%;border-radius:50%;background:#e2e8f0;animation:bubble-pulse 1.5s ease-in-out infinite;"></div>
+<div style="position:absolute;top:20%;right:25%;width:12%;height:12%;border-radius:50%;background:#e2e8f0;animation:bubble-pulse 1.5s ease-in-out 0.2s infinite;"></div>
+<div style="position:absolute;bottom:25%;left:30%;width:22%;height:22%;border-radius:50%;background:#e2e8f0;animation:bubble-pulse 1.5s ease-in-out 0.4s infinite;"></div>
+<div style="position:absolute;bottom:30%;right:20%;width:14%;height:14%;border-radius:50%;background:#e2e8f0;animation:bubble-pulse 1.5s ease-in-out 0.6s infinite;"></div>
+</div>
+<p class="mt-4 text-sm text-gray-500 font-medium">Computing layout...</p>
+</div>
+<style>
+@keyframes bubble-spin { to { transform: rotate(360deg); } }
+@keyframes bubble-pulse { 0%,100% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 0.7; transform: scale(1); } }
+</style>
+</div>
+<div class="mt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500 font-medium">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full" style="background:#22c55e;"></span>
+<span>Low complexity</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full" style="background:#eab308;"></span>
+<span>Medium</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full" style="background:#ef4444;"></span>
+<span>High complexity</span>
+</div>
+<div class="flex items-center gap-2">
+<svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="none" stroke="#f59e0b" stroke-width="2.5" opacity="0.7"/></svg>
+<span>Ring = Git activity</span>
+</div>
+<div class="flex items-center gap-2">
+<span>Size = Lines of code</span>
+</div>
+<div class="flex items-center gap-2 text-gray-500">
+<span>Test files are excluded</span>
+</div>
+</div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+function initBubbleChart() {
+if (!window.d3) return;
+if (!window.PIXI) return;
+var _d = window.__AST_DATA__ || {};
+// Test files are not production code: exclude them from the chart
+// (protojson only emits isTest when it is true)
+var filesRaw = (_d.files || []).filter(function(f) { return f && !f.isTest; });
+if (!filesRaw.length) return;
+var n2c = _d.nodeToCommunity || {};
+var explorerUrl = 'explorer.html';
+try {
+explorerUrl = JSON.parse(document.getElementById('bubble-explorer-url').textContent || '"explorer.html"');
+} catch(e) {}
+// Find common prefix to strip from absolute paths
+var allPaths = filesRaw.map(function(f) { return f.path || f.shortPath || ''; });
+var commonPrefix = '';
+if (allPaths.length > 0) {
+var parts0 = allPaths[0].split('/');
+for (var depth = 0; depth < parts0.length - 1; depth++) {
+var candidate = parts0.slice(0, depth + 1).join('/') + '/';
+var allMatch = allPaths.every(function(p) { return p.indexOf(candidate) === 0; });
+if (allMatch) commonPrefix = candidate;
+else break;
+}
+}
+// Build nodes: one per class, or one per file if no classes
+var nodes = [];
+filesRaw.forEach(function(f) {
+var filePath = f.path || f.shortPath || '';
+var relPath = commonPrefix ? filePath.substring(commonPrefix.length) : filePath;
+var folder = relPath.split('/').slice(0, -1).join('/') || '/';
+var commits = 0;
+if (f.commits && f.commits.count) commits = f.commits.count;
+var stmts = f.stmts;
+var classes = (stmts && stmts.stmtClass) ? stmts.stmtClass : [];
+if (classes.length > 0) {
+classes.forEach(function(cls) {
+var name = '';
+if (cls.name) name = cls.name.qualified || cls.name.short || '';
+var ccn = 0, loc = 0;
+if (cls.stmts && cls.stmts.analyze) {
+var a = cls.stmts.analyze;
+if (a.complexity) ccn = a.complexity.cyclomatic || 0;
+if (a.volume) loc = a.volume.loc || 0;
+}
+var community = '';
+if (name && Object.keys(n2c).length > 0) {
+var parts = name.replace(/\\/g, '/').split('/');
+for (var d = parts.length; d >= 1; d--) {
+var prefix = parts.slice(0, d).join('/');
+if (n2c[prefix]) { community = n2c[prefix]; break; }
+var bsPrefix = parts.slice(0, d).join('\\');
+if (n2c[bsPrefix]) { community = n2c[bsPrefix]; break; }
+}
+}
+if (loc > 0 || ccn > 0) {
+nodes.push({name: name || relPath, complexity: ccn, loc: loc, commits: commits, folder: folder, community: community, pathHash: f.pathHash || ''});
+}
+});
+} else {
+var loc = 0, ccn = 0;
+if (f.linesOfCode) loc = f.linesOfCode.linesOfCode || 0;
+if (stmts && stmts.analyze) {
+if (stmts.analyze.complexity) ccn = stmts.analyze.complexity.cyclomatic || 0;
+if (!loc && stmts.analyze.volume) loc = stmts.analyze.volume.loc || 0;
+}
+if (loc > 0 || ccn > 0) {
+nodes.push({name: relPath, complexity: ccn, loc: loc, commits: commits, folder: folder, community: '', pathHash: f.pathHash || ''});
+}
+}
+});
+if (!nodes.length) return;
+// Group folders: merge singleton folders into their parent
+var folderCount = {};
+nodes.forEach(function(d) {
+folderCount[d.folder] = (folderCount[d.folder] || 0) + 1;
+});
+nodes.forEach(function(d) {
+var f = d.folder;
+while (folderCount[f] <= 1 && f !== '/' && f.indexOf('/') !== -1) {
+var parts = f.split('/').filter(Boolean);
+if (parts.length <= 1) break;
+var parent = parts.slice(0, -1).join('/');
+var parentCount = 0;
+nodes.forEach(function(n) {
+if (n.folder === parent || n.folder.indexOf(parent + '/') === 0) parentCount++;
+});
+if (parentCount > 1) { f = parent; break; }
+f = parent;
+}
+d.folderGroup = f || '/';
+});
+// PixiJS setup
+var container = document.getElementById('bubble-chart-canvas');
+var wrapper = document.getElementById('bubble-chart-wrapper');
+var W = wrapper.clientWidth || 800;
+var H = wrapper.clientHeight || 450;
+var app = new PIXI.Application({
+width: W,
+height: H,
+backgroundAlpha: 0,
+antialias: true,
+resolution: window.devicePixelRatio || 1,
+autoDensity: true,
+});
+container.appendChild(app.view);
+app.view.style.width = '100%';
+app.view.style.height = '100%';
+app.view.style.display = 'block';
+// Full manual rendering — no ticker, no PixiJS events
+app.ticker.autoStart = false;
+app.ticker.stop();
+app.stage.eventMode = 'none';
+var dirty = false;
+var rafPending = false;
+function requestRender() {
+if (rafPending) return;
+rafPending = true;
+requestAnimationFrame(function() {
+rafPending = false;
+app.renderer.render(app.stage);
+});
+}
+var worldContainer = new PIXI.Container();
+app.stage.addChild(worldContainer);
+// Color scale: complexity -> green/yellow/red
+var colorScale = d3.scaleLinear()
+.domain([0, 10, 25])
+.range(['#22c55e', '#eab308', '#ef4444'])
+.clamp(true);
+function colorToPixi(c) {
+var d3c = d3.color(c);
+if (!d3c) return 0x888888;
+return ((Math.round(d3c.r) & 0xff) << 16) | ((Math.round(d3c.g) & 0xff) << 8) | (Math.round(d3c.b) & 0xff);
+}
+function darkerPixi(c, k) {
+var d3c = d3.color(c);
+if (!d3c) return 0x666666;
+d3c = d3c.darker(k || 0.4);
+return ((Math.round(d3c.r) & 0xff) << 16) | ((Math.round(d3c.g) & 0xff) << 8) | (Math.round(d3c.b) & 0xff);
+}
+// Size scale
+var totalArea = W * H;
+var areaPerNode = totalArea / Math.max(nodes.length, 1);
+var maxRTarget = Math.sqrt(areaPerNode / Math.PI) * 0.8;
+maxRTarget = Math.min(maxRTarget, Math.min(W, H) / 8);
+maxRTarget = Math.max(maxRTarget, 8);
+var maxLoc = d3.max(nodes, function(d) { return d.loc; }) || 1;
+// Pre-compute per-node visual properties (colors, radii, ring)
+nodes.forEach(function(d) {
+d.r = Math.max(3, Math.sqrt((d.loc || 1) / maxLoc) * maxRTarget);
+var csColor = colorScale(d.complexity);
+d._fill = colorToPixi(csColor);
+d._stroke = darkerPixi(csColor, 0.4);
+d._visible = true; // for search filtering
+});
+// Commit-based ring quantiles
+var commitValues = nodes.map(function(d) { return d.commits; }).filter(function(c) { return c > 0; }).sort(d3.ascending);
+var commitQ50 = d3.quantile(commitValues, 0.5) || 1;
+var commitQ85 = d3.quantile(commitValues, 0.85) || 1;
+function ringWidth(commits) {
+if (!commits || commits === 0) return 0;
+if (commits <= commitQ50) return 1.5;
+if (commits <= commitQ85) return 2.5;
+return 4;
+}
+function ringOpacity(commits) {
+if (!commits || commits === 0) return 0;
+if (commits <= commitQ50) return 0.4;
+if (commits <= commitQ85) return 0.6;
+return 0.85;
+}
+// Grouping
+var folderGroups = Array.from(new Set(nodes.map(function(d) { return d.folderGroup; }))).sort();
+var communities = Array.from(new Set(nodes.map(function(d) { return d.community; }).filter(Boolean))).sort();
+if (!communities.length) communities = [''];
+function groupCenters(items) {
+var centers = {};
+var vW = W * 2, vH = H * 2;
+var cols = Math.ceil(Math.sqrt(items.length));
+var rows = Math.ceil(items.length / cols);
+var cellW = vW / (cols + 1);
+var cellH = vH / (rows + 1);
+items.forEach(function(item, i) {
+var col = i % cols;
+var row = Math.floor(i / cols);
+centers[item] = {x: (col + 1) * cellW - vW / 2 + W / 2, y: (row + 1) * cellH - vH / 2 + H / 2};
+});
+return centers;
+}
+var folderCenters = groupCenters(folderGroups);
+var communityCenters = groupCenters(communities);
+function shortFolderName(folder) {
+if (!folder || folder === '/') return '/';
+return folder.split('/').filter(Boolean).join('/');
+}
+// Tooltip (HTML overlay)
+if (!document.getElementById('bubble-tooltip')) {
+var tip = document.createElement('div');
+tip.id = 'bubble-tooltip';
+tip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;display:none;background:#1e293b;color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.5;max-width:300px;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+document.body.appendChild(tip);
+}
+var tooltip = document.getElementById('bubble-tooltip');
+// === BATCH RENDERING: single Graphics for ALL circles ===
+var labelsContainer = new PIXI.Container();
+worldContainer.addChild(labelsContainer);
+// One Graphics for all node circles (1 draw call for 8000+ nodes)
+var batchGfx = new PIXI.Graphics();
+worldContainer.addChild(batchGfx);
+// Overlay for hover highlight (drawn on top, only 1 node at a time)
+var hoverGfx = new PIXI.Graphics();
+worldContainer.addChild(hoverGfx);
+// Draw all circles into batchGfx in one pass
+function drawAllNodes() {
+batchGfx.clear();
+for (var i = 0; i < nodes.length; i++) {
+var d = nodes[i];
+var alpha = d._visible ? 0.75 : 0.06;
+// Main circle
+batchGfx.beginFill(d._fill, alpha);
+batchGfx.drawCircle(d.x, d.y, d.r);
+batchGfx.endFill();
+// Stroke
+batchGfx.lineStyle(0.5, d._stroke, d._visible ? 1 : 0.1);
+batchGfx.drawCircle(d.x, d.y, d.r);
+batchGfx.lineStyle(0);
+// Git activity ring
+var rw = ringWidth(d.commits);
+if (rw > 0) {
+batchGfx.lineStyle(rw, 0xf59e0b, d._visible ? ringOpacity(d.commits) : 0.05);
+batchGfx.drawCircle(d.x, d.y, d.r + rw / 2 + 0.5);
+batchGfx.lineStyle(0);
+}
+}
+}
+function drawHover(d) {
+hoverGfx.clear();
+if (!d) return;
+// Bright version of the circle
+hoverGfx.beginFill(d._fill, 1);
+hoverGfx.drawCircle(d.x, d.y, d.r);
+hoverGfx.endFill();
+hoverGfx.lineStyle(1.5, d._stroke, 1);
+hoverGfx.drawCircle(d.x, d.y, d.r);
+hoverGfx.lineStyle(0);
+var rw = ringWidth(d.commits);
+if (rw > 0) {
+hoverGfx.lineStyle(rw, 0xf59e0b, ringOpacity(d.commits));
+hoverGfx.drawCircle(d.x, d.y, d.r + rw / 2 + 0.5);
+}
+}
+// Canvas-level mouse interaction
+var hoveredNode = null;
+var scale = 1, panX = 0, panY = 0;
+var isPanning = false, panStartX = 0, panStartY = 0, panStartPX = 0, panStartPY = 0;
+function screenToWorld(clientX, clientY) {
+var rect = wrapper.getBoundingClientRect();
+var sx = clientX - rect.left;
+var sy = clientY - rect.top;
+return { x: (sx - panX) / scale, y: (sy - panY) / scale };
+}
+function findNodeAt(wx, wy) {
+for (var i = nodes.length - 1; i >= 0; i--) {
+var d = nodes[i];
+if (!d._visible) continue;
+var dx = wx - d.x, dy = wy - d.y;
+var hitR = d.r + Math.max(ringWidth(d.commits), 1) + 2;
+if (dx * dx + dy * dy <= hitR * hitR) return d;
+}
+return null;
+}
+wrapper.addEventListener('mousemove', function(e) {
+if (isPanning) return;
+var wp = screenToWorld(e.clientX, e.clientY);
+var hit = findNodeAt(wp.x, wp.y);
+if (hit !== hoveredNode) {
+hoveredNode = hit;
+drawHover(hit);
+if (hit) {
+tooltip.innerHTML = '<strong>' + hit.name + '</strong><br>' +
+'Complexity: ' + hit.complexity + '<br>' +
+'LOC: ' + hit.loc + '<br>' +
+'Commits: ' + hit.commits +
+(hit.community ? '<br>Community: ' + hit.community : '');
+tooltip.style.display = 'block';
+wrapper.style.cursor = 'pointer';
+} else {
+tooltip.style.display = 'none';
+wrapper.style.cursor = 'grab';
+}
+requestRender();
+}
+if (hit) {
+tooltip.style.left = (e.clientX + 12) + 'px';
+tooltip.style.top = (e.clientY - 10) + 'px';
+}
+});
+wrapper.addEventListener('mouseleave', function() {
+if (hoveredNode) {
+hoveredNode = null;
+drawHover(null);
+tooltip.style.display = 'none';
+requestRender();
+}
+});
+wrapper.addEventListener('click', function(e) {
+if (isPanning) return;
+var wp = screenToWorld(e.clientX, e.clientY);
+var hit = findNodeAt(wp.x, wp.y);
+if (hit && hit.pathHash) {
+window.location.href = explorerUrl + '?file=' + encodeURIComponent(hit.pathHash);
+}
+});
+// Group labels
+var labelTexts = [];
+// === INITIAL LAYOUT ===
+var currentGroup = 'all';
+// Pre-position nodes in a phyllotaxis spiral (golden angle)
+// This gives a great starting layout so the simulation needs very few ticks
+nodes.sort(function(a, b) { return b.r - a.r; }); // largest first
+var goldenAngle = Math.PI * (3 - Math.sqrt(5));
+var spiralSpacing = Math.sqrt(totalArea / nodes.length) * 0.35;
+for (var i = 0; i < nodes.length; i++) {
+var angle = i * goldenAngle;
+var dist = Math.sqrt(i + 0.5) * spiralSpacing;
+nodes[i].x = W / 2 + dist * Math.cos(angle);
+nodes[i].y = H / 2 + dist * Math.sin(angle);
+}
+// Lightweight simulation: only collide (1 iteration) + centering, high alphaDecay
+var simulation = d3.forceSimulation(nodes)
+.force('collide', d3.forceCollide().radius(function(d) { return d.r + Math.max(ringWidth(d.commits), 1) + 1; }).strength(0.8).iterations(1))
+.force('x', d3.forceX(W / 2).strength(0.05))
+.force('y', d3.forceY(H / 2).strength(0.05))
+.alphaDecay(0.08)
+.stop();
+// Run ~35 ticks synchronously (vs ~170 before) — spiral start means fast convergence
+while (simulation.alpha() > simulation.alphaMin()) simulation.tick();
+// Draw once and fit
+drawAllNodes();
+fitToView();
+// Hide loading skeleton
+var loadingEl = document.getElementById('bubble-chart-loading');
+if (loadingEl) loadingEl.style.display = 'none';
+// Zoom & Pan
+wrapper.addEventListener('wheel', function(e) {
+e.preventDefault();
+var rect = wrapper.getBoundingClientRect();
+var mouseX = e.clientX - rect.left;
+var mouseY = e.clientY - rect.top;
+var zoomFactor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+var newScale = Math.min(8, Math.max(0.1, scale * zoomFactor));
+panX = mouseX - (mouseX - panX) * (newScale / scale);
+panY = mouseY - (mouseY - panY) * (newScale / scale);
+scale = newScale;
+worldContainer.scale.set(scale);
+worldContainer.position.set(panX, panY);
+requestRender();
+}, { passive: false });
+wrapper.addEventListener('pointerdown', function(e) {
+if (e.target === app.view || e.target === wrapper) {
+isPanning = true;
+panStartX = e.clientX;
+panStartY = e.clientY;
+panStartPX = panX;
+panStartPY = panY;
+wrapper.style.cursor = 'grabbing';
+}
+});
+window.addEventListener('pointermove', function(e) {
+if (!isPanning) return;
+panX = panStartPX + (e.clientX - panStartX);
+panY = panStartPY + (e.clientY - panStartY);
+worldContainer.position.set(panX, panY);
+requestRender();
+});
+window.addEventListener('pointerup', function() {
+isPanning = false;
+wrapper.style.cursor = 'grab';
+});
+wrapper.style.cursor = 'grab';
+// Auto-fit zoom
+function fitToView() {
+if (!nodes.length) return;
+var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+nodes.forEach(function(d) {
+var rr = d.r + Math.max(ringWidth(d.commits), 1) + 2;
+if (d.x - rr < x0) x0 = d.x - rr;
+if (d.y - rr < y0) y0 = d.y - rr;
+if (d.x + rr > x1) x1 = d.x + rr;
+if (d.y + rr > y1) y1 = d.y + rr;
+});
+labelTexts.forEach(function(lt) {
+if (lt._lx !== undefined) {
+var lw = lt.width / 2;
+if (lt._lx - lw < x0) x0 = lt._lx - lw;
+if (lt._ly - 12 < y0) y0 = lt._ly - 12;
+if (lt._lx + lw > x1) x1 = lt._lx + lw;
+if (lt._ly > y1) y1 = lt._ly;
+}
+});
+var bw = x1 - x0, bh = y1 - y0;
+if (bw <= 0 || bh <= 0) return;
+var newScale = Math.min((W * 0.9) / bw, (H * 0.9) / bh, 1.2);
+var cx = (x0 + x1) / 2;
+var cy = (y0 + y1) / 2;
+scale = newScale;
+panX = W / 2 - newScale * cx;
+panY = H / 2 - newScale * cy;
+worldContainer.scale.set(scale);
+worldContainer.position.set(panX, panY);
+requestRender();
+}
+// Respond to container size changes (sidebar toggle, window resize)
+var resizeRAF = null;
+var resizeObserver = new ResizeObserver(function(entries) {
+var entry = entries[0];
+var newW = entry.contentRect.width;
+var newH = entry.contentRect.height;
+if (newW > 0 && newH > 0 && (newW !== W || newH !== H)) {
+W = newW;
+H = newH;
+if (resizeRAF) cancelAnimationFrame(resizeRAF);
+resizeRAF = requestAnimationFrame(function() {
+resizeRAF = null;
+app.renderer.resize(W, H);
+drawAllNodes();
+fitToView();
+});
+}
+});
+resizeObserver.observe(wrapper);
+function updateLabelPositions() {
+var groupMap = {};
+nodes.forEach(function(d) {
+var key = currentGroup === 'folder' ? d.folderGroup : (d.community || '');
+if (!groupMap[key]) groupMap[key] = {sumX: 0, sumY: 0, minY: Infinity, count: 0};
+groupMap[key].sumX += d.x;
+groupMap[key].sumY += d.y;
+if (d.y - d.r < groupMap[key].minY) groupMap[key].minY = d.y - d.r;
+groupMap[key].count++;
+});
+labelTexts.forEach(function(lt) {
+var g = groupMap[lt._key];
+if (g) {
+lt._lx = g.sumX / g.count;
+lt._ly = Math.max(12, g.minY - 10);
+lt.x = lt._lx;
+lt.y = lt._ly;
+}
+});
+}
+function drawLabels(mode, centers) {
+labelsContainer.removeChildren();
+labelTexts = [];
+if (mode === 'all') return;
+var items = mode === 'folder' ? folderGroups : communities;
+items.forEach(function(item) {
+var labelStr = mode === 'folder' ? shortFolderName(item) : (item || 'Uncategorized');
+var text = new PIXI.Text(labelStr, {
+fontSize: 10,
+fontWeight: '600',
+fill: '#64748b',
+fontFamily: 'system-ui, -apple-system, sans-serif',
+stroke: '#f8fafc',
+strokeThickness: 3,
+});
+text.anchor.set(0.5, 1);
+var c = centers[item] || {x: W/2, y: H/2};
+text.x = c.x;
+text.y = c.y - 30;
+text._key = item;
+text._lx = text.x;
+text._ly = text.y;
+labelsContainer.addChild(text);
+labelTexts.push(text);
+});
+}
+function updateGrouping(mode) {
+currentGroup = mode;
+if (mode === 'all') {
+drawLabels('all', {});
+simulation
+.force('x', d3.forceX(W / 2).strength(0.05))
+.force('y', d3.forceY(H / 2).strength(0.05));
+} else if (mode === 'folder') {
+drawLabels('folder', folderCenters);
+simulation
+.force('x', d3.forceX(function(d) {
+return (folderCenters[d.folderGroup] || {x: W/2}).x;
+}).strength(0.4))
+.force('y', d3.forceY(function(d) {
+return (folderCenters[d.folderGroup] || {y: H/2}).y;
+}).strength(0.4));
+} else if (mode === 'community') {
+drawLabels('community', communityCenters);
+simulation
+.force('x', d3.forceX(function(d) {
+var c = d.community || '';
+return (communityCenters[c] || {x: W/2}).x;
+}).strength(0.4))
+.force('y', d3.forceY(function(d) {
+var c = d.community || '';
+return (communityCenters[c] || {y: H/2}).y;
+}).strength(0.4));
+}
+// Run simulation synchronously, then render once
+simulation.alpha(0.7).stop();
+nodes.forEach(function(d) { d.vx = 0; d.vy = 0; });
+while (simulation.alpha() > simulation.alphaMin()) simulation.tick();
+drawAllNodes();
+updateLabelPositions();
+fitToView();
+}
+// Search
+var searchInput = document.getElementById('bubble-search');
+function applySearch() {
+var q = (searchInput.value || '').toLowerCase().trim();
+nodes.forEach(function(d) {
+d._visible = !q || d.folderGroup.toLowerCase().indexOf(q) !== -1 || d.name.toLowerCase().indexOf(q) !== -1;
+});
+labelTexts.forEach(function(lt) {
+var match = !q || lt._key.toLowerCase().indexOf(q) !== -1;
+lt.alpha = match ? 1 : 0.15;
+});
+drawAllNodes();
+requestRender();
+}
+searchInput.addEventListener('input', applySearch);
+// Radio button handlers
+document.querySelectorAll('input[name="bubble-group"]').forEach(function(radio) {
+radio.addEventListener('change', function() {
+var mode = this.value;
+if (mode === 'folder' || mode === 'community') {
+searchInput.classList.remove('hidden');
+searchInput.placeholder = mode === 'folder' ? 'Filter folders...' : 'Filter communities...';
+} else {
+searchInput.classList.add('hidden');
+searchInput.value = '';
+}
+updateGrouping(mode);
+applySearch();
+});
+});
+}
+// Wait for both D3 and PixiJS
+function tryInit() {
+if (window.d3 && typeof d3.forceSimulation === 'function' && window.PIXI) {
+initBubbleChart();
+return true;
+}
+return false;
+}
+if (!tryInit()) {
+var checkLibs = setInterval(function() {
+if (tryInit()) clearInterval(checkLibs);
+}, 100);
+setTimeout(function() { clearInterval(checkLibs); }, 10000);
+}
+});
+</script>
+</div>
+<!-- end: code map -->
+</div>
+</main>
+<!-- File explorer sidebar: a real nested tree, flattened into one list so Alpine
+can render any depth with a single loop. -->
+<div x-data="fileSidebar()" x-cloak
+@keydown.window="if ((e=$event).ctrlKey && e.key==='b') { e.preventDefault(); toggle(); }">
+<!-- Mobile backdrop -->
+<div x-show="open" x-transition:enter="transition-opacity ease-out duration-300"
+x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+x-transition:leave="transition-opacity ease-in duration-200"
+x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+@click="toggle()" class="fixed inset-0 bg-black/30 z-40 lg:hidden"></div>
+<!-- Sidebar panel -->
+<div :class="open ? 'translate-x-0' : 'translate-x-full'" class="file-sidebar" id="file-sidebar-panel">
+<!-- Header -->
+<div class="flex items-center justify-between px-5 pt-5 pb-3">
+<h2 class="card-title text-base">Files</h2>
+<button @click="toggle()" aria-label="Close the file explorer"
+class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-600 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+</button>
+</div>
+<!-- Search -->
+<div class="px-5 pb-3">
+<div class="relative">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2">
+<path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+</svg>
+<input type="search" x-model.debounce.200ms="query" aria-label="Search a file"
+placeholder="Search a file"
+class="w-full bg-slate-50 border border-slate-200 rounded-full pl-10 pr-3 py-2 text-sm
+placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500
+focus:border-transparent focus:bg-white transition-colors">
+</div>
+</div>
+<!-- Scope: everything, or only files carrying a risk -->
+<div class="px-5 pb-3">
+<div class="seg w-full" role="tablist" aria-label="Filter files">
+<button role="tab" class="seg-item flex-1 text-center" :class="onlyAtRisk ? '' : 'seg-item--active'"
+:aria-selected="onlyAtRisk ? 'false' : 'true'" @click="onlyAtRisk = false">All</button>
+<button role="tab" class="seg-item flex-1 text-center" :class="onlyAtRisk ? 'seg-item--active' : ''"
+:aria-selected="onlyAtRisk ? 'true' : 'false'" @click="onlyAtRisk = true">
+At risk <span class="text-slate-600 font-normal" x-text="atRiskCount"></span>
+</button>
+</div>
+</div>
+<!-- Tree -->
+<div class="overflow-y-auto flex-1 px-3 pb-4">
+<template x-for="n in visibleNodes" :key="n.id">
+<div>
+<!-- Folder -->
+<button x-show="n.type === 'dir'" @click="toggleDir(n)"
+:style="`padding-left: ${0.5 + n.depth * 0.75}rem`"
+:aria-expanded="n.expanded ? 'true' : 'false'"
+class="w-full flex items-center gap-1.5 pr-2 py-1.5 rounded-lg text-left
+text-slate-500 hover:bg-slate-50 transition-colors group">
+<svg :class="n.expanded ? 'rotate-90' : ''"
+class="w-3 h-3 shrink-0 text-slate-300 group-hover:text-slate-500 transition-transform"
+xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+<span class="dot shrink-0" :class="n.sev"></span>
+<span class="font-mono text-xs truncate" x-text="n.name" :title="n.path"></span>
+</button>
+<!-- File -->
+<button x-show="n.type === 'file'" @click="selectFile(n.file)"
+:data-sb-path="n.path"
+:style="`padding-left: ${1.5 + n.depth * 0.75}rem`"
+:aria-current="n.file && selectedPath === n.file.path ? 'true' : 'false'"
+class="w-full flex items-center gap-1.5 pr-3 py-1.5 rounded-full text-left transition-colors"
+:class="n.file && selectedPath === n.file.path
+? 'bg-slate-900 text-white'
+: 'text-slate-600 hover:bg-slate-50'">
+<span class="dot shrink-0" :class="n.sev"></span>
+<span class="font-mono text-xs truncate" x-text="n.name" :title="n.path"></span>
+<span x-show="n.file && n.file.isTest"
+class="shrink-0 px-1 py-px rounded text-[10px] font-medium leading-tight"
+:class="n.file && selectedPath === n.file.path ? 'bg-white/20 text-white' : 'bg-violet-50 text-violet-600'">test</span>
+</button>
+</div>
+</template>
+<p x-show="!visibleNodes.length" class="text-xs text-slate-500 text-center py-8">
+<span x-show="query">No file matches <span class="font-medium" x-text="query"></span>.</span>
+<span x-show="!query && onlyAtRisk">No file carries a risk.</span>
+</p>
+</div>
+<!-- Legend -->
+<div class="px-5 py-3 border-t border-slate-100 flex items-center gap-4 text-[11px] text-slate-500">
+<span class="flex items-center gap-1.5"><span class="dot sev-good"></span> clean</span>
+<span class="flex items-center gap-1.5"><span class="dot sev-warn"></span> some risks</span>
+<span class="flex items-center gap-1.5"><span class="dot sev-bad"></span> many risks</span>
+</div>
+</div>
+<!-- FAB toggle -->
+<button x-show="!open" x-transition @click="toggle()"
+class="fixed bottom-6 right-6 z-50 w-12 h-12 bg-slate-800 hover:bg-slate-900 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+title="Browse files (Ctrl+B)"
+aria-label="Browse files">
+<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+</svg>
+</button>
+</div>
+<script>
+function fileSidebar() {
+const isDesktop = window.innerWidth >= 1024;
+const stored = localStorage.getItem('ast-sidebar-open');
+const isExplorerPage = false;
+// The tree is the explorer's main navigation, so it is always open there.
+// Everywhere else it is a side tool: closed until asked for (FAB or Ctrl+B).
+const initialOpen = isExplorerPage ? true : (stored !== null ? stored === 'true' : false);
+return {
+open: initialOpen,
+query: '',
+onlyAtRisk: false,
+files: [],
+risksByPath: {},
+nodes: [],
+collapsed: {},
+selectedPath: '',
+isExplorerPage: isExplorerPage,
+init() {
+const d = window.__AST_DATA__ || {};
+this.files = d.files || [];
+this.risksByPath = d.risks || {};
+this.buildTree();
+if (this.open && isDesktop) this.pushMain(true);
+if (this.isExplorerPage) {
+window.addEventListener('explorer-file-selected', (e) => {
+if (e.detail && e.detail.path) {
+this.selectedPath = e.detail.path;
+this.revealPath(e.detail.path);
+}
+});
+// The explorer may have selected a deep-linked file before this
+// component was listening, so resolve ?file= here as well.
+this.selectFromQuery();
+}
+},
+toggle() {
+this.open = !this.open;
+localStorage.setItem('ast-sidebar-open', this.open);
+if (window.innerWidth >= 1024) this.pushMain(this.open);
+document.body.style.overflow = (this.open && window.innerWidth < 1024) ? 'hidden' : '';
+},
+pushMain(push) {
+const main = document.querySelector('main.col-span-full, main.col-span-6');
+if (main) {
+main.style.transition = 'margin-right 0.3s ease';
+main.style.marginRight = push ? '320px' : '0';
+}
+},
+// Resolve ?file=<hash|shortPath|path> the same way the explorer does
+selectFromQuery() {
+let param = null;
+try { param = new URLSearchParams(window.location.search).get('file'); } catch (e) { return; }
+if (!param) return;
+const f = this.files.find(x => (x.pathHash || '') === param)
+|| this.files.find(x => (x.shortPath || '') === param)
+|| this.files.find(x => (x.path || '') === param);
+if (!f) return;
+this.selectedPath = f.path;
+this.revealPath(f.path);
+},
+// Risks are keyed by path hash, like everywhere else in the report data
+risksFor(f) { return this.risksByPath[f.pathHash] || []; },
+severityOf(count) {
+if (count >= 3) return 'sev-bad';
+if (count >= 1) return 'sev-warn';
+return 'sev-good';
+},
+get atRiskCount() {
+return this.files.filter(f => this.risksFor(f).length > 0).length;
+},
+// Build a nested tree, then flatten it into an ordered list of nodes that
+// carry their own depth. One Alpine loop can then render any depth.
+buildTree() {
+const root = { children: new Map(), files: [] };
+for (const f of this.files) {
+const parts = (f.shortPath || f.path || '').split('/').filter(Boolean);
+const fileName = parts.pop();
+let node = root;
+for (const part of parts) {
+if (!node.children.has(part)) node.children.set(part, { children: new Map(), files: [] });
+node = node.children.get(part);
+}
+node.files.push({ name: fileName, file: f });
+}
+const out = [];
+let seq = 0;
+const walk = (node, depth, prefix) => {
+for (const [name, child] of [...node.children.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+const path = prefix ? prefix + '/' + name : name;
+// A folder inherits the worst severity of what it contains
+const worst = this.worstSeverityIn(child);
+out.push({ id: 'd' + (seq++), type: 'dir', name, path, depth, sev: worst });
+walk(child, depth + 1, path);
+}
+for (const entry of node.files.sort((a, b) => a.name.localeCompare(b.name))) {
+const count = this.risksFor(entry.file).length;
+out.push({
+id: 'f' + (seq++), type: 'file', name: entry.name,
+path: entry.file.shortPath || entry.file.path,
+depth, file: entry.file, sev: this.severityOf(count),
+});
+}
+};
+walk(root, 0, '');
+this.nodes = out;
+},
+worstSeverityIn(node) {
+let max = 0;
+const visit = (n) => {
+for (const entry of n.files) max = Math.max(max, this.risksFor(entry.file).length);
+for (const child of n.children.values()) visit(child);
+};
+visit(node);
+return this.severityOf(max);
+},
+// Visibility is derived: a node shows when no ancestor is collapsed. A
+// search or the "at risk" filter hides non-matching files and any folder
+// left empty by the filter.
+get visibleNodes() {
+const q = this.query.trim().toLowerCase();
+const keep = new Set();
+if (q || this.onlyAtRisk) {
+for (const n of this.nodes) {
+if (n.type !== 'file') continue;
+if (q && !(n.path || '').toLowerCase().includes(q)) continue;
+if (this.onlyAtRisk && this.risksFor(n.file).length === 0) continue;
+keep.add(n.path);
+const parts = (n.path || '').split('/');
+for (let i = 1; i < parts.length; i++) keep.add(parts.slice(0, i).join('/'));
+}
+}
+const out = [];
+for (const n of this.nodes) {
+if ((q || this.onlyAtRisk) && !keep.has(n.path)) continue;
+// While filtering, everything matching stays expanded
+const collapsedAncestor = (q || this.onlyAtRisk) ? false : this.hasCollapsedAncestor(n.path);
+if (collapsedAncestor) continue;
+out.push(n.type === 'dir'
+? { ...n, expanded: (q || this.onlyAtRisk) ? true : !this.collapsed[n.path] }
+: n);
+}
+return out;
+},
+hasCollapsedAncestor(path) {
+const parts = (path || '').split('/');
+for (let i = 1; i < parts.length; i++) {
+if (this.collapsed[parts.slice(0, i).join('/')]) return true;
+}
+return false;
+},
+toggleDir(n) {
+this.collapsed = { ...this.collapsed, [n.path]: !this.collapsed[n.path] };
+},
+// Make sure a deep-linked file is neither hidden inside a collapsed
+// folder nor off-screen in a long tree
+revealPath(fullPath) {
+const f = this.files.find(x => x.path === fullPath);
+const rel = (f && (f.shortPath || f.path)) || fullPath;
+const parts = rel.split('/');
+const next = { ...this.collapsed };
+for (let i = 1; i < parts.length; i++) delete next[parts.slice(0, i).join('/')];
+this.collapsed = next;
+this.$nextTick(() => {
+const el = document.querySelector(`[data-sb-path="${CSS.escape(rel)}"]`);
+if (el) el.scrollIntoView({ block: 'center' });
+});
+},
+selectFile(f) {
+this.selectedPath = f.path;
+if (this.isExplorerPage) {
+this.$dispatch('sidebar-select-file', { path: f.path, pathHash: f.pathHash || f.shortPath || f.path });
+} else {
+window.location.href = 'explorer.html?file=' + encodeURIComponent(f.pathHash || f.shortPath || f.path);
+}
+},
+};
+}
+</script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@7.3.3/dist/pixi.min.js" defer></script>
+<!-- Generic table sorting: makes every <table class="sortable"> header clickable. No dependency. -->
+<script type="text/javascript">
+(function () {
+'use strict';
+// Number at the beginning of a cell: "12", "-3.5", "1 234", "1.2 K", "45%"
+var LEADING_NUMBER = /^([+-]?\d[\d\s,.]*)\s*([kmgt])?\s*%?/i;
+var SCALES = { k: 1e3, m: 1e6, g: 1e9, t: 1e12 };
+var EMPTY_VALUES = ['', '-', '--', 'n/a', 'na'];
+function cellText(row, index) {
+var cell = row.cells[index];
+if (!cell) {
+return '';
+}
+// Non breaking spaces are common in formatted numbers
+return (cell.textContent || '').replace(/ /g, ' ').trim();
+}
+// Returns a number, or null when the cell holds no numeric value.
+function parseNumber(text) {
+if (EMPTY_VALUES.indexOf(text.toLowerCase()) !== -1) {
+return null;
+}
+var match = text.match(LEADING_NUMBER);
+if (!match) {
+return null;
+}
+var digits = match[1].replace(/\s/g, '');
+if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(digits)) {
+digits = digits.replace(/,/g, ''); // "1,234" : thousand separator
+} else {
+digits = digits.replace(',', '.'); // "1,2" : decimal comma
+}
+var value = parseFloat(digits);
+if (isNaN(value)) {
+return null;
+}
+return value * (SCALES[(match[2] || '').toLowerCase()] || 1);
+}
+// Rows spanning several columns (empty states, notices) are never sorted.
+function isSortableRow(row) {
+for (var i = 0; i < row.cells.length; i++) {
+if (row.cells[i].colSpan > 1) {
+return false;
+}
+}
+return true;
+}
+function sortableRows(table) {
+var body = table.tBodies[0];
+if (!body) {
+return [];
+}
+// body.rows only contains real <tr>, so Alpine <template> blocks are ignored
+return Array.prototype.filter.call(body.rows, isSortableRow);
+}
+// Headers of the last row of the <thead>.
+function headerCells(table) {
+var head = table.tHead;
+if (!head || !head.rows.length) {
+return [];
+}
+var row = head.rows[head.rows.length - 1];
+return Array.prototype.filter.call(row.cells, function (cell) {
+return cell.tagName === 'TH';
+});
+}
+// Auto detection: numeric when most of the filled cells parse as numbers.
+function isNumericColumn(rows, index) {
+var numeric = 0;
+var filled = 0;
+for (var i = 0; i < rows.length; i++) {
+var text = cellText(rows[i], index);
+if (!text) {
+continue;
+}
+filled++;
+if (parseNumber(text) !== null) {
+numeric++;
+}
+}
+return filled > 0 && (numeric / filled) >= 0.6;
+}
+function reorder(table, state) {
+var body = table.tBodies[0];
+if (!body) {
+return;
+}
+var factor = state.direction === 'descending' ? -1 : 1;
+var allRows = Array.prototype.slice.call(body.rows);
+var items = allRows.filter(isSortableRow).map(function (row, position) {
+var text = cellText(row, state.index);
+return {
+row: row,
+position: position,
+text: text,
+value: state.numeric ? parseNumber(text) : null
+};
+});
+items.sort(function (a, b) {
+if (state.numeric) {
+// Cells without value always land at the bottom
+if (a.value === null || b.value === null) {
+if (a.value === b.value) {
+return a.position - b.position;
+}
+return a.value === null ? 1 : -1;
+}
+if (a.value !== b.value) {
+return (a.value - b.value) * factor;
+}
+} else {
+if (!a.text || !b.text) {
+if (a.text === b.text) {
+return a.position - b.position;
+}
+return a.text ? -1 : 1;
+}
+var comparison = a.text.localeCompare(b.text, undefined, { numeric: true, sensitivity: 'base' });
+if (comparison !== 0) {
+return comparison * factor;
+}
+}
+return a.position - b.position; // stable for ties
+});
+// Re-inject the sorted rows, keeping the non sortable rows at their own index
+var fragment = document.createDocumentFragment();
+var cursor = 0;
+allRows.forEach(function (row) {
+fragment.appendChild(isSortableRow(row) ? items[cursor++].row : row);
+});
+body.appendChild(fragment);
+}
+// Applies the sort without letting our own DOM moves wake up the observer.
+function applySort(table, state) {
+var observer = table.astSortObserver;
+if (observer) {
+observer.disconnect();
+}
+reorder(table, state);
+if (observer) {
+observer.observe(table.tBodies[0], { childList: true, subtree: true, characterData: true });
+}
+}
+// Some tables are rendered client side (Alpine x-for in linters.html): rows appear or are
+// rewritten after a filter change, which would silently reset the order. We watch the tbody
+// and replay the current sort. Alpine keeps its own references to the rows, so moving them
+// around does not break its bookkeeping: it may reorder them on the next update, and we
+// simply sort again.
+function watchRerenders(table) {
+var body = table.tBodies[0];
+if (!body || typeof MutationObserver === 'undefined') {
+return;
+}
+var scheduled = false;
+var observer = new MutationObserver(function () {
+if (scheduled || !table.astSortState) {
+return;
+}
+scheduled = true;
+// setTimeout, not requestAnimationFrame: also runs in a hidden tab,
+// and after the current batch of framework updates
+window.setTimeout(function () {
+scheduled = false;
+if (table.astSortState) {
+applySort(table, table.astSortState);
+}
+}, 0);
+});
+table.astSortObserver = observer;
+observer.observe(body, { childList: true, subtree: true, characterData: true });
+}
+function setupTable(table) {
+var headers = headerCells(table);
+if (!headers.length || !table.tBodies[0]) {
+return;
+}
+watchRerenders(table);
+headers.forEach(function (header, index) {
+if (!(header.textContent || '').trim()) {
+return; // decorative column (icon only): nothing to sort on
+}
+header.classList.add('sort-header');
+header.setAttribute('aria-sort', 'none');
+// The existing content is moved into a button: native click, Enter and Space support,
+// while the <th> keeps its columnheader role and its aria-sort attribute.
+var button = document.createElement('button');
+button.type = 'button';
+button.className = 'sort-btn';
+button.setAttribute('tabindex', '0');
+while (header.firstChild) {
+button.appendChild(header.firstChild);
+}
+var arrow = document.createElement('span');
+arrow.className = 'sort-arrow';
+arrow.setAttribute('aria-hidden', 'true');
+button.appendChild(arrow);
+header.appendChild(button);
+button.addEventListener('click', function () {
+var previous = table.astSortState;
+var ascending = !(previous && previous.index === index && previous.direction === 'ascending');
+var method = header.getAttribute('data-sort-method');
+var numeric = method === 'number';
+if (!numeric && method !== 'text') {
+numeric = isNumericColumn(sortableRows(table), index);
+}
+headers.forEach(function (other) {
+if (other.hasAttribute('aria-sort')) {
+other.setAttribute('aria-sort', 'none');
+}
+});
+var direction = ascending ? 'ascending' : 'descending';
+header.setAttribute('aria-sort', direction);
+table.astSortState = { index: index, direction: direction, numeric: numeric };
+applySort(table, table.astSortState);
+});
+});
+}
+document.addEventListener('DOMContentLoaded', function () {
+Array.prototype.forEach.call(document.querySelectorAll('table.sortable'), setupTable);
+});
+})();
+</script>
+</body>
+</html>

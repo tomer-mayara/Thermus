@@ -1,0 +1,36 @@
+{
+  "reviewedHead": "f03a7b73b2c27dc26477d5378a3356f28744a367",
+  "base": "8c6d204e8588a664438ba8934ab36670b802525f",
+  "finalCandidate": "d0dd8fc8e519eb8a008ae0fe78ceb4e1199bc60d",
+  "evidenceCommit": "bc62fd685d39990a16429199a7bd20e6f554d161",
+  "standaloneSha256": "a60f5fdbf0e7f60de9c6a3b2daffc744c1b94394df1c3a9eff6a2ffd7ec5cbfc",
+  "immutableSummaryEmbeddedByteIdentical": true,
+  "initialRemotePRBodyEmbeddedByteIdentical": true,
+  "workingSummaryEmbeddedByteIdentical": true,
+  "productionContractRegistryDeltaSha256": "18490536a362c68bdf5e709fac862a8c76a861c4d5c0c8f39855a5bce9704016",
+  "workingDeltaByteIdentical": true,
+  "renderReused": true,
+  "newRenderRun": false,
+  "priorRenderer": "@mermaid-js/mermaid-cli 12.0.0 (existing cached installation)",
+  "priorDimensions": [
+    800,
+    1195
+  ],
+  "assets": {
+    "comparison-final-800.png": {
+      "sha256": "1b76a83ec181919d1dd4e937c583c12ccaf9af9c24f0f1ba3fee01a2719b2567",
+      "matchesRenderReport": true,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/architecture/comparison-final-800.png"
+    },
+    "comparison-final-800.svg": {
+      "sha256": "618be2ea3501ab501d3f49292818e1b5306ff6434628bf0fd5d369248f62d98b",
+      "matchesRenderReport": true,
+      "url": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/architecture/comparison-final-800.svg"
+    }
+  },
+  "priorManagerReview": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/architecture/manager-review.md",
+  "priorRenderReport": "https://github.com/tomer-mayara/Thermus/blob/bc62fd685d39990a16429199a7bd20e6f554d161/review-evidence/pr251-rebase-8c6d204e/f03a7b73b2c27dc26477d5378a3356f28744a367/architecture/render-report-final.json",
+  "evidenceLimit": "Byte equivalence supports reuse; manager must refresh final head/base pins, inspect final PR source and record current sign-off. This is not a test or merge pass.",
+  "freshWorkerVisualInspection": "Reused exact PNG inspected at 800 by 1195 pixels on 26 October 2026. Title, labels, L2 and component boundaries, arrow directions and targets are readable. Composition, source and runtime arrows are distinct. No crossing runs through an unrelated box or label. SDK edge and label backgrounds stay neutral.",
+  "managerReview": "manager-review-final.json"
+}
