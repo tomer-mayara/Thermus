@@ -2,10 +2,10 @@ import type { TestContext } from 'node:test';
 import { chromium, type Locator, type Page } from 'playwright';
 import type { BrowserTransport } from './hosted-browser.ts';
 
-export async function memberRemovalBrowser(t: TestContext, transport: BrowserTransport, cookieHeader: string) {
+export async function memberRemovalBrowser(t: TestContext, transport: BrowserTransport, cookieHeader: string, options: { readonly javaScriptEnabled?: boolean } = {}) {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE });
   t.after(() => browser.close());
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: options.javaScriptEnabled });
   await context.addCookies(cookieHeader.split(';').map(part => {
     const index = part.indexOf('=');
     return { name: part.slice(0, index).trim(), value: part.slice(index + 1).trim(), url: 'https://thermus.example', secure: true };

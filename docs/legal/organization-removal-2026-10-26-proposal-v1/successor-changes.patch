@@ -1,0 +1,54 @@
+--- docs/legal/organization-removal-2026-10-25-proposal-v1/terms.md
++++ docs/legal/organization-removal-2026-10-26-proposal-v1/terms.md
+@@ -1,6 +1,6 @@
+ # Terms of Service
+ 
+-**Effective date: 25 October 2026.**
++**Effective date: 26 October 2026.**
+ 
+ The terms for using the Thermus website, guides, waitlist, evaluation materials, and hosted portal and MCP service, including the limits of our security protections.
+ 
+--- docs/legal/organization-removal-2026-10-25-proposal-v1/privacy.md
++++ docs/legal/organization-removal-2026-10-26-proposal-v1/privacy.md
+@@ -1,6 +1,6 @@
+ # Privacy Policy
+ 
+-**Effective date: 25 October 2026.**
++**Effective date: 26 October 2026.**
+ 
+ How Thermus handles information from our website, contact form, waitlist, public product guides, hosted portal, and hosted MCP service.
+ 
+@@ -76,7 +76,7 @@
+ 
+ An organization Admin can choose Axiom or a Custom HTTPS OTLP/HTTP JSON logs destination, provide a Bearer credential, and save the export enabled state. Axiom requires a dataset name; Custom uses no Axiom dataset. The portal requires a new token when none is saved or the endpoint changes. A blank token keeps the saved Bearer credential for the same endpoint. The portal has no unauthenticated-delivery or token-removal option. We store the organization identifier, destination address, optional dataset name, authentication choice, enabled state, revision, and encrypted optional credential in a private PostgreSQL schema hosted by Supabase. For direct Axiom export, the application sends the saved dataset name in the x-axiom-dataset routing header. The application uses the credential to authenticate delivery; the dataset routing header and credential are not fields of the audit event payload. Authorized Admins can read the saved destination and optional dataset name and whether a credential is present. The portal can show the first four characters followed by masking when the saved token is longer than four characters; it does not display the full saved credential.
+ 
+-When export is enabled, supported tool events can include the validated fetch URL and reason or search query and reason, together with the final public result or error text returned to the MCP client. They also include trusted organization and actor identifiers, operation identifier, tool, outcome, duration, and time. A captured fetch URL can include noncredential query parameters and fragments. Invitation send, resend, and revoke events include the actor, organization, target email address or invitation identifier, role where applicable, action, outcome, and time. Membership-removal events include the actor, organization, exact target membership identifier, action, outcome, and time; their payloads exclude the form token and membership revision. Audit destination Save and Test events include action and outcome metadata; those event payloads exclude the saved endpoint, dataset name, and credential. These exports are separate from internal operator logs.
++When export is enabled, supported tool events can include the validated fetch URL and reason or search query and reason, together with the final public result or error text returned to the MCP client. They also include trusted organization and actor identifiers, operation identifier, tool, outcome, duration, and time. A captured fetch URL can include noncredential query parameters and fragments. Invitation send, resend, and revoke events include the actor, organization, target email address or invitation identifier, role where applicable, action, outcome, and time. Membership-removal events include the actor, organization, exact target membership identifier, action, outcome, and time; their payloads exclude the form token and membership revision. Audit destination Save and Test events include action and outcome metadata; those event payloads exclude the saved endpoint, dataset name, and credential. These exports are separate from internal operator logs. Supported audit events and synthetic Test events can also include the actor’s display name when available. Names are display metadata; stable actor identifiers remain. Thermus trims and bounds names and applies the same pattern-based redaction to them. Missing or invalid names are omitted.
+ 
+ Before export, Thermus replaces recognized credential fields and selected credential-bearing URL parameters. This redaction uses patterns; it does not remove every secret, personal detail, or confidential value. Sign-in form fields, session cookies, request Authorization headers, and the saved destination credential are not collected as audit event fields. Information repeated in tool inputs or returned text can still be captured. The existing restrictions on submitting secrets, confidential information, sensitive personal information, and regulated data still apply.
+ 
+--- docs/legal/organization-removal-2026-10-25-proposal-v1/audit-help.md
++++ docs/legal/organization-removal-2026-10-26-proposal-v1/audit-help.md
+@@ -6,7 +6,7 @@
+ 
+ ### What export includes
+ 
+-Enabled export includes tool inputs and results or errors: search queries, requested URLs, fetched text, and reasons. It also includes administration metadata for supported invitations, membership removal, and destination Save and Test actions.
++Enabled export includes tool inputs and results or errors: search queries, requested URLs, fetched text, and reasons. It also includes administration metadata for supported invitations, membership removal, and destination Save and Test actions. Supported audit events and synthetic Test events can include the actor’s display name when available, alongside stable actor identifiers. Names are trimmed, bounded, and subject to the same pattern-based redaction. Missing or invalid names are omitted.
+ 
+ Thermus redacts recognized credential fields and credential-bearing URL parameters. Event fields exclude sign-in forms, cookies, Authorization headers, and the destination token. Other free text can still contain secrets.
+ 
+--- docs/legal/organization-removal-2026-10-25-proposal-v1/members-help.md
++++ docs/legal/organization-removal-2026-10-26-proposal-v1/members-help.md
+@@ -30,7 +30,10 @@
+ supported; removal requires no new factor enrollment or paid feature.
+ 
+ Enabled audit export can include removal metadata: actor, organization, target
+-membership identifier, action, outcome, and time. It excludes the form token and
++membership identifier, action, outcome, and time. It can also include the actor’s
++display name when available, alongside stable actor identifiers. Names are
++trimmed, bounded, and subject to the same pattern-based redaction. Missing or
++invalid names are omitted. It excludes the form token and
+ membership revision. Delivery is best effort. Export failure does not undo a
+ confirmed removal, clear a pending operation, or cause removal to be replayed.
+ Read our [Privacy Policy](https://thermus.ai/privacy/).

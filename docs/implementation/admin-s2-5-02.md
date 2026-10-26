@@ -1,5 +1,15 @@
 # S2.5-02 integrated verification and release controls
 
+**Current checkpoint, 26 October 2026:** see
+[production release status](admin-s2-5-production-release.md). The entire stack
+is merged, its reported architect approval and recording waiver are resolved,
+and the user has authorized deployment. Earlier S2-04 release is complete.
+The owner approved the exact 26 October notice package. The removal migration
+is applied. Runtime/help integration, final checks and deployed removal proof
+remain in progress. The dated status and gate statements
+below preserve history; the linked checkpoint supersedes their current-status
+claims.
+
 Status on 26 October 2026: the [S2.5-R1 source repair](admin-s2-5-r1.md) is
 implemented in PR #257. The check results and Draft/review holds below retain
 their original candidate scope. The user directly reported architect approval

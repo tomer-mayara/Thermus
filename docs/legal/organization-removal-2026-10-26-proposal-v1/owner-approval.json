@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-10-26T16:04:11Z",
+  "source": "Direct owner answer in the release conversation",
+  "question": "Approve publishing the five-document notice package linked above, effective 26 October 2026? It covers removal, audit exports and help text; keeps the agreement checkbox unchanged; and preserves existing acceptance records without asking members to accept again. Exact package: s2502-organization-removal-proposal-2026-10-26-v1, manifest SHA-256 7528832b4e2baf055d4be35ec2d12fe3d00a9681d0a7684dc5f246e830c4071e.",
+  "answer": "Approve this package and continue the release",
+  "bundle_version": "s2502-organization-removal-proposal-2026-10-26-v1",
+  "manifest_sha256": "7528832b4e2baf055d4be35ec2d12fe3d00a9681d0a7684dc5f246e830c4071e",
+  "effective_date": "2026-10-26",
+  "scope": [
+    "Publish the five approved documents through the existing policy, signup, Audit and Members surfaces",
+    "Keep the agreement checkbox unchanged",
+    "Preserve historical acceptance records without repeated or fabricated acceptance",
+    "Continue the authorized Slice 2.5 release and deployment"
+  ],
+  "history": "The approved manifest and five documents remain unchanged. This separate record supersedes their preparation-time pending status."
+}

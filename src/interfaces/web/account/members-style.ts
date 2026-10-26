@@ -55,6 +55,11 @@ button:hover{border-color:#F3F2EE;background:#2C2D34}
 .logging-actions .secondary-action:hover{background:#555862;border-color:#F3F2EE}
 .logging-result{margin-block:20px;padding:16px;border:1px solid #7B7E88;border-radius:6px;background:#2C2D34}.logging-result h3{margin:0 0 8px}.logging-result p{margin:0}
 .destination-notice{margin-block:20px;padding:16px;border:1px solid #C69754;border-radius:6px;background:#302A20;font-size:15px}.destination-notice p{margin:0}
+.administration-help{margin-top:24px;border-top:1px solid #43454E;padding-top:12px}
+.administration-help>summary{width:fit-content;max-width:100%;min-height:48px;padding:12px 0;cursor:pointer;font-size:15px}
+.administration-help-content{max-width:75ch;font-size:15px;color:#B4BAC0;overflow-wrap:anywhere}
+.administration-help-content h3,.administration-help-content h4,.administration-help-content h5{color:#F3F2EE;line-height:1.3;margin:24px 0 12px}
+.administration-help-content h3{font-size:22px}.administration-help-content h4{font-size:19px}.administration-help-content h5{font-size:17px}
 .policy-note{margin:24px 0 0;padding-top:20px;border-top:1px solid #43454E}
 .member-list,.invitation-list{padding:0;margin:20px 0 0;list-style:none}
 .member-list li,.invitation-list li{padding-block:20px;border-top:1px solid #43454E}

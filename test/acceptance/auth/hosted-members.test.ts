@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import { parseHTML } from 'linkedom';
+import { micromark } from 'micromark';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
@@ -17,6 +20,20 @@ describe('Members through the hosted HTTP server', () => {
     const { answer, forms } = await shownPage(admin, 'members');
 
     assert.equal(answer.status, 200, answer.body);
+    const document = parseHTML(answer.body).document;
+    const help = document.querySelector('details[data-help="members"]');
+    assert.ok(help, 'Complete removal help must be available without scripts');
+    assert.equal(help.hasAttribute('open'), false);
+    assert.equal(help.querySelector('summary')?.textContent, 'Member removal help');
+    assert.equal(help.getAttribute('data-document-version'), 'hosted-members-help-organization-removal-proposal-2026-10-26-v1');
+    assert.equal(help.getAttribute('data-document-sha256'), '853d344d0f861fd3a53ed05b846909108d56d39d6105a7fa4fcc626e0d1aa9ca');
+    const canonical = await readFile('docs/legal/organization-removal-2026-10-26-proposal-v1/members-help.md', 'utf8');
+    const expected = parseHTML(`<div>${micromark(canonical)}</div>`).document.querySelector('div')?.textContent;
+    assert.equal(help.querySelector('.administration-help-content')?.textContent, expected);
+    assert.equal(help.querySelector('a')?.getAttribute('href'), 'https://thermus.ai/privacy/');
+    assert.equal(help.querySelectorAll('form, input, script').length, 0);
+    assert.equal(help.closest('form'), null);
+    assert.deepEqual(site.directory.invitationChanges, []);
     assert.match(answer.body, /Invite to Acme<\/h2>/);
     assert.equal(forms[0]?.fields.organization_id, 'org-a');
     assert.match(answer.body, /href="\/team\/">Product \/ Connect<\/a>/);

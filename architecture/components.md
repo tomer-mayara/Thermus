@@ -1232,10 +1232,12 @@ client, remote key-set resolver, and organization directory. WorkOS owns remote
 identity/organization data. Provider calls run during requests with a short
 timeout and no SDK retry. Self-serve signup follows configured enablement and
 selected organization/authority documents. Production composition supplies the
-[purpose-marked organization Audit bundle](../src/accounts/providers/workos/workos-organization-audit-documents.ts).
+[purpose-marked organization removal bundle](../src/accounts/providers/workos/workos-organization-removal-documents.ts).
 The bundle holds exact versioned bytes; the separate approval and rollout record
 decides publication and deployment. Existing approved and historical bundles stay
-unchanged.
+unchanged. Account pages render the complete approved Audit and Members removal
+help in native expandable regions; the frozen help bytes remain inside the web
+component.
 Signup remains false by default. The unchanged historical personal-User bundle
 does not authorize new named creation; marked test documents prove behavior only.
 The selected document versions and hashes use the existing WorkOS creator-record
