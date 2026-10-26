@@ -1,0 +1,35 @@
+▶ Members through the hosted HTTP server
+  ✖ Given an Admin in Acme Labs, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (28.504042ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (10.523417ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (15.572292ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (4.059667ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.361333ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (2.772459ms)
+✖ Members through the hosted HTTP server (65.636ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 343.083167
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-members.test.js:10:5
+✖ Given an Admin in Acme Labs, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (28.504042ms)
+  AssertionError [ERR_ASSERTION]: The workspace name must be beside Switch workspace
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-members.test.js:18:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Product / ConnectMembersAudit logsSwitch workspace',
+    expected: /Acme Labs/,
+    operator: 'match',
+    diff: 'simple'
+  }

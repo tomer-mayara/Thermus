@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "classification": {
+    "container": false,
+    "external": false,
+    "contract": false,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": false,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "architecture": {
+    "modelUpdated": false,
+    "summary": "UI-01 changes presentation inside the existing Web owner: pass the existing trusted MemberOverview organizationName to private layout chrome, escape it, label ordinary page links, use a 32px shared title and full-width Members, and focus main after the skip link. Audit keeps its form, script, Save/Test, context and current lookups. Style/script CSP hashes still derive actual bytes; admission, session, permissions, mutations, recovery, seat counts and approved help remain unchanged. No new production component, import edge, public module/declaration, provider call, store, deployment boundary or dependency. All registry drawings remain unchanged because the existing member-read and Web responsibility descriptions still apply. The test-gate document updates the browser group inventory; commands, selection, required checks and decision authority do not change.",
+    "views": [
+      "Context",
+      "C4 containers: hosted edition",
+      "Containers and source owners",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Scenario: hosted member read",
+      "Behavior and resource ownership",
+      "Deployment view"
+    ],
+    "evidence": [
+      "src/interfaces/web/account/members-page-layout.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "src/interfaces/web/account/administration-pages.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "test/support/in-process/hosted-member-removal-site.ts",
+      "docs/implementation/admin-ui-01.md",
+      "docs/implementation/test-gate-policy.md",
+      "architecture/components.md"
+    ]
+  },
+  "head": "a017020ebe2448f5de6cc7d9cbb0700367fc80b1",
+  "base": "57c99e2b892acea52bfc3a53aee61b5ae442bf46"
+}

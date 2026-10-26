@@ -1,0 +1,1 @@
+Superseded run at ed804ba6 was stopped with SIGTERM (exit 143) after independent review found the Audit tablet max-width regression. It is incomplete, not a pass. Termination-related failures in the log are not product findings. Rerun the full ordinary suite after the CSS fix and test-quality refactor.

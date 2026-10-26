@@ -1,0 +1,15 @@
+{
+  "head": "a017020ebe2448f5de6cc7d9cbb0700367fc80b1",
+  "base": "57c99e2b892acea52bfc3a53aee61b5ae442bf46",
+  "validated_source": "d35d12fc6d16d00c39a554e14b31121d0feba247",
+  "changes_since_source_validation": [
+    "docs/design/organization-admin-plan.md",
+    "docs/design/portal-design.md",
+    "docs/implementation/admin-ui-01.md",
+    "docs/metrics/2026-10-26-57c99e2b.json",
+    "test/support/drivers/browser/admin-shell-browser.ts"
+  ],
+  "production_source_unchanged": true,
+  "test_change": "browser-only local binding renamed skip to skipLink; same assertions and calls",
+  "working_tree_clean": true
+}

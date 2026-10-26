@@ -1,0 +1,30 @@
+✖ Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width (633.241625ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1128.77725
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:104:1
+✖ Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width (633.241625ms)
+  AssertionError [ERR_ASSERTION]: Audit must keep the available content width at tablet sizes
+  
+  650 !== 752
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js:113:16)
+      at runNextTicks (node:internal/process/task_queues:65:5)
+      at process.processImmediate (node:internal/timers:541:9)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 650,
+    expected: 752,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

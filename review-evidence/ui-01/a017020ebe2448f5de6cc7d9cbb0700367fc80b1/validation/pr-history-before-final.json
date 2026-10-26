@@ -1,0 +1,23 @@
+{
+  "captured": "2026-10-26T21:00:54.429Z",
+  "pull_request": {
+    "url": "https://github.com/tomer-mayara/Thermus/pull/263",
+    "head": "d35d12fc6d16d00c39a554e14b31121d0feba247",
+    "base": "57c99e2b892acea52bfc3a53aee61b5ae442bf46",
+    "title": "Refine the shared admin shell and Members layout (UI-01)",
+    "body": "## Description\n\nUI-01 adds trusted workspace context beside Switch workspace, compact page navigation, and a full-width Members layout. Audit logs keeps its existing form and data behavior. This draft records the reviewed plan and implementation evidence as work proceeds.\n\n## Review\n\nDraft — final classification and complete-candidate evidence pending. The implementation stays inside the existing Web component; final architecture and quality checks will confirm the complete candidate.\n\nMerge status: blocked. Implementation validation, required gates, metrics and final review remain pending. This request covers UI-01 implementation; no merge or deployment is being performed.\n\n---\nCandidate: [74f8f64f](https://github.com/tomer-mayara/Thermus/commit/74f8f64f4b8b6d4fa7a08f587ac002ec2ae1a2f7) · [Validation](https://github.com/tomer-mayara/Thermus/pull/263#issuecomment-6426553537) · [Quality review](https://github.com/tomer-mayara/Thermus/pull/263#issuecomment-6426553900)",
+    "draft": true
+  },
+  "comments": [
+    {
+      "id": 6426553537,
+      "url": "https://github.com/tomer-mayara/Thermus/pull/263#issuecomment-6426553537",
+      "body": "## Validation\n\nImplementation candidate: `d35d12fc6d16d00c39a554e14b31121d0feba247`; base: `57c99e2b892acea52bfc3a53aee61b5ae442bf46`. Candidate publication and final report links follow complete validation.\n\nBDD-first failures were observed before source edits for missing workspace context, narrow desktop content and large titles. Focus checks found the skip link did not focus main. Independent review then found Audit width changed at tablet sizes; a regression test failed at 650px versus the expected 752px before the CSS fix.\n\nCurrent focused checks pass: Members browser **7/7** (JavaScript on/off, 320/1280px, Audit 800/860px, long values, doubled text, keyboard, approved help and Save/Test), HTTP/route/Audit renderer and handlers **82/82**, and shared-site consumers **25/25**. Measured final Audit widths are 752px at viewport800 and812px at860.\n\nThe first full ordinary run at `ed804ba6` was interrupted after the tablet finding and is not a pass. The complete ordinary suite is now running on corrected source; type/build/container/metrics checks remain pending. No provider, production, SQL or Collector gate is selected by this presentation change or its actual test-helper consumers. Full logs, screenshots and failure/retry history will be retained in the final linked evidence."
+    },
+    {
+      "id": 6426553900,
+      "url": "https://github.com/tomer-mayara/Thermus/pull/263#issuecomment-6426553900",
+      "body": "## Quality review\n\nInitial draft at `74f8f64f4b8b6d4fa7a08f587ac002ec2ae1a2f7`, base `57c99e2b892acea52bfc3a53aee61b5ae442bf46`.\n\nThe initial plan commit changes no production architecture. `habit-hooks --branch origin/main` passed. Complete-candidate architecture assessment, metrics, classification and independent agent review are pending. This is not human approval evidence. No merge or deployment is part of this implementation turn."
+    }
+  ]
+}

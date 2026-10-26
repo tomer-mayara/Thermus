@@ -1,0 +1,12 @@
+✔ Given built Members with JavaScript off at 320px, when an Admin opens the page, then the list uses the content width and the title stays modest (1303.497333ms)
+✔ Given built Members with JavaScript off at 1280px, when an Admin opens the page, then the list uses the content width and the title stays modest (762.769875ms)
+✔ Given built Members with JavaScript on at 320px, when an Admin opens the page, then the list uses the content width and the title stays modest (862.809958ms)
+✔ Given built Members with JavaScript on at 1280px, when an Admin opens the page, then the list uses the content width and the title stays modest (803.800416ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4494.450292

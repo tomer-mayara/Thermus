@@ -1,0 +1,654 @@
+
+> thermus@0.0.0 test
+> npm run build && node --test --test-concurrency=1 "dist/test/**/!(hosted-image).test.js" && npm run test:user-portal
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+✔ S1-05 Given a verified creator and recipient, when they create, invite as admin, accept with a provider fake, and select the workspace, then application browser and MCP access match their roles and only the creator agreement is stored (397.576542ms)
+✔ S1-05 Given a verified creator and recipient, when they create, invite as user, accept with a provider fake, and select the workspace, then application browser and MCP access match their roles and only the creator agreement is stored (187.227458ms)
+✔ Given an Admin after password sign-in and a valid current User-grant form, when it posts to the retired grant path, then that path is unavailable, no role changes, and native invitations remain available (28.741792ms)
+✔ Given an AuthKit return with two current memberships and no selected organization or explicit return path, when the callback completes, then the existing selector opens without choosing a workspace (177.743042ms)
+✔ Given AuthKit selected an organization with current product access, when its callback completes, then the browser opens the portal for that organization without a creator agreement or activation write (72.758333ms)
+✔ Given a safe explicit return path, including the portal root, when an unselected member completes sign-in, then the sealed destination is retained (88.843541ms)
+✔ Given one eligible membership without a trusted selection, when a default callback completes, then the existing selector offers that workspace without selecting it (37.2235ms)
+✔ Given a returned identity with no eligible membership, when the selector opens, then it gives existing invitation and signup guidance without an agreement or a workspace inferred from the email domain (63.834125ms)
+✔ Given a provider-selected workspace whose membership is no longer active, when its default callback completes, then the browser selects from current memberships without an automatic switch (67.49025ms)
+✔ Given no selected organization from AuthKit, when login and callback queries claim an invitation or organization, then those hints cannot choose a workspace (56.864542ms)
+✔ Given a membership read outage after code exchange, when the default callback completes, then recovery keeps the signed-in cookie and opens the selector after the outage ends (82.012291ms)
+✔ Given a browser selected in Acme and an MCP token bound to Acme, when a native unselected return is followed by choosing Globex, then the browser opens Globex and the same token still uses Acme (131.211542ms)
+✔ Given a native return followed by workspace selection, when membership is removed or the provider refuses or cannot switch, then the completed sign-in survives and no workspace is silently chosen (86.647625ms)
+✔ Given an Admin and a current invitation form, when role, origin, CSRF, or selected organization is forged, then native invitation writes are refused and refreshed session cookies remain usable (35.1635ms)
+✔ Given a User without administration authority, when it opens Members or sends a native invitation, then current authority refuses both without changing provider state (4.188625ms)
+▶ Hosted invitations through the public routes, with session and directory doubles
+  ✔ Given two Admins, when each sends a native invitation, then each can invite either role, unsupported roles are refused, and accepted Admin access includes product access (41.106958ms)
+  ✔ Given pending, accepted, revoked, and expired invitations, when an Admin resends and revokes them, then only pending invitations appear and only pending invitations of its organization change, and no invitation token reaches a page or a record (8.389959ms)
+  ✔ Given a directory that enforces the invited address and then one that accepts by its own rules, when Members opens, then the page claims a strict address match only for the first (2.57975ms)
+  ✔ Given an inactive membership with User and Admin and a pending membership with User, when an Admin invites the first address as User, another Admin invites the second as Admin, and each person accepts, then each membership becomes active with only the role of its invitation, so that no invitation restores a grant outside the authority of its sender (7.244542ms)
+  ✔ Given a pending User invitation, when an Admin sends the same address as User again, also in another letter case, then nothing is sent and the browser returns to Members; after another Admin revokes the invitation, a new send is a new invitation (7.035875ms)
+  ✔ Given an Admin without completed MFA, when it opens Members and sends either invitation role, then password access permits both and records each applied change (3.727958ms)
+✔ Hosted invitations through the public routes, with session and directory doubles (70.914291ms)
+✔ Given a hosted MCP resource, when a request carries a foreign, malformed, or opaque Origin, then it gets 403 before WorkOS receives a request, with or without a bearer token (681.181542ms)
+✔ Given a hosted MCP resource, when a native client omits Origin or a browser sends the public origin, then a valid bearer token lists the fetch tool and no token receives the metadata challenge (122.499458ms)
+✔ Given hosted protected-resource metadata, when a client reads it with a foreign Origin, then it stays public and names the MCP resource (42.58425ms)
+▶ Hosted MCP access guidance
+  ✔ Given an authenticated MCP client without current product permission in its token workspace, when it calls a tool, then denial points to signup and reauthorization without granting access; an authorized token for another workspace still calls the tool (182.687041ms)
+  ✔ Given hosted signup guidance, when a client has no valid token or WorkOS cannot read its membership, then the response remains an authentication challenge or server failure and no tool or provider write runs (58.031958ms)
+✔ Hosted MCP access guidance (241.501041ms)
+✔ Given 100 active memberships and display-user reads that each cost 300 ms, when the current Admin removes an ordinary User, then only that target is deleted after admission and its exact operation has a terminal receipt within 30 seconds (5.855083ms)
+✔ Given a target Admin with two memberships, a global account, and a personal factor, when Members removes one membership and a fresh User invitation is accepted, then only invited User access returns and the other account state stays intact (481.934792ms)
+✔ Given applied removal and a throwing customer Audit sink, when Members submits and reads again, then the outcome and receipt or hold stay unchanged with one deletion (128.599333ms)
+✔ Given unknown removal and a throwing customer Audit sink, when Members submits and reads again, then the outcome and receipt or hold stay unchanged with one deletion (175.099458ms)
+✔ Given a valid Admin form with a forged organization, when Members refuses it, then no customer event is captured for the forged tenant and no provider deletion is sent (105.778541ms)
+✔ Given a password-authenticated Admin, two active Admins, and an ordinary User, when the Admin confirms Remove through Members, then only that membership is removed and the current count is two (200.869959ms)
+✔ Given a valid removable target and only actor authority changed, when the removal form is submitted, then no provider deletion occurs (126.523167ms)
+✔ Given a valid removable target and only saved organization stale, when the removal form is submitted, then no provider deletion occurs (113.00425ms)
+✔ Given a valid removable target and only organization forged, when the removal form is submitted, then no provider deletion occurs (109.836625ms)
+✔ Given a valid removable target and only saved target stale, when the removal form is submitted, then no provider deletion occurs (79.113375ms)
+✔ Given a valid removable target and only target forged, when the removal form is submitted, then no provider deletion occurs (174.529417ms)
+✔ Given a valid removable target and only revision stale, when the removal form is submitted, then no provider deletion occurs (114.963791ms)
+✔ Given a valid removable target and only revision forged, when the removal form is submitted, then no provider deletion occurs (140.049834ms)
+✔ Given a valid removable target and only method invalid, when the removal form is submitted, then no provider deletion occurs (122.320916ms)
+✔ Given a valid removable target and only origin invalid, when the removal form is submitted, then no provider deletion occurs (93.275583ms)
+✔ Given a valid removable target and only CSRF invalid, when the removal form is submitted, then no provider deletion occurs (164.377041ms)
+✔ Given a password-only last Admin and a valid self-removal form, when Remove is confirmed, then the page asks for another Admin and links to invitations without deleting the membership (122.961792ms)
+✔ Given an uncertain removal that deleted its target, when the Admin repeats the same POST and refreshes Members, then the POST is busy, current facts are shown, and no deletion is replayed (127.835291ms)
+✔ Given a confirmed removal followed by failed Members reads, when the Admin refreshes, then completion remains separate from the read failure and no deletion is replayed (102.239541ms)
+✔ Given an Admin with another eligible membership, when the Admin removes itself and follows workspace guidance, then old organization browser and MCP access are refused and the other workspace can be selected (282.758ms)
+✔ Given an invited Admin without another membership or creator record, when the Admin removes itself and follows guidance, then no-membership invitation and eligible signup are usable without restoring access (120.702125ms)
+✔ Given a creator Admin with a retained start record and another Admin, when the creator removes itself, then signup offers saved-start support without making or restoring a membership (139.090417ms)
+✔ Given a provider that requires reauthentication after self-removal, when the Admin uses sign-in guidance, then the new identity-only selection offers current no-membership guidance without protected removal details (145.183541ms)
+✔ Given an unknown self-removal that took effect, when old POST and Members are refused, then identity-only guidance remains usable and the pending operation is not settled or replayed (134.083166ms)
+✔ Given a removed membership and an expired selected-workspace session, when the User opens session, then sign-in is required and a new sign-in can select only retained access without replaying removal (301.9135ms)
+✔ Given a removed membership and an expired selected-workspace session, when the User opens organizations, then sign-in is required and a new sign-in can select only retained access without replaying removal (164.017083ms)
+▶ Members through the hosted HTTP server
+  ✔ Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (30.679667ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (8.437792ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (13.629375ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (4.028375ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (3.444333ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (2.96125ms)
+✔ Members through the hosted HTTP server (64.025458ms)
+✔ Given a User and Admin with existing browser and MCP sessions in two organizations, when the provider removes Admin in one, then old invitation forms and Members are denied there while product and other organization access remain (56.738708ms)
+✔ Given a User with browser and MCP sessions in two organizations, when the provider removes its last application grant in one, then access stops there without ending identity or access in the other organization (11.793667ms)
+✔ Given an ordinary active membership, another membership, an account, and a personal factor, when the directory deletes the exact membership and WorkOS confirms completion, then only that membership is absent on reread (84.995542ms)
+✔ Given all current role slugs and ordinary management, when management changes without a new timestamp, then member and page facts retain all grants and external management with a new revision (56.375375ms)
+✔ Given directory-managed refusal, when the directory deletes the intended membership, then it reports only the known outcome and sends one DELETE (56.217666ms)
+✔ Given response lost after deletion, when the directory deletes the intended membership, then it reports only the known outcome and sends one DELETE (99.238875ms)
+✔ Given explicit ordinary management, when real membership wire evidence becomes undefined with the same timestamp, then member and page report unknown with a new revision (61.338833ms)
+✔ Given explicit ordinary management, when real membership wire evidence becomes null with the same timestamp, then member and page report unknown with a new revision (90.93625ms)
+▶ Hosted organization requests through the public routes: browser checks, cookie effects, session failures, and deferred operations
+  ✔ Given a signed-in user whose session the provider refreshes at each request, when selection posts come from another site or without an origin, lack the form token or have a wrong one, or name an invalid return destination or an extra field, then each is refused without a switch, and the refreshed session cookie still reaches the browser (43.135334ms)
+  ✔ Given an ended session and then an outage of the session lookup, when the organization page and a selection are requested, then the ended session gets a sign-in request that clears its cookie, the outage gets a server failure that keeps the cookie and asks for no sign-in, and no organization is read or switched (6.152416ms)
+  ✔ Given an Admin with a selected organization, when it requests to create, resume, rename, or change the settings of an organization, then no route does it: the organization page accepts only reads, the selection accepts no other field, other organization paths do not exist, and the session gets no further switch (8.657791ms)
+✔ Hosted organization requests through the public routes: browser checks, cookie effects, session failures, and deferred operations (58.709916ms)
+▶ Hosted organization onboarding and selection through the public routes, with session and directory doubles
+  ✔ Given signed-in users without an authorized active organization — no membership, an inactive membership, a default role, or a retired role without application permissions —, when each opens the organization page, then it tells them to accept an invitation or to contact the operator, offers no organization, and every tenant page stays refused without a default tenant or role, with a link to the organization page (42.528125ms)
+  ✔ Given a user with User access in one organization, Admin access in a second, and an inactive membership in a third, when the user opens the organization page and selects the second organization for the User administration page, then only the two active organizations are offered, and the browser goes to that page with a new session cookie, where only the second organization and its own permissions apply (10.17575ms)
+  ✔ Given the same user, when a selection form names an inactive membership, an organization of another user, or an unknown organization, also with forged organization values in the query and headers, then each selection is refused, the session keeps its organization, and the session gets no switch (5.777791ms)
+  ✔ Given a user with only Admin in an organization, when it selects that organization for the billing page, then billing, both administration destinations, product access, and the protected MCP tool work with the current Admin grant (26.484958ms)
+✔ Hosted organization onboarding and selection through the public routes, with session and directory doubles (85.73175ms)
+✔ Given valid local hosted inputs, when the production application opens, then the portal, built assets, and local health are available without WorkOS calls and protected routes still require sign-in (314.569042ms)
+✔ Given an account request waiting for session, when disconnect occurs, then its wait ends and its protected operation never starts (24.487167ms)
+✔ Given an account request waiting for session, when shutdown occurs, then its wait ends and its protected operation never starts (22.210458ms)
+✔ Given an account request waiting for access, when disconnect occurs, then its wait ends and its protected operation never starts (23.496ms)
+✔ Given an account request waiting for access, when shutdown occurs, then its wait ends and its protected operation never starts (22.999834ms)
+▶ The hosted active product member count through the public routes, with session and directory doubles
+  ✔ Given members on several pages with repeated page boundaries, when Admin-only and combined User/Admin members open the members page, then each active product member counts once, including Admin-only members, while default-role, pending, and inactive memberships and pending invitations do not count (27.490792ms)
+  ✔ Given a member page or an invitation page that fails to load, when Members opens, then each gives the failure page without a partial number or list, and the operator gets the path and the cause (3.504583ms)
+✔ The hosted active product member count through the public routes, with session and directory doubles (31.56125ms)
+✔ Given a former invited User without a creation record or current access, when the person accepts named creation, then a new organization gets its first Admin without restoring the old membership (203.463167ms)
+✔ Given a legacy personal record and active User membership, when signup is retried after restart with a different name, then saved facts and User status stay unchanged without an Admin grant (109.004208ms)
+✔ Given a legacy personal record and inactive User membership, when signup is retried after restart with a different name, then saved facts and User status stay unchanged without an Admin grant (109.253625ms)
+✔ Given a broken retained record and no other workspace, when signup is inspected after restart, then it requires support without repairing the record (113.247375ms)
+✔ Given a broken retained record and another current workspace, when signup is inspected after restart, then it requires support and permits Continue to that workspace without repairing the record (115.788708ms)
+✔ Given current User and Admin memberships, when signup continues through each choice, then both workspaces remain usable without a new organization or agreement (120.736417ms)
+✔ Given a signed-in hosted user with no workspace and signup off, when they open the organization page, then they can check signup availability or follow invitation and support guidance without an automatic grant (160.748333ms)
+✔ Given a new visitor, when free signup opens, then the branded two-step page offers the complete readable notice before sign-in and a compact mobile disclosure (92.369834ms)
+✔ Given an eligible identity, when a named organization is created, then the readable agreement and editable name lead directly to that workspace (182.858125ms)
+✔ Given an organization response is lost before persistence, when signup restarts and a new name is submitted, then a confirmed fresh creation can make the first Admin (256.381708ms)
+✔ Given the organization response is lost after persistence with a saved organization, when signup restarts and a different name is submitted, then saved facts stay unchanged and no grant repeats (82.539208ms)
+✔ Given the membership response is lost before persistence with a saved organization, when signup restarts and a different name is submitted, then saved facts stay unchanged and no grant repeats (73.034833ms)
+✔ Given the membership response is lost after persistence with a saved organization, when signup restarts and a different name is submitted, then saved facts stay unchanged and no grant repeats (75.009ms)
+✔ Given an unconfirmed organization write completes after its request times out, when a new application reads it, then recovery uses current access without another write (2151.312209ms)
+✔ Given an unconfirmed membership write completes after its request times out, when a new application reads it, then recovery uses current access without another write (2123.31275ms)
+✔ Given two application instances receive different creation names for one subject, when both provider writes settle, then one organization persists and only its confirmed creator attempts the Admin grant (146.510959ms)
+✔ Given creation succeeds but its browser organization switch fails, when signup is retried after restart, then the same organization opens without a new grant or acceptance write (110.086167ms)
+✔ Given a retained activation, when the application restarts with signup off and reopens after revocation, then the old form cannot replay the grant and other workspace access remains usable (326.741833ms)
+▶ Hosted edition with the WorkOS provider
+  ✔ Given hosted settings without WorkOS settings, when the server starts, then it stops before it listens with a FATAL line that names each missing WorkOS setting, gives no access, and uses no network (155.968625ms)
+  ✔ Given refused WorkOS values, when the server starts, then it stops before it listens with a line that names each setting and its rule but not the value (148.1725ms)
+  ✔ Given valid WorkOS settings without readable trusted rules, when the hosted server starts, then it stops before listening and names only the rules setting and failure (755.945584ms)
+  ✔ Given valid WorkOS settings and trusted rules but a missing renderer, when the hosted server starts, then it stops before listening with a safe renderer setup message and uses no network (382.597542ms)
+  ✔ Given valid hosted settings but a missing portal build, when the server starts, then it stops before listening with a safe build message and uses no network (394.403625ms)
+  ✔ Given valid hosted settings but a invalid portal build, when the server starts, then it stops before listening with a safe build message and uses no network (418.175375ms)
+  ✔ Given valid WorkOS settings and outbound access denied, when MCP, account, organization, and billing operations arrive with forged bearer tokens, cookies, organization IDs, and form input, then none gets access or a session: MCP asks for a token, each account path asks for a sign-in, a forged callback is refused, and the server uses no network (497.366666ms)
+  ✔ Given valid WorkOS settings, when a browser starts the sign-in, then the server sends it to the AuthKit sign-in of WorkOS with PKCE, its state, and the registered redirect URI, sets a short sign-in cookie, and uses no network; the protected-resource metadata names the AuthKit issuer (419.724042ms)
+  ✔ Given test and demonstration settings, when the onboarding page, the organization list, and a selection arrive with the session cookie, form token, organization, and return destination that the test doubles accept, then each asks for a sign-in, and the server reports no organization or tenant and uses no network (403.262791ms)
+  ✔ Given hosted settings with an invalid common setting, also with every WorkOS setting, when the server starts, then it stops before it listens with a FATAL line that names the setting and the rule but not the value (1120.790583ms)
+✔ Hosted edition with the WorkOS provider (4697.595666ms)
+▶ Hosted WorkOS edition: current grants and revocation at the next request
+  ✔ Given Ada and Hal with User and Admin, each with a browser session and an MCP token for Acme, when the provider removes Admin from Ada and User from Hal, then Ada loses administration but keeps product access, and Hal keeps product and administration access with Admin alone (377.138416ms)
+  ✔ Given Bea with only User in Acme and User in Globex, when the provider removes its last grant in Acme, then WorkOS keeps the membership with only the default role: Bea is refused in Acme at the next request and has no seat there, keeps its identity and Globex, and no default role restores access (191.02675ms)
+✔ Hosted WorkOS edition: current grants and revocation at the next request (568.782417ms)
+▶ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets
+  ✔ Given Dan signed in as Admin and then changed to User in WorkOS, when Dan opens administration pages or sends an invitation with the existing form token, then current membership checks deny each request before reading members or invitations or making changes (93.620458ms)
+✔ Hosted WorkOS edition: changes on stale, inactive, foreign, and forged targets (93.757042ms)
+▶ Hosted WorkOS edition: organization invitations
+  ✔ Given Dan with Admin alone, when Dan invites a new address as User, repeats the send, invites it as Admin, invites the active Ada, resends, and revokes, then WorkOS gets one send with only the User role, one resend, and one revoke; the repeat changes nothing, both other sends get 409 address-in-use, and the page shows the state that WorkOS gives without a token or link (246.034834ms)
+  ✔ Given Eve with an inactive membership that had User and Admin, when Hal invites Eve as User and Eve accepts in AuthKit, then the membership becomes active with only User: no earlier Admin returns, Members no longer shows the accepted invitation, and the active product members count Eve (183.567625ms)
+  ✔ Given Cal with only Admin, a User invitation whose expiry passed while WorkOS still says pending, and a pending Admin invitation, when Cal opens the invitations page, posts an Admin invitation, and posts a resend of the expired User invitation, then the page offers both roles and changes for the pending Admin invitation, the new Admin invitation succeeds, and the expired resend is refused (111.632834ms)
+✔ Hosted WorkOS edition: organization invitations (541.482291ms)
+▶ Hosted WorkOS edition: the active product member count from every WorkOS page
+  ✔ Given WorkOS pages of two memberships that repeat one membership on the next page, when Dan opens the members page, then each active product membership counts once, including Admin-only and combined User/Admin memberships, and default-role, inactive, and pending memberships count zero (185.70775ms)
+  ✔ Given a WorkOS outage on a later page of the members, when Dan opens the members page, then it gives the 500 failure page with an operator report and no partial count (68.916959ms)
+✔ Hosted WorkOS edition: the active product member count from every WorkOS page (254.850333ms)
+✔ Given a retained cookie with inferred MFA proof, when the portal performs a session read, then the user stays signed in without MFA proof (169.311125ms)
+✔ Given a retained cookie with inferred MFA proof, when the portal performs a session refresh, then the user stays signed in without MFA proof (72.898166ms)
+✔ Given a retained cookie with inferred MFA proof, when the portal performs a session organization switch, then the user stays signed in without MFA proof (110.004333ms)
+✔ Given retained Required MFA settings, when an Admin signs in with a Password callback, then the portal reports no MFA proof (186.526458ms)
+▶ Hosted WorkOS edition: organization onboarding and selection from WorkOS organization reads
+  ✔ Given signed-in users without an authorized active organization in WorkOS — no membership, only an inactive membership, or only the default role —, when each opens the organization page, then each gets the invitation and operator guidance without an organization or a form, and the protected portal request, the member and invitation pages, and the MCP endpoint refuse each of them, without a default tenant or role (254.215791ms)
+  ✔ Given a member with User and Admin in Acme, User in Globex, an inactive membership in Initech, and only the default role in Umbrella, whose memberships WorkOS gives on several pages, when the member opens the organization page and selects Globex for the portal, then only Acme and Globex are offered with their WorkOS names, the browser goes to the portal with a new session cookie, and the portal and the billing page check the current grants of Globex (114.379542ms)
+  ✔ Given the same member, when a selection form names the inactive Initech, the default-role Umbrella, the Hooli of another user, or an unknown organization, also with forged organization values in the query and the headers, then each selection is refused with 403, WorkOS gets no switch, and the session keeps Acme (93.282916ms)
+  ✔ Given memberships that change in WorkOS after the organization page was shown — Globex deactivated and a new User membership in Hooli —, when the member selects each, then the current WorkOS read decides: Globex is refused without a switch, and Hooli is selected (123.927084ms)
+  ✔ Given a member with only the retired Super Admin role in Acme, when the member opens organization and account pages, then no organization is offered and portal, billing, and MCP access are refused (90.576708ms)
+  ✔ Given a signed-in member, when a selection comes from another origin or with another form token, then each is refused with 403 before any organization read, and WorkOS gets no switch (118.125166ms)
+  ✔ Given a session whose access token expired, when the member selects Globex, selects Initech, and meets a WorkOS membership outage, then each answer carries the refreshed session cookie: the 303 before the cookie of the switch, the 403 refusal, and the 500 failure page with an operator report; an outage never shows the onboarding guidance (120.934083ms)
+✔ Hosted WorkOS edition: organization onboarding and selection from WorkOS organization reads (916.525666ms)
+✔ Given an active Admin-only membership and password sign-in, when the Admin uses the product, MCP, members, billing, and invitations, then access is allowed and either customer role can be invited without MFA (291.116584ms)
+✔ Given an active User-only membership and password sign-in, when the User uses product and MCP or attempts administration, then product access works and member, billing, and invitation operations are denied (146.681584ms)
+✔ Given an Admin session in Acme and valid User access in Globex, when the current Acme record becomes the default role, then existing sessions and tokens lose Acme access while Globex still works (168.866458ms)
+✔ Given an Admin session in Acme and valid User access in Globex, when the current Acme record becomes the retired Super Admin role, then existing sessions and tokens lose Acme access while Globex still works (151.353833ms)
+✔ Given an Admin session in Acme and valid User access in Globex, when the current Acme record becomes an unknown role absent from the catalog, then existing sessions and tokens lose Acme access while Globex still works (137.164708ms)
+✔ Given an Admin session in Acme and valid User access in Globex, when the current Acme record becomes an inactive membership, then existing sessions and tokens lose Acme access while Globex still works (113.2995ms)
+✔ Given an Admin session in Acme and valid User access in Globex, when the current Acme record becomes no membership after removal, then existing sessions and tokens lose Acme access while Globex still works (109.640417ms)
+✔ Given an Admin session in Acme and valid User access in Globex, when the current Acme record becomes only another person’s membership, then existing sessions and tokens lose Acme access while Globex still works (192.198334ms)
+▶ Hosted self-service signup is closed by default
+  ✔ Given no signup setting, when a visitor opens signup, then the page says activation is closed and offers Sign in and Contact (107.977541ms)
+  ✔ Given closed signup and a signed-in identity without membership, when an earlier agreement form is posted, then activation stays closed and no membership is created (73.747625ms)
+✔ Hosted self-service signup is closed by default (182.454917ms)
+▶ Hosted self-service signup with a test legal bundle
+  ✔ S1-03a Given an eligible verified person, when creation opens, then the organization name is editable and the one authority agreement is unchecked (172.221458ms)
+  ✔ S1-03a Given an eligible verified creator, Acme Labs, and the accepted authority agreement, when creation completes, then the first Admin is sent to the guide route with matching named organization context (159.137167ms)
+  ✔ Given signup is enabled without approved documents, when the application starts, then startup fails (29.682375ms)
+  ✔ Given a visitor, when signup opens, then the full notice appears before sign in (72.843125ms)
+  ✔ Given a signed-in user deleted from WorkOS, when signup receives GET, then it offers fresh sign-in without activation writes (39.127ms)
+  ✔ Given a signed-in user deleted from WorkOS, when signup receives POST, then it offers fresh sign-in without activation writes (49.227ms)
+  ✔ Given a signed-out visitor posts an old signup form, when signup answers, then the full notice and a usable Sign in link appear without writes (49.170458ms)
+  ✔ Given a deleted user follows signup Sign in, when a fresh user returns and accepts the agreement, then one new organization receives Admin access (147.005083ms)
+  ✔ Given a current-user provider outage, when signup receives GET, then it reports unavailability without activation writes (65.433625ms)
+  ✔ Given a current-user provider outage, when signup receives POST, then it reports unavailability without activation writes (185.169292ms)
+  ✔ Given current User access, when signup opens, then Continue uses the selector and returns to the portal without another agreement or provider write (88.718709ms)
+  ✔ Given a verified user with no access, when the agreement is accepted again after activation and revocation, then one Admin grant is created and stays revoked (149.275792ms)
+  ✔ Given a signed-in user, when acceptance is missing or the origin is foreign, then no provider write occurs (39.873792ms)
+  ✔ Given a session for a user whose current email is unverified, when signup is submitted, then activation is refused (58.871292ms)
+  ✔ Given existing Admin-only access, when signup opens, then Continue preserves existing access without agreement, organization creation, or a new User membership (45.105666ms)
+  ✔ Given a signup form opened before Admin access was granted, when the old form is submitted, then existing access is used without another organization or grant (78.367125ms)
+  ✔ Given a revoked created organization and current access elsewhere, when signup opens, then it requires support and lets other access continue without a new agreement or repair (143.762958ms)
+  ✔ Given the signup-record lookup fails, when signup opens, then the page reports unavailability instead of offering a new agreement (65.009541ms)
+✔ Hosted self-service signup with a test legal bundle (1638.850708ms)
+▶ S2.5 production signup documents
+  ✔ Given production signup is off by default, when GET, HEAD, or an old form arrives, then it stays closed without policy bytes or provider reads (276.574167ms)
+  ✔ S2.5 Given the approved membership-removal bundle in the hosted candidate and an eligible creator, when signup opens and its one agreement is accepted, then exact Terms and Privacy are served and the first Admin retains their legal versions and hashes (281.43775ms)
+✔ S2.5 production signup documents (558.260667ms)
+✔ Given the earlier personal bundle, when an explicit composition enables organization creation, then startup still refuses it before provider access (87.535709ms)
+✔ Given the approved terms with corrupt bytes, when signup is composed, then it fails before any provider read or write (62.939917ms)
+✔ Given the approved terms with corrupt hash, when signup is composed, then it fails before any provider read or write (49.781375ms)
+✔ Given the approved notice with corrupt bytes, when signup is composed, then it fails before any provider read or write (62.600917ms)
+✔ Given the approved notice with corrupt hash, when signup is composed, then it fails before any provider read or write (98.790333ms)
+▶ Hosted WorkOS edition: browser sign-in, the portal session, and current access
+  ✔ Given the hosted WorkOS edition, when a user signs in through the server and AuthKit sends the code back, then the browser gets one sealed HttpOnly, Secure, SameSite=Lax session cookie and no sign-in cookie, and the portal session shows the profile, the organization, no MFA evidence, and a form token (204.45425ms)
+  ✔ Given a callback with another state, without the sign-in cookie, with an AuthKit error, or with a refused code, when it arrives, then the server answers 400, makes no session, and clears the sign-in cookie (46.618291ms)
+  ✔ Given a User of organization A, an Admin, a default-role member, and a user without a membership, when each opens the protected portal request, then the User and Admin get product access, and only from a current grant read (130.957417ms)
+  ✔ Given a signed-in user without an active membership, when the organization page opens, then it gives the onboarding guidance, and each tenant page stays refused (89.209625ms)
+  ✔ Given a session whose access token expired, when the next request arrives, then the server refreshes it with WorkOS, sends one new session cookie, and keeps the form token (67.875791ms)
+  ✔ Given an expired session that WorkOS ended, when the next request arrives, then the server answers 401 and clears the cookie; when the refresh service fails instead, then the answer is 500, the cookie stays, and the session works again after the outage (90.073542ms)
+  ✔ Given the signed-in portal, when the user posts the sign-out form with the form token from the site, then the server clears the session cookie and sends the browser to the WorkOS logout URL of the session; another origin or another token changes nothing (62.24025ms)
+✔ Hosted WorkOS edition: browser sign-in, the portal session, and current access (692.34175ms)
+▶ Hosted WorkOS edition: Connect tokens at the MCP endpoint
+  ✔ Given Connect tokens, when the MCP endpoint gets them, then a User or Admin of the organization of the token is served; the default role, a missing organization, and an inactive membership get 403, and no MCP work runs for them (70.27975ms)
+  ✔ Given a browser token, an M2M-shaped token, an expired token, a token for another resource, and no token, when each reaches the MCP endpoint, then each gets 401 with a Bearer challenge that names the protected-resource metadata (97.849875ms)
+  ✔ Given the protected-resource metadata of the MCP resource, when a client reads it, then it names the MCP resource and the AuthKit issuer as its only authorization server (81.706833ms)
+  ✔ Given a member with Admin in A and User in B, when the browser session is in A and the MCP token is in B, then each credential keeps its own organization, also after access in A is removed (72.518333ms)
+  ✔ Given a membership read or key-set outage, when a request with a valid credential arrives, then the server answers 500 without protected work and reports the failure to the operator, without a token in the report (43.419208ms)
+  ✔ Given the hosted composition with a buildServer that gives a test-only tool, when a Connect token of a User lists the tools, then the list has that tool; given the composition without a buildServer, then the endpoint has no tool list and answers that the method is not found (89.126333ms)
+✔ Hosted WorkOS edition: Connect tokens at the MCP endpoint (455.2715ms)
+▶ Hosted WorkOS edition: the connection to WorkOS
+  ✔ Given the WorkOS settings of an environment, when the connection opens, then it gives those settings and writes one operator line that names the client and the AuthKit issuer; given no WorkOS settings, then it rejects and writes no line (0.9925ms)
+✔ Hosted WorkOS edition: the connection to WorkOS (1.037125ms)
+▶ Offline approved MCP client registration
+  ✔ Given the Thermus program, when an operator enters an unknown command, then the usage names the Thermus commands (153.4005ms)
+  ✔ Given a fresh Thermus installation with an approved client, when a user signs in and discovers the MCP server, then the sign-in page names Thermus and the server identity is thermus (1797.504041ms)
+  ✔ Given an enabled account and an approved native client with an exact loopback redirect URI, when registration runs, then the client persists in the data directory, no registration session stays, and a user can authorize with that redirect URI; invalid targets and redirect URIs give safe errors and register nothing (5585.401917ms)
+  ✔ Given an installation without a resource-server client, when the operator registers two native clients, then only the first registration also registers the resource-server client, the data directory keeps its credentials for the MCP resource in an owner-only file, they can introspect a user token, and no output shows the client secret (1740.013042ms)
+✔ Offline approved MCP client registration (9277.227167ms)
+✔ Given a provider import guard, when syntax, configuration, or the edition refuses a command, then no provider module loads; an accepted local command reaches the guarded opener (578.235208ms)
+2026-10-26T20:38:58.896Z WARN [Better Auth]: Invalid password
+▶ Offline local user and client commands
+  ✔ Given a stopped server and its data directory, when the operator adds users with hidden passwords and lists them, then a duplicate email is refused, the list shows each enabled state without credentials, the new password signs in, and no command uses the network (3401.850041ms)
+2026-10-26T20:39:02.423Z WARN [Better Auth]: Invalid password
+  ✔ Given two enabled users with browser sessions and MCP access tokens, when reset-password targets one user, then only that user's old password, session, and token fail; its ID and enabled state stay; its new password works; and the peer stays usable (3040.855709ms)
+  ✔ Given two enabled users with sessions, MCP access tokens, and a pending authorization code, when disable targets one user, then that user cannot sign in, keeps its ID, and loses its session, token, pending code, new authorization, and refresh; the list shows it disabled; the peer stays usable (2646.832041ms)
+  ✔ Given a live server, when each operator command runs in another process on its data directory, then each fails with the lock error, asks for no password, and changes nothing; after the server stops, add recovers the zero-account installation (4400.403292ms)
+✔ Offline local user and client commands (13490.800083ms)
+▶ Trusted access context for MCP HTTP requests
+  ✔ Given two members of different organizations, when each calls the protected tool with forged tenant headers and arguments, then each call uses only its verified user and trusted tenant (51.70125ms)
+  ✔ Given a member with Admin and User grants, when the member calls the protected tool, then the context holds both grants and every permission they give (3.493542ms)
+  ✔ Given a member with only the retired Super Admin role and no application permissions, when the member calls the protected tool, then the tool refuses before any fetch or clean step (4.168584ms)
+  ✔ Given a member whose organization membership is inactive, when the member connects, then the server denies access with HTTP 403 before any request tool exists (1.014833ms)
+  ✔ Given no access token, when a client connects, then the server requires authentication before access resolution and no protected work runs (0.827ms)
+  ✔ Given a rejected access token, when a client connects, then the server requires authentication before access resolution and no protected work runs (0.488125ms)
+  ✔ Given an access lookup outage, when a member connects, then the client gets a generic server error and no protected work runs (0.447416ms)
+✔ Trusted access context for MCP HTTP requests (62.845291ms)
+▶ Operator reports of unexpected MCP failures
+  ✔ Given an identity provider outage, when a member connects with a bearer token and a session cookie, then the client gets a generic server error and the operator gets one token-verification report that keeps the cause and holds no credential (18.356334ms)
+  ✔ Given an access lookup outage, when a member connects with a bearer token and a session cookie, then the client gets a generic server error and the operator gets one access-resolution report that keeps the cause and holds no credential (1.6675ms)
+  ✔ Given a rejected token, a token without the required scope, and an inactive membership, when members connect, then each client is refused and the operator gets no failure report (2.380541ms)
+✔ Operator reports of unexpected MCP failures (23.028541ms)
+﹣ Self-hosted evaluation container without outbound access (0.328291ms) # The container gate runs only with npm run test:container.
+✔ Given an installation under a public URL path, when clients discover the provider and an unknown client starts authorization, then the provider metadata and bundled error page use that path and the old root routes stay closed (666.021292ms)
+▶ Self-hosted server startup with one persistent installation
+  ✔ Given a fresh data directory, when the server starts, stops, and starts again, then one installation identity persists and both runs report the same local tenant (1325.014167ms)
+  ✔ Given several servers that start at the same time, when each gets SIGTERM in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after SIGTERM" and exits with status 0, not by the signal (1595.970458ms)
+  ✔ Given several servers that start at the same time, when each gets SIGINT in the same tick in which its "Listening on" line arrives, then each run writes "Stopping after SIGINT" and exits with status 0, not by the signal (1742.945375ms)
+  ✔ Given a fresh installation with zero accounts, when the server starts, then startup succeeds, MCP requests get a Bearer challenge, and no public route creates an account (680.729583ms)
+  ✔ Given an installation whose only account is disabled, when the server starts, then startup succeeds, MCP requests stay denied, and the account keeps its ID (719.380042ms)
+  ✔ Given a fresh data directory, when two servers start at the same time, then one serves, the other stops with a lock error before it listens, and one installation identity exists (667.074416ms)
+  ✔ Given a running server, when another server starts with the same data directory, then it stops with a lock error before it listens, within five seconds, and changes no data (1229.852958ms)
+  ✔ Given retained authentication data without its installation identity, when the server starts, then it stops before it listens, asks for operator recovery, and creates no new identity (1284.40975ms)
+  ✔ Given a stopped installation, when its complete data directory is restored to a new location, then the server starts there with the same tenant; a restore without the secret stops before it listens (1807.647916ms)
+  ✔ Given a Better Auth variable that the self-hosted runtime refuses, when the server starts, then it stops before it listens with an error that names the variable but not its value (1957.931125ms)
+  ✔ Given an unknown command, when the process starts, then it stops with status 2 before it listens and creates no local data (153.269334ms)
+  ✔ Given the hosted edition with a data directory setting, when the server starts, then it serves the public portal, keeps the account protected, reports no local tenant, and creates no local data (424.291166ms)
+✔ Self-hosted server startup with one persistent installation (13589.856792ms)
+▶ Self-hosted browser-to-MCP authorization without outbound access
+  ✔ Given two enabled accounts and two approved native clients, when each user's MCP SDK client starts the authorization and the user signs in and consents on the bundled pages, then each client works with a resource-bound token for its own user and browser session and no refresh token, in the one installation workspace; when a token is no longer accepted, the client authorizes again through the live browser session without the pages, and no process uses the network (3357.968042ms)
+  ✔ Given two users with MCP tokens, when the operator resets one user's password while the server is stopped, then after the restart that user's old password, old token, and a refresh request fail, the user signs in with the new password and gets a new token without a new consent, and the peer's token, session, and consent still work (3965.634917ms)
+  ✔ Given two users with MCP tokens, when the operator disables one user while the server is stopped, then after the restart that user's token is refused, the sign-in page refuses the account, no new token and no refresh is possible, and the peer keeps working with its token (3957.247958ms)
+  ✔ Given a running server, when a client reads both discovery documents and tries public signup, dynamic registration, a client metadata URL as client ID, an unregistered redirect URI, and the private provider routes, then the documents describe only the local provider, nothing creates an account or a client, and the server fetches nothing (2003.382083ms)
+  ✔ Given the bundled pages, when a sign-in or consent request has an untrusted origin or a changed authorization signature, then the page refuses it, reveals no consent details, and creates no authorization; valid requests still work (2117.342ms)
+  ✔ Given the bundled sign-in page, when one client address posts more than three sign-ins within ten seconds, then the page answers 429 with a retry delay and signs no one in, also with the correct password (2218.418291ms)
+✔ Self-hosted browser-to-MCP authorization without outbound access (17621.005583ms)
+▶ Free billing until the owner chooses a payment provider
+  ✔ Given a new hosted organization, when its billing is read, then it is on the free plan and no seat is billed (0.659ms)
+  ✔ Given active User seats that go from 3 to 5, then to 4, and then to 0, when billing gets each count, then each update confirms the free plan with no billed seat (0.722791ms)
+  ✔ Given a seat count that arrives again or after a newer count, when billing gets it, then the result does not change (0.16725ms)
+  ✔ Given two organizations, when one changes its seats, then the other keeps its own free state (0.109625ms)
+✔ Free billing until the owner chooses a payment provider (2.275375ms)
+▶ Hosted billing with BillingFree through the public routes, with session, directory, and billing doubles
+  ✔ Given Admin alone and Admin with User, each after password sign-in, when each opens the billing page of Acme, then each sees the free plan with no billed seat and no payment form, and billing reads only Acme (24.128458ms)
+  ✔ Given User alone, a default role, and a foreign organization request, when each opens the billing page, then each gets the access denial without a billing state, and billing reads nothing (4.809041ms)
+  ✔ Given Admin without completed MFA, when it opens billing, then it reads the current free state without a billing mutation (1.923292ms)
+  ✔ Given an Admin, when it posts a form to the billing page, then it gets 405 with the allowed methods, because the free plan has no billing change, and billing gets no call and nothing is recorded (3.231875ms)
+  ✔ Given overlapping member pages and pending invitations, when an Admin reads Members and billing, then each active product member counts once and the free billing state stays unchanged (3.911959ms)
+  ✔ Given a later member-page outage, when Members is read and then read after recovery, then no partial count is shown and the recovered page has the complete count (2.925083ms)
+✔ Hosted billing with BillingFree through the public routes, with session, directory, and billing doubles (41.678416ms)
+✔ given a literal woman-technologist emoji, when the pipeline converts HTML, then Markdown keeps its joiner (43.329375ms)
+✔ given a literal prohibited bidi control, when the pipeline converts HTML, then it removes and reports the control (10.049458ms)
+✔ given a literal joiner in an ASCII word, when the pipeline converts HTML, then it removes and reports the joiner (7.870709ms)
+✔ given a decimal woman-technologist emoji, when the pipeline converts HTML, then Markdown keeps its joiner (5.997ms)
+✔ given a decimal prohibited bidi control, when the pipeline converts HTML, then it removes and reports the control (6.162292ms)
+✔ given a decimal joiner in an ASCII word, when the pipeline converts HTML, then it removes and reports the joiner (5.197334ms)
+✔ given a hexadecimal woman-technologist emoji, when the pipeline converts HTML, then Markdown keeps its joiner (6.167541ms)
+✔ given a hexadecimal prohibited bidi control, when the pipeline converts HTML, then it removes and reports the control (4.718084ms)
+✔ given a hexadecimal joiner in an ASCII word, when the pipeline converts HTML, then it removes and reports the joiner (4.844041ms)
+✔ given an emoji split across a joiner-only span, when the pipeline converts HTML, then Markdown keeps its sequence (5.715084ms)
+✔ given an emoji split across a joiner-only text node, when the pipeline converts HTML, then Markdown keeps its sequence (4.886ms)
+✔ given an emoji split across three spans, when the pipeline converts HTML, then Markdown keeps its sequence (4.458875ms)
+✔ given the hosted EasyList snapshot and an article with an ad banner, when cleaned, then the banner is removed and the article stays (55.62875ms)
+✔ given literal or encoded emoji joiners across a joiner-only span, when the pipeline runs, then Markdown and findings agree (60.372042ms)
+✔ given literal or encoded emoji joiners across a joiner-only text node, when the pipeline runs, then Markdown and findings agree (19.089542ms)
+✔ given literal or encoded emoji joiners across three spans, when the pipeline runs, then Markdown and findings agree (18.409541ms)
+✔ Given a cold runtime and enabled saved settings, when trusted activity occurs, then the first event returns without waiting and is captured once with its input and result (4.9185ms)
+✔ Given cached disabled settings and remote Enable, when activity reaches freshness expiry, then refresh captures its triggering event without reviving content observed while disabled (1.029ms)
+✔ Given a failed settings read and later recovery, when only time passes then no reads occur, and later eligible activity recovers future capture (1.19ms)
+✔ Given enabled saved settings and an expired snapshot, when the first later search completes, then its query and result reach the same destination once (0.980333ms)
+✔ Given an authorized WorkOS user with a trusted profile, when search completes with forged client names, then customer OTLP contains the profile name and original WorkOS ID (500.743667ms)
+✔ Given an authorized WorkOS user with a trusted profile, when getURLAsMarkdown completes with forged client names, then customer OTLP contains the profile name and original WorkOS ID (59.423542ms)
+✔ Given an authorized WorkOS user with a unavailable optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (90.8605ms)
+✔ Given an authorized WorkOS user with a blank optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (51.520333ms)
+✔ Given an authorized WorkOS user with a control optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (82.45275ms)
+✔ Given an authorized WorkOS user with a oversized optional profile name, when a tool completes, then the event keeps the WorkOS ID without a display name (78.352792ms)
+✔ Given a current Admin and saved destination, when Test completes, then Save and Test action events are separate from the synthetic test and contains no sender response (189.9365ms)
+✔ Given a current Admin and none capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (73.817916ms)
+✔ Given a current Admin and throw capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (86.1125ms)
+✔ Given a current Admin and refuse capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (134.872709ms)
+✔ Given a current Admin and record-throw capture failure, when an invitation completes, then it is sent once and its customer event uses current trusted context (120.669084ms)
+✔ Given a current Admin and enabled capture, when Audit logs Save completes, then one metadata event names the trusted tenant and actor without settings content (67.294791ms)
+✔ Given a current Admin and a customer sink that throws, when Audit logs Save completes, then its public outcome stays complete and its write is not replayed (52.748958ms)
+✔ Given a current Admin and a customer sink that refuses, when Audit logs Save completes, then its public outcome stays complete and its write is not replayed (61.993209ms)
+✔ Given a controlled customer sink, when explicit audit actions are recorded, then only named customer events reach that sink (3.384084ms)
+✔ Given separate system and customer outputs, when internal information and an audit action are logged, then only the system output has a caller location (1.383959ms)
+✔ Given validated tool content with credential fields and a long Unicode result, when capture completes, then only a redacted bounded public copy reaches the customer sink (9.706542ms)
+✔ Given credential URLs beside public JSON and Markdown text, when capture completes, then secrets are removed and adjacent public content stays complete (0.31425ms)
+✔ Given a projected customer audit event and a private destination, when the sender connects, then neither content nor credentials leave the sender (3.938208ms)
+✔ Given enabled saved settings and a loaded snapshot, when bounded public content is captured, then one authorized event reaches the sender without writing audit content to SQL (10.568083ms)
+✔ Given captured work for a saved revision, when another instance changes settings before authorization, then the old event drops without retargeting (1.175583ms)
+✔ Given independent enabled tenants, when each captures public content and the collector then closes, then their events stay separate and closed capture sends nothing (1.637833ms)
+✔ Given a disabled saved destination, when Test settles, then one labelled synthetic event uses saved auth without changing settings (8.388708ms)
+✔ Given a disabled saved destination, when Test settles after its saved revision changes, then the obsolete result is suppressed (0.463167ms)
+✔ Given queued work for one saved revision, when another instance changes that version, then authorization drops old work and recovers only the current tenant credential (2.248125ms)
+✔ Given uncancellable DNS and a cancelled export, when its public outcome settles, then content is erased while physical sender admission remains occupied until disposal (4.114458ms)
+✔ Given hosted storage owns customer dispatch, when cold activity loads settings and a later tool completes, then the shared capture path admits both final results to that dispatcher without changing the tool response (394.339792ms)
+✔ Given enabled hosted export, when a tool and an invitation complete, then the production capture and dispatch assembly exports their redacted final customer events without writing event content to settings (136.627291ms)
+✔ Given queued hosted content for a saved revision, when another instance replaces that revision before the attempt read finishes, then the old event is dropped without retargeting (77.477291ms)
+✔ Given a stalled customer export and more calls than tenant queue capacity, when tools and an Admin invitation complete and the app closes, then product results remain usable and shutdown cancels export before storage closes (195.774667ms)
+✔ Given enabled snapshots and an unavailable dispatch settings read, when MCP and Admin work completes, then no new export starts and their public results stay complete (108.652625ms)
+✔ Given one held export and queued content for the old revision, when public activity refreshes remotely disabled settings, then the shared snapshot owner cancels old export and late sender success starts no retry (87.05025ms)
+✔ Given cold hosted capture with saved Enable, when an invitation then a later MCP call complete, then both events use shared activity-loaded settings and reach the saved revision (421.953708ms)
+✔ Given cold hosted capture with saved Enable, when MCP activity loads settings then an invitation completes, then the web action uses that same snapshot without another store read (140.568959ms)
+✔ Given an enabled snapshot in one hosted process, when that process restarts against the saved store, then the new process captures its first and later events with the saved revision (205.692875ms)
+✔ Given hosted capture caches disabled settings, when another process enables a new revision, then due and later activity use the refreshed revision without idle reads (149.302167ms)
+✔ Given an unavailable settings read, when later hosted activity reaches backoff and the store recovers, then public outcomes stay complete and recovery captures new activity without replaying rejected content (192.6ms)
+✔ Given two trusted hosted tenants have different saved revisions, when both call MCP and an Admin acts in A, then each admitted event keeps its own tenant and revision (155.475542ms)
+✔ Given hosted logging storage is unavailable, when MCP and Admin actions complete, then customer capture stays discarded and neither path reads settings (103.205625ms)
+✔ Given enabled settings at startup and a held settings read, when the first MCP search completes, then its complete response returns before audit metadata and its query and result are captured once after release (49.461666ms)
+✔ Given enabled settings at expiry and a held settings read, when the first MCP search completes, then its complete response returns before audit metadata and its query and result are captured once after release (45.559125ms)
+✔ Given missing or invalid logging storage settings, when the hosted server starts, then MCP metadata remains available and shutdown completes without storage network work (440.445708ms)
+✔ Given missing or invalid logging storage settings, when the hosted server starts, then MCP metadata remains available and shutdown completes without storage network work (436.838125ms)
+✔ Given valid logging storage settings and denied database network access, when the hosted server serves MCP, then startup needs no database connection and shutdown stays bounded (431.136959ms)
+✔ Given a self-hosted server with hosted storage settings, when logging SQL modules cannot load, then MCP starts without loading hosted storage (636.455916ms)
+✔ Given a password-authenticated current Admin, when the Admin opens Audit logs, then a protected Save form is available (143.569959ms)
+✔ Given an Admin choosing an audit destination, when Audit logs opens, then a Bearer-only destination selector, short privacy notice and complete expandable help guide Save (119.420083ms)
+✔ Given user access, when a browser opens Audit logs or submits its Save operation, then current Admin access is required (70.978375ms)
+✔ Given revoked-admin access, when a browser opens Audit logs or submits its Save operation, then current Admin access is required (71.209833ms)
+✔ Given a password-authenticated Admin at /, when endpoint, Bearer token, and Enable are saved together, then reread shows one saved version without the token (118.751167ms)
+✔ Given a password-authenticated Admin at /team/, when endpoint, Bearer token, and Enable are saved together, then reread shows one saved version without the token (128.349208ms)
+✔ Given a saved destination and two forms, when a tenant is forged or an old revision is submitted, then neither can replace the saved destination (153.433667ms)
+✔ Given a protected Save form, when the origin or CSRF value is forged, then the destination stays absent (73.091ms)
+✔ Given a committed Save whose answer is lost, when the browser receives an unconfirmed outcome, then it offers a saved-state read and the old form conflicts (112.7065ms)
+✔ Given a saved Axiom destination, when a browser without scripts selects Custom and clears its dataset, then the same endpoint retains the write-only token and an endpoint change needs a new token (145.030125ms)
+✔ Given a protected destination form, when Save or Test submits a forged destination, dataset, or None authentication, then no settings or event is written (181.108958ms)
+✔ Given a current Admin and an Axiom destination, when the Admin saves its dataset, Tests, and enables export, then Test and export use the saved dataset and a dataset edit invalidates old work (212.125875ms)
+✔ Given a current Admin and a saved disabled none destination at /, when Bearer settings are saved before Test if needed, then one synthetic event uses the saved token without Enable (94.3135ms)
+✔ Given a current Admin and a saved disabled bearer destination at /, when Bearer settings are saved before Test if needed, then one synthetic event uses the saved token without Enable (125.335041ms)
+✔ Given a current Admin and a saved disabled none destination at /team/, when Bearer settings are saved before Test if needed, then one synthetic event uses the saved token without Enable (102.999167ms)
+✔ Given a current Admin and a saved disabled bearer destination at /team/, when Bearer settings are saved before Test if needed, then one synthetic event uses the saved token without Enable (72.144333ms)
+✔ Given edited endpoint settings, when Test is selected, then valid edits save and Test while invalid edits send nothing (92.718417ms)
+✔ Given edited endpoint settings, when Test is selected, then valid edits save and Test while invalid edits send nothing (77.474709ms)
+✔ Given edited token settings, when Test is selected, then valid edits save and Test while invalid edits send nothing (46.6895ms)
+✔ Given edited enabled settings, when Test is selected, then valid edits save and Test while invalid edits send nothing (68.217708ms)
+✔ Given edited auth settings, when Test is selected, then valid edits save and Test while invalid edits send nothing (94.658375ms)
+✔ Given edited destination, axiom_dataset settings, when Test is selected, then valid edits save and Test while invalid edits send nothing (92.032542ms)
+✔ Given a Test in progress, when the post-settlement saved revision changes its authority, then the browser suppresses the accepted result (109.658541ms)
+✔ Given a Test in progress, when the post-settlement saved read-failure changes its authority, then the browser suppresses the accepted result (118.975958ms)
+✔ Given a origin refusal, when the saved destination Test is submitted, then no event leaves the protected account boundary (94.103375ms)
+✔ Given a csrf refusal, when the saved destination Test is submitted, then no event leaves the protected account boundary (62.922333ms)
+✔ Given a tenant refusal, when the saved destination Test is submitted, then no event leaves the protected account boundary (59.70725ms)
+✔ Given a revoked-admin refusal, when the saved destination Test is submitted, then no event leaves the protected account boundary (78.715708ms)
+✔ Given edited Axiom settings with export Off, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (214.592875ms)
+✔ Given edited Axiom settings with export On, when an Admin selects Test, then one Save precedes Test and the styled settings page shows the result and saved revision (62.847042ms)
+✔ Given invalid during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (80.391583ms)
+✔ Given endpoint-token during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (61.930542ms)
+✔ Given unconfirmed during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (69.669125ms)
+✔ Given test-failed during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (72.96625ms)
+✔ Given read-failed during Test, when the Admin submits current settings, then a styled outcome distinguishes Save from Test and offers safe recovery (91.719625ms)
+✔ Given no destination, when Test receives the first valid form, then it saves one disabled destination and tests its new version (96.197ms)
+✔ Given edited Audit settings, when an Admin selects Save, then confirmed saved text sits above the buttons and the empty token field shows only its masked stored prefix (210.075458ms)
+✔ Given edited Audit settings, when an Admin selects Test, then confirmed saved text sits above the buttons and the empty token field shows only its masked stored prefix (65.022959ms)
+✔ Given saved token feedback and removed Admin access, when the page or Test is requested, then no token preview, read, write, or send is permitted (156.909916ms)
+✔ Given a default system logger with an OTel sink and Axiom system-log-test, when DEBUG and INFO are logged and flushed, then Axiom accepts the export and the HTTP body contains only INFO with its source (271.816625ms)
+ℹ Axiom system-log-test scope: thermus-otel-test-7ee97bf5-cf51-424a-9458-ebf48f621625
+✔ Given an injected system sink, when an admitted call returns, then the sink has received one prepared record with the original caller (3.013083ms)
+✔ Given enabled customer capture in organization A, when a tool has success, then only its validated input and final public outcome reach A's customer sink (48.906959ms)
+✔ Given enabled customer capture in organization A, when a tool has empty success, then only its validated input and final public outcome reach A's customer sink (8.358ms)
+✔ Given enabled customer capture in organization A, when a tool has safe error, then only its validated input and final public outcome reach A's customer sink (6.368ms)
+✔ Given enabled customer capture in organization A, when a tool has cancelled, then only its validated input and final public outcome reach A's customer sink (5.90525ms)
+✔ Given enabled customer capture in organization A, when a tool has withheld, then only its validated input and final public outcome reach A's customer sink (6.568125ms)
+✔ Given a customer sink that can throw, when a tool completes, then its exact public result remains and the operation runs once (4.898917ms)
+✔ Given a customer sink that can refuse, when a tool completes, then its exact public result remains and the operation runs once (4.40625ms)
+✔ Given customer capture for two trusted tenants, when each tenant calls a tool and names the other tenant in metadata, then each completion belongs to its authenticated tenant (8.625333ms)
+✔ Given a hosted renderer that returns HTTP 404, when an authorized user fetches the page, then a safe failure diagnostic joins its completion by operation ID and the public error reports HTTP 404 (300.595958ms)
+✔ Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and one allowed outgoing and incoming records join the completion ID, and missing or revoked access is refused before rendering (411.2175ms)
+✔ Given one renderer active in production hosted composition, when another authorized request calls the tool, then it promptly gets a safe busy error and a busy completion, and a call after settlement can run (79.945291ms)
+✔ Given a production hosted fetch with failure, when another call arrives before the renderer settles, then busy is returned until cleanup completes and the next call can render (120.579083ms)
+✔ Given a production hosted fetch with cancelled, when another call arrives before the renderer settles, then busy is returned until cleanup completes and the next call can render (78.897084ms)
+✔ Given empty, hidden-only, ad-only, withheld, oversized, deep, and failed pages in 2026-07-28, when a real hosted user fetches them, then exact output and truthful incoming records join one completion per call (159.660416ms)
+✔ Given empty, hidden-only, ad-only, withheld, oversized, deep, and failed pages in 2025-11-25, when a real hosted user fetches them, then exact output and truthful incoming records join one completion per call (160.25725ms)
+✔ Given the production hosted application and an authorized user in 2026-07-28, when the user discovers and calls search, then both tools have their guidance and schemas and the captured Brave results reach the client (406.494792ms)
+✔ Given the production hosted application and an authorized user in 2025-11-25, when the user discovers and calls search, then both tools have their guidance and schemas and the captured Brave results reach the client (286.152375ms)
+
+Interrupted while running:
+
+⚠ dist/test/acceptance/mcp/hosted-process-shutdown.test.js (dist/test/acceptance/mcp/hosted-process-shutdown.test.js:1:1)
+✖ dist/test/acceptance/mcp/hosted-process-shutdown.test.js (4427.136625ms)
+✖ dist/test/acceptance/mcp/hosted-search-capacity.test.js
+✖ dist/test/acceptance/mcp/http-authentication-cancellation.test.js
+✖ dist/test/acceptance/mcp/http-cancelled-shutdown.test.js
+✖ dist/test/acceptance/mcp/http-dns-cancellation.test.js
+✖ dist/test/acceptance/mcp/http-fetch-cancellation.test.js
+✖ dist/test/acceptance/mcp/http-fetch-refusals.test.js
+✖ dist/test/acceptance/mcp/http-fetch.test.js
+✖ dist/test/acceptance/mcp/http-renderer-shutdown.test.js
+✖ dist/test/acceptance/mcp/http-request-cancellation.test.js
+✖ dist/test/acceptance/mcp/http-request-isolation.test.js
+✖ dist/test/acceptance/mcp/http-request-refusals.test.js
+✖ dist/test/acceptance/mcp/http-shutdown.test.js
+✖ dist/test/acceptance/mcp/incoming-step-cancellation.test.js
+✖ dist/test/acceptance/mcp/incoming-step.test.js
+✖ dist/test/acceptance/mcp/outgoing-step-cancellation.test.js
+✖ dist/test/acceptance/mcp/outgoing-step.test.js
+✖ dist/test/acceptance/mcp/renderer-setup-report.test.js
+✖ dist/test/acceptance/mcp/search-lifecycle.test.js
+✖ dist/test/acceptance/mcp/search-pipeline.test.js
+✖ dist/test/acceptance/mcp/self-hosted-fetch-tool.test.js
+✖ dist/test/acceptance/mcp/self-hosted-rules-startup.test.js
+✖ dist/test/acceptance/mcp/server-only-modules.test.js
+✖ dist/test/acceptance/pipeline-counters.test.js
+✖ dist/test/acceptance/pipeline-css-work.test.js
+✖ dist/test/acceptance/script/fetch-url-failure-details.test.js
+✖ dist/test/acceptance/small-text-cutoff.test.js
+✖ dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-admin-access.test.js
+✖ dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-mcp-url-fetch.test.js
+✖ dist/test/acceptance/work-slice/auth-workos-mcp-url-fetch/auth-workos-onboarding.test.js
+✖ dist/test/acceptance/work-slice/basic-mcp-url-fetch/basic-mcp-url-fetch.test.js
+✖ dist/test/integration/application-ad-rules.test.js
+✖ dist/test/integration/auth-workos/workos-session-landing-cancellation.test.js
+✖ dist/test/integration/auth-workos/workos-session-routes-cancellation.test.js
+✖ dist/test/integration/auth-workos/workos-session-routes-landing.test.js
+✖ dist/test/integration/auth-workos/workos-session-routes-logout.test.js
+✖ dist/test/integration/auth-workos/workos-session-routes-sign-in.test.js
+✖ dist/test/integration/auth-workos/workos-session-routes.test.js
+✖ dist/test/integration/auth/better-auth-provider-access.test.js
+✖ dist/test/integration/auth/better-auth-provider-introspection.test.js
+✖ dist/test/integration/auth/better-auth-provider-verification.test.js
+✖ dist/test/integration/auth/hosted-account.test.js
+✖ dist/test/integration/auth/hosted-administration.test.js
+✖ dist/test/integration/auth/hosted-audit-snapshot-lifecycle.test.js
+✖ dist/test/integration/auth/hosted-live-site.test.js
+✖ dist/test/integration/auth/hosted-mcp-origin.test.js
+✖ dist/test/integration/auth/hosted-organizations.test.js
+✖ dist/test/integration/auth/hosted-storage-lifecycle.test.js
+✖ dist/test/integration/auth/local-access.test.js
+✖ dist/test/integration/auth/local-auth-command-boundary.test.js
+✖ dist/test/integration/auth/local-auth-command-clients.test.js
+✖ dist/test/integration/auth/local-auth-command-grants.test.js
+✖ dist/test/integration/auth/local-auth-command-lifecycle.test.js
+✖ dist/test/integration/auth/local-auth-command-lock.test.js
+✖ dist/test/integration/auth/local-auth-command-users.test.js
+✖ dist/test/integration/auth/local-auth-command.test.js
+✖ dist/test/integration/auth/local-installation.test.js
+✖ dist/test/integration/auth/mcp-context.test.js
+✖ dist/test/integration/auth/portal-access.test.js
+✖ dist/test/integration/auth/portal-organization-name.test.js
+✖ dist/test/integration/auth/workos-actor-name.test.js
+✖ dist/test/integration/auth/workos-browser-session-mfa.test.js
+✖ dist/test/integration/auth/workos-browser-session-switch.test.js
+✖ dist/test/integration/auth/workos-browser-session.test.js
+✖ dist/test/integration/auth/workos-connection.test.js
+✖ dist/test/integration/auth/workos-google-onboarding.test.js
+✖ dist/test/integration/auth/workos-member-facts.test.js
+✖ dist/test/integration/auth/workos-provider-access.test.js
+✖ dist/test/integration/auth/workos-provider-administration.test.js
+✖ dist/test/integration/auth/workos-provider-directory.test.js
+✖ dist/test/integration/auth/workos-provider-organizations.test.js
+✖ dist/test/integration/auth/workos-provider-verification.test.js
+✖ dist/test/integration/auth/workos-removal-lifetime.test.js
+✖ dist/test/integration/auth/workos-signup-inspection.test.js
+✖ dist/test/integration/auth/workos-signup-pages.test.js
+✖ dist/test/integration/auth/workos-signup-routes.test.js
+✖ dist/test/integration/auth/workos-signup.test.js
+✖ dist/test/integration/fetch-tool-renderer-setup-report.test.js
+✖ dist/test/integration/hosted-admin/account-routes-administration-changes.test.js
+✖ dist/test/integration/hosted-admin/account-routes-administration-input.test.js
+✖ dist/test/integration/hosted-admin/account-routes-administration-pages.test.js
+✖ dist/test/integration/hosted-admin/account-routes-audit.test.js
+✖ dist/test/integration/hosted-admin/account-routes-billing-page.test.js
+✖ dist/test/integration/hosted-admin/account-routes-cancellation.test.js
+✖ dist/test/integration/hosted-admin/account-routes-effects.test.js
+✖ dist/test/integration/hosted-admin/account-routes-grant-retirement.test.js
+✖ dist/test/integration/hosted-admin/account-routes-logging.test.js
+✖ dist/test/integration/hosted-admin/account-routes-organization-page.test.js
+✖ dist/test/integration/hosted-admin/account-routes-removal-audit.test.js
+✖ dist/test/integration/hosted-admin/account-routes-removal.test.js
+✖ dist/test/integration/hosted-admin/account-routes-selection-input.test.js
+✖ dist/test/integration/hosted-admin/account-routes-selection.test.js
+✖ dist/test/integration/hosted-admin/account-routes.test.js
+✖ dist/test/integration/hosted-admin/organization-selection-page.test.js
+✖ dist/test/integration/logging/audit/logging-storage-export.test.js
+✖ dist/test/integration/mcp/access-resolver.test.js
+✖ dist/test/integration/mcp/auth-claims.test.js
+✖ dist/test/integration/mcp/auth.test.js
+✖ dist/test/integration/mcp/fetch-failure-details.test.js
+✖ dist/test/integration/mcp/fetch-tool-schema.test.js
+✖ dist/test/integration/mcp/fetch-tool-server.test.js
+✖ dist/test/integration/mcp/get-url-as-markdown-mcp.test.js
+✖ dist/test/integration/mcp/get-url-as-markdown-pipeline.test.js
+✖ dist/test/integration/mcp/identity-verifier-sdk-adapter.test.js
+✖ dist/test/integration/mcp/renderer-setup-report.test.js
+✖ dist/test/integration/mcp/required-permission.test.js
+✖ dist/test/integration/mcp/sdk-http.test.js
+✖ dist/test/integration/mcp/search-tool-schema.test.js
+✖ dist/test/integration/mcp/tool-completion-record.test.js
+✖ dist/test/integration/page-fetch/execute-incoming-step.test.js
+✖ dist/test/integration/page-fetch/execute-outgoing-step.test.js
+✖ dist/test/integration/page-fetch/fetch-page.test.js
+✖ dist/test/integration/search-pipeline/brave-markdown.test.js
+✖ dist/test/integration/search-pipeline/brave-renderer-failures.test.js
+✖ dist/test/integration/search-pipeline/protected-search.test.js
+✖ dist/test/integration/server-stop-signals.test.js
+✖ dist/test/integration/tool-operations.test.js
+✖ dist/test/interface/auth/better-auth.test.js
+✖ dist/test/interface/hosted-renderer-startup.test.js
+✖ dist/test/interface/logging/audit/destination-settings-store.test.js
+✖ dist/test/interface/logging/system/axiom-logging.test.js
+✖ dist/test/interface/logging/system/otel-logger.test.js
+✖ dist/test/interface/website-fetcher-cancellation.test.js
+✖ dist/test/interface/website-fetcher-http.test.js
+✖ dist/test/interface/website-fetcher-network.test.js
+✖ dist/test/interface/website-fetcher-readiness.test.js
+✖ dist/test/interface/website-fetcher-redirects.test.js
+✖ dist/test/interface/website-fetcher.test.js
+✖ dist/test/unit/app/hidden-line-input.test.js
+✖ dist/test/unit/app/operation-capacity.test.js
+✖ dist/test/unit/application-lifecycle.test.js
+✖ dist/test/unit/application-operator-log.test.js
+✖ dist/test/unit/application.test.js
+✖ dist/test/unit/auth-better-auth/better-auth-runtime.test.js
+✖ dist/test/unit/auth-better-auth/data-directory-lock.test.js
+✖ dist/test/unit/auth-better-auth/local-administration-opener.test.js
+✖ dist/test/unit/auth-better-auth/local-auth-migrations.test.js
+✖ dist/test/unit/auth-better-auth/local-auth-pages-consent.test.js
+✖ dist/test/unit/auth-better-auth/local-auth-pages-form-posts.test.js
+✖ dist/test/unit/auth-better-auth/local-auth-pages-sign-in.test.js
+✖ dist/test/unit/auth-better-auth/local-auth-pages.test.js
+✖ dist/test/unit/auth-better-auth/local-installation.test.js
+✖ dist/test/unit/auth-better-auth/local-provider-options.test.js
+✖ dist/test/unit/auth-better-auth/local-user-administration-clients.test.js
+✖ dist/test/unit/auth-better-auth/local-user-administration-revocation.test.js
+✖ dist/test/unit/auth-better-auth/local-user-administration.test.js
+✖ dist/test/unit/auth-workos/session-cookies.test.js
+✖ dist/test/unit/auth-workos/workos-approved-organization-documents.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-end.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-mfa.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-refresh.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session-sign-in.test.js
+✖ dist/test/unit/auth-workos/workos-browser-session.test.js
+✖ dist/test/unit/auth-workos/workos-membership-reads.test.js
+✖ dist/test/unit/auth-workos/workos-organization-audit-documents.test.js
+✖ dist/test/unit/auth-workos/workos-organization-removal-documents.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-deletion.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-invitations.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-member-facts.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-members.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-memberships.test.js
+✖ dist/test/unit/auth-workos/workos-organizations-read-lifetime.test.js
+✖ dist/test/unit/auth-workos/workos-organizations.test.js
+✖ dist/test/unit/auth-workos/workos-settings.test.js
+✖ dist/test/unit/auth-workos/workos-sign-in-onboarding.test.js
+✖ dist/test/unit/auth-workos/workos-signup-documents.test.js
+✖ dist/test/unit/auth/access-context.test.js
+✖ dist/test/unit/billing/billing-free.test.js
+✖ dist/test/unit/config/ad-rules-file.test.js
+✖ dist/test/unit/config/deployment-config.test.js
+✖ dist/test/unit/config/listen-address.test.js
+✖ dist/test/unit/config/logging-storage-config.test.js
+✖ dist/test/unit/execution/execution-context.test.js
+✖ dist/test/unit/execution/observe-request-step.test.js
+✖ dist/test/unit/execution/step-record.test.js
+✖ dist/test/unit/hosted-portal/hosted-portal.test.js
+✖ dist/test/unit/hosted-renderer-startup.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules-deployment.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-rules.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/ad-work-counters.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-construction.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-depth.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-document-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-line-whitespace.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-recovery.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads-source-ranges.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/clean-html-ads.test.js
+✖ dist/test/unit/html-cleaner-pipeline/ad-cleaner/source-range-parser.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-code-formatting.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-fragment-content.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-input-shapes.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-landing-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-noscript-fragments.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown-search-links.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/html-to-markdown.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/markdown-counters.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/noscript-examples.test.js
+✖ dist/test/unit/html-cleaner-pipeline/html-to-markdown/prepared-html-document.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/ad-sanitizer-pipeline.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-depth.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-pipeline.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/html-processing-sanitized-content.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/known-html-pipeline.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/pipeline-cancellation.test.js
+✖ dist/test/unit/html-cleaner-pipeline/pipeline/redirect-metadata.test.js
+✖ dist/test/unit/html-cleaner-pipeline/process-html-step.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/decoded-control-boundary.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/deferred-html-controls.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/encoded-invisible-controls.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/controls/raw-inline-emoji-joiners.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/composed-transform.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-class-token-budget.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-cleared-style-findings.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-source-tokens.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-document-visibility.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-hidden-passes.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-html-tree.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-opacity-animation.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-candidates.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-cost.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-flags.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-selector-matching.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-stylesheet.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility-provenance.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visibility.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/css-visible-controls.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/deferred-font-size.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/font-size-mode.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/matrix-visibility.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/preserve-3d.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/small-text-policy.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/source-html-document.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-context.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/transform-planes.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-control-boundaries.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-correctness-regressions.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-css-integration.test.js
+✖ dist/test/unit/html-cleaner-pipeline/prompt-injection-remover/css-visibility/visibility-deferred-headers.test.js

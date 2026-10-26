@@ -1,0 +1,98 @@
+UI-01 focused implementation evidence
+Node for every build and test command: PATH=/Users/tomermayara/.nvm/versions/node/v24.20.0/bin:$PATH
+Working directory: /Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus
+No product source changed before the three initial-red runs.
+
+1. npm run build:user-portal > .cache/ui01/implementation/portal-build.log 2>&1
+   PASS. Real portal images and local fonts used in all browser runs.
+2. npm run build > .cache/ui01/implementation/acceptance-build.log 2>&1
+   First attempt: TS2304 for getComputedStyle in new test. Replaced the unbound global with ownerDocument.defaultView.getComputedStyle; repeat PASS.
+3. node --test dist/test/acceptance/auth/hosted-members.test.js > .cache/ui01/implementation/acceptance-initial-red.log 2>&1
+   EXPECTED RED: 1 fail, 5 pass. Workspace name absent beside Switch workspace.
+4. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/initial-red node --test --test-name-pattern='built Members' dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/browser-initial-red.log 2>&1
+   EXPECTED RED: 4 fail. 320px title 36px; 1280px member list narrower than main. Screenshots in initial-red/.
+5. npm run build > .cache/ui01/implementation/integration-build.log 2>&1
+   PASS after new focused route test, still before product source changes.
+6. node --test dist/test/integration/hosted-admin/account-routes-administration-pages.test.js > .cache/ui01/implementation/integration-initial-red.log 2>&1
+   EXPECTED RED: 1 fail, 19 pass. Trusted escaped workspace name absent beside Switch workspace.
+7. npm run build > .cache/ui01/implementation/name-handoff-build.log 2>&1
+   PASS after minimum trusted-name handoff and Connect label migration.
+8. node --test dist/test/acceptance/auth/hosted-members.test.js dist/test/integration/hosted-admin/account-routes-administration-pages.test.js > .cache/ui01/implementation/name-handoff-green.log 2>&1
+   INTERMEDIATE FAILURE (despite log filename): 25 pass, 1 fail. New HTTP journey expected Audit 200, but its unchanged site has no settings service and returns a safe 503 shell. Corrected the fixture expectation explicitly; no product workaround.
+9. npm run build > .cache/ui01/implementation/layout-build.log 2>&1
+   PASS after minimum grid, header and title CSS.
+10. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/layout-green node --test --test-name-pattern='built Members' dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/layout-green.log 2>&1
+    PASS: 4/4 layout cases.
+11. npm run build > .cache/ui01/implementation/focus-build.log 2>&1
+    PASS after adding long-value, keyboard and text-size acceptance.
+12. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/focus-red node --test --test-name-pattern='built Members' dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/focus-red.log 2>&1
+    EXPECTED RED: 4 fail. Skip link did not move focus into main.
+13. npm run build > .cache/ui01/implementation/reflow-build.log 2>&1
+    PASS after tabindex=-1, grid simplification, and wrapping workspace context.
+14. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/reflow node --test --test-name-pattern='built Members' dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/reflow.log 2>&1
+    INTERMEDIATE FIXTURE FAILURE: focus, full width, long values and 200% text passed; Audit Save absent because this unchanged site's logging storage had no settings service.
+15. npm run build > .cache/ui01/implementation/audit-browser-build.log 2>&1
+    PASS after optional settings service seam in existing test site and real settings service with fake store/sender in browser fixture.
+16. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/browser-green node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/browser-green.log 2>&1
+    INTERMEDIATE ASSERTION FAILURE (despite log filename): 2 pass, 4 fail. Save and Test completed, but test used the result message as a heading name. Corrected to existing heading Test accepted and asserted the message separately.
+17. npm run build > .cache/ui01/implementation/focused-build.log 2>&1
+    PASS. Final focused build.
+18. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/final-browser node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/final-browser.log 2>&1
+    PASS: 6/6. Final screenshots and four measured geometry/font/color JSON files in final-browser/.
+19. node --test --test-concurrency=1 dist/test/acceptance/auth/hosted-members.test.js dist/test/integration/hosted-admin/account-routes-administration-pages.test.js dist/test/unit/html/logging-page.test.js dist/test/unit/html/logging-routes.test.js dist/test/unit/html/logging-test-routes.test.js dist/test/unit/html/logging-feedback-script.test.js > .cache/ui01/implementation/focused-green.log 2>&1
+    PASS: 82/82.
+20. node --test --test-concurrency=1 dist/test/acceptance/auth/hosted-member-removal.test.js dist/test/acceptance/auth/hosted-member-removal-scope.test.js dist/test/acceptance/auth/hosted-member-self-removal.test.js dist/test/acceptance/auth/hosted-member-session-recovery.test.js > .cache/ui01/implementation/site-consumers-green.log 2>&1
+    PASS: 25/25. These and the browser runtime are the complete direct import consumers of hosted-member-removal-site.ts. No SQL, Collector or hosted-live import consumer exists.
+21. git diff --check
+    PASS.
+
+Final browser evidence uses actual built portal images/fonts, fresh setUp(world) per matrix case, explicit JavaScript false/true and widths 320/1280. All computed text sizes are doubled after initial layout checks; Members h1 is confirmed 64px for the 200% text reflow observation. Expanded removal help and long workspace/member/invitation values have no horizontal overflow. Skip link is reached by Tab, its outline and colors are measured, and Enter focuses main. Real page links navigate Members -> Audit logs -> Members. Normal Audit settings use the real service with fake storage/sender boundaries: one Save POST then one Test POST, blank returned token, two store saves and one synthetic event. No external destination request is made. The existing HTTP site remains an unavailable Audit storage characterization (503).
+
+Normal preview screenshots: final-browser/members-normal-320.png and members-normal-1280.png.
+Audit controls and expanded help: final-browser/audit-controls-{off,on}-{320,1280}.png.
+Long values plus expanded help plus 200% text: final-browser/members-expanded-text-200-{off,on}-{320,1280}.png.
+Measured geometry, fonts and actual colors: final-browser/measurements-{off,on}-{320,1280}.json.
+Earlier snapshots are historical; only final-browser/ describes the final candidate.
+
+Full ordinary suite, global typecheck, full portal build repeat, dedicated container gates, metrics, habit-hooks, impact classification and PR workflow are owned by the manager. No commit, push, PR edit or merge was made by this worker.
+
+Manager review follow-up after ed804ba6 (supersedes final-browser/ as current evidence):
+22. npm run build > .cache/ui01/implementation/audit-tablet-red-build.log 2>&1
+    PASS after adding only the Audit tablet acceptance case.
+23. node --test --test-name-pattern='tablet widths' dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/audit-tablet-red.log 2>&1
+    EXPECTED RED: 1 fail. At 800px, Audit main width was 650px and available navigation width was 752px. This ran before the source fix.
+24. Removed only max-width:650px from the new tablet Logging selector; retained tablet padding. Moved concrete browser operations and measurements into two focused protocol driver modules, with explicit browser-window and visible-bounds guards.
+25. npm run build > .cache/ui01/implementation/refactor-build.log 2>&1
+    PASS.
+26. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/reviewed-browser node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/reviewed-browser.log 2>&1
+    PASS 7/7 after the refactor and tablet fix.
+27. habit-hooks --branch origin/main > .cache/ui01/implementation/reviewed-habit-hooks.log 2>&1
+    PASS (exit 0). Only the two retained source-comment advisories remain. No complexity, non-null, or oversized-file finding remains.
+28. habit-hooks --file test/support/drivers/browser/admin-shell-browser.ts > .cache/ui01/implementation/driver-habit-hooks.log 2>&1
+    PASS, no findings. Explicit file scan includes the new untracked driver.
+29. habit-hooks --file test/support/drivers/browser/admin-shell-measurements.ts > .cache/ui01/implementation/measurements-habit-hooks.log 2>&1
+    PASS, no findings. Explicit file scan includes the new untracked measurement module.
+30. node --test --test-concurrency=1 dist/test/acceptance/auth/hosted-members.test.js dist/test/integration/hosted-admin/account-routes-administration-pages.test.js dist/test/unit/html/logging-page.test.js dist/test/unit/html/logging-routes.test.js dist/test/unit/html/logging-test-routes.test.js dist/test/unit/html/logging-feedback-script.test.js > .cache/ui01/implementation/reviewed-focused.log 2>&1
+    PASS 82/82.
+31. Added actual tablet geometry diagnostics and optional screenshots to the new case. npm run build > .cache/ui01/implementation/reviewed-final-build.log 2>&1
+    PASS.
+32. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/reviewed-browser node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/reviewed-browser.log 2>&1
+    Final PASS 7/7. At 800px, navigation/main/form are all 752px wide. At 860px, all are 812px wide. Both actual geometries appear in the log. New screenshots: reviewed-browser/audit-tablet-800.png and audit-tablet-860.png.
+33. habit-hooks --branch origin/main > .cache/ui01/implementation/reviewed-habit-hooks.log 2>&1
+    Final PASS (exit 0), same two source-comment advisories only.
+34. git diff --check
+    PASS.
+
+The current browser evidence is reviewed-browser/. It repeats the complete prior screenshots and four measurement JSON files, plus the new tablet screenshots. Both new protocol driver modules are used only by hosted-member-removal-browser.runtime.ts; their refactor selects no additional dedicated group. The source change is a tablet Audit width regression fix inside the existing Web/account stylesheet. No production API, runtime edge, read, provider or mutation contract changed. Complete candidate validation and classification remain manager-owned.
+
+Final candidate verification after the local skip -> skipLink binding rename:
+All commands use PATH=/Users/tomermayara/.nvm/versions/node/v24.20.0/bin:$PATH.
+35. npm run build > .cache/ui01/implementation/final-candidate-build.log 2>&1
+    PASS, exit 0.
+36. THERMUS_BROWSER_EVIDENCE_DIR=.cache/ui01/implementation/final-candidate-browser node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js > .cache/ui01/implementation/final-candidate-browser.log 2>&1
+    PASS 7/7, exit 0. Current candidate screenshots and measurement JSON are final-candidate-browser/. Audit main/form widths are 752px at 800px and 812px at 860px.
+37. npm run typecheck > .cache/ui01/implementation/final-candidate-typecheck.log 2>&1
+    PASS, exit 0. Includes server/test TypeScript and portal TypeScript.
+38. habit-hooks --branch origin/main > .cache/ui01/implementation/final-candidate-habit-hooks.log 2>&1
+    PASS, exit 0. Only the same two retained source-comment advisories remain.
+No source or test code changed during these checks. The only outstanding code difference from committed HEAD is the local binding rename skip -> skipLink and its two uses in admin-shell-browser.ts. Coverage refresh and complete-candidate reporting remain manager-owned. No broad suite, metric process or commit was run by this worker.

@@ -1,0 +1,60 @@
+▶ Members through the hosted HTTP server
+  ✖ Given an Admin in Acme Labs, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (99.957ms)
+  ✔ Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form (15.270958ms)
+  ✔ Given a Members page, when an Admin invites a User and an Admin and then resends and revokes, then each confirmed change returns to Members without changing active memberships (53.6805ms)
+  ✔ Given an unconfirmed sendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (14.578333ms)
+  ✔ Given an unconfirmed resendInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (17.318125ms)
+  ✔ Given an unconfirmed revokeInvitation response, when the Admin submits and checks status, then the page gives no retry form and the status read sends no second write (11.11825ms)
+✖ Members through the hosted HTTP server (212.868583ms)
+▶ HostedAccountRoutes combined Members page
+  ✔ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (15.114083ms)
+  ✔ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.115ms)
+  ✔ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (0.672583ms)
+  ✔ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (1.168708ms)
+  ✔ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (0.827917ms)
+  ✔ Given an unknown identity policy, when Members opens, then it makes no strict address promise (0.504708ms)
+  ✔ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.480875ms)
+  ✔ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (0.537125ms)
+  ✔ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (0.662125ms)
+  ✔ Given a session without MFA, when Members opens, then current Admin access is sufficient (0.502792ms)
+  ✔ Given current Admin access, when GET opens the old Invitations URL, then it redirects to Members with no history page (0.294791ms)
+  ✔ Given current Admin access, when HEAD opens the old Invitations URL, then it redirects to Members with no history page (0.166708ms)
+  ✔ Given a service that denies the actor, when either page opens, then current service authorization refuses it (0.695584ms)
+  ✔ Given a failed members read, when Members opens, then no partial page or invitation form is returned (0.323667ms)
+  ✔ Given a failed invitations read, when Members opens, then no partial page or invitation form is returned (0.227417ms)
+  ✔ Given a POST request to a page, when it arrives, then no read or write runs (6.078584ms)
+  ✔ Given a PUT request to a page, when it arrives, then no read or write runs (0.436542ms)
+  ✔ Given a DELETE request to a page, when it arrives, then no read or write runs (0.312333ms)
+  ✔ Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path (0.596042ms)
+  ✔ Given a denied resolver or no selected organization, when either page opens, then the service is not asked (0.501791ms)
+✔ HostedAccountRoutes combined Members page (47.422583ms)
+ℹ tests 26
+ℹ suites 2
+ℹ pass 25
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 939.890458
+
+✖ failing tests:
+
+test at dist/test/acceptance/auth/hosted-members.test.js:10:5
+✖ Given an Admin in Acme Labs, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked (99.957ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  503 !== 200
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/acceptance/auth/hosted-members.test.js:20:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 503,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

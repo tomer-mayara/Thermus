@@ -1,0 +1,95 @@
+{
+  "javaScriptEnabled": false,
+  "width": 320,
+  "title": {
+    "size": "32px",
+    "family": "\"IBM Plex Serif\", Georgia, serif"
+  },
+  "main": {
+    "x": 16,
+    "y": 336.5,
+    "width": 288,
+    "height": 2753.9375
+  },
+  "list": {
+    "x": 16,
+    "y": 1321.296875,
+    "width": 288,
+    "height": 1014.171875
+  },
+  "focus": {
+    "outline": "3px",
+    "outlineColor": "rgb(243, 242, 238)",
+    "text": "rgb(23, 24, 29)",
+    "background": "rgb(243, 242, 238)"
+  },
+  "text": {
+    "color": "rgb(243, 242, 238)",
+    "background": "rgb(23, 24, 29)",
+    "family": "\"IBM Plex Sans\", system-ui, sans-serif",
+    "sansLoaded": true,
+    "serifLoaded": true
+  },
+  "navigation": [
+    {
+      "name": "",
+      "font": "\"IBM Plex Sans\", system-ui, sans-serif",
+      "size": "17px",
+      "color": "rgb(243, 242, 238)",
+      "border": "rgb(243, 242, 238)",
+      "width": 120,
+      "height": 48,
+      "x": 16,
+      "y": 20
+    },
+    {
+      "name": "Switch workspace",
+      "font": "\"IBM Plex Sans\", system-ui, sans-serif",
+      "size": "15px",
+      "color": "rgb(180, 186, 192)",
+      "border": "rgb(180, 186, 192)",
+      "width": 121.609375,
+      "height": 48,
+      "x": 16,
+      "y": 231.5
+    },
+    {
+      "name": "Connect",
+      "font": "\"IBM Plex Sans\", system-ui, sans-serif",
+      "size": "15px",
+      "color": "rgb(180, 186, 192)",
+      "border": "rgba(0, 0, 0, 0)",
+      "width": 55.8125,
+      "height": 48,
+      "x": 16,
+      "y": 287.5
+    },
+    {
+      "name": "Members",
+      "font": "\"IBM Plex Sans\", system-ui, sans-serif",
+      "size": "15px",
+      "color": "rgb(243, 242, 238)",
+      "border": "rgb(232, 85, 42)",
+      "width": 63.265625,
+      "height": 48,
+      "x": 95.8125,
+      "y": 287.5
+    },
+    {
+      "name": "Audit logs",
+      "font": "\"IBM Plex Sans\", system-ui, sans-serif",
+      "size": "15px",
+      "color": "rgb(180, 186, 192)",
+      "border": "rgba(0, 0, 0, 0)",
+      "width": 67.109375,
+      "height": 48,
+      "x": 183.078125,
+      "y": 287.5
+    }
+  ],
+  "surface": {
+    "color": "rgb(243, 242, 238)",
+    "background": "rgb(33, 34, 40)",
+    "border": "rgb(67, 69, 78)"
+  }
+}

@@ -1,0 +1,53 @@
+▶ HostedAccountRoutes combined Members page
+  ✖ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (14.954083ms)
+  ✔ Given current Admin access, when a GET request opens Members with forged organization values, then both complete reads use the trusted actor and organization (1.674708ms)
+  ✔ Given current Admin access, when a HEAD request opens Members with forged organization values, then both complete reads use the trusted actor and organization (0.744792ms)
+  ✔ Given invited-address invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (1.168417ms)
+  ✔ Given provider-rules invitations, when Members opens, then one email form defaults to User and only pending invitations have expiry and current actions (1.11075ms)
+  ✔ Given an unknown identity policy, when Members opens, then it makes no strict address promise (0.679542ms)
+  ✔ Given no pending invitations, when Members opens, then the empty state keeps the single invitation form (0.569333ms)
+  ✔ Given another member with the same email, when Members opens, then only the trusted subject gets the You label (0.630834ms)
+  ✔ Given hostile provider text and an unsupported member, when Members opens, then values are escaped and that member has no removal form (0.791542ms)
+  ✔ Given a session without MFA, when Members opens, then current Admin access is sufficient (0.65875ms)
+  ✔ Given current Admin access, when GET opens the old Invitations URL, then it redirects to Members with no history page (0.357041ms)
+  ✔ Given current Admin access, when HEAD opens the old Invitations URL, then it redirects to Members with no history page (0.213583ms)
+  ✔ Given a service that denies the actor, when either page opens, then current service authorization refuses it (0.798542ms)
+  ✔ Given a failed members read, when Members opens, then no partial page or invitation form is returned (2.550834ms)
+  ✔ Given a failed invitations read, when Members opens, then no partial page or invitation form is returned (0.576916ms)
+  ✔ Given a POST request to a page, when it arrives, then no read or write runs (1.228791ms)
+  ✔ Given a PUT request to a page, when it arrives, then no read or write runs (5.516083ms)
+  ✔ Given a DELETE request to a page, when it arrives, then no read or write runs (0.439666ms)
+  ✔ Given a base path, when Members opens, then navigation, forms, and the old page redirect remain under that path (0.947708ms)
+  ✔ Given a denied resolver or no selected organization, when either page opens, then the service is not asked (0.635792ms)
+✖ HostedAccountRoutes combined Members page (37.486875ms)
+ℹ tests 20
+ℹ suites 1
+ℹ pass 19
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 370.131458
+
+✖ failing tests:
+
+test at dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:10:5
+✖ Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace (14.954083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Product / ConnectMembersAudit logsSwitch workspace'
+  - 'Acme <script>alert("name")</script> & LabsSwitch workspace'
+  
+      at TestContext.<anonymous> (file:///Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus/dist/test/integration/hosted-admin/account-routes-administration-pages.test.js:18:16)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1889:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Product / ConnectMembersAudit logsSwitch workspace',
+    expected: 'Acme <script>alert("name")</script> & LabsSwitch workspace',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
