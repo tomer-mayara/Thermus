@@ -51,7 +51,7 @@ export function createToolOperations(environment: Environment, logger: SystemLog
 
 export function createHostedToolOperations(environment: Environment, logger: SystemLog): ToolOperations {
   const operations = createToolOperations(environment, logger);
-  const capacity = new OperationCapacity();
+  const capacity = new OperationCapacity(1);
   return { fetch: capacity.wrap(operations.fetch), search: capacity.wrap(operations.search) };
 }
 
