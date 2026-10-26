@@ -5,31 +5,29 @@
     "external": false,
     "contract": false,
     "deployment": false,
+    "crossCutting": false,
     "component": false,
     "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
-    "crossCutting": false,
     "uncertain": false
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documentation only: adds docs/implementation/self-onboarding-plan.md, the plan for free-tier self signup with one Render container for each tenant behind the existing origin, the free and team tiers, the Stripe upgrade through the WorkOS seat meter, the owner answers to decisions D-1 to D-14 of 26 October 2026, and the tickets SO-00 to SO-15, plus its index line in docs/README.md. No source, test, configuration, dependency, registry, declaration, or deployment change. All registry Mermaid views remain unchanged. The components, edges, and decision records that the plan proposes are declared by their own later tickets, not by this candidate.",
+    "summary": "Record the reviewed Refined tabs plan before UI-01 implementation. This initial draft changes documentation only; production architecture, contracts, access rules and deployment remain unchanged. The complete implementation candidate will refresh this declaration and its evidence.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
-      "C4 containers: local edition",
       "Selected C4 components: hosted authentication in the Node server",
-      "Selected C4 components: local authentication in the Node server",
+      "Selected C4 components: hosted membership removal in the Node server",
       "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Selected C4 components: system and audit logs in the Node server",
-      "Runtime view",
+      "Scenario: hosted member read",
       "Deployment view"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-plan.md",
-      "docs/README.md",
+      "docs/design/organization-admin-plan.md",
+      "docs/design/portal-design.md",
       "architecture/components.md"
     ]
   }
