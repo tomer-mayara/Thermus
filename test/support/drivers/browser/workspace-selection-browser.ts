@@ -60,7 +60,7 @@ export class WorkspaceSelectionBrowser {
     await Promise.all([this.page.waitForNavigation(), this.page.keyboard.press('Enter')]);
     assert.equal(new URL(this.page.url()).pathname, '/', 'The actual organization button must leave the picker for Connect');
     const name = label.replace(' (selected)', '');
-    if (this.options.javaScriptEnabled) assert.equal(await this.page.getByText(`Workspace: ${name}`, { exact: true }).isVisible(), true);
+    if (this.options.javaScriptEnabled) await this.page.getByText(`Workspace: ${name}`, { exact: true }).waitFor({ state: 'visible' });
     await this.openPicker();
     assert.equal(await this.page.getByRole('button', { name: `${name} (selected)`, exact: true }).isVisible(), true);
     assert.deepEqual(posts, ['/organizations/select'], 'One organization choice must send one protected POST');

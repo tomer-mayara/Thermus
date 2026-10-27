@@ -42,8 +42,8 @@ test('Given a valid self-hosted environment, when it loads for HTTP, then it ret
   assert.deepEqual(load('self-hosted'), { deployment: 'self-hosted', ...rootUrls, dataDirectory: '/var/lib/thermus' } satisfies DeploymentConfig);
 });
 
-test('Given a valid hosted environment without WorkOS settings, when it loads for HTTP, then it selects the hosted edition with only the derived URLs', () => {
-  assert.deepEqual(load('hosted'), { deployment: 'hosted', ...rootUrls } satisfies DeploymentConfig);
+test('Given a valid hosted environment without WorkOS settings and without THERMUS_ROLE, when it loads for HTTP, then it selects the control plane of the hosted edition with only the derived URLs', () => {
+  assert.deepEqual(load('hosted'), { deployment: 'hosted', role: 'control-plane', ...rootUrls } satisfies DeploymentConfig);
 });
 
 const derivedUrls: ReadonlyArray<[Edition, string, string, string, string]> = [
@@ -97,6 +97,8 @@ const ignoredSettings: ReadonlyArray<[Edition, Environment]> = [
   ['self-hosted', { WORKOS_AUTHKIT_ISSUER: 'not-a-url', WORKOS_COOKIE_PASSWORD: 'short' }],
   ['hosted', workOSSettings], ['hosted', { WORKOS_AUTHKIT_ISSUER: 'not-a-url', WORKOS_COOKIE_PASSWORD: 'short', WORKOS_API_KEY: '' }],
   ['hosted', { ...workOSSettings, AUTH_MODE: 'workos', ENABLE_PAID_FEATURES: 'true' }],
+  ['self-hosted', { THERMUS_ROLE: 'tenant' }], ['self-hosted', { THERMUS_ROLE: 'worker', TENANT_ORGANIZATION_ID: 'org_01PINNED' }],
+  ['hosted', { TENANT_ORGANIZATION_ID: 'org_01PINNED', GATEWAY_PUBLIC_KEY: 'not-a-key', CONTROL_PLANE_INTERNAL_URL: 'not-a-url' }],
 ];
 for (const [edition, extra] of ignoredSettings) {
   test(`Given a valid ${edition} environment with ${assignments(extra)}, when it loads, then those settings change nothing`, () => {
@@ -106,7 +108,7 @@ for (const [edition, extra] of ignoredSettings) {
 
 const settingsRead: ReadonlyArray<[Edition, string]> = [
   ['self-hosted', 'DATA_DIR DEPLOYMENT PUBLIC_BASE_URL'],
-  ['hosted', 'DEPLOYMENT PUBLIC_BASE_URL'],
+  ['hosted', 'DEPLOYMENT PUBLIC_BASE_URL THERMUS_ROLE'],
 ];
 for (const [edition, expected] of settingsRead) {
   test(`Given a valid ${edition} environment with WorkOS settings, when it loads, then it reads only the ${edition} settings`, () => {

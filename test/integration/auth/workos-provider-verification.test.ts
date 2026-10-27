@@ -3,7 +3,7 @@ import { inspect } from 'node:util';
 import { describe, test, type TestContext } from 'node:test';
 import { createLocalJWKSet, createRemoteJWKSet, SignJWT, UnsecuredJWT, type JWTPayload, type JWTVerifyGetKey } from 'jose';
 import { InvalidAccessTokenError } from '../../../src/accounts/identity/identity-verifier.ts';
-import { WorkOSAuthProvider } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
+import { WorkOSAuthProvider, WorkOSTokenVerifier } from '../../../src/accounts/providers/workos/workos-auth-provider.ts';
 import { browserSessionIssuer, workosAuthority } from '../../../src/accounts/providers/workos/workos-settings.ts';
 import { nowInSeconds, SigningKey, type TokenSettings } from '../../support/doubles/workos/jwt-signing-key.ts';
 import { refusedLoopbackPort, WorkOSFakeApi, type FakeAnswer } from '../../support/doubles/workos/workos-fake-api.ts';
@@ -102,6 +102,15 @@ describe('WorkOSAuthProvider Connect token verification', () => {
       expiresAtUnixSeconds: issuedAt + 300,
       resource: new URL(mcpResourceUrl),
     });
+  });
+
+  test('Given the token verifier alone, as a tenant uses it without membership reads, when it checks a Connect user token and a token of another key, then it gives the same identity as the provider and refuses the other token', async () => {
+    const tokens = new WorkOSTokenVerifier({ authority, authkitIssuer, mcpResourceUrl, keySet: createLocalJWKSet({ keys: [authkitKey.publicJwk] }) });
+    const token = await connectToken();
+    const forged = await connectToken(connectClaims(), {}, forgerUnderPublishedKid);
+
+    assert.deepEqual(await tokens.verifyAccessToken(token), await providerWith().verifyAccessToken(token));
+    await assertInvalidToken(tokens.verifyAccessToken(forged), forged);
   });
 
   test('Given a Connect user token without org_id, when it is verified, then the user has no selected organization', async () => {

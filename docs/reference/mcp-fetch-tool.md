@@ -232,6 +232,13 @@ health, startup checks, and hosted MCP Origin validation. Hosted startup checks
 the pinned renderer before listening; self-hosted startup keeps its deferred
 renderer failure behavior. Test fixtures do not select production ad rules.
 
+A tenant, the hosted image with `THERMUS_ROLE=tenant` (SO-03), serves the same
+two tools with the same capacity rule in its own process. The default stays 10.
+The provisioner sets `OPERATION_CAPACITY` for each tier (decision D-15): 5 for
+a free tenant on `0.5c-512mb`, and 10 for a team tenant on `1c-2g`. The next
+call above the capacity of a tenant gets the same busy result and completion
+status `busy`, and the tenant relays that audit event to the control plane.
+
 ## Renderer setup report
 
 A renderer setup failure is a renderer process that cannot start. The fetcher

@@ -113,7 +113,8 @@ protected_paths:
     # change. Public contracts are under public_surface; a changed declaration
     # is an architecture fact. On 2026-10-24 the list shrank from 28 entries
     # over 101 source files to 13 entries over 33 source files; the
-    # sensitiveBehavior flag covers the rest.
+    # sensitiveBehavior flag covers the rest. On 2026-10-27 SO-03 added the five
+    # files that admit a tenant request: 18 entries over 45 source files.
     paths:
       - src/pipelines/providers/website-fetcher/network-policy.ts # which destinations may be fetched
       - src/pipelines/html-processing/prompt-injection-remover/** # untrusted text that reaches the model
@@ -123,6 +124,11 @@ protected_paths:
       - src/interfaces/mcp/identity-verifier-sdk-adapter.ts # token verification
       - src/interfaces/mcp/protected-resource-endpoint.ts
       - src/accounts/identity/identity-verifier.ts
+      - src/accounts/identity/access-context-verifier.ts # the signed context that admits a tenant request
+      - src/accounts/identity/access-context-signature.ts # its keys, algorithm, type, organization, and age
+      - src/accounts/identity/access-context-claims.ts # its claims and the hash of the bearer token
+      - src/accounts/identity/context-access-resolver.ts # the access of a tenant request: the signed grants
+      - src/app/tenant-requests.ts # the 403 of a tenant before MCP handling
       - src/accounts/providers/workos/session-cookies.ts # cookie sealing
       - src/accounts/providers/workos/workos-signup.ts # one-time grant authority
       - src/runtime/http/client-address.ts # trusted proxy address
@@ -174,6 +180,7 @@ public_surface:
       - src/logs/audit/audit-send.ts
     identity:
       - src/accounts/identity/access-context.ts
+      - src/accounts/identity/signed-access-context.ts
       - src/accounts/identity/browser-session.ts
       - src/accounts/identity/browser-session-controls.ts
       - src/accounts/identity/identity-verifier.ts
@@ -261,7 +268,7 @@ dependency_graph:
     - { from: app, to: web, kind: runtime }
     - { from: app, to: website-fetcher, kind: runtime }
     - { from: app, to: workos, kind: runtime }
-    - { from: app, to: identity, kind: type }
+    - { from: app, to: identity, kind: runtime } # runtime since SO-03: the tenant composition verifies the signed access context
     - { from: organizations, to: identity, kind: type }
     - { from: organizations, to: billing, kind: type }
     - { from: workos, to: identity, kind: runtime }
@@ -303,7 +310,8 @@ dependency_graph:
     - { from: app, to: tenants, kind: runtime }
     - { from: audit-logs, to: sql, kind: type }
     - { from: tenants, to: sql, kind: type }
-    # 59 permitted owner edges on 2026-10-27; runtime includes public types.
+    - { from: audit-logs, to: identity, kind: runtime } # SO-03: the relay sink sends the Thermus-Access context
+    # 60 permitted owner edges on 2026-10-27; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }
@@ -341,6 +349,7 @@ dependency_graph:
   allowed_external_imports:
     # Observed per component; logging additions checked on 2026-10-23; pg moved to sql on 2026-10-27. No inherited parent allowances.
     workos: [ "@workos-inc/node", jose ]
+    identity: [ jose ] # SO-03: the signed access context, an EdDSA JWT
     web: [ linkedom, micromark, micromark-extension-gfm ]
     better-auth: [ "@better-auth/mcp", better-auth ]
     config: [ "@modelcontextprotocol/server" ]
@@ -354,6 +363,7 @@ dependency_graph:
   allowed_node_builtins:
     # Observed per component; logging/config additions checked on 2026-10-23. No inherited parent allowances.
     workos: [ node:crypto ]
+    identity: [ node:crypto ] # SO-03: the Ed25519 keys and the SHA-256 token hash of the signed access context
     web: [ node:crypto ]
     better-auth: [ node:crypto, node:fs, node:path, node:sqlite ]
     cli: [ node:util ]

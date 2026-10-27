@@ -1,5 +1,6 @@
 import { FREE_PLAN } from '../render-tenant-lifecycle/calls.ts';
 import type { ProbeStep } from './context.ts';
+import { controlPlaneJob } from './control-plane-job.ts';
 import { job } from './job.ts';
 import { preflight } from './preflight.ts';
 import { publicCheck } from './public-check.ts';
@@ -23,6 +24,10 @@ export const probeSteps: readonly (ProbeStep & { readonly id: NonNullable<ProbeS
   {
     id: 'job', name: 'Job', run: job,
     spec: 'Given both services live, when a one-off job on the web service requests /healthz of the private service on port 10000, on port 8080, and at serviceDetails.url, then its log lines show at least one 200 with ok.',
+  },
+  {
+    id: 'control-plane', name: 'Control plane', run: controlPlaneJob,
+    spec: 'Given both services live, when a one-off job on the private service requests /healthz of the web service at its slug on port 8080 and on port 10000, then its log lines show at least one 200 with ok (SO-03: the private address of the control plane).',
   },
   {
     id: 'public-check', name: 'Public check', run: publicCheck,

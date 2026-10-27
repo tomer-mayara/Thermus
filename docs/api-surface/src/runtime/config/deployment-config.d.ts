@@ -1,3 +1,4 @@
+import type { KeyObject } from 'node:crypto';
 type Environment = Readonly<Record<string, string | undefined>>;
 type Deployment = DeploymentConfig['deployment'];
 export interface PublicUrls {
@@ -11,8 +12,20 @@ interface SelfHostedConfig extends PublicUrls {
 }
 interface HostedConfig extends PublicUrls {
     readonly deployment: 'hosted';
+    readonly role: 'control-plane';
 }
-export type DeploymentConfig = SelfHostedConfig | HostedConfig;
+export interface TenantSettings {
+    readonly organizationId: string;
+    readonly gatewayPublicKeys: readonly KeyObject[];
+    readonly controlPlaneInternalUrl: string;
+    readonly authkitIssuer: string;
+}
+interface TenantConfig extends PublicUrls {
+    readonly deployment: 'hosted';
+    readonly role: 'tenant';
+    readonly tenant: TenantSettings;
+}
+export type DeploymentConfig = SelfHostedConfig | HostedConfig | TenantConfig;
 export interface ListenAddress {
     readonly host: string;
     readonly port: number;

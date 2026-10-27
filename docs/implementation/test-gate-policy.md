@@ -461,6 +461,8 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/search-pipeline.test.js`,
    `dist/test/acceptance/mcp/hosted-search-capacity.test.js`,
    `dist/test/acceptance/mcp/hosted-capacity-setting.test.js`,
+   `dist/test/acceptance/mcp/hosted-tenant-role.test.js`,
+   `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js`,
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`, and
@@ -473,6 +475,12 @@ The search acceptance files cover public results and safe records in both
 editions and eras, shared hosted capacity through operation settlement, and
 shutdown during search renderer cleanup. These are offline cases with
 controlled renderer processes; the last phase checks actual rendering.
+
+The tenant role and tenant capacity files, added by SO-03, cover the hosted
+image with `THERMUS_ROLE=tenant`: the signed access context, its routes, its
+audit relay, and the capacity of a tenant. They are offline cases too: a local
+key set stands in for AuthKit, and a loopback spy for the relay route of the
+control plane.
 
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It

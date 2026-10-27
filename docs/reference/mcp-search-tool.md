@@ -143,6 +143,12 @@ request server. Hosted fetch and search use one capacity owner for the full
 operation through cleanup. Self-hosted concurrency is unchanged. Existing
 request lifetime tracking owns search cancellation and shutdown too.
 
+A tenant, the hosted image with `THERMUS_ROLE=tenant` (SO-03), keeps the same
+shared capacity in its own process. `OPERATION_CAPACITY` stays 10 by default;
+the provisioner sets 5 for a free tenant and 10 for a team tenant (decision
+D-15). A search above the capacity of a tenant gets `Server busy. Try again
+later.` with completion status `busy`.
+
 An aborted signal wins before error inspection. Cancellation during that
 inspection also wins. An unreadable error name or prototype uses the fixed
 failure for its boundary, starts no later stage, and preserves the safe stage

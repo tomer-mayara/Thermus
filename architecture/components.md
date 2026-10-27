@@ -58,6 +58,11 @@ removal intent, and the tenant registry; its subscription and billing-event
 tables wait for Slice 3. The Collector is the configured customer destination,
 including compatible OTLP services such as Axiom; WorkOS includes AuthKit.
 The portal's HTTP arrow covers account requests and server-provided assets.
+The tenant server is the same image with `THERMUS_ROLE=tenant` (SO-03): it
+serves `/healthz` and `/mcp` for one organization and holds no secret. Dotted
+arrows are planned: the gateway that forwards MCP requests with a signed access
+context and the route `/internal/audit` that receives the audit relay come with
+SO-05, so no production deployment runs a tenant yet.
 
 ```mermaid
 %%{init: {"flowchart": {"wrappingWidth": 130, "nodeSpacing": 20, "rankSpacing": 35}}}%%
@@ -67,6 +72,7 @@ flowchart TB
   subgraph hosted_system["Software system: Thermus · hosted"]
     hosted_portal["Browser app: portal<br/>JavaScript / HTML / CSS<br/>Accounts and setup"]
     hosted_server["Server container<br/>Node.js / TypeScript<br/>Tools and accounts"]
+    hosted_tenant["Tenant server container<br/>Same image · tenant role<br/>MCP of one organization"]
     hosted_renderer["Renderer process<br/>Lightpanda<br/>One page per fetch"]
     hosted_settings[("PostgreSQL datastore<br/>Private settings, removal<br/>intent, tenant registry")]
   end
@@ -80,6 +86,10 @@ flowchart TB
   hosted_server -->|pg / verified TLS| hosted_settings
   hosted_server -->|OTLP JSON / HTTPS| hosted_collector
   hosted_server -->|execFile / JSON| hosted_renderer
+  hosted_server -.->|planned SO-05: MCP + signed context / private HTTP| hosted_tenant
+  hosted_tenant -.->|audit relay / private HTTP; route planned| hosted_server
+  hosted_tenant -->|HTTPS / JWKS only| hosted_workos
+  hosted_tenant -->|execFile / JSON| hosted_renderer
   hosted_renderer -->|HTTP / HTTPS| hosted_public
   %% Invisible links keep external services in one column.
   hosted_settings ~~~ hosted_workos
@@ -127,6 +137,7 @@ roots, responsibilities, and public contracts.
 | --- | --- |
 | Both Node server editions | `app`, `config`, `http`, `system-logs`, `mcp`, `web`, `identity`, `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
 | Hosted server additions | `organizations`, `billing`, `workos`, `audit-logs` (capture, dispatch, settings, removal intent, and Test), `sql` (the bounded SQL runtime), `tenants` (the tenant registry) |
+| Hosted tenant server (same image, `THERMUS_ROLE=tenant`) | `app` (tenant composition and routes), `config` (role and tenant settings), `http`, `system-logs`, `mcp`, `identity` (signed access context and its access), `workos` (Connect token check only), `audit-logs` (relay sink only), `web` (the `product:access` name only), and the tool owners `execution`, `page-fetch`, `search`, `html-processing`, `website-fetcher`, `search-engine` |
 | Local server addition | `better-auth` |
 | Local administration CLI | `app`, `cli`, `config`, `http` (client-address helper), `system-logs`, `identity`, `better-auth` |
 | Hosted browser application and build assets | `user-portal`; app's `HostedPortal` loads its built files |
@@ -251,6 +262,57 @@ helpers remain provider-specific. Composition supplies the portal's allowed
 form destinations. The portal uses a supplied current active-organization name
 read for workspace display; an absent or blank name returns unavailable rather
 than a fallback identity. Profile data does not grant access.
+
+### Selected C4 components: tenant role in the hosted image
+
+Scope: one tenant server container, the hosted image with
+`THERMUS_ROLE=tenant` (SO-03). The control plane is a supporting Level 2
+container: its gateway, which signs the `Thermus-Access` context of each
+request, and its route `/internal/audit` are planned for SO-05 and drawn
+dotted. Thick arrows show composition; solid arrows show runtime calls. The
+tool owners and the renderer keep the tool processing view above.
+
+```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 140, "nodeSpacing": 20, "rankSpacing": 35}}}%%
+flowchart TB
+  tenant_gateway["L2: control plane<br/>Gateway, planned SO-05"]
+  subgraph tenant_server["Container: tenant server · hosted image, tenant role"]
+    tenant_app["app · TypeScript<br/>Tenant composition<br/>/healthz and /mcp; 403 without context"]
+    tenant_config["config · TypeScript<br/>Role and tenant settings<br/>Refuse control-plane secrets"]
+    tenant_identity["identity · TypeScript / jose<br/>Verify signed context<br/>Access from its grants"]
+    tenant_mcp["mcp · TypeScript<br/>Bearer check, request scope<br/>Tool server per request"]
+    tenant_workos["workos · TypeScript / jose<br/>Connect token check only"]
+    tenant_audit["audit-logs · TypeScript<br/>Relay sink, collector bounds"]
+  end
+  tenant_authkit["External: WorkOS AuthKit<br/>Key set"]
+  tenant_route["L2: control plane<br/>/internal/audit, planned SO-05"]
+  tenant_gateway -.->|MCP + Thermus-Access / private HTTP| tenant_app
+  tenant_app ==>|reads settings at start| tenant_config
+  tenant_app -->|verify context| tenant_identity
+  tenant_app -->|admitted request + scope| tenant_mcp
+  tenant_mcp -->|verify bearer token| tenant_workos
+  tenant_mcp -->|access of the scope| tenant_identity
+  tenant_mcp -->|audit events of the request| tenant_audit
+  tenant_workos -->|HTTPS / JWKS| tenant_authkit
+  tenant_audit -.->|POST + same context / private HTTP| tenant_route
+```
+
+[Tenant composition](../src/app/tenant-application.ts) reads no WorkOS secret
+and no database. [Tenant requests](../src/app/tenant-requests.ts) answer
+`/healthz`, give `404` to each other path, and refuse an MCP request with `403`
+before MCP handling unless
+[`AccessContextVerifier`](../src/accounts/identity/access-context-verifier.ts)
+verifies its context: a valid signature of one of the gateway keys, the pinned
+organization, the hash of the bearer token, and time left. The
+[tenant MCP server](../src/app/tenant-mcp.ts) keeps the bearer check of today
+with [`WorkOSTokenVerifier`](../src/accounts/providers/workos/workos-auth-provider.ts)
+and the AuthKit key set, and gives each admitted request a scope:
+[`ContextAccessResolver`](../src/accounts/identity/context-access-resolver.ts)
+with the grants of the context, and a tool server whose `AuditLog` writes to the
+[relay sink](../src/logs/audit/audit-relay-sink.ts) with the context of that
+request. The tenant reads no membership. The
+[authentication design](../docs/design/authentication-design.md#tenant-role-and-signed-access-context)
+gives the header contract and the relay contract.
 
 ### Selected C4 components: hosted membership removal in the Node server
 
@@ -1232,6 +1294,15 @@ Compose publishes only loopback HTTP. A different public address requires the
 HTTPS reverse proxy described by the installation contract; this diagram does
 not invent that infrastructure.
 
+The tenant role of the same image (SO-03) has no recorded deployment yet. The
+plan places each tenant in a Render private service of the workspace and region
+of the control plane (SO-06, planned). Measured on disposable services, a
+private service reaches a web service at `http://<slug>:8080`, the
+`CONTROL_PLANE_INTERNAL_URL` of a tenant, once the private address of a new web
+service accepts connections; the
+[SO-03 record](../docs/implementation/self-onboarding-s1.md#so-03-private-address-of-the-control-plane)
+gives the runs and limits. This map draws no tenant deployment until one exists.
+
 ## Ownership
 
 The 22 IDs below are stable logical component names. Each root owns its source
@@ -1249,13 +1320,13 @@ surface and the narrower file-context restrictions.
 
 | Stable ID and source root | Responsibility and main parts | Boundary |
 | --- | --- | --- |
-| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
-| `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, and local-user-administration contracts. No provider or UI implementation belongs here. |
+| `app` — [`src/app/`](../src/app/), plus [`src/index.ts`](../src/index.ts) | Select hosted or self-hosted operation and the role of the hosted image; construct providers, routes, tools, logs, and shared services; own startup, shutdown, capacity, portal loading, the tenant composition and its routes, and hidden terminal input. | Entrypoint and application lifecycle; documented [tool composition](../src/app/fetch-tool.ts). Other components do not import app. |
+| `identity` — [`src/accounts/identity/`](../src/accounts/identity/) | Define authenticated users, grants, immutable request contexts, permission checks, verification, browser sessions and profile controls, and local administration roles. Sign and verify the signed access context of a tenant with `jose`, and give the access of a verified context. | [Access context](../src/accounts/identity/access-context.ts), verifier, browser-session, browser-session-controls, local-user-administration, and [signed-access-context](../src/accounts/identity/signed-access-context.ts) contracts. The signer, the verifier, and the context resolver are for app. No provider or UI implementation belongs here. |
 | `organizations` — [`src/accounts/organizations/`](../src/accounts/organizations/) | Customer roles, administration rules, member/invitation overviews, directory reads and native invitations, durable removal coordination and last-Admin checks, signup activation, seat calculations, and privileged change recording. | Directory, administration, overview, customer-role, change-record, removal-store, and signup-activation modules. Administration exposes removal requests/results and close. Directory-read and removal helpers remain private. |
 | `billing` — [`src/accounts/billing/`](../src/accounts/billing/) | Report plan state and accept seat updates. `BillingFree` is the current implementation. | [Billing roles](../src/accounts/billing/billing.ts); app selects the implementation. |
-| `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. |
+| `workos` — [`src/accounts/providers/workos/`](../src/accounts/providers/workos/) | Hosted token/access verification, sessions, organization operations, signup/onboarding, settings, cookies, and signup-document validation. `WorkOSTokenVerifier` is the Connect token check alone, for a tenant. | App constructs provider/SDK objects. Web uses neutral supplied session, signup, and account roles; its WorkOS auth area still uses provider cookie and document-validation helpers. |
 | `better-auth` — [`src/accounts/providers/better-auth/`](../src/accounts/providers/better-auth/) | Local authentication, access resolution, user/client administration, installation storage, data-directory lock, and cleanup. | Provider, runtime-opening, and administration-opening modules for app; storage and lock mechanics remain private. |
-| `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
+| `mcp` — [`src/interfaces/mcp/`](../src/interfaces/mcp/) | Adapt protocol requests to trusted access contexts and supplied tool operations. Own schemas, metadata, protocol errors, request lifetimes, and completion presentation. A request can carry its own scope: the access resolver and the tool server of an admitted tenant request. | Server/tool composition modules, protected-resource endpoint, and client-visible schema modules. SDK adaptation stays inside this owner. |
 | `web` — [`src/interfaces/web/`](../src/interfaces/web/) | Account/admin/organization-selection routes, portal access, sign-in/out, signup, consent, forms, pages, escaping, and browser request protection. `account/` and `auth/` are private areas of this one owner. | Route constructors for app; shared account-form, page-html, and html-escape modules. Provider-specific browser adapters have narrower access than the whole owner. |
 | `cli` — [`src/interfaces/cli/`](../src/interfaces/cli/) | Parse local user/client commands, use supplied administration and hidden-input roles, format output and exit status. | [Local command](../src/interfaces/cli/local-auth-command.ts). App opens and closes administration/input resources. |
 | `user-portal` — [`src/interfaces/user-portal/`](../src/interfaces/user-portal/) | Browser portal behavior, connection instructions, styles, and static assets; Vite build configuration and declarations. | Browser HTTP interactions and rendered output. Vite runs in Node; browser modules cannot inherit its server/build access. |
@@ -1266,9 +1337,9 @@ surface and the narrower file-context restrictions.
 | `website-fetcher` — [`src/pipelines/providers/website-fetcher/`](../src/pipelines/providers/website-fetcher/) | Render pages with Lightpanda; destination/process policy; safe renderer failures and reports. | Fetcher/result/failure roles, renderer-failure-reports, and documented [network policy](../src/pipelines/providers/website-fetcher/network-policy.ts). App selects Lightpanda. |
 | `search-engine` — [`src/pipelines/providers/search-engine/`](../src/pipelines/providers/search-engine/) | Build Brave search requests, validate the returned origin/document, and fetch through a supplied website fetcher. | [Search engine/document roles](../src/pipelines/providers/search-engine/search-engine.ts). App selects the Brave HTTP adapter. |
 | `system-logs` — [`src/logs/system/`](../src/logs/system/) | Format internal engineering diagnostics with caller file and line. Customers cannot access this stream. | SystemLog for callers; concrete SystemLogger/LogLevel with a supplied SystemLogSink. ConsoleSystemLogSink and OtelSystemLogSink own output only. |
-| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
+| `audit-logs` — [`src/logs/audit/`](../src/logs/audit/) | Own customer audit event projection, activity snapshots, bounded queue and current-revision dispatch, tenant destination validation and credential protection, atomic settings revisions, saved-destination Tests, and one-shot OTLP requests to the configured Collector or compatible service, including direct Axiom. Its SQL adapter also stores removal intent and terminal receipts on the shared `sql` runtime. The relay sink of a tenant sends its events to the control plane with the bounds of the collector. | AuditLog event methods and AuditEventSink; AuditSnapshots and RevisionBoundAuditSink; AuditCollector; destination-settings service with fresh export authorization and Test outcomes; neutral settings store, private codec, and SQL adapter; implementation of the organizations-owned removal store; OtlpAuditSender with tracked physical settlement. MCP and web share hosted snapshots and bounded dispatch; web reads, saves, and tests settings. |
 | `http` — [`src/runtime/http/`](../src/runtime/http/) | Node listener, HTTP-to-Fetch exchange, trusted client address, request cancellation, connection tracking, and listener drain. | Server for app; client-address and request-cancellation modules for other consumers. Exchange mechanics remain private. |
-| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, optional hosted logging storage settings, the hosted operation capacity, and the free-tenant cap, and read trusted ad rules. Provider settings stay with their provider. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, and the free-tenant-limit reader. |
+| `config` — [`src/runtime/config/`](../src/runtime/config/) | Validate deployment/listen settings, `THERMUS_ROLE` and the tenant settings with the refusal of control-plane secrets, optional hosted logging storage settings, the hosted operation capacity, and the free-tenant cap, and read trusted ad rules. Provider settings stay with their provider; a tenant has no provider settings. | Deployment-config and ad-rules-file modules; app selects the logging-storage settings reader, the operation-capacity reader, and the free-tenant-limit reader. |
 | `sql` — [`src/runtime/sql/`](../src/runtime/sql/) | Own the one bounded SQL runtime of the hosted stores: the `pg` pool with verified TLS, admission of active and pending work, acquisition, operation and statement deadlines, late-work accounting, and bounded close. The only owner that imports `pg`. | [Bounded SQL runtime](../src/runtime/sql/bounded-sql-runtime.ts) for the stores; app opens it and owns its lifetime. |
 | `tenants` — [`src/tenancy/tenants/`](../src/tenancy/tenants/) | Own the tenant registry of the control plane: the tenant request inside the free-tenant cap, the in-memory route lookup with its refresh bounds, and the SQL adapter of the `tenants` table. | No public module yet; app composes the request, the lookup, and the adapter. The gateway and signup use them in later tickets. |
 
@@ -1347,6 +1418,13 @@ The pool is lazy: configuration does not establish a live SQL connection or prov
 TLS/grants. Missing or failed storage blocks removal but leaves MCP and admitted
 product access independent of SQL. The local edition does not open this pool.
 
+A tenant composes one MCP server, one relay sink, and the hosted tool
+operations with one `OPERATION_CAPACITY` owner. Each admitted request gets its
+own access resolver and tool server; the relay sink and the capacity are
+shared. Close aborts the request signals, closes the MCP server and its tool
+work, then closes the relay sink, which aborts its attempts and drops the
+pending events. The tenant holds no database pool and no WorkOS client.
+
 Hosted application close starts MCP cleanup and the administration/storage cleanup
 chain together. It stops removal before hosted composition closes snapshots and
 clears their pending content. The collector then stops admission, clears content
@@ -1406,6 +1484,12 @@ The following limits affect architectural decisions today:
   use a supplied Response-returning handler. A provider change must preserve each browser
   contract, cookie, Origin/CSRF, and return-path protection; a common provider
   interface alone does not cover this work.
+- The tenant role exists in code, but its callers do not: the gateway of the
+  control plane and the route `/internal/audit` come with SO-05. Until then no
+  deployment runs a tenant. The relay is best effort like the capture of today:
+  a refused, failed, slow, or excess relay loses its event. Traffic on the
+  private network is plain HTTP, and a context can repeat within its 2 minutes,
+  but only with its own bearer token and at the tenant of its organization.
 - The application-wide hosted capacity bounds this process only, to
   `OPERATION_CAPACITY` calls. It rejects a call above that limit instead of
   queuing work and does not coordinate multiple instances. A deployment change

@@ -6,6 +6,7 @@ import type { HostedLoggingStorage } from './logging-storage.ts';
 import type { WorkOS } from '@workos-inc/node';
 import type { JWTVerifyGetKey } from 'jose';
 import {
+  accessDeniedDescription,
   accountChangeRecorder,
   accountFailureReporter,
   composeHostedApplication,
@@ -155,7 +156,7 @@ async function workosProviderParts(config: RouteConfig, connection: WorkOSConnec
       resourceMetadataUrl: config.resourceMetadataUrl,
       expectedResource: new URL(config.mcpResourceUrl),
       requiredPermission: PRODUCT_ACCESS,
-      accessDeniedDescription: `Access denied. Open ${new URL('signup', config.publicBaseUrl).href} to check free signup availability. If you already have access, reauthorize this MCP client and choose the intended workspace.`,
+      accessDeniedDescription: accessDeniedDescription(config.publicBaseUrl),
     },
     buildServer,
     reportFailure: operatorFailureReporter(logger),
