@@ -1,5 +1,7 @@
+import type { KeyObject } from 'node:crypto';
 import { isAbsolute } from 'node:path';
 import { getOAuthProtectedResourceMetadataUrl } from '@modelcontextprotocol/server';
+import { readTenantSettings } from './tenant-settings.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 type Deployment = DeploymentConfig['deployment'];
@@ -15,12 +17,33 @@ interface SelfHostedConfig extends PublicUrls {
   readonly dataDirectory: string;
 }
 
-// The hosted provider will read and check its own settings, so no WORKOS_* value can change this record.
+// The control plane, THERMUS_ROLE=control-plane or no THERMUS_ROLE. The hosted provider will read and check its own
+// settings, so no WORKOS_* value can change this record.
 interface HostedConfig extends PublicUrls {
   readonly deployment: 'hosted';
+  readonly role: 'control-plane';
 }
 
-export type DeploymentConfig = SelfHostedConfig | HostedConfig;
+// The settings of THERMUS_ROLE=tenant (plan section 4.1). A tenant holds no secret: only public keys and addresses.
+export interface TenantSettings {
+  // The one organization that this tenant serves.
+  readonly organizationId: string;
+  // The Ed25519 public keys of the gateway. A context of any of them verifies, for a key rotation.
+  readonly gatewayPublicKeys: readonly KeyObject[];
+  // The origin of the control plane on the private network, with a final slash. The audit relay posts there.
+  readonly controlPlaneInternalUrl: string;
+  // Exactly as written: Connect access tokens must carry this issuer, and its key set checks them.
+  readonly authkitIssuer: string;
+}
+
+// The same hosted image in the tenant role: it serves /healthz and /mcp for one organization.
+interface TenantConfig extends PublicUrls {
+  readonly deployment: 'hosted';
+  readonly role: 'tenant';
+  readonly tenant: TenantSettings;
+}
+
+export type DeploymentConfig = SelfHostedConfig | HostedConfig | TenantConfig;
 
 export interface ListenAddress {
   readonly host: string;
@@ -86,8 +109,25 @@ function loadSelfHostedConfig(environment: Environment): SelfHostedConfig {
   return Object.freeze(config);
 }
 
-function loadHostedConfig(environment: Environment): HostedConfig {
-  const config: HostedConfig = { deployment: 'hosted', ...loadPublicUrls(environment, 'hosted') };
+function loadHostedConfig(environment: Environment): HostedConfig | TenantConfig {
+  if (readRole(environment) === 'tenant') return loadTenantConfig(environment);
+  const config: HostedConfig = { deployment: 'hosted', role: 'control-plane', ...loadPublicUrls(environment, 'hosted') };
+  return Object.freeze(config);
+}
+
+function readRole(environment: Environment): HostedConfig['role'] | TenantConfig['role'] {
+  const role = environment.THERMUS_ROLE;
+  if (role === undefined || role === '' || role === 'control-plane') return 'control-plane';
+  if (role === 'tenant') return role;
+  throw new DeploymentConfigError('THERMUS_ROLE must be control-plane or tenant.');
+}
+
+// The tenant serves /healthz and /mcp at the root of the public origin, as the control plane serves /mcp.
+function loadTenantConfig(environment: Environment): TenantConfig {
+  const tenant = readTenantSettings(environment, (message) => { throw new DeploymentConfigError(message); });
+  const urls = loadPublicUrls(environment, 'hosted');
+  if (new URL(urls.publicBaseUrl).pathname !== '/') throw new DeploymentConfigError('The tenant role requires PUBLIC_BASE_URL with the base path /.');
+  const config: TenantConfig = { deployment: 'hosted', role: 'tenant', ...urls, tenant };
   return Object.freeze(config);
 }
 
