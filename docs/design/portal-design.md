@@ -76,11 +76,10 @@ switch offers safe recovery and must not repeat the first-Admin grant.
 ## Members
 
 On 26 October 2026, the owner selected **Refined tabs** as the approved design
-direction for Members. UI-01 is implemented in
-[PR #263](https://github.com/tomer-mayara/Thermus/pull/263). UI-02
-([PR #264](https://github.com/tomer-mayara/Thermus/pull/264)) follows UI-01; UI-03
-([PR #266](https://github.com/tomer-mayara/Thermus/pull/266)) is now stacked on UI-02.
-UI-04 is next to restack. The
+direction for Members. The [reviewed UI state](organization-admin-plan.md#reviewed-ui-state)
+records the four candidates, their actual parents, Ready/Draft state and holds.
+The [stack review record](../implementation/admin-ui-stack-review.md) gives the
+integration work and validation limits. The
 [UI tickets and validation gate](organization-admin-plan.md#refined-tabs-ui--approved-design-26-october-2026)
 define the work; this selection changes no release or provider approval.
 
