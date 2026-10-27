@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { deleteServiceCall } from '../render-tenant-lifecycle/calls.ts';
 import { addRow, messageOf, seconds } from '../render-tenant-lifecycle/context.ts';
 import { createdIds, untilGone } from '../render-tenant-lifecycle/create.ts';
+import { sleep } from '../render-tenant-lifecycle/polls.ts';
 import { probeServices } from '../render-tenant-lifecycle/waits.ts';
 import { ANY_TYPE } from '../private-network-probe/preflight.ts';
 import { fixtureEmailPrefix, fixtureNamePrefix } from '../../../test/support/hosted-live/fixture-registry.ts';
@@ -10,6 +11,7 @@ import { deleteOwnResource } from './oauth-resource.ts';
 
 const STEP = 'Cleanup';
 const DELETE_ORDER: readonly Role[] = ['tenant', 'pages'];
+const FIXTURE_CHECK = { everyMs: 5_000, attempts: 12 } as const;
 
 async function fixturesOfRun(fixtures: FixtureParts): Promise<readonly string[]> {
   const { workos, runId } = fixtures;
@@ -24,13 +26,25 @@ async function fixturesOfRun(fixtures: FixtureParts): Promise<readonly string[]>
   ];
 }
 
+// The organization list of WorkOS still showed a deleted organization right after its delete (setup run of 27
+// October 2026; a read by its ID answered 404), so the check reads the lists again for a bounded time.
+async function remainingFixtures(fixtures: FixtureParts, signal: AbortSignal): Promise<{ readonly left: readonly string[]; readonly reads: number; readonly ms: number }> {
+  const started = performance.now();
+  for (let reads = 1; ; reads++) {
+    const left = await fixturesOfRun(fixtures);
+    if (left.length === 0 || reads === FIXTURE_CHECK.attempts) return { left, reads, ms: performance.now() - started };
+    await sleep(FIXTURE_CHECK.everyMs, signal);
+  }
+}
+
 async function deleteFixtures(context: ProbeContext, problems: string[]): Promise<string> {
   const fixtures = context.state.fixtures;
   if (fixtures === undefined) return 'no WorkOS fixture of this run';
   await fixtures.browser.close().catch((error: unknown) => problems.push(`The browser did not close: ${messageOf(error)}`));
   await fixtures.registry.deleteAll().catch((error: unknown) => problems.push(messageOf(error)));
-  const left = await fixturesOfRun(fixtures);
-  addRow(context, STEP, { check: `WorkOS fixtures named with ${fixtures.runId}`, expected: '0 after the deletes', measured: left.length === 0 ? '0' : left.join(', ') });
+  const { left, reads, ms } = await remainingFixtures(fixtures, context.signal);
+  const measured = `${left.length === 0 ? '0' : left.join(', ')}; ${reads} reads of the lists, ${seconds(ms)} after the deletes`;
+  addRow(context, STEP, { check: `WorkOS fixtures named with ${fixtures.runId}`, expected: `0 after the deletes, within ${FIXTURE_CHECK.attempts} reads ${FIXTURE_CHECK.everyMs / 1000} s apart`, measured });
   if (left.length > 0) problems.push(`WorkOS fixtures of the run remain: ${left.join(', ')}.`);
   return `deleted the WorkOS fixtures of ${fixtures.runId}`;
 }
