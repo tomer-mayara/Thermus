@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
 import { credentialsCall, ownerCall } from './calls.ts';
 import { credentialsOf, fieldText } from './answers.ts';
-import { addRow, type ProbeContext } from './context.ts';
+import { addRow, type ProbeContext, type Row } from './context.ts';
+import type { RenderClient } from './render-client.ts';
 import { probeServices } from './waits.ts';
 
-async function readWorkspace(context: ProbeContext, problems: string[]): Promise<string> {
+interface PreflightContext {
+  readonly inputs: { readonly owner: string; readonly registryCredential: string };
+  readonly client: RenderClient;
+  readonly signal: AbortSignal;
+  readonly report: { readonly rows: Row[] };
+  readonly state: { credentialId?: string };
+}
+
+export async function readWorkspace(context: PreflightContext, problems: string[]): Promise<string> {
   const owner = (await context.client.read(ownerCall(context.inputs.owner), context.signal)).json;
   const workspace = `${fieldText(owner, 'name') ?? 'no name'} (${fieldText(owner, 'type') ?? 'no type'})`;
   if (fieldText(owner, 'id') !== context.inputs.owner) problems.push(`The workspace answer names ${fieldText(owner, 'id') ?? 'no ID'}, not ${context.inputs.owner}.`);
@@ -12,7 +21,7 @@ async function readWorkspace(context: ProbeContext, problems: string[]): Promise
   return workspace;
 }
 
-async function findCredential(context: ProbeContext, problems: string[]): Promise<string> {
+export async function findCredential(context: PreflightContext, problems: string[]): Promise<string> {
   const wanted = context.inputs.registryCredential;
   const credentials = credentialsOf((await context.client.read(credentialsCall(context.inputs.owner), context.signal)).json);
   const matches = credentials.filter((item) => item.id === wanted || item.name === wanted);

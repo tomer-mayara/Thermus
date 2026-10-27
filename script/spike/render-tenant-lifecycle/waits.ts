@@ -1,9 +1,11 @@
 import {
-  deployCall, deployImageCall, eventsCall, instancesCall, PAGE_SIZE, privateServicesCall, recentDeploysCall, SERVICE_PREFIX, serviceCall,
+  deployCall, deployImageCall, eventsCall, instancesCall, PAGE_SIZE, PRIVATE_SERVICES, recentDeploysCall, SERVICE_PREFIX, serviceCall,
+  servicesCall, type ServiceType,
 } from './calls.ts';
 import { deployOf, eventsOf, instanceIdsOf, listItems, serviceOf, type DeployView, type ServiceView } from './answers.ts';
-import { progress, seconds, serviceIdOf, type ProbeContext } from './context.ts';
+import { progress, seconds, serviceIdOf, type ProbeContext, type ServiceSession } from './context.ts';
 import { poll, POLLS, watch } from './polls.ts';
+import type { RenderClient } from './render-client.ts';
 
 const ENDED = new Set(['build_failed', 'update_failed', 'canceled', 'pre_deploy_failed', 'deactivated']);
 const CLOCK_SKEW_MS = 2_000;
@@ -15,7 +17,7 @@ export interface LiveDeploy {
   readonly statuses: readonly string[];
 }
 
-export async function waitForLive(context: ProbeContext, deployId: string, since: number): Promise<LiveDeploy> {
+export async function waitForLive(context: ServiceSession, deployId: string, since: number): Promise<LiveDeploy> {
   const serviceId = serviceIdOf(context);
   const statuses: string[] = [];
   const deploy = await poll({ plan: POLLS.deploy, signal: context.signal, what: `deploy ${deployId} to be live` }, async () => {
@@ -31,7 +33,7 @@ export async function waitForLive(context: ProbeContext, deployId: string, since
   return { deploy, ms: performance.now() - since, statuses };
 }
 
-export async function recentDeploys(context: ProbeContext): Promise<readonly DeployView[]> {
+export async function recentDeploys(context: ServiceSession): Promise<readonly DeployView[]> {
   const answer = await context.client.read(recentDeploysCall(serviceIdOf(context)), context.signal);
   return listItems(answer.json, 'deploy').items.map(deployOf);
 }
@@ -60,7 +62,7 @@ export async function deployImage2(context: ProbeContext, step: string, known: R
   return { id, status: answer.status };
 }
 
-export async function readService(context: ProbeContext): Promise<ServiceView> {
+export async function readService(context: ServiceSession): Promise<ServiceView> {
   return serviceOf((await context.client.read(serviceCall(serviceIdOf(context)), context.signal)).json);
 }
 
@@ -87,11 +89,16 @@ export interface ProbeService {
   readonly name: string;
 }
 
-export async function probeServices(context: ProbeContext, signal: AbortSignal): Promise<readonly ProbeService[]> {
+interface ServiceLister {
+  readonly client: RenderClient;
+  readonly inputs: { readonly owner: string };
+}
+
+export async function probeServices(context: ServiceLister, signal: AbortSignal, types: readonly ServiceType[] = PRIVATE_SERVICES): Promise<readonly ProbeService[]> {
   const found: ProbeService[] = [];
   let cursor: string | undefined;
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const answer = await context.client.read(privateServicesCall(context.inputs.owner, cursor), signal);
+    const answer = await context.client.read(servicesCall(context.inputs.owner, types, cursor), signal);
     const { items, cursor: next } = listItems(answer.json, 'service');
     const services = items.map(serviceOf).map((service) => ({ id: service.id, name: service.name ?? '' }));
     found.push(...services.filter((service) => service.name.startsWith(SERVICE_PREFIX)));

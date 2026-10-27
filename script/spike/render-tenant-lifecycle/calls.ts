@@ -1,5 +1,3 @@
-import type { ProbeInputs } from './inputs.ts';
-
 type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 export interface Call {
@@ -8,14 +6,26 @@ export interface Call {
   readonly body?: unknown;
 }
 
+export type ServiceType = 'private_service' | 'web_service';
+
+// The SO-01c inputs have no serviceType, so the SO-01c create call stays a private service.
+interface ServiceSource {
+  readonly owner: string;
+  readonly region: string;
+  readonly image: { readonly ref: string };
+  readonly serviceType?: ServiceType;
+}
+
 export const API_BASE = 'https://api.render.com/v1';
 export const FREE_PLAN = '0.5c-512mb';
 export const TEAM_PLAN = '1c-2g';
 export const LISTEN_PORT = 8080;
 export const SERVICE_PREFIX = 'thermus-spike-';
 export const PRODUCTION_SERVICE_ID = 'srv-db8mnqg473hc739d529g';
+export const HEALTH_CHECK_PATH = '/healthz';
 export const PAGE_SIZE = 100;
 const PAGE_LIMIT = String(PAGE_SIZE);
+export const PRIVATE_SERVICES: readonly ServiceType[] = ['private_service'];
 
 export const PLACEHOLDER_ENVIRONMENT: readonly (readonly [string, string])[] = [
   ['PUBLIC_BASE_URL', 'https://thermus.example/'],
@@ -26,17 +36,20 @@ export const PLACEHOLDER_ENVIRONMENT: readonly (readonly [string, string])[] = [
   ['WORKOS_COOKIE_PASSWORD', 'cookie-password-placeholder-0032'],
 ];
 
-export function createServiceCall(inputs: ProbeInputs, name: string, credentialId: string): Call {
+export function createServiceCall(source: ServiceSource, name: string, credentialId: string): Call {
+  const type = source.serviceType ?? 'private_service';
+  const details = { runtime: 'image', plan: FREE_PLAN, region: source.region, numInstances: 1 };
   return {
     method: 'POST',
     path: '/services',
     body: {
-      type: 'private_service',
+      type,
       name,
-      ownerId: inputs.owner,
-      image: { ownerId: inputs.owner, imagePath: inputs.image.ref, registryCredentialId: credentialId },
+      ownerId: source.owner,
+      image: { ownerId: source.owner, imagePath: source.image.ref, registryCredentialId: credentialId },
       envVars: PLACEHOLDER_ENVIRONMENT.map(([key, value]) => ({ key, value })),
-      serviceDetails: { runtime: 'image', plan: FREE_PLAN, region: inputs.region, numInstances: 1 },
+      // A web service gets the Render health check. The OpenAPI document gives healthCheckPath only for web services.
+      serviceDetails: type === 'web_service' ? { ...details, healthCheckPath: HEALTH_CHECK_PATH } : details,
     },
   };
 }
@@ -69,8 +82,11 @@ export function credentialsCall(owner: string): Call {
   return { method: 'GET', path: `/registrycredentials?${new URLSearchParams({ ownerId: owner, limit: PAGE_LIMIT })}` };
 }
 
-export function privateServicesCall(owner: string, cursor?: string): Call {
-  const query = new URLSearchParams({ ownerId: owner, type: 'private_service', limit: PAGE_LIMIT });
+// An empty list of types sends no type filter, so the answer holds services of every type.
+export function servicesCall(owner: string, types: readonly ServiceType[], cursor?: string): Call {
+  const query = new URLSearchParams({ ownerId: owner });
+  if (types.length > 0) query.set('type', types.join(','));
+  query.set('limit', PAGE_LIMIT);
   if (cursor !== undefined) query.set('cursor', cursor);
   return { method: 'GET', path: `/services?${query}` };
 }
