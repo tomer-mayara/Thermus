@@ -1,25 +1,12 @@
-import type { SystemLog } from '../../logs/system/system-logger.ts';
-import type { ProvisioningClock } from './provisioning-clock.ts';
-import { freeTenantEnvironment, serviceNameOf, type TenantPublicSettings } from './tenant-environment.ts';
-import { watchDeploy } from './tenant-deploy-watch.ts';
-import type { TenantPlatform } from './tenant-platform.ts';
-import type { ProvisioningRow, RecordResult, TenantProvisioningStore } from './tenant-provisioning-store.ts';
-import { serviceForRow, type ServiceOutcome } from './tenant-service-creation.ts';
+import { serviceNameOf } from './tenant-environment.ts';
+import { RowProvisioning, type RowParts } from './tenant-row-provisioning.ts';
 
 const IDLE_PAUSE_MS = 5_000;
 const STORE_PAUSE_MS = 60_000;
 
-export interface TenantProvisionerOptions {
-  readonly platform: TenantPlatform;
-  readonly store: TenantProvisioningStore;
-  readonly clock: ProvisioningClock;
-  readonly log: SystemLog;
-  readonly tenant: TenantPublicSettings;
+export interface TenantProvisionerOptions extends RowParts {
   readonly namePrefix: string;
-  readonly freePlan: string;
 }
-
-type RowOutcome = 'done' | 'store-failed';
 
 /**
  * The provisioning loop of the control plane (plan section 4.2). It works on one row at a time: it claims the row,
@@ -30,9 +17,11 @@ type RowOutcome = 'done' | 'store-failed';
  */
 export class TenantProvisioner {
   private readonly options: TenantProvisionerOptions;
+  private readonly rows: RowProvisioning;
 
   constructor(options: TenantProvisionerOptions) {
     this.options = options;
+    this.rows = new RowProvisioning(options);
   }
 
   async run(signal: AbortSignal): Promise<void> {
@@ -51,53 +40,7 @@ export class TenantProvisioner {
       log.error('Tenant provisioning cannot read the tenant registry. It tries again in 60 s.');
       return STORE_PAUSE_MS;
     }
-    this.record(claim.row, claim.row.state, claim.resumed ? { resumed: true } : {});
-    return await this.provision(claim.row, signal) === 'store-failed' ? STORE_PAUSE_MS : 0;
-  }
-
-  private async provision(row: ProvisioningRow, signal: AbortSignal): Promise<RowOutcome> {
-    const service = row.state === 'creating' ? await this.serviceOf(row, signal) : existingService(row);
-    if (service.status === 'failed') return this.fail(row, service.reason);
-    const { serviceId } = service;
-    if (row.state === 'creating') {
-      const recorded = await this.options.store.recordService(row.organizationId, serviceId);
-      if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
-      this.record(row, 'deploying', { serviceId });
-    }
-    const watched = await watchDeploy(this.options, serviceId, signal);
-    if (watched.status === 'failed') return this.fail(row, watched.reason);
-    const live = { internalUrl: watched.internalUrl, ...(watched.imageDigest === undefined ? {} : { imageDigest: watched.imageDigest }) };
-    const recorded = await this.options.store.recordLive(row.organizationId, live);
-    if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
-    this.record(row, 'live', { serviceId, ...live });
-    return 'done';
-  }
-
-  private serviceOf(row: ProvisioningRow, signal: AbortSignal): Promise<ServiceOutcome> {
-    const { tenant, freePlan } = this.options;
-    const request = { name: row.serviceName, plan: freePlan, environment: freeTenantEnvironment(row.organizationId, tenant) };
-    return serviceForRow(this.options, { organizationId: row.organizationId, request }, signal);
-  }
-
-  // One report for the operator, when the registry holds the failure.
-  private async fail(row: ProvisioningRow, reason: string): Promise<RowOutcome> {
-    const recorded = await this.options.store.recordFailed(row.organizationId, reason);
-    if (recorded.status !== 'recorded') return this.unrecorded(row, recorded);
-    this.options.log.error(`Tenant provisioning failed: ${JSON.stringify({ organizationId: row.organizationId, serviceName: row.serviceName, reason })}`);
-    return 'done';
-  }
-
-  private unrecorded(row: ProvisioningRow, result: RecordResult): RowOutcome {
-    if (result.status === 'moved') {
-      this.options.log.info(`Tenant provisioning leaves organization ${row.organizationId}: its row changed during the work.`);
-      return 'done';
-    }
-    this.options.log.error(`Tenant provisioning could not write the row of organization ${row.organizationId}. It tries again in 60 s.`);
-    return 'store-failed';
-  }
-
-  private record(row: ProvisioningRow, state: string, details: Readonly<Record<string, unknown>>): void {
-    this.options.log.info(`Tenant provisioning record: ${JSON.stringify({ organizationId: row.organizationId, state, serviceName: row.serviceName, ...details })}`);
+    return await this.rows.provision(claim, signal) === 'store-failed' ? STORE_PAUSE_MS : 0;
   }
 
   private unexpected(error: unknown, signal: AbortSignal): number {
@@ -105,8 +48,4 @@ export class TenantProvisioner {
     this.options.log.error(`Tenant provisioning failed unexpectedly: ${error instanceof Error ? error.message : String(error)}. It tries again in 60 s.`);
     return STORE_PAUSE_MS;
   }
-}
-
-function existingService(row: ProvisioningRow): ServiceOutcome {
-  return row.serviceId === null ? { status: 'failed', reason: 'The deploying row has no Render service ID' } : { status: 'service', serviceId: row.serviceId };
 }
