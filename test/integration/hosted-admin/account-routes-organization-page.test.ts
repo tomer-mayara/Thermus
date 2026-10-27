@@ -40,7 +40,7 @@ describe('HostedAccountRoutes organization page', () => {
       ]);
       assert.equal(document.querySelectorAll('script, iframe, object, [style]').length, 0);
       assert.deepEqual(organizations.lists, [ann]);
-      assert.deepEqual([resolver.calls, operations.calls], [[], []]);
+      assert.deepEqual([resolver.calls, operations.calls], [[ann], []]);
     });
   }
 
@@ -54,14 +54,14 @@ describe('HostedAccountRoutes organization page', () => {
   });
 
   for (const publicBaseUrl of ['https://thermus.example/team/', 'https://thermus.example/team']) {
-    test(`Given the public URL ${publicBaseUrl} and no return destination, when the organization page opens, then each form posts under the public path and returns to the organization page there`, async () => {
+    test(`Given the public URL ${publicBaseUrl} and no return destination, when the organization page opens, then each form posts under the public path and returns to Connect there`, async () => {
       const { routes } = serveAnn({}, { publicBaseUrl });
 
       const body = await (await routes.handle(accountRequest('/team/organizations', 'session=ann'))).text();
 
       assert.deepEqual(formsIn(body).map(({ action, fields }) => [action, fields.return_to]), [
-        ['/team/organizations/select', '/team/organizations'],
-        ['/team/organizations/select', '/team/organizations'],
+        ['/team/organizations/select', '/team/'],
+        ['/team/organizations/select', '/team/'],
       ]);
     });
   }

@@ -11,11 +11,14 @@ a{color:inherit;text-underline-offset:.2em}
 .skip-link:focus{transform:none}
 .site-header{border-bottom:1px solid #2C2D34}
 .header-content,.organization-layout,.site-footer{width:min(1200px,calc(100% - 48px));margin-inline:auto}
-.header-content{min-height:88px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.header-content{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 24px;padding-top:20px}
 .brand{display:inline-flex;align-items:center;min-height:48px;flex-shrink:0}
 .brand img{display:block;width:166px;height:auto}
-.back-link{display:inline-flex;align-items:center;min-height:48px;font-size:15px;color:#B4BAC0;text-decoration:none}
-.back-link:hover{color:#F3F2EE;text-decoration:underline}
+nav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+nav a{display:inline-flex;align-items:center;min-height:48px;font-size:15px;color:#B4BAC0;text-decoration:none;border-bottom:2px solid transparent}
+nav a:hover{color:#F3F2EE;text-decoration:underline}
+nav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}
+main:focus{outline:none}
 .organization-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,540px);gap:80px;align-content:start;align-items:start;padding-block:72px 96px}
 .organization-introduction{padding-top:24px;min-width:0}
 .eyebrow,.card-caption,.selection-note,.site-footer{font-family:"IBM Plex Mono",ui-monospace,monospace}
@@ -43,14 +46,14 @@ h2{font-size:32px}
 }
 @media(max-width:480px){
  .header-content,.organization-layout,.site-footer{width:calc(100% - 40px)}
- .header-content{min-height:72px;gap:16px}
+ .header-content{gap:8px 16px}
  .brand img{width:120px}
- .back-link{font-size:13px}
  .organization-card{padding:24px}
  h1{font-size:36px}
  h2{font-size:28px}
  .organization-list button{min-height:72px;font-size:16px;padding-left:16px;padding-right:44px}
  .organization-list button:after{right:16px}
 }
+@media(max-width:860px){nav{gap:24px}}
 @media(forced-colors:active){.organization-list [aria-current="true"] button{border-width:3px}}
 `;

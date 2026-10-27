@@ -69,7 +69,9 @@ They never select a tenant or give access. Each protected request uses the
 verified server session and a current read of the grants. A sign-in alone
 gives no User access.
 
-Organization selection links return to the portal. This selection affects only
+Organization selection returns to Connect at the public base path by default,
+including when the user chooses the selected workspace again. An explicit safe
+return destination keeps its exact path. This selection affects only
 this browser. To connect a native MCP client, add the displayed endpoint as a
 remote HTTP server, sign in, choose the intended workspace in client consent,
 approve the connection, and fetch a page. The client's verified Connect token
@@ -82,6 +84,10 @@ the current product access response includes the exact `admin` role. The current
 page link has `aria-current="page"`. The links wrap on narrow screens and keep
 48px targets and visible keyboard focus. The protected routes still check access
 independently. Members keeps the trusted workspace name above the same menu.
+The organization picker keeps that menu with Switch Workspace active. It reads
+current access only to decide whether to show Admin links. A failed lookup or
+missing current access leaves the picker available with Connect and Switch
+Workspace. Roles in another workspace cannot show Admin links.
 
 ## MCP setup guides
 

@@ -20,7 +20,7 @@ describe('Hosted organization requests through the public routes: browser checks
   test('Given a signed-in user whose session the provider refreshes at each request, when selection posts come from another site or without an origin, lack the form token or have a wrong one, or name an invalid return destination or an extra field, then each is refused without a switch, and the refreshed session cookie still reaches the browser', { timeout: 20_000 }, async (t) => {
     const site = await serve(t);
     const browser = site.browserOf(mia);
-    const { csrf_token: token = '', ...withoutToken } = formLabelled(formsIn((await browser.open('organizations')).body), 'Globex').fields;
+    const { csrf_token: token = '', ...withoutToken } = formLabelled(formsIn((await browser.open('organizations?return_to=/team/portal')).body), 'Globex').fields;
     const fields = { ...withoutToken, csrf_token: token };
     const posts: ReadonlyArray<[string, Readonly<Record<string, string>>, { origin?: string | null }, number]> = [
       ['a foreign origin', fields, { origin: 'https://evil.example' }, 403],

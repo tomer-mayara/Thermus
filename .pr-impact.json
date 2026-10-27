@@ -1,12 +1,12 @@
 {
   "version": 1,
   "classification": {
-    "container": true,
+    "container": false,
     "external": false,
     "contract": true,
-    "deployment": true,
-    "crossCutting": true,
-    "component": true,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
     "internalInterface": true,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
@@ -15,11 +15,12 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "The Connect portal and server-rendered administration pages use one compact header menu: Connect, Switch Workspace, Members, Audit Log. The portal shows Members and Audit Log only for the existing exact admin grant. The web and user-portal owners retain separate renderers and styles. Existing routes, server access checks, browser session authority, public interfaces, dependencies, containers, and deployment remain unchanged. Registry prose names the menu; all diagrams remain accurate.",
+    "summary": "The organization picker defaults to Connect at the normalized public base path after selection, while explicit safe return destinations retain their value. This changes the documented browser navigation default. The web owner adds an optional current-access lookup through the existing AccessResolver for picker menu visibility. Only a context bound to the session user and selected workspace, with product access and an exact nonempty admin grant, shows Members and Audit Log. Denial, mismatch, or lookup failure leaves the picker usable with Connect and Switch Workspace; cancellation propagates. Identity admission, selection POST authorization, CSRF and origin checks, session cookie order, and MCP isolation retain their rules. Public declarations, component owners, import edges, external integrations, containers, and deployment are unchanged. Registry prose records the new runtime use; all 16 diagrams remain accurate.",
     "views": [
+      "Context",
       "C4 containers: hosted edition",
       "Selected C4 components: hosted authentication in the Node server",
-      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Collaboration overview",
       "Scenario: hosted default sign-in landing",
       "Scenario: hosted member read",
       "Deployment view",
@@ -27,14 +28,15 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "src/interfaces/user-portal/portal.ts",
-      "src/interfaces/user-portal/style.css",
-      "src/interfaces/web/account/members-page-layout.ts",
-      "src/interfaces/web/account/members-style.ts",
-      "test/acceptance/user-portal/portal.test.ts",
-      "test/acceptance/auth/hosted-members.test.ts",
+      "src/interfaces/web/account/account-routes.ts",
+      "src/interfaces/web/account/organization-selection-page.ts",
+      "src/interfaces/web/account/organization-selection-style.ts",
+      "test/acceptance/auth/hosted-workspace-selection.test.ts",
+      "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts",
+      "test/integration/auth/workos-provider-organizations.test.ts",
       "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
-      "architecture/components.md"
+      "architecture/components.md",
+      "docs/design/authentication-design.md"
     ]
   }
 }
