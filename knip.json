@@ -19,7 +19,8 @@
         "script/code-quality/coverage/loader-observer.ts",
         "script/pr-review/check.ts",
         "script/pr-review/api-surface.ts",
-        "script/pr-review/replay.ts"
+        "script/pr-review/replay.ts",
+        "script/spike/gateway-proxy-probe.ts"
       ]
     },
     ".habit-hooks": {
