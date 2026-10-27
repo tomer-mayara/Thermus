@@ -501,9 +501,10 @@ it records evidence. No test under `test/` covers a script; the rules of
 [AGENTS.md](../../AGENTS.md) keep tests for behavior under `src/`. Each probe
 writes its evidence into one record, `docs/implementation/self-onboarding-s1.md`,
 with one section for each probe: durations, limits, and what the client saw,
-and never a secret. Every probe runs in the My Workspace Render workspace, the
-WorkOS Staging environment, and Stripe test mode, never in production, and
-deletes what it creates, also after a failure.
+and never a secret. Owner decision of 27 October 2026: Render probes run in the
+Thermus AI workspace in a service named `thermus-spike-<time>`, never on the
+production service. Every probe runs in the WorkOS Staging environment and
+Stripe test mode, and deletes what it creates, also after a failure.
 
 Order: SO-00, SO-01a, SO-01b, and SO-01f can start at once. SO-01c needs the
 image of SO-01b. SO-01d needs the private service of SO-01c. SO-01e needs
