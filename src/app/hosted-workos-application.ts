@@ -21,7 +21,7 @@ import type { GoogleOnboardingSettings } from '../accounts/providers/workos/work
 import type { WorkOSSettings } from '../accounts/providers/workos/workos-settings.ts';
 import type { WorkOSOrganizations } from '../accounts/providers/workos/workos-organizations.ts';
 import type { SignupDocuments } from '../accounts/organizations/signup-activation.ts';
-import { portalAccessOperation, PRODUCT_ACCESS } from '../interfaces/web/account/portal-access.ts';
+import { portalAccessOperation, PRODUCT_ACCESS, type PortalReads } from '../interfaces/web/account/portal-access.ts';
 import { MCPServer, type RequestServerBuilder } from '../interfaces/mcp/mcp-server.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
@@ -122,14 +122,19 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     changeRecords: accountChangeRecorder(parts.logger),
     audit,
     billing,
-    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, {
-      organizationNameOf: (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId),
-      billingOf: (organizationId) => billing.stateOf(organizationId),
-    }),
+    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, portalReads(providerParts.organizations, billing)),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
   }, loggingStorage);
   owned.move();
   return application;
+}
+
+// The portal reads the name of the active organization of the member and the billing state of that organization.
+function portalReads(organizations: WorkOSOrganizations, billing: Billing): PortalReads {
+  return {
+    organizationNameOf: (user, organizationId) => organizations.activeOrganizationName(user, organizationId),
+    billingOf: (organizationId) => billing.stateOf(organizationId),
+  };
 }
 
 async function billingOf(parts: WorkOSApplicationParts): Promise<Billing> {
