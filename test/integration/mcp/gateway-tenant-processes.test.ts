@@ -66,4 +66,8 @@ test('Given the control plane and the tenant of organization A as two processes,
   assert.equal(completionRecordsIn(controlPlane.output).length, 0, 'The control plane ran no tool: the tenant did.');
   assert.equal(tenant.attemptedOutboundAccess, false, tenant.output);
   assert.equal(controlPlane.attemptedOutboundAccess, false, controlPlane.output);
+  // Both roles stop with SIGTERM, as a deployment stops them, and exit normally.
+  await client.close();
+  assert.equal((await controlPlane.stop()).code, 0, controlPlane.output);
+  assert.equal((await tenant.stop()).code, 0, tenant.output);
 });
