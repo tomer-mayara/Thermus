@@ -14,10 +14,18 @@ test('Given an ordinary active member, when Members opens, then native confirmat
   const removals = formsIn(body).filter(form => form.action === path);
   assert.equal(removals.length, 1);
   assert.deepEqual(removals[0]?.fields, fields);
-  assert.match(body, /<details[^>]*>[\s\S]*<summary[^>]*>Remove/);
+  assert.match(body, /<details[^>]*>[\s\S]*<summary[^>]*>Leave/);
   assert.match(body, /href="\/members">Cancel<\/a>/);
   assert.doesNotMatch(body, /role="dialog"|<script/);
   assert.deepEqual(organizations.administrationCalls.map(call => call.operation), ['memberOverview', 'invitationOverview']);
+});
+
+test('Given the last-Admin refusal, when recovery is shown, then the existing invitation link explains the ordinary Members task and waits for acceptance', async () => {
+  const { routes } = serveAdministration({ removal: 'last-admin' });
+  const body = await (await routes.handle(changePost(path, fields))).text();
+  assert.match(body, /href="\/invitations">Invite another Admin<\/a>/);
+  assert.match(body, /On Members, open Invite member, select Admin, and wait for acceptance\./);
+  assert.deepEqual(formsIn(body), []);
 });
 
 test('Given password-only Admin access, when a valid removal is confirmed, then only the coordinator runs and completion requires no Members read', async () => {

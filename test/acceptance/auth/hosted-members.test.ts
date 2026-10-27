@@ -5,9 +5,58 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
-import { userOf } from '../../support/fixtures/hosted-members.ts';
+import { administrationMembers, userOf } from '../../support/fixtures/hosted-members.ts';
 
 describe('Members through the hosted HTTP server', () => {
+  test('Given seven active members and six product members, when the Admin opens Members, then labelled read-only facts keep both counts and trusted self actions distinct', async (t) => {
+    const site = await serveAdministrationSite(t);
+    const admin = site.browserOf(userOf('user-eve', 'org-a'));
+    const answer = await admin.open('members');
+    assert.equal(answer.status, 200, answer.body);
+    const document = parseHTML(answer.body).document;
+    assert.equal(document.querySelector('h1')?.textContent, 'Members · 7');
+    assert.match(answer.body, /Active product members: 6/);
+    const rows = [...document.querySelectorAll('.member-list > li')];
+    assert.equal(rows.length, 7);
+    for (const row of rows) assert.deepEqual([...row.querySelectorAll('dt')].map(label => label.textContent), ['Member', 'Role', 'Action']);
+    const self = rows.find(row => row.querySelector('.member-email')?.textContent === 'eve@example.com');
+    assert.ok(self);
+    assert.equal(self.querySelector('.you-label')?.textContent, 'You');
+    assert.equal(document.querySelectorAll('.you-label').length, 1);
+    assert.deepEqual([...self.querySelectorAll('summary')].map(summary => [summary.textContent, summary.getAttribute('aria-label')]), [['Leave…', 'Leave Acme as eve@example.com']]);
+    assert.deepEqual([...self.querySelectorAll('button')].map(button => button.textContent), ['Leave Acme']);
+    const other = rows.find(row => row.querySelector('.member-email')?.textContent === 'una@example.com');
+    assert.ok(other);
+    assert.deepEqual([...other.querySelectorAll('summary')].map(summary => [summary.textContent, summary.getAttribute('aria-label')]), [['Remove…', 'Remove una@example.com from Acme']]);
+    const unsupported = rows.find(row => row.querySelector('.member-email')?.textContent === 'dora@example.com');
+    assert.ok(unsupported);
+    assert.deepEqual([...unsupported.querySelectorAll('.member-role dd')].map(role => role.textContent), ['none']);
+    assert.equal(unsupported.querySelector('details, form, select'), null);
+    assert.equal(document.querySelectorAll('.member-list select, .member-list input:not([type="hidden"])').length, 0);
+  });
+
+  test('Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked', async (t) => {
+    const site = await serveAdministrationSite(t);
+    site.directory.replaceMemberships(administrationMembers.map(member => ({ ...member, organizationName: member.organizationId === 'org-a' ? 'Acme Labs' : member.organizationName })));
+    const admin = site.browserOf(userOf('user-eve', 'org-a'));
+    let answer = await admin.open('members');
+    let document = parseHTML(answer.body).document;
+    const switchLink = [...document.querySelectorAll('header a')].find(link => link.textContent === 'Switch workspace');
+    assert.ok(switchLink);
+    assert.match(switchLink.parentElement?.textContent ?? '', /Acme Labs/, 'The workspace name must be beside Switch workspace');
+    for (const [current, destination] of [['Members', 'Audit logs'], ['Audit logs', 'Members']] as const) {
+      assert.equal(answer.status, current === 'Members' ? 200 : 503);
+      const links = [...document.querySelectorAll('header a')];
+      for (const label of ['Connect', 'Members', 'Audit logs', 'Switch workspace']) assert.ok(links.some(link => link.textContent === label && link.getAttribute('href')?.startsWith('/team/')), `${label} must be a page link`);
+      assert.deepEqual(links.filter(link => link.hasAttribute('aria-current')).map(link => [link.textContent, link.getAttribute('aria-current')]), [[current, 'page']]);
+      const next = links.find(link => link.textContent === destination)?.getAttribute('href');
+      assert.ok(next);
+      answer = await admin.open(next);
+      document = parseHTML(answer.body).document;
+    }
+    assert.equal(document.querySelector('header [aria-current="page"]')?.textContent, 'Members');
+  });
+
   test('Given an Admin and invitations in several states, when Members opens, then one page shows current members, You, pending expiry, navigation, and one invitation form', async (t) => {
     const site = await serveAdministrationSite(t);
     site.directory.addInvitations(
@@ -36,7 +85,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.deepEqual(site.directory.invitationChanges, []);
     assert.match(answer.body, /Invite to Acme<\/h2>/);
     assert.equal(forms[0]?.fields.organization_id, 'org-a');
-    assert.match(answer.body, /href="\/team\/">Product \/ Connect<\/a>/);
+    assert.match(answer.body, /href="\/team\/">Connect<\/a>/);
     assert.match(answer.body, /href="\/team\/members" aria-current="page">Members<\/a>/);
     assert.match(answer.body, /href="\/team\/logging"[^>]*>Audit logs<\/a>/);
     assert.match(answer.body, /href="\/team\/organizations">Switch workspace<\/a>/);
@@ -44,7 +93,7 @@ describe('Members through the hosted HTTP server', () => {
     assert.match(answer.body, /new@example\.com: User invitation, pending\./);
     assert.match(answer.body, /Expires <time datetime="[^"]+">/);
     assert.doesNotMatch(answer.body, /old@example\.com|other@example\.com|ivy@example\.com|pia@example\.com/);
-    assert.deepEqual(forms.filter(({ fields }) => fields.membership_id === undefined).map(({ label }) => label), ['Invite', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
+    assert.deepEqual(forms.filter(({ fields }) => fields.membership_id === undefined).map(({ label }) => label), ['Send invitation', 'Resend the invitation to new@example.com', 'Revoke the invitation to new@example.com']);
     assert.equal(forms.filter(({ fields }) => fields.membership_id !== undefined).length, 6);
     assert.equal(forms[0]?.fields.role, 'user');
     assert.doesNotMatch(answer.body, /Change role|Security|MFA|<script/);
@@ -56,8 +105,8 @@ describe('Members through the hosted HTTP server', () => {
     const admin = site.browserOf(userOf('user-eve', 'org-a'));
     const before = site.directory.membershipIn('user-eve', 'org-a');
 
-    const sentUser = await submitOnPage(admin, 'members', { label: 'Invite', filled: { email: 'new.user@example.com' } });
-    const sentAdmin = await submitOnPage(admin, 'members', { label: 'Invite', filled: { email: 'new.admin@example.com', role: 'admin' } });
+    const sentUser = await submitOnPage(admin, 'members', { label: 'Send invitation', filled: { email: 'new.user@example.com' } });
+    const sentAdmin = await submitOnPage(admin, 'members', { label: 'Send invitation', filled: { email: 'new.admin@example.com', role: 'admin' } });
     const resent = await submitOnPage(admin, 'members', 'Resend the invitation to new.user@example.com');
     const revoked = await submitOnPage(admin, 'members', 'Revoke the invitation to new.user@example.com');
     const after = await admin.open('members');

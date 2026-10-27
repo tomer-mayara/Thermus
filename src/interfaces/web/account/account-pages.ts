@@ -96,7 +96,7 @@ const REMOVAL_NOTICES: Readonly<Record<RemovalResult, Notice>> = {
 // Keep the write result separate from the next read, including after self-removal.
 export function removalResultPage(result: RemovalResult, paths: { readonly members: string; readonly organizations: string; readonly invitations: string; readonly login: string }): Response {
   return noticeResponse(REMOVAL_NOTICES[result], [
-    ...(result === 'last-admin' ? [`<p><a href="${escapeHtml(paths.invitations)}">Invite another Admin</a></p>`] : []),
+    ...(result === 'last-admin' ? [`<p><a href="${escapeHtml(paths.invitations)}">Invite another Admin</a>. On Members, open Invite member, select Admin, and wait for acceptance.</p>`] : []),
     `<p><a href="${escapeHtml(paths.members)}">Read current Members</a></p>`,
     `<p><a href="${escapeHtml(paths.organizations)}">Choose a workspace or check access</a></p>`,
     `<p>If your session ended, <a href="${escapeHtml(paths.login)}">sign in again</a>.</p>`,

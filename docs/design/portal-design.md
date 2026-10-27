@@ -75,16 +75,64 @@ switch offers safe recovery and must not repeat the first-Admin grant.
 
 ## Members
 
-Use the same visual system for the Admin's Members page. Keep Product / Connect,
-Members, and Switch workspace together. Show active members, a You label from
-trusted identity, and pending invitations with expiry and current actions. Do
-not show invitation history or actions from later slices.
+On 26 October 2026, the owner selected **Refined tabs** as the approved design
+direction for Members. UI-01 is implemented in
+[PR #263](https://github.com/tomer-mayara/Thermus/pull/263). UI-02
+([PR #264](https://github.com/tomer-mayara/Thermus/pull/264)) follows UI-01; UI-03
+([PR #266](https://github.com/tomer-mayara/Thermus/pull/266)) is now stacked on UI-02.
+UI-04 is next to restack. The
+[UI tickets and validation gate](organization-admin-plan.md#refined-tabs-ui--approved-design-26-october-2026)
+define the work; this selection changes no release or provider approval.
 
-Use one email field and User/Admin radio buttons. Select User by default. Keep
-Invite, Resend, and Revoke as protected HTML forms that work without JavaScript.
-Wrap long addresses and stack controls on narrow screens. A provider write with
-no confirmed result offers a Check status link, without a resubmit form or a
-claim that a pending invitation proves email delivery.
+Keep the dark Thermus palette, logo, and local IBM Plex fonts. Use a 32px Plex
+Serif title and Plex Sans labels. On Members, show the selected workspace name
+near Switch workspace. Connect, Members, and Audit logs are ordinary page links, with
+`aria-current="page"` on the current link. “Tabs” describes their appearance;
+do not add an ARIA tab widget or sidebar. Audit logs shares shell styling only.
+Scope Members body styles to Members; preserve the Audit body, controls, script,
+and current context without a name lookup. Regenerate CSP hashes when embedded
+CSS changes; keep the policy semantics. A Connect body redesign is outside scope.
+
+Keep this order: heading and Invite member disclosure, member list, pending
+invitations disclosure, removal help. Opening Invite member does not reorder
+these sections. Make the member list the main full-width surface with aligned
+Member, Role, and Action facts. Members · N counts displayed active rows. Retain
+the smaller caption `Active product members: S` from `activeUserSeats`; these
+counts can differ. Keep unsupported or absent role labels, the trusted-subject
+You marker, and the current `removable` decision. Add no query or billing behavior.
+
+Use quiet Remove… or Leave… native disclosures with specific accessible member
+names. Reserve red emphasis within this flow for the final removal or leave
+confirmation. Name the person and workspace, explain retained account and other
+workspace access, and keep Cancel. This rule adds no invitation Revoke confirmation.
+
+Put Invite member beside the heading as a native Details disclosure, closed on
+initial GET. Its open trigger is neutral; Send invitation is the only orange
+action while open. Keep the labelled email field, current User/Admin role choices,
+User selected when available, role help, and the visible provider-neutral
+recipient-policy note. Omit the trigger and form when no role is invitable.
+Summary toggles and Cancel are read-only. Cancel uses a Members GET and discards
+input; it needs no script or focus-return mechanism.
+
+Show Pending invitations · N in a compact native disclosure. Count the complete
+pending collection; start zero closed and nonzero open. Keep absolute UTC expiry
+and allowed Resend/Revoke forms. A failed read remains a failure, never zero.
+Keep the full approved removal help with its exact text, version, and hash.
+
+Mutations remain protected no-JavaScript forms with only their current
+per-operation fields. Native email validation keeps input; server errors retain
+fixed notices and discard input. Preserve server authority and existing recovery,
+including last-Admin and self-removal outcomes. Add no role-count Leave gate,
+provider rule, recovery state, optimistic removal, unsafe retry, or Undo. The
+[behavior rules and wireframes](organization-admin-plan.md#members-and-invitations--refined-tabs)
+and [UI tickets](organization-admin-plan.md#refined-tabs-ui--approved-design-26-october-2026)
+give the detailed failure, recovery, protocol, and validation requirements.
+
+Keep controls at least 48px high and rows about 64–72px high where text fits;
+let rows grow. At 320px, stack labelled facts and actions. Wrap long values and
+expanded content, preserve keyboard order, visible focus and text zoom, and
+prevent horizontal scroll. Verify with JavaScript on and off. No framework,
+provider widget, search, bulk action, or role change is part of this work.
 
 ## Organization selection
 

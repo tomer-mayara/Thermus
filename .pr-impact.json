@@ -15,21 +15,28 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Probe tooling only: script/spike/private-network-probe.ts and its helper modules under script/spike/private-network-probe/ probe the Render private network for SO-01d part two through the Render REST API: they create the private service of SO-01c and a disposable web service from the same image, run a one-off job on the web service that requests /healthz of the private service on port 10000 and on port 8080, read the job lines through the logs endpoint, check from this machine that the internal address does not resolve, and delete both services, with a dry-run mode, a reads-only preflight, and the client guard of SO-01c that touches only the thermus-spike-* services of the run and never the production service. Small export and type changes in script/spike/render-tenant-lifecycle/ let the new probe reuse the SO-01c modules, and the SO-01c dry run output stays the same; knip lists the new script as an entry point. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md fills the subsection Part two: Render private network of the section SO-01d and adds the result to one SO-01c finding, and docs/implementation/self-onboarding-plan.md states the confirmed internal address form in the SO-06 ticket and the one-off job in the SO-01d ticket. No source, runtime, registry view, declaration, or deployment change.",
+    "summary": "UI-03 changes invitation presentation inside the existing Web owner. The increment preserves the parent UI-02 member rows, distinct counts and compact quiet removal controls. A native closed Invite member disclosure contains the current protected form, Send invitation and a Members GET Cancel link. Last-Admin refusal adds instructions beside the existing recovery link. Allowed roles, recipient policy, POST fields, session/access checks, provider operations, server notices, removal authority and approved help remain unchanged. There is no new script, state, query, production component, dependency, public declaration, store or deployment change. All 15 registry views and current responsibility descriptions remain accurate. The browser gate inventory documents the added cases without changing gate selection or decision authority.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
+      "Containers and source owners",
       "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted membership removal in the Node server",
-      "Collaboration overview",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
       "Scenario: hosted member read",
-      "Deployment view",
-      "Behavior and resource ownership"
+      "Behavior and resource ownership",
+      "Deployment view"
     ],
     "evidence": [
-      "script/spike/private-network-probe.ts",
-      "docs/implementation/self-onboarding-s1.md",
-      "docs/implementation/self-onboarding-plan.md"
+      "src/interfaces/web/account/administration-pages.ts",
+      "src/interfaces/web/account/account-pages.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "test/acceptance/auth/hosted-invitations.test.ts",
+      "docs/implementation/admin-ui-03.md",
+      "docs/implementation/test-gate-policy.md",
+      "architecture/components.md"
     ]
   }
 }

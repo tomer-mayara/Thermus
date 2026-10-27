@@ -1,5 +1,12 @@
 # Organization administration plan
 
+UI design selected: 26 October 2026 — Refined tabs. UI-01 is implemented in
+[PR #263](https://github.com/tomer-mayara/Thermus/pull/263). UI-02 is implemented in
+[PR #264](https://github.com/tomer-mayara/Thermus/pull/264), with UI-03
+([PR #266](https://github.com/tomer-mayara/Thermus/pull/266)) now stacked on UI-02.
+UI-04 remains the next child to restack.
+See the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
+
 Plan reviewed: 25 October 2026. Slice 1 and Slice 2 are merged, and the internal
 Thermus AI rollout is live. [PR #252](https://github.com/tomer-mayara/Thermus/pull/252)
 contains the first-event capture follow-up. Its revised contract below supersedes
@@ -30,7 +37,11 @@ Current candidate pins, validation and approval reconciliation are in PR #257's
 [Validation](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840671) and
 [Quality review](https://github.com/tomer-mayara/Thermus/pull/257#issuecomment-6403840871). The
 [S2.5-02 ledger](../implementation/admin-s2-5-02.md) is the sole current Slice 2.5
-release gate ledger. Removal is not released, and S2.5-02 is not Done.
+release gate ledger. The [26 October production closeout](https://github.com/tomer-mayara/Thermus/blob/baff8d2a566ef39b97bd80aa8d88f6d19f839e74/review-evidence/s25-production-release-20261026/root/session-recovery-closeout/README.md)
+records Slice 2.5 release and production fixture cleanup complete, with
+`57c99e2b892acea52bfc3a53aee61b5ae442bf46` deployed. S2.5-02 is complete within
+that recorded scope. This plan update performs no new live verification and
+changes no unrelated first-event or Slice 3 MFA gate.
 
 This document authorizes no access change, provider action, account change,
 destination change, or cutover. Mock addresses are examples. Legal copy must use
@@ -175,7 +186,9 @@ change an existing MCP client's workspace.
 Use labels, radio groups, status text, visible focus, and controls at least 48px
 high. Ordinary forms and selection work without JavaScript. Use one column/cards
 on narrow screens; wrap long values, preserve zoom/full labels, and announce
-asynchronous results. Keep only non-secret input after safe errors. Never return
+asynchronous results. Keep only non-secret input after safe errors when that flow
+already supports restoration. Members invitation POST failures keep fixed notices
+and discard input; native pre-submit validation keeps values. Never return
 saved credentials/tokens in HTML, JSON, hydration, errors, logs, or events. The
 transient MFA setup exception is defined below. Distinguish denied, stale, rate-
 limited, failed, and unknown results; an outage is not an empty list.
@@ -213,55 +226,122 @@ Organization unclear with multiple memberships: [Choose workspace]
 [Terms of Service]  [Privacy Notice]
 ```
 
-### Members and invitations — Slice 1, with later actions
+### Members and invitations — Refined tabs
 
-Show active members and WorkOS-pending invitations with current expiry and allowed
-resend/revoke actions. No accepted-invitation history or setup rows. An empty
-pending section can be a sentence. Slice 1 has no member-row mutations:
+**Approved design direction — 26 October 2026. UI-01 is implemented in PR #263;
+UI-02 and UI-03 have candidates in PR #264 and PR #266, with UI-03 stacked on UI-02.
+UI-04 remains the next child to restack.**
+The owner selected Refined tabs. The following wireframes replace the earlier
+conceptual Members layout; they do not claim that the application has changed.
+Follow [portal design](portal-design.md#members) and the
+[UI implementation tickets](#refined-tabs-ui--approved-design-26-october-2026).
+Keep current member/invitation behavior and release gates. Slice 3 role changes
+and Security navigation remain separate work.
 
 ```text
-Thermus       Product / Connect | Members | Switch workspace
-                                 -------
-Members — Acme Labs
-Email                          Role
-alex@example.com               Admin · You
-sam@example.com                Admin
-jo@example.com                 User
-Pending invitations
-nia@example.com          Admin    3 days left    [Resend] [Revoke]
+Thermus       Connect | Members | Audit logs      Acme Labs [Switch workspace]
+                        -------
+Members · 3                                               [▸ Invite member]
+Active product members: 3
+┌ Member                         Role                   Action             ┐
+│ alex@example.com  You          Admin                  [Leave…]           │
+│ sam@example.com                Admin                  [Remove…]          │
+│ jo@example.com                 User                   [Remove…]          │
+└─────────────────────────────────────────────────────────────────────────┘
+[▸ Pending invitations · 0]
+[▸ Member removal help]
 ```
 
-Slice 2 adds Audit logs navigation. Slice 2.5 adds `[Remove]` on member rows.
-Slice 3 adds `[Change role]`; Security navigation appears with the MFA branch.
-Add security to the Admin role description only when that branch ships.
+The links are real page navigation with `aria-current="page"`, not an ARIA tab
+widget. Use the dark Thermus palette/local Plex fonts, a 32px serif title, sans
+labels, and full-width aligned rows. The heading count is the number of displayed
+active member rows from the complete read. Retain the smaller, separately labelled
+`Active product members: N` caption from `activeUserSeats`. It counts product
+access, so the numbers can differ: the existing Acme test fixture has seven active
+rows and six product members. Do not change the seat rule or its billing tests.
+Retain active memberships with no app role or an unknown role, their read-only
+labels, and their existing `removable` decision. You uses the trusted subject.
+Do not add role editing, a sidebar, search, bulk actions, a framework, or a provider
+widget.
 
 ```text
-Invite to Acme Labs (on the Members page)
-Email address [ name@example.com                               ]
-(*) User — use Thermus and connect an MCP client
-( ) Admin — also invite members
-[Invite]
-Confirmed send/resend/revoke: Return to the current Members page.
-Address conflict: Already a member or has a pending invitation.
-Unconfirmed change: It may have taken effect. [Check status]
+Members · 3                                               [▾ Invite member]
+Active product members: 3
+Invite to Acme Labs
+Email address [ name@example.com                                        ]
+(*) User    ( ) Admin
+User gives product and MCP access. Admin can also manage members.
+[Visible recipient-policy note from the current identityPolicy contract]
+[Send invitation] [Cancel]
+
+Member rows (other rows omitted here):
+jo@example.com             User                         [▾ Remove…]
+  Remove jo@example.com from Acme Labs?
+  This removes access here. The account and other workspace access remain.
+  [Cancel] [Remove member — final red confirmation]
+
+[▾ Pending invitations · 1]
+nia@example.com             Admin    Expires 2026-11-02 18:00:00 UTC
+                                    [Resend] [Revoke]
+[▸ Member removal help]
 ```
 
-Use native HTML forms and fixed failure notices. Keep one invite form on Members;
-no dialog, flash-message state, or separate invitation-history page is needed.
-Each example state appears only when applicable. Distinguish a member from a
-pending invitation only when a current provider result proves that distinction.
+Keep one document order at every width: heading/invitation task, member list,
+pending invitations, then help. Opening Invite inserts its form before the list;
+it does not reorder the other sections. Keep each mutation in its own form;
+put no form inside another form.
+
+Invite member is a native Details disclosure, closed on initial GET. Its open
+trigger is neutral, with one orange Send invitation. Keep one email field,
+`maxlength="254"`, the currently invitable User/Admin radios with User selected
+when available, labels, role help, and the existing protected no-JavaScript POST.
+Show no invitation trigger or form when no role is invitable. The summary closes
+the form without a write; Cancel is a normal Members GET link that discards input.
+Keep the policy note visible
+inside the open form before submission. For `invited-address`, retain the exact
+address promise. For `provider-rules`, retain the truthful generic sign-in-service
+policy note; it can permit another address. The enum does not prove a complete
+company/personal-email rule. Add no WorkOS-specific UI branch.
+
+This plan deliberately refines the earlier design review: native pre-submit
+validation retains values, but server failures keep the current fixed notice
+pages and discard input. No inline server-error restoration, flash, session, or
+query state is needed. On the last-Admin refusal page, place a clear instruction
+beside the existing Invite another Admin link: on Members, open Invite member,
+select Admin, and wait for acceptance. That link still lands on Members through
+the existing invitation route, with the form closed. This flow needs no recovery
+state on Members and does not depend on fragment-driven disclosure opening.
+
+Pending invitations are a compact native disclosure. Count the complete filtered
+pending collection; start zero closed and nonzero open. Keep absolute UTC expiry,
+its machine-readable time, and only allowed Resend/Revoke forms. Keep these
+actions quiet and specifically named. Revoke remains its existing protected POST;
+this design adds no invitation-confirmation flow. Do not show
+accepted history, invent relative times, or treat a failed/incomplete read as
+zero. An invitation is not active access and a pending record does not prove
+email delivery.
+
+Keep quiet, visible Remove…/Leave… disclosures rather than a one-item menu, each
+with a specific accessible member name. For removal/leave, use red only at final
+confirmation.
+Name person/workspace, preserve existing consequences and Cancel, and retain the
+exact protected POST fields. The displayed overview strips permission grants:
+role labels cannot prove last-Admin safety. Do not pre-disable Leave from a role
+count or add provider/grants reads for this layout. Preserve the server's current
+last-Admin refusal. Another active Admin must join; an invitation alone does not
+count. The concept preview's disabled Leave action is illustrative only.
+
+Keep confirmed, refused, busy, unavailable, and unconfirmed removal outcomes
+separate. Preserve Read current Members and its warning that a current read does
+not confirm an operation or make retry safe. Keep invitation Check status under
+its existing rules. Add no optimistic row removal, unsafe Retry, or Undo. Existing
+self-removal selection/sign-in recovery remains unchanged. Keep the approved full
+Member removal help text, version and hash in a compact closed disclosure.
+
+The existing later role-change flow remains Slice 3 work, outside these UI
+tickets. Its earlier mock is retained here:
 
 ```text
-Slice 2.5 — Remove jo@example.com from Acme Labs?
-Jo loses access here; account and other memberships remain.
-Rejoining needs a new invitation. [Cancel] [Remove member]
-Last Admin: Another Admin must join before you leave.
-[Back to members] [Invite Admin]
-Unsupported membership: Ask the operator to review its current state.
-Changed since opening: Reload and review the member.
-Unknown result: We could not confirm the removal. [Check current status]
-After self-removal: [Choose workspace] [Sign out]
-
 Slice 3 — Change jo@example.com's role · Current role: User
 ( ) Admin — product/MCP, members, and Audit logs
 (*) User — product/MCP
@@ -355,20 +435,46 @@ identifies Axiom; its absence identifies Custom. Existing unauthenticated settin
 remain readable, but any Save through this form, including disabling export,
 requires a Bearer token.
 
-### Narrow screens — Slice 1
+### Narrow screens — Refined tabs
 
 ```text
-Thermus                                         [Menu]
-Workspace [Acme Labs v]
-Members                                  [Invite member]
-alex@example.com · Admin · You
-Pending invitations
-nia@example.com · Admin · Invited · 3 days left
+Thermus
+Acme Labs [Switch workspace]
+Connect | Members | Audit logs
+          -------
+Members · 3
+Active product members: 3
+[▸ Invite member]
+─────────────────────────────────
+Member  alex.with.a.long.address@
+        example.com  You
+Role    Admin
+Action  [Leave…]
+─────────────────────────────────
+Member  sam@example.com
+Role    Admin
+Action  [Remove…]
+─────────────────────────────────
+Member  jo@example.com
+Role    User
+Action  [Remove…]
+─────────────────────────────────
+[▾ Pending invitations · 1]
+nia@example.com
+Role    Admin
+Expires 2026-11-02 18:00:00 UTC
 [Resend] [Revoke]
+[▸ Member removal help]
 ```
 
-The menu exposes only shipped pages/actions plus ordinary account/sign-out
-controls. Keep endpoint text, focus, and controls usable without horizontal scroll.
+This is the same page and native disclosures at 320px. The invite form remains
+on demand; opening it inserts its email, role, policy note, and Send invitation
+in normal flow before the member list. Navigation wraps as visible page links;
+no Menu, sidebar, drawer, modal, or scripted tab state is needed. Keep a sensible
+keyboard order, visible focus, 48px targets, full labels, long-value wrapping,
+and usable text zoom without horizontal scroll. Expanded help and confirmation
+content must reflow too. Verify these facts in a real browser with JavaScript
+both enabled and disabled; an HTTP/DOM test cannot establish CSS or validation.
 
 ## Canonical behavior rules
 
@@ -1113,6 +1219,453 @@ Dependencies identify functional prerequisites; release exits also enforce
 1 → 2 → 2.5 → 3. Each ticket follows the canonical rules, free-only rule, and
 verification procedure above. S1-03 and S1-04 remain group references: each is
 complete only when both of its child tickets are complete.
+
+### Refined tabs UI — approved design, 26 October 2026
+
+**Status: UI-01, UI-02 and UI-03 have candidates in PR #263, #264 and #266.
+UI-03 is now stacked on UI-02; UI-04 is next to restack.** These four small,
+plan-local tickets implement the selected Members presentation against existing
+member, invitation, and removal behavior. They add no provider or MFA feature
+and have no Slice 3 dependency. They do not reopen completed Slice 2.5 release
+work. Implement them serially: they share rendering/style and acceptance files.
+UI-02/03/04 depend functionally on UI-01, not on each other. The serial order below
+avoids conflicting edits; no separate verification-only ticket is needed. UI-01
+can finish while the current invitation form and pending section remain visible.
+Each ticket must leave a working page; later tickets are not its exit conditions.
+
+| Ticket | Dependencies | Result |
+| --- | --- | --- |
+| [UI-01](#ui-01--shared-admin-shell-and-layout) | Current Members/Audit logs routes and trusted access | Modest shared shell, visible page links, Members workspace context and full-width content. |
+| [UI-02](#ui-02--member-rows-and-quiet-removal) | Current checked removal; UI-01 | Aligned identity/role/action rows and quiet native Remove…/Leave… confirmations. |
+| [UI-03](#ui-03--on-demand-invitation-form) | Current native invitation routes; UI-01 | Closed initial invitation disclosure and one explicit Send invitation. |
+| [UI-04](#ui-04--compact-pending-invitations) | Current complete invitation overview; UI-01 | Counted pending disclosure, compact rows, UTC expiry and existing allowed actions. |
+
+**Deep review corrections — 26 October 2026.**
+
+| Finding | Decision |
+| --- | --- |
+| The shared exit gate required UI-03/04 features before those tickets existed. | Validate the current ticket and earlier work; check the combined page when all four tickets are complete. |
+| The new row count could replace the product-seat fact used by billing and access tests. | Keep both clearly labelled counts from the existing overview; preserve seat semantics and tests. |
+| Old sentence, label and form-order assertions were missing from the migration scope. | The ticket that changes the markup also updates its consumers, including offline WorkOS and hosted-live tests. |
+| The browser driver defaults to 390px with JavaScript on. | Set 320px/desktop and JavaScript modes explicitly; use fresh fixtures for each scenario. |
+| Some BDD cases combined cancel, submit, or failed reads into one journey. | Separate the outcomes; add the successful invitation journey and a real later-page failure. |
+| The open-form mock moved Pending invitations before members. | Use the same section order in every state; scope Members body styles so Audit logs keeps its controls. |
+
+Start each ticket with executable BDD through public HTTP or real browser
+interfaces. Run the cases for new behavior before source changes and record the
+actual initial red result. The expected gaps below come from source inspection,
+not test runs. Existing behavior and changed test selectors can remain green;
+do not manufacture red results for them. Then use each
+focused failing test → minimum implementation → green refactor cycle below until
+the acceptance cases are green. If a preceding step already makes a case pass,
+keep it as passing coverage; do not force another failure. Select tests by
+subject, not quotas. Rendering
+and route contracts use the existing integration tests named below: they connect
+real Web/account rendering/routes and their public collaborators. No new renderer
+unit suite is required. A unit test, if needed for a focused local rule, replaces
+other Delamain packages at their public interfaces. Real disclosure, keyboard,
+native validation and layout behavior need browser acceptance. Do not add
+CSS-class-string snapshots, unit functions for CSS geometry, or tests of this plan.
+
+**Test migration and fixtures.** Each ticket updates the assertions and helpers
+that consume its changed presentation. Find forms by action and target fields in
+HTTP tests; keep explicit label assertions when wording is the subject. Browser
+tests use accessible names and scope actions to the chosen member or invitation.
+Replace incidental form indexes, sentence matching and exact row-class extraction
+in affected cases with assertions of the same facts. Do not remove safety checks,
+weaken expected outcomes, or build a general UI test framework.
+
+In addition to the ticket pointers, trace
+[hosted-administration](../../test/integration/auth/hosted-administration.test.ts),
+[offline WorkOS administration](../../test/acceptance/auth/hosted-workos-administration.test.ts)
+and [hosted-live administration](../../test/acceptance/auth/hosted-live/administration-server.ts).
+UI-02 owns row/self-action migrations; UI-03 owns Invite → Send invitation;
+UI-04 owns pending-row migrations. Preserve the `seatsIn` product-count meaning in
+[the administration DSL](../../test/support/dsl/hosted-administration.ts),
+[hosted-seats](../../test/acceptance/auth/hosted-seats.test.ts) and
+[hosted-billing](../../test/acceptance/billing/hosted-billing.test.ts). Never change
+all expected six-seat results to seven because the row heading changed.
+
+Reuse [the browser site](../../test/support/in-process/hosted-member-removal-site.ts)
+with `setUp(world)` for fresh self/other, pending, long-value and last-Admin states.
+Use the existing browser driver with explicit `javaScriptEnabled` and
+`setViewportSize`; the 390px/JavaScript-on defaults do not prove the planned cases.
+Inspect actual visibility, keyboard focus, bounds, native validity, request
+counts and resulting state. HTTP form parsing alone cannot establish those facts.
+
+#### UI-01 — Shared admin shell and layout
+
+Implemented in [PR #263](https://github.com/tomer-mayara/Thermus/pull/263).
+The [implementation record](../implementation/admin-ui-01.md) links validation
+and review evidence. This status does not claim a merge or deployment.
+
+**BDD acceptance first.**
+
+```gherkin
+Scenario: Keep workspace context beside page navigation
+  Given a current Admin in the named workspace Acme Labs
+  When the Admin opens Members and follows Audit logs and Members
+  Then Connect, Members, Audit logs and Switch workspace remain real page links
+  And only the current page link has aria-current="page"
+  And Members shows Acme Labs beside Switch workspace
+  And Members uses the available content width for its list
+Scenario: Use the shell without JavaScript at narrow and desktop widths
+  Given the built portal assets and JavaScript disabled
+  When an Admin opens Members at 320px and desktop width and uses the keyboard
+  Then navigation, the skip link, focus and workspace text remain usable
+  And long values and the current page content reflow without horizontal scrolling
+```
+
+**Initial red to observe.** Add the first acceptance assertion for named workspace
+context beside Switch workspace: the current shell has no name there. Record a
+browser acceptance failure for the new full-width/modest-title layout before CSS
+changes; do not assert a class name to represent this behavior.
+
+**Focused TDD.**
+
+1. Add a failing integration rendering/route test for the Members name beside
+   Switch workspace → pass the trusted `MemberOverview.organizationName` to the
+   internal layout, including escaping → make it pass and refactor.
+2. Use focused failing browser assertions for full-width content and narrow
+   navigation → change the minimum layout/CSS → make them pass and refactor.
+   Inspect the 32px serif title, sans labels, local fonts and 48px controls in
+   browser evidence. Do not create a unit abstraction for CSS geometry.
+
+**Characterization, which may already pass.** Preserve links under the configured
+base path, current-page semantics, escaping, skip/focus navigation, non-cacheable
+responses, and CSP hashes derived from the actual embedded style/script. Audit
+logs inherits shell typography/navigation/spacing only. Scope Members body styles
+so Audit keeps its controls, help, context behavior, Save/Test handlers, result
+availability and optional script. The CSP policy stays equally restrictive; its
+style hash must follow changed CSS bytes, not remain byte-for-byte identical.
+Do not add a workspace-name lookup, LoggingRoutes option, or provider failure path
+for its chrome; do not display a tenant ID as a workspace name. Connect is a link
+here; its body redesign is outside scope.
+
+**Owner and pointers.** Web/account owns
+[members-page-layout.ts](../../src/interfaces/web/account/members-page-layout.ts),
+[members-style.ts](../../src/interfaces/web/account/members-style.ts),
+[administration-pages.ts](../../src/interfaces/web/account/administration-pages.ts),
+and the existing data handoff in
+[administration-routes.ts](../../src/interfaces/web/account/administration-routes.ts).
+Inspect the shared consumer
+[logging-page.ts](../../src/interfaces/web/account/logging-page.ts), without adding
+logging lookups. Extend
+[hosted-members.test.ts](../../test/acceptance/auth/hosted-members.test.ts),
+[account-routes-administration-pages.test.ts](../../test/integration/hosted-admin/account-routes-administration-pages.test.ts),
+and [hosted-member-removal-browser.runtime.ts](../../test/acceptance/auth/hosted-member-removal-browser.runtime.ts).
+Retain focused [logging-page](../../test/unit/html/logging-page.test.ts) and
+[logging-routes](../../test/unit/html/logging-routes.test.ts) checks for the shared
+consumer. The browser driver is
+[member-removal-browser.ts](../../test/support/drivers/browser/member-removal-browser.ts).
+
+**Complete when** the shell acceptance is green with JavaScript on and off,
+Members workspace context is truthful, Audit behavior is unchanged, and the
+[candidate validation gate](#ui-shared-final-validation-gate) passes. UI-03/04
+disclosures are not required to complete UI-01.
+
+#### UI-02 — Member rows and quiet removal
+
+Implemented in [PR #264](https://github.com/tomer-mayara/Thermus/pull/264),
+stacked on UI-01. See the [implementation record](../implementation/admin-ui-02.md).
+
+**BDD acceptance first.**
+
+```gherkin
+Scenario: Read active member facts and choose a deliberate action
+  Given a complete overview with seven active members, six of whom have product access
+  When the Admin opens Members
+  Then Member, Role and Action facts are aligned and Members shows seven active rows
+  And Active product members still shows six from the existing product-access count
+  And You is beside only the trusted current identity and roles are read-only
+  And each removable other member has a quiet Remove disclosure with a specific name
+  And a removable current member has a quiet Leave disclosure with a specific name
+Scenario: Cancel removal without JavaScript
+  Given a removable member and JavaScript disabled
+  When the Admin opens that member's disclosure by keyboard
+  Then confirmation names the person and workspace and states retained account and other access
+  And only the final removal confirmation is red
+  When the Admin follows Cancel
+  Then Members opens with the disclosure closed and no removal request or state change
+Scenario: Confirm removal without JavaScript
+  Given a fresh page for an eligible member removal, another active Admin will remain and JavaScript is disabled
+  When the Admin opens that member's disclosure and submits one valid confirmation
+  Then only that membership is removed, with one removal POST
+  And the account and other workspace memberships remain
+  And Member removed is shown with recovery links and no repeat-removal form
+```
+
+**Initial red to observe.** The current rows express identity/status/roles in a
+sentence; the self trigger says Remove rather than Leave. Add and run the new
+self-action/row-fact acceptance first. Quiet emphasis and column alignment need
+an initial browser acceptance observation, not a class-string test.
+
+**Focused TDD.**
+
+1. Add a failing integration case for labelled row facts and the seven-row heading
+   beside the retained six-product-member caption → render existing overview
+   facts without new reads → make it pass and refactor. Migrate sentence/row
+   assertions while keeping product-seat assertions unchanged.
+2. Add a failing integration case for self Leave and other Remove names → use the
+   trusted subject and existing `removable` decision for native disclosures →
+   make it pass and refactor. Keep absent/unknown roles and duplicate-email
+   identities in the cases; an email match cannot identify You or self-removal.
+3. Use a focused failing browser check for aligned rows and quiet triggers →
+   apply the minimum row/action CSS → make it pass and refactor. Close the outer
+   BDD loop with fresh self/other keyboard cancel and submit cases, including
+   self-removal with another active Admin. Inspect wrapping, final danger color
+   and 48px targets; retain the existing refusal/recovery characterizations.
+
+**Characterization, which may already pass.** Retain the visible product count
+and its deduplication, access and read-failure rules; it is not the row count.
+Retain exact CSRF, organization, membership and revision fields. Preserve all
+active rows, including unsupported
+or absent roles; only mutation controls depend on the existing `removable`
+decision. Preserve authoritative stale, last-Admin, busy, unavailable and
+unconfirmed results; one checked POST; no retry on unknown. The overview omits
+permission grants, so never disable Leave by
+counting displayed Admin labels or add grants/provider lookups. Preserve
+Read current Members and the warning that it does not confirm the operation.
+Keep safe self-removal selection/sign-in recovery, account/other-membership
+preservation, no Undo, and the full approved help. Its current version is
+`hosted-members-help-organization-removal-proposal-2026-10-26-v1`; SHA-256 is
+`853d344d0f861fd3a53ed05b846909108d56d39d6105a7fa4fcc626e0d1aa9ca`.
+Preserve exact text and metadata, not a rewritten summary.
+
+**Owner and pointers.** Web/account owns row/removal rendering in
+[administration-pages.ts](../../src/interfaces/web/account/administration-pages.ts)
+and [members-style.ts](../../src/interfaces/web/account/members-style.ts).
+[account-pages.ts](../../src/interfaces/web/account/account-pages.ts) owns fixed
+outcomes; [administration-help-documents.ts](../../src/interfaces/web/account/administration-help-documents.ts)
+owns help bytes. The domain remains unchanged in
+[administration-overviews.ts](../../src/accounts/organizations/administration-overviews.ts)
+and [membership-removal.ts](../../src/accounts/organizations/membership-removal.ts).
+Extend the UI-01 Members/route/browser tests. Characterize existing
+[hosted-member-removal](../../test/acceptance/auth/hosted-member-removal.test.ts),
+[hosted-member-self-removal](../../test/acceptance/auth/hosted-member-self-removal.test.ts),
+and [hosted-member-session-recovery](../../test/acceptance/auth/hosted-member-session-recovery.test.ts)
+through [hosted-member-removal.ts](../../test/support/dsl/hosted-member-removal.ts).
+
+**Complete when** the new row/Leave acceptance and preserved removal outcomes are
+green, approved help is unchanged, browser review shows quiet actions and usable
+expanded rows, all affected row/self-action test consumers are migrated, and the
+candidate validation gate passes. No later invitation UI is required.
+
+#### UI-03 — On-demand invitation form
+
+**Candidate: [PR #266](https://github.com/tomer-mayara/Thermus/pull/266), stacked
+on UI-02.** See the [implementation record](../implementation/admin-ui-03.md).
+This candidate includes the parent member rows, both counts and compact removal actions.
+
+**BDD acceptance first.**
+
+```gherkin
+Scenario: Invite only after opening the task
+  Given a current Admin for whom User and Admin are both invitable and JavaScript disabled
+  When the initial Members GET opens
+  Then Invite member is a closed native disclosure beside the heading
+  When the Admin opens it by keyboard
+  Then one email field and User/Admin choices appear with User selected
+  And the recipient-policy note is visible before Send invitation
+  And the open trigger is neutral and Send invitation is the only orange action
+Scenario: Discard a draft invitation without a write
+  Given a fresh open invitation form with a typed email and Admin selected
+  When the Admin follows Cancel
+  Then a fresh Members GET shows the closed form and no invitation was sent
+Scenario Outline: Send one invitation from the disclosed form
+  Given a fresh Members page where <role> is invitable and JavaScript disabled
+  When the Admin opens Invite member, enters a valid new email, selects <role> and submits once
+  Then one protected invitation POST is sent with that email and role
+  And the applied result redirects with 303 to Members with the invitation form closed
+  And the new pending invitation has that role without claiming email delivery
+  Examples:
+    | role  |
+    | User  |
+    | Admin |
+Scenario: Reject invalid email before a request
+  Given a fresh open invitation form
+  When the Admin submits an invalid email in a real browser
+  Then native validation prevents submission and retains the typed values
+Scenario Outline: Keep existing notices for server outcomes
+  Given a fresh valid invitation form and a server result of <outcome>
+  When the Admin submits once
+  Then the existing fixed notice and safe recovery appear without a restored form or unsafe retry
+  Examples:
+    | outcome     |
+    | refusal     |
+    | unconfirmed |
+Scenario: Find the invitation task after last-Admin refusal
+  Given the existing last-Admin refusal page
+  When the Admin reads its Invite another Admin recovery guidance
+  Then an instruction explains to open Invite member, select Admin and wait for acceptance
+  When the Admin follows that existing link and opens Invite member on Members
+  Then the ordinary invitation form is usable without JavaScript or recovery state
+```
+
+**Initial red to observe.** The current invitation form is always visible and its
+submit label is Invite. Add the closed-initial-disclosure/Send invitation
+acceptance first; run it to observe failure before the markup change. Use a real
+browser for hidden content and native validation, not the HTTP driver's form list.
+
+**Focused TDD.**
+
+1. Add focused failing integration cases for the closed disclosure, Send invitation
+   label and Cancel GET link → wrap the existing protected form in native Details
+   → make each case pass and refactor. Keep no-trigger/no-form for an empty role
+   list as passing characterization. Migrate Invite-label consumers in this
+   ticket, keeping their send/role checks.
+2. Add a failing integration case for the last-Admin recovery instruction → add
+   the instruction beside the existing link → make it pass and refactor. Preserve
+   the recovery route/redirect; users open Invite member on the resulting page.
+3. Check the open trigger's neutral emphasis and form placement in the browser.
+   For a remaining gap, record a focused failure → apply the minimum CSS → make
+   it pass and refactor. Keep an already passing check green. Run
+   the outer BDD with actual keyboard opening, typed Cancel and one successful
+   submission for each role. Retain native validation and server-notice coverage.
+   Closing the summary retains native focus behavior; Cancel is document
+   navigation. Add no modal, state store, script or custom focus-return flow.
+
+**Characterization, which may already pass.** Keep email `maxlength="254"`, native
+labels/validation, default User when available, the allowed role subset, escaping,
+CSRF/scope fields and no-JavaScript POST. Preserve both existing identity-policy
+texts without a WorkOS-specific branch or inferred company/personal rule.
+Applied and unchanged results, including an unchanged duplicate invitation,
+retain their 303 redirect to Members. Preserve the existing denied, stale,
+not-pending, address-in-use, unsupported and invalid-input notices, and the
+unconfirmed notice without a retry form. Add no new rate-limit outcome. Only
+native pre-submit validation retains values; server-error form restoration is
+outside scope. A pending record does not prove email delivery.
+
+**Owner and pointers.** Web/account owns `sendForm`/policy text in
+[administration-pages.ts](../../src/interfaces/web/account/administration-pages.ts),
+[members-style.ts](../../src/interfaces/web/account/members-style.ts), and recovery
+instructions in [account-pages.ts](../../src/interfaces/web/account/account-pages.ts).
+Preserve [account-form.ts](../../src/interfaces/web/account/account-form.ts) and
+[administration-routes.ts](../../src/interfaces/web/account/administration-routes.ts)
+contracts. Extend the UI-01 Members/route/browser cases; characterize
+[hosted-invitations.test.ts](../../test/acceptance/auth/hosted-invitations.test.ts),
+[hosted-invitation-refusals.test.ts](../../test/acceptance/auth/hosted-invitation-refusals.test.ts)
+and [account-routes-administration-input.test.ts](../../test/integration/hosted-admin/account-routes-administration-input.test.ts).
+Reuse [hosted-administration.ts](../../test/support/dsl/hosted-administration.ts)
+and the existing real browser driver; do not treat the HTTP driver as CSS proof.
+
+**Complete when** initial/open/valid/invalid-browser/server-notice/recovery cases
+pass, browser interactions work with JavaScript on and off, policy and protected
+forms are unchanged, Invite-label consumers are migrated, and the candidate
+validation gate passes. The current pending list can show the new invitation;
+UI-04's counted disclosure is not needed yet.
+
+#### UI-04 — Compact pending invitations
+
+**BDD acceptance first.**
+
+```gherkin
+Scenario: Discover all current pending invitations
+  Given a successful complete invitation overview with pending and terminal entries
+  When Members opens
+  Then Pending invitations shows the complete pending count and starts open when nonzero
+  And only pending entries show their role, absolute UTC expiry and currently allowed actions
+Scenario: Keep a successfully read empty group small
+  Given a successful complete overview with no pending invitations
+  When Members opens
+  Then Pending invitations shows zero in a closed native disclosure
+  And opening it explains that no invitations are pending
+Scenario: Do not present a partial read as empty or complete
+  Given an invitation read whose later page fails after an earlier page returned entries
+  When Members opens
+  Then the existing failure is shown with no partial list or count
+```
+
+**Initial red to observe.** The current pending section is a permanent card with
+no counted disclosure. Add and run zero-closed/nonzero-open/count acceptance before
+source changes. Failure is expected from that missing behavior, not an invented
+failure of existing expiry or resend/revoke rules.
+
+**Focused TDD.**
+
+1. Add focused failing integration cases for the filtered count and zero-closed/
+   nonzero-open states → use the complete existing collection and native Details
+   without another read or stored counter → make each case pass and refactor.
+2. Use a focused failing browser check for compact, long-value pending rows at
+   320px → change the minimum markup/CSS → make it pass and refactor. Migrate
+   pending sentence/row assertions, preserving role, expiry and action checks.
+   Close the outer BDD with keyboard discovery and the existing Resend/Revoke
+   flows. Keep UTC `time` semantics; add no relative clock or new confirmation.
+
+**Characterization, which may already pass.** Retain complete-read failure
+behavior, pending-only entries, roles, machine-readable expiry, scoped protected
+Resend/Revoke forms, current allowed actions and fixed result notices. Keep
+unconfirmed status guidance and no delivery claim. Do not add invitation history,
+new lifecycle/provider policy, or hidden nonzero pending rows. Exercise a later
+page failure through the public route with the existing directory fixture; do
+not invent a partially successful `InvitationOverview`. That contract is complete.
+
+**Owner and pointers.** Web/account owns pending rendering in
+[administration-pages.ts](../../src/interfaces/web/account/administration-pages.ts)
+and [members-style.ts](../../src/interfaces/web/account/members-style.ts).
+Accounts owns the unchanged complete projection in
+[administration-overviews.ts](../../src/accounts/organizations/administration-overviews.ts).
+Extend the UI-01 Members/route/browser tests and preserve
+[account-routes-administration-changes.test.ts](../../test/integration/hosted-admin/account-routes-administration-changes.test.ts)
+and [organization-administration-invitation-overview.test.ts](../../test/unit/organizations/organization-administration-invitation-overview.test.ts).
+
+**Complete when** counted zero/nonzero states, keyboard discovery, complete-read
+failure and existing lifecycle behavior pass, compact rows reflow, pending-row
+consumers are migrated, and the candidate validation gate passes. When this is
+the last of the four tickets, also inspect the combined page as described below.
+
+#### UI shared final validation gate
+
+**Per candidate.** Check the current ticket and preserve earlier behavior. A
+later ticket's feature cannot block an earlier ticket. Record actual red → green
+evidence for new behavior; selector migrations and unchanged characterizations
+need a passing result, not an artificial failure. Run the selected focused checks
+and then the complete candidate checks. Reuse the
+[test layout](../testing/test-code-layout.md) and
+[test gate policy](../implementation/test-gate-policy.md). A source change needs
+`npm test`, `npm run typecheck`, `npm run build:user-portal`, and applicable dedicated
+gates. Changes under `src/interfaces/web/` also select `npm run test:container`,
+`npm run build:hosted`, and the Linux AMD64 `npm run test:container:hosted` gate.
+Do not add `npm run check`. Removal form, confirmation, or result-navigation
+changes select the Members browser gate; an updated runtime test file also
+selects its own gate. The Members browser command is
+`npm run build:user-portal && npm run build && node --test dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js`.
+Run each changed test locally; record environment limits or deferral explicitly.
+Layout alone does not select SQL, Collector or live provider proofs. Still trace
+changed tests/helpers to their consuming groups: a changed hosted-live assertion
+or helper can require its dedicated staging group. Actual authentication or
+WorkOS read/write changes also follow the hosted-live source gate. Apply the
+policy's prerequisites and nested-run limits; an unavailable required run is
+deferred, not passed. These tickets authorize no production fixture changes.
+
+Use real built assets. Set JavaScript enabled/disabled and 320px/1280px widths
+explicitly for the ticket's browser cases. Use long values, keyboard navigation,
+text zoom and expanded content where relevant. Inspect computed text/boundary/
+focus contrast and 48px action targets, with screenshots or manual observations.
+HTTP/DOM checks cannot prove CSS geometry, hidden content or native validation.
+Update the browser gate's documented scope when its implemented cases change.
+
+| Candidate | New browser behavior to prove, alongside existing regressions |
+| --- | --- |
+| UI-01 | Workspace/nav layout, full-width content, skip/focus and reflow; Audit shell without changed body behavior. The existing invitation/pending sections may remain. |
+| UI-02 | Labelled rows, two distinct counts, self/other quiet disclosures, cancellation with no write and one confirmation with existing recovery. |
+| UI-03 | Initial/open invitation, typed Cancel, invalid native input, valid User/Admin submission and last-Admin recovery instructions. Existing pending rows are sufficient. |
+| UI-04 | Zero/nonzero pending disclosure, long rows, allowed actions and stable section order. |
+
+**Combined finish.** When all four tickets are present, inspect one complete
+Members page through the new states above with JavaScript on/off at both widths.
+Include expanded approved help and fixed server notices, and retain the existing
+session/self-removal recovery coverage. Check Audit logs after the final shared
+CSS changes: controls, help, optional script and Save/Test behavior still work.
+Reuse current passing evidence; repeat checks only for a changed candidate or
+an unresolved concern. Do not add a separate verification ticket or require new
+provider writes merely to review the combined layout.
+
+Before Ready, review the complete diff, required documents, architecture impact,
+component registry, public-surface snapshots when applicable, habit-hooks, metrics,
+review tier and merge eligibility under repository policy. No release, provider,
+legal-copy, or human-approval gate is waived by this design selection. This plan
+edit itself needs document/link review, not source tests or provider checks.
 
 ### Slice 1 — Basic password Admin portal
 
@@ -2493,12 +3046,19 @@ identity mirror, or membership-reduction coordinator.
 
 ### Slice 2.5 — Password-only membership removal
 
-**Current status — 25 October 2026.** Ordinary User/Admin removal and self-removal
-are implemented under password authentication. Independent review found a P2
-in the safety scan. S2.5-R1 completes the source repair and selected behavioral
-checks. Independent human architect review of the current candidate remains
-pending. Removal is not released. Role changes and MFA remain Slice 3 work;
-settings backup remains Slice 4 work.
+**Current status — 26 October 2026.** Ordinary User/Admin removal and self-removal
+are released under password authentication. The
+[production closeout](https://github.com/tomer-mayara/Thermus/blob/baff8d2a566ef39b97bd80aa8d88f6d19f839e74/review-evidence/s25-production-release-20261026/root/session-recovery-closeout/README.md)
+records completed release and exact production fixture cleanup on deployed
+`57c99e2b892acea52bfc3a53aee61b5ae442bf46`. It supersedes the earlier pending-review
+and release holds for that scope. This is a baseline update from recorded evidence,
+not a new live verification. Role changes and MFA remain Slice 3 work; settings
+backup remains Slice 4 work.
+
+**Historical state — 25 October, before production closeout.** The following
+candidate table and evidence retain the earlier P2 safety-scan finding,
+S2.5-R1 repair, pending review and ordered release holds. They are historical
+records, not dependencies on unfinished removal for the new UI tickets.
 
 The [S2.5-02 ledger](../implementation/admin-s2-5-02.md) alone owns the current
 release gates and their ordered execution. The
@@ -2663,6 +3223,9 @@ only when the acceptance case and selected checks pass on the repaired candidate
 The simulated fixture is a regression case, not a runtime throughput SLA.
 
 #### S2.5-02 — Integrated verification, runbooks, and release
+
+**Historical procedure; completed within the [26 October production closeout](https://github.com/tomer-mayara/Thermus/blob/baff8d2a566ef39b97bd80aa8d88f6d19f839e74/review-evidence/s25-production-release-20261026/root/session-recovery-closeout/README.md) scope.**
+The following preserves the original procedure and completion criteria.
 
 The [current release ledger](../implementation/admin-s2-5-02.md) owns every
 remaining gate and release sequence. First hold and verify actual deployment

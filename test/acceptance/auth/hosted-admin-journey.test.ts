@@ -42,7 +42,7 @@ for (const role of ['admin', 'user'] as const) {
     const members = await owner.open('members');
     assert.equal(members.status, 200, members.body);
     assert.doesNotMatch(members.body, /type="checkbox"|name="agreement"|multi-factor authentication is required/i);
-    const invitation = formLabelled(formsIn(members.body), 'Invite');
+    const invitation = formLabelled(formsIn(members.body), 'Send invitation');
     const sent = await owner.submit({ ...invitation, fields: { ...invitation.fields, email: recipient.email, role } });
     assert.equal(sent.status, 303, sent.body);
     assert.equal(site.world.invitations.length, 1);

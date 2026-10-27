@@ -26,23 +26,22 @@ const ROLE_LABELS: ReadonlyMap<string, string> = new Map([['user', 'User'], ['ad
 export function membersPage(form: MembersPageForm): Response {
   const members = form.members.members.filter(({ status }) => status === 'active');
   const invitations = form.invitations.invitations.filter(({ state }) => state === 'pending');
-  const memberRows = members.map((member) => `<li class="member-row"><div class="member-identity"><p>${escapeHtml(member.email)}: active. Roles: ${rolesText(member.roles)}.</p>${member.subject === form.subject ? '<span class="you-label">You</span>' : ''}</div>${member.removable ? removalForm(form, member) : ''}</li>`);
-  const content = `<div class="introduction"><p class="eyebrow">Workspace administration</p><h1>Members</h1><p>${escapeHtml(form.members.organizationName)}</p></div>
-<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to ${escapeHtml(form.members.organizationName)}</h2>
-<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>
-${sendForm(form).join('\n')}
-<p class="policy-note">${identityPolicyText(form.invitations.identityPolicy)}</p></section>
+  const memberRows = members.map((member) => `<li class="member-row"><dl class="member-facts"><div class="member-identity"><dt>Member</dt><dd><span class="member-email">${escapeHtml(member.email)}</span>${member.subject === form.subject ? '<span class="you-label">You</span>' : ''}</dd></div><div class="member-role"><dt>Role</dt><dd>${rolesText(member.roles)}</dd></div><div class="member-action"><dt>Action</dt><dd>${member.removable ? removalForm(form, member) : '<span class="list-note">No action available</span>'}</dd></div></dl></li>`);
+  const content = `<div class="introduction members-introduction"><p class="eyebrow">Workspace administration</p><h1>Members · ${members.length}</h1>
+${sendForm(form).join('\n')}</div>
 <div class="member-lists"><section class="members-card" aria-labelledby="active-heading"><h2 id="active-heading">Active members</h2>
 <p class="list-note">Active product members: ${form.members.activeUserSeats}</p>
 ${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">${memberRows.join('\n')}</ul>`}${membersHelp}</section>
 <section class="members-card" aria-labelledby="pending-heading"><h2 id="pending-heading">Pending invitations</h2>
 ${invitations.length === 0 ? '<p class="list-note">No pending invitations.</p>' : `<ul class="invitation-list">${invitations.map((invitation) => invitationRow(form, invitation)).join('\n')}</ul>`}
 </section></div>`;
-  return membersPageLayout(form.navigation, content);
+  return membersPageLayout(form.navigation, content, { title: 'Members', current: 'members', organizationName: form.members.organizationName });
 }
 
 function removalForm(form: MembersPageForm, member: MemberOverview['members'][number]): string {
-  const label = `Remove ${member.email}`;
+  const self = member.subject === form.subject;
+  const label = self ? `Leave ${form.members.organizationName}` : `Remove ${member.email}`;
+  const disclosureLabel = self ? `Leave ${form.members.organizationName} as ${member.email}` : `Remove ${member.email} from ${form.members.organizationName}`;
   const content = [
     hiddenField('csrf_token', form.csrfToken),
     hiddenField('organization_id', form.members.organizationId),
@@ -50,19 +49,26 @@ function removalForm(form: MembersPageForm, member: MemberOverview['members'][nu
     hiddenField('revision', member.revision),
     `<p>Remove ${escapeHtml(member.email)} from ${escapeHtml(form.members.organizationName)}? This removes access to this workspace. The account and access to other workspaces remain.</p>`,
   ];
-  return `<details class="member-removal"><summary>${escapeHtml(label)}</summary><div class="removal-confirmation">${postForm(form.actions.remove, content, label).join('\n')}<a href="${escapeHtml(form.navigation.members)}">Cancel</a></div></details>`;
+  return `<details class="member-removal"><summary aria-label="${escapeHtml(disclosureLabel)}">${self ? 'Leave…' : 'Remove…'}</summary><div class="removal-confirmation">${postForm(form.actions.remove, content, label).join('\n')}<a href="${escapeHtml(form.navigation.members)}">Cancel</a></div></details>`;
 }
 
 function sendForm(form: MembersPageForm): string[] {
   if (form.invitations.invitableRoles.length === 0) return [];
   const roles = form.invitations.invitableRoles.map((role) => `<label class="role-option"><input type="radio" name="role" value="${escapeHtml(role)}"${role === 'user' ? ' checked' : ''} required> ${escapeHtml(roleLabel(role))}</label>`);
-  return postForm(form.actions.send, [
-    hiddenField('csrf_token', form.csrfToken),
-    hiddenField('organization_id', form.members.organizationId),
-    '<label for="invite-email">Email address</label>',
-    '<input id="invite-email" type="email" name="email" autocomplete="email" required maxlength="254">',
-    '<fieldset><legend>Role</legend>', ...roles, '</fieldset>',
-  ], 'Invite');
+  return [
+    '<details class="member-invitation"><summary>Invite member</summary>',
+    `<section class="invite-card" aria-labelledby="invite-heading"><h2 id="invite-heading">Invite to ${escapeHtml(form.members.organizationName)}</h2>`,
+    '<p>User gives product and MCP access. Admin includes product and MCP access and can invite or remove Users and Admins.</p>',
+    ...postForm(form.actions.send, [
+      hiddenField('csrf_token', form.csrfToken),
+      hiddenField('organization_id', form.members.organizationId),
+      '<label for="invite-email">Email address</label>',
+      '<input id="invite-email" type="email" name="email" autocomplete="email" required maxlength="254">',
+      '<fieldset><legend>Role</legend>', ...roles, '</fieldset>',
+      `<p class="policy-note">${identityPolicyText(form.invitations.identityPolicy)}</p>`,
+    ], 'Send invitation'),
+    `<a href="${escapeHtml(form.navigation.members)}">Cancel</a></section></details>`,
+  ];
 }
 
 function invitationRow(form: MembersPageForm, invitation: InvitationEntry): string {
