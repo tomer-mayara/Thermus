@@ -1,7 +1,7 @@
 import {
   API_BASE, callLine, createServiceCall, credentialsCall, deleteServiceCall, deployCall, deployImageCall, envVarsCall,
-  eventsCall, FREE_PLAN, instancesCall, ownerCall, privateServicesCall, recentDeploysCall, resumeCall, serviceCall,
-  servicesNamedCall, suspendCall, TEAM_PLAN, updatePlanCall, type Call,
+  eventsCall, FREE_PLAN, instancesCall, ownerCall, PRIVATE_SERVICES, recentDeploysCall, resumeCall, serviceCall,
+  servicesCall, servicesNamedCall, suspendCall, TEAM_PLAN, updatePlanCall, type Call,
 } from './calls.ts';
 import type { ProbeInputs } from './inputs.ts';
 import { POLLS } from './polls.ts';
@@ -36,7 +36,7 @@ function preflight(inputs: ProbeInputs): PlannedStep {
   return { title: 'Preflight (reads only)', calls: [
     planned(ownerCall(inputs.owner), 'The workspace exists.'),
     planned(credentialsCall(inputs.owner), `One credential has the ID or name "${inputs.registryCredential}", for GITHUB. Its ID becomes {registryCredentialId}.`),
-    planned(privateServicesCall(inputs.owner), `With each next cursor until a page is not full. ${reuse}`),
+    planned(servicesCall(inputs.owner, PRIVATE_SERVICES), `With each next cursor until a page is not full. ${reuse}`),
   ] };
 }
 
@@ -85,7 +85,7 @@ const builders: Readonly<Record<StepId, Builder>> = {
 
 function cleanup(inputs: ProbeInputs, name: string, service: string): PlannedStep {
   const title = 'Cleanup (always, also after a failure or a stop signal)';
-  const list = privateServicesCall(inputs.owner);
+  const list = servicesCall(inputs.owner, PRIVATE_SERVICES);
   if (inputs.keep) {
     return { title, calls: [
       planned(deleteServiceCall(service), 'Only after a failed step: --keep keeps the service when every step passed.', true),

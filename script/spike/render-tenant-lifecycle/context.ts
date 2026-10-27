@@ -1,5 +1,9 @@
+import { basename } from 'node:path';
 import type { ProbeInputs } from './inputs.ts';
 import type { RenderClient } from './render-client.ts';
+
+// The progress lines name the probe script that runs, also when another probe imports these modules.
+const PROGRAM = basename(process.argv[1] ?? 'render-tenant-lifecycle.ts', '.ts');
 
 export interface Row {
   readonly step: string;
@@ -43,13 +47,20 @@ export interface ProbeStep {
   run(context: ProbeContext): Promise<string>;
 }
 
-export function serviceIdOf(context: ProbeContext): string {
+// The part of a probe context that the reads of one service need. A probe with more services gives one for each.
+export interface ServiceSession {
+  readonly client: RenderClient;
+  readonly signal: AbortSignal;
+  readonly state: { readonly serviceId?: string };
+}
+
+export function serviceIdOf(context: ServiceSession): string {
   const id = context.state.serviceId;
   if (id === undefined) throw new Error('No service: the create step did not finish.');
   return id;
 }
 
-export function addRow(context: ProbeContext, step: string, values: Omit<Row, 'step'>): void {
+export function addRow(context: { readonly report: { readonly rows: Row[] } }, step: string, values: Omit<Row, 'step'>): void {
   context.report.rows.push({ step, ...values });
 }
 
@@ -58,7 +69,7 @@ export function addField(context: ProbeContext, field: string, values: Omit<Fiel
 }
 
 export function progress(line: string): void {
-  process.stderr.write(`render-tenant-lifecycle: ${line}\n`);
+  process.stderr.write(`${PROGRAM}: ${line}\n`);
 }
 
 export function seconds(ms: number): string {

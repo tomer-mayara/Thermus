@@ -4,17 +4,18 @@ import { stepSelection, type StepId } from './step-ids.ts';
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-const REGIONS = ['frankfurt', 'oregon', 'ohio', 'singapore', 'virginia'] as const;
-type Region = (typeof REGIONS)[number];
-const DEFAULT_REGION: Region = 'oregon';
+// The other probes import the value checks below, so that each probe applies the same guards.
+export const REGIONS = ['frankfurt', 'oregon', 'ohio', 'singapore', 'virginia'] as const;
+export type Region = (typeof REGIONS)[number];
+export const DEFAULT_REGION: Region = 'oregon';
 
-const PROBE_WORKSPACE_ID = 'tea-db8i6ceq1p3s73dev9og';
+export const PROBE_WORKSPACE_ID = 'tea-db8i6ceq1p3s73dev9og';
 const UNRELATED_WORKSPACE_ID = 'tea-d3mlbrvdiees73ca4rdg';
 const RENDER_ID = /^[A-Za-z0-9_-]{1,64}$/;
 const CREDENTIAL_NAME = /^[^\p{Cc}]{1,100}$/u;
 const IMAGE_REF = /^([a-z0-9][a-z0-9.-]*(?::\d{1,5})?(?:\/[a-z0-9][a-z0-9._-]*)+)@sha256:([0-9a-f]{64})$/;
 
-interface ImageRef {
+export interface ImageRef {
   readonly ref: string;
   readonly repository: string;
   readonly digest: string;
@@ -124,20 +125,20 @@ function parseProbeArgs(args: readonly string[]) {
   });
 }
 
-function required(value: string | undefined, name: string): string {
+export function required(value: string | undefined, name: string): string {
   if (value === undefined || value === '') throw new UsageError(`${name} is required.`);
   return value;
 }
 
-function ownerId(value: string): string {
+export function ownerId(value: string): string {
   const owner = renderId(value, '--owner');
   if (owner === UNRELATED_WORKSPACE_ID) throw new UsageError(`--owner names ${UNRELATED_WORKSPACE_ID}, My Workspace, which the probes must not use. The probes run in Thermus AI, ${PROBE_WORKSPACE_ID}.`);
   return owner;
 }
 
-function reusedServiceId(value: string): string {
-  const id = renderId(value, '--service-id');
-  if (id === PRODUCTION_SERVICE_ID) throw new UsageError(`--service-id names ${PRODUCTION_SERVICE_ID}, the production service. The probe never touches it.`);
+export function reusedServiceId(value: string, name = '--service-id'): string {
+  const id = renderId(value, name);
+  if (id === PRODUCTION_SERVICE_ID) throw new UsageError(`${name} names ${PRODUCTION_SERVICE_ID}, the production service. The probe never touches it.`);
   return id;
 }
 
@@ -146,12 +147,12 @@ function renderId(value: string, name: string): string {
   return value;
 }
 
-function credential(value: string): string {
+export function credential(value: string): string {
   if (!CREDENTIAL_NAME.test(value)) throw new UsageError('--registry-credential must be a credential ID or name of 1 to 100 characters, without control characters.');
   return value;
 }
 
-function imageRef(value: string, name: string): ImageRef {
+export function imageRef(value: string, name: string): ImageRef {
   const match = IMAGE_REF.exec(value);
   if (match?.[1] === undefined || match[2] === undefined) {
     throw new UsageError(`${name} must be an image reference by digest, such as ghcr.io/owner/name@sha256:<64 hexadecimal digits>.`);
@@ -159,7 +160,7 @@ function imageRef(value: string, name: string): ImageRef {
   return Object.freeze({ ref: value, repository: match[1], digest: `sha256:${match[2]}` });
 }
 
-function region(value: string): Region {
+export function region(value: string): Region {
   const found = REGIONS.find((item) => item === value);
   if (found === undefined) throw new UsageError(`--region must be one of ${REGIONS.join(', ')}.`);
   return found;
