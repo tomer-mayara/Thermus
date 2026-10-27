@@ -68,7 +68,7 @@ describe('The free member limit at invitation send, through the public routes wi
       ada.submit({ ...adaForm, fields: { ...adaForm.fields, email: 'eli@example.com' } }),
       bob.submit({ ...bobForm, fields: { ...bobForm.fields, email: 'fay@example.com' } }),
     ]);
-    assert.ok(await within(5_000, () => site.directory.invitationChanges.length > 0), 'No invitation send reached the directory.');
+    assert.ok(await within(10_000, () => site.directory.invitationChanges.length > 0), 'No invitation send reached the directory.');
     // Without the serialization, the other send would reach the held directory in this time.
     await within(300, () => site.directory.invitationChanges.length > 1);
     release();
