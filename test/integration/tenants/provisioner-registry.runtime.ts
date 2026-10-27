@@ -91,7 +91,7 @@ test('Given two requested rows, when the provisioner runs on the real registry, 
   const row = await rowOf(site, organizationA);
   assert.deepEqual(
     [row.render_service_id, row.service_name, row.internal_url, row.image_digest, row.plan, row.applied_plan, row.failure_reason],
-    [service.id, 'thermus-tenant-org-01jruntimeaaaaaaaaaaaaaaa', 'http://thermus-tenant-org-01jruntimeaaaaaaaaaaaaaaa:8080', tenantImageDigest, '0.5c-512mb', '0.5c-512mb', null],
+    [service.id, 'thermus-tenant-org-01jruntimeaaaaaaaaaaaaaaa', `http://${service.slug}:8080`, tenantImageDigest, '0.5c-512mb', '0.5c-512mb', null],
   );
 });
 

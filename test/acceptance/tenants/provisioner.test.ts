@@ -45,19 +45,20 @@ test('Given a requested row, when the loop runs with a fake Render API, then the
   assert.deepEqual(harness.errorLines(), []);
 });
 
-test('Given an organization ID with an underscore and capital letters, when the loop names and creates its service, then the name is the prefix and the ID in lower case with the underscore as a hyphen, and the internal address is http://<the whole name>:8080', async () => {
+test('Given two organizations whose service names share a long start, when both go live, then each name is the prefix and the ID in lower case with the underscore as a hyphen, each address is the slug that Render returns on port 8080, and the two addresses differ', async () => {
   const harness = new ProvisioningHarness();
   harness.store.request(organizationA);
+  harness.store.request(organizationB);
 
-  await harness.runUntil(isLive(harness, organizationA), 'a live row');
+  await harness.runUntil(() => isLive(harness, organizationA)() && isLive(harness, organizationB)(), 'two live rows');
 
-  // Render keeps a service name up to its first underscore as the slug (SO-06 live runs), so a name has none.
-  const name = 'thermus-tenant-org-01jtenantaaaaaaaaaaaaaaaa';
-  const row = harness.store.row(organizationA);
-  assert.deepEqual(
-    { serviceName: row.serviceName, slug: harness.render.service(name)?.slug, internalUrl: row.internalUrl },
-    { serviceName: name, slug: name, internalUrl: `http://${name}:8080` },
-  );
+  // Render shortens a long name into the hostname and keeps hostnames unique (SO-06 live runs), so the loop stores the
+  // address that Render returns.
+  const names = ['thermus-tenant-org-01jtenantaaaaaaaaaaaaaaaa', 'thermus-tenant-org-01jtenantbbbbbbbbbbbbbbbb'];
+  const rows = [harness.store.row(organizationA), harness.store.row(organizationB)];
+  assert.deepEqual(rows.map((row) => row.serviceName), names);
+  assert.deepEqual(rows.map((row) => row.internalUrl), names.map((name) => `http://${harness.render.service(name)?.slug}:8080`));
+  assert.notEqual(rows[0]?.internalUrl, rows[1]?.internalUrl);
 });
 
 test('Given the create call, when the fake API records it, then it holds each tenant variable of section 4.1 and the image digest, and no WorkOS API key, cookie password, database setting, Render setting, or Stripe setting', async () => {

@@ -2,12 +2,23 @@
 // image-backed private service, read a service and its deploys, and delete a service. It keeps services and deploys
 // in memory, with the answer shapes and rate-limit headers that record SO-01c measured. A new deploy shows
 // update_in_progress for deployReads reads of the deploy list and then ends with deployOutcome. The fake makes the
-// slug as the SO-06 live runs measured: Render keeps the name up to its first underscore. So a name with an underscore
-// gets a slug that differs from it, and a test can see that the adapter reads the slug and does not compute it.
+// slug as the SO-06 live runs measured: Render keeps a short name whole, shortens a long name at the last separator
+// before a limit, and gives a second service with the same shortened start a unique suffix. So a long name gets a
+// slug that differs from it, and a test can see that the adapter reads the slug and does not compute it.
 // Saboteur entries (failNext) replace the next answer of a route with a status, a network failure before Render sees
 // the request, or a lost answer after Render did the work.
 
 export type RenderRoute = 'list services' | 'create service' | 'read service' | 'list deploys' | 'delete service';
+
+// A limit between the longest whole slug that the live runs saw (33 characters) and the shortest shortened name (42).
+const SLUG_LIMIT = 40;
+
+function shortSlugOf(name: string): string {
+  if (name.length <= SLUG_LIMIT) return name;
+  const cut = name.slice(0, SLUG_LIMIT + 1);
+  const separator = Math.max(cut.lastIndexOf('-'), cut.lastIndexOf('_'));
+  return separator > 0 ? name.slice(0, separator) : name.slice(0, SLUG_LIMIT);
+}
 
 export type RenderFault =
   | { readonly status: number; readonly headers?: Readonly<Record<string, string>>; readonly body?: unknown }
@@ -230,11 +241,12 @@ export class RenderFake {
     return service;
   }
 
-  // The measured rule: the name up to its first underscore. The suffix for a slug that another service has is the rule
-  // of this fake only; the answer of Render in that case is not measured.
+  // The measured rule (SO-06 live runs 1 to 4): a name up to the limit stays whole, and a longer one ends at the last
+  // separator before the limit. A slug that another service has gets a suffix of four letters and digits, as the
+  // second service of run 4 got.
   private slugOf(name: string): string {
-    const [slug = name] = name.toLowerCase().split('_', 1);
-    return this.services().some((service) => service.slug === slug) ? `${slug}-${this.#sequence.toString(36)}x` : slug;
+    const slug = shortSlugOf(name.toLowerCase());
+    return this.services().some((service) => service.slug === slug) ? `${slug}-${this.#sequence.toString(36).padStart(4, 'x')}` : slug;
   }
 
   private serviceJson(service: FakeService): unknown {

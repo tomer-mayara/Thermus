@@ -13,8 +13,8 @@ export interface TenantPublicSettings {
 
 /**
  * The name of the service of an organization: the prefix and the organization ID in lower case, with each character
- * outside a-z, 0-9, and hyphen as a hyphen (27 October 2026). Render makes the slug of the private address from the
- * name up to its first underscore, so a name without one keeps each tenant address whole and distinct.
+ * outside a-z, 0-9, and hyphen as a hyphen, so the name is DNS-safe (27 October 2026). Render shortens a long name
+ * into the hostname and keeps hostnames unique, so the private address comes from Render, never from this name.
  */
 export function serviceNameOf(prefix: string, organizationId: string): string {
   return `${prefix}${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
