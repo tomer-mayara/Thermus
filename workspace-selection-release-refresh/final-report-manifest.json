@@ -1,0 +1,30 @@
+{
+  "candidate": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "gateArtifactCommit": "5fec0d05c3991a41a1ce474b6bebf3c19c0130c7",
+  "productionCommit": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "files": [
+    {
+      "path": "workspace-selection-release-refresh/pr-body.md",
+      "sha256": "157402c0c649bfcc093e442c8b6c3c093e5765764a3f3b9beb335008cb464940"
+    },
+    {
+      "path": "workspace-selection-release-refresh/validation-comment.md",
+      "sha256": "3a3f2f92abcb9ace59e77a614804e37d66ed109bf93ad07f2a2144327211a503"
+    },
+    {
+      "path": "workspace-selection-release-refresh/quality-comment.md",
+      "sha256": "244676e21c62d2c38b9de4a2c0dff947209ac0c2c10d3b88dca832efbc5b0945"
+    },
+    {
+      "path": "workspace-selection-release-refresh/pr-readback-final.json",
+      "sha256": "20c58b9c5f55d092ee85a3abf87b2d3aa70066af1d95c69288164f2ce66f871a"
+    },
+    {
+      "path": "workspace-selection-release-refresh/publication-final.json",
+      "sha256": "ff418f13582b142d1510817608fd7a6d46ecaabf49bd80faf3194915378dc189"
+    }
+  ],
+  "worktree": "Archived after all evidence was preserved; see pr-readback-final.json",
+  "pr": "Draft; staging invitation-email quota and current-head human approval holds"
+}

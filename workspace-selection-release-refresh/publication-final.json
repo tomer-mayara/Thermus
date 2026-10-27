@@ -1,0 +1,8 @@
+{
+  "commit": "5fec0d05c3991a41a1ce474b6bebf3c19c0130c7",
+  "parent": "8ffe379721321141609f82282a1412d596c52aaf",
+  "candidate": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "files": 166,
+  "overallMerge": "blocked",
+  "deployedApprovedCommit": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769"
+}
