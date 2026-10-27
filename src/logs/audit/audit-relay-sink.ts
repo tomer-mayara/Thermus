@@ -6,7 +6,6 @@ import { postAuditRelay } from './audit-relay-request.ts';
 import { RelayScheduler } from './audit-relay-scheduler.ts';
 
 export type { AuditRelay } from './audit-relay-request.ts';
-export type { AuditRelayPost } from './audit-relay-item.ts';
 
 export interface AuditRelayOptions extends Partial<RelayClock> {
   readonly bounds?: Partial<AuditCollectorBounds>;

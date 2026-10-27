@@ -3,8 +3,8 @@ import { retryDelay, type AuditCollectorBounds } from './audit-collector-state.t
 import type { AuditSendOutcome } from './audit-send.ts';
 import type { AuditRelay } from './audit-relay-request.ts';
 
-/** One relay attempt. Its outcome is never an exception. */
-export type AuditRelayPost = (relay: AuditRelay, signal: AbortSignal) => Promise<AuditSendOutcome>;
+// One relay attempt. Its outcome is never an exception.
+type AuditRelayPost = (relay: AuditRelay, signal: AbortSignal) => Promise<AuditSendOutcome>;
 
 /** The parts of a relay that a test can replace: the clock, the jitter of the backoff, and the attempt. */
 export interface RelayClock {
