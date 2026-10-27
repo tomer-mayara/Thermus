@@ -1,0 +1,34 @@
+{
+  "base": "0377cd12022d0c6fa9250107bc89aeaf9c457423",
+  "head": "6e23e891f7549cebd8abc6bf0a36ae55bb20f57b",
+  "node": "24.20.0",
+  "snapshotBaseExit": 0,
+  "snapshotHeadExit": 0,
+  "processExit": 1,
+  "processReason": "completed Delta goal miss, remaining stages passed",
+  "crapExit": 0,
+  "habitExit": 1,
+  "habitReason": "42 retained findings: 7 non-null assertions, 31 comments, 4 oversized files",
+  "checkerExit": 0,
+  "checkerTier": "T1 Team review",
+  "checkerEligibility": "eligible",
+  "overall": "blocked: WorkOS live gate and current-head independent human approval remain required",
+  "defaultArtifactsRestored": true,
+  "coverageNeverEdited": true,
+  "history": "docs/metrics/2026-10-27-0377cd12.json",
+  "historySha256": "0b64758d2a44b0183664ceb0fe976ac49779ad8ef03a7b6d63f80ef5737794c9",
+  "priorRuns": [
+    {
+      "head": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+      "result": "default3380 coverage rejected by native compatibility; CRAP withheld and no history written"
+    },
+    {
+      "head": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+      "result": "two native Delta compare failures with tracked doc uncommitted; no history written; clean-head retry resolved"
+    },
+    {
+      "head": "dcd9a7f1031fcccb65f27007a63dfcdea3b96ff0",
+      "result": "all4 sections complete; Delta retained MI goal miss; immutable0377 history generated"
+    }
+  ]
+}

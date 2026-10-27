@@ -1,0 +1,6 @@
+1:  88f5592b = 1:  79ba3b1f Record UI-04 scope on the UI-03 stack
+2:  d79f431b = 2:  930f0a57 Make pending invitations compact and counted (UI-04)
+3:  b5308867 = 3:  afefeeae Record the Refined tabs stack review and remaining corrections
+4:  06911c5f = 4:  c6ce096f Clarify current UI restack status and historical evidence
+5:  905576c0 = 5:  0e775c75 Refresh stack provenance after the latest main rebase
+6:  057434b9 = 6:  a64bf2f8 Record the latest main rebase and validation provenance

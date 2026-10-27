@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-27T13:25:35.970956+00:00",
+  "head": "6e23e891f7549cebd8abc6bf0a36ae55bb20f57b",
+  "mergeBase": "0377cd12022d0c6fa9250107bc89aeaf9c457423",
+  "targetMainObserved": "6d6adcc31778e1df623a04bd1e7ab43e15875dbb",
+  "sourcePush": "complete",
+  "githubDraft": true,
+  "githubMergeable": true,
+  "managerReview": "Accepted independent content, native quality and report review; verified all six patches unchanged and only four documentation/history changes from old057. All application, test, manifest and build inputs unchanged. No source fix needed.",
+  "freshExecutionHead": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+  "freshChecks": "typecheck, portal/server builds and71browsercases passed",
+  "quality": "Native reports pin finalhead/base0377. Required CRAP and checker pass. Existing-file MI miss and42habit findings have retained reasons. Three ignored analysis files are explicitly outside the candidate.",
+  "externalMainAdvance": "24 paths disjoint from20candidatepaths; true mergebase unchanged. No PR271 validation claimed.",
+  "holds": [
+    "current hosted-live group",
+    "independent human approval of current head"
+  ],
+  "noActions": [
+    "No merge",
+    "No deployment",
+    "No paid service/workflow",
+    "No provider retry",
+    "No coverage edits"
+  ]
+}

@@ -1,0 +1,79 @@
+── non-null-assertion (7 issues) ──
+
+A null check — and especially a `!` — is usually covering an underlying design problem, not handling a value that's legitimately sometimes-missing. Before you write one, say out loud what the null actually represents and how it relates to the other objects. That sentence almost always names the real fix.
+
+Two design smells hide behind most null assertions:
+
+- **A circular dependency with no clear owner.** Two objects reference each other, so neither can be built first and one sits briefly null. The fix is to give the dependency a direction: work out which object owns the other (operates on its state, is its exclusive consumer) and have the owner *create* the owned so they're initialised together — or, if it's really an upward event, give the emitter an opaque handler (no-op default) that the owner wires after construction. The mutual reference disappears.
+- **Null standing in for a special case** — "outside the grid", "not found", "not loaded yet". Model that case explicitly: a subclass or a separate class with the same interface — a null object, like a `NullCell` that behaves as a blocked cell — resolved once at the boundary so no caller ever sees null.
+
+Sometimes a null genuinely is unavoidable. Even then `!` is wrong: it swallows the failure at runtime. Replace it with an explicit check — an `if`-guard / early return, or a throw with a clear message — so a broken assumption fails loudly, where it happens.
+
+The only exception: an extremely simple method where the nullable's scope is tiny, a wrong value genuinely cannot cause a silent error, and there's a real performance gain. This should be vanishingly rare — check in with a human before settling for it.
+
+test/integration/hosted-admin/account-routes-administration-pages.test.ts:41
+test/integration/hosted-admin/account-routes-administration-pages.test.ts:55
+test/support/drivers/browser/pending-invitations-browser.ts:17
+test/support/drivers/browser/pending-invitations-browser.ts:48
+test/support/drivers/browser/pending-invitations-browser.ts:50
+test/support/drivers/browser/pending-invitations-browser.ts:56
+test/support/drivers/browser/pending-invitations-browser.ts:59
+
+── non-essential-comment (31 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+test/acceptance/auth/hosted-workos-administration.test.ts:10
+test/acceptance/auth/hosted-workos-administration.test.ts:11
+test/acceptance/auth/hosted-workos-administration.test.ts:12
+test/acceptance/auth/hosted-workos-administration.test.ts:13
+test/acceptance/auth/hosted-workos-administration.test.ts:18
+test/acceptance/auth/hosted-workos-administration.test.ts:36
+test/acceptance/auth/hosted-workos-administration.test.ts:37
+test/acceptance/auth/hosted-workos-administration.test.ts:83
+test/acceptance/auth/hosted-workos-administration.test.ts:84
+test/acceptance/auth/hosted-workos-administration.test.ts:110
+test/acceptance/auth/hosted-workos-administration.test.ts:111
+test/acceptance/auth/hosted-workos-administration.test.ts:138
+test/acceptance/auth/hosted-workos-administration.test.ts:139
+src/interfaces/web/account/administration-pages.ts:25
+test/support/drivers/browser/hosted-browser.ts:23
+test/support/drivers/browser/hosted-browser.ts:28
+test/support/drivers/browser/hosted-browser.ts:29
+test/support/drivers/browser/hosted-browser.ts:30
+test/support/drivers/browser/hosted-browser.ts:59
+test/support/drivers/browser/hosted-browser.ts:95
+test/support/drivers/browser/hosted-browser.ts:96
+test/support/drivers/browser/hosted-browser.ts:118
+test/support/drivers/browser/hosted-browser.ts:131
+test/support/drivers/browser/hosted-browser.ts:132
+test/support/drivers/browser/pending-invitations-page.ts:3
+test/acceptance/auth/hosted-live/administration-server.ts:44
+test/acceptance/auth/hosted-live/administration-server.ts:45
+test/acceptance/auth/hosted-live/administration-server.ts:80
+test/acceptance/auth/hosted-live/administration-server.ts:102
+test/acceptance/auth/hosted-live/administration-server.ts:105
+test/acceptance/auth/hosted-live/administration-server.ts:130
+
+── oversized-file (4 issues) ──
+
+Files over 200 lines accumulate unrelated concerns. The smell is poor cohesion — a file that asks the reader to hold too many ideas at once — not the raw line count.
+
+First identify the seams: which exports, types, or helper clusters actually belong together? A long file usually splits cleanly along one of: a data type and its operations, a feature pipeline, or one concern per file.
+
+Avoid mechanical splits. Carving the file at line 200 into `foo-1.ts` and `foo-2.ts`, or moving every private helper into a `utils.ts`, satisfies the threshold without making anything clearer — the cohesion problem just hops to a new place.
+
+If the file's structure resists splitting, that is itself the signal: responsibilities are tangled. Look for a missing abstraction (a class, a small module with a focused interface) that would let related pieces move together as a unit.
+
+A concrete technique: write a one-sentence description of what each emerging seam *would* be responsible for. If you cannot, you have not found the seam yet — do not split.
+
+test/acceptance/auth/hosted-live/administration-server.ts
+test/acceptance/auth/hosted-member-removal-browser.runtime.ts
+test/acceptance/auth/hosted-workos-administration.test.ts
+test/integration/hosted-admin/account-routes-administration-pages.test.ts

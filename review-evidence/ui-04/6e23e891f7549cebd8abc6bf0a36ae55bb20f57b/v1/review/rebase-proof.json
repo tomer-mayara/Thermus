@@ -1,0 +1,41 @@
+{
+  "capturedAt": "2026-10-27T13:16:06.593692+00:00",
+  "oldHead": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "oldBase": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "newBase": "0377cd12022d0c6fa9250107bc89aeaf9c457423",
+  "mergedParentHead": "94c5b0d850a2ebdd20fdd42581f1c6a6fd28202e",
+  "initialReplayedHead": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+  "oldHeadTree": "624d795cd2ff2e50793695fb06fd670c58fa86d1",
+  "replayedHeadTree": "4796d96d97147fbb1bf3d9a4b8bdb489b7300e34",
+  "newBaseTree": "5536babdfd792db3c3cb1225d50134cac1257d5f",
+  "mergedParentTree": "5536babdfd792db3c3cb1225d50134cac1257d5f",
+  "mergeBase": "0377cd12022d0c6fa9250107bc89aeaf9c457423",
+  "allSixPatchesIdentical": true,
+  "initialOnlyDifferencesFromOldHead": [
+    "docs/implementation/admin-ui-03.md",
+    "docs/metrics/2026-10-27-2282edd4.json"
+  ],
+  "sourceTestBuildInputsUnchanged": true,
+  "actualFreshTestExecutionHead": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+  "dirtyStatusWhenProofCaptured": "",
+  "limits": "Any concurrent working-tree changes are documentation/report-only. No source/test/build-input changes are authorized in this rebase. Historical evidence retains its original execution pins.",
+  "finalHead": "6e23e891f7549cebd8abc6bf0a36ae55bb20f57b",
+  "finalHeadTree": "d599cef2c998b0962e2eac4c1c6dba53b20c3e63",
+  "finalOnlyDifferencesFromOldHead": [
+    "docs/implementation/admin-ui-03.md",
+    "docs/implementation/admin-ui-04.md",
+    "docs/metrics/2026-10-27-0377cd12.json",
+    "docs/metrics/2026-10-27-2282edd4.json"
+  ],
+  "finalTrackedWorktree": "clean",
+  "finalWhitespaceCheck": "passed",
+  "finalProofAt": "2026-10-27T13:20:19.720166+00:00",
+  "freshChecks": [
+    "typecheck:exit0",
+    "portalBuild:exit0",
+    "serverBuild:exit0",
+    "MembersBrowser:71/71,0fail/cancel/skip/todo"
+  ],
+  "historicalEvidence": "All prior test, image, live and coverage evidence retains its actual execution SHA and limits. Source/test/build input identity does not establish current live success.",
+  "ownerApproval": "Old057 exact-head approval preserved as history only."
+}

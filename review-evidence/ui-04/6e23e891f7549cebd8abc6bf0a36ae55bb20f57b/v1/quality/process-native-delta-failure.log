@@ -1,0 +1,29 @@
+time="2026-10-27T07:17:11-06:00" level=error msg="Cannot compare code with branch or commit \"origin/main\" for repository /Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus"
+  ✗ Cannot compare code with branch or commit "origin/main" for repository /Users/tomermayara/.codex/worktrees/ui-01-refined-tabs/Thermus
+# Code quality process
+
+## Delta
+
+Status: failed.
+
+```text
+ast-metrics analyze failed with exit status 1.
+```
+
+## Review
+
+Status: unavailable.
+
+A prerequisite failed. This stage did not run.
+
+## CRAP
+
+Status: unavailable.
+
+A prerequisite failed. This stage did not run.
+
+## Architecture
+
+Status: unavailable.
+
+A prerequisite failed. This stage did not run.

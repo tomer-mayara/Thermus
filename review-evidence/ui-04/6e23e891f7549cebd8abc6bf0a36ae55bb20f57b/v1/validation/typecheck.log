@@ -1,0 +1,8 @@
+
+> thermus@0.0.0 typecheck
+> tsc --noEmit && npm run typecheck:user-portal
+
+
+> thermus@0.0.0 typecheck:user-portal
+> tsc --project tsconfig.user-portal.json
+

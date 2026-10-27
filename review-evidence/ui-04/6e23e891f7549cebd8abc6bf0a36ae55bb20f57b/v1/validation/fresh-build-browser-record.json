@@ -1,0 +1,44 @@
+[
+  {
+    "step": "portal-build",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "build:user-portal"
+    ],
+    "executionHead": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+    "start": "2026-10-27T13:15:23.342815+00:00",
+    "end": "2026-10-27T13:15:25.569258+00:00",
+    "exit": 0
+  },
+  {
+    "step": "server-build",
+    "command": [
+      "pnpm",
+      "exec",
+      "npm",
+      "run",
+      "build"
+    ],
+    "executionHead": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+    "start": "2026-10-27T13:15:25.570105+00:00",
+    "end": "2026-10-27T13:15:27.314441+00:00",
+    "exit": 0
+  },
+  {
+    "step": "members-browser",
+    "command": [
+      "pnpm",
+      "exec",
+      "node",
+      "--test",
+      "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+    ],
+    "executionHead": "a64bf2f80f96ea54afcb61ad3e8a3aeddf07d787",
+    "start": "2026-10-27T13:15:27.315045+00:00",
+    "end": "2026-10-27T13:16:09.872590+00:00",
+    "exit": 0
+  }
+]

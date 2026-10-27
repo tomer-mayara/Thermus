@@ -1,0 +1,76 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "origin/main",
+  "baseSha": "0377cd12022d0c6fa9250107bc89aeaf9c457423",
+  "headSha": "6e23e891f7549cebd8abc6bf0a36ae55bb20f57b",
+  "summary": {
+    "filesChanged": 11,
+    "filesAdded": 34,
+    "filesDeleted": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 5,
+    "improvements": 0
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "medium",
+      "rule": "new-violation:cyclomatic_complexity",
+      "file": ".cache/ui-stack-finish/local-image/worker-preparation/run-image.py",
+      "message": "Cyclomatic complexity too high: got 49 (max: 40)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": ".cache/ui-stack-review/ui02-original/administration-pages.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "new-violation:efferent_coupling",
+      "file": ".cache/ui-stack-review/ui02-runtime/administration-pages.ts",
+      "message": "Efferent coupling too high: got 11 (max: 10)",
+      "before": 0,
+      "after": 0
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/acceptance/auth/hosted-invitations.test.ts",
+      "message": "Estimated bugs (Halstead): 0.82 -\u003e 1.22",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 0.8165930128534054,
+      "after": 1.2242882001256847
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/acceptance/auth/hosted-members.test.ts",
+      "message": "Estimated bugs (Halstead): 2.44 -\u003e 2.71",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 2.4422441606391,
+      "after": 2.706716234302281
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "message": "Estimated bugs (Halstead): 4.09 -\u003e 5.08",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 4.0862169576301435,
+      "after": 5.078756355191878
+    }
+  ],
+  "improvements": [],
+  "gate": "passed"
+}

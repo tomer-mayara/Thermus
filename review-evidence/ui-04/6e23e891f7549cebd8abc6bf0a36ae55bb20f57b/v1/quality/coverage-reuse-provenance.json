@@ -1,0 +1,60 @@
+{
+  "head": "6e23e891f7549cebd8abc6bf0a36ae55bb20f57b",
+  "currentProvenance": {
+    "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+    "inputsFingerprint": "c1d375a1796b956c255f655254b9027899cdf3585ddd5bc7c2d8befd32b64399",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": "unit"
+  },
+  "captureCommit": "057434b9c3ad313f656b03e033866cdecab7ae51",
+  "captureProvenance": {
+    "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+    "inputsFingerprint": "c1d375a1796b956c255f655254b9027899cdf3585ddd5bc7c2d8befd32b64399",
+    "runtime": "node-24.20.0",
+    "compiler": "typescript-7.0.2",
+    "measurementVersion": "own-characters-1",
+    "suite": [
+      "integration"
+    ],
+    "comparisonIdentity": {
+      "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+      "inputsFingerprint": "c1d375a1796b956c255f655254b9027899cdf3585ddd5bc7c2d8befd32b64399",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": "unit"
+    },
+    "status": "verified",
+    "capturedCommit": "057434b9c3ad313f656b03e033866cdecab7ae51",
+    "buildFingerprint": "da599258a59d3572ff3c0615e75ea4b1d84190a894415068802cd405363bcf4d",
+    "captureManifestFingerprint": "03ca9616c2155b5c4dd26d389434b2d2920cfa7ff7117a915188431ce8b27f5e",
+    "captures": [
+      {
+        "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+        "inputsFingerprint": "97ca0e4a05d0759a8a4c44f9c3f10c526cf87db57c436b978a43604727d22966",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "integration",
+        "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+        "captureId": "365fea8cb228ae8cb1788b6fd8af131f4c09a9873bb2daac09ed3afe995c535c",
+        "comparisonIdentity": {
+          "sourceFingerprint": "3895d5c8939fc7c05a873ba5432400bf491e378d5ceb5f6a79caa2cf1329df9b",
+          "inputsFingerprint": "c1d375a1796b956c255f655254b9027899cdf3585ddd5bc7c2d8befd32b64399",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "unit"
+        },
+        "status": "verified",
+        "capturedCommit": "057434b9c3ad313f656b03e033866cdecab7ae51",
+        "buildFingerprint": "da599258a59d3572ff3c0615e75ea4b1d84190a894415068802cd405363bcf4d",
+        "captureManifestFingerprint": "23cf4a58dd042e9c8b52c6c80655f7320ab7c3e94f061f787b461ff086b4b421"
+      }
+    ]
+  },
+  "sourceReport": "/Users/tomermayara/.codex/worktrees/ui-stack-validation-02/Thermus/ast-report/coverage.json",
+  "unmodified": true
+}
