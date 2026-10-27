@@ -6,26 +6,27 @@ SO-08 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#s
 adds the 5-seat member limit of a free organization at invitation send.
 Inventory presence is not a passing result; the pull request records the runs.
 
-- `test/acceptance/auth/hosted-free-member-limit.test.ts` has nine acceptance
-  cases. Seven use the administration site with the session and directory
-  doubles and `BillingFree`: two Admins at 4 of 5 seats (3 members and 1
-  pending invitation) with a held directory send, so one invitation is sent
-  and one is refused; the refusal at 5 of 5 with the owner's words and no
-  link; an expired invitation that holds no seat; default-role, inactive, and
-  pending memberships that hold none; a failed member page and a failed
-  invitation page, which send nothing; two free workspaces, one at the limit;
-  and the seat line "N of 5 seats used" beside the unchanged pending list,
-  absent on the team plan. Two use the WorkOS composition with a fake WorkOS
-  API: the change record and the audit event of a refusal keep
-  `limit-reached` with no WorkOS invitation write, and the portal JSON of a
-  free workspace has `plan: 'free'` and `memberLimit: 5`.
+- `test/acceptance/auth/hosted-free-member-limit.test.ts` has seven
+  acceptance cases with the session and directory doubles and `BillingFree`:
+  two Admins at 4 of 5 seats (3 members and 1 pending invitation) with a held
+  directory send, so one invitation is sent and one is refused; the refusal at
+  5 of 5 with the owner's words and no link; an expired invitation that holds
+  no seat; default-role, inactive, and pending memberships that hold none; a
+  failed member page and a failed invitation page, which send nothing; two
+  free workspaces, one at the limit; and the seat line "N of 5 seats used"
+  beside the unchanged pending list, absent on the team plan.
+  `test/acceptance/auth/hosted-workos-member-limit.test.ts` has two cases with
+  the WorkOS composition and a fake WorkOS API: the change record and the
+  audit event of a refusal keep `limit-reached` with no WorkOS invitation
+  write, and the portal JSON of a free workspace has `plan: 'free'` and
+  `memberLimit: 5`.
 - `test/acceptance/billing/free-billing.test.ts` and
   `test/unit/billing/billing-free.test.ts` check the member limit 5 of the
   free state; `test/acceptance/user-portal/portal.test.ts` and
   `test/unit/user-portal/portal.test.ts` check that the portal accepts the team
   plan and reads the member limit of a free plan.
-- `test/unit/organizations/organization-administration-invitations.test.ts`
-  has seven member limit cases: the count with a pending and an expired
+- `test/unit/organizations/organization-administration-member-limit.test.ts`
+  has eight member limit cases: the count with a pending and an expired
   invitation, the repeat of a pending invitation at 5 of 5, a failed member
   page, invitation page, or billing read, two concurrent sends at 4 of 5, two
   organizations that do not wait for each other, and the team plan.
@@ -1162,6 +1163,15 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] When the invited person accepts after the service read the invitation as pending, the `not-pending` answer of the directory to the revoke reaches the caller, and the acceptance stays
 [V] Sends nothing and gives `unchanged` while an invitation to the same address for the same role is pending, also for a retry after an unknown outcome and for the address in other letter case; sends an invitation for another role, and a new invitation after a revoke; the check reads only the explicit state `pending`, and each request is recorded
 [V] The denied record of a revoke of an invitation of another organization names no role; the denied record of an invitation of the organization keeps its role
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/unit/organizations/organization-administration-invitations.test.js
+```
+
+**Free member limit** (`test/unit/organizations/organization-administration-member-limit.test.ts`)
+
 [V] In a free organization with 3 seats and a pending and an expired invitation, the first send is applied at 4 of 5 and the second is `limit-reached` at 5 of 5; the pending invitation counts and the expired one does not
 [V] At 5 of 5 seats, a repeat of a pending invitation stays `unchanged` and a new address is `limit-reached`; the count reads every active member-fact page and no display page
 [V] A failed member page, invitation page, or billing read fails the send; nothing is sent, and the record keeps `failed`
@@ -1172,7 +1182,7 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 Run only these tests:
 
 ```sh
-npm run build && node --test dist/test/unit/organizations/organization-administration-invitations.test.js
+npm run build && node --test dist/test/unit/organizations/organization-administration-member-limit.test.js
 ```
 
 **Invitation overview** (`test/unit/organizations/organization-administration-invitation-overview.test.ts`)
@@ -2987,13 +2997,22 @@ npm run build && node --test dist/test/acceptance/auth/hosted-seats.test.js
 [V] Given a member page or an invitation page that fails, no invitation is sent, the Admin gets the failure page, and the record keeps `failed`
 [V] Given two free workspaces, one at the limit, an Admin of the other can still invite
 [V] Given a free workspace, Members shows "N of 5 seats used" beside the unchanged pending list; a team workspace shows no seat line
-[V] Given the WorkOS composition, a refusal keeps `limit-reached` in the change record and the audit event, and WorkOS gets no invitation write
-[V] Given the WorkOS composition, the portal JSON of a free workspace has `plan: 'free'` and `memberLimit: 5`
 
 Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/hosted-free-member-limit.test.js
+```
+
+**Free member limit in the WorkOS composition** (`test/acceptance/auth/hosted-workos-member-limit.test.ts`)
+
+[V] Given a refusal at 5 of 5 seats, the change record and the audit event keep `limit-reached`, and WorkOS gets no invitation write
+[V] Given a free workspace, the portal JSON has `plan: 'free'` and `memberLimit: 5`
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-workos-member-limit.test.js
 ```
 
 **Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)
