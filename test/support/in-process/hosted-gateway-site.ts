@@ -20,7 +20,7 @@ import { TenantResumeSpy } from '../doubles/tenants/tenant-resume-spy.ts';
 import { WorkOSFake, type FakeUser } from '../doubles/workos/workos-fake.ts';
 import { listenerTransport } from '../drivers/browser/hosted-browser.ts';
 import { connectMcpClient } from '../drivers/mcp/mcp-sdk-client.ts';
-import { mcpRequest, rpcResult, type McpRequestOptions } from '../drivers/mcp/mcp-http-request.ts';
+import { httpRefusal, mcpRequest, rpcResult, type McpRequestOptions } from '../drivers/mcp/mcp-http-request.ts';
 import type { McpProtocolEra } from '../drivers/mcp/mcp-protocol-eras.ts';
 import { SignedContextGateway, type ContextChanges } from '../drivers/mcp/signed-context-gateway.ts';
 import { hostedRootConfig } from '../fixtures/hosted-config.ts';
@@ -136,6 +136,8 @@ export async function openHostedGatewaySite(t: TestContext, options: HostedGatew
     },
     post,
     toolResult: async (request: PostOptions) => rpcResult(await post(request)),
+    // The answer of the gateway itself to a request that it does not forward.
+    refusal: async (request: PostOptions) => httpRefusal(await post(request)),
     // The request in the process, without a client: the client may send headers that the fetch of Node refuses.
     handle: (request: PostOptions): Promise<Response> => application.handle(mcpRequest({ url: config.mcpResourceUrl, ...request })),
     request: (path: string, init: RequestInit = {}): Promise<Response> => fetch(new URL(path, server.url), init),

@@ -4,7 +4,7 @@ import { setImmediate } from 'node:timers/promises';
 import { context, controlledBody, fetchCall, gatewayOf, internalUrl, organizationId, post } from './fixtures/gateway-harness.ts';
 
 // The forward of the gateway to a live tenant (SO-05): the header rules, the signed claims, the stream, both abort
-// paths, the restart answers, the search limit, and the request body limit.
+// paths, the restart answers, and the request body limit. mcp-gateway-searches.test.ts holds the search limit.
 
 test('Given a live tenant, when a call is forwarded, then the tenant gets the method, the body, the path and query, the client headers without the hop-by-hop headers, a cookie, or a client context, and the signed context of the access', async (t) => {
   const { forward, calls, signed } = gatewayOf(t);
@@ -156,35 +156,6 @@ test('Given an answer stream that started, when the connection of the tenant res
 
   assert.equal(end?.done, true);
   assert.deepEqual(log.lines, ['ERROR MCP gateway tenant restart: {"organizationId":"org_A","phase":"during-answer","cause":"connection"}']);
-});
-
-test('Given 5 searches that run through the gateway, when a sixth search arrives, then it gets the search busy message without a forward, and a search after one ends is forwarded', async (t) => {
-  const { forward, upstream, calls, log, tracked } = gatewayOf(t);
-  const answers: Array<ReturnType<typeof controlledBody>> = [];
-  upstream.answer = async () => {
-    const answer = controlledBody();
-    answer.send('event: message\ndata: started\n\n');
-    answers.push(answer);
-    return new Response(answer.body, { status: 200, headers: { 'Content-Type': 'text/event-stream' } });
-  };
-  const search = (id: number) => post({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'search', arguments: { query: `q${id}`, reason: 'Find it' } } });
-
-  const running = await Promise.all([1, 2, 3, 4, 5].map((id) => forward(search(id))));
-  const sixth = await forward(search(6));
-  const fetchDuringBusy = await forward(post(fetchCall));
-  answers[0]?.end();
-  await running[0]?.text();
-  await setImmediate();
-  const seventh = await forward(search(7));
-
-  assert.deepEqual(await sixth.json(), { jsonrpc: '2.0', id: 6, result: { content: [{ type: 'text', text: 'Server busy. Try again later.' }], isError: true, resultType: 'complete' } });
-  assert.equal(fetchDuringBusy.status, 200);
-  assert.equal(seventh.status, 200);
-  assert.equal(calls.length, 7);
-  assert.deepEqual(log.lines, ['INFO MCP gateway refusal: {"organizationId":"org_A","reason":"search-busy"}']);
-  for (const answer of answers) answer.end();
-  await Promise.all([...running.slice(1), fetchDuringBusy, seventh].map((response) => response.text()));
-  await Promise.all(tracked);
 });
 
 test('Given a body above the request body limit of the MCP SDK, when it arrives, then the gateway answers 413 as the SDK does and forwards nothing', async (t) => {

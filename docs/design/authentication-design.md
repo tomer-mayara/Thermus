@@ -1382,22 +1382,26 @@ of a context of the old key is refused, because the route knows only the
 current key.
 
 The tests: the acceptance specifications of the
-[gateway](../../test/acceptance/mcp/hosted-gateway.test.ts) and the
+[gateway](../../test/acceptance/mcp/hosted-gateway.test.ts), its
+[row states](../../test/acceptance/mcp/hosted-gateway-states.test.ts) and its
+[forward](../../test/acceptance/mcp/hosted-gateway-forward.test.ts), and the
 [relay](../../test/acceptance/logging/audit/audit-relay.test.ts), with a fake
 tenant upstream, the real registry rules over an in-memory registry, and a spy
 of the resume operation; the unit tests of the
-[gateway states](../../test/unit/mcp/mcp-gateway.test.ts) and its
-[forward](../../test/unit/mcp/mcp-gateway-forward.test.ts), the
+[gateway states](../../test/unit/mcp/mcp-gateway.test.ts), its
+[forward](../../test/unit/mcp/mcp-gateway-forward.test.ts) and its
+[search limit](../../test/unit/mcp/mcp-gateway-searches.test.ts), the
 [forward step](../../test/unit/mcp/forward-step.test.ts), the
 [bounded read](../../test/unit/http/bounded-body.test.ts), the registry writes
 in [tenants](../../test/unit/tenants/), the
-[relay check](../../test/unit/auth/signed-access-context.test.ts), and the
+[relay context check](../../test/unit/auth/signed-access-context.test.ts), and the
 [relayed capture](../../test/unit/logging/audit/audit-relay-capture.test.ts);
+the gateway writes on [PostgreSQL](../../test/integration/tenants/tenant-gateway-writes.runtime.ts);
 the [route integration](../../test/integration/logging/audit/audit-relay-route.test.ts)
 with the real context check and capture; the
 [two-process integration](../../test/integration/mcp/gateway-tenant-processes.test.ts)
 of both roles; and the start cases of the
-[hosted startup](../../test/acceptance/auth/hosted-startup.test.ts). They run
+[hosted control plane](../../test/acceptance/auth/hosted-startup-gateway.test.ts). They run
 offline; they are no proof of Render behavior.
 
 ### Pinned WorkOS SDK proof

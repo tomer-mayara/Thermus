@@ -457,6 +457,7 @@ then runs these emitted files directly, without another build:
 1. `dist/test/integration/**/*.test.js`: the complete offline integration suite.
 2. `dist/test/acceptance/hosted-ad-policy.test.js`,
    `dist/test/acceptance/auth/hosted-startup.test.js`,
+   `dist/test/acceptance/auth/hosted-startup-gateway.test.js`,
    `dist/test/acceptance/auth/hosted-portal.test.js`,
    `dist/test/acceptance/auth/hosted-mcp-origin.test.js`,
    `dist/test/acceptance/auth/hosted-workos-signup.test.js`,
@@ -470,6 +471,8 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/hosted-tenant-role.test.js`,
    `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js`,
    `dist/test/acceptance/mcp/hosted-gateway.test.js`,
+   `dist/test/acceptance/mcp/hosted-gateway-states.test.js`,
+   `dist/test/acceptance/mcp/hosted-gateway-forward.test.js`,
    `dist/test/acceptance/logging/audit/audit-relay.test.js`,
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
