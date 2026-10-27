@@ -27,9 +27,10 @@ export interface LocalRequestHandlers {
   readonly pages: Pick<LocalAuthPages, 'handles' | 'handle'>;
 }
 
-// The browser routes of the provider that need no signed-in session: the sign-in, its callback, the sign-out, and the
-// session of the portal. They come before the account routes, which need a signed-in session.
-interface BrowserRoutes {
+// A group of routes that answers the paths it handles. The browser routes of the provider need no signed-in session:
+// the sign-in, its callback, the sign-out, and the session of the portal. The internal routes answer the private
+// network only. Both come before the account routes, which need a signed-in session.
+interface RouteGroup {
   handles(pathname: string): boolean;
   handle(request: Request): Promise<Response>;
 }
@@ -37,17 +38,20 @@ interface BrowserRoutes {
 export interface HostedRequestHandlers {
   readonly mcp: FetchHandler;
   readonly account: FetchHandler;
-  readonly browser?: BrowserRoutes;
+  readonly browser?: RouteGroup;
+  readonly internal?: RouteGroup;
 }
 
 // The parts that change with the hosted provider. The MCP endpoint answers the MCP resource and its
-// protected-resource metadata, and the application closes it.
+// protected-resource metadata, and the application closes it. With MCP_TENANTS_ENABLED on, the internal routes take
+// /internal/: the audit relay of the tenants.
 export interface HostedProviderParts {
   readonly session: BrowserSession;
   readonly accessResolver: AccessResolver;
   readonly organizations: OrganizationDirectory;
   readonly mcp: Pick<MCPServer, 'fetch' | 'close'>;
-  readonly browserRoutes?: BrowserRoutes;
+  readonly browserRoutes?: RouteGroup;
+  readonly internalRoutes?: RouteGroup;
 }
 
 export interface HostedAccountParts {
@@ -174,7 +178,7 @@ export function composeHostedApplication(config: RouteConfig, parts: HostedProvi
     logging: loggingStorage?.service,
     audit: account.audit,
   });
-  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes });
+  const handle = routeHostedRequests(config, { mcp: (request) => parts.mcp.fetch(request), account: (request) => routes.handle(request), browser: parts.browserRoutes, internal: parts.internalRoutes });
   const shutdown = new AbortController();
   return composeApplication((request) => {
     const signal = AbortSignal.any([request.signal, shutdown.signal]);
@@ -209,6 +213,7 @@ export function routeHostedRequests(config: RouteConfig, handlers: HostedRequest
       if (origin !== null && origin !== publicUrl.origin) return new Response('Forbidden', { status: 403 });
     }
     if (mcpPaths.has(pathname)) return handlers.mcp(request);
+    if (handlers.internal?.handles(pathname)) return handlers.internal.handle(request);
     if (handlers.browser?.handles(pathname)) return handlers.browser.handle(request);
     if (pathname.startsWith(basePath)) return handlers.account(request);
     return new Response('Not Found', { status: 404 });
