@@ -67,7 +67,7 @@ function pointsOf(values: unknown): readonly Point[] {
   return points.filter((point) => Number.isFinite(point.at) && Number.isFinite(point.value)).sort((a, b) => a.at - b.at);
 }
 
-export function seriesOf(value: unknown): readonly Series[] {
+function seriesOf(value: unknown): readonly Series[] {
   const items = Array.isArray(value) ? value.filter(isJson) : [];
   return items.map((item) => {
     const labels = Array.isArray(item.labels) ? item.labels.filter(isJson) : [];
@@ -84,7 +84,7 @@ export async function readMetric(reader: MetricsReader, query: MetricQuery): Pro
 }
 
 // The series of the three reads with shifted starts, together.
-export async function windowSeries(reader: MetricsReader, query: MetricQuery): Promise<readonly Series[]> {
+async function windowSeries(reader: MetricsReader, query: MetricQuery): Promise<readonly Series[]> {
   const { range } = query;
   const shifted = SHIFTS_SECONDS.map((shift) => ({ ...query, range: { startSeconds: range.startSeconds + shift, endSeconds: range.endSeconds + shift } }));
   const parts: (readonly Series[])[] = [];

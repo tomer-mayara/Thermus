@@ -17,7 +17,7 @@ interface PlannedStep {
   readonly calls: readonly Planned[];
 }
 
-export const DRY_RUN = 'YYYYMMDD-HHMMSS';
+const DRY_RUN = 'YYYYMMDD-HHMMSS';
 
 function identityCalls(plan: Plan): readonly Planned[] {
   const resource = plan.reused.tenant ? `${plan.origins.tenant}/mcp` : resourceOf(plan.origins.tenant);

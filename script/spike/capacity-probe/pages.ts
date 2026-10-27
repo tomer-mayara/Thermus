@@ -78,7 +78,7 @@ function serverStatements(): string {
 
 // One line with no single quote, backslash, dollar sign, or backtick, as the SO-01d part two job program: a shell
 // and a shell-style word split give the same arguments.
-export function pagesProgram(): string {
+function pagesProgram(): string {
   const program = `${nearPageFunction()}${jsPageFunction()}${serverStatements()}`;
   if (/['\\$`\n]/.test(program)) throw new Error('The pages program must not contain a quote, backslash, dollar sign, backtick, or new line.');
   return program;
