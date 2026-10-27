@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
 import { describe, test } from 'node:test';
-import {
-  AccessContextSigner,
-  AccessContextVerifier,
-  type AccessContextClaims,
-} from '../../../src/accounts/identity/signed-access-context.ts';
+import { AccessContextSigner } from '../../../src/accounts/identity/access-context-signer.ts';
+import { AccessContextVerifier } from '../../../src/accounts/identity/access-context-verifier.ts';
+import type { AccessContextClaims } from '../../../src/accounts/identity/signed-access-context.ts';
 
 const organizationId = 'org_01PINNED';
 const token = 'connect-token-of-the-request';
