@@ -80,6 +80,35 @@ verify actual deployment, capacity, safe recovery and restore controls before
 removal activation. The [implementation record](admin-s2-5-01b.md) describes the
 row contract and local proof; it does not establish live migration status.
 
+### Add the tenant registry tables before Slice 2 self on-boarding
+
+SO-04 of the [self on-boarding plan](self-onboarding-plan.md#43-data-model) adds
+three private tables on the same runtime role and pool:
+[the migration](../../sql/migrations/20261027175430_tenant_registry_and_billing.sql)
+creates `tenants`, `subscriptions`, and `billing_events` in `thermus_admin`.
+SO-04 has not applied it to the Supabase project; SO-12 applies it in the
+production order. The owner checks that the three table names are unused, then
+applies this additive migration once after the earlier migrations, with
+stop-on-error enabled. Do not repeat initial setup or change working credentials.
+
+The control plane reuses `thermus_logging` (answer of 27 October 2026): one role
+and one connection. The migration creates no role and no schema. It removes
+PUBLIC and any `anon`, `authenticated`, or `service_role` grants from its new
+tables, grants the server role SELECT, INSERT, and UPDATE, and forces RLS with
+the same open policies for that role. UPDATE also permits the
+`SHARE ROW EXCLUSIVE` table lock that serializes tenant requests at the
+`FREE_TENANT_LIMIT` cap. Inspect the effective grants: the server role must
+have no DELETE, TRUNCATE, DDL, or ownership; tenant containers get no database
+access at all.
+
+The table checks hold the registry rules: `tenants.state` is one of the seven
+states of the plan; a `live` row has its Render service ID and internal address;
+the address is plain HTTP to a private service name and a port, never a numeric
+address; a Render service ID starts with `srv-`. No new secret, API key, paid
+resource, or pool is required. Until the gateway (SO-05) and signup (SO-07) call
+the registry, the tables stay empty; a rollback of the code leaves them unused.
+Local proof uses disposable PostgreSQL 17 only (`npm run test:logging:postgres`).
+
 ### Initial credentials and configuration
 
 Use a secure owner session to assign a new independent password to
