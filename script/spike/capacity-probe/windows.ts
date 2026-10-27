@@ -3,7 +3,7 @@ import type { Client } from '@modelcontextprotocol/client';
 import { samePlan } from '../render-tenant-lifecycle/answers.ts';
 import { addRow, progress, seconds, serviceIdOf, shown } from '../render-tenant-lifecycle/context.ts';
 import { sleep } from '../render-tenant-lifecycle/polls.ts';
-import { readService } from '../render-tenant-lifecycle/waits.ts';
+import { instanceIds, readService } from '../render-tenant-lifecycle/waits.ts';
 import { originOf, sessionOf, type CallRecord, type ProbeContext, type WindowRecord } from './context.ts';
 import { eventsSince, eventsText, KILL_TYPE, type EventView } from './events.ts';
 import type { Workload } from './inputs.ts';
@@ -14,6 +14,7 @@ import { baseUrlOf } from './variables.ts';
 
 // Two buckets between the end of a window and the start of the next, so that their metrics do not overlap.
 const WINDOW_GAP_MS = 2 * RESOLUTION_SECONDS * 1_000;
+const LATE_EVENTS_MS = 120_000;
 
 interface Window {
   readonly plan: string;
@@ -116,10 +117,13 @@ export function firstKilled(windows: readonly WindowRecord[], plan: string): num
 }
 
 // In run A of 27 October 2026, ten 9 MiB calls got HTTP 502 and no server_failed event came in the window read, so
-// the step reads the events once more after its last window, and counts the kills of each window again.
+// the step reads the events once more, at least 2 minutes after its last window, and counts the kills again.
 async function recountKills(context: ProbeContext, records: readonly WindowRecord[], stepStart: number): Promise<readonly WindowRecord[]> {
+  const wait = (context.state.lastWindowEnd ?? 0) + LATE_EVENTS_MS - Date.now();
+  if (wait > 0) await sleep(wait, context.signal);
   const late = await eventsSince(context, serviceIdOf(sessionOf(context, 'tenant')), stepStart);
-  addRow(context, `Calls on ${records[0]?.plan ?? 'the plan'}`, { check: 'Events of the step, read after the last window', expected: 'recorded; server_failed is a kill', measured: eventsText(late, stepStart) });
+  const step = `Calls on ${records[0]?.plan ?? 'the plan'}`;
+  addRow(context, step, { check: `Events of the step, read ${LATE_EVENTS_MS / 1000} s or more after the last window`, expected: 'recorded; server_failed is a kill', measured: eventsText(late, stepStart) });
   return records.map((record, index) => {
     const from = Date.parse(record.start) - WINDOW_GAP_MS;
     const to = index + 1 < records.length ? Date.parse(records[index + 1]?.start ?? '') - WINDOW_GAP_MS : Number.POSITIVE_INFINITY;
@@ -134,11 +138,14 @@ export async function callsOn(context: ProbeContext, plan: string): Promise<stri
   const service = await readService(sessionOf(context, 'tenant'));
   assert.ok(samePlan(service.plan, plan), `The tenant service is on ${shown(service.plan)}, not ${plan}`);
   const stepStart = Date.now();
+  const before = await instanceIds(sessionOf(context, 'tenant'));
   const records: WindowRecord[] = [];
   for (const parallelism of context.inputs.parallelism) {
     for (const workload of context.inputs.workloads) records.push(await runWindow(context, { plan, parallelism, workload }));
   }
   const recounted = await recountKills(context, records, stepStart);
+  const after = await instanceIds(sessionOf(context, 'tenant'));
+  addRow(context, `Calls on ${plan}`, { check: 'Instances at the step start and after the last window', expected: 'recorded; a new ID is a new instance', measured: `${before.join(', ') || 'none'}; then ${after.join(', ') || 'none'}` });
   const windows = context.report.windows;
   windows.splice(windows.length - records.length, records.length, ...recounted);
   const kills = recounted.reduce((sum, item) => sum + item.kills, 0);
