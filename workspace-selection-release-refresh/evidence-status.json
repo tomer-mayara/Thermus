@@ -1,0 +1,96 @@
+{
+  "candidate": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "sourceChecks": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+  "sourceInputBridge": "../workspace-selection/review/final-head-input-bridge-v4.json",
+  "production": {
+    "approvedCommit": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+    "deployId": "dep-dbgidiou01pc73c6h7ag",
+    "status": "live",
+    "verifiedBothRoles": true,
+    "proof": "../workspace-selection-production/verification.json"
+  },
+  "ordinary": {
+    "compiled": 5372,
+    "portal": 51,
+    "exitCode": 0
+  },
+  "typecheck": 0,
+  "portalBuild": 0,
+  "hostedBuild": {
+    "exitCode": 0,
+    "groups": [
+      3468,
+      31,
+      20,
+      1194,
+      139,
+      13
+    ]
+  },
+  "selfHostedContainer": {
+    "pass": 11,
+    "exitCode": 0
+  },
+  "browser": {
+    "pass": 83,
+    "exitCode": 0
+  },
+  "nativeImage": {
+    "pass": 7,
+    "exitCode": 0,
+    "head": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+    "runId": 40595080704,
+    "url": "https://github.com/tomer-mayara/Thermus/actions/runs/40595080704",
+    "digest": "sha256:aa29d6206d7a0cbd6c4efabdcf1bce3255e4ed7c6fdb4346db6858fa87651f6e",
+    "compressedBytes": 154747373,
+    "deploymentJob": "skipped"
+  },
+  "hostedLive": {
+    "head": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+    "exitCode": 1,
+    "pass": 22,
+    "fail": 7,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 614699.394,
+    "finishedAt": "2026-10-27T22:52:30.445Z",
+    "failure": "Six cases share one WorkOS sandbox invitation-email quota HTTP429; removal invitation503 is a supported same-cause inference, not a directly logged429.",
+    "retry": "Only after independently confirmed staging invitation-email quota availability; no reset duration supplied."
+  },
+  "metrics": {
+    "processExitCode": 1,
+    "delta": "goal miss with retained reasons",
+    "review": "goal miss with retained reasons",
+    "crap": "passed",
+    "architecture": "passed",
+    "standaloneCrapExitCode": 0,
+    "coverageFiles": 196,
+    "coverageProcesses": 767,
+    "coverageCommit": "e36e34c9304444312b52d76cc1c91aa365ccc719"
+  },
+  "habitHooks": {
+    "exitCode": 1,
+    "commentFindings": 21,
+    "testLengthFindings": 2,
+    "allRetainedWithReasons": true,
+    "snooze": []
+  },
+  "checker": {
+    "exitCode": 0,
+    "tier": "T2 Need architect",
+    "architectureReason": "T0: no architecture fact",
+    "localPreliminaryEligibility": "eligible",
+    "blockers": []
+  },
+  "overallMerge": {
+    "status": "blocked",
+    "draft": true,
+    "holds": [
+      "Refreshed full hosted-live gate is not green because of WorkOS sandbox invitation-email quota.",
+      "Independent owner/architect approval must cover current44753a72; prior approval is for deployedfeaddbde only."
+    ],
+    "mergeAttempt": "Original exactfeadd merge refused405 after upstreamSO02; no PR281 merge has completed."
+  }
+}

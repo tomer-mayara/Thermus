@@ -1,0 +1,83 @@
+{
+  "worktree": "/Users/tomermayara/.codex/worktrees/workspace-picker-checks/Thermus",
+  "head": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "node": "v24.20.0",
+  "lightpanda": "/Users/tomermayara/git/Thermus/.cache/lightpanda/1.0.0/lightpanda",
+  "steps": [
+    {
+      "name": "ordinary",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "started_at": "2026-10-27T22:29:24.212520+00:00",
+      "log": "ordinary.log",
+      "exit_code": 0,
+      "duration_seconds": 473.01
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "started_at": "2026-10-27T22:37:17.226314+00:00",
+      "log": "typecheck.log",
+      "exit_code": 0,
+      "duration_seconds": 1.914
+    },
+    {
+      "name": "portal-build",
+      "command": [
+        "npm",
+        "run",
+        "build:user-portal"
+      ],
+      "started_at": "2026-10-27T22:37:19.141044+00:00",
+      "log": "portal-build.log",
+      "exit_code": 0,
+      "duration_seconds": 1.223
+    },
+    {
+      "name": "hosted-build",
+      "command": [
+        "npm",
+        "run",
+        "build:hosted"
+      ],
+      "started_at": "2026-10-27T22:37:20.364748+00:00",
+      "log": "hosted-build.log",
+      "exit_code": 0,
+      "duration_seconds": 144.711
+    },
+    {
+      "name": "self-hosted-container",
+      "command": [
+        "npm",
+        "run",
+        "test:container"
+      ],
+      "started_at": "2026-10-27T22:39:45.077722+00:00",
+      "log": "self-hosted-container.log",
+      "exit_code": 0,
+      "duration_seconds": 513.061
+    },
+    {
+      "name": "browser",
+      "command": [
+        "node",
+        "--test",
+        "--test-timeout=30000",
+        "--test-reporter=tap",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "started_at": "2026-10-27T22:48:18.147485+00:00",
+      "log": "browser.log",
+      "exit_code": 0,
+      "duration_seconds": 53.702
+    }
+  ],
+  "git_status": ""
+}

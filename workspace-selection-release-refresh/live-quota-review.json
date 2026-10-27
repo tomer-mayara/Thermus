@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "reviewedAt": "2026-10-27T22:54:43.526760+00:00",
+  "head": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "log": {
+    "path": "ast-report/workspace-selection-release-refresh/hosted-live.log",
+    "sha256": "b96969d1cd44e0e7c9c435ee043364869fd095efde8b8edef431987149c0ef4a",
+    "finishedAt": "2026-10-27T22:52:30.445Z",
+    "exitStatus": 1,
+    "tests": 29,
+    "suites": 8,
+    "passed": 22,
+    "failed": 7,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 614699.394
+  },
+  "directFailure": {
+    "affectedCases": 6,
+    "group": "AUTH-08W",
+    "exception": "RateLimitExceededException",
+    "message": "Sandbox environment email quota reached for invitation emails.",
+    "httpStatus": 429,
+    "requestId": "ad077443-8aa6-41ce-a23b-e73848ec010d",
+    "rawData": {},
+    "code": null,
+    "retryAfter": null,
+    "allSixShareSameExceptionRequestIdAndStack": true,
+    "rootSource": "test/support/hosted-live/administration-fixtures.ts:37",
+    "setupAwait": "test/acceptance/auth/hosted-live/administration-proofs.ts:149",
+    "cachedPromiseOwner": "test/support/hosted-live/live-run.ts:15-17,58",
+    "invitationReadVisibilityFailureObserved": false,
+    "subjectBehaviorReached": false
+  },
+  "removalFailure": {
+    "directObservation": "Invitation POST answered503 instead of expected303",
+    "source": "test/acceptance/auth/hosted-removal.live.ts:225-226",
+    "emittedSource": "dist/test/acceptance/auth/hosted-removal.live.js:215",
+    "underlyingProviderErrorDirectlyObserved": false,
+    "quotaCause": "Likely, consistent with same-run explicit quota and existing error-to-UnconfirmedChangeError-to503 path. Do not report as direct429 evidence.",
+    "errorTranslationSources": [
+      "src/accounts/providers/workos/workos-organizations.ts:209-216",
+      "src/accounts/organizations/change-records.ts:63-75",
+      "src/interfaces/web/account/administration-routes.ts:191-197",
+      "src/interfaces/web/account/account-pages.ts:74-82"
+    ]
+  },
+  "cleanup": {
+    "removalJournal": ".cache/s25-02/live/s25-02-mvr9tf6e-955a5c.jsonl",
+    "journalSha256": "63cb8b3a554d65ec6fb01b038ace9db93f6e383d58c43c0837eadf974225e695",
+    "completedAt": "2026-10-27T22:44:22.854Z",
+    "exactOwned404VerificationCounts": {
+      "organization": 3,
+      "user": 3,
+      "application": 1,
+      "membership": 5
+    },
+    "cleanupFailedEventPresent": false,
+    "completedPriorRemovalEvents": [
+      "safe-refusals-confirmed",
+      "user-removal-confirmed",
+      "self-removal-confirmed",
+      "account-and-other-access-preserved",
+      "account-and-other-access-preserved"
+    ],
+    "rejoinConfirmed": false,
+    "fullRemovalJourneyPassed": false,
+    "mainRunCleanupHookErrorReported": false,
+    "remoteInventoryIndependentlyQueried": false
+  },
+  "recommendation": {
+    "immediateRetry": false,
+    "sourceFixNeededOnObservedEvidence": false,
+    "quotaResetAmountOrIntervalKnown": false,
+    "safeRetryCondition": "Independently confirm staging invitation-email quota is available; wait for runner and cleanup completion; run one complete normal hosted-live gate on clean exact candidate, with no concurrent staging live run.",
+    "commandAfterCondition": "npm run test:hosted-live",
+    "retainFailureAndRetryHistory": true,
+    "changeAssertionsTimeoutsOrProductionSettings": false
+  },
+  "status": {
+    "pr": "Draft; blocked by refreshed live environment gate and current-head human approval, per manager",
+    "production": "Separately approved feaddbde is live with real Admin/non-Admin verification complete, per manager; independent of this new-head staging gate",
+    "final447ApprovalOrGatePassClaimed": false
+  },
+  "reviewerActions": "Read-only local log/source/WorkOS skill references. No gate/build/MCP/WorkOS/production/account/agent action. Only requested ignored diagnosis artifacts written."
+}

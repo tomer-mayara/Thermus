@@ -1,0 +1,511 @@
+TAP version 13
+# Subtest: Given three short member rows at 1280px and normal text, when Members loads its production fonts with removal closed, then labelled rows stay within 72px and quiet actions keep 48px targets
+ok 1 - Given three short member rows at 1280px and normal text, when Members loads its production fonts with removal closed, then labelled rows stay within 72px and quiet actions keep 48px targets
+  ---
+  duration_ms: 1547.31125
+  type: 'test'
+  ...
+# Short closed member row heights [70.25,70.25,60.25]
+# Subtest: Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill
+ok 2 - Given closed member actions, when an Admin reads the page, then each disclosure uses quiet text with no danger fill
+  ---
+  duration_ms: 357.678542
+  type: 'test'
+  ...
+# Subtest: Given labelled member rows at 320px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red
+ok 3 - Given labelled member rows at 320px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red
+  ---
+  duration_ms: 593.271292
+  type: 'test'
+  ...
+# Subtest: Given labelled member rows at 1280px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red
+ok 4 - Given labelled member rows at 1280px without JavaScript, when an Admin reads long facts and opens removal, then columns align, the trigger is quiet, and only confirmation is red
+  ---
+  duration_ms: 633.880708
+  type: 'test'
+  ...
+# Subtest: Given an expanded removal at widths between phone and desktop, when the Admin reads its consequence, then confirmation has room for readable text
+ok 5 - Given an expanded removal at widths between phone and desktop, when the Admin reads its consequence, then confirmation has room for readable text
+  ---
+  duration_ms: 698.541541
+  type: 'test'
+  ...
+# Subtest: Given a fresh other Remove confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+ok 6 - Given a fresh other Remove confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+  ---
+  duration_ms: 571.52875
+  type: 'test'
+  ...
+# Subtest: Given a fresh other Remove confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+ok 7 - Given a fresh other Remove confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+  ---
+  duration_ms: 575.019375
+  type: 'test'
+  ...
+# Subtest: Given a fresh other Remove confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+ok 8 - Given a fresh other Remove confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+  ---
+  duration_ms: 522.340334
+  type: 'test'
+  ...
+# Subtest: Given a fresh other Remove confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+ok 9 - Given a fresh other Remove confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+  ---
+  duration_ms: 553.229334
+  type: 'test'
+  ...
+# Subtest: Given a fresh self Leave confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+ok 10 - Given a fresh self Leave confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+  ---
+  duration_ms: 488.339542
+  type: 'test'
+  ...
+# Subtest: Given a fresh self Leave confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+ok 11 - Given a fresh self Leave confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to Cancel, then a GET closes the disclosure without a write
+  ---
+  duration_ms: 467.006375
+  type: 'test'
+  ...
+# Subtest: Given a fresh self Leave confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+ok 12 - Given a fresh self Leave confirmation without JavaScript at 320px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+  ---
+  duration_ms: 504.945042
+  type: 'test'
+  ...
+# Subtest: Given a fresh self Leave confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+ok 13 - Given a fresh self Leave confirmation without JavaScript at 1280px and another Admin, when the Admin uses the keyboard to confirm once, then one POST removes only that membership and gives recovery links
+  ---
+  duration_ms: 476.785417
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+ok 14 - Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+  ---
+  duration_ms: 455.795292
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+ok 15 - Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+  ---
+  duration_ms: 516.337584
+  type: 'test'
+  ...
+# Subtest: Given short and long pending invitations with JavaScript off at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+ok 16 - Given short and long pending invitations with JavaScript off at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+  ---
+  duration_ms: 601.625292
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 17 - Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 559.280792
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 18 - Given an independent pending invitation with JavaScript off at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 700.063834
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+ok 19 - Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+  ---
+  duration_ms: 557.710542
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+ok 20 - Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript off at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+  ---
+  duration_ms: 537.120709
+  type: 'test'
+  ...
+# Subtest: Given short and long pending invitations with JavaScript off at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+ok 21 - Given short and long pending invitations with JavaScript off at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+  ---
+  duration_ms: 728.206125
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 22 - Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 582.831167
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 23 - Given an independent pending invitation with JavaScript off at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 575.550791
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+ok 24 - Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+  ---
+  duration_ms: 491.2015
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+ok 25 - Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 320px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+  ---
+  duration_ms: 533.015834
+  type: 'test'
+  ...
+# Subtest: Given short and long pending invitations with JavaScript on at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+ok 26 - Given short and long pending invitations with JavaScript on at 320px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+  ---
+  duration_ms: 619.093958
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 27 - Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 485.558541
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 28 - Given an independent pending invitation with JavaScript on at 320px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 563.222291
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+ok 29 - Given a complete invitation overview with 0 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts closed and can be discovered by keyboard
+  ---
+  duration_ms: 538.388625
+  type: 'test'
+  ...
+# Subtest: Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+ok 30 - Given a complete invitation overview with 2 pending entries and terminal entries with JavaScript on at 1280px, when Members opens, then its counted native disclosure starts open and can be discovered by keyboard
+  ---
+  duration_ms: 467.692375
+  type: 'test'
+  ...
+# Subtest: Given short and long pending invitations with JavaScript on at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+ok 31 - Given short and long pending invitations with JavaScript on at 1280px, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order
+  ---
+  duration_ms: 609.715375
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 32 - Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Resend by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 524.787042
+  type: 'test'
+  ...
+# Subtest: Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+ok 33 - Given an independent pending invitation with JavaScript on at 1280px, when an Admin uses Revoke by keyboard, then one existing protected POST returns to Members with the current pending state
+  ---
+  duration_ms: 619.297917
+  type: 'test'
+  ...
+# Subtest: Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden
+ok 34 - Given Members without JavaScript, when an Admin first reads the page, then Invite member is a closed native disclosure with its form hidden
+  ---
+  duration_ms: 342.355791
+  type: 'test'
+  ...
+# Subtest: Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+ok 35 - Given Members with JavaScript off at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+  ---
+  duration_ms: 746.644916
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+ok 36 - Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+  ---
+  duration_ms: 556.599125
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+ok 37 - Given a fresh invitation form with JavaScript off at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+  ---
+  duration_ms: 549.049166
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+ok 38 - Given a fresh invitation form with JavaScript off at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+  ---
+  duration_ms: 471.339792
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 39 - Given a fresh invitation form with JavaScript off at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 550.337
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 40 - Given a fresh invitation form with JavaScript off at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 565.652334
+  type: 'test'
+  ...
+# Subtest: Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+ok 41 - Given Members with JavaScript off at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+  ---
+  duration_ms: 696.947625
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+ok 42 - Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+  ---
+  duration_ms: 466.718333
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+ok 43 - Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+  ---
+  duration_ms: 459.312042
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+ok 44 - Given a fresh invitation form with JavaScript off at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+  ---
+  duration_ms: 476.224792
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 45 - Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 579.844
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 46 - Given a fresh invitation form with JavaScript off at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 623.675958
+  type: 'test'
+  ...
+# Subtest: Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+ok 47 - Given Members with JavaScript on at 320px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+  ---
+  duration_ms: 663.546208
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+ok 48 - Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+  ---
+  duration_ms: 542.316833
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+ok 49 - Given a fresh invitation form with JavaScript on at 320px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+  ---
+  duration_ms: 498.092208
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+ok 50 - Given a fresh invitation form with JavaScript on at 320px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+  ---
+  duration_ms: 492.921459
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 51 - Given a fresh invitation form with JavaScript on at 320px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 559.07525
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 52 - Given a fresh invitation form with JavaScript on at 320px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 623.508042
+  type: 'test'
+  ...
+# Subtest: Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+ok 53 - Given Members with JavaScript on at 1280px, when an Admin opens Invite member by keyboard and cancels a typed draft, then the native form discards input through a fresh GET without a write
+  ---
+  duration_ms: 756.658917
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+ok 54 - Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an invalid email with Admin selected, then native validation retains both values without a request
+  ---
+  duration_ms: 557.807
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+ok 55 - Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits an existing member address, then the existing fixed refusal appears without form restoration or a write
+  ---
+  duration_ms: 589.359125
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+ok 56 - Given a fresh invitation form with JavaScript on at 1280px and an uncertain provider result, when an Admin submits once, then the existing unconfirmed notice provides Check status without a restored form or retry
+  ---
+  duration_ms: 472.118625
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 57 - Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits User once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 619.689291
+  type: 'test'
+  ...
+# Subtest: Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+ok 58 - Given a fresh invitation form with JavaScript on at 1280px, when an Admin submits Admin once, then one protected POST creates that pending role and a 303 returns the closed Members form
+  ---
+  duration_ms: 548.595125
+  type: 'test'
+  ...
+# Subtest: Given Members at 481px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+ok 59 - Given Members at 481px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+  ---
+  duration_ms: 562.453875
+  type: 'test'
+  ...
+# Subtest: Given Members at 600px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+ok 60 - Given Members at 600px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+  ---
+  duration_ms: 667.290417
+  type: 'test'
+  ...
+# Subtest: Given Members at 860px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+ok 61 - Given Members at 860px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+  ---
+  duration_ms: 566.436917
+  type: 'test'
+  ...
+# Subtest: Given Members at 1280px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+ok 62 - Given Members at 1280px with long workspace text and JavaScript off, when Invite member opens with 200% text, then the heading, trigger and full form reflow without overlap
+  ---
+  duration_ms: 649.922
+  type: 'test'
+  ...
+# Subtest: Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task
+ok 63 - Given the last Admin with JavaScript off, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task
+  ---
+  duration_ms: 649.903
+  type: 'test'
+  ...
+# Subtest: Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task
+ok 64 - Given the last Admin with JavaScript on, when self-removal is refused and Invite another Admin is followed, then the guidance opens the ordinary closed Members invitation task
+  ---
+  duration_ms: 639.935583
+  type: 'test'
+  ...
+# Subtest: Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership
+ok 65 - Given Members at a 320 by 844 viewport, when an Admin uses the keyboard to open, cancel, and confirm Remove, then the controls have names, cancellation writes nothing, and confirmation removes only the chosen membership
+  ---
+  duration_ms: 872.559792
+  type: 'test'
+  ...
+# Subtest: Given Audit logs without JavaScript, when an Admin opens full help by keyboard at narrow and desktop widths, then all approved text and links are readable without overflow or a write
+ok 66 - Given Audit logs without JavaScript, when an Admin opens full help by keyboard at narrow and desktop widths, then all approved text and links are readable without overflow or a write
+  ---
+  duration_ms: 720.282166
+  type: 'test'
+  ...
+# Audit tablet geometry {"width":800,"navigation":{"x":24,"y":76,"width":752,"height":48},"main":{"x":24,"y":125,"width":752,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":752,"height":1206.1875}}
+# Audit tablet geometry {"width":860,"navigation":{"x":24,"y":76,"width":812,"height":48},"main":{"x":24,"y":125,"width":812,"height":1412.71875},"destination":{"x":24,"y":259.53125,"width":812,"height":1206.1875}}
+# Subtest: Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width
+ok 67 - Given Audit logs at tablet widths without JavaScript, when an Admin opens its settings, then the form keeps the full content width
+  ---
+  duration_ms: 600.154875
+  type: 'test'
+  ...
+# Subtest: Given built Members with JavaScript off at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+ok 68 - Given built Members with JavaScript off at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+  ---
+  duration_ms: 1344.572959
+  type: 'test'
+  ...
+# Subtest: Given built Members with JavaScript off at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+ok 69 - Given built Members with JavaScript off at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+  ---
+  duration_ms: 1467.997083
+  type: 'test'
+  ...
+# Subtest: Given built Members with JavaScript on at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+ok 70 - Given built Members with JavaScript on at 320px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+  ---
+  duration_ms: 1339.93675
+  type: 'test'
+  ...
+# Subtest: Given built Members with JavaScript on at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+ok 71 - Given built Members with JavaScript on at 1280px, when an Admin reads long values and uses shared navigation, then full-width content, keyboard focus, doubled text and Audit controls stay usable
+  ---
+  duration_ms: 1340.163458
+  type: 'test'
+  ...
+# Subtest: Given the built Connect page for admin at 320px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+ok 72 - Given the built Connect page for admin at 320px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+  ---
+  duration_ms: 607.127125
+  type: 'test'
+  ...
+# Subtest: Given the built Connect page for admin at 1280px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+ok 73 - Given the built Connect page for admin at 1280px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+  ---
+  duration_ms: 575.783666
+  type: 'test'
+  ...
+# Subtest: Given the built Connect page for user at 320px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+ok 74 - Given the built Connect page for user at 320px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+  ---
+  duration_ms: 646.789209
+  type: 'test'
+  ...
+# Subtest: Given the built Connect page for user at 1280px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+ok 75 - Given the built Connect page for user at 1280px, when workspace navigation opens and is used by keyboard, then compact header links follow the current role and fit the screen
+  ---
+  duration_ms: 590.728916
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 320px with JavaScript off, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 76 - Given Switch Workspace at 320px with JavaScript off, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 585.8115
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 320px with JavaScript off, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 77 - Given Switch Workspace at 320px with JavaScript off, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 667.356417
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 1280px with JavaScript off, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 78 - Given Switch Workspace at 1280px with JavaScript off, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 625.076209
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 1280px with JavaScript off, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 79 - Given Switch Workspace at 1280px with JavaScript off, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 712.556958
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 320px with JavaScript on, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 80 - Given Switch Workspace at 320px with JavaScript on, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 812.71175
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 320px with JavaScript on, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 81 - Given Switch Workspace at 320px with JavaScript on, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 903.166083
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 1280px with JavaScript on, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 82 - Given Switch Workspace at 1280px with JavaScript on, when the user chooses Acme (selected) by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 819.168667
+  type: 'test'
+  ...
+# Subtest: Given Switch Workspace at 1280px with JavaScript on, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+ok 83 - Given Switch Workspace at 1280px with JavaScript on, when the user chooses Globex by keyboard, then compact navigation and the protected selection lead to Connect with the selected workspace
+  ---
+  duration_ms: 861.906708
+  type: 'test'
+  ...
+1..83
+# tests 83
+# suites 0
+# pass 83
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 53641.613041
