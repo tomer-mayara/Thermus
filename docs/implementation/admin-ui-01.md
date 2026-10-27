@@ -121,3 +121,19 @@ input comparisons and failure history. A check on an earlier candidate is not
 relabeled as a new execution. Independent source review found no defect in the
 UI-01 increment or the combined page; final gates and T1 human approval remain
 separate requirements.
+
+The shared local VM image attempt on the latest inputs also hit an unchanged
+fake-provider read deadline and two process-signal deadlines. Its stuck test
+worker was stopped to obtain diagnostics; no runtime image check ran. Those
+results remain failed attempts. The image gate must pass in full, with its
+original deadlines and assertions, before merge. The owner chose to keep the
+image checks local.
+
+Verified integration coverage passed all 1,159 cases. The quality process found
+no missed goal or unknown identity for the changed functions. Existing template
+MI findings and test-size findings keep their explicit review reasons. The first
+process attempt restored the wrong revision from a detached checkout; its
+outputs are invalid and retained only as failure history. Repeating it on a
+named validation branch restored the correct head. The generated base metric
+record is committed without edits. Final checker and image results remain in
+the maintained PR evidence.
