@@ -1,0 +1,54 @@
+{
+  "candidate": "94c5b0d850a2ebdd20fdd42581f1c6a6fd28202e",
+  "base": "2282edd46c2b4546150d6a06d53c3377e2e624f8",
+  "results": {
+    "snapshotBase": 0,
+    "snapshotHead": 0,
+    "process": 1,
+    "crap": 0,
+    "habitHooks": 1,
+    "checker": 0
+  },
+  "processOutcomes": [
+    {
+      "name": "Delta",
+      "status": "goal miss"
+    },
+    {
+      "name": "Review",
+      "status": "goal miss"
+    },
+    {
+      "name": "CRAP",
+      "status": "passed"
+    },
+    {
+      "name": "Architecture",
+      "status": "passed"
+    }
+  ],
+  "coverage": "Reused native-verified compatible historical integration report, unmodified; no coverage collection",
+  "habitFindings": {
+    "complexity": 1,
+    "comments": 29,
+    "oversized": 5,
+    "unchanged": true
+  },
+  "regressionsUnchanged": true,
+  "crapRowsUnchanged": true,
+  "tier": "T1 Team review",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "localEligibility": "eligible",
+  "checkerBlockers": [],
+  "externalHolds": [
+    "Hosted-live validation remains pending",
+    "Human approval of old aa8 does not cover current head"
+  ],
+  "gitStatus": "",
+  "testsRun": false,
+  "coverageCollected": false
+}

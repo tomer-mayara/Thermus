@@ -1,0 +1,72 @@
+── high-complexity (1 issue) ──
+
+High cyclomatic complexity means one function makes too many decisions at once. The count is the symptom; tangled responsibilities are the cause.
+
+**Untangle the decisions:**
+1. Lift guards out first — turn precondition checks into early returns so the happy path stays flat. Much of the count is preconditions wrapped around the real work.
+2. Change the shape of what remains: an `if`/`else` chain switching on one value is often a lookup table or polymorphism in disguise; a nested loop is often a filter/map pipeline.
+3. If the branches are genuinely separate jobs, extract one function per branch, each named for the responsibility it handles.
+
+Useful tip: describe each branch in one sentence. Two branches with the same sentence belong together; a branch you cannot name cleanly wants its own function.
+
+**AVOID**: merging conditions with and/or, or rewriting branches as ternaries, just to lower the score — the decisions remain, only the counter moves. You are done when a first-time reader can hold the whole function in their head.
+
+test/acceptance/auth/hosted-admin-journey.test.ts:13
+
+── non-essential-comment (29 issues) ──
+
+Comments indicate code that is not self-documenting. The smell is the *need* for the comment — the reader could not work out what the code does from the names and structure alone.
+
+Extract complex logic into well-named functions instead of explaining with a comment. A function called `applyDiscountForLoyalCustomers` does not need a header explaining what it does.
+
+Remove comments unless they impact functionality (executable annotations) or explain *why* something non-obvious was chosen (a workaround for a specific library bug, a reference to a spec). Comments that explain *what* the code does are almost always redundant — or worse, drift out of sync with the code and start lying.
+
+Do not delete an `eslint-disable` or shebang on autopilot — those are flagged separately and exempted from this rule.
+
+test/acceptance/auth/hosted-admin-journey.test.ts:53
+test/acceptance/auth/hosted-workos-administration.test.ts:9
+test/acceptance/auth/hosted-workos-administration.test.ts:10
+test/acceptance/auth/hosted-workos-administration.test.ts:11
+test/acceptance/auth/hosted-workos-administration.test.ts:12
+test/acceptance/auth/hosted-workos-administration.test.ts:17
+test/acceptance/auth/hosted-workos-administration.test.ts:35
+test/acceptance/auth/hosted-workos-administration.test.ts:36
+test/acceptance/auth/hosted-workos-administration.test.ts:82
+test/acceptance/auth/hosted-workos-administration.test.ts:83
+test/acceptance/auth/hosted-workos-administration.test.ts:109
+test/acceptance/auth/hosted-workos-administration.test.ts:110
+test/acceptance/auth/hosted-workos-administration.test.ts:137
+test/acceptance/auth/hosted-workos-administration.test.ts:138
+test/support/container/audit-sender-site.ts:59
+test/support/container/audit-sender-site.ts:75
+test/support/container/audit-sender-site.ts:182
+test/support/in-process/browser-transport-site.ts:11
+test/support/in-process/hosted-audit-journey-site.ts:40
+src/interfaces/web/account/account-pages.ts:13
+src/interfaces/web/account/account-pages.ts:96
+src/interfaces/web/account/account-pages.ts:118
+src/interfaces/web/account/administration-pages.ts:25
+test/acceptance/auth/hosted-live/administration-server.ts:43
+test/acceptance/auth/hosted-live/administration-server.ts:44
+test/acceptance/auth/hosted-live/administration-server.ts:79
+test/acceptance/auth/hosted-live/administration-server.ts:101
+test/acceptance/auth/hosted-live/administration-server.ts:104
+test/acceptance/auth/hosted-live/administration-server.ts:129
+
+── oversized-file (5 issues) ──
+
+Files over 200 lines accumulate unrelated concerns. The smell is poor cohesion — a file that asks the reader to hold too many ideas at once — not the raw line count.
+
+First identify the seams: which exports, types, or helper clusters actually belong together? A long file usually splits cleanly along one of: a data type and its operations, a feature pipeline, or one concern per file.
+
+Avoid mechanical splits. Carving the file at line 200 into `foo-1.ts` and `foo-2.ts`, or moving every private helper into a `utils.ts`, satisfies the threshold without making anything clearer — the cohesion problem just hops to a new place.
+
+If the file's structure resists splitting, that is itself the signal: responsibilities are tangled. Look for a missing abstraction (a class, a small module with a focused interface) that would let related pieces move together as a unit.
+
+A concrete technique: write a one-sentence description of what each emerging seam *would* be responsible for. If you cannot, you have not found the seam yet — do not split.
+
+test/acceptance/auth/hosted-live/administration-server.ts
+test/acceptance/auth/hosted-member-removal-browser.runtime.ts
+test/acceptance/auth/hosted-workos-administration.test.ts
+test/integration/hosted-admin/account-routes-administration-pages.test.ts
+test/support/container/audit-sender-site.ts

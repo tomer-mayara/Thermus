@@ -1,0 +1,29 @@
+{
+  "candidate": "94c5b0d850a2ebdd20fdd42581f1c6a6fd28202e",
+  "base": "2282edd46c2b4546150d6a06d53c3377e2e624f8",
+  "executedAt": "2a5da5dc95df705ac9cffce885aec1a19fc90bd1",
+  "results": {
+    "typecheck": "pass",
+    "portalBuild": "pass",
+    "serverBuild": "pass",
+    "membersBrowser": {
+      "tests": 51,
+      "pass": 51,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "binding": "Final candidate changes only docs/implementation/admin-ui-03.md and the generated base metrics record after these executions. The source, tests, dependencies and build inputs are unchanged.",
+  "notRerun": [
+    "ordinary suite",
+    "SQL",
+    "Collector",
+    "self-hosted",
+    "offline",
+    "container image"
+  ],
+  "historicalEvidence": "Retained immutable reports use their original execution revisions. Input equality does not establish hosted-live success.",
+  "hostedLive": "Still required; no provider writes or retry while the recorded quota limitation is unresolved."
+}

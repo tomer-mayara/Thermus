@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-27T13:04:13.374248+00:00",
+  "oldHead": "aa8c56bb7e195e97d2362b2c661cc63a760a5cc9",
+  "oldBase": "614090a1632b27ce40a3d2e38cac9492bac048aa",
+  "newBase": "2282edd46c2b4546150d6a06d53c3377e2e624f8",
+  "initialReplayedHead": "2a5da5dc95df705ac9cffce885aec1a19fc90bd1",
+  "finalHead": "94c5b0d850a2ebdd20fdd42581f1c6a6fd28202e",
+  "baseTree": "dbd7449fd25b63ef8d11560bf8d969fbebaba1ba",
+  "oldBaseTree": "dbd7449fd25b63ef8d11560bf8d969fbebaba1ba",
+  "oldHeadTree": "22811ee32a3fec7ad36d2c43b761bf714891b9ce",
+  "replayedHeadTree": "22811ee32a3fec7ad36d2c43b761bf714891b9ce",
+  "finalHeadTree": "5536babdfd792db3c3cb1225d50134cac1257d5f",
+  "mergeBase": "2282edd46c2b4546150d6a06d53c3377e2e624f8",
+  "patchesIdentical": true,
+  "finalOnlyDifferencesFromOldHead": [
+    "docs/implementation/admin-ui-03.md",
+    "docs/metrics/2026-10-27-2282edd4.json"
+  ],
+  "unchangedSourceTestDependencyBuildInputs": true,
+  "whitespaceCheck": "passed",
+  "trackedWorktree": "clean",
+  "freshChecksExecutionHead": "2a5da5dc95df705ac9cffce885aec1a19fc90bd1",
+  "freshChecks": [
+    "typecheck",
+    "portal build",
+    "server build",
+    "Members browser51/51"
+  ],
+  "freshQualityExecutionHead": "94c5b0d850a2ebdd20fdd42581f1c6a6fd28202e",
+  "historicalEvidence": "Keep original run commits, image digests, reports and failed histories; this proof compares inputs and does not relabel historical executions or establish a live pass.",
+  "ownerApproval": "Old aa8 approval retained in history; no approval asserted for final94c",
+  "managerReview": "Accepted independent final content/evidence review and verified exact file deltas; no application or test behavior changed."
+}
