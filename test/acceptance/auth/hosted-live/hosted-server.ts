@@ -130,7 +130,7 @@ export function describeHostedServerCases(run: LiveRun): void {
       assert.equal((await sessionJson(browser.page)).organizationId, organizationA.id);
       const portal = await serverGet(browser.page, 'portal/access');
       assert.equal(portal.status, 200, portal.body);
-      assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationA.id, organizationName: organizationA.name, roles: ['admin'], plan: 'free', mcpUrl: mcpResource });
+      assert.deepEqual(JSON.parse(portal.body), { organizationId: organizationA.id, organizationName: organizationA.name, roles: ['admin'], plan: 'free', memberLimit: 5, mcpUrl: mcpResource });
       assert.equal((await mcpStatus(grant.tokens.accessToken)).status, 200);
       await run.workos.userManagement.deactivateOrganizationMembership(memberships.mixedAdminInA);
       assert.equal((await serverGet(browser.page, 'portal/access')).status, 403);

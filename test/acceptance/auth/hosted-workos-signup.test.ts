@@ -126,6 +126,7 @@ describe('Hosted self-service signup with a test legal bundle', () => {
       organizationName: 'Acme Labs',
       roles: ['admin'],
       plan: 'free',
+      memberLimit: 5,
       mcpUrl: site.world.mcpResourceUrl,
     });
     const writes = site.world.fake.takeRequests().filter(({ method }) => method === 'POST');

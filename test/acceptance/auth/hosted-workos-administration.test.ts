@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../../support/drivers/browser/hosted-browser.ts';
 import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
+import { TeamBillingStub } from '../../support/doubles/billing/team-billing-stub.ts';
 import type { FakeMembership, FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { serveWorkOSSite, type WorkOSSite } from '../../support/in-process/workos-site.ts';
 
@@ -54,8 +55,11 @@ interface WorkOSChange {
   readonly body: unknown;
 }
 
+// Acme has six active product members, above the 5 seats of a free organization, so these cases use the team plan,
+// which has no member limit.
 const openSite = (t: TestContext) => serveWorkOSSite(t, {
   organizations: Object.keys(organizationNames),
+  billing: new TeamBillingStub(),
   setUp: (world) => {
     world.memberships = memberships;
     world.organizationNames = organizationNames;

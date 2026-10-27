@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { UnconfirmedChangeError, type ChangeResult } from '../../../src/accounts/organizations/change-records.ts';
+import { AuditLog, type AuditEvent } from '../../../src/logs/audit/audit-log.ts';
 import { formsIn } from '../../support/drivers/browser/hosted-browser.ts';
 import { ann, assertPage, postForm } from './fixtures/account-routes-fixtures.ts';
 import { annToken, changePost, serveAdministration, sessionCookies, validChanges } from './fixtures/administration-routes-fixtures.ts';
@@ -18,6 +19,18 @@ describe('HostedAccountRoutes invitation changes', () => {
     assert.match(body, /already belongs to a member.*pending invitation/);
     assert.match(body, /An existing member cannot be invited again\. To replace a pending invitation, revoke it first\./);
     assert.doesNotMatch(body, /To change the roles|open the members page/);
+  });
+
+  test('Given a free workspace whose seats are all used, when the service refuses the send with limit-reached, then the browser gets 409 with the fixed words of the owner and no link, and the audit event keeps limit-reached', async () => {
+    const events: AuditEvent[] = [];
+    const { routes } = serveAdministration({ change: 'limit-reached' }, { routes: { audit: new AuditLog({ writeAuditEvent: (event) => { events.push(event); } }) } });
+
+    const response = await routes.handle(changePost(validChanges.send.path, validChanges.send.fields));
+    const body = await response.clone().text();
+
+    await assertPage(response, { status: 409, text: /<p>This free workspace has 5 of 5 seats\. Upgrade to Team to add more members\.<\/p>/, cookies: sessionCookies });
+    assert.doesNotMatch(body, /<a\b/);
+    assert.deepEqual(events.map((event) => event.eventName === 'organization.changed' && [event.action, event.target, event.role, event.outcome]), [['invite', { email: 'new.user@example.com' }, 'user', 'limit-reached']]);
   });
 
   for (const [name, { path, fields }] of changes) {

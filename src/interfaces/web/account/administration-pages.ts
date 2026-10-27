@@ -30,12 +30,17 @@ export function membersPage(form: MembersPageForm): Response {
   const content = `<div class="introduction members-introduction"><p class="eyebrow">Workspace administration</p><h1>Members · ${members.length}</h1>
 ${sendForm(form).join('\n')}</div>
 <div class="member-lists"><section class="members-card" aria-labelledby="active-heading"><h2 id="active-heading">Active members</h2>
-<p class="list-note">Active product members: ${form.members.activeUserSeats}</p>
+<p class="list-note">Active product members: ${form.members.activeUserSeats}</p>${seatLine(form.invitations)}
 ${members.length === 0 ? '<p>No active members.</p>' : `<ul class="member-list">${memberRows.join('\n')}</ul>`}</section>
 <details class="pending-invitations members-card"${invitations.length > 0 ? ' open' : ''}><summary>Pending invitations · ${invitations.length}</summary>
 ${invitations.length === 0 ? '<p class="list-note">No pending invitations.</p>' : `<ul class="invitation-list">${invitations.map((invitation) => invitationRow(form, invitation)).join('\n')}</ul>`}
 </details>${membersHelp}</div>`;
   return membersPageLayout(form.navigation, content, { title: 'Members', current: 'members', organizationName: form.members.organizationName });
+}
+
+// The seats of a plan with a member limit count the pending invitations too, so the line stays beside both lists.
+function seatLine(invitations: InvitationOverview): string {
+  return invitations.seats === undefined ? '' : `\n<p class="list-note">${invitations.seats.used} of ${invitations.seats.limit} seats used</p>`;
 }
 
 function removalForm(form: MembersPageForm, member: MemberOverview['members'][number]): string {

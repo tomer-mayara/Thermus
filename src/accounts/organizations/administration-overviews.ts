@@ -1,4 +1,5 @@
 import { invitationsOf, membersOf } from './directory-reads.ts';
+import { holdsSeat } from './member-limit.ts';
 import { removalSupported } from './membership-removal-checks.ts';
 import type {
   AssignableRole,
@@ -42,11 +43,20 @@ export interface InvitationEntry {
   readonly changes: readonly InvitationChange[];
 }
 
+// The seats of a plan with a member limit: each active membership with product access and each pending invitation
+// holds one. After a downgrade, used can be above the limit.
+export interface SeatUsage {
+  readonly used: number;
+  readonly limit: number;
+}
+
 export interface InvitationOverview {
   readonly organizationId: string;
   readonly invitations: readonly InvitationEntry[];
   readonly invitableRoles: readonly AssignableRole[];
   readonly identityPolicy: InvitationIdentityPolicy;
+  // Only a plan with a member limit has seats.
+  readonly seats?: SeatUsage;
 }
 
 const INVITATION_STATES: readonly InvitationState[] = Object.freeze(['pending', 'accepted', 'revoked', 'expired']);
@@ -74,12 +84,7 @@ export async function readInvitationOverview(directory: OrganizationDirectory, o
 }
 
 function userSeatsOf(members: readonly OrganizationMember[]): number {
-  return members.filter(holdsUserSeat).length;
-}
-
-// Count each active membership with product access once, including an Admin-only membership.
-function holdsUserSeat(member: OrganizationMember): boolean {
-  return member.status === 'active' && member.grants.some((grant) => grant.permissions.includes('product:access'));
+  return members.filter(holdsSeat).length;
 }
 
 function memberEntry(member: OrganizationMember): MemberEntry {

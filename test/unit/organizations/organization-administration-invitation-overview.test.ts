@@ -65,6 +65,30 @@ describe('OrganizationAdministration invitation overview', () => {
     assert.equal(overview.invitations.length, 5);
   });
 
+  test('Given a free organization above its limit after a downgrade and a team organization, when an Admin reads each invitation overview, then the free one has its seats, 5 active members with product access and 2 pending invitations of the limit 5, and the team one has none', async () => {
+    const free = invitationsWith();
+    free.billing.answerWith({ plan: 'free', memberLimit: 5 });
+    const team = invitationsWith();
+
+    const freeOverview = overviewOf(await free.administration.invitationOverview(actorOf('user-eve'), 'org-a'));
+    const teamOverview = overviewOf(await team.administration.invitationOverview(actorOf('user-eve'), 'org-a'));
+
+    assert.deepEqual(freeOverview.seats, { used: 7, limit: 5 });
+    assert.ok(Object.isFrozen(freeOverview) && Object.isFrozen(freeOverview.seats));
+    assert.equal(teamOverview.seats, undefined);
+    assert.deepEqual([free.billing.stateReads, team.billing.stateReads], [['org-a'], ['org-a']]);
+    assert.deepEqual([free.directory.memberPageReads, team.directory.memberFactsPageReads], [[], []]);
+  });
+
+  test('Given a member page that fails in a free organization, when an Admin reads the invitation overview, then the failure reaches the caller and no partial seat count exists', async () => {
+    const { directory, billing, administration } = invitationsWith();
+    billing.answerWith({ plan: 'free', memberLimit: 5 });
+    const outage = new Error('member page 2 timed out');
+    directory.memberFactsPageLayout = (facts) => [facts.slice(0, 2), outage];
+
+    await assert.rejects(administration.invitationOverview(actorOf('user-eve'), 'org-a'), outage);
+  });
+
   for (const { label, actor, refusal } of [
     { label: 'a User without Admin', actor: actorOf('user-una'), refusal: 'denied' },
   ]) {

@@ -58,6 +58,12 @@ const NOTICES = {
       'An existing member cannot be invited again. To replace a pending invitation, revoke it first.',
     ],
   },
+  // The words of the owner of 27 October 2026. The Upgrade button comes with the paid tier, so the notice has no link.
+  invitationLimitReached: {
+    status: 409,
+    title: 'Invitation not sent',
+    paragraphs: ['This free workspace has 5 of 5 seats. Upgrade to Team to add more members.'],
+  },
   changeUnsupported: {
     status: 503,
     title: 'Change not available',

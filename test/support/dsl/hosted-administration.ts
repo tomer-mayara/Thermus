@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import type { TestContext } from 'node:test';
 import type { AccountFailureReport } from '../../../src/interfaces/web/account/account-routes.ts';
 import type { ChangeRecord } from '../../../src/accounts/organizations/change-records.ts';
+import { TeamBillingStub } from '../doubles/billing/team-billing-stub.ts';
 import { formLabelled, formsIn, type BrowserAnswer, type HostedBrowser, type PageForm } from '../drivers/browser/hosted-browser.ts';
 import { administrationMembers, userOf } from '../fixtures/hosted-members.ts';
 import { serveOrganizationSite, type OrganizationSite, type SiteSetup } from '../in-process/hosted-organization-site.ts';
@@ -11,9 +12,12 @@ const recordFields = ['action', 'actor', 'organizationId', 'outcome', 'target', 
 
 // The shared site behind the real HTTP server, with these memberships and a failure reporter that records each report.
 // Each Acme member below has the MCP token "<subject>-token" for Acme, and cy and una also "<subject>-globex-token".
+// Acme has 6 active product members, above the 5 seats of a free organization, so the organizations of the site are on
+// the team plan, which has no member limit, unless a case gives another billing, such as BillingFree.
 export async function serveAdministrationSite(t: TestContext, setup: Pick<SiteSetup, 'billing'> = {}) {
   const failures: AccountFailureReport[] = [];
   const site = await serveOrganizationSite(t, {
+    billing: new TeamBillingStub(),
     ...setup,
     reportFailure: (report) => failures.push(report),
     memberships: administrationMembers,

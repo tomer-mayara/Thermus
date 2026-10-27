@@ -50,6 +50,8 @@ export interface WorkOSApplicationParts {
   readonly onboarding?: GoogleOnboardingSettings;
   // Explicit composition supplies its own documents. Production selects the approved organization removal bundle at startup.
   readonly signup?: { readonly enabled: boolean; readonly documents?: SignupDocuments };
+  // Explicit composition can supply the billing of its organizations. Production uses BillingFree.
+  readonly billing?: Billing;
 }
 
 // No retry and a short timeout: each WorkOS call runs during a browser or MCP request.
@@ -114,14 +116,17 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
   }
   const { BillingFree } = await import('../accounts/billing/billing-free.ts');
-  const billing = new BillingFree();
+  const billing = parts.billing ?? new BillingFree();
   const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing });
   const application = composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
     changeRecords: accountChangeRecorder(parts.logger),
     audit,
     billing,
-    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId)),
+    operation: portalAccessOperation(config.publicBaseUrl, config.mcpResourceUrl, {
+      organizationNameOf: (user, organizationId) => providerParts.organizations.activeOrganizationName(user, organizationId),
+      billingOf: (organizationId) => billing.stateOf(organizationId),
+    }),
     signupUrl: new URL('signup', config.publicBaseUrl).href,
   }, loggingStorage);
   owned.move();
