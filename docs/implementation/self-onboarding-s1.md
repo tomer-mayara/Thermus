@@ -1509,18 +1509,18 @@ From the pages above, with what the runs showed:
 
 ## SO-01e: capacity and memory
 
-Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01e-capacity-probe-7e8c5c`,
-stacked on the SO-01d part two branch `self-ob-s1-so-01d-private-network-012463`.
+Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01e-capacity-probe-7e8c5c`.
 
-Status: waits for the launcher. The probe is built, its dry run and guards
-pass, and a rehearsal of its calls step passed against a local stand-in. The
-pages origin is live on Render and kept for the later runs. No tenant service
-exists yet. Each WorkOS step, the calls on Render, and the measured tables wait
-for the WorkOS Staging launcher: `~/.config/thermus/with-workos-staging.cjs`
-accepts only the `3-headed-monkey/Thermus` origins, and the origin of the
-repository is now `https://github.com/tomer-mayara/Thermus.git`, so the launcher
-stops each run with "Run this command from a Thermus checkout with the expected
-origin." The owner adds the new origin to the launcher.
+Status: the probe is complete. Run A measured the free instance `0.5c-512mb`
+and run B the team instance `1c-2g`, each with 9 windows and its full cleanup.
+A dedicated repeat settled the one window with `HTTP 502`. After the runs, a
+reads-only preflight listed no `thermus-spike-*` service, and no WorkOS fixture
+of a run remained. The [measured runs](#measured-runs) and the
+[recommendation for D-15](#recommendation-for-d-15) are below.
+
+Until the owner fixed the WorkOS Staging launcher on 27 October 2026, the
+WorkOS steps waited: `~/.config/thermus/with-workos-staging.cjs` accepted only
+the `3-headed-monkey/Thermus` origins, not the new origin of the repository.
 
 ### What the probe does
 
@@ -1607,7 +1607,9 @@ Rules of the script, in addition to the rules of SO-01c:
 - The fixtures. The organization, the user, and the Connect application have
   the run ID `so01e-<UTC start time>` in their names and email. The probe does
   not delete stale fixtures of other runs. The cleanup deletes the fixtures of
-  the run and then checks that none remains.
+  the run and then checks that none remains. The WorkOS lists can show a
+  deleted fixture for a short time, so the check reads them again, every 5 s,
+  at most 12 times.
 - Exit code 0: each step and the cleanup passed. Exit code 1: a step or the
   cleanup failed. Exit code 2: a usage error.
 
@@ -1665,10 +1667,11 @@ the pages origin and check it:
 | Pages origin | GET https://thermus-spike-pages-20261027-055251.onrender.com/js from this machine | 200, 14845 bytes, marker not in the HTML | 200, 14845 bytes, marker not in the HTML, after 0.1 s |
 
 The create had `Ratelimit-Limit 20`, `Ratelimit-Remaining 14`, and
-`Ratelimit-Reset 428`. The pages origin `srv-dbg3od0m7kps73bafuvg` is kept for
-the later runs with `--pages-id`. The final run deletes it.
+`Ratelimit-Reset 428`. The setup run, the development runs, and run A used
+this pages origin `srv-dbg3od0m7kps73bafuvg` with `--pages-id`, and the cleanup
+of run A deleted it. Run B and the repeat made their own pages origins.
 
-### The tenant service (waits for the launcher)
+### The tenant service
 
 The create call has every variable that the hosted image does not set itself:
 
@@ -1732,6 +1735,11 @@ kill or a transport failure, the probe waits until `/healthz` answers again,
 and the restart time counts from the event or from the window end. The next
 window starts at least two buckets (60 s) after the end of the window before
 it.
+
+After the last window of a calls step, the probe waits until 120 s after its
+end. Then it reads the events of the step again and counts the kills of each
+window again. It also records the instance IDs at the step start and after the
+last window: a new ID is a new instance.
 
 ### Planned calls
 
@@ -1834,29 +1842,598 @@ once at the end.
 - `npm run typecheck`, `eslint` with the habit-hooks configuration on
   `script/spike`, and `knip` pass; knip gives only its two earlier hints.
 
-### Measured (waits for the launcher)
+### Measured runs
 
-The complete runs, one for each instance plan, come here with their tables as
-the script prints them.
+All times are UTC on 27 October 2026. Each run used the image
+`ghcr.io/tomer-mayara/thermus-hosted@sha256:d6b8a8fd3174c02984267f6aef54a7ee4e4bc783776ae9b856685202972dbfbd`
+in the region `oregon`. Each run had the `--owner`, `--registry-credential`,
+and `--image` options of the command above. Each run started on the owner's
+Mac (Darwin 27.0.0, Node 24.20.0) through the WorkOS Staging launcher. The
+record uses run A, run B, and the repeat. Each of them ended with the full
+cleanup, and reads-only checks of Render and WorkOS Staging came after them.
 
-### Recommendation for D-15 (waits for the measured runs)
+| Start | Run | Options or calls | Render writes | Result |
+| --- | --- | --- | --- | --- |
+| 05:52:51 | Development driver (scratchpad) | the probe modules: create the pages origin | 1 | Pass. `srv-dbg3od0m7kps73bafuvg` stayed for the later runs. |
+| 12:58:21 | Preflight | `--preflight --pages-id srv-dbg3od0m7kps73bafuvg` | 0 | Pass. |
+| 13:00:19 | Setup | `--pages-id srv-dbg3od0m7kps73bafuvg --steps setup --keep` | 1 | The setup passed. The tenant `srv-dbga0pp42hec73e1nrug` and its OAuth resource R1 `authkit_oauth_resource_01M5YQ8ME9NWTK3S2GZG83FX7E` stayed for the later runs. The cleanup failed its fixture check (see the findings). |
+| 13:04:16 | Development 1 | `--service-id srv-dbga0pp42hec73e1nrug --pages-id srv-dbg3od0m7kps73bafuvg --steps setup,calls-free --parallelism 1 --workloads page9m --keep` | 0 | Pass. |
+| 13:06:49 | Development 2 | the same, with `--workloads js,search` | 0 | Pass. |
+| 13:11 | R1 delete, a one-off that the manager approved | `GET` of R1 by its ID: `404`, because WorkOS has no read of one resource. The list `GET` showed R1 with the URI that the setup recorded. `DELETE` of R1: `204`. | 0 | R1 deleted; the live gate URI still listed. |
+| 13:11:28 | Run A, free plan | `--service-id srv-dbga0pp42hec73e1nrug --pages-id srv-dbg3od0m7kps73bafuvg --steps setup,calls-free` | 2 | Pass, with the full cleanup. |
+| 13:25:21 | Preflight and fixture check | reads only | 0 | Pass: no `thermus-spike-*` service, and no fixture of a run. |
+| 13:31:57 | Run B, attempt 1 | `--steps setup,plan-team,calls-team` | 2 | FAIL Setup: the new pages origin answered `/page9m` with `404` (see the findings). The cleanup deleted the pages origin `srv-dbgafjqjnfac73fo8g00`. |
+| 13:33:45 | Run B, team plan | `--steps setup,plan-team,calls-team` | 6 | Pass, with the full cleanup. |
+| 13:49:40 | Repeat of the `HTTP 502` window | `--steps setup,calls-free --parallelism 10 --workloads page9m` | 4 | Pass, with the full cleanup. |
+| 13:54:57 | Final preflight and fixture check | reads only | 0 | Pass: no `thermus-spike-*` service, and no fixture of a run. |
+| 14:05 | Fixture and resource check | reads only: the 18 fixture IDs of the six runs with WorkOS writes, and the resource list | 0 | Each fixture ID answers `404`, and the lists hold no fixture of a run. The resource list holds only the live gate URI and `https://localhost:24443/mcp` of the owner. |
 
-The recommendation for the free and team capacity values, the alert threshold,
-and the words of the failure message come from the measured runs.
+#### Run A: `0.5c-512mb`
+
+The script printed these lines first:
+
+> Node v24.20.0. Start 2026-10-27T13:11:28.488Z. The tenant service thermus-spike-cap-20261027-130019 (srv-dbga0pp42hec73e1nrug) and pages origin thermus-spike-pages-20261027-055251 (srv-dbg3od0m7kps73bafuvg), in oregon, owner tea-db8i6ceq1p3s73dev9og.
+>
+> Image ghcr.io/tomer-mayara/thermus-hosted@sha256:d6b8a8fd3174c02984267f6aef54a7ee4e4bc783776ae9b856685202972dbfbd. Parallelism 1, 5, 10; workloads page9m, js, search.
+>
+> Connect token: lifetime 300 s, 2 refreshes. Times are seconds on the clock of this machine.
+
+| Instance | Parallelism | Workload | Outcomes | Duration s, min / median / max | Result characters | Peak memory | Memory limit | CPU peak | Instances | Kills | Restart | Metrics lag | Events |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.5c-512mb | 1 | page9m | 1 error: Page fetch failed: Renderer readiness timed out | 20.7 / 20.7 / 20.7 | 47 | 170,631,170 bytes (163 MiB) | 536,870,900 bytes (512 MiB) | 0.3327 cpu | 1 unitless | 0 | none | 58.0 s (4 reads) | none |
+| 0.5c-512mb | 1 | js | 1 ok | 1.0 / 1.0 / 1.0 | 13698 | 145,383,420 bytes (139 MiB) | 536,870,900 bytes (512 MiB) | 0.0004021 cpu | 1 unitless | 0 | none | 36.1 s (4 reads) | none |
+| 0.5c-512mb | 1 | search | 1 ok | 4.2 / 4.2 / 4.2 | 6144 | 144,814,080 bytes (138 MiB) | 536,870,900 bytes (512 MiB) | 0.06109 cpu | 1 unitless | 0 | none | 61.0 s (4 reads) | none |
+| 0.5c-512mb | 5 | page9m | 5 error: Page fetch failed: Renderer readiness timed out | 20.7 / 20.7 / 20.8 | 47 | 397,824,000 bytes (379 MiB) | 536,870,900 bytes (512 MiB) | 0.2857 cpu | 1 unitless | 0 | none | 46.4 s (4 reads) | none |
+| 0.5c-512mb | 5 | js | 5 ok | 0.9 / 1.8 / 2.5 | 13698 | 145,645,570 bytes (139 MiB) | 536,870,900 bytes (512 MiB) | 0.05515 cpu | 1 unitless | 0 | none | 35.7 s (4 reads) | none |
+| 0.5c-512mb | 5 | search | 5 ok | 7.3 / 11.2 / 14.9 | 6144 | 165,552,130 bytes (158 MiB) | 536,870,900 bytes (512 MiB) | 0.2473 cpu | 1 unitless | 0 | none | 49.8 s (4 reads) | none |
+| 0.5c-512mb | 10 | page9m | 10 HTTP 502 | 2.3 / 2.4 / 2.5 | 0 | 165,552,130 bytes (158 MiB) | 536,870,900 bytes (512 MiB) | 0.0002588 cpu | 1 unitless | 0 | /healthz 200 15.8 s after the window end | 33.7 s (4 reads) | none |
+| 0.5c-512mb | 10 | js | 10 ok | 1.9 / 3.4 / 5.0 | 13698 | 145,326,080 bytes (139 MiB) | 536,870,900 bytes (512 MiB) | 0.09398 cpu | 1 unitless | 0 | none | 57.9 s (4 reads) | none |
+| 0.5c-512mb | 10 | search | 10 error: Search failed: HTTP 429 | 3.7 / 4.2 / 4.5 | 23 | 126,402,560 bytes (121 MiB) | 536,870,900 bytes (512 MiB) | 0.07394 cpu | 1 unitless | 0 | none | 62.4 s (4 reads) | none |
+
+<details>
+<summary>The other tables and the conclusions of run A, as the script printed them</summary>
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+| Preflight | Workspace | the given owner | Thermus AI (team) |
+| Preflight | Registry credential "ghcr-thermus-hosted-read" | one credential with this ID or name; registry GITHUB | ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0), GITHUB |
+| Preflight | Services named thermus-spike-*, any type | only srv-dbga0pp42hec73e1nrug, srv-dbg3od0m7kps73bafuvg | thermus-spike-cap-20261027-130019 (srv-dbga0pp42hec73e1nrug), thermus-spike-pages-20261027-055251 (srv-dbg3od0m7kps73bafuvg) |
+| Preflight | WorkOS Staging: GET /user_management/authkit_oauth_resources | 200; the live gate URI https://localhost:46443/mcp is listed | 200; 1 resources; the live gate URI is listed |
+| Pages origin | Given service | not suspended; the last deploy is live | srv-dbg3od0m7kps73bafuvg: `not_suspended`, plan `0.5c-512mb`; last deploy dep-dbg3od8m7kps73bafve0 `live` |
+| Pages origin | Public URL | https://<name>.onrender.com in serviceDetails.url | `https://thermus-spike-pages-20261027-055251.onrender.com` |
+| Pages origin | GET https://thermus-spike-pages-20261027-055251.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok", after 209 ms; request 1 of at most 24, 0.2 s after the first |
+| Pages origin | GET https://thermus-spike-pages-20261027-055251.onrender.com/page9m from this machine | 200, 9437483 bytes, marker in the HTML | 200, 9437483 bytes, marker in the HTML, after 0.7 s |
+| Pages origin | GET https://thermus-spike-pages-20261027-055251.onrender.com/js from this machine | 200, 14845 bytes, marker not in the HTML | 200, 14845 bytes, marker not in the HTML, after 0.1 s |
+| Tenant service | Given service | not suspended; the last deploy is live | srv-dbga0pp42hec73e1nrug: `not_suspended`, plan `0.5c-512mb`; last deploy dep-dbga0q142hec73e1ntdg `live` |
+| Tenant service | Public URL | https://<name>.onrender.com in serviceDetails.url | `https://thermus-spike-cap-20261027-130019.onrender.com` |
+| Tenant service | Variables (keys only) | OPERATION_CAPACITY, PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI | OPERATION_CAPACITY, PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI |
+| Tenant service | PUBLIC_BASE_URL | https://thermus-spike-cap-20261027-130019.onrender.com/, the public URL of the service | `https://thermus-spike-cap-20261027-130019.onrender.com/`; predicted from the name: the same |
+| Tenant service | GET https://thermus-spike-cap-20261027-130019.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok\n", after 193 ms; request 1 of at most 24, 0.2 s after the first |
+| OAuth resource | GET /user_management/authkit_oauth_resources | the live gate URI is listed | 1 resources; the live gate URI is listed; https://thermus-spike-cap-20261027-130019.onrender.com/mcp is not listed |
+| OAuth resource | POST /user_management/authkit_oauth_resources, then GET | https://thermus-spike-cap-20261027-130019.onrender.com/mcp added; the live gate URI still listed | 201 after 0.1 s: authkit_oauth_resource_01M5YQSH7W0ZBZ8KHQTE20N57W; 2 resources; the live gate URI is listed; https://thermus-spike-cap-20261027-130019.onrender.com/mcp is listed as authkit_oauth_resource_01M5YQSH7W0ZBZ8KHQTE20N57W |
+| Identity | Fixtures of the run | organization, user with a membership, Connect application | org_01M5YQSHH5EC4KE051GBYTC4NQ, user_01M5YQSHZ1856ZNAWY1W16QTTW, connect_app_01M5YQSJJAAZ7EPEZAMZD541VA; names and email have the run ID so01e-20261027-131128 |
+| Identity | Connect authorization in a headless browser | the callback has the code and the state | 9.2 s; AuthKit pages / > /password > /application-authorization > /application-authorization/success |
+| Identity | Connect access token (claims only, never the token) | audience, organization, and user of the run; lifetime recorded | audience is the tenant resource; organization matches; user matches; lifetime 300 s; refresh token present |
+| MCP | initialize and tools/list at https://thermus-spike-cap-20261027-130019.onrender.com/mcp | getURLAsMarkdown and search | protocol 2026-07-28; tools getURLAsMarkdown, search |
+| Cleanup | WorkOS fixtures named with so01e-20261027-131128 | 0 after the deletes, within 12 reads 5 s apart | 0; 2 reads of the lists, 6.6 s after the deletes |
+| Cleanup | OAuth resource | deleted when this run created it; the live gate URI untouched | deleted https://thermus-spike-cap-20261027-130019.onrender.com/mcp (authkit_oauth_resource_01M5YQSH7W0ZBZ8KHQTE20N57W): 204 |
+| Cleanup | Delete the tenant service srv-dbga0pp42hec73e1nrug | 204, or 404 when already gone | 204 after 0.6 s |
+| Cleanup | Delete the pages origin srv-dbg3od0m7kps73bafuvg | 204, or 404 when already gone | 204 after 0.5 s |
+| Cleanup | Services of this run in the list | 0 | 0, 0.1 s after the deletes; other thermus-spike-* services: none |
+
+**First killed parallelism**
+
+- 0.5c-512mb: no window had a server_failed event; no call reported a killed renderer.
+
+**Calls**
+
+| Instance | Parallelism | Workload | Call | Outcome | Duration | Characters |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0.5c-512mb | 1 | page9m | 1 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 0.5c-512mb | 1 | js | 1 | ok | 1.0 s | 13698 |
+| 0.5c-512mb | 1 | search | 1 | ok | 4.2 s | 6144 |
+| 0.5c-512mb | 5 | page9m | 1 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 0.5c-512mb | 5 | page9m | 2 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 0.5c-512mb | 5 | page9m | 3 | error: Page fetch failed: Renderer readiness timed out | 20.8 s | 47 |
+| 0.5c-512mb | 5 | page9m | 4 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 0.5c-512mb | 5 | page9m | 5 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 0.5c-512mb | 5 | js | 1 | ok | 1.8 s | 13698 |
+| 0.5c-512mb | 5 | js | 2 | ok | 0.9 s | 13698 |
+| 0.5c-512mb | 5 | js | 3 | ok | 2.1 s | 13698 |
+| 0.5c-512mb | 5 | js | 4 | ok | 2.5 s | 13698 |
+| 0.5c-512mb | 5 | js | 5 | ok | 1.2 s | 13698 |
+| 0.5c-512mb | 5 | search | 1 | ok | 7.3 s | 6144 |
+| 0.5c-512mb | 5 | search | 2 | ok | 14.9 s | 6144 |
+| 0.5c-512mb | 5 | search | 3 | ok | 13.1 s | 6144 |
+| 0.5c-512mb | 5 | search | 4 | ok | 9.4 s | 6144 |
+| 0.5c-512mb | 5 | search | 5 | ok | 11.2 s | 6144 |
+| 0.5c-512mb | 10 | page9m | 1 | HTTP 502 | 2.4 s | 0 |
+| 0.5c-512mb | 10 | page9m | 2 | HTTP 502 | 2.5 s | 0 |
+| 0.5c-512mb | 10 | page9m | 3 | HTTP 502 | 2.4 s | 0 |
+| 0.5c-512mb | 10 | page9m | 4 | HTTP 502 | 2.4 s | 0 |
+| 0.5c-512mb | 10 | page9m | 5 | HTTP 502 | 2.3 s | 0 |
+| 0.5c-512mb | 10 | page9m | 6 | HTTP 502 | 2.5 s | 0 |
+| 0.5c-512mb | 10 | page9m | 7 | HTTP 502 | 2.3 s | 0 |
+| 0.5c-512mb | 10 | page9m | 8 | HTTP 502 | 2.3 s | 0 |
+| 0.5c-512mb | 10 | page9m | 9 | HTTP 502 | 2.4 s | 0 |
+| 0.5c-512mb | 10 | page9m | 10 | HTTP 502 | 2.5 s | 0 |
+| 0.5c-512mb | 10 | js | 1 | ok | 3.4 s | 13698 |
+| 0.5c-512mb | 10 | js | 2 | ok | 2.3 s | 13698 |
+| 0.5c-512mb | 10 | js | 3 | ok | 4.1 s | 13698 |
+| 0.5c-512mb | 10 | js | 4 | ok | 1.9 s | 13698 |
+| 0.5c-512mb | 10 | js | 5 | ok | 2.6 s | 13698 |
+| 0.5c-512mb | 10 | js | 6 | ok | 5.0 s | 13698 |
+| 0.5c-512mb | 10 | js | 7 | ok | 2.9 s | 13698 |
+| 0.5c-512mb | 10 | js | 8 | ok | 4.5 s | 13698 |
+| 0.5c-512mb | 10 | js | 9 | ok | 3.8 s | 13698 |
+| 0.5c-512mb | 10 | js | 10 | ok | 4.3 s | 13698 |
+| 0.5c-512mb | 10 | search | 1 | error: Search failed: HTTP 429 | 3.9 s | 23 |
+| 0.5c-512mb | 10 | search | 2 | error: Search failed: HTTP 429 | 4.2 s | 23 |
+| 0.5c-512mb | 10 | search | 3 | error: Search failed: HTTP 429 | 3.7 s | 23 |
+| 0.5c-512mb | 10 | search | 4 | error: Search failed: HTTP 429 | 4.2 s | 23 |
+| 0.5c-512mb | 10 | search | 5 | error: Search failed: HTTP 429 | 4.0 s | 23 |
+| 0.5c-512mb | 10 | search | 6 | error: Search failed: HTTP 429 | 4.2 s | 23 |
+| 0.5c-512mb | 10 | search | 7 | error: Search failed: HTTP 429 | 3.7 s | 23 |
+| 0.5c-512mb | 10 | search | 8 | error: Search failed: HTTP 429 | 4.2 s | 23 |
+| 0.5c-512mb | 10 | search | 9 | error: Search failed: HTTP 429 | 4.2 s | 23 |
+| 0.5c-512mb | 10 | search | 10 | error: Search failed: HTTP 429 | 4.5 s | 23 |
+
+**Render writes, durations, and rate-limit headers**
+
+Writes in this run: 2. Reads: 112; the last read had Ratelimit-Limit 400, Ratelimit-Remaining 399, and Ratelimit-Reset 57.
+
+| Step | Call | Status | Duration | Ratelimit-Limit | Ratelimit-Remaining | Ratelimit-Reset | Retry-After |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Cleanup | `DELETE /services/srv-dbga0pp42hec73e1nrug` | 204 | 0.64 s | 100 | 99 | 58 | absent |
+| Cleanup | `DELETE /services/srv-dbg3od0m7kps73bafuvg` | 204 | 0.52 s | 100 | 98 | 57 | absent |
+
+**WorkOS Staging writes**
+
+| Step | Call | Result | Duration |
+| --- | --- | --- | --- |
+| OAuth resource | `POST /user_management/authkit_oauth_resources` | 201 | 0.15 s |
+| Identity | `createOrganization` | done | 0.40 s |
+| Identity | `createUser` | done | 0.48 s |
+| Identity | `createOrganizationMembership (role user)` | done | 0.17 s |
+| Identity | `connect.createApplication (OAuth, PKCE)` | done | 0.19 s |
+| Cleanup | `DELETE /user_management/authkit_oauth_resources/authkit_oauth_resource_01M5YQSH7W0ZBZ8KHQTE20N57W` | 204 | 0.12 s |
+
+**Conclusions**
+
+- PASS Preflight: the workspace Thermus AI (team) and the credential ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0) exist, the probe uses thermus-spike-cap-20261027-130019 (srv-dbga0pp42hec73e1nrug) and thermus-spike-pages-20261027-055251 (srv-dbg3od0m7kps73bafuvg), and the WorkOS Staging environment answers (1 WorkOS resources, the live gate URI listed).
+- PASS Setup: pages origin: thermus-spike-pages-20261027-055251 (srv-dbg3od0m7kps73bafuvg) is the given service, live; https://thermus-spike-pages-20261027-055251.onrender.com/healthz answered 200 with ok, and /page9m (9437483 bytes) and /js (14845 bytes) answered 200 with the planned sizes and markers. Tenant: thermus-spike-cap-20261027-130019 (srv-dbga0pp42hec73e1nrug) is the given service, live; PUBLIC_BASE_URL names the public URL; plan: on 0.5c-512mb; https://thermus-spike-cap-20261027-130019.onrender.com/healthz answered 200 with ok. Resource: registered https://thermus-spike-cap-20261027-130019.onrender.com/mcp as authkit_oauth_resource_01M5YQSH7W0ZBZ8KHQTE20N57W; the live gate URI is still listed. Identity: the fixtures of so01e-20261027-131128 exist, and the Connect token for https://thermus-spike-cap-20261027-130019.onrender.com/mcp lasts 300 s. MCP protocol 2026-07-28 lists getURLAsMarkdown and search.
+- PASS Calls on 0.5c-512mb: 9 windows on 0.5c-512mb; 0 server_failed events; no window was killed.
+- PASS Cleanup: deleted the WorkOS fixtures of so01e-20261027-131128; deleted https://thermus-spike-cap-20261027-130019.onrender.com/mcp (authkit_oauth_resource_01M5YQSH7W0ZBZ8KHQTE20N57W): 204; deleted srv-dbga0pp42hec73e1nrug and srv-dbg3od0m7kps73bafuvg.
+
+</details>
+
+#### Run B: `1c-2g`
+
+The script printed these lines first:
+
+> Node v24.20.0. Start 2026-10-27T13:33:45.621Z. The tenant service thermus-spike-cap-20261027-133345 (srv-dbgagkt9el5s73ccktig) and pages origin thermus-spike-pages-20261027-133345 (srv-dbgaget9el5s73cckgf0), in oregon, owner tea-db8i6ceq1p3s73dev9og.
+>
+> Image ghcr.io/tomer-mayara/thermus-hosted@sha256:d6b8a8fd3174c02984267f6aef54a7ee4e4bc783776ae9b856685202972dbfbd. Parallelism 1, 5, 10; workloads page9m, js, search.
+>
+> Connect token: lifetime 300 s, 3 refreshes. Times are seconds on the clock of this machine.
+
+| Instance | Parallelism | Workload | Outcomes | Duration s, min / median / max | Result characters | Peak memory | Memory limit | CPU peak | Instances | Kills | Restart | Metrics lag | Events |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1c-2g | 1 | page9m | 1 error: Page fetch failed: Renderer readiness timed out | 20.7 / 20.7 / 20.7 | 47 | 139,730,940 bytes (133 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.3296 cpu | no point | 0 | none | 41.5 s (4 reads) | none |
+| 1c-2g | 1 | js | 1 ok | 1.1 / 1.1 / 1.1 | 13698 | 190,578,690 bytes (182 MiB) | 536,870,900 bytes (512 MiB) | 0.004188 cpu | 1 unitless | 0 | none | 36.4 s (4 reads) | none |
+| 1c-2g | 1 | search | 1 ok | 2.8 / 2.8 / 2.8 | 4996 | 212,398,080 bytes (203 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.02643 cpu | 1 unitless | 0 | none | 32.4 s (4 reads) | none |
+| 1c-2g | 5 | page9m | 5 error: Page fetch failed: Renderer readiness timed out | 20.6 / 20.6 / 20.7 | 47 | 389,406,720 bytes (371 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.2011 cpu | 1 unitless | 0 | none | 40.8 s (4 reads) | none |
+| 1c-2g | 5 | js | 5 ok | 0.9 / 1.2 / 1.6 | 13698 | 227,487,740 bytes (217 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.4726 cpu | 1 unitless | 0 | none | 35.6 s (4 reads) | none |
+| 1c-2g | 5 | search | 5 ok | 3.8 / 5.0 / 6.3 | 4996 | 241,750,020 bytes (231 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.1935 cpu | 1 unitless | 0 | none | 57.2 s (4 reads) | none |
+| 1c-2g | 10 | page9m | 10 error: Page fetch failed: Renderer readiness timed out | 20.5 / 20.5 / 20.7 | 47 | 743,059,460 bytes (709 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.6817 cpu | 1 unitless | 0 | none | 46.9 s (4 reads) | none |
+| 1c-2g | 10 | js | 10 ok | 0.9 / 1.4 / 1.7 | 13698 | 265,977,860 bytes (254 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.0003874 cpu | 1 unitless | 0 | none | 35.1 s (4 reads) | none |
+| 1c-2g | 10 | search | 4 error: Search failed: HTTP 429, 6 ok | 2.2 / 4.5 / 7.2 | 23, 4996 | 251,969,540 bytes (240 MiB) | 2,147,483,600 bytes (2048 MiB) | 0.2293 cpu | 1 unitless | 0 | none | 56.6 s (4 reads) | none |
+
+<details>
+<summary>The other tables and the conclusions of run B, as the script printed them</summary>
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+| Preflight | Workspace | the given owner | Thermus AI (team) |
+| Preflight | Registry credential "ghcr-thermus-hosted-read" | one credential with this ID or name; registry GITHUB | ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0), GITHUB |
+| Preflight | Services named thermus-spike-*, any type | none | none |
+| Preflight | WorkOS Staging: GET /user_management/authkit_oauth_resources | 200; the live gate URI https://localhost:46443/mcp is listed | 200; 2 resources; the live gate URI is listed |
+| Pages origin | Create answer | 201 with the service and deployId | 201 after 1.9 s: srv-dbgaget9el5s73cckgf0, `web_service`, plan `0.5c-512mb` |
+| Pages origin | First deploy | live; time recorded | live 17.5 s after the create call (update_in_progress > live); Render: createdAt 2026-10-27T13:33:48.02865Z, finishedAt 2026-10-27T13:34:00.546738Z, 12.5 s |
+| Pages origin | Public URL | https://<name>.onrender.com in serviceDetails.url | `https://thermus-spike-pages-20261027-133345.onrender.com` |
+| Pages origin | GET https://thermus-spike-pages-20261027-133345.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok", after 217 ms; request 2 of at most 24, 5.4 s after the first |
+| Pages origin | GET https://thermus-spike-pages-20261027-133345.onrender.com/page9m from this machine | 200, 9437483 bytes, marker in the HTML | 200, 9437483 bytes, marker in the HTML, after 0.2 s; request 1 of at most 6 |
+| Pages origin | GET https://thermus-spike-pages-20261027-133345.onrender.com/js from this machine | 200, 14845 bytes, marker not in the HTML | 200, 14845 bytes, marker not in the HTML, after 0.1 s; request 1 of at most 6 |
+| Tenant service | Create answer | 201 with the service and deployId | 201 after 3.1 s: srv-dbgagkt9el5s73ccktig, `web_service`, plan `0.5c-512mb` |
+| Tenant service | First deploy | live; time recorded | live 71.3 s after the create call (update_in_progress > live); Render: createdAt 2026-10-27T13:34:12.558382Z, finishedAt 2026-10-27T13:35:20.685881Z, 68.1 s |
+| Tenant service | Public URL | https://<name>.onrender.com in serviceDetails.url | `https://thermus-spike-cap-20261027-133345.onrender.com` |
+| Tenant service | Variables (keys only) | OPERATION_CAPACITY, PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI | OPERATION_CAPACITY, PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI |
+| Tenant service | PUBLIC_BASE_URL | https://thermus-spike-cap-20261027-133345.onrender.com/, the public URL of the service | `https://thermus-spike-cap-20261027-133345.onrender.com/`; predicted from the name: the same |
+| Tenant service | GET https://thermus-spike-cap-20261027-133345.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok\n", after 718 ms; request 2 of at most 24, 5.9 s after the first |
+| OAuth resource | GET /user_management/authkit_oauth_resources | the live gate URI is listed | 2 resources; the live gate URI is listed; https://thermus-spike-cap-20261027-133345.onrender.com/mcp is not listed |
+| OAuth resource | POST /user_management/authkit_oauth_resources, then GET | https://thermus-spike-cap-20261027-133345.onrender.com/mcp added; the live gate URI still listed | 201 after 0.1 s: authkit_oauth_resource_01M5YS5BMGSDFSA79JYGBNBJB3; 3 resources; the live gate URI is listed; https://thermus-spike-cap-20261027-133345.onrender.com/mcp is listed as authkit_oauth_resource_01M5YS5BMGSDFSA79JYGBNBJB3 |
+| Identity | Fixtures of the run | organization, user with a membership, Connect application | org_01M5YS5C07ZWFB710QK4D982CG, user_01M5YS5C7YWMJJKRNDGNAHYMBB, connect_app_01M5YS5CHKPQX40YF8D38J3XNP; names and email have the run ID so01e-20261027-133345 |
+| Identity | Connect authorization in a headless browser | the callback has the code and the state | 7.1 s; AuthKit pages / > /password > /application-authorization > /application-authorization/success |
+| Identity | Connect access token (claims only, never the token) | audience, organization, and user of the run; lifetime recorded | audience is the tenant resource; organization matches; user matches; lifetime 300 s; refresh token present |
+| MCP | initialize and tools/list at https://thermus-spike-cap-20261027-133345.onrender.com/mcp | getURLAsMarkdown and search | protocol 2026-07-28; tools getURLAsMarkdown, search |
+| Plan 1c-2g | Update answer | plan 1c-2g | 200, plan `1c-2g`, after 0.2 s |
+| Plan 1c-2g | Deploy that applies the plan | live | started by the probe, with the probe image (answer 201); live 51.8 s after the update and 25.7 s after the deploy call (update_in_progress > live); the probe image |
+| Plan 1c-2g | Service after the deploy | plan 1c-2g | plan `1c-2g` |
+| Plan 1c-2g | Container restarted | recorded; docs: the deploy starts a new instance | yes: new instance srv-dbgagkt9el5s73ccktig-mslp2; the old instance is no longer listed |
+| Plan 1c-2g | Event types since the update | recorded | plan_changed (+0.1 s), deploy_started (+31.2 s), deploy_ended (+50.6 s) |
+| Plan 1c-2g | GET https://thermus-spike-cap-20261027-133345.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok\n", after 128 ms; request 1 of at most 24, 0.1 s after the first |
+| Calls on 1c-2g | Events of the step, read after the last window | recorded; server_failed is a kill | deploy_ended (-1.7 s) |
+| Cleanup | WorkOS fixtures named with so01e-20261027-133345 | 0 after the deletes, within 12 reads 5 s apart | 0; 2 reads of the lists, 6.8 s after the deletes |
+| Cleanup | OAuth resource | deleted when this run created it; the live gate URI untouched | deleted https://thermus-spike-cap-20261027-133345.onrender.com/mcp (authkit_oauth_resource_01M5YS5BMGSDFSA79JYGBNBJB3): 204 |
+| Cleanup | Delete the tenant service srv-dbgagkt9el5s73ccktig | 204, or 404 when already gone | 204 after 1.1 s |
+| Cleanup | Delete the pages origin srv-dbgaget9el5s73cckgf0 | 204, or 404 when already gone | 204 after 0.7 s |
+| Cleanup | Services of this run in the list | 0 | 0, 0.1 s after the deletes; other thermus-spike-* services: none |
+
+**First killed parallelism**
+
+- 1c-2g: no window had a server_failed event; no call reported a killed renderer.
+
+**Calls**
+
+| Instance | Parallelism | Workload | Call | Outcome | Duration | Characters |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1c-2g | 1 | page9m | 1 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 1c-2g | 1 | js | 1 | ok | 1.1 s | 13698 |
+| 1c-2g | 1 | search | 1 | ok | 2.8 s | 4996 |
+| 1c-2g | 5 | page9m | 1 | error: Page fetch failed: Renderer readiness timed out | 20.6 s | 47 |
+| 1c-2g | 5 | page9m | 2 | error: Page fetch failed: Renderer readiness timed out | 20.6 s | 47 |
+| 1c-2g | 5 | page9m | 3 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 1c-2g | 5 | page9m | 4 | error: Page fetch failed: Renderer readiness timed out | 20.6 s | 47 |
+| 1c-2g | 5 | page9m | 5 | error: Page fetch failed: Renderer readiness timed out | 20.6 s | 47 |
+| 1c-2g | 5 | js | 1 | ok | 0.9 s | 13698 |
+| 1c-2g | 5 | js | 2 | ok | 1.6 s | 13698 |
+| 1c-2g | 5 | js | 3 | ok | 1.5 s | 13698 |
+| 1c-2g | 5 | js | 4 | ok | 1.1 s | 13698 |
+| 1c-2g | 5 | js | 5 | ok | 1.2 s | 13698 |
+| 1c-2g | 5 | search | 1 | ok | 5.7 s | 4996 |
+| 1c-2g | 5 | search | 2 | ok | 5.0 s | 4996 |
+| 1c-2g | 5 | search | 3 | ok | 3.8 s | 4996 |
+| 1c-2g | 5 | search | 4 | ok | 6.3 s | 4996 |
+| 1c-2g | 5 | search | 5 | ok | 4.5 s | 4996 |
+| 1c-2g | 10 | page9m | 1 | error: Page fetch failed: Renderer readiness timed out | 20.5 s | 47 |
+| 1c-2g | 10 | page9m | 2 | error: Page fetch failed: Renderer readiness timed out | 20.5 s | 47 |
+| 1c-2g | 10 | page9m | 3 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 1c-2g | 10 | page9m | 4 | error: Page fetch failed: Renderer readiness timed out | 20.5 s | 47 |
+| 1c-2g | 10 | page9m | 5 | error: Page fetch failed: Renderer readiness timed out | 20.5 s | 47 |
+| 1c-2g | 10 | page9m | 6 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 1c-2g | 10 | page9m | 7 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 1c-2g | 10 | page9m | 8 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 1c-2g | 10 | page9m | 9 | error: Page fetch failed: Renderer readiness timed out | 20.7 s | 47 |
+| 1c-2g | 10 | page9m | 10 | error: Page fetch failed: Renderer readiness timed out | 20.5 s | 47 |
+| 1c-2g | 10 | js | 1 | ok | 1.6 s | 13698 |
+| 1c-2g | 10 | js | 2 | ok | 1.4 s | 13698 |
+| 1c-2g | 10 | js | 3 | ok | 1.3 s | 13698 |
+| 1c-2g | 10 | js | 4 | ok | 1.2 s | 13698 |
+| 1c-2g | 10 | js | 5 | ok | 1.5 s | 13698 |
+| 1c-2g | 10 | js | 6 | ok | 1.4 s | 13698 |
+| 1c-2g | 10 | js | 7 | ok | 1.1 s | 13698 |
+| 1c-2g | 10 | js | 8 | ok | 0.9 s | 13698 |
+| 1c-2g | 10 | js | 9 | ok | 1.7 s | 13698 |
+| 1c-2g | 10 | js | 10 | ok | 1.7 s | 13698 |
+| 1c-2g | 10 | search | 1 | error: Search failed: HTTP 429 | 2.3 s | 23 |
+| 1c-2g | 10 | search | 2 | ok | 5.3 s | 4996 |
+| 1c-2g | 10 | search | 3 | ok | 5.6 s | 4996 |
+| 1c-2g | 10 | search | 4 | error: Search failed: HTTP 429 | 2.4 s | 23 |
+| 1c-2g | 10 | search | 5 | ok | 4.5 s | 4996 |
+| 1c-2g | 10 | search | 6 | ok | 7.2 s | 4996 |
+| 1c-2g | 10 | search | 7 | error: Search failed: HTTP 429 | 2.2 s | 23 |
+| 1c-2g | 10 | search | 8 | ok | 6.2 s | 4996 |
+| 1c-2g | 10 | search | 9 | ok | 6.7 s | 4996 |
+| 1c-2g | 10 | search | 10 | error: Search failed: HTTP 429 | 2.7 s | 23 |
+
+**Render writes, durations, and rate-limit headers**
+
+Writes in this run: 6. Reads: 143; the last read had Ratelimit-Limit 400, Ratelimit-Remaining 399, and Ratelimit-Reset 56.
+
+| Step | Call | Status | Duration | Ratelimit-Limit | Ratelimit-Remaining | Ratelimit-Reset | Retry-After |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Pages origin | `POST /services` | 201 | 1.89 s | 20 | 17 | 1573 | absent |
+| Tenant service | `POST /services` | 201 | 3.11 s | 20 | 16 | 1550 | absent |
+| Plan 1c-2g | `PATCH /services/srv-dbgagkt9el5s73ccktig` | 200 | 0.20 s | 10 | 9 | 22 | absent |
+| Plan 1c-2g | `POST /services/srv-dbgagkt9el5s73ccktig/deploys` | 201 | 4.63 s | 10 | 9 | 56 | absent |
+| Cleanup | `DELETE /services/srv-dbgagkt9el5s73ccktig` | 204 | 1.05 s | 100 | 99 | 57 | absent |
+| Cleanup | `DELETE /services/srv-dbgaget9el5s73cckgf0` | 204 | 0.71 s | 100 | 98 | 56 | absent |
+
+**WorkOS Staging writes**
+
+| Step | Call | Result | Duration |
+| --- | --- | --- | --- |
+| OAuth resource | `POST /user_management/authkit_oauth_resources` | 201 | 0.15 s |
+| Identity | `createOrganization` | done | 0.20 s |
+| Identity | `createUser` | done | 0.21 s |
+| Identity | `createOrganizationMembership (role user)` | done | 0.17 s |
+| Identity | `connect.createApplication (OAuth, PKCE)` | done | 0.16 s |
+| Cleanup | `DELETE /user_management/authkit_oauth_resources/authkit_oauth_resource_01M5YS5BMGSDFSA79JYGBNBJB3` | 204 | 0.14 s |
+
+**Conclusions**
+
+- PASS Preflight: the workspace Thermus AI (team) and the credential ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0) exist, no service of an earlier run exists, and the WorkOS Staging environment answers (2 WorkOS resources, the live gate URI listed).
+- PASS Setup: pages origin: thermus-spike-pages-20261027-133345 (srv-dbgaget9el5s73cckgf0) was created and was live 17.5 s after the create call; https://thermus-spike-pages-20261027-133345.onrender.com/healthz answered 200 with ok, and /page9m (9437483 bytes) and /js (14845 bytes) answered 200 with the planned sizes and markers. Tenant: thermus-spike-cap-20261027-133345 (srv-dbgagkt9el5s73ccktig) was created and was live 71.3 s after the create call; PUBLIC_BASE_URL names the public URL; plan: on 0.5c-512mb; https://thermus-spike-cap-20261027-133345.onrender.com/healthz answered 200 with ok. Resource: registered https://thermus-spike-cap-20261027-133345.onrender.com/mcp as authkit_oauth_resource_01M5YS5BMGSDFSA79JYGBNBJB3; the live gate URI is still listed. Identity: the fixtures of so01e-20261027-133345 exist, and the Connect token for https://thermus-spike-cap-20261027-133345.onrender.com/mcp lasts 300 s. MCP protocol 2026-07-28 lists getURLAsMarkdown and search.
+- PASS Plan 1c-2g: the update answer showed 1c-2g; the deploy that applied it was started by the probe, with the probe image (answer 201) and was live 51.8 s after the update; container restarted: yes: new instance srv-dbgagkt9el5s73ccktig-mslp2; the old instance is no longer listed. After it, /healthz answered 200 with ok.
+- PASS Calls on 1c-2g: 9 windows on 1c-2g; 0 server_failed events; no window was killed.
+- PASS Cleanup: deleted the WorkOS fixtures of so01e-20261027-133345; deleted https://thermus-spike-cap-20261027-133345.onrender.com/mcp (authkit_oauth_resource_01M5YS5BMGSDFSA79JYGBNBJB3): 204; deleted srv-dbgagkt9el5s73ccktig and srv-dbgaget9el5s73cckgf0.
+
+</details>
+
+#### Repeat of the `HTTP 502` window on `0.5c-512mb`
+
+The script printed these lines first:
+
+> Node v24.20.0. Start 2026-10-27T13:49:40.978Z. The tenant service thermus-spike-cap-20261027-134940 (srv-dbgao559el5s73cd9ijg) and pages origin thermus-spike-pages-20261027-134940 (srv-dbgantl9el5s73cd8r60), in oregon, owner tea-db8i6ceq1p3s73dev9og.
+>
+> Image ghcr.io/tomer-mayara/thermus-hosted@sha256:d6b8a8fd3174c02984267f6aef54a7ee4e4bc783776ae9b856685202972dbfbd. Parallelism 10; workloads page9m.
+>
+> Connect token: lifetime 300 s, 0 refreshes. Times are seconds on the clock of this machine.
+
+| Instance | Parallelism | Workload | Outcomes | Duration s, min / median / max | Result characters | Peak memory | Memory limit | CPU peak | Instances | Kills | Restart | Metrics lag | Events |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.5c-512mb | 10 | page9m | 10 HTTP 502 | 2.6 / 2.7 / 2.8 | 0 | 79,572,990 bytes (76 MiB) | 536,870,900 bytes (512 MiB) | 0.0001142 cpu | 0 unitless | 0 | /healthz 200 5.4 s after the window end | 33.9 s (4 reads) | none |
+
+The two rows of the calls step, as the script printed them:
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+| Calls on 0.5c-512mb | Events of the step, read 120 s or more after the last window | recorded; server_failed is a kill | none |
+| Calls on 0.5c-512mb | Instances at the step start and after the last window | recorded; a new ID is a new instance | srv-dbgao559el5s73cd9ijg-kxp8q; then srv-dbgao559el5s73cd9ijg-kxp8q |
+
+<details>
+<summary>The other tables and the conclusions of the repeat, as the script printed them</summary>
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+| Preflight | Workspace | the given owner | Thermus AI (team) |
+| Preflight | Registry credential "ghcr-thermus-hosted-read" | one credential with this ID or name; registry GITHUB | ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0), GITHUB |
+| Preflight | Services named thermus-spike-*, any type | none | none |
+| Preflight | WorkOS Staging: GET /user_management/authkit_oauth_resources | 200; the live gate URI https://localhost:46443/mcp is listed | 200; 2 resources; the live gate URI is listed |
+| Pages origin | Create answer | 201 with the service and deployId | 201 after 2.2 s: srv-dbgantl9el5s73cd8r60, `web_service`, plan `0.5c-512mb` |
+| Pages origin | First deploy | live; time recorded | live 18.0 s after the create call (update_in_progress > live); Render: createdAt 2026-10-27T13:49:43.728879Z, finishedAt 2026-10-27T13:49:56.985562Z, 13.3 s |
+| Pages origin | Public URL | https://<name>.onrender.com in serviceDetails.url | `https://thermus-spike-pages-20261027-134940.onrender.com` |
+| Pages origin | GET https://thermus-spike-pages-20261027-134940.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok", after 192 ms; request 3 of at most 24, 11.1 s after the first |
+| Pages origin | GET https://thermus-spike-pages-20261027-134940.onrender.com/page9m from this machine | 200, 9437483 bytes, marker in the HTML | 200, 9437483 bytes, marker in the HTML, after 0.4 s; request 1 of at most 6 |
+| Pages origin | GET https://thermus-spike-pages-20261027-134940.onrender.com/js from this machine | 200, 14845 bytes, marker not in the HTML | 200, 14845 bytes, marker not in the HTML, after 0.1 s; request 1 of at most 6 |
+| Tenant service | Create answer | 201 with the service and deployId | 201 after 3.3 s: srv-dbgao559el5s73cd9ijg, `web_service`, plan `0.5c-512mb` |
+| Tenant service | First deploy | live; time recorded | live 92.5 s after the create call (update_in_progress > live); Render: createdAt 2026-10-27T13:50:14.490926Z, finishedAt 2026-10-27T13:51:41.119242Z, 86.6 s |
+| Tenant service | Public URL | https://<name>.onrender.com in serviceDetails.url | `https://thermus-spike-cap-20261027-134940.onrender.com` |
+| Tenant service | Variables (keys only) | OPERATION_CAPACITY, PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI | OPERATION_CAPACITY, PUBLIC_BASE_URL, WORKOS_API_KEY, WORKOS_AUTHKIT_ISSUER, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI |
+| Tenant service | PUBLIC_BASE_URL | https://thermus-spike-cap-20261027-134940.onrender.com/, the public URL of the service | `https://thermus-spike-cap-20261027-134940.onrender.com/`; predicted from the name: the same |
+| Tenant service | GET https://thermus-spike-cap-20261027-134940.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok\n", after 240 ms; request 1 of at most 24, 0.2 s after the first |
+| OAuth resource | GET /user_management/authkit_oauth_resources | the live gate URI is listed | 2 resources; the live gate URI is listed; https://thermus-spike-cap-20261027-134940.onrender.com/mcp is not listed |
+| OAuth resource | POST /user_management/authkit_oauth_resources, then GET | https://thermus-spike-cap-20261027-134940.onrender.com/mcp added; the live gate URI still listed | 201 after 0.1 s: authkit_oauth_resource_01M5YT362V4V59W4JMWCW306GS; 3 resources; the live gate URI is listed; https://thermus-spike-cap-20261027-134940.onrender.com/mcp is listed as authkit_oauth_resource_01M5YT362V4V59W4JMWCW306GS |
+| Identity | Fixtures of the run | organization, user with a membership, Connect application | org_01M5YT36D7N40FVWR4FAA1K9FS, user_01M5YT36MK983W2FWJW58VAM0T, connect_app_01M5YT36Z09V06A4437WDWNF48; names and email have the run ID so01e-20261027-134940 |
+| Identity | Connect authorization in a headless browser | the callback has the code and the state | 7.2 s; AuthKit pages / > /password > /application-authorization > /application-authorization/success |
+| Identity | Connect access token (claims only, never the token) | audience, organization, and user of the run; lifetime recorded | audience is the tenant resource; organization matches; user matches; lifetime 300 s; refresh token present |
+| MCP | initialize and tools/list at https://thermus-spike-cap-20261027-134940.onrender.com/mcp | getURLAsMarkdown and search | protocol 2026-07-28; tools getURLAsMarkdown, search |
+| Calls on 0.5c-512mb | Events of the step, read 120 s or more after the last window | recorded; server_failed is a kill | none |
+| Calls on 0.5c-512mb | Instances at the step start and after the last window | recorded; a new ID is a new instance | srv-dbgao559el5s73cd9ijg-kxp8q; then srv-dbgao559el5s73cd9ijg-kxp8q |
+| Cleanup | WorkOS fixtures named with so01e-20261027-134940 | 0 after the deletes, within 12 reads 5 s apart | 0; 3 reads of the lists, 12.4 s after the deletes |
+| Cleanup | OAuth resource | deleted when this run created it; the live gate URI untouched | deleted https://thermus-spike-cap-20261027-134940.onrender.com/mcp (authkit_oauth_resource_01M5YT362V4V59W4JMWCW306GS): 204 |
+| Cleanup | Delete the tenant service srv-dbgao559el5s73cd9ijg | 204, or 404 when already gone | 204 after 0.6 s |
+| Cleanup | Delete the pages origin srv-dbgantl9el5s73cd8r60 | 204, or 404 when already gone | 204 after 0.6 s |
+| Cleanup | Services of this run in the list | 0 | 0, 0.1 s after the deletes; other thermus-spike-* services: none |
+
+**First killed parallelism**
+
+- 0.5c-512mb: no window had a server_failed event; no call reported a killed renderer.
+
+**Calls**
+
+| Instance | Parallelism | Workload | Call | Outcome | Duration | Characters |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0.5c-512mb | 10 | page9m | 1 | HTTP 502 | 2.6 s | 0 |
+| 0.5c-512mb | 10 | page9m | 2 | HTTP 502 | 2.7 s | 0 |
+| 0.5c-512mb | 10 | page9m | 3 | HTTP 502 | 2.7 s | 0 |
+| 0.5c-512mb | 10 | page9m | 4 | HTTP 502 | 2.7 s | 0 |
+| 0.5c-512mb | 10 | page9m | 5 | HTTP 502 | 2.7 s | 0 |
+| 0.5c-512mb | 10 | page9m | 6 | HTTP 502 | 2.7 s | 0 |
+| 0.5c-512mb | 10 | page9m | 7 | HTTP 502 | 2.8 s | 0 |
+| 0.5c-512mb | 10 | page9m | 8 | HTTP 502 | 2.7 s | 0 |
+| 0.5c-512mb | 10 | page9m | 9 | HTTP 502 | 2.6 s | 0 |
+| 0.5c-512mb | 10 | page9m | 10 | HTTP 502 | 2.7 s | 0 |
+
+**Render writes, durations, and rate-limit headers**
+
+Writes in this run: 4. Reads: 45; the last read had Ratelimit-Limit 400, Ratelimit-Remaining 399, and Ratelimit-Reset 46.
+
+| Step | Call | Status | Duration | Ratelimit-Limit | Ratelimit-Remaining | Ratelimit-Reset | Retry-After |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Pages origin | `POST /services` | 201 | 2.21 s | 20 | 15 | 618 | absent |
+| Tenant service | `POST /services` | 201 | 3.35 s | 20 | 14 | 588 | absent |
+| Cleanup | `DELETE /services/srv-dbgao559el5s73cd9ijg` | 204 | 0.56 s | 100 | 99 | 47 | absent |
+| Cleanup | `DELETE /services/srv-dbgantl9el5s73cd8r60` | 204 | 0.62 s | 100 | 98 | 47 | absent |
+
+**WorkOS Staging writes**
+
+| Step | Call | Result | Duration |
+| --- | --- | --- | --- |
+| OAuth resource | `POST /user_management/authkit_oauth_resources` | 201 | 0.12 s |
+| Identity | `createOrganization` | done | 0.18 s |
+| Identity | `createUser` | done | 0.21 s |
+| Identity | `createOrganizationMembership (role user)` | done | 0.20 s |
+| Identity | `connect.createApplication (OAuth, PKCE)` | done | 0.41 s |
+| Cleanup | `DELETE /user_management/authkit_oauth_resources/authkit_oauth_resource_01M5YT362V4V59W4JMWCW306GS` | 204 | 0.12 s |
+
+**Conclusions**
+
+- PASS Preflight: the workspace Thermus AI (team) and the credential ghcr-thermus-hosted-read (rgc-dbg1h0142hec73da9ra0) exist, no service of an earlier run exists, and the WorkOS Staging environment answers (2 WorkOS resources, the live gate URI listed).
+- PASS Setup: pages origin: thermus-spike-pages-20261027-134940 (srv-dbgantl9el5s73cd8r60) was created and was live 18.0 s after the create call; https://thermus-spike-pages-20261027-134940.onrender.com/healthz answered 200 with ok, and /page9m (9437483 bytes) and /js (14845 bytes) answered 200 with the planned sizes and markers. Tenant: thermus-spike-cap-20261027-134940 (srv-dbgao559el5s73cd9ijg) was created and was live 92.5 s after the create call; PUBLIC_BASE_URL names the public URL; plan: on 0.5c-512mb; https://thermus-spike-cap-20261027-134940.onrender.com/healthz answered 200 with ok. Resource: registered https://thermus-spike-cap-20261027-134940.onrender.com/mcp as authkit_oauth_resource_01M5YT362V4V59W4JMWCW306GS; the live gate URI is still listed. Identity: the fixtures of so01e-20261027-134940 exist, and the Connect token for https://thermus-spike-cap-20261027-134940.onrender.com/mcp lasts 300 s. MCP protocol 2026-07-28 lists getURLAsMarkdown and search.
+- PASS Calls on 0.5c-512mb: 1 windows on 0.5c-512mb; 0 server_failed events; no window was killed.
+- PASS Cleanup: deleted the WorkOS fixtures of so01e-20261027-134940; deleted https://thermus-spike-cap-20261027-134940.onrender.com/mcp (authkit_oauth_resource_01M5YT362V4V59W4JMWCW306GS): 204; deleted srv-dbgao559el5s73cd9ijg and srv-dbgantl9el5s73cd8r60.
+
+</details>
+
+### Findings
+
+**The owner of the readiness limit.** The limit is the constant
+`WEBSITE_FETCH_READINESS_BUDGET_MS = 20_000` in
+[`website-fetcher.ts`](../../src/pipelines/providers/website-fetcher/website-fetcher.ts).
+`WebsiteFetcherLightpanda` starts the timer when it starts the renderer
+process, and at the limit it stops the renderer with `SIGKILL`
+([`website-fetcher-lightpanda.ts`](../../src/pipelines/providers/website-fetcher/website-fetcher-lightpanda.ts)).
+The [website fetcher reference](../reference/website-fetcher.md) says that the
+limit is "not a request option or an environment setting". So an operator
+cannot change it for one instance. A change is a source change for all
+instances.
+
+**The 9 MiB page does not render within the limit on either plan.**
+
+- On `0.5c-512mb`, at 1 and 5 calls, each call ended after 20.7 to 20.8 s with
+  "Page fetch failed: Renderer readiness timed out". No call reported a kill,
+  and no `server_failed` event came. The memory peaks were 163 and 379 MiB.
+- On `1c-2g`, at 1, 5, and 10 calls, each call also ended after 20.5 to 20.7 s
+  with the readiness timeout and no kill. The memory peaks were 133, 371, and
+  709 MiB. So `1c-2g` does not render the page either.
+- So the "kills on huge pages" of D-2 were readiness timeouts on both plans.
+  The only exception is 10 calls on `0.5c-512mb`: there, the container
+  restarted (see the next finding).
+- The fetch failed, so the cleaning did not run. The peaks are the memory of
+  the renderers, not of the cleaning.
+- The probe did not measure why the render on Render takes more than 20 s. The
+  local check above rendered the same page in 2.7 s. RHD-05 rendered and
+  cleaned its near-limit page on `1c-2g` in 12.8 s of server time, with the
+  page served through a tunnel.
+
+**The `HTTP 502` window was a container restart, with no kill event.**
+
+- Run A, 10 calls of the 9 MiB page on `0.5c-512mb`: all 10 calls got
+  `HTTP 502` from Render after 2.3 to 2.5 s. `/healthz` answered `200` again
+  15.8 s after the window end. The events, read about 34 s after the window,
+  had no `server_failed` event. The metrics showed no memory peak and an
+  instance count of 1. So run A showed a suspected container restart. The
+  evidence had three limits. The metrics have a resolution of 30 s, so a crash
+  of a few seconds does not show. The probe read the events only 34 s after
+  the window. The probe read `/healthz` from this machine every 5 s.
+- The late events read of run B covers only the windows on `1c-2g`. It gave
+  only the `deploy_ended` event of the plan change, so it shows no kill on
+  `1c-2g`. It cannot settle the window on `0.5c-512mb`. For that, a repeat ran
+  the same window on a new `0.5c-512mb` tenant. The repeat read the events
+  120 s or more after the window, and it recorded the instance IDs.
+- The repeat: all 10 calls got `HTTP 502` after 2.6 to 2.8 s. `/healthz`
+  answered `200` again 5.4 s after the window end. The instance count was 0
+  for the window. The instance ID was the same at the step start and after the
+  window. The event list had no entry, also 2 minutes after the window.
+- Result: the container restarted in place, and the event list of Render does
+  not report this restart. The kill count from the events is 0 in both
+  windows. The restart count from the client outcomes, `/healthz`, and the
+  instance count is 1 in each window. So the first parallelism with a restart
+  is 10 on `0.5c-512mb`, for the 9 MiB page. `1c-2g` had no restart.
+- The likely cause is memory: on `1c-2g`, 10 renders of the page held 709 MiB,
+  and `0.5c-512mb` has 512 MiB.
+
+**Brave refuses 10 searches at the same time.**
+
+- With 10 searches at the same time, Brave answered `HTTP 429` to all 10 on
+  `0.5c-512mb` and to 4 of 10 on `1c-2g`. The container was not at a limit:
+  its peaks were 121 MiB and 0.07 CPU, and 240 MiB and 0.23 CPU.
+- The search tool reads the public Brave website without an API key
+  ([search tool](../reference/mcp-search-tool.md)). Render shares the outbound
+  IP ranges of a region across all services in that region
+  ([Outbound IP addresses](https://render.com/docs/outbound-ip-addresses)). So
+  this is an external rate limit for the source address. It is not a limit of
+  the container or of a key.
+- For Slices 2 and 3: all tenants in a region send their searches from the
+  same address ranges. When the searches of one organization use the limit,
+  the searches of the other organizations fail too.
+- The measured basis is 5 searches at the same time. All of them passed, in
+  7.3 to 14.9 s on `0.5c-512mb` and in 3.8 to 6.3 s on `1c-2g`.
+
+**Normal pages are far from the limits.** Ten JavaScript pages at the same
+time took 1.9 to 5.0 s on `0.5c-512mb`, with a memory peak of 139 MiB. On
+`1c-2g`, they took 0.9 to 1.7 s, with 254 MiB.
+
+**Times on Render and WorkOS.** A new tenant service was `live` 71.3 to
+104.1 s after its create call, and a new pages origin 17.5 to 18.1 s after its
+create call. The plan change was `live` 51.8 s after the plan update and
+25.7 s after the deploy call, with a new instance. The Connect authorization in
+the headless browser took 6.3 to 9.2 s. Each token had a lifetime of 300 s, and
+the probe refreshed it 2 times in run A and 3 times in run B.
+
+**Details of Render and WorkOS.**
+
+- Right after the plan change of run B, the first window read no instance
+  count, and the second window read a memory limit of 512 MiB. The other
+  windows read 2048 MiB.
+- In run B attempt 1, `/healthz` of the new pages origin answered `200`. Then
+  `/page9m` got a `404` of 10 bytes, which the program of the origin does not
+  send. Probably, the router of Render did not yet send all requests for the
+  new name to the service. The probe now repeats a page request that does not
+  get `200`, every 5 s, at most 6 times.
+- In the setup run, right after the deletes, the organization list of WorkOS
+  still showed the deleted organization. Less than one minute later, a read of
+  the organization by its ID answered `404`, and the list did not show it. The
+  cleanup check now reads the lists again, every 5 s, at most 12 times. In the
+  later runs, the check passed after 2 or 3 reads, 6.5 to 12.8 s after the
+  deletes.
+
+### Recommendation for D-15
+
+The owner decides D-15. These values come from the runs above.
+
+- **Free tenants, `0.5c-512mb`: lower `OPERATION_CAPACITY` to 5.** With 10,
+  ten 9 MiB calls restarted the container in run A and in the repeat. Each
+  time, the container of the organization did not answer until 5.4 to 15.8 s
+  after the window end. A restart stops each call that runs in the container,
+  also the calls of the other members. Five such calls peaked at 379 MiB, 74 %
+  of 512 MiB, with no restart: they ended with the readiness timeout. A free
+  organization has at most 5 members (D-5), so 5 still gives one call for each
+  member at the same time. The sixth call gets "Server busy. Try again
+  later.".
+- **Team tenants, `1c-2g`: keep `OPERATION_CAPACITY` at 10.** Ten 9 MiB calls
+  peaked at 709 MiB, 35 % of 2048 MiB, with no restart.
+- **Keep the readiness limit at 20 s.** The limit also sets a limit on the
+  memory of a heavy call, because the renderer stops at 20 s and the cleaning
+  does not run. When a page renders in time, its cleaning adds much memory. In
+  the local check above, the cleaning of this page increased the Node memory
+  from 208 to 616 MiB. In RHD-05, the samples reached 631 MiB on `1c-2g`. So
+  on `0.5c-512mb`, one such call can restart the container at each capacity,
+  as D-2 accepts. Measure again before a change of the limit.
+- **Alert threshold.** Alert on the first tenant restart outside a deploy.
+  The event list of Render did not report the restarts above, so the Render
+  failure emails of SO-11 can miss them too. The gateway (SO-05) sees a
+  restart as an `HTTP 502` or a reset connection from a live tenant, and the
+  instance count can show 0. Also alert on a memory value at or above 80 % of
+  the limit: 410 MiB for `0.5c-512mb` and 1,638 MiB for `1c-2g`. With a
+  capacity of 5, the 9 MiB page stays below 80 %. So the alert shows a page or
+  a load that needs more memory than these runs measured.
+- **Words of the failure message.** For each call that a tenant restart stops,
+  the gateway returns one tool error with `isError: true` and the words "Server
+  restarted. Try again in a minute.". This has the form of "Server busy. Try
+  again later.". A heavy page keeps "Page fetch failed: Renderer readiness
+  timed out", and a refused search keeps "Search failed: HTTP 429".
+- **Search.** `OPERATION_CAPACITY` does not protect the Brave limit, because
+  the limit applies to the shared outbound addresses of the region. For Slices
+  2 and 3, there are three options. The gateway can limit the searches of all
+  tenants together. A Brave Search API key has its own limits. Render sells
+  dedicated outbound IP addresses for a workspace. The measured basis is 5
+  searches at the same time: 7.3 to 14.9 s on `0.5c-512mb`.
 
 ### Limits
 
 - A memory value is a value of the Render series at a point, not a kernel
   peak. The probe takes the largest of three reads with starts 10 s apart, so
   a peak shorter than about 10 s can still be lower in the record. A container
-  that is killed restarts before a later point can show it.
+  that restarts in a few seconds shows no peak: the two `HTTP 502` windows have
+  none.
+- The event list of Render did not report the container restarts. The client
+  outcomes, `/healthz`, and the instance count show them. The instance count is
+  a 30-second value, and it showed 0 only in the repeat.
 - The renderer is a child process in the same container. A memory kill can
   stop only the renderer: then the call gets "Page fetch failed: Renderer
   process was killed", and no `server_failed` event comes. The report counts
-  these calls apart from the kills.
-- One region, one instance, and one pages origin in the same region. The
-  search uses the public Brave website, which can refuse or rate-limit many
-  searches from one address.
+  these calls apart from the kills. No call got this error.
+- The 9 MiB page did not render on Render, so the runs did not measure the
+  memory of the cleaning on Render. A smaller page that renders within 20 s
+  and needs a long cleaning was not measured.
+- Right after the plan change, two windows of run B read values that are not
+  those of `1c-2g`: a memory limit of 512 MiB, and no instance count.
+- One region, one instance, and one pages origin in the same region, from one
+  machine. The search uses the public Brave website, which rate-limits many
+  searches from one address. Other traffic from the shared Render addresses can
+  change the results.
 - The hosted-live fixtures have the name prefix "Thermus live". A hosted live
   gate run that starts during a probe run deletes them as stale fixtures, so
   the two must not run at the same time.
