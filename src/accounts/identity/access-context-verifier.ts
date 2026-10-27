@@ -3,7 +3,14 @@ import { namesBearerToken, typedAccessClaimsOf } from './access-context-claims.t
 import { signedPayloadOf } from './access-context-signature.ts';
 import { requireEd25519Key, type AccessContextVerification } from './signed-access-context.ts';
 
-/** A tenant holds only public keys: it can check a context, never make one. It tries each key, for a key rotation. */
+// A tenant relays an event up to 30 seconds after its tool call ends (the age bound of the audit collector), so the
+// context of the call can expire while the event waits (SO-05).
+const RELAY_GRACE_SECONDS = 30;
+
+/**
+ * A tenant holds only public keys: it can check a context, never make one. It tries each key, for a key rotation. The
+ * control plane uses the public key of its own signing key for the audit relays of an organization.
+ */
 export class AccessContextVerifier {
   readonly #keys: readonly KeyObject[];
   readonly #organizationId: string;
@@ -25,5 +32,16 @@ export class AccessContextVerifier {
     if (claims === undefined) return { status: 'refused', reason: 'malformed' };
     if (!namesBearerToken(claims.tokenHash, bearerToken)) return { status: 'refused', reason: 'token' };
     return { status: 'verified', context: claims.context };
+  }
+
+  /**
+   * Accepts the context of an audit relay: the checks of verify() without the bearer token, which a relay does not
+   * carry, and with 30 seconds of grace after the expiry.
+   */
+  async verifyRelay(context: string | null | undefined): Promise<AccessContextVerification> {
+    const payload = await signedPayloadOf(context ?? '', this.#keys, this.#organizationId, RELAY_GRACE_SECONDS);
+    if (typeof payload === 'string') return { status: 'refused', reason: payload };
+    const claims = typedAccessClaimsOf(payload);
+    return claims === undefined ? { status: 'refused', reason: 'malformed' } : { status: 'verified', context: claims.context };
   }
 }
