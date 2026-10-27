@@ -2449,12 +2449,11 @@ the Staging environment was not connected, Seat Sync and Entitlements were
 off, `.env.local` held no Stripe variable, and the Stripe CLI was not
 installed on the owner's Mac (`stripe` was not found).
 
-The WorkOS organization check needs no Stripe key and no add-on, but it also
-waits: the WorkOS Staging launcher `~/.config/thermus/with-workos-staging.cjs`
-refuses this checkout, because its origin allow-list names only the old owner
-`3-headed-monkey`. The probe does not change or bypass the launcher. The check
-is built (`--workos-only`), and it ran only against the stand-in of the
-[checks before the real run](#checks-before-the-real-run).
+The [WorkOS organization check](#workos-organization-check) needs no Stripe
+key and no add-on. It ran in the WorkOS Staging environment on 27 October
+2026, after the owner added the new origin to the allow-list of the launcher.
+Its first run found a gap of the probe in the check after the deletes. After
+the fix, the second run passed.
 
 ### What the probe does
 
@@ -2537,12 +2536,16 @@ Rules of the script:
   (15 minutes); a test clock advance, every 2 s, at most 150 reads;
   `stripe listen`, 60 s until "Ready!"; `stripe trigger`, 120 s; the
   forwarded event, 60 s; the retries of the test clock, at most 14 advances
-  and 63 days of clock time.
+  and 63 days of clock time; the check after the deletes, every 2 s, at most
+  60 reads.
 - The cleanup runs after each run, also after a failed step and after the
   first `SIGINT` or `SIGTERM`. It removes the objects that the steps remember
   and the objects that it finds by the run token, and then reads each one
-  until it is gone. A second signal stops the probe at once and can leave
-  objects.
+  until it is gone: WorkOS Staging can still show an organization for some
+  seconds after its `DELETE` answer
+  ([WorkOS organization check](#workos-organization-check)). The reads stop
+  early when only objects whose removal failed remain. A second signal stops
+  the probe at once and can leave objects.
 - Exit code 0: each step and the cleanup passed. Exit code 1: a step or the
   cleanup failed. Exit code 2: a usage error.
 
@@ -2600,8 +2603,7 @@ step puts a secret in the repository, a ticket, a chat, or a log.
    `stripe listen --print-secret` must exit with code 0. Do not copy its
    output: it is the signing secret.
 10. The WorkOS Staging launcher must accept the origin
-    `https://github.com/tomer-mayara/Thermus.git`. Today it names only
-    `3-headed-monkey/Thermus`.
+    `https://github.com/tomer-mayara/Thermus.git`. Done on 27 October 2026.
 
 ### Variables
 
@@ -2891,31 +2893,97 @@ stripe trigger customer.subscription.created --skip product --skip price \
 | The clock reports `internal_failure` | `--steps test-clock` | 1 | `FAIL Test clock`: "The test clock … stopped with the status internal_failure". |
 | The subscription stays `past_due` after the retries | `--steps test-clock` | 1 | `FAIL Test clock`: "The subscription stayed past_due 65 days after the first failed payment. Set Billing > Revenue recovery > Retries to cancel the subscription after the last retry." |
 | None, with `--keep`; then a second run; then the sweep | `--steps checkout --keep`; `--steps checkout`; `--steps cleanup` | 0; 1; 0 | Kept 3 objects. Then `FAIL Preflight`: "Objects of earlier runs exist: Stripe customer …". Then `PASS Sweep`: the customer was removed; deleting it canceled the kept subscription. |
+| A read by ID shows the organization for 5 s after its `DELETE` answer, as WorkOS Staging did | `--workos-only` | 0 | `PASS Cleanup`: "removed 3 objects; none is left; gone only at a later read: WorkOS organization org_… at read 4, 6.0 s after the deletes". Before the fix: exit code 1, `FAIL Cleanup` with "Objects left: 1". |
+| The same | `--steps seat-sync` | 0 | `PASS Cleanup`: 4 objects removed; the organization was gone at read 4. |
+| The same | `--workos-only --keep`; `--steps cleanup` | 0; 0 | Kept 3 objects. Then `PASS Sweep`: 3 objects removed; the organization was gone at read 4. |
+| WorkOS refuses the organization delete with `403` | `--workos-only` | 1 | `FAIL Cleanup` after 0.3 s: "Delete these objects by hand … DELETE /organizations/org_… answered HTTP 403 …". |
+| WorkOS answers the organization delete but never deletes it | `--workos-only` | 1 | `FAIL Cleanup` after 60 reads, 119 s: "Delete these objects by hand … WorkOS organization org_…". |
 
 The stand-in, its scenario runner, and the guard runner are in the session
 scratchpad, not in the branch. Two stand-in faults found gaps of the stand-in,
 not of the probe: the automatic tax flag of a completed session, and the
 retrieve of one invoice. The scenario with no customer write permission found
 a gap of the probe: the cleanup stopped when its search failed. The cleanup
-now removes the remembered objects first, and then fails with the reason.
+now removes the remembered objects first, and then fails with the reason. The
+first real WorkOS organization check found a second gap of the probe: the
+check after the deletes read each object one time. The five scenarios of a
+slow or refused organization delete came after it. Before the fix, the probe
+failed the three scenarios of a slow delete. After the fix, the run with all
+steps, the `SIGINT` scenario, and the 19 scenarios that take less than two
+minutes each gave the same results as before. The scenarios of the meter and
+of the operator who never pays were not run again; their cleanup removes the
+same kinds of objects.
 
 ### WorkOS organization check
 
-Waits for the launcher, as the status says. When the launcher accepts this
-checkout, the first real run is:
+Run on 27 October 2026 (UTC) in the WorkOS Staging environment, from the
+repository root of this branch, after the owner added the origin of this
+checkout to the launcher:
 
 ```sh
 node ~/.config/thermus/with-workos-staging.cjs node --env-file=/Users/tomermayara/git/Thermus/.env.local \
   script/spike/stripe-seat-sync-probe.ts --workos-only
 ```
 
-It creates one disposable organization and two users in the WorkOS Staging
-environment, sets `stripe_customer_id` to `cus_ThermusSpike` and the last
-four characters of the run token, reads the organization back, adds and
-removes the memberships, and deletes the users and the organization. The
-record then says whether WorkOS accepts the field without the Stripe add-on.
-The planned calls are the "Seat sync (WorkOS only)" and "Cleanup" parts of
-`--dry-run --workos-only`.
+The check creates one disposable organization and two users, sets
+`stripe_customer_id` to `cus_ThermusSpike` and the last four characters of
+the run token, reads the organization back, adds and removes the
+memberships, and deletes the users and the organization. The planned calls
+are the "Seat sync (WorkOS only)" and "Cleanup" parts of
+`--dry-run --workos-only`. Before the runs, that dry run through the launcher
+printed `WORKOS_API_KEY: <set>`, and `STRIPE_RESTRICTED_KEY` and
+`STRIPE_PRICE_ID` as `<not set>`. No run made a Stripe call.
+
+| Run | Probe commit | Exit code | Result |
+| --- | --- | --- | --- |
+| `20261027-130244-e432` | `e249f95e` | 1 | The preflight and the seat sync passed. `FAIL Cleanup`: the deletes of the two users and of the organization `org_01M5YQ9EY9C3QC60PYW6B5F2TA` answered, but the read right after the deletes still showed the organization. A read 77 s later answered `404` for the organization and both users, and no organization or user with the probe prefix was listed. |
+| `20261027-132448-e66f` | `9eea5776` | 0 | Each step and the cleanup passed. The organization was gone at read 4, 6.6 s after the deletes. |
+
+The report of the second run, as the script printed it:
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+| Preflight | Objects of earlier runs | none | none |
+| Seat sync (WorkOS only) | stripe_customer_id cus_ThermusSpikee66f, Stripe add-on not connected | recorded: accepted or refused | accepted: the answer shows stripe_customer_id cus_ThermusSpikee66f |
+| Seat sync (WorkOS only) | stripe_customer_id after a read of the organization | recorded | cus_ThermusSpikee66f |
+| Seat sync (WorkOS only) | Add membership 1 | 1 active membership | 1 active membership |
+| Seat sync (WorkOS only) | Add membership 2 | 2 active memberships | 2 active memberships |
+| Seat sync (WorkOS only) | Remove membership 2 | 1 active membership | 1 active membership |
+| Cleanup | Remove WorkOS user user_01M5YRHWQHP9VMSHV98SJ2VJP7 | deleted, canceled, or expired; or already gone | deleted |
+| Cleanup | Remove WorkOS user user_01M5YRHX5DA2SDE95QHNW7NMQ1 | deleted, canceled, or expired; or already gone | deleted |
+| Cleanup | Remove WorkOS organization org_01M5YRHW7S7V3T6Q09XPQ6T46X | deleted, canceled, or expired; or already gone | deleted |
+| Cleanup | Objects left | 0, within 60 reads 2 s apart | 0; gone only at a later read: WorkOS organization org_01M5YRHW7S7V3T6Q09XPQ6T46X at read 4, 6.6 s after the deletes |
+
+| System | Object | ID | Created in | Cleanup |
+| --- | --- | --- | --- | --- |
+| WorkOS | organization | `org_01M5YRHW7S7V3T6Q09XPQ6T46X` | Seat sync (WorkOS only) | deleted |
+| WorkOS | user | `user_01M5YRHWQHP9VMSHV98SJ2VJP7` | Seat sync (WorkOS only) | deleted |
+| WorkOS | user | `user_01M5YRHX5DA2SDE95QHNW7NMQ1` | Seat sync (WorkOS only) | deleted |
+
+The run made 10 writes, each answered in 0.13 s to 0.45 s, and 11 reads with
+an answer; the count leaves out the `404` answers of the check after the
+deletes. The first run made the same writes for the organization
+`org_01M5YQ9EY9C3QC60PYW6B5F2TA` and the users
+`user_01M5YQ9FH082YD110HC8YBBYA5` and `user_01M5YQ9G1VYSD15RJMCADWMD0A`.
+
+Results:
+
+- Without the Stripe add-on, WorkOS accepts a `stripe_customer_id` that
+  names no Stripe customer: the update answered with the fake ID, and a read
+  gave it back. So an accepted update does not show that the add-on is
+  connected or that the customer exists; the meter of the seat-sync step
+  shows whether the add-on sends counts. Whether WorkOS checks the ID when
+  the add-on is connected waits for the real run.
+- WorkOS showed 1, 2, and 1 active memberships at the first read after each
+  change.
+- A read by ID can still show a deleted organization for some seconds after
+  its `DELETE` answer: 6.6 s in the second run. The users were gone at the
+  first read. In the SO-01e setup run, the list call still showed a deleted
+  organization while a read by its ID answered `404`. A Thermus flow that
+  deletes an organization and then reads it must allow for this lag.
+- After both runs, no organization or user with the probe prefix was listed
+  in the Staging environment. The environment had two other organizations
+  and two other users, which the probe did not touch.
 
 ### Measured
 
@@ -2973,9 +3041,11 @@ From the pages above, read on 27 October 2026 (UTC), for SO-13 to SO-15:
 
 ### Limits
 
-- The real run waits for the owner steps and the launcher. Only the stand-in
-  exercised the Stripe and WorkOS code paths, and it models the pages as the
-  probe reads them, so it cannot show the real behavior. The real run must
+- The real run waits for the owner steps. Only the stand-in exercised the
+  Stripe code paths and the meter reads of the seat sync, and it models the
+  pages as the probe reads them, so it cannot show the real behavior. The
+  WorkOS organization check is the only real run: two runs, one lag
+  measurement. The real run must
   answer these points: whether the summary call accepts an `end_time` at the
   next minute boundary, which is in the future; whether the CLI accepts
   `--skip product --skip price` with the price override; whether a meter
