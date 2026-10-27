@@ -15,12 +15,13 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only: the owner accepted the D-15 recommendation of SO-01e on 27 October 2026, OPERATION_CAPACITY 5 for a free tenant and 10 for a team tenant. docs/implementation/self-onboarding-plan.md records the final answer in the D-15 row of section 5 with its measured basis and its consequence, and states the values in the design in short, the tenant column of the settings table, the tier change paragraph, the tier rules, the D-12 row, the SO-01e ticket, the Slice 2 introduction, SO-03, SO-06, SO-13, and the memory risk; the Slice 1 history stays. The two decision records under architecture/decisions/ get one dated amendment sentence each, in place (item 6 of the container record; line 12 and the capacity row of the tiers record), that points at plan section 5, and the Slice 1 record notes the acceptance under its Recommendation for D-15. The source default of OPERATION_CAPACITY stays 10, so the registry text \"default 10\" stays accurate; the provisioner and tier change tickets carry the values of each tier. No source, runtime, registry view, declaration, or deployment change.",
+    "summary": "Documents only: docs/implementation/self-onboarding-plan.md records the 24 Slice 2 design answers of 27 October 2026, each dated where the plan describes the design or the ticket. Section 4.1: the new settings read only with MCP_TENANTS_ENABLED on, FREE_TENANT_LIMIT 0 to 1000 with default 25, TENANT_NAME_PREFIX, several keys in GATEWAY_PUBLIC_KEY, the context as an EdDSA JWT with jose in the Thermus-Access header, and the tenant deny list at start. Section 4.2: the gateway restart answer, Retry-After 15 and 60, the limit of 5 searches, the resume through deploying, last_active_at once a minute, the Host check of /internal/audit, the portal words and meta refresh, the accepted cap race, the release by manual dispatch and API deploy, the fleet health, commands, and batches, the daily idle sweep and the organization sweep that confirms by ID, and the registry copy. Sections 4.3 to 4.5: the cap count, no marked-for-deletion state, the reuse of thermus_logging, the seat rule and its words. Section 6: the Slice 2 tickets SO-02 to SO-12, with the SO-08 race example corrected to 3 members and 1 invitation and the SO-12 order with the image switch at step 5 and the rollback in the rehearsal. Section 7: the Axiom monitors, the shared search limit, the GHCR rule, and the registry credential token rotation; D-9 gets a dated amendment. The two decision records under architecture/decisions/ get one dated amendment sentence each, where an answer changes a stated fact: the reuse of thermus_logging (container record, item 8) and the refusal without a link (tiers record, members row). No source, runtime, registry view, declaration, or deployment change.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
       "Selected C4 components: tool processing in the Node server",
-      "Scenario: MCP page fetch and renderer cancellation",
+      "Selected C4 components: hosted authentication in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
       "Deployment view",
       "Behavior and resource ownership"
     ],
@@ -28,7 +29,6 @@
       "docs/implementation/self-onboarding-plan.md",
       "architecture/decisions/2026-10-26-per-tenant-containers.md",
       "architecture/decisions/2026-10-26-tiers-and-billing.md",
-      "docs/implementation/self-onboarding-s1.md",
       "architecture/components.md"
     ]
   }

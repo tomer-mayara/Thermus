@@ -40,7 +40,7 @@ takes `?tier=free`, and only an upgrade gives `team`. The tier rules of
 
 | Rule | `free` | `team` |
 | --- | --- | --- |
-| Members | At most 5 in total, the creator included: active memberships with product access plus pending invitations. Expired invitations do not count. Beyond the limit, an invitation gets `limit-reached` with an Upgrade link. | No limit. Each active member is billed. |
+| Members | At most 5 in total, the creator included: active memberships with product access plus pending invitations. Expired invitations do not count. Beyond the limit, an invitation gets `limit-reached` with an Upgrade link. Amended on 27 October 2026: in Slice 2, the refusal has no link and says "This free workspace has 5 of 5 seats. Upgrade to Team to add more members.", and the Upgrade button comes with SO-13 ([plan section 4.4](../../docs/implementation/self-onboarding-plan.md#44-tier-rules)). | No limit. Each active member is billed. |
 | Enforcement | At invitation send, in `OrganizationAdministration.sendInvitation()` on the control plane, from complete member and invitation reads. Serialized for each organization. A failed page fails the check. | None. |
 | Invariant | An invitation from the control plane is the only way to add a member. SSO, Directory Sync, domain joining, and dashboard-created memberships stay off. | The same. |
 | Inviting again after a downgrade | Needs member removal or a new upgrade. | Not applicable. |

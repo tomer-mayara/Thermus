@@ -114,6 +114,9 @@ alternative that lost.
    - Why: WorkOS metadata is full, and both plans cost nothing.
    - Rejected for now: paid plans. The owner looks at Supabase again at the
      first paying customer, and at Render when the fleet grows.
+   - Amendment of 27 October 2026: the control plane reuses the existing role
+     `thermus_logging` for the three tables, with no new role
+     ([plan section 4.3](../../docs/implementation/self-onboarding-plan.md#43-data-model)).
 9. **A rollout switch.** `MCP_TENANTS_ENABLED`, default `false`, turns the
    gateway on. While it is off, the control plane serves the tools, as today.
    - Why: the rollout can go step by step, and a rollback turns the gateway
