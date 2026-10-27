@@ -1,11 +1,9 @@
 # Organization administration plan
 
-UI design selected: 26 October 2026 — Refined tabs. UI-01 is implemented in
-[PR #263](https://github.com/tomer-mayara/Thermus/pull/263), followed by UI-02
-([PR #264](https://github.com/tomer-mayara/Thermus/pull/264)), UI-03
-([PR #266](https://github.com/tomer-mayara/Thermus/pull/266)) and UI-04
-([PR #268](https://github.com/tomer-mayara/Thermus/pull/268)) in one restacked chain.
-See the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026).
+UI design selected: 26 October 2026 — Refined tabs. See the
+[reviewed UI state](#reviewed-ui-state) for candidate heads, parents and holds,
+and the [four UI tickets](#refined-tabs-ui--approved-design-26-october-2026)
+for scope and acceptance specifications.
 
 Plan reviewed: 25 October 2026. Slice 1 and Slice 2 are merged, and the internal
 Thermus AI rollout is live. [PR #252](https://github.com/tomer-mayara/Thermus/pull/252)
@@ -228,9 +226,8 @@ Organization unclear with multiple memberships: [Choose workspace]
 
 ### Members and invitations — Refined tabs
 
-**Approved design direction — 26 October 2026. UI-01 is implemented in PR #263;
-UI-02, UI-03 and UI-04 follow in PR #264, #266 and #268. The candidate chain
-contains all four increments.**
+**Approved design direction — 26 October 2026.** Candidate status is in the
+[reviewed UI state](#reviewed-ui-state).
 The owner selected Refined tabs. The following wireframes replace the earlier
 conceptual Members layout; they do not claim that the application has changed.
 Follow [portal design](portal-design.md#members) and the
@@ -1222,39 +1219,62 @@ complete only when both of its child tickets are complete.
 
 ### Refined tabs UI — approved design, 26 October 2026
 
-**Status: UI-01 → UI-02 → UI-03 → UI-04 are restacked in PR #263, #264, #266 and #268.
-The final candidate includes all four increments; validation remains required.** These four small,
-plan-local tickets implement the selected Members presentation against existing
-member, invitation, and removal behavior. They add no provider or MFA feature
+These four plan-local tickets implement the selected Members presentation against
+existing member, invitation, and removal behavior. They add no provider or MFA feature
 and have no Slice 3 dependency. They do not reopen completed Slice 2.5 release
-work. Implement them serially: they share rendering/style and acceptance files.
-UI-02/03/04 depend functionally on UI-01, not on each other. The serial order below
-avoids conflicting edits; no separate verification-only ticket is needed. UI-01
-can finish while the current invitation form and pending section remain visible.
+work. UI-02/03/04 each need the UI-01 shell, but their features are independent.
+The branches now follow UI-01 → UI-02 → UI-03 → UI-04. The final candidate
+contains all four increments. Keep this order because they share rendering,
+styles and test consumers.
 Each ticket must leave a working page; later tickets are not its exit conditions.
 
-| Ticket | Dependencies | Result |
+#### Reviewed UI state
+
+Restacked on 26 October 2026 against main
+`9a3ac1f9763b9d8927ec2d1d5cd4527982d33619`. All four PRs are Draft while fresh
+complete-candidate validation and review evidence are prepared. The current
+source candidates form one chain; the maintained PR descriptions and comments
+pin the final heads and evidence after document and metric-record updates.
+This state claims no merge or deployment.
+
+| Ticket / PR | Source candidate at restack | Actual parent | State and remaining holds |
+| --- | --- | --- | --- |
+| UI-01 / [#263](https://github.com/tomer-mayara/Thermus/pull/263) | `7acd90d44e90769e335c4b2f095d3791d82dc3d4` | main above | Fresh complete-candidate checks and review are in progress. |
+| UI-02 / [#264](https://github.com/tomer-mayara/Thermus/pull/264) | `2ec671ebb30741055f380f7f7a3866ecca549c21` | UI-01 | Density correction passes; full checks and review remain. Staging is blocked as described below. |
+| UI-03 / [#266](https://github.com/tomer-mayara/Thermus/pull/266) | `2189f24e74fe9aa5c381b7bb81eae7c0f2026e11` | UI-02 | Counted-heading migration and combined 51-case browser group pass; full checks and review remain. |
+| UI-04 / [#268](https://github.com/tomer-mayara/Thermus/pull/268) | `72523c1a` (source commit, before this review record) | UI-03 | All four increments are present; 130 focused cases and 71 browser cases pass. Full checks and review remain. |
+
+The fresh UI-02 staging run passed 22 of 29 cases. Six failures share a WorkOS
+sandbox invitation-email quota error during fixture setup. The scoped removal
+journey separately returned HTTP 503 instead of 303 on reinvitation; its cause
+is not established. Exact owned-resource cleanup completed. Keep these failures
+separate. Retry the full selected live group after the external quota is cleared
+at no cost; do not weaken assertions or buy quota. UI-03 and UI-04 also require
+the live group on their final combined candidates.
+
+Keep the four existing PRs and merge in **UI-01 → UI-02 → UI-03 → UI-04** order
+only after their required checks and review requirements pass. All need final
+T1 owner/team approval; agent review does not supply it. The
+[stack review record](../implementation/admin-ui-stack-review.md) preserves the
+original pins, failures and findings and records the corrections. No new feature
+or verification-only ticket is needed.
+
+| Ticket | Functional dependencies | Result |
 | --- | --- | --- |
 | [UI-01](#ui-01--shared-admin-shell-and-layout) | Current Members/Audit logs routes and trusted access | Modest shared shell, visible page links, Members workspace context and full-width content. |
 | [UI-02](#ui-02--member-rows-and-quiet-removal) | Current checked removal; UI-01 | Aligned identity/role/action rows and quiet native Remove…/Leave… confirmations. |
 | [UI-03](#ui-03--on-demand-invitation-form) | Current native invitation routes; UI-01 | Closed initial invitation disclosure and one explicit Send invitation. |
 | [UI-04](#ui-04--compact-pending-invitations) | Current complete invitation overview; UI-01 | Counted pending disclosure, compact rows, UTC expiry and existing allowed actions. |
 
-**Deep review corrections — 26 October 2026.**
+The original ticket specifications and TDD steps below preserve the pre-implementation plan.
+Each **Pre-implementation red expectation** describes the earlier starting point,
+not a current gap or a new test result. Actual red/green history belongs in the
+implementation records and linked PR evidence. The separately marked outstanding
+UI-02 density correction is new follow-up work.
 
-| Finding | Decision |
-| --- | --- |
-| The shared exit gate required UI-03/04 features before those tickets existed. | Validate the current ticket and earlier work; check the combined page when all four tickets are complete. |
-| The new row count could replace the product-seat fact used by billing and access tests. | Keep both clearly labelled counts from the existing overview; preserve seat semantics and tests. |
-| Old sentence, label and form-order assertions were missing from the migration scope. | The ticket that changes the markup also updates its consumers, including offline WorkOS and hosted-live tests. |
-| The browser driver defaults to 390px with JavaScript on. | Set 320px/desktop and JavaScript modes explicitly; use fresh fixtures for each scenario. |
-| Some BDD cases combined cancel, submit, or failed reads into one journey. | Separate the outcomes; add the successful invitation journey and a real later-page failure. |
-| The open-form mock moved Pending invitations before members. | Use the same section order in every state; scope Members body styles so Audit logs keeps its controls. |
-
-Start each ticket with executable BDD through public HTTP or real browser
-interfaces. Run the cases for new behavior before source changes and record the
-actual initial red result. The expected gaps below come from source inspection,
-not test runs. Existing behavior and changed test selectors can remain green;
+For new source behavior, start with executable BDD through public HTTP or real
+browser interfaces. Run it before source changes and record the actual red result.
+Existing behavior and changed test selectors can remain green;
 do not manufacture red results for them. Then use each
 focused failing test → minimum implementation → green refactor cycle below until
 the acceptance cases are green. If a preceding step already makes a case pass,
@@ -1286,6 +1306,14 @@ UI-04 owns pending-row migrations. Preserve the `seatsIn` product-count meaning 
 [hosted-billing](../../test/acceptance/billing/hosted-billing.test.ts). Never change
 all expected six-seat results to seven because the row heading changed.
 
+At the UI-02/UI-03 join, migrate the exact `Members` heading selector in
+[InvitationBrowser](../../test/support/drivers/browser/invitation-browser.ts)
+and the invitation placement assertion in
+[the route integration test](../../test/integration/hosted-admin/account-routes-administration-pages.test.ts)
+to the approved counted heading. Use semantic selection for placement/geometry,
+and retain separate exact count assertions derived from each fixture. This is a
+characterization migration, not a new product behavior or an invented red step.
+
 Reuse [the browser site](../../test/support/in-process/hosted-member-removal-site.ts)
 with `setUp(world)` for fresh self/other, pending, long-value and last-Admin states.
 Use the existing browser driver with explicit `javaScriptEnabled` and
@@ -1295,9 +1323,9 @@ counts and resulting state. HTTP form parsing alone cannot establish those facts
 
 #### UI-01 — Shared admin shell and layout
 
-Implemented in [PR #263](https://github.com/tomer-mayara/Thermus/pull/263).
-The [implementation record](../implementation/admin-ui-01.md) links validation
-and review evidence. This status does not claim a merge or deployment.
+See the [reviewed UI state](#reviewed-ui-state) and
+[implementation record](../implementation/admin-ui-01.md) for candidate status
+and linked validation evidence.
 
 **BDD acceptance first.**
 
@@ -1316,8 +1344,8 @@ Scenario: Use the shell without JavaScript at narrow and desktop widths
   And long values and the current page content reflow without horizontal scrolling
 ```
 
-**Initial red to observe.** Add the first acceptance assertion for named workspace
-context beside Switch workspace: the current shell has no name there. Record a
+**Pre-implementation red expectation.** Add the first acceptance assertion for named workspace
+context beside Switch workspace: the earlier shell has no name there. Record a
 browser acceptance failure for the new full-width/modest-title layout before CSS
 changes; do not assert a class name to represent this behavior.
 
@@ -1366,8 +1394,9 @@ disclosures are not required to complete UI-01.
 
 #### UI-02 — Member rows and quiet removal
 
-Implemented in [PR #264](https://github.com/tomer-mayara/Thermus/pull/264),
-stacked on UI-01. See the [implementation record](../implementation/admin-ui-02.md).
+See the [reviewed UI state](#reviewed-ui-state) and the
+[UI-02 implementation record](../implementation/admin-ui-02.md)
+for candidate status and prior evidence.
 
 **BDD acceptance first.**
 
@@ -1395,7 +1424,7 @@ Scenario: Confirm removal without JavaScript
   And Member removed is shown with recovery links and no repeat-removal form
 ```
 
-**Initial red to observe.** The current rows express identity/status/roles in a
+**Pre-implementation red expectation.** The earlier rows express identity/status/roles in a
 sentence; the self trigger says Remove rather than Leave. Add and run the new
 self-action/row-fact acceptance first. Quiet emphasis and column alignment need
 an initial browser acceptance observation, not a class-string test.
@@ -1446,16 +1475,49 @@ Extend the UI-01 Members/route/browser tests. Characterize existing
 and [hosted-member-session-recovery](../../test/acceptance/auth/hosted-member-session-recovery.test.ts)
 through [hosted-member-removal.ts](../../test/support/dsl/hosted-member-removal.ts).
 
+##### UI-02 density correction
+
+This review correction is implemented in UI-02. The new browser acceptance
+failed at 118.39/118.39/98.39 pixels before the CSS change and passed at
+70.25/70.25/60.25 pixels after it. All 20 UI-02 browser cases pass, including
+48-pixel controls and expanded confirmation at 861 pixels. The scenario and
+steps below retain the test-first specification; the full candidate gate is
+separate.
+
+**BDD acceptance first.**
+
+```gherkin
+Scenario: Keep short closed desktop member rows compact
+  Given an Admin and three short member fixture rows at 1280px
+  And all member removal disclosures are closed at normal text size
+  When the Admin opens Members and the production fonts finish loading
+  Then each of those three rows is at most 72px high with readable labelled facts
+  And Remove or Leave stays quiet and each action control is at least 48px high
+```
+
+The 72px test bound applies only to these three short closed fixture rows. It is
+not a universal maximum. Long values, mobile layouts, enlarged text and expanded
+confirmations must grow naturally without a fixed height or clipping.
+
+**Focused TDD sequence used.** Run the new browser acceptance before source edits
+and record its actual red result. Use focused browser height/fact/control checks
+to guide the minimum markup/CSS change that reduces repeated vertical label and
+padding overhead while keeping semantics. Make the checks and outer acceptance
+green, then refactor with the existing alignment, reflow and removal cases green.
+Do not force another red for an already covered passing check. Keep this small
+presentation correction in UI-02; it adds no fifth feature ticket.
+
 **Complete when** the new row/Leave acceptance and preserved removal outcomes are
 green, approved help is unchanged, browser review shows quiet actions and usable
-expanded rows, all affected row/self-action test consumers are migrated, and the
-candidate validation gate passes. No later invitation UI is required.
+expanded rows, the short-row density correction passes, all affected row/self-action
+test consumers are migrated, and the candidate validation gate passes. No later
+invitation UI is required.
 
 #### UI-03 — On-demand invitation form
 
-**Candidate: [PR #266](https://github.com/tomer-mayara/Thermus/pull/266), stacked
-on UI-02.** See the [implementation record](../implementation/admin-ui-03.md).
-This candidate includes the parent member rows, both counts and compact removal actions.
+See the [reviewed UI state](#reviewed-ui-state) and
+[implementation record](../implementation/admin-ui-03.md) for candidate status
+and linked validation evidence.
 
 **BDD acceptance first.**
 
@@ -1502,7 +1564,7 @@ Scenario: Find the invitation task after last-Admin refusal
   Then the ordinary invitation form is usable without JavaScript or recovery state
 ```
 
-**Initial red to observe.** The current invitation form is always visible and its
+**Pre-implementation red expectation.** The earlier invitation form is always visible and its
 submit label is Invite. Add the closed-initial-disclosure/Send invitation
 acceptance first; run it to observe failure before the markup change. Use a real
 browser for hidden content and native validation, not the HTTP driver's form list.
@@ -1557,10 +1619,9 @@ UI-04's counted disclosure is not needed yet.
 
 #### UI-04 — Compact pending invitations
 
-**Candidate: [PR #268](https://github.com/tomer-mayara/Thermus/pull/268), stacked
-on UI-03.** See the [implementation record](../implementation/admin-ui-04.md).
-The restacked candidate includes all four UI tickets and must pass their combined
-validation before completion.
+See the [reviewed UI state](#reviewed-ui-state) and
+[implementation record](../implementation/admin-ui-04.md) for candidate status
+and linked validation evidence.
 
 **BDD acceptance first.**
 
@@ -1581,7 +1642,7 @@ Scenario: Do not present a partial read as empty or complete
   Then the existing failure is shown with no partial list or count
 ```
 
-**Initial red to observe.** The current pending section is a permanent card with
+**Pre-implementation red expectation.** The earlier pending section is a permanent card with
 no counted disclosure. Add and run zero-closed/nonzero-open/count acceptance before
 source changes. Failure is expected from that missing behavior, not an invented
 failure of existing expiry or resend/revoke rules.
@@ -1616,8 +1677,8 @@ and [organization-administration-invitation-overview.test.ts](../../test/unit/or
 
 **Complete when** counted zero/nonzero states, keyboard discovery, complete-read
 failure and existing lifecycle behavior pass, compact rows reflow, pending-row
-consumers are migrated, and the candidate validation gate passes. When this is
-the last of the four tickets, also inspect the combined page as described below.
+consumers are migrated, and the candidate validation gate passes. When a candidate
+contains all four increments, also inspect the combined page as described below.
 
 #### UI shared final validation gate
 
@@ -1657,7 +1718,7 @@ Update the browser gate's documented scope when its implemented cases change.
 | UI-03 | Initial/open invitation, typed Cancel, invalid native input, valid User/Admin submission and last-Admin recovery instructions. Existing pending rows are sufficient. |
 | UI-04 | Zero/nonzero pending disclosure, long rows, allowed actions and stable section order. |
 
-**Combined finish.** When all four tickets are present, inspect one complete
+**Combined finish.** When a candidate contains all four increments, inspect one complete
 Members page through the new states above with JavaScript on/off at both widths.
 Include expanded approved help and fixed server notices, and retain the existing
 session/self-removal recovery coverage. Check Audit logs after the final shared
