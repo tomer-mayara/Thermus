@@ -9,7 +9,8 @@ import { AccessContextSigner } from '../../../../src/accounts/identity/access-co
 import type { AccessContextClaims } from '../../../../src/accounts/identity/signed-access-context.ts';
 import { AuditLog, type AuditEvent } from '../../../../src/logs/audit/audit-log.ts';
 import { AuditSnapshots } from '../../../../src/logs/audit/audit-snapshots.ts';
-import { AuditRelayRoute, type RelayRefusal } from '../../../../src/interfaces/web/internal/audit-relay-route.ts';
+import type { RelayRefusal } from '../../../../src/interfaces/web/internal/audit-relay-check.ts';
+import { AuditRelayRoute } from '../../../../src/interfaces/web/internal/audit-relay-route.ts';
 import { AuditExportSenderSpy } from '../../../support/doubles/logging/audit-export-sender-spy.ts';
 import { SnapshotSettingsStoreSpy } from '../../../support/doubles/logging/snapshot-settings-store-spy.ts';
 

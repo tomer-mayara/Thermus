@@ -1,8 +1,5 @@
-import { answerHeaders } from './mcp-gateway-request.ts';
-
-// How an answer stream ended: complete, cancelled by the client or by the shutdown, or failed because the tenant went
-// away after its first answer byte.
-type StreamEnd = 'complete' | 'cancelled' | 'failed';
+import { answerStream, tenantBodyOf, type StreamEnd } from './mcp-gateway-answer-stream.ts';
+import { answerHeaders } from './mcp-gateway-headers.ts';
 
 /** The failure of a tenant that restarts, before its first answer byte: HTTP 502, or a connection that resets. */
 export type RestartCause = 'http-502' | 'connection';
@@ -18,15 +15,6 @@ export interface TenantCall {
   readonly headers: Headers;
   readonly body?: Uint8Array;
 }
-
-// The answer body of a tenant: its reader, the signal of the forwarded request, and the end of the stream.
-interface TenantBody {
-  readonly reader: ReadableStreamDefaultReader<Uint8Array>;
-  readonly signal: AbortSignal;
-  readonly end: (how: StreamEnd) => void;
-}
-
-type ReadResult = Awaited<ReturnType<ReadableStreamDefaultReader<Uint8Array>['read']>>;
 
 const RESTARTED_CONNECTION: TenantAnswer = Object.freeze({ status: 'restarted', cause: 'connection' });
 
@@ -51,15 +39,14 @@ export async function callTenant(call: TenantCall, signal: AbortSignal): Promise
   return streamFrom(response, signal);
 }
 
+// The first read waits for the first answer byte. A tenant that goes away before it is a restart.
 async function streamFrom(response: Response, signal: AbortSignal): Promise<TenantAnswer> {
   const init = { status: response.status, statusText: response.statusText, headers: answerHeaders(response.headers) };
   if (response.body === null) return { status: 'answered', response: new Response(null, init), ended: Promise.resolve('complete') };
   const ended = Promise.withResolvers<StreamEnd>();
-  const body = bodyOf(response.body.getReader(), signal, ended.resolve);
-  let first: ReadResult;
-  try {
-    first = await body.reader.read();
-  } catch {
+  const body = tenantBodyOf(response.body.getReader(), signal, ended.resolve);
+  const first = await body.reader.read().catch(() => undefined);
+  if (first === undefined) {
     body.end('failed');
     signal.throwIfAborted();
     return RESTARTED_CONNECTION;
@@ -67,50 +54,4 @@ async function streamFrom(response: Response, signal: AbortSignal): Promise<Tena
   // The cancel of an abort ends the first read without a chunk.
   signal.throwIfAborted();
   return { status: 'answered', response: new Response(answerStream(body, first), init), ended: ended.promise };
-}
-
-// From the answer headers on, an abort of the request cancels the answer body of the tenant, and the stream ends once.
-function bodyOf(reader: ReadableStreamDefaultReader<Uint8Array>, signal: AbortSignal, resolve: (how: StreamEnd) => void): TenantBody {
-  const abort = (): void => {
-    end('cancelled');
-    reader.cancel(signal.reason).catch(() => undefined);
-  };
-  const end = (how: StreamEnd): void => {
-    signal.removeEventListener('abort', abort);
-    resolve(how);
-  };
-  signal.addEventListener('abort', abort, { once: true });
-  return { reader, signal, end };
-}
-
-function answerStream(body: TenantBody, first: ReadResult): ReadableStream<Uint8Array> {
-  return new ReadableStream<Uint8Array>({
-    start(controller) {
-      if (!first.done) controller.enqueue(first.value);
-      else finish(controller, body, 'complete');
-    },
-    async pull(controller) {
-      try {
-        const next = await body.reader.read();
-        if (!next.done) controller.enqueue(next.value);
-        else finish(controller, body, 'complete');
-      } catch {
-        // After the first answer byte, the gateway ends a stream that the tenant broke off (answer 1 of 27 October 2026).
-        finish(controller, body, body.signal.aborted ? 'cancelled' : 'failed');
-      }
-    },
-    cancel(reason) {
-      body.end('cancelled');
-      return body.reader.cancel(reason);
-    },
-  }, { highWaterMark: 0 });
-}
-
-function finish(controller: ReadableStreamDefaultController<Uint8Array>, body: TenantBody, how: StreamEnd): void {
-  try {
-    controller.close();
-  } catch {
-    // The client cancelled the stream already.
-  }
-  body.end(how);
 }

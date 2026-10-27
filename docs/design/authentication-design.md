@@ -1337,7 +1337,10 @@ connected yet (SO-10)."; no tenant is suspended before the idle sweep of SO-10.
 - 5 searches at a time pass across all tenants (answer 4): a request takes one
   place for each `tools/call` of `search` that it holds, until its answer
   stream ends. The sixth gets the tool error "Server busy. Try again later.",
-  one refusal line, and no forward.
+  one refusal line, and no forward. The
+  [search places](../../src/interfaces/mcp/mcp-gateway-searches.ts) tell a
+  search from a fetch by the tool name of the message alone: `search` takes a
+  place, and `getURLAsMarkdown` takes none.
 - After a successful forward, that is, when the tenant answers with a status
   below 500, the gateway records the use of the tenant. The registry writes
   `last_active_at` at most once a minute for each organization, with the time
@@ -1350,17 +1353,22 @@ takes the audit relays of the tenants (answer 6 of 27 October 2026):
    gets `404`, also each other path under `/internal/`. Another method gets
    `405`. With the switch off, `/internal/*` stays an account path that needs
    a sign-in.
-2. The body has at most 256 KiB (`413` above) and must be JSON (`400`). It must
-   be a tool completion event that passes the projection rules of the audit
-   capture again (`400`): the control plane checks and copies each field and
-   redacts the input and the result text again.
-3. The organization is the part of the tenant ID of the event after the
-   authority of the control plane (`403` for another authority). The
-   `Thermus-Access` context must be valid for that organization, with the
-   public key of `GATEWAY_SIGNING_KEY`: the checks of a tenant without the
-   bearer token, which a relay does not carry, and with 30 seconds of grace
-   after the expiry, the age bound of a relayed event (`403`). The actor of the
-   event must have the authority and the subject of the context (`403`).
+2. The body has at most 256 KiB (`413` above) and must be JSON (`400`). The
+   gateway and the route read a body with the same
+   [bounded read](../../src/runtime/http/bounded-body.ts), which cancels a
+   larger body and stops at the abort of the request. The body must be a tool
+   completion event that passes the projection rules of the audit capture
+   again (`400`): the control plane checks and copies each field and redacts
+   the input and the result text again.
+3. The [relay check](../../src/interfaces/web/internal/audit-relay-check.ts)
+   holds the trust rule of this step. The organization is the part of the
+   tenant ID of the event after the authority of the control plane (`403` for
+   another authority). The `Thermus-Access` context must be valid for that
+   organization, with the public key of `GATEWAY_SIGNING_KEY`: the checks of a
+   tenant without the bearer token, which a relay does not carry, and with 30
+   seconds of grace after the expiry, the age bound of a relayed event (`403`).
+   The actor of the event must have the authority and the subject of the
+   context (`403`).
 4. A repeated operation ID of the same tenant within 160 s, the longest time
    that its context can pass, gets `202` and is not captured again. A full
    memory of 16,384 operation IDs gives `503`, so the tenant tries again.
@@ -1380,7 +1388,8 @@ tenant upstream, the real registry rules over an in-memory registry, and a spy
 of the resume operation; the unit tests of the
 [gateway states](../../test/unit/mcp/mcp-gateway.test.ts) and its
 [forward](../../test/unit/mcp/mcp-gateway-forward.test.ts), the
-[forward step](../../test/unit/mcp/forward-step.test.ts), the registry writes
+[forward step](../../test/unit/mcp/forward-step.test.ts), the
+[bounded read](../../test/unit/http/bounded-body.test.ts), the registry writes
 in [tenants](../../test/unit/tenants/), the
 [relay check](../../test/unit/auth/signed-access-context.test.ts), and the
 [relayed capture](../../test/unit/logging/audit/audit-relay-capture.test.ts);

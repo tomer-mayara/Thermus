@@ -65,6 +65,10 @@ request records the runs.
   `gateway-settings.test.ts` (15 cases) check the switch and the gateway
   settings, with no value in a message. `test/unit/web/accepted-relays.test.ts`
   (3 cases) checks the memory of the accepted operation IDs.
+- `test/unit/http/bounded-body.test.ts` (7 cases) checks the bounded read of a
+  request body that the gateway and the relay route share: the body at and
+  within the limit, a `Content-Length` or a stream above the limit with the
+  cancel of the body, an abort during and before the read, and no body.
 - `test/integration/logging/audit/audit-relay-route.test.ts` (5 cases) runs the
   route with the real context check of `identity` and the real capture and
   dispatch of `audit-logs`.
@@ -81,7 +85,7 @@ npm run build && node --test --test-name-pattern="MCP_TENANTS_ENABLED" dist/test
 npm run build && node --test dist/test/unit/mcp/mcp-gateway.test.js dist/test/unit/mcp/mcp-gateway-forward.test.js dist/test/unit/mcp/forward-step.test.js
 npm run build && node --test dist/test/unit/tenants/tenant-resumes.test.js dist/test/unit/tenants/tenant-activity.test.js dist/test/unit/tenants/pg-tenant-registry-store.test.js
 npm run build && node --test dist/test/unit/auth/signed-access-context.test.js dist/test/unit/logging/audit/audit-relay-capture.test.js
-npm run build && node --test dist/test/unit/config/mcp-tenants-config.test.js dist/test/unit/config/gateway-settings.test.js dist/test/unit/web/accepted-relays.test.js
+npm run build && node --test dist/test/unit/config/mcp-tenants-config.test.js dist/test/unit/config/gateway-settings.test.js dist/test/unit/web/accepted-relays.test.js dist/test/unit/http/bounded-body.test.js
 npm run build && node --test dist/test/integration/logging/audit/audit-relay-route.test.js dist/test/integration/mcp/gateway-tenant-processes.test.js
 ```
 

@@ -679,10 +679,11 @@ removes the hop-by-hop headers, the cookie, and each client context, and
 streams the answer of the tenant back; each other state gets `503`. It reads
 only the id, the method, and the tool name of the JSON-RPC messages that it
 forwards. The [relay route](../src/interfaces/web/internal/audit-relay-route.ts)
-answers only the host of `CONTROL_PLANE_INTERNAL_URL`, checks the context with
-the public key of `GATEWAY_SIGNING_KEY` for the organization of the event,
-drops a repeated operation ID, and gives the checked event to `AuditLog`, so
-the capture of today exports it. With the switch off, app composes neither the
+answers only the host of `CONTROL_PLANE_INTERNAL_URL`; its
+[check](../src/interfaces/web/internal/audit-relay-check.ts) verifies the
+context with the public key of `GATEWAY_SIGNING_KEY` for the organization and
+the user of the event. The route drops a repeated operation ID and gives the
+checked event to `AuditLog`, so the capture of today exports it. With the switch off, app composes neither the
 forward step nor the relay route. The
 [authentication design](../docs/design/authentication-design.md#mcp-gateway-and-audit-relay)
 gives the answers and the rules.
@@ -1196,7 +1197,8 @@ the gateway aborts its pending fetch; after that, it cancels the answer body of
 the tenant. A restart after the first answer byte ends the answer stream. Each
 refusal writes one system log line and no audit event, and the restart line is
 the operator report. The [gateway](../src/interfaces/mcp/mcp-gateway.ts), its
-[upstream call](../src/interfaces/mcp/mcp-gateway-stream.ts), the
+[upstream call](../src/interfaces/mcp/mcp-gateway-stream.ts) and
+[answer stream](../src/interfaces/mcp/mcp-gateway-answer-stream.ts), the
 [registry rules](../src/tenancy/tenants/tenant-resumes.ts), and the
 [relay route](../src/interfaces/web/internal/audit-relay-route.ts) provide the
 contracts.
@@ -1741,7 +1743,8 @@ pending events. The tenant holds no database pool and no WorkOS client.
 With `MCP_TENANTS_ENABLED` on, the control plane composes one
 [gateway](../src/interfaces/mcp/mcp-gateway.ts) as the forward step of its
 MCPServer and one [relay route](../src/interfaces/web/internal/audit-relay-route.ts).
-Their state is in memory and has process scope: the 5 search places of the
+Their state is in memory and has process scope: the 5
+[search places](../src/interfaces/mcp/mcp-gateway-searches.ts) of the
 gateway, the organizations of its failure reports, the time of the last activity
 write of each organization in [TenantActivity](../src/tenancy/tenants/tenant-activity.ts),
 the running resumes of [TenantResumes](../src/tenancy/tenants/tenant-resumes.ts),
