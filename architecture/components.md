@@ -683,8 +683,8 @@ answers only the host of `CONTROL_PLANE_INTERNAL_URL`; its
 [check](../src/interfaces/web/internal/audit-relay-check.ts) verifies the
 context with the public key of `GATEWAY_SIGNING_KEY` for the organization and
 the user of the event. The route drops a repeated operation ID and gives the
-checked event to `AuditLog`, so the capture of today exports it. With the switch off, app composes neither the
-forward step nor the relay route. The
+checked event to `AuditLog`, so the capture of today exports it. With the
+switch off, app composes neither the forward step nor the relay route. The
 [authentication design](../docs/design/authentication-design.md#mcp-gateway-and-audit-relay)
 gives the answers and the rules.
 
@@ -1050,8 +1050,8 @@ which creates the tenant services through the Render adapter of render, and the
 MCP gateway reads the row of the organization, requests a tenant, resumes a
 suspended one, and records activity through a port that app composes on the
 registry; it forwards the request to the tenant server, and the relay route of
-web takes the audit relay of that tenant. Web calls the service
-for the trusted current tenant and actor. Test sends one synthetic event; the
+web takes the audit relay of that tenant. Web calls the service for the trusted
+current tenant and actor. Test sends one synthetic event; the
 separate tool and administration capture shares hosted activity-driven snapshots.
 Organizations calls the same SQL adapter through its supplied removal store for
 admission and terminal receipts. This runtime call points from organizations to
