@@ -23,7 +23,8 @@ function accepted(body: Buffer): AuditSendOutcome {
   return { kind: message.length === 0 ? 'accepted' : 'warning' };
 }
 
-function retryDelay(value: string | undefined, now: number): number | undefined {
+/** The delay of a Retry-After header in milliseconds: delta seconds or an HTTP date. Another form gives undefined. */
+export function retryAfterMs(value: string | undefined, now: number): number | undefined {
   if (value === undefined) return undefined;
   if (/^\d+$/.test(value)) return Number(value) * 1_000;
   if (!/^[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(value)) return undefined;
@@ -36,7 +37,7 @@ export function interpretAuditResponse(response: AuditHttpResponse, now = Date.n
   const statusCode = response.statusCode;
   if (statusCode !== 200) {
     if (![429, 502, 503, 504].includes(statusCode)) return { kind: 'permanent_failure', reason: 'http_status', statusCode };
-    const delay = retryDelay(response.retryAfter, now);
+    const delay = retryAfterMs(response.retryAfter, now);
     if (delay !== undefined && delay > AUDIT_SEND_LIMITS.retryAfterMs) return { kind: 'permanent_failure', reason: 'retry_after_exceeds_limit', statusCode };
     return { kind: 'transient_failure', reason: 'http_status', statusCode, ...(delay === undefined ? {} : { retryAfterMs: delay }) };
   }
