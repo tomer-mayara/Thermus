@@ -7,17 +7,15 @@ import type { RelayItem } from './audit-relay-item.ts';
  * The bounds are small, so the totals are counted again at each admission.
  */
 export class RelayQueue {
+  // A tenant has an entry only while it has a pending item, so the size of the map counts the tenants of the bound.
   private readonly tenants = new Map<string, RelayItem[]>();
 
   constructor(private readonly bounds: AuditCollectorBounds) {}
 
   /** Adds the item when it fits each bound; else the item is lost. */
   add(item: RelayItem): boolean {
-    const all = this.items();
     const items = this.tenants.get(item.tenant) ?? [];
-    const fitsAll = all.length < this.bounds.items && bytesOf(all) + item.bytes <= this.bounds.bytes;
-    const fitsTenant = items.length < this.bounds.tenantItems && bytesOf(items) + item.bytes <= this.bounds.tenantBytes;
-    if (!fitsAll || !fitsTenant || (items.length === 0 && this.tenants.size >= this.bounds.tenants)) return false;
+    if (!fitsBounds(this.bounds, { all: this.items(), items, tenants: this.tenants.size }, item)) return false;
     this.tenants.set(item.tenant, [...items, item]);
     return true;
   }
@@ -40,6 +38,21 @@ export class RelayQueue {
     else this.tenants.set(item.tenant, rest);
     return true;
   }
+}
+
+interface Pending {
+  readonly all: readonly RelayItem[];
+  readonly items: readonly RelayItem[];
+  readonly tenants: number;
+}
+
+// One more item must keep the items and the bytes within their bounds, in all and for its tenant. A new tenant needs a
+// free tenant place too.
+function fitsBounds(bounds: AuditCollectorBounds, pending: Pending, item: RelayItem): boolean {
+  const { all, items, tenants } = pending;
+  const fitsAll = all.length < bounds.items && bytesOf(all) + item.bytes <= bounds.bytes;
+  const fitsTenant = items.length < bounds.tenantItems && bytesOf(items) + item.bytes <= bounds.tenantBytes;
+  return fitsAll && fitsTenant && (items.length > 0 || tenants < bounds.tenants);
 }
 
 function bytesOf(items: readonly RelayItem[]): number {

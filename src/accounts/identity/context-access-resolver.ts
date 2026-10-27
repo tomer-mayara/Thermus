@@ -12,11 +12,15 @@ const ORGANIZATION_REQUIRED: AccessDecision = Object.freeze({ allowed: false, re
 export class ContextAccessResolver implements AccessResolver {
   constructor(private readonly context: VerifiedAccessContext, private readonly tenantId: string) {}
 
+  /** Allows the user of the token only when the token names the subject and the organization of the context. */
   async resolve(user: AuthenticatedUser): Promise<AccessDecision> {
-    const { context } = this;
-    if (user.subject !== context.subject) return ACCOUNT_INACTIVE;
-    if (user.selectedOrganizationId !== context.organizationId) return ORGANIZATION_REQUIRED;
-    const trustedUser = { authority: context.authority, subject: context.subject, selectedOrganizationId: context.organizationId, ...(context.name === undefined ? {} : { name: context.name }) };
-    return { allowed: true, context: createRequestContext({ user: trustedUser, tenantId: this.tenantId, organizationId: context.organizationId, grants: context.grants }) };
+    return accessOf(this.context, this.tenantId, user);
   }
+}
+
+function accessOf(context: VerifiedAccessContext, tenantId: string, user: AuthenticatedUser): AccessDecision {
+  if (user.subject !== context.subject) return ACCOUNT_INACTIVE;
+  if (user.selectedOrganizationId !== context.organizationId) return ORGANIZATION_REQUIRED;
+  const trustedUser = { authority: context.authority, subject: context.subject, selectedOrganizationId: context.organizationId, ...(context.name === undefined ? {} : { name: context.name }) };
+  return { allowed: true, context: createRequestContext({ user: trustedUser, tenantId, organizationId: context.organizationId, grants: context.grants }) };
 }

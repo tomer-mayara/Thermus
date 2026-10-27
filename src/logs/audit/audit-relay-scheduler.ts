@@ -6,7 +6,9 @@ import type { RelayQueue } from './audit-relay-queue.ts';
  * after the backoff of a transient failure. An accepted relay, a final failure, and an expired event leave the queue.
  */
 export class RelayScheduler {
+  // The attempts that run now: at most the active bound. A relay that waits for its retry holds no place.
   private active = 0;
+  // After close, no pump starts, so no attempt starts.
   private closed = false;
   private scheduled?: ReturnType<typeof setImmediate>;
 
@@ -27,9 +29,7 @@ export class RelayScheduler {
 
   /** Ends a relay: its event and its timers go, and an active attempt aborts and leaves the queue when it settles. */
   dispose(item: RelayItem): void {
-    item.disposed = true; item.body = undefined;
-    clearTimeout(item.deadline); clearTimeout(item.retry);
-    item.controller?.abort();
+    release(item);
     if (!item.active && this.queue.remove(item)) this.schedule();
   }
 
@@ -50,4 +50,11 @@ export class RelayScheduler {
     else item.retry = setTimeout(() => { item.retry = undefined; this.schedule(); }, wait);
     this.schedule();
   }
+}
+
+// The event and the timers of an ended relay go at once. An active attempt aborts, so its request stops too.
+function release(item: RelayItem): void {
+  item.disposed = true; item.body = undefined;
+  clearTimeout(item.deadline); clearTimeout(item.retry);
+  item.controller?.abort();
 }

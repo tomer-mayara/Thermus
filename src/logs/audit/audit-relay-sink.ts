@@ -23,8 +23,7 @@ export class AuditRelaySink {
   private closed = false;
 
   constructor(target: URL, options: AuditRelayOptions = {}) {
-    const clock = { now: options.now ?? (() => performance.now()), random: options.random ?? Math.random, post: options.post ?? postAuditRelay };
-    this.route = { target, clock, bounds: collectorBounds(options.bounds ?? {}) };
+    this.route = relayRouteOf(target, options);
     this.queue = new RelayQueue(this.route.bounds);
     this.scheduler = new RelayScheduler(this.queue, this.route);
   }
@@ -40,6 +39,8 @@ export class AuditRelaySink {
     this.scheduler.close();
   }
 
+  // False when the event is lost: after close, when the bounds refuse it, or when the queue is full. An admitted
+  // event drops at the end of its age, as in the audit collector.
   private admit(event: AuditEvent, context: string): boolean {
     try {
       const item = this.closed ? undefined : relayItemOf(event, context, this.route);
@@ -52,4 +53,10 @@ export class AuditRelaySink {
       return false;
     }
   }
+}
+
+// Production posts with fetch on the performance clock; a test gives its own clock, random source, or post.
+function relayRouteOf(target: URL, options: AuditRelayOptions): RelayRoute {
+  const clock = { now: options.now ?? (() => performance.now()), random: options.random ?? Math.random, post: options.post ?? postAuditRelay };
+  return { target, clock, bounds: collectorBounds(options.bounds ?? {}) };
 }
