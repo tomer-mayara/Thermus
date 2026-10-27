@@ -7,6 +7,7 @@ import type { TenantPlatform } from '../tenancy/tenants/tenant-platform.ts';
 import { TenantProvisioner } from '../tenancy/tenants/tenant-provisioner.ts';
 import type { TenantProvisioningStore } from '../tenancy/tenants/tenant-provisioning-store.ts';
 import type { HostedLoggingStorage } from './logging-storage.ts';
+import { systemClock } from './system-clock.ts';
 
 export interface TenantProvisioningParts {
   readonly settings: TenantProvisioningSettings;
@@ -24,26 +25,6 @@ export interface TenantProvisioning {
   close(): Promise<void>;
 }
 
-/** The monotonic clock of the process, with a wait that a stop signal ends. */
-export const systemClock: ProvisioningClock = {
-  now: () => performance.now(),
-  sleep: (ms, signal) => new Promise((resolve, reject) => {
-    if (signal.aborted) {
-      reject(signal.reason);
-      return;
-    }
-    const stop = (): void => {
-      clearTimeout(timer);
-      reject(signal.reason);
-    };
-    const timer = setTimeout(() => {
-      signal.removeEventListener('abort', stop);
-      resolve();
-    }, ms);
-    signal.addEventListener('abort', stop, { once: true });
-  }),
-};
-
 /** The Render adapter of the control plane, with the write guard of the tenant registry. */
 export function tenantPlatformOf(parts: Pick<TenantProvisioningParts, 'settings' | 'store' | 'fetch' | 'clock'>): TenantPlatform {
   const { apiKey, ownerId, registryCredentialId, tenantImage } = parts.settings.render;
@@ -56,29 +37,21 @@ export function tenantPlatformOf(parts: Pick<TenantProvisioningParts, 'settings'
 
 /** Starts the provisioner loop of the control plane. App owns its lifetime and closes it before the SQL runtime. */
 export function startTenantProvisioning(parts: TenantProvisioningParts): TenantProvisioning {
-  const { settings, logger } = parts;
-  const provisioner = new TenantProvisioner({
-    platform: tenantPlatformOf(parts),
-    store: parts.store,
-    clock: parts.clock ?? systemClock,
-    log: logger,
-    tenant: { publicBaseUrl: parts.publicBaseUrl, authkitIssuer: parts.authkitIssuer, gatewayPublicKey: settings.gatewayPublicKey, controlPlaneInternalUrl: settings.controlPlaneInternalUrl },
-    namePrefix: settings.namePrefix,
-    freePlan: settings.freePlan,
-  });
+  const { render, freePlan, namePrefix } = parts.settings;
   const controller = new AbortController();
-  const running = provisioner.run(controller.signal);
-  logger.info(`The tenant provisioner runs: Render workspace ${settings.render.ownerId}, image ${settings.render.tenantImage}, plan ${settings.freePlan}, name prefix ${settings.namePrefix}.`);
-  let closing: Promise<void> | undefined;
-  return {
-    close: () => {
-      if (closing === undefined) {
-        controller.abort(new DOMException('The control plane is shutting down', 'AbortError'));
-        closing = running;
-      }
-      return closing;
-    },
-  };
+  const running = provisionerOf(parts).run(controller.signal);
+  parts.logger.info(`The tenant provisioner runs: Render workspace ${render.ownerId}, image ${render.tenantImage}, plan ${freePlan}, name prefix ${namePrefix}.`);
+  // A second close aborts nothing more and waits for the same end of the loop.
+  return { close: () => { controller.abort(new DOMException('The control plane is shutting down', 'AbortError')); return running; } };
+}
+
+function provisionerOf(parts: TenantProvisioningParts): TenantProvisioner {
+  const { gatewayPublicKey, controlPlaneInternalUrl, namePrefix, freePlan } = parts.settings;
+  return new TenantProvisioner({
+    platform: tenantPlatformOf(parts), store: parts.store, clock: parts.clock ?? systemClock, log: parts.logger,
+    tenant: { publicBaseUrl: parts.publicBaseUrl, authkitIssuer: parts.authkitIssuer, gatewayPublicKey, controlPlaneInternalUrl },
+    namePrefix, freePlan,
+  });
 }
 
 /**
