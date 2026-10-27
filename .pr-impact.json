@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Test support only: the local HTTPS site of the hosted live gate (test/support/hosted-live/local-https-site.ts and settings.ts) moves from the fixed port 46443, inside the Linux ephemeral port range, to 24443, and the Connect callback of the live proofs from 46480 to 24480; both ports are below the ephemeral ranges of Linux (32768 to 60999) and macOS (49152 to 65535). The two loopback fronts of the site move to the new module test/support/hosted-live/https-fronts.ts; they listen before the application opens, and a busy fixed port stops the start at once with one error that names the port and the likely cause. The hosted-live-site integration cases need no registered URI, so their sites listen on port 0 and their requests go to the front address. The live gate files start the site before their first WorkOS call. The live describe names, the fetch proofs, the work slice launcher and guide, the test gate policy, the test list, README.md, and docs/user-portal.md name the new port. The WorkOS Staging URIs of the new ports are configuration outside Git. No source, runtime, registry view, declaration, or deployment change.",
+    "summary": "Probe tooling only: script/spike/stripe-seat-sync-probe.ts and its helper modules under script/spike/stripe-seat-sync-probe/ probe, in Stripe test mode and the WorkOS Staging environment, the WorkOS Stripe Seat Sync meter (one membership, a second, one removed), a Checkout Session in subscription mode with required terms acceptance and Stripe Tax for the metered price, a local webhook listener that the Stripe CLI forwards to, with the SDK signature check, and a test clock that bills three reported seats and cancels the subscription after its failed payment retries; with a dry-run mode, a reads-only preflight, guards that stop a live Stripe key, a WorkOS production key, and the production client before any call, a --workos-only mode, and a cleanup that deletes every object of the run by its run token, also after a failure or the first stop signal. It reuses the step runner and the polls of the SO-01c probe. The new dev dependency stripe, pinned to 23.0.1 in package.json and pnpm-lock.yaml, is used only by this probe; no file under src/ imports it, and it runs in no build, image, or production path. knip lists the script as an entry point. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md gains the section SO-01f: Stripe Checkout, webhooks, test clocks, and WorkOS seat sync, with the WorkOS-only check that ran in the WorkOS Staging environment and its cleanup fix. By the owner's decision of 27 October 2026, the real run with the Stripe steps moves to Slice 3: the SO-01f ticket of docs/implementation/self-onboarding-plan.md names the record section and the move, and Slice 3 gains the item SO-01f real run before SO-13, with owner steps 1 to 9 as its prerequisites. No source, runtime, registry view, declaration, or deployment change.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,13 +27,10 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "test/support/hosted-live/local-https-site.ts",
-      "test/support/hosted-live/https-fronts.ts",
-      "test/support/hosted-live/settings.ts",
-      "test/integration/auth/hosted-live-site.test.ts",
-      "test/integration/auth/hosted-live-site/mcp.ts",
-      "test/acceptance/auth/hosted.live.ts",
-      "docs/implementation/test-gate-policy.md"
+      "script/spike/stripe-seat-sync-probe.ts",
+      "docs/implementation/self-onboarding-s1.md",
+      "docs/implementation/self-onboarding-plan.md",
+      "package.json"
     ]
   }
 }

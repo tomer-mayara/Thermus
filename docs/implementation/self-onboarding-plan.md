@@ -738,7 +738,12 @@ and the recommendation are in the record section
   repeat; 5. the cleanup, also after a failure.
 
 **SO-01f Stripe and WorkOS seat sync probe.** Size M. Needed before Slice 3;
-it can run later than the other probes.
+it can run later than the other probes. The probe, the owner steps, the
+variables, and the permissions of the restricted key are in the record section
+[SO-01f: Stripe Checkout, webhooks, test clocks, and WorkOS seat sync](self-onboarding-s1.md#so-01f-stripe-checkout-webhooks-test-clocks-and-workos-seat-sync).
+On 27 October 2026, the owner moved the real run to Slice 3 (item SO-01f
+real run); Slice 1 delivered the probe and its WorkOS-only check in the
+WorkOS Staging environment.
 
 - Owner steps in the dashboards, recorded without secrets: connect the
   WorkOS Stripe add-on of the Staging environment to the Stripe account in
@@ -911,6 +916,17 @@ Depends on SO-02 to SO-11.
 At the end of this slice, an Admin upgrades with a card, the organization has
 no member limit, is billed for each active member, and runs on `1c-2g`; a
 cancellation returns it to the free tier.
+
+**SO-01f real run.** The real run of the SO-01f probe in Stripe test mode and
+the WorkOS Staging environment: the seat sync, Checkout, webhook, and test
+clock steps. The owner moved it here from Slice 1 on 27 October 2026. The
+prerequisites are owner steps 1 to 9 of the record section
+[SO-01f: Stripe Checkout, webhooks, test clocks, and WorkOS seat sync](self-onboarding-s1.md#so-01f-stripe-checkout-webhooks-test-clocks-and-workos-seat-sync):
+the WorkOS Stripe add-on with Seat Sync and Entitlements, the metered price,
+the Tax settings, a terms of service URL, the Customer Portal, the retry
+rule, the restricted key and its two variables, and the Stripe CLI login.
+That section is the guide of the run, and the run adds its results there.
+SO-13 depends on SO-01f, so this run comes before SO-13.
 
 **SO-13 Stripe billing (AUTH-11).** `BillingStripe` behind the `Billing`
 interface with the operations that the flow needs: start Checkout, open the
