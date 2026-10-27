@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-10-27T22:22:15Z",
+  "candidate": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "source": "Direct human response to the current-candidate owner/architect question in this Codex chat",
+  "question": "Do you approve PR #281 at feaddbde as owner/architect—the picker returns to Connect and uses an optional current-role lookup for its menu—so I can merge, deploy, and verify both production accounts? All required release checks are complete.",
+  "answer": "Approve feaddbde and continue",
+  "scope": [
+    "picker default return to Connect",
+    "optional current-role lookup and role-based compact navigation",
+    "merge PR281",
+    "production deployment",
+    "verification of both account roles"
+  ],
+  "note": "This records the human chat approval. It is not an AI-submitted GitHub approval review or a claim about a GitHub review identity."
+}

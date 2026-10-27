@@ -1,0 +1,12 @@
+{
+  "phase": "Human owner/architect approval received; eligible to merge",
+  "candidate": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "base": "f6b523967223da5ebddafdef1a508d3936cee01c",
+  "allSelectedReleaseGates": "passed or permitted retained findings fully reviewed",
+  "ready": true,
+  "mergeable": true,
+  "currentHeadCiChecks": [],
+  "currentHeadCiStatuses": [],
+  "approval": "See human-approval.json",
+  "productionDeployment": "pending"
+}
