@@ -1,11 +1,14 @@
 import type { Billing, BillingState } from './billing.ts';
 
+// The 5 members of a free organization, the creator included (decision D-5).
+const FREE_MEMBER_LIMIT = 5;
+
 export class BillingFree implements Billing {
   async stateOf(organizationId: string): Promise<BillingState> {
     if (typeof organizationId !== 'string' || organizationId === '') {
       throw new TypeError('Billing needs an organization ID');
     }
-    return Object.freeze({ organizationId, plan: 'free', billedSeats: 0 });
+    return Object.freeze({ organizationId, plan: 'free', memberLimit: FREE_MEMBER_LIMIT, billedSeats: 0 });
   }
 
   async updateSeats(organizationId: string, seatCount: number): Promise<BillingState> {

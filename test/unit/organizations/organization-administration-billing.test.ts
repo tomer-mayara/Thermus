@@ -16,11 +16,12 @@ describe('OrganizationAdministration billing state', () => {
   for (const subject of ['user-sam', 'user-otto', 'user-eve', 'user-cy']) {
     test(`Given an Admin (${subject}) whose session selected Globex, when it asks for the billing state of Acme, then a current read of its memberships authorizes it, and it gets the state of Acme from billing`, async () => {
       const { directory, records, billing, administration } = administrationWith();
+      billing.answerWith({ plan: 'free', memberLimit: 5 });
       const actor = actorOf(subject);
 
       const state = await administration.billingState(actor, 'org-a');
 
-      assert.deepEqual(state, { organizationId: 'org-a', plan: 'free', billedSeats: 0 });
+      assert.deepEqual(state, { organizationId: 'org-a', plan: 'free', memberLimit: 5, billedSeats: 0 });
       assert.ok(Object.isFrozen(state));
       assert.deepEqual(directory.membershipReads, [actor.user]);
       assert.deepEqual(billing.stateReads, ['org-a']);

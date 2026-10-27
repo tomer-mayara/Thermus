@@ -3,7 +3,7 @@ import { describe, test } from 'node:test';
 import type { BillingState } from '../../../src/accounts/billing/billing.ts';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
 
-const freeOrgA: BillingState = { organizationId: 'org-a', plan: 'free', billedSeats: 0 };
+const freeOrgA: BillingState = { organizationId: 'org-a', plan: 'free', memberLimit: 5, billedSeats: 0 };
 const missingOrganization = { name: 'TypeError', message: 'Billing needs an organization ID' };
 const invalidSeatCount = { name: 'RangeError', message: 'A seat count must be a whole number of 0 or more' };
 
@@ -38,6 +38,20 @@ describe('BillingFree input', () => {
   });
 });
 
+describe('BillingFree plan', () => {
+  test('Given any organization, when its billing is read, then it is on the free plan with the member limit 5 and no billed seat, also after a seat count', async () => {
+    const billing = new BillingFree();
+
+    const states = [await billing.stateOf('org-a'), await billing.stateOf('org-b'), await billing.updateSeats('org-a', 9)];
+
+    assert.deepEqual(states.map(({ organizationId, plan, billedSeats, ...limit }) => [organizationId, plan, billedSeats, limit]), [
+      ['org-a', 'free', 0, { memberLimit: 5 }],
+      ['org-b', 'free', 0, { memberLimit: 5 }],
+      ['org-a', 'free', 0, { memberLimit: 5 }],
+    ]);
+  });
+});
+
 describe('BillingFree state records', () => {
   test('Given a confirmed state, when a caller tries to change it, then the record is frozen and keeps the free state', async () => {
     const billing = new BillingFree();
@@ -46,6 +60,9 @@ describe('BillingFree state records', () => {
       assert.ok(Object.isFrozen(state));
       assert.throws(() => {
         (state as { billedSeats: number }).billedSeats = 4;
+      }, TypeError);
+      assert.throws(() => {
+        (state as { memberLimit: number }).memberLimit = 50;
       }, TypeError);
       assert.deepEqual(state, freeOrgA);
     }
