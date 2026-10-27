@@ -10,8 +10,9 @@
 // and answers of SO-01c (render-tenant-lifecycle/), with its rules: the client refuses each call to a service other
 // than the thermus-spike-* services of this run, and always the production service; it reads RENDER_API_KEY from the
 // environment, and no output holds the key. docs/implementation/self-onboarding-s1.md (section SO-01d) names the
-// documentation page of each call. This is a probe, not production code. Run it from the repository root: --help
-// prints the usage.
+// documentation page of each call. SO-03 adds the step control-plane: a one-off job on the private service, as a tenant,
+// requests /healthz of the web service, as the control plane, at its slug (self-onboarding-s1.md, section SO-03).
+// This is a probe, not production code. Run it from the repository root: --help prints the usage.
 import { progress } from './render-tenant-lifecycle/context.ts';
 import { readApiKey } from './render-tenant-lifecycle/inputs.ts';
 import { RenderClient } from './render-tenant-lifecycle/render-client.ts';

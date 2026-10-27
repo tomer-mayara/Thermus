@@ -14,11 +14,10 @@ const DELETE_ORDER: readonly Role[] = ['web', 'private'];
 // A job that has not ended is canceled first: the docs do not say that a delete of its service stops it.
 async function cancelOpenJob(context: ProbeContext): Promise<void> {
   const job = context.state.job;
-  const webId = context.state.services.web.serviceId;
-  if (job === undefined || webId === undefined || JOB_ENDED.has(job.status ?? '')) return;
-  const current = jobOf((await context.client.read(jobStatusCall(webId, job.id), context.signal)).json);
+  if (job === undefined || JOB_ENDED.has(job.status ?? '')) return;
+  const current = jobOf((await context.client.read(jobStatusCall(job.serviceId, job.id), context.signal)).json);
   if (JOB_ENDED.has(current.status ?? '')) return;
-  const answer = await context.client.write(STEP, cancelJobCall(webId, job.id), context.signal);
+  const answer = await context.client.write(STEP, cancelJobCall(job.serviceId, job.id), context.signal);
   addRow(context, STEP, { check: `Cancel ${job.id} (status ${current.status ?? 'absent'})`, expected: '200', measured: `${answer.status} after ${seconds(answer.ms)}` });
 }
 
@@ -54,7 +53,7 @@ async function deleteAll(context: ProbeContext): Promise<readonly string[]> {
   try {
     await cancelOpenJob(context);
   } catch (error) {
-    problems.push(`The job ${context.state.job?.id ?? ''} was not canceled: ${messageOf(error)}. Cancel it on the One-off Jobs page of the web service.`);
+    problems.push(`The job ${context.state.job?.id ?? ''} was not canceled: ${messageOf(error)}. Cancel it on the One-off Jobs page of its service.`);
   }
   const deleted: string[] = [];
   for (const role of DELETE_ORDER) {
