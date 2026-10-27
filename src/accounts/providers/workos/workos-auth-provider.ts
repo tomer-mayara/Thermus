@@ -13,7 +13,7 @@ interface ActiveGrantReader {
   activeGrants(userId: string, organizationId: string): Promise<readonly RoleGrant[] | undefined>;
 }
 
-export interface WorkOSAuthProviderOptions {
+export interface WorkOSTokenVerifierOptions {
   // The one authority of the WorkOS environment, from workosAuthority(). The client ID of an MCP client never changes it.
   readonly authority: string;
   // Exactly as written: each Connect access token must carry this issuer.
@@ -22,6 +22,9 @@ export interface WorkOSAuthProviderOptions {
   readonly mcpResourceUrl: string;
   // The AuthKit key set. In production: createRemoteJWKSet(<authkitIssuer>/oauth2/jwks).
   readonly keySet: JWTVerifyGetKey;
+}
+
+export interface WorkOSAuthProviderOptions extends WorkOSTokenVerifierOptions {
   readonly grants: ActiveGrantReader;
   // Optional display data. Failure keeps access and the ID; production uses the SDK timeout and zero retries.
   readonly userManagement?: { getUser(userId: string): Promise<unknown> };
@@ -57,10 +60,12 @@ export function hostedTenantId(authority: string, organizationId: string): strin
   return `${authority}:${organizationId}`;
 }
 
-export class WorkOSAuthProvider implements IdentityVerifier, AccessResolver {
-  private readonly options: WorkOSAuthProviderOptions;
+// The check of a Connect token alone, with no membership read. A tenant uses it: the signed access context of the
+// control plane gives the grants there.
+export class WorkOSTokenVerifier implements IdentityVerifier {
+  private readonly options: WorkOSTokenVerifierOptions;
 
-  constructor(options: WorkOSAuthProviderOptions) {
+  constructor(options: WorkOSTokenVerifierOptions) {
     this.options = options;
   }
 
@@ -77,6 +82,38 @@ export class WorkOSAuthProvider implements IdentityVerifier, AccessResolver {
       expiresAtUnixSeconds: claims.expiresAt,
       resource: new URL(mcpResourceUrl),
     };
+  }
+
+  // A token fault gives no cause: a jose error can hold the claims of the token.
+  private async signedPayload(token: string): Promise<JWTPayload> {
+    const { keySet, authkitIssuer, mcpResourceUrl } = this.options;
+    try {
+      const { payload } = await jwtVerify(token, keySet, {
+        issuer: authkitIssuer,
+        audience: mcpResourceUrl,
+        algorithms: ['RS256'],
+        requiredClaims: REQUIRED_CLAIMS,
+        clockTolerance: CLOCK_TOLERANCE_SECONDS,
+      });
+      return payload;
+    } catch (error) {
+      if (isTokenFault(error)) throw new InvalidAccessTokenError('The access token failed the JWT check');
+      throw error;
+    }
+  }
+}
+
+export class WorkOSAuthProvider implements IdentityVerifier, AccessResolver {
+  private readonly options: WorkOSAuthProviderOptions;
+  private readonly tokens: WorkOSTokenVerifier;
+
+  constructor(options: WorkOSAuthProviderOptions) {
+    this.options = options;
+    this.tokens = new WorkOSTokenVerifier(options);
+  }
+
+  verifyAccessToken(token: string): Promise<VerifiedIdentity> {
+    return this.tokens.verifyAccessToken(token);
   }
 
   // Each call checks the current membership and grants before it builds the access context.
@@ -102,24 +139,6 @@ export class WorkOSAuthProvider implements IdentityVerifier, AccessResolver {
       return profileNameOf(profile, subject);
     } catch {
       return undefined;
-    }
-  }
-
-  // A token fault gives no cause: a jose error can hold the claims of the token.
-  private async signedPayload(token: string): Promise<JWTPayload> {
-    const { keySet, authkitIssuer, mcpResourceUrl } = this.options;
-    try {
-      const { payload } = await jwtVerify(token, keySet, {
-        issuer: authkitIssuer,
-        audience: mcpResourceUrl,
-        algorithms: ['RS256'],
-        requiredClaims: REQUIRED_CLAIMS,
-        clockTolerance: CLOCK_TOLERANCE_SECONDS,
-      });
-      return payload;
-    } catch (error) {
-      if (isTokenFault(error)) throw new InvalidAccessTokenError('The access token failed the JWT check');
-      throw error;
     }
   }
 }
