@@ -1,3 +1,4 @@
+import { pendingInvitationsIn } from '../../../support/drivers/browser/pending-invitations-page.ts';
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import type { Invitation, OrganizationMembership } from '@workos-inc/node';
@@ -212,12 +213,12 @@ export function describeAdministrationServerCases(run: LiveRun): void {
 
       for (const answer of [...sent, resent, revoked]) assertSeeOther(answer, 'members');
       for (const answer of refused) assertNotice(answer, 409, addressInUse);
-      assert.ok(pending.body.includes(`${inviteeUser.email}: User invitation, pending.`), 'The invitations page does not show the pending User invitation.');
-      assert.ok(pending.body.includes(`${inviteeAdmin.email}: Admin invitation, pending.`), 'The invitations page does not show the pending Admin invitation.');
+      assert.ok(pendingInvitationsIn(pending.body).some(entry => entry.email === inviteeUser.email && entry.role === 'User'), 'The invitations page does not show the pending User invitation.');
+      assert.ok(pendingInvitationsIn(pending.body).some(entry => entry.email === inviteeAdmin.email && entry.role === 'Admin'), 'The invitations page does not show the pending Admin invitation.');
       assert.ok(pendingChanges.every((label) => labelsOf(pending.forms).includes(label)), `A pending invitation has no resend or revoke form: ${JSON.stringify(labelsOf(pending.forms))}`);
       assert.deepEqual([inviteeUser, inviteeAdmin, inviteeRevoked].map(({ email }) => invitations.filter((invitation) => invitation.email === email).length), [1, 1, 1]);
       assert.deepEqual([adminInvitee.status, adminInvitee.roles], ['pending', ['admin']]);
-      assert.ok(!after.body.includes(`${inviteeRevoked.email}: User invitation`), 'Members still shows the revoked invitation.');
+      assert.ok(!pendingInvitationsIn(after.body).some(entry => entry.email === inviteeRevoked.email), 'Members still shows the revoked invitation.');
       assert.ok(labelsOf(after.forms).every((label) => !label.endsWith(inviteeRevoked.email)), 'The revoked invitation has a change form.');
       assert.deepEqual(records, [
         `invite user for ${inviteeUser.email}: applied`,
