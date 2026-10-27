@@ -2,8 +2,8 @@
 
 Candidate: [PR #266](https://github.com/tomer-mayara/Thermus/pull/266).
 Scope: [UI-03](../design/organization-admin-plan.md#ui-03--on-demand-invitation-form)
-of the Refined tabs plan. This candidate is now stacked on UI-02 PR #264 and
-includes its member rows, both counts, quiet self/other actions and density fix.
+of the Refined tabs plan. This candidate follows the merged UI-02 PR #264 on
+main and includes its member rows, both counts, quiet self/other actions and density fix.
 The original evidence below describes the earlier UI-01-based candidate; the
 maintained PR comments record the new head, parent and validation. This record
 claims no merge or deployment.
@@ -98,3 +98,17 @@ no artificial feature failure was introduced for conflict resolution. The full
 rebased candidate still requires its selected functional, staging and quality
 gates before Ready. The earlier staging failures in this record remain historical evidence
 until a new full run establishes the result for the restacked candidate.
+
+## Rebase after UI-02 merged
+
+UI-02 was squash-merged as `2282edd4`. Its complete tree matches the former
+parent `614090a1`. Replaying only UI-03's two commits onto that main revision
+kept both patches and the complete UI-03 tree unchanged. The rebase adds no
+application or test behavior. The required metrics process records the new
+main revision in `docs/metrics/2026-10-27-2282edd4.json`.
+
+Fresh typecheck, portal and server builds, and all 51 Members browser cases
+passed. Earlier test and image reports keep their original execution revisions;
+the maintained PR comments link the input comparison and refreshed review
+reports. Hosted live verification remains pending. The owner's approval of the
+previous head stays in the history and does not approve the rebased head.
