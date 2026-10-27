@@ -1297,6 +1297,19 @@ service accepts connections; the
 [SO-03 record](../docs/implementation/self-onboarding-s1.md#so-03-private-address-of-the-control-plane)
 gives the runs and limits. This map draws no tenant deployment until one exists.
 
+The hosted release path is source-defined since SO-02 of the self on-boarding
+plan. At each merge to `main`, [`hosted-image.yml`](../.github/workflows/hosted-image.yml)
+builds `Dockerfile.hosted` on a GitHub-hosted AMD64 runner, runs the hosted
+image gate against that image, and pushes it by digest to the private GHCR
+package `ghcr.io/tomer-mayara/thermus-hosted`. Only a manual dispatch on `main`
+with a digest and a service ID deploys: the deploy job calls the Render API
+deploy with `imageUrl` for an image-backed web service of the Thermus AI
+workspace, which also sets its image setting `imagePath`, and Render pulls the
+image by digest. The recorded hosted target above still builds from Git with
+automatic deploys off, so its diagram does not change; step 5 of the SO-12
+order moves it to the image. GHCR keeps every digest that a service runs and
+the last ten release digests ([Hosted release](../README.md#hosted-release)).
+
 ## Ownership
 
 The 22 IDs below are stable logical component names. Each root owns its source
