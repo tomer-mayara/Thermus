@@ -43,14 +43,15 @@ function stateOf(membership: OrganizationMembership): MembershipState {
   return { status: membership.status, roles: rolesOf(membership), updatedAt: membership.updatedAt };
 }
 
-// A page that fails names the last operator reports of the server. A report names the path and the failure, never a
-// credential.
+// A page or a refusal that fails names the last operator reports of the server. A report names the path and the
+// failure, never a credential.
+async function lastOperatorReports(run: LiveRun): Promise<string> {
+  return (await run.site()).log.lines.filter((line) => line.startsWith('ERROR ')).slice(-3).join('\n');
+}
+
 async function shownPage(run: LiveRun, page: Page, path: string): Promise<ShownPage> {
   const answer = await serverGet(page, path);
-  if (answer.status !== 200) {
-    const reports = (await run.site()).log.lines.filter((line) => line.startsWith('ERROR ')).slice(-3);
-    assert.fail(`GET /${path} gave ${answer.status}. The last operator reports:\n${reports.join('\n')}`);
-  }
+  if (answer.status !== 200) assert.fail(`GET /${path} gave ${answer.status}. The last operator reports:\n${await lastOperatorReports(run)}`);
   return { body: answer.body, forms: formsIn(answer.body) };
 }
 
@@ -94,8 +95,8 @@ async function organizationState(run: LiveRun, organizationId: string) {
   };
 }
 
-function assertAdministrationRefusal(answer: ServerAnswer): void {
-  assert.equal(answer.status, 403, answer.body);
+async function assertAdministrationRefusal(run: LiveRun, answer: ServerAnswer): Promise<void> {
+  if (answer.status !== 403) assert.fail(`The refusal gave ${answer.status}. The last operator reports:\n${await lastOperatorReports(run)}`);
   assert.doesNotMatch(answer.body, /<form/);
 }
 
@@ -251,11 +252,11 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       const session = await sessionJson(page);
       assert.equal(session.mfaCompleted, false);
       assert.equal((await serverGet(page, 'portal/access')).status, 200);
-      for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(page, path));
+      for (const path of ['members', 'invitations', 'billing']) await assertAdministrationRefusal(run, await serverGet(page, path));
       const fields = { csrf_token: String(session.csrfToken), organization_id: organizationC.id };
-      assertAdministrationRefusal(await serverPost(page, 'invitations/send', { fields: { ...fields, email: users['c-invitee-revoked'].email, role: 'admin' } }));
+      await assertAdministrationRefusal(run, await serverPost(page, 'invitations/send', { fields: { ...fields, email: users['c-invitee-revoked'].email, role: 'admin' } }));
       for (const path of ['invitations/resend', 'invitations/revoke']) {
-        assertAdministrationRefusal(await serverPost(page, path, { fields: { ...fields, invitation_id: pending.id } }));
+        await assertAdministrationRefusal(run, await serverPost(page, path, { fields: { ...fields, invitation_id: pending.id } }));
       }
       assert.deepEqual(await organizationState(run, organizationC.id), before, 'A refused User request changed WorkOS data.');
       assert.deepEqual((await changeRecordsOf(users['c-target'])).map(({ outcome }) => outcome), ['denied', 'denied', 'denied']);
@@ -294,7 +295,7 @@ export function describeAdministrationServerCases(run: LiveRun): void {
       assert.equal(adminPortal.status, 200, adminPortal.body);
       assert.deepEqual(JSON.parse(adminPortal.body), { organizationId: organizationC.id, organizationName: organizationC.name, roles: ['admin'], plan: 'free', memberLimit: 5, mcpUrl: mcpResource });
       assert.equal(adminMembers.status, 200, 'The Admin invitee cannot open the members page.');
-      for (const path of ['members', 'invitations', 'billing']) assertAdministrationRefusal(await serverGet(userVisit.page, path));
+      for (const path of ['members', 'invitations', 'billing']) await assertAdministrationRefusal(run, await serverGet(userVisit.page, path));
       assert.ok(!membersPage.body.includes(`${inviteeUser.email}: User invitation`), 'Members still shows the accepted User invitation.');
       assert.ok(!membersPage.body.includes(`${inviteeAdmin.email}: Admin invitation`), 'Members still shows the accepted Admin invitation.');
       assert.equal(seatCount(membersPage), seats);
