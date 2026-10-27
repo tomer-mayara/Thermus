@@ -1,35 +1,48 @@
 {
   "version": 1,
   "classification": {
-    "container": false,
+    "container": true,
     "external": false,
-    "contract": false,
-    "deployment": false,
-    "crossCutting": false,
-    "component": false,
-    "internalInterface": false,
+    "contract": true,
+    "deployment": true,
+    "crossCutting": true,
+    "component": true,
+    "internalInterface": true,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": false,
-    "summary": "Documents only: docs/implementation/self-onboarding-plan.md records the 24 Slice 2 design answers of 27 October 2026, each dated where the plan describes the design or the ticket. Section 4.1: the new settings read only with MCP_TENANTS_ENABLED on, FREE_TENANT_LIMIT 0 to 1000 with default 25, TENANT_NAME_PREFIX, several keys in GATEWAY_PUBLIC_KEY, the context as an EdDSA JWT with jose in the Thermus-Access header, and the tenant deny list at start. Section 4.2: the gateway restart answer, Retry-After 15 and 60, the limit of 5 searches, the resume through deploying, last_active_at once a minute, the Host check of /internal/audit, the portal words and meta refresh, the accepted cap race, the release by manual dispatch and API deploy, the fleet health, commands, and batches, the daily idle sweep and the organization sweep that confirms by ID, and the registry copy. Sections 4.3 to 4.5: the cap count, no marked-for-deletion state, the reuse of thermus_logging, the seat rule and its words. Section 6: the Slice 2 tickets SO-02 to SO-12, with the SO-08 race example corrected to 3 members and 1 invitation and the SO-12 order with the image switch at step 5 and the rollback in the rehearsal. Section 7: the Axiom monitors, the shared search limit, the GHCR rule, and the registry credential token rotation; D-9 gets a dated amendment. The two decision records under architecture/decisions/ get one dated amendment sentence each, where an answer changes a stated fact: the reuse of thermus_logging (container record, item 8) and the refusal without a link (tiers record, members row). No source, runtime, registry view, declaration, or deployment change.",
+    "modelUpdated": true,
+    "summary": "SO-04 adds two components and one public module: the new owner sql (src/runtime/sql/) takes the bounded SQL runtime unchanged from audit-logs (a git rename) and becomes the only owner that imports pg, with the runtime as its public module; the new owner tenants (src/tenancy/tenants/) holds the tenant registry of the control plane. App now opens the one runtime and gives it to the settings and removal adapter of audit-logs, which keeps only a type edge, and to the registry: one role (thermus_logging) and one pool. New edges: app to sql and to tenants (runtime), audit-logs and tenants to sql (type). The tenant request is one idempotent insert of a requested row: under a SHARE ROW EXCLUSIVE lock on thermus_admin.tenants it counts the rows by state and inserts only for an organization without a row and with a free place under FREE_TENANT_LIMIT, where every row except failed and deleted holds a place; at a full cap it inserts nothing and answers full. The lookup gives the state and internal address from an in-memory copy that it reads on demand: after 10 s it reads again, after a failed read it serves the copy up to 60 s, then answers unavailable; it opens no connection at startup. The hosted start reads FREE_TENANT_LIMIT (0 to 1000, default 25, 0 closes free signup through the cap); an invalid value stops the start with a FATAL line that names the rule. Flags: component and internalInterface for the owners and edges; container and contract because the PostgreSQL datastore gains three tables (tenants, subscriptions, billing_events) with checks and grants, and operators get a new start setting; deployment because the migration must precede any caller and the registry shares the existing pool; crossCutting because SQL access and pg move to one shared owner for every store. Nothing calls the registry yet (the gateway of SO-05 and signup of SO-07 will), the migration is not applied to Supabase (SO-12 applies it), and no Render, WorkOS, or Stripe call is added.",
     "views": [
-      "Context",
       "C4 containers: hosted edition",
-      "Selected C4 components: tool processing in the Node server",
-      "Selected C4 components: hosted authentication in the Node server",
+      "Containers and source owners",
+      "Selected C4 components: hosted membership removal in the Node server",
       "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
-      "Deployment view",
-      "Behavior and resource ownership"
+      "Selected C4 components: hosted tenant registry in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Collaboration overview",
+      "Recorded hosted Render target",
+      "Ownership",
+      "Behavior and resource ownership",
+      "Design choices and current soft spots"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-plan.md",
-      "architecture/decisions/2026-10-26-per-tenant-containers.md",
-      "architecture/decisions/2026-10-26-tiers-and-billing.md",
-      "architecture/components.md"
+      "src/runtime/sql/bounded-sql-runtime.ts",
+      "src/tenancy/tenants/tenant-requests.ts",
+      "src/tenancy/tenants/tenant-lookup.ts",
+      "src/tenancy/tenants/pg-tenant-registry-store.ts",
+      "src/tenancy/tenants/tenant-registry-store.ts",
+      "src/app/logging-storage.ts",
+      "src/app/hosted-workos-application.ts",
+      "src/runtime/config/free-tenant-limit-config.ts",
+      "sql/migrations/20261027175430_tenant_registry_and_billing.sql",
+      "docs/implementation/pr-review-rules.yaml",
+      "architecture/components.md",
+      "test/acceptance/tenants/tenant-registry.runtime.ts",
+      "test/integration/tenants/tenant-registry-store.runtime.ts"
     ]
   }
 }
