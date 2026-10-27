@@ -1,5 +1,6 @@
+import { watch, type PollPlan } from '../render-tenant-lifecycle/polls.ts';
 import { planned, type PlannedCall } from './calls.ts';
-import { stripeOf, workosOf, type CreatedObject, type ObjectKind, type ProbeContext } from './context.ts';
+import { objectLabel, seconds, stripeOf, workosOf, type CreatedObject, type ObjectKind, type ProbeContext } from './context.ts';
 import {
   cancelSubscriptionCall, checkoutCall, clockCall, customerCall, deleteClockCall, deleteCustomerCall, expireCheckoutCall, subscriptionCall,
 } from './stripe-calls.ts';
@@ -63,8 +64,40 @@ export function removeObject(context: ProbeContext, step: string, object: Create
 }
 
 // True when the object no longer exists, or can no longer bill: an expired session, a canceled subscription.
-export function isRemoved(context: ProbeContext, object: CreatedObject): Promise<boolean> {
+function isRemoved(context: ProbeContext, object: CreatedObject): Promise<boolean> {
   return checks[object.kind](context, object.id);
+}
+
+// WorkOS Staging still showed an organization to a read by its ID right after its DELETE answer (27 October 2026), so
+// the check reads each object again until it is gone, for a bounded time. It stops early when only objects whose
+// removal failed remain: the cleanup reports those failures.
+export const GONE_POLL: PollPlan = { everyMs: 2_000, attempts: 60 };
+
+interface Remaining {
+  readonly left: readonly CreatedObject[];
+  readonly goneLate: readonly string[];
+}
+
+function removalFailed(object: CreatedObject): boolean {
+  return object.outcome?.startsWith('FAILED') === true;
+}
+
+export async function remainingObjects(context: ProbeContext, objects: readonly CreatedObject[]): Promise<Remaining> {
+  const started = performance.now();
+  const goneLate: string[] = [];
+  let left = objects;
+  let reads = 0;
+  await watch({ plan: GONE_POLL, signal: context.signal, what: 'the removed objects to be gone' }, async () => {
+    reads += 1;
+    const present: CreatedObject[] = [];
+    for (const object of left) {
+      if (!(await isRemoved(context, object))) present.push(object);
+      else if (reads > 1) goneLate.push(`${objectLabel(object)} at read ${reads}, ${seconds(performance.now() - started)} after the deletes`);
+    }
+    left = present;
+    return left.every(removalFailed) ? true : undefined;
+  });
+  return { left, goneLate };
 }
 
 // The systems that a run calls: the probe makes no call to a system without its key.

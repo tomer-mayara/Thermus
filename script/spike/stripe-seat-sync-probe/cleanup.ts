@@ -1,7 +1,7 @@
 import { action, planned, type PlannedCall } from './calls.ts';
-import { addRow, messageOf, PREFIX, type CreatedObject, type ObjectKind, type ProbeContext } from './context.ts';
+import { addRow, messageOf, objectLabel, PREFIX, type CreatedObject, type ObjectKind, type ProbeContext } from './context.ts';
 import { usesStripe, usesWorkOS, type ProbeInputs } from './inputs.ts';
-import { isRemoved, REMOVAL_ORDER, removalPlan, removeObject, type Systems } from './removal.ts';
+import { GONE_POLL, REMOVAL_ORDER, removalPlan, remainingObjects, removeObject, type Systems } from './removal.ts';
 import { customersSearchCall, PROBE_CUSTOMERS_QUERY, testClocksCall } from './stripe-calls.ts';
 import { organizationsCall, usersCall } from './workos-calls.ts';
 
@@ -71,20 +71,12 @@ async function removeAll(context: ProbeContext, step: string, objects: readonly 
         object.outcome = await removeObject(context, step, object);
       } catch (error) {
         object.outcome = `FAILED: ${messageOf(error)}`;
-        failures.push(`${object.system} ${object.kind} ${object.id}: ${messageOf(error)}`);
+        failures.push(`${objectLabel(object)}: ${messageOf(error)}`);
       }
-      addRow(context, step, { check: `Remove ${object.system} ${object.kind} ${object.id}`, expected: 'deleted, canceled, or expired; or already gone', measured: object.outcome });
+      addRow(context, step, { check: `Remove ${objectLabel(object)}`, expected: 'deleted, canceled, or expired; or already gone', measured: object.outcome });
     }
   }
   return failures;
-}
-
-async function left(context: ProbeContext, objects: readonly CreatedObject[]): Promise<readonly string[]> {
-  const remaining: string[] = [];
-  for (const object of objects) {
-    if (!(await isRemoved(context, object))) remaining.push(`${object.system} ${object.kind} ${object.id}`);
-  }
-  return remaining;
 }
 
 function objects(count: number): string {
@@ -93,16 +85,19 @@ function objects(count: number): string {
 
 async function removeAndCheck(context: ProbeContext, step: string, items: readonly CreatedObject[]): Promise<string> {
   const failures = await removeAll(context, step, items);
-  const remaining = await left(context, items);
-  addRow(context, step, { check: 'Objects left', expected: '0', measured: remaining.length === 0 ? '0' : `${remaining.length}: ${remaining.join(', ')}` });
+  const { left, goneLate } = await remainingObjects(context, items);
+  const remaining = left.map(objectLabel);
+  const lateText = goneLate.length === 0 ? '' : `; gone only at a later read: ${goneLate.join(', ')}`;
+  const expected = `0, within ${GONE_POLL.attempts} reads ${GONE_POLL.everyMs / 1_000} s apart`;
+  addRow(context, step, { check: 'Objects left', expected, measured: `${remaining.length === 0 ? '0' : `${remaining.length}: ${remaining.join(', ')}`}${lateText}` });
   if (failures.length > 0 || remaining.length > 0) {
     throw new Error(`Delete these objects by hand in the Stripe Dashboard (test mode) or the WorkOS Dashboard (Staging): ${[...failures, ...remaining].join('; ')}`);
   }
-  return `removed ${objects(items.length)}; none is left.`;
+  return `removed ${objects(items.length)}; none is left${lateText}.`;
 }
 
 function keepObjects(context: ProbeContext): string {
-  const kept = context.state.created.map((object) => `${object.system} ${object.kind} ${object.id}`);
+  const kept = context.state.created.map(objectLabel);
   for (const object of context.state.created) object.outcome = 'kept (--keep)';
   addRow(context, STEP, { check: 'Kept objects (--keep)', expected: 'the objects of this run', measured: kept.join(', ') || 'none' });
   return `kept ${objects(kept.length)}. A later run with --steps cleanup deletes them, and the next run refuses to start before.`;
@@ -146,7 +141,7 @@ export function systemsOf(inputs: ProbeInputs): Systems {
   return { workos: usesWorkOS(inputs), stripe: usesStripe(inputs) };
 }
 
-const GONE_NOTE = 'Each object must then be gone: a 404 answer, a deleted customer, a canceled subscription, or a session that is not open.';
+const GONE_NOTE = `Each object must then be gone: a 404 answer, a deleted customer, a canceled subscription, or a session that is not open. While one is not, every ${GONE_POLL.everyMs / 1_000} s, at most ${GONE_POLL.attempts} reads.`;
 
 export function cleanupPlan(inputs: ProbeInputs, values: { readonly run: string }): readonly PlannedCall[] {
   const calls = [...findPlan(runFinder(values.run), systemsOf(inputs)), ...removalPlan(systemsOf(inputs)), action('(reads)', GONE_NOTE)];

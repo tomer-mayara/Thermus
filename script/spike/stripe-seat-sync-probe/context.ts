@@ -107,6 +107,10 @@ export function remember(context: ProbeContext, object: Omit<CreatedObject, 'out
   context.state.created.push({ ...object });
 }
 
+export function objectLabel(object: CreatedObject): string {
+  return `${object.system} ${object.kind} ${object.id}`;
+}
+
 export function addRow(context: ProbeContext, step: string, values: Omit<Row, 'step'>): void {
   context.report.rows.push({ step, ...values });
 }

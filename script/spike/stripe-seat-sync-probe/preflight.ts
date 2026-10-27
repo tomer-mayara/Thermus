@@ -1,7 +1,7 @@
 import type Stripe from 'stripe';
 import { action, planned, type Placeholders, type PlannedCall } from './calls.ts';
 import { earlierObjects, earlierObjectsPlan, systemsOf } from './cleanup.ts';
-import { addRow, messageOf, stripeOf, type ProbeContext } from './context.ts';
+import { addRow, messageOf, objectLabel, stripeOf, type ProbeContext } from './context.ts';
 import { usesStripe, type ProbeInputs } from './inputs.ts';
 import { checkRules, type Rule } from './rules.ts';
 import { cliVersion, readSigningSecret } from './stripe-cli.ts';
@@ -77,7 +77,7 @@ async function readCli(context: ProbeContext): Promise<string> {
 
 async function noEarlierObjects(context: ProbeContext): Promise<string> {
   const objects = await earlierObjects(context);
-  const listed = objects.map((object) => `${object.system} ${object.kind} ${object.id}`);
+  const listed = objects.map(objectLabel);
   addRow(context, STEP, { check: 'Objects of earlier runs', expected: 'none', measured: listed.length === 0 ? 'none' : listed.join(', ') });
   if (listed.length > 0) throw new Error(`Objects of earlier runs exist: ${listed.join(', ')}. Run the probe with --steps cleanup to delete them.`);
   return 'no object of an earlier run exists';
