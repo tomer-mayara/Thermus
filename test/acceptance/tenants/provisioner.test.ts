@@ -34,7 +34,6 @@ test('Given a requested row, when the loop runs with a fake Render API, then the
 
   const service = harness.render.service(serviceNameOf(organizationA));
   assert.ok(service !== undefined, 'Render has the service of the organization');
-  assert.notEqual(service.slug, service.name, 'The fake gives a slug that differs from the name, so the address cannot come from the name');
   const row = harness.store.row(organizationA);
   assert.deepEqual(
     { serviceName: row.serviceName, serviceId: row.serviceId, internalUrl: row.internalUrl, imageDigest: row.imageDigest, plan: row.plan, appliedPlan: row.appliedPlan },
@@ -44,6 +43,21 @@ test('Given a requested row, when the loop runs with a fake Render API, then the
   assert.equal(harness.createBodies().length, 1);
   assert.equal(variablesOf(harness.createBodies()[0]).get('OPERATION_CAPACITY'), '5');
   assert.deepEqual(harness.errorLines(), []);
+});
+
+test('Given an organization ID with an underscore and capital letters, when the loop names and creates its service, then the name is the prefix and the ID in lower case with the underscore as a hyphen, and the internal address is http://<the whole name>:8080', async () => {
+  const harness = new ProvisioningHarness();
+  harness.store.request(organizationA);
+
+  await harness.runUntil(isLive(harness, organizationA), 'a live row');
+
+  // Render keeps a service name up to its first underscore as the slug (SO-06 live runs), so a name has none.
+  const name = 'thermus-tenant-org-01jtenantaaaaaaaaaaaaaaaa';
+  const row = harness.store.row(organizationA);
+  assert.deepEqual(
+    { serviceName: row.serviceName, slug: harness.render.service(name)?.slug, internalUrl: row.internalUrl },
+    { serviceName: name, slug: name, internalUrl: `http://${name}:8080` },
+  );
 });
 
 test('Given the create call, when the fake API records it, then it holds each tenant variable of section 4.1 and the image digest, and no WorkOS API key, cookie password, database setting, Render setting, or Stripe setting', async () => {
@@ -217,10 +231,10 @@ test('Given a deploying row after a resume, when the loop runs, then it sets liv
 
 test('Given rows that are live, suspended, failed, or deleted, when the loop runs, then it changes none of them and sends no Render call', async () => {
   const harness = new ProvisioningHarness();
-  harness.store.put({ organizationId: 'org_live', state: 'live', serviceName: 'thermus-tenant-org_live', serviceId: 'srv-livetenant', internalUrl: 'http://thermus-tenant-org-live:8080' });
-  harness.store.put({ organizationId: 'org_suspended', state: 'suspended', serviceName: 'thermus-tenant-org_suspended', serviceId: 'srv-suspendedtenant' });
-  harness.store.put({ organizationId: 'org_failed', state: 'failed', serviceName: 'thermus-tenant-org_failed', failureReason: 'an earlier failure' });
-  harness.store.put({ organizationId: 'org_deleted', state: 'deleted', serviceName: 'thermus-tenant-org_deleted' });
+  harness.store.put({ organizationId: 'org_live', state: 'live', serviceName: 'thermus-tenant-org-live', serviceId: 'srv-livetenant', internalUrl: 'http://thermus-tenant-org-live:8080' });
+  harness.store.put({ organizationId: 'org_suspended', state: 'suspended', serviceName: 'thermus-tenant-org-suspended', serviceId: 'srv-suspendedtenant' });
+  harness.store.put({ organizationId: 'org_failed', state: 'failed', serviceName: 'thermus-tenant-org-failed', failureReason: 'an earlier failure' });
+  harness.store.put({ organizationId: 'org_deleted', state: 'deleted', serviceName: 'thermus-tenant-org-deleted' });
   const before = JSON.stringify([...harness.store.rows.values()]);
 
   await harness.runFor(60_000);

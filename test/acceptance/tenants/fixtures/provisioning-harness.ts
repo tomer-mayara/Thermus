@@ -16,8 +16,10 @@ export const productionServiceId = 'srv-db8mnqg473hc739d529g';
 
 const REAL_WAIT_LIMIT_MS = 10_000;
 
+// The name rule of 27 October 2026 (SO-06): the prefix and the organization ID in lower case, each character outside
+// a-z, 0-9, and hyphen as a hyphen.
 export function serviceNameOf(organizationId: string): string {
-  return `thermus-tenant-${organizationId.toLowerCase()}`;
+  return `thermus-tenant-${organizationId.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
 }
 
 export class ProvisioningHarness {

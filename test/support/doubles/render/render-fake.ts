@@ -2,7 +2,8 @@
 // image-backed private service, read a service and its deploys, and delete a service. It keeps services and deploys
 // in memory, with the answer shapes and rate-limit headers that record SO-01c measured. A new deploy shows
 // update_in_progress for deployReads reads of the deploy list and then ends with deployOutcome. The fake makes the
-// slug from the name with its own rule, so a test can see that the adapter reads the slug and does not compute it.
+// slug as the SO-06 live runs measured: Render keeps the name up to its first underscore. So a name with an underscore
+// gets a slug that differs from it, and a test can see that the adapter reads the slug and does not compute it.
 // Saboteur entries (failNext) replace the next answer of a route with a status, a network failure before Render sees
 // the request, or a lost answer after Render did the work.
 
@@ -229,9 +230,10 @@ export class RenderFake {
     return service;
   }
 
-  // The rule of this fake: lowercase letters, digits, and hyphens, and a suffix when another service has the slug.
+  // The measured rule: the name up to its first underscore. The suffix for a slug that another service has is the rule
+  // of this fake only; the answer of Render in that case is not measured.
   private slugOf(name: string): string {
-    const slug = name.toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+    const [slug = name] = name.toLowerCase().split('_', 1);
     return this.services().some((service) => service.slug === slug) ? `${slug}-${this.#sequence.toString(36)}x` : slug;
   }
 

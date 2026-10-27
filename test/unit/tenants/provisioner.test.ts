@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { serviceNameOf } from '../../../src/tenancy/tenants/tenant-environment.ts';
 import { TenantProvisioner } from '../../../src/tenancy/tenants/tenant-provisioner.ts';
 import { OperatorLogSpy } from '../../support/doubles/application/operator-log-spy.ts';
 import { TenantProvisioningStoreFake } from '../../support/doubles/tenants/tenant-provisioning-store-fake.ts';
@@ -11,7 +12,7 @@ import { TenantPlatformFake } from './fixtures/tenant-platform-fake.ts';
 
 const organization = 'org_01JUNITAAAAAAAAAAAAAAAAAAA';
 const otherOrganization = 'org_01JUNITBBBBBBBBBBBBBBBBBB';
-const name = `thermus-tenant-${organization.toLowerCase()}`;
+const name = 'thermus-tenant-org-01junitaaaaaaaaaaaaaaaaaaa';
 const tenant = {
   publicBaseUrl: 'https://thermus.example/',
   authkitIssuer: 'https://thermus-test.authkit.app',
@@ -58,14 +59,21 @@ test('Given a requested row, when the loop runs, then it names the service, crea
   ]);
 });
 
-test('Given TENANT_NAME_PREFIX, when the loop names a service, then the name is the prefix and the organization ID in lower case', async () => {
+test('Given TENANT_NAME_PREFIX, when the loop names a service, then the name is the prefix and the organization ID in lower case with the underscore as a hyphen', async () => {
   const { platform, store, runUntil, stateOf } = provisionerWith({ namePrefix: 'thermus-spike-tenant-' });
   store.request(organization);
 
   await runUntil(() => stateOf(organization)() === 'live');
 
-  assert.equal(platform.requests[0]?.name, `thermus-spike-tenant-${organization.toLowerCase()}`);
-  assert.equal(store.row(organization).serviceName, `thermus-spike-tenant-${organization.toLowerCase()}`);
+  assert.equal(platform.requests[0]?.name, 'thermus-spike-tenant-org-01junitaaaaaaaaaaaaaaaaaaa');
+  assert.equal(store.row(organization).serviceName, 'thermus-spike-tenant-org-01junitaaaaaaaaaaaaaaaaaaa');
+});
+
+test('Given organization IDs with characters outside a-z, 0-9, and hyphen, when their service names are made, then each such character becomes a hyphen after the change to lower case', () => {
+  assert.deepEqual(
+    ['org_01HXAB', 'Org.01_x+Y', 'org-01-ab', 'org_ÄB'].map((organizationId) => serviceNameOf('thermus-tenant-', organizationId)),
+    ['thermus-tenant-org-01hxab', 'thermus-tenant-org-01-x-y', 'thermus-tenant-org-01-ab', 'thermus-tenant-org--b'],
+  );
 });
 
 test('Given a new free tenant, when the loop creates it, then its variables are exactly the tenant settings of section 4.1 with OPERATION_CAPACITY 5', async () => {
