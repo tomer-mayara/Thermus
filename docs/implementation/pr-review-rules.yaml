@@ -194,6 +194,7 @@ public_surface:
     http:
       - src/runtime/http/client-address.ts
       - src/runtime/http/request-cancellation.ts
+      - src/runtime/http/bounded-body.ts # the bounded read of a request body that the MCP gateway and the relay route share (SO-05)
     sql:
       - src/runtime/sql/bounded-sql-runtime.ts # the one bounded SQL runtime of the stores; app opens it
     tenants:
