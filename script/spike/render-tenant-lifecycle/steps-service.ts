@@ -1,11 +1,8 @@
 import assert from 'node:assert/strict';
-import {
-  createServiceCall, envVarsCall, FREE_PLAN, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall,
-} from './calls.ts';
-import {
-  addressFields, fieldJson, fieldText, listItems, renderId, sameDigest, samePlan, serviceOf, type DeployView, type ServiceView,
-} from './answers.ts';
+import { createServiceCall, FREE_PLAN, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall } from './calls.ts';
+import { addressFields, sameDigest, samePlan, serviceOf, type DeployView, type ServiceView } from './answers.ts';
 import { addField, addRow, seconds, serviceIdOf, shown, type ProbeContext } from './context.ts';
+import { sendCreate as createService, renderTimes, variableKeys, type CreatedService } from './create.ts';
 import { deployIds, deployImage2, readService, recentDeploys, waitForLive } from './waits.ts';
 
 const READ = 'GET /services/{id}';
@@ -30,13 +27,6 @@ function recordCreated(context: ProbeContext, service: ServiceView, deployId: st
   for (const [field, value] of fields) addField(context, field, { answer, value: shown(value) });
 }
 
-function renderTimes(deploy: DeployView): string {
-  const created = Date.parse(deploy.createdAt ?? '');
-  const finished = Date.parse(deploy.finishedAt ?? '');
-  if (!Number.isFinite(created) || !Number.isFinite(finished)) return 'Render times absent';
-  return `Render: createdAt ${deploy.createdAt}, finishedAt ${deploy.finishedAt}, ${seconds(finished - created)}`;
-}
-
 export function imageName(context: ProbeContext, deploy: DeployView): string {
   const { image, secondImage } = context.inputs;
   const named = (ref: { digest: string }): boolean => sameDigest(deploy.imageSha, ref.digest) || deploy.imageRef?.includes(ref.digest) === true;
@@ -45,27 +35,16 @@ export function imageName(context: ProbeContext, deploy: DeployView): string {
   return `ref ${shown(deploy.imageRef)}, sha ${shown(deploy.imageSha)}`;
 }
 
-async function sendCreate(context: ProbeContext): Promise<{ readonly service: ServiceView; readonly deployId: string; readonly ms: number }> {
+function sendCreate(context: ProbeContext): Promise<CreatedService> {
   const credentialId = context.state.credentialId;
   if (credentialId === undefined) throw new Error('No registry credential: the preflight did not find it.');
-  context.state.createSent = true;
   context.state.serviceName = context.name;
-  const answer = await context.client.write('Create', createServiceCall(context.inputs, context.name, credentialId), context.signal);
-  assert.equal(answer.status, 201, `POST /services answered ${answer.status}, not 201`);
-  const service = serviceOf(fieldJson(answer.json, 'service'));
-  context.client.confirmOwnService(service.id, service.name);
-  context.state.serviceId = service.id;
-  return { service, deployId: renderId(fieldJson(answer.json, 'deployId'), 'deployId'), ms: answer.ms };
+  return createService(context, 'Create', createServiceCall(context.inputs, context.name, credentialId));
 }
 
 function recordDeploy(context: ProbeContext, deploy: DeployView): void {
   const fields: [string, string | undefined][] = [['deploy.trigger', deploy.trigger], ['deploy.image.ref', deploy.imageRef], ['deploy.image.sha', deploy.imageSha]];
   for (const [field, value] of fields) addField(context, field, { answer: 'GET /services/{id}/deploys/{deployId}', value: shown(value) });
-}
-
-async function variableKeys(context: ProbeContext, serviceId: string): Promise<readonly string[]> {
-  const answer = await context.client.read(envVarsCall(serviceId), context.signal);
-  return listItems(answer.json, 'envVar').items.map((item) => fieldText(item, 'key') ?? '').sort();
 }
 
 export async function create(context: ProbeContext): Promise<string> {

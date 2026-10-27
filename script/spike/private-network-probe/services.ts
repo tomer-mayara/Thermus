@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import {
-  createServiceCall, envVarsCall, FREE_PLAN, HEALTH_CHECK_PATH, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall, type ServiceType,
+  createServiceCall, FREE_PLAN, HEALTH_CHECK_PATH, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall, type ServiceType,
 } from '../render-tenant-lifecycle/calls.ts';
-import {
-  addressFields, fieldJson, fieldText, listItems, renderId, samePlan, serviceOf, type DeployView, type ServiceView,
-} from '../render-tenant-lifecycle/answers.ts';
+import { addressFields, samePlan, serviceOf, type ServiceView } from '../render-tenant-lifecycle/answers.ts';
 import { addRow, progress, seconds, serviceIdOf, shown } from '../render-tenant-lifecycle/context.ts';
+import { renderTimes, sendCreate, variableKeys } from '../render-tenant-lifecycle/create.ts';
 import { readService, recentDeploys, waitForLive } from '../render-tenant-lifecycle/waits.ts';
 import { sessionOf, type ProbeContext, type Role } from './context.ts';
 import { checkPublicHealth } from './web-health.ts';
@@ -14,24 +13,12 @@ const TYPES: Readonly<Record<Role, ServiceType>> = { private: 'private_service',
 const STEP: Readonly<Record<Role, string>> = { private: 'Private service', web: 'Web service' };
 const SLUG = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
 
-function renderTimes(deploy: DeployView): string {
-  const created = Date.parse(deploy.createdAt ?? '');
-  const finished = Date.parse(deploy.finishedAt ?? '');
-  if (!Number.isFinite(created) || !Number.isFinite(finished)) return 'Render times absent';
-  return `Render: createdAt ${deploy.createdAt}, finishedAt ${deploy.finishedAt}, ${seconds(finished - created)}`;
-}
-
 function assertService(context: ProbeContext, role: Role, service: ServiceView): void {
   assert.equal(service.type, TYPES[role], `The service type is ${shown(service.type)}, not ${TYPES[role]}`);
   assert.equal(service.runtime, 'image', `The runtime is ${shown(service.runtime)}, not image`);
   assert.ok(samePlan(service.plan, FREE_PLAN), `The plan is ${shown(service.plan)}, not ${FREE_PLAN}`);
   assert.equal(service.region, context.inputs.region, `The region is ${shown(service.region)}`);
   assert.ok(service.imagePath?.includes(context.inputs.image.digest), `The image setting is ${shown(service.imagePath)}, not the given image`);
-}
-
-async function variableKeys(context: ProbeContext, serviceId: string): Promise<readonly string[]> {
-  const answer = await context.client.read(envVarsCall(serviceId), context.signal);
-  return listItems(answer.json, 'envVar').items.map((item) => fieldText(item, 'key') ?? '').sort();
 }
 
 async function checkVariables(context: ProbeContext, role: Role, serviceId: string): Promise<void> {
@@ -46,17 +33,13 @@ async function createLive(context: ProbeContext, role: Role): Promise<{ readonly
   const credentialId = context.state.credentialId;
   if (credentialId === undefined) throw new Error('No registry credential: the preflight did not find it.');
   const started = performance.now();
-  state.createSent = true;
   const source = role === 'web' ? { ...context.inputs, serviceType: TYPES.web } : context.inputs;
-  const answer = await context.client.write(STEP[role], createServiceCall(source, state.name, credentialId), context.signal);
-  assert.equal(answer.status, 201, `POST /services answered ${answer.status}, not 201`);
-  const service = serviceOf(fieldJson(answer.json, 'service'));
-  context.client.confirmOwnService(service.id, service.name);
-  state.serviceId = service.id;
+  const target = { client: context.client, signal: context.signal, state };
+  const { service, deployId, ms } = await sendCreate(target, STEP[role], createServiceCall(source, state.name, credentialId));
   progress(`created the ${state.label} ${state.name} (${service.id}); the cleanup deletes it`);
-  addRow(context, STEP[role], { check: 'Create answer', expected: '201 with the service and deployId', measured: `201 after ${seconds(answer.ms)}: ${service.id}, ${shown(service.type)}, plan ${shown(service.plan)}` });
+  addRow(context, STEP[role], { check: 'Create answer', expected: '201 with the service and deployId', measured: `201 after ${seconds(ms)}: ${service.id}, ${shown(service.type)}, plan ${shown(service.plan)}` });
   assertService(context, role, service);
-  const live = await waitForLive(sessionOf(context, role), renderId(fieldJson(answer.json, 'deployId'), 'deployId'), started);
+  const live = await waitForLive(sessionOf(context, role), deployId, started);
   addRow(context, STEP[role], { check: 'First deploy', expected: 'live; time recorded', measured: `live ${seconds(live.ms)} after the create call (${live.statuses.join(' > ')}); ${renderTimes(live.deploy)}` });
   await checkVariables(context, role, service.id);
   return { service, note: `was created and was live ${seconds(live.ms)} after the create call` };

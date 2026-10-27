@@ -1,0 +1,154 @@
+import assert from 'node:assert/strict';
+import type { Client } from '@modelcontextprotocol/client';
+import { samePlan } from '../render-tenant-lifecycle/answers.ts';
+import { addRow, progress, seconds, serviceIdOf, shown } from '../render-tenant-lifecycle/context.ts';
+import { sleep } from '../render-tenant-lifecycle/polls.ts';
+import { instanceIds, readService } from '../render-tenant-lifecycle/waits.ts';
+import { originOf, sessionOf, type CallRecord, type ProbeContext, type WindowRecord } from './context.ts';
+import { eventsSince, eventsText, KILL_TYPE, type EventView } from './events.ts';
+import type { Workload } from './inputs.ts';
+import { connectTenant, errorOutcome, timedCall, workloadCall, type CallOutcome } from './mcp.ts';
+import { lagText, peakOf, quantity, readMetric, RESOLUTION_SECONDS, settledMemory, windowRange, type MetricName } from './metrics.ts';
+import { waitHealthy, type Health } from './services.ts';
+import { baseUrlOf } from './variables.ts';
+
+// Two buckets between the end of a window and the start of the next, so that their metrics do not overlap.
+const WINDOW_GAP_MS = 2 * RESOLUTION_SECONDS * 1_000;
+const LATE_EVENTS_MS = 120_000;
+
+interface Window {
+  readonly plan: string;
+  readonly parallelism: number;
+  readonly workload: Workload;
+}
+
+interface Sent {
+  readonly startMs: number;
+  readonly endMs: number;
+  readonly outcomes: readonly CallOutcome[];
+}
+
+async function pauseAfterLastWindow(context: ProbeContext): Promise<void> {
+  const last = context.state.lastWindowEnd;
+  const wait = last === undefined ? 0 : last + WINDOW_GAP_MS - Date.now();
+  if (wait > 0) await sleep(wait, context.signal);
+}
+
+// The clients connect first, so that the tool calls leave at the same time. A failed connect is the outcome of its call.
+async function sendCalls(context: ProbeContext, window: Window): Promise<Sent> {
+  const tokens = context.state.tokens;
+  assert.ok(tokens !== undefined, 'No Connect token: the setup did not finish.');
+  await tokens.token();
+  const endpoint = new URL('mcp', baseUrlOf(originOf(context, 'tenant')));
+  const call = workloadCall(window.workload, originOf(context, 'pages'));
+  const connected = await Promise.all(Array.from({ length: window.parallelism }, () => connectTenant(endpoint, tokens).catch((error: unknown) => errorOutcome(error))));
+  const startMs = Date.now();
+  try {
+    const outcomes = await Promise.all(connected.map((client) => (typeof client === 'string'
+      ? Promise.resolve({ outcome: `connect ${client}`, ok: false, ms: 0, chars: 0 })
+      : timedCall(client, call, context.signal))));
+    return { startMs, endMs: Date.now(), outcomes };
+  } finally {
+    await Promise.allSettled(connected.filter((client): client is Client => typeof client !== 'string').map((client) => client.close()));
+  }
+}
+
+function transportFailed(outcomes: readonly CallOutcome[]): boolean {
+  return outcomes.some((item) => /^(HTTP|network|client|connect)/.test(item.outcome));
+}
+
+interface RecoveryFacts {
+  readonly events: readonly EventView[];
+  readonly sent: Sent;
+  // Started at the window end after a transport failure, while the metrics settle. An abort gives its error.
+  readonly early?: Promise<Health | Error>;
+}
+
+async function recovery(context: ProbeContext, facts: RecoveryFacts): Promise<string> {
+  const killed = facts.events.find((event) => event.type === KILL_TYPE);
+  if (killed === undefined && facts.early === undefined) return 'none';
+  const health = await (facts.early ?? waitHealthy(context, 'tenant'));
+  if (health instanceof Error) throw health;
+  assert.ok(health.ok, `The tenant service did not answer again: ${health.text}`);
+  const from = killed === undefined ? { at: facts.sent.endMs, what: 'the window end' } : { at: killed.at, what: 'the server_failed event' };
+  return `/healthz 200 ${seconds(health.at - from.at)} after ${from.what}`;
+}
+
+async function peakText(context: ProbeContext, metric: MetricName, range: ReturnType<typeof windowRange>): Promise<string> {
+  const serviceId = serviceIdOf(sessionOf(context, 'tenant'));
+  return quantity(peakOf(await readMetric(context, { metric, serviceId, range })));
+}
+
+async function measure(context: ProbeContext, window: Window, sent: Sent): Promise<WindowRecord> {
+  const serviceId = serviceIdOf(sessionOf(context, 'tenant'));
+  const early = transportFailed(sent.outcomes) ? waitHealthy(context, 'tenant').catch((error: unknown) => (error instanceof Error ? error : new Error(String(error)))) : undefined;
+  const settled = await settledMemory(context, serviceId, sent);
+  const range = windowRange(sent);
+  const events = await eventsSince(context, serviceId, sent.startMs);
+  const calls: CallRecord[] = sent.outcomes.map((outcome, index) => ({ index: index + 1, ...outcome }));
+  return {
+    ...window, start: new Date(sent.startMs).toISOString(), calls, memory: quantity(peakOf(settled.series)),
+    limit: await peakText(context, 'memory-limit', range), cpu: await peakText(context, 'cpu', range), instances: await peakText(context, 'instance-count', range),
+    lag: lagText(settled), kills: events.filter((event) => event.type === KILL_TYPE).length, restart: await recovery(context, { events, sent, early }),
+    events: eventsText(events, sent.startMs),
+  };
+}
+
+function outcomeSummary(calls: readonly CallRecord[]): string {
+  const counts = new Map<string, number>();
+  for (const call of calls) counts.set(call.outcome, (counts.get(call.outcome) ?? 0) + 1);
+  return [...counts].map(([outcome, count]) => `${count} ${outcome}`).join(', ');
+}
+
+async function runWindow(context: ProbeContext, window: Window): Promise<WindowRecord> {
+  await pauseAfterLastWindow(context);
+  progress(`window ${window.plan}, ${window.parallelism} at the same time, ${window.workload}`);
+  const sent = await sendCalls(context, window);
+  context.state.lastWindowEnd = sent.endMs;
+  const record = await measure(context, window, sent);
+  context.report.windows.push(record);
+  progress(`window ${window.plan}, ${window.parallelism}, ${window.workload}: ${outcomeSummary(record.calls)}; memory ${record.memory}; kills ${record.kills}`);
+  return record;
+}
+
+export function firstKilled(windows: readonly WindowRecord[], plan: string): number | undefined {
+  const killed = windows.filter((item) => item.plan === plan && item.kills > 0).map((item) => item.parallelism);
+  return killed.length === 0 ? undefined : Math.min(...killed);
+}
+
+// In run A of 27 October 2026, ten 9 MiB calls got HTTP 502 and no server_failed event came in the window read, so
+// the step reads the events once more, at least 2 minutes after its last window, and counts the kills again.
+async function recountKills(context: ProbeContext, records: readonly WindowRecord[], stepStart: number): Promise<readonly WindowRecord[]> {
+  const wait = (context.state.lastWindowEnd ?? 0) + LATE_EVENTS_MS - Date.now();
+  if (wait > 0) await sleep(wait, context.signal);
+  const late = await eventsSince(context, serviceIdOf(sessionOf(context, 'tenant')), stepStart);
+  const step = `Calls on ${records[0]?.plan ?? 'the plan'}`;
+  addRow(context, step, { check: `Events of the step, read ${LATE_EVENTS_MS / 1000} s or more after the last window`, expected: 'recorded; server_failed is a kill', measured: eventsText(late, stepStart) });
+  return records.map((record, index) => {
+    const from = Date.parse(record.start) - WINDOW_GAP_MS;
+    const to = index + 1 < records.length ? Date.parse(records[index + 1]?.start ?? '') - WINDOW_GAP_MS : Number.POSITIVE_INFINITY;
+    const kills = late.filter((event) => event.type === KILL_TYPE && event.at >= from && event.at < to).length;
+    return kills > record.kills ? { ...record, kills, events: `${record.events}; read after the step: ${eventsText(late.filter((event) => event.at >= from && event.at < to), Date.parse(record.start))}` } : record;
+  });
+}
+
+// Each parallelism, then each workload, in the order of the inputs. A kill does not stop the step; a service that does
+// not answer again does.
+export async function callsOn(context: ProbeContext, plan: string): Promise<string> {
+  const service = await readService(sessionOf(context, 'tenant'));
+  assert.ok(samePlan(service.plan, plan), `The tenant service is on ${shown(service.plan)}, not ${plan}`);
+  const stepStart = Date.now();
+  const before = await instanceIds(sessionOf(context, 'tenant'));
+  const records: WindowRecord[] = [];
+  for (const parallelism of context.inputs.parallelism) {
+    for (const workload of context.inputs.workloads) records.push(await runWindow(context, { plan, parallelism, workload }));
+  }
+  const recounted = await recountKills(context, records, stepStart);
+  const after = await instanceIds(sessionOf(context, 'tenant'));
+  addRow(context, `Calls on ${plan}`, { check: 'Instances at the step start and after the last window', expected: 'recorded; a new ID is a new instance', measured: `${before.join(', ') || 'none'}; then ${after.join(', ') || 'none'}` });
+  const windows = context.report.windows;
+  windows.splice(windows.length - records.length, records.length, ...recounted);
+  const kills = recounted.reduce((sum, item) => sum + item.kills, 0);
+  const first = firstKilled(recounted, plan);
+  return `${recounted.length} windows on ${plan}; ${kills} server_failed events; ${first === undefined ? 'no window was killed' : `the first killed parallelism is ${first}`}.`;
+}

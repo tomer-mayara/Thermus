@@ -22,7 +22,8 @@
         "script/pr-review/replay.ts",
         "script/spike/gateway-proxy-probe.ts",
         "script/spike/private-network-probe.ts",
-        "script/spike/render-tenant-lifecycle.ts"
+        "script/spike/render-tenant-lifecycle.ts",
+        "script/spike/capacity-probe.ts"
       ]
     },
     ".habit-hooks": {

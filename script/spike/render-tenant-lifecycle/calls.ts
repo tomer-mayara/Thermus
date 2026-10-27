@@ -1,4 +1,4 @@
-type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export interface Call {
   readonly method: Method;
@@ -7,13 +7,17 @@ export interface Call {
 }
 
 export type ServiceType = 'private_service' | 'web_service';
+export type Variables = readonly (readonly [string, string])[];
 
-// The SO-01c inputs have no serviceType, so the SO-01c create call stays a private service.
+// The SO-01c inputs have no serviceType, so the SO-01c create call stays a private service. Without variables, the
+// call holds the placeholder variables; a Docker command replaces the command of the image.
 interface ServiceSource {
   readonly owner: string;
   readonly region: string;
   readonly image: { readonly ref: string };
   readonly serviceType?: ServiceType;
+  readonly variables?: Variables;
+  readonly dockerCommand?: string;
 }
 
 export const API_BASE = 'https://api.render.com/v1';
@@ -27,7 +31,7 @@ export const PAGE_SIZE = 100;
 const PAGE_LIMIT = String(PAGE_SIZE);
 export const PRIVATE_SERVICES: readonly ServiceType[] = ['private_service'];
 
-export const PLACEHOLDER_ENVIRONMENT: readonly (readonly [string, string])[] = [
+export const PLACEHOLDER_ENVIRONMENT: Variables = [
   ['PUBLIC_BASE_URL', 'https://thermus.example/'],
   ['WORKOS_API_KEY', 'sk_test_placeholder'],
   ['WORKOS_CLIENT_ID', 'client_placeholder'],
@@ -36,9 +40,13 @@ export const PLACEHOLDER_ENVIRONMENT: readonly (readonly [string, string])[] = [
   ['WORKOS_COOKIE_PASSWORD', 'cookie-password-placeholder-0032'],
 ];
 
-export function createServiceCall(source: ServiceSource, name: string, credentialId: string): Call {
+// A public image needs no registry credential: an undefined credential ID leaves the field out.
+export function createServiceCall(source: ServiceSource, name: string, credentialId: string | undefined): Call {
   const type = source.serviceType ?? 'private_service';
   const details = { runtime: 'image', plan: FREE_PLAN, region: source.region, numInstances: 1 };
+  // A web service gets the Render health check. The OpenAPI document gives healthCheckPath only for web services.
+  const checked = type === 'web_service' ? { ...details, healthCheckPath: HEALTH_CHECK_PATH } : details;
+  const credential = credentialId === undefined ? {} : { registryCredentialId: credentialId };
   return {
     method: 'POST',
     path: '/services',
@@ -46,12 +54,16 @@ export function createServiceCall(source: ServiceSource, name: string, credentia
       type,
       name,
       ownerId: source.owner,
-      image: { ownerId: source.owner, imagePath: source.image.ref, registryCredentialId: credentialId },
-      envVars: PLACEHOLDER_ENVIRONMENT.map(([key, value]) => ({ key, value })),
-      // A web service gets the Render health check. The OpenAPI document gives healthCheckPath only for web services.
-      serviceDetails: type === 'web_service' ? { ...details, healthCheckPath: HEALTH_CHECK_PATH } : details,
+      image: { ownerId: source.owner, imagePath: source.image.ref, ...credential },
+      envVars: (source.variables ?? PLACEHOLDER_ENVIRONMENT).map(([key, value]) => ({ key, value })),
+      serviceDetails: source.dockerCommand === undefined ? checked : { ...checked, envSpecificDetails: { dockerCommand: source.dockerCommand } },
     },
   };
+}
+
+// The answer holds the value, so no caller may record its body. The server reads the new value at its next start.
+export function updateVariableCall(serviceId: string, key: string, value: string): Call {
+  return { method: 'PUT', path: `/services/${serviceId}/env-vars/${encodeURIComponent(key)}`, body: { value } };
 }
 
 export function deployImageCall(serviceId: string, imageUrl: string): Call {

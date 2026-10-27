@@ -15,28 +15,28 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "UI-04 changes pending invitation presentation inside the existing Web owner. A native disclosure counts the complete filtered pending collection and starts closed at zero or open when nonzero. Compact rows retain role, absolute UTC expiry and permitted protected Resend/Revoke forms. The existing full removal help moves after pending invitations without changing its text, version or hash. Complete-read failure, authorization, scopes, provider operations, fixed outcomes and UI-03 invitation behavior remain. The parent now includes UI-02 member rows, both counts, compact quiet actions and the density correction; this increment preserves them. No script, state, query, production component, dependency, public declaration, store or deployment changes. All 15 registry views and responsibility descriptions remain accurate. The browser gate inventory documents new cases without changing selection or authority.",
+    "summary": "Probe tooling only: (1) script/spike/capacity-probe.ts and its helper modules under script/spike/capacity-probe/ probe the capacity and memory of a hosted tenant web service on Render (0.5c-512mb, then 1c-2g) with 1, 5, and 10 parallel MCP fetch and search calls, the Render metrics and events of each window, a disposable pages origin, WorkOS Staging fixtures, and a Staging OAuth resource; they reuse the SO-01c and SO-01d part two Render modules and the hosted-live test fixtures, with a dry-run mode, a reads-only preflight, and a client guard that touches only the thermus-spike-* services of the run and never the production service, also in metrics reads; knip lists the script as an entry point. Small changes in script/spike/render-tenant-lifecycle/ and script/spike/private-network-probe/ let the three Render probes share the step runner, the service create, and the cleanup reads, and let the create call take variables and a Docker command; the SO-01c and SO-01d part two dry-run outputs stay the same. (2) The cancellation check of #272, merged into this branch: script/spike/gateway-proxy-probe.ts gains a --protocol 2025-11-25 run with the new modules cancel-notification.ts, cancel-measure.ts, and wire-tap.ts under script/spike/gateway-proxy/, where a client pinned to 2025-11-25 cancels a call by notifications/cancelled through the local proxy and a 2026-07-28 client aborts the same call for the contrast; the default run and its output stay the same. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md gains the section SO-01e: capacity and memory, with the measured runs and the D-15 recommendation, and the SO-01d subsection Cancellation by notifications/cancelled (2025-era clients); docs/implementation/self-onboarding-plan.md names them in the SO-01e and SO-05 tickets. No source, runtime, registry view, declaration, or deployment change.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
-      "Containers and source owners",
       "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted membership removal in the Node server",
-      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Collaboration overview",
       "Scenario: hosted member read",
-      "Behavior and resource ownership",
-      "Deployment view"
+      "Deployment view",
+      "Behavior and resource ownership"
     ],
     "evidence": [
-      "src/interfaces/web/account/administration-pages.ts",
-      "src/interfaces/web/account/members-style.ts",
-      "src/accounts/organizations/administration-overviews.ts",
-      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
-      "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
-      "test/acceptance/auth/hosted-invitations.test.ts",
-      "docs/implementation/admin-ui-04.md",
-      "docs/implementation/test-gate-policy.md",
-      "architecture/components.md"
+      "script/spike/capacity-probe.ts",
+      "script/spike/capacity-probe/windows.ts",
+      "script/spike/render-tenant-lifecycle/runner.ts",
+      "script/spike/render-tenant-lifecycle/create.ts",
+      "script/spike/gateway-proxy-probe.ts",
+      "script/spike/gateway-proxy/cancel-notification.ts",
+      "script/spike/gateway-proxy/cancel-measure.ts",
+      "script/spike/gateway-proxy/wire-tap.ts",
+      "docs/implementation/self-onboarding-s1.md",
+      "docs/implementation/self-onboarding-plan.md"
     ]
   }
 }

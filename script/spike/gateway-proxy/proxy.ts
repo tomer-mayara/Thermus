@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type Server as HttpServer, type Ser
 import { Readable } from 'node:stream';
 import { closeServer, forwardedHeaders, listen, sendJson, sendResponse } from './http-bridge.ts';
 
-interface ProxyExchange { readonly startedAt: number; requestClosedAt?: number; clientGoneAt?: number; status?: number }
+interface ProxyExchange { readonly startedAt: number; requestClosedAt?: number; clientGoneAt?: number; status?: number; endedAt?: number }
 export interface Proxy { readonly url: URL; readonly server: HttpServer; readonly exchanges: ProxyExchange[]; close(): Promise<void> }
 interface Route { readonly upstream: URL; readonly signContext: () => string; readonly exchanges: ProxyExchange[] }
 
@@ -31,6 +31,7 @@ async function forward(incoming: IncomingMessage, outgoing: ServerResponse, rout
     const response = await fetch(route.upstream, upstreamRequest(incoming, route.signContext(), clientGone.signal));
     exchange.status = response.status;
     await sendResponse(response, outgoing);
+    exchange.endedAt = performance.now();
   } catch {
     if (clientGone.signal.aborted || outgoing.headersSent) outgoing.destroy();
     else sendJson(outgoing, 502, { error: 'bad_gateway' });
