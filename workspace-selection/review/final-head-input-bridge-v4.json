@@ -1,0 +1,44 @@
+{
+  "version": "final v4",
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "reviewedSourceCandidate": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+  "finalCandidate": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "verifiedAt": "2026-10-27T22:40:23.931018+00:00",
+  "comparison": "Every recursive tracked Git entry mode/type/object ID",
+  "sourceTrackedEntries": 1681,
+  "finalTrackedEntries": 1682,
+  "changedEntries": [
+    "docs/metrics/2026-10-27-a421afc0.json"
+  ],
+  "allOtherEntriesIdentical": true,
+  "sourceTestConfigDependencyPolicyRegistryImpactSurfaceInputsIdentical": true,
+  "record": {
+    "path": "docs/metrics/2026-10-27-a421afc0.json",
+    "gitObject": "777b0ad8449644d1c833df69d8601a5f8a1f864f",
+    "sha256": "6079002245b8f5f08f31c7e0449a877711d91b3aa2a62d79b86af60d3f94d54e",
+    "bytes": 105870,
+    "recordsBase": "a421afc056ce3e400f2779c75683ea45270b96cb",
+    "coverageCommit": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+    "kind": "head-derived-estimate",
+    "baseUnknownCoverageFunctions": 81
+  },
+  "sourceReview": "source-review-provenance-v4.json",
+  "v3AndV4SourceReviewsPreserved": true,
+  "diagramSourceSha256": "2a68a084122b65861f40cee83b04f94d9ea940c10387779d71f6fb3fea6410a1",
+  "reusedDiagramRenderSha256": "babbf1f31e5876cd81efb1f54473cb9f70c30db61320f6d4c416b005602c21fa",
+  "diagramInputAndRuntimeMeaningIdentical": true,
+  "approval": {
+    "exactApprovedDeploymentHead": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+    "finalPRHeadHumanApprovalClaimed": false,
+    "oldApprovalExtended": false
+  },
+  "separateDeployment": {
+    "source": "Manager report; no reviewer production call",
+    "head": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+    "id": "dep-dbgidiou01pc73c6h7ag",
+    "triggeredAt": "2026-10-27T22:33:47Z",
+    "status": "building per manager report; live not claimed",
+    "mode": "Existing manual Git specific-commit Render deployment; no image migration",
+    "finalPRHeadDeployed": false
+  }
+}

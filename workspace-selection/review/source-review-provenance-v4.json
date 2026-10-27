@@ -1,0 +1,199 @@
+{
+  "version": "v4 source candidate",
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "head": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+  "priorApprovedHead": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "reviewedAt": "2026-10-27T22:31:03.210126+00:00",
+  "incrementalFiles": [
+    {
+      "path": ".pr-impact.json",
+      "gitObject": "d0480e351607f63b704d3446ee759ad2089220fc",
+      "sha256": "7f3be7f2404a00d2b2715e2232536615b124b43afa38b5ca34e561bdd5a453fb"
+    },
+    {
+      "path": "architecture/components.md",
+      "gitObject": "1058ddf8558ba01e60539cfd87b7149a1d8ce765",
+      "sha256": "6d0ac9f78b40a4e5be4f06a19938580eca8d531b80ef6d7e92590e6e90fb4fb4"
+    },
+    {
+      "path": "docs/design/authentication-design.md",
+      "gitObject": "0af663c6f1bbc61dd39a81f3030d97c498d7587e",
+      "sha256": "293fc6bd8608580f0201e5c4f125e084b90001c3ccb7e15a5c1b967ae3b8d12b"
+    },
+    {
+      "path": "docs/design/portal-design.md",
+      "gitObject": "b5e0741a9484da214d33f8749a1ce2e41c3e9976",
+      "sha256": "dced7ed538d82930c969e23153601b29e586df5f4d7ea4376b9cc69d07bd6a9f"
+    },
+    {
+      "path": "docs/metrics/2026-10-27-f6b52396.json",
+      "gitObject": "3f29615a15cdaf06604ea08f72b63f06defb671e",
+      "sha256": "1b1bfbe60458430892d08855a76c4bb8194d254c165f170a20a5534f5fc31f87"
+    },
+    {
+      "path": "docs/user-portal.md",
+      "gitObject": "2d6a9876914156db5b24d8106c7f9a5222e3dfdd",
+      "sha256": "7cc4d3f08fcbb2c157123f68e0f5cc330beee3c390af90623404aef47828fcc6"
+    },
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "gitObject": "ef1a417749056778036fce4a26fb337203d9d8d2",
+      "sha256": "a93c9962cc5250486c9b4fca3856a05f3d7d20b85826d76ffe92e832fc270b4e"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-page.ts",
+      "gitObject": "c056ccaa18b447554d248ed6f3ac3868b700e130",
+      "sha256": "161a971b692eb5985ba163ef2fc23a5c85969f564b28db69be6a857368e0fda2"
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-style.ts",
+      "gitObject": "8071176f3d3364b70a786f4238aa5cb550f404e3",
+      "sha256": "13f5eaaaa501a3d0ed11908e31cda17fa984d89080ea9e809db18db8bc6ae5b1"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "gitObject": "75b2e6770ab0b27a7e320c631e98277a3abcbad2",
+      "sha256": "48ecfef3266c4e9ee1fb33dc91d2c6717876fb87cbf208bb813e34087e81de65"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-organization-requests.test.ts",
+      "gitObject": "a8d03fa0245ac35136ca463f5ee2437eb40a6500",
+      "sha256": "7cab012cd80e93984b6f85dfd68316a5418341d6ff6dfbcdf8448c9b3d050720"
+    },
+    {
+      "path": "test/acceptance/auth/hosted-workspace-selection.test.ts",
+      "gitObject": "c839b72cf8ce9a1a5c7be8e2be3d4f40f17d80e5",
+      "sha256": "071ae45c002e2daf8b9fe8e4d7fd79aaf69d304594db522dafbec681a46d9bea"
+    },
+    {
+      "path": "test/integration/auth/workos-provider-organizations.test.ts",
+      "gitObject": "bc886a4bb77b73b100d689f79daf3afe9772dbe0",
+      "sha256": "57c68155587aa443c5ba8e8a524fa3d55fdfab44f0a48ec4c0ca0b11b0cdcd03"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-organization-page.test.ts",
+      "gitObject": "820560575f3fb1c5ea6cc62e033ffdcd9a61c376",
+      "sha256": "239d2235c78d49a08fe0ddef78ddeaefc54b6d4084dfc457b8726d1da013203c"
+    },
+    {
+      "path": "test/integration/hosted-admin/account-routes-workspace-navigation.test.ts",
+      "gitObject": "b4bda961ab5a8e629a232fd7b2e550e37a6fc76f",
+      "sha256": "28c9df5ec7d02df3f95da51285f268e21d95f78e223183c700b97d1e6fb6c8bc"
+    },
+    {
+      "path": "test/integration/hosted-admin/organization-selection-page.test.ts",
+      "gitObject": "181267cc2f977feb33a87a8b3c5cb1b1217cf098",
+      "sha256": "f54d262f6abe403c429dad074649c4f5355cb2c568ab0805b0a1f378cf3149a3"
+    },
+    {
+      "path": "test/support/drivers/browser/workspace-selection-browser.ts",
+      "gitObject": "1399f62914e5e7593e67a3230d19f7d06a672ed4",
+      "sha256": "07c77f8b7f0ae1dcde01a55100c8422b94d175a3b838a19e584c0132f3456beb"
+    },
+    {
+      "path": "test/support/in-process/hosted-workspace-selection-site.ts",
+      "gitObject": "5bc4a97664a1b74e5c4056b6fbcfe6bd975dcc36",
+      "sha256": "7e69a764f0c10bd0885c8c56974a19ecbfd4b8e75e2b42b217afc409d3d6a151"
+    }
+  ],
+  "productionFiles": [
+    {
+      "path": "src/interfaces/web/account/account-routes.ts",
+      "gitObject": "ef1a417749056778036fce4a26fb337203d9d8d2",
+      "sha256": "a93c9962cc5250486c9b4fca3856a05f3d7d20b85826d76ffe92e832fc270b4e",
+      "identicalToPriorReviewedHead": true
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-page.ts",
+      "gitObject": "c056ccaa18b447554d248ed6f3ac3868b700e130",
+      "sha256": "161a971b692eb5985ba163ef2fc23a5c85969f564b28db69be6a857368e0fda2",
+      "identicalToPriorReviewedHead": true
+    },
+    {
+      "path": "src/interfaces/web/account/organization-selection-style.ts",
+      "gitObject": "8071176f3d3364b70a786f4238aa5cb550f404e3",
+      "sha256": "13f5eaaaa501a3d0ed11908e31cda17fa984d89080ea9e809db18db8bc6ae5b1",
+      "identicalToPriorReviewedHead": true
+    }
+  ],
+  "wholeSrcAndTestTreesEqualToPriorReviewedHead": {
+    "src": true,
+    "test": true
+  },
+  "selectionPostAndSwitchAnswer": {
+    "identicalToActualBase": true,
+    "sha256": "50c3dd600af6703afd7011855a8c28b0d7b8adc4420a70ed09f7fd272d7cb1b3",
+    "path": "src/interfaces/web/account/account-routes.ts",
+    "headLines": "134-151",
+    "baseLines": "121-138",
+    "sliceRule": "Start of selectOrganization method through switchAnswer method, excluding class closing brace"
+  },
+  "registry": {
+    "count": 17,
+    "allBlockBodiesIdentical": true,
+    "proseHasPickerAndInheritedSO02ReleaseNotes": true,
+    "inventory": "registry-inventory-v4.json"
+  },
+  "publicSurface": {
+    "trackedSnapshots": 51,
+    "treesIdentical": true,
+    "tree": "86e9b0699777fd9b84a10ba410f62d00df02ac1e"
+  },
+  "impactFlags": {
+    "container": false,
+    "external": false,
+    "contract": true,
+    "deployment": false,
+    "crossCutting": false,
+    "component": false,
+    "internalInterface": true,
+    "sensitiveBehavior": false,
+    "dependencyRisk": false,
+    "policy": false,
+    "uncertain": false
+  },
+  "pickerImpactDeclarationIdenticalToPriorApprovedHead": true,
+  "inheritedSO02FilesIdenticalToActualBase": [
+    ".github/workflows/hosted-image.yml",
+    "README.md",
+    "script/README.md",
+    "docs/implementation/self-onboarding-s1.md",
+    "docs/implementation/test-gate-policy.md",
+    "script/release/deploy-hosted-image.ts",
+    "script/release/deploy-request.ts",
+    "script/release/render-api.ts",
+    "script/release/render-answers.ts",
+    "script/release/public-health.ts"
+  ],
+  "sourceFindings": [],
+  "approval": {
+    "priorExactHumanApproval": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+    "source": "Manager reports owner explicit approval; preserved as prior-head history",
+    "currentHeadHumanApproval": "required; not supplied by agent/manager review"
+  },
+  "gates": {
+    "freshCoverageAndOrdinaryHostedSelfBrowser": "manager/isolated worker running; not claimed passed",
+    "nativeAMD64Run": {
+      "id": "40595080704",
+      "url": "https://github.com/tomer-mayara/Thermus/actions/runs/40595080704",
+      "head": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+      "status": "running per manager report; not independently queried"
+    },
+    "hostedLive": "manager plans fresh 29-case gate after generated record commit and clean final head; not claimed passed"
+  },
+  "productionReadback": {
+    "source": "Manager fresh Render API readback at 2026-10-27 22:24 UTC; no independent cloud read by this reviewer",
+    "runtime": "docker",
+    "repo": "Thermus",
+    "branch": "main",
+    "autoDeploy": "off",
+    "lastLiveCommitPrefix": "6e2c",
+    "interpretation": "Keep existing Git release mode; SO02 image workflow refuses non-image service; production conversion belongs to SO12 step5"
+  },
+  "limits": [
+    "No test/build/MCP/production call by reviewer",
+    "Fresh coverage required because inherited script/.github bytes invalidate conservative input identity",
+    "Prior screenshots do not become fresh captures; picker-specific 200%/long-name proof remains absent",
+    "Final generated-record head not yet known; final bridge will be separate"
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "head": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "reviewedAt": "2026-10-27T22:40:23.931018+00:00",
+  "input": "ast-report/workspace-selection-release-refresh/habit-hooks-final.log",
+  "inputSha256": "73e37e90397119b59a10b57c2b5759fc03192ad65dab32335a1baab4b1bde1d4",
+  "exitStatus": 1,
+  "exitStatusSource": "Manager final runner report for current final candidate; raw log independently verified byte-identical to v3.",
+  "commentFindings": 21,
+  "oversizedFileFindings": 2,
+  "allRetained": true,
+  "groups": [
+    {
+      "findings": "4 comments",
+      "pathAndLines": "test/integration/auth/workos-provider-organizations.test.ts:25-28",
+      "retainedReason": "Defines the test boundary: real SDK/provider/session/routes with a fake remote API and substituted destinations. It prevents treating this integration proof as real WorkOS evidence and identifies the live gate that covers that limit."
+    },
+    {
+      "findings": "1 comment",
+      "pathAndLines": "Same file:37",
+      "retainedReason": "Explains why billing is deliberately absent from the substitute destinations: the route owns a real billing page. Without this reason, the missing entry looks like a coverage gap."
+    },
+    {
+      "findings": "2 comments",
+      "pathAndLines": "Same file:49-50",
+      "retainedReason": "Gives the compact cross-workspace role matrix behind isolation and permission cases: User here, Admin there, inactive/default elsewhere. The table's purpose spans several fixture records and is useful when checking that a different workspace cannot supply authority."
+    },
+    {
+      "findings": "1 comment",
+      "pathAndLines": "Same file:107",
+      "retainedReason": "Defines the remote-request assertion scope. JWKS discovery is excluded from the organization-call trace so key-set traffic is not mistaken for a membership/catalog read. That scope matters when interpreting the new picker-read assertion."
+    },
+    {
+      "findings": "2 comments",
+      "pathAndLines": "src/interfaces/web/account/account-routes.ts:11-12",
+      "retainedReason": "Records the division of authority: route session/current-access admission does not replace each operation's permission check. The local AccountOperation type cannot express that security obligation."
+    },
+    {
+      "findings": "2 comments",
+      "pathAndLines": "Same file:74-75",
+      "retainedReason": "Explains why signed-in failures become pages and why immutable answers are reconstructed: refreshed or ended session cookies must reach the browser on errors too."
+    },
+    {
+      "findings": "1 comment",
+      "pathAndLines": "Same file:93",
+      "retainedReason": "Records dispatch precedence: dedicated administration handling must run before the generic account operation fallback. This is a collaboration constraint, not a reason to move authorization into the fallback."
+    },
+    {
+      "findings": "1 comment",
+      "pathAndLines": "Same file:107",
+      "retainedReason": "States the changed picker invariant: identity admits the recovery page; optional access controls display only. It prevents a later refactor from turning the display lookup into an admission gate."
+    },
+    {
+      "findings": "2 comments",
+      "pathAndLines": "Same file:132-133",
+      "retainedReason": "Explains origin-before-body order and current-membership authority. A foreign form must cause no body/service work, and the session must switch to the ID confirmed by the service rather than an untrusted request hint."
+    },
+    {
+      "findings": "3 comments",
+      "pathAndLines": "Same file:162-164",
+      "retainedReason": "Explains cookie precedence and response reconstruction. Session-refresh cookies must precede a later switch cookie, including when redirect headers are immutable. The order affects actual browser session state."
+    },
+    {
+      "findings": "1 comment",
+      "pathAndLines": "Same file:172",
+      "retainedReason": "Explains directory normalization for relative route paths. The missing final slash would otherwise change URL resolution and public-base containment."
+    },
+    {
+      "findings": "1 comment",
+      "pathAndLines": "Same file:186",
+      "retainedReason": "Explains why cloning precedes freezing: later mutations to resolver-owned records must not change a running operation's context, and the route must not freeze the collaborator's own object."
+    },
+    {
+      "findings": "File length, 553 lines",
+      "pathAndLines": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "retainedReason": "Keeps the dedicated browser gate's shared workspace shell and Members/Audit/Connect/picker viewport and JavaScript matrix discoverable under one entry point. Protocol mechanics already live in drivers, including the new WorkspaceSelectionBrowser. A threshold-only split would scatter the matrix without simplifying source behavior."
+    },
+    {
+      "findings": "File length, 234 lines",
+      "pathAndLines": "test/integration/auth/workos-provider-organizations.test.ts",
+      "retainedReason": "One integration subject verifies the real provider/session/account-route collaboration against a pinned local WorkOS API fake. Offered memberships, current permission isolation, exact remote reads and rejected provider data share one role matrix and composition. Keeping them together makes the new optional-read phase comparable to unchanged selection authority."
+    }
+  ],
+  "snooze": [],
+  "comparisonWithV2": {
+    "head": "16c8e174f503f79c5011fe9ac7e157578ff49d74",
+    "base": "77477864d8238b9141e9619b6bcbb6b0aa7fb11b",
+    "input": "ast-report/workspace-selection/habit-hooks.log",
+    "sha256": "73e37e90397119b59a10b57c2b5759fc03192ad65dab32335a1baab4b1bde1d4",
+    "logBytesIdentical": true,
+    "findingLocationsIdentical": true,
+    "newFindings": [],
+    "removedFindings": [],
+    "containingFileBytes": [
+      {
+        "path": "src/interfaces/web/account/account-routes.ts",
+        "v2AndV3BytesIdentical": true,
+        "sha256": "a93c9962cc5250486c9b4fca3856a05f3d7d20b85826d76ffe92e832fc270b4e",
+        "lineCount": 197
+      },
+      {
+        "path": "test/integration/auth/workos-provider-organizations.test.ts",
+        "v2AndV3BytesIdentical": true,
+        "sha256": "57c68155587aa443c5ba8e8a524fa3d55fdfab44f0a48ec4c0ca0b11b0cdcd03",
+        "lineCount": 234
+      },
+      {
+        "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+        "v2AndV3BytesIdentical": true,
+        "sha256": "48ecfef3266c4e9ee1fb33dc91d2c6717876fb87cbf208bb813e34087e81de65",
+        "lineCount": 553
+      }
+    ]
+  },
+  "locations": [
+    "test/integration/auth/workos-provider-organizations.test.ts:25",
+    "test/integration/auth/workos-provider-organizations.test.ts:26",
+    "test/integration/auth/workos-provider-organizations.test.ts:27",
+    "test/integration/auth/workos-provider-organizations.test.ts:28",
+    "test/integration/auth/workos-provider-organizations.test.ts:37",
+    "test/integration/auth/workos-provider-organizations.test.ts:49",
+    "test/integration/auth/workos-provider-organizations.test.ts:50",
+    "test/integration/auth/workos-provider-organizations.test.ts:107",
+    "src/interfaces/web/account/account-routes.ts:11",
+    "src/interfaces/web/account/account-routes.ts:12",
+    "src/interfaces/web/account/account-routes.ts:74",
+    "src/interfaces/web/account/account-routes.ts:75",
+    "src/interfaces/web/account/account-routes.ts:93",
+    "src/interfaces/web/account/account-routes.ts:107",
+    "src/interfaces/web/account/account-routes.ts:132",
+    "src/interfaces/web/account/account-routes.ts:133",
+    "src/interfaces/web/account/account-routes.ts:162",
+    "src/interfaces/web/account/account-routes.ts:163",
+    "src/interfaces/web/account/account-routes.ts:164",
+    "src/interfaces/web/account/account-routes.ts:172",
+    "src/interfaces/web/account/account-routes.ts:186",
+    "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+    "test/integration/auth/workos-provider-organizations.test.ts"
+  ],
+  "metricsAndGateLimit": "Final metric reports reviewed separately; checker and other gate results not inferred.",
+  "reviewerActions": "Read-only commands and ignored review artifacts only; no hook/build/test/MCP run or tracked edit",
+  "sourceReviewHead": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+  "sourceAndFinalLogsIdentical": true,
+  "applicability": "All containing source/test bytes equal prior reviewed versions; all final finding locations/reasons retained. Complete final hook output is independently checked; no new finding.",
+  "snoozeSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+}

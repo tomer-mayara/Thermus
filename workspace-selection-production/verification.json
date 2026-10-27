@@ -1,0 +1,90 @@
+{
+  "release": {
+    "commit": {
+      "createdAt": "2026-10-27T21:48:00Z",
+      "id": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+      "message": "Record base metrics for the refreshed workspace picker fix"
+    },
+    "createdAt": "2026-10-27T22:33:47.55929Z",
+    "finishedAt": "2026-10-27T22:39:16.519159Z",
+    "id": "dep-dbgidiou01pc73c6h7ag",
+    "startedAt": "2026-10-27T22:33:47.527446Z",
+    "status": "live",
+    "trigger": "manual",
+    "updatedAt": "2026-10-27T22:39:16.51941Z"
+  },
+  "publicUrl": "https://app.thermus.ai/",
+  "approvalRecord": "https://github.com/tomer-mayara/Thermus/blob/d73395697a48cd879756a7d12d2421c8c146515d/workspace-selection-refresh/human-approval.json",
+  "verifiedCommit": "feaddbdec5f9e2cc7bf8e07050a4d5e7aa5e5769",
+  "deploymentMethod": "Render Manual Deploy > Deploy a specific commit; UI permits a commit from any branch",
+  "previousLiveCommit": "6e2c6739fab812c330d4b5295bfc2c934b021762",
+  "runtimeInstance": "srv-db8mnqg473hc739d529g-pppkv",
+  "health": {
+    "url": "https://app.thermus.ai/healthz",
+    "status": 200,
+    "body": "ok"
+  },
+  "observations": {
+    "user": {
+      "actualRoleObservedInDetails": "user",
+      "pickerLinks": [
+        "Connect",
+        "Switch Workspace"
+      ],
+      "clickedOrganization": "Thermus AI (selected)",
+      "afterClickUrl": "https://app.thermus.ai/",
+      "afterClickHeading": "Connect your MCP client",
+      "afterClickWorkspace": "Thermus AI",
+      "connectLinks": [
+        "Connect",
+        "Switch Workspace"
+      ],
+      "reopenedPickerSelectedOrganization": "Thermus AI (selected)",
+      "pickerConnectLinkOpenedRoot": true
+    },
+    "admin": {
+      "actualRoleObservedInDetails": "admin",
+      "pickerLinks": [
+        "Connect",
+        "Switch Workspace",
+        "Members",
+        "Audit Log"
+      ],
+      "clickedOrganization": "Thermus AI (selected)",
+      "afterClickUrl": "https://app.thermus.ai/",
+      "afterClickHeading": "Connect your MCP client",
+      "afterClickWorkspace": "Thermus AI",
+      "connectLinks": [
+        "Connect",
+        "Switch Workspace",
+        "Members",
+        "Audit Log"
+      ],
+      "membersLink": {
+        "url": "https://app.thermus.ai/members",
+        "heading": "Members · 2",
+        "sameFourMenuLinks": true
+      },
+      "auditLink": {
+        "url": "https://app.thermus.ai/logging",
+        "heading": "Audit logs",
+        "sameFourMenuLinks": true
+      }
+    }
+  },
+  "runtimeWarningErrorQuery": {
+    "hasMore": false,
+    "logs": [],
+    "nextEndTime": "2026-10-27T22:45:18.758713101Z",
+    "nextStartTime": "2026-10-27T22:39:12Z"
+  },
+  "screenshots": [
+    "admin-picker.jpg",
+    "user-picker.jpg"
+  ],
+  "limits": [
+    "Production proof uses the two existing accounts and their one existing selected workspace; alternate workspace and viewport/JavaScript cases are in local and staging tests.",
+    "No production membership, role, invitation, audit destination, credential or environment setting was changed.",
+    "PR281 acquired upstream release-tooling changes after feadd approval; its refreshed head44753a72 remains a separate unmerged candidate. This verification does not assert approval or deployment of44753a72."
+  ]
+}

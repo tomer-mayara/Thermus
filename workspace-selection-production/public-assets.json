@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-27T22:47:15.639Z",
+  "portalStatus": 200,
+  "assets": [
+    {
+      "path": "/assets/thermus-favicon.svg",
+      "status": 200,
+      "bytes": 582
+    },
+    {
+      "path": "/assets/index-cfluoOXL.js",
+      "status": 200,
+      "bytes": 16632
+    },
+    {
+      "path": "/assets/index-7glWBjbz.css",
+      "status": 200,
+      "bytes": 9671
+    }
+  ]
+}

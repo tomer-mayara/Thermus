@@ -1,0 +1,21 @@
+{
+  "version": "final v4 equality bridge",
+  "base": "a421afc056ce3e400f2779c75683ea45270b96cb",
+  "head": "44753a72a7c1cecbf076e1448c26a4ae4b93a9f2",
+  "source": "architecture-comparison-v4.mmd",
+  "sourceSha256": "2a68a084122b65861f40cee83b04f94d9ea940c10387779d71f6fb3fea6410a1",
+  "sourceBytesIdenticalToApprovedV3": true,
+  "reusedRender": "architecture-comparison-v3.png",
+  "pngSha256": "babbf1f31e5876cd81efb1f54473cb9f70c30db61320f6d4c416b005602c21fa",
+  "width": 798,
+  "height": 1615,
+  "renderProvenance": "render-provenance-v3.json",
+  "embeddedSourceMatchesRenderedSource": true,
+  "reason": "Same affected owner responsibilities, runtime relationships and changed caller/default meanings after inheriting SO02; only pins and surrounding prose updated.",
+  "priorManagerReview": "Manager approved v3 render at native798px without fixes. Approval history retained.",
+  "currentManagerReview": "requested for v4 pins/context; unchanged render can be inspected from existing artifact",
+  "newRenderExecuted": false,
+  "toolExecutionLimit": "No render/build/test/MCP command was run for this equality bridge.",
+  "reviewedSourceHead": "e36e34c9304444312b52d76cc1c91aa365ccc719",
+  "recordOnlyHeadBridge": "final-head-input-bridge-v4.json"
+}
