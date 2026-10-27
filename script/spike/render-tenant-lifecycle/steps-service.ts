@@ -1,12 +1,8 @@
 import assert from 'node:assert/strict';
-import {
-  createServiceCall, envVarsCall, FREE_PLAN, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall,
-} from './calls.ts';
-import {
-  addressFields, fieldText, listItems, sameDigest, samePlan, serviceOf, type DeployView, type ServiceView,
-} from './answers.ts';
+import { createServiceCall, FREE_PLAN, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall } from './calls.ts';
+import { addressFields, sameDigest, samePlan, serviceOf, type DeployView, type ServiceView } from './answers.ts';
 import { addField, addRow, seconds, serviceIdOf, shown, type ProbeContext } from './context.ts';
-import { sendCreate as createService, renderTimes, type CreatedService } from './create.ts';
+import { sendCreate as createService, renderTimes, variableKeys, type CreatedService } from './create.ts';
 import { deployIds, deployImage2, readService, recentDeploys, waitForLive } from './waits.ts';
 
 const READ = 'GET /services/{id}';
@@ -49,11 +45,6 @@ function sendCreate(context: ProbeContext): Promise<CreatedService> {
 function recordDeploy(context: ProbeContext, deploy: DeployView): void {
   const fields: [string, string | undefined][] = [['deploy.trigger', deploy.trigger], ['deploy.image.ref', deploy.imageRef], ['deploy.image.sha', deploy.imageSha]];
   for (const [field, value] of fields) addField(context, field, { answer: 'GET /services/{id}/deploys/{deployId}', value: shown(value) });
-}
-
-async function variableKeys(context: ProbeContext, serviceId: string): Promise<readonly string[]> {
-  const answer = await context.client.read(envVarsCall(serviceId), context.signal);
-  return listItems(answer.json, 'envVar').items.map((item) => fieldText(item, 'key') ?? '').sort();
 }
 
 export async function create(context: ProbeContext): Promise<string> {
