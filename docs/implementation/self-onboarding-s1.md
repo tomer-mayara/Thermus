@@ -225,6 +225,11 @@ token. The owner does these steps:
 To replace the token before it expires, make a new token with the same scope,
 update the credential in Render, and then delete the old token on GitHub.
 
+27 October 2026: the owner chose the Thermus AI workspace instead of My
+Workspace. The manager created the credential `ghcr-thermus-hosted-read` there
+through the API, with the ID `rgc-dbg1h0142hec73da9ra0` (see
+[SO-01c](#so-01c-render-private-service-lifecycle)).
+
 ## SO-01d: gateway proxy and private network
 
 Date: 26 October 2026. Part one is a local probe, in pull request
