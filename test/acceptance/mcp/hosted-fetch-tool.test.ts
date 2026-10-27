@@ -21,6 +21,8 @@ const html = '<html><body><main><h1>Hosted story</h1><p>The rendered article has
 const markdown = 'The rendered article has enough words to keep this first paragraph.';
 const renderedOutput = JSON.stringify({ url, http_status: 200, content: html, error: null });
 const params = { name: 'getURLAsMarkdown', arguments: { url, reason } };
+// The busy cases show the refusal of one hosted slot, so they set the capacity to one call.
+const oneSlot = { OPERATION_CAPACITY: '1' };
 
 test('Given production hosted composition with trusted rules and a valid Connect User, when the user lists and calls the tool, then cleaned Markdown and one allowed outgoing and incoming records join the completion ID, and missing or revoked access is refused before rendering', { timeout: 30_000 }, async (t) => {
   const site = await openHostedFetchSite(t);
@@ -53,7 +55,7 @@ test('Given production hosted composition with trusted rules and a valid Connect
 });
 
 test('Given one renderer active in production hosted composition, when another authorized request calls the tool, then it promptly gets a safe busy error and a busy completion, and a call after settlement can run', { timeout: 5_000 }, async (t) => {
-  const site = await openHostedFetchSite(t);
+  const site = await openHostedFetchSite(t, oneSlot);
   const renderer = controlledRenderer(t);
   t.after(() => renderer.finish(null, renderedOutput, ''));
   const call = () => site.application.handle(mcpRequest({ url: site.config.mcpResourceUrl, method: 'tools/call', token: site.token, params }));
@@ -76,7 +78,7 @@ test('Given one renderer active in production hosted composition, when another a
 
 for (const outcome of ['failure', 'cancelled'] as const) {
   test(`Given a production hosted fetch with ${outcome}, when another call arrives before the renderer settles, then busy is returned until cleanup completes and the next call can render`, { timeout: 5_000 }, async (t) => {
-    const site = await openHostedFetchSite(t);
+    const site = await openHostedFetchSite(t, oneSlot);
     const renderer = controlledRenderer(t);
     t.after(() => renderer.finish(null, renderedOutput, ''));
     const controller = new AbortController();

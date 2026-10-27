@@ -416,9 +416,10 @@ and one AuthKit key set, and writes the operator line below:
 [auth WorkOS MCP URL fetch plan](../implementation/auth-workos-mcp-url-fetch-plan.md)).
 [RHD-01](../implementation/rhd-01.md) makes
 `openWorkOSApplication()` read trusted `AD_RULES_FILE`, create the production
-fetch operation, and supply `fetchToolServers` as `buildServer`. One shared slot
-covers DNS, rendering, cleaning, and cleanup until settlement. Excess calls
-return a safe `busy` result without a queue.
+fetch operation, and supply `fetchToolServers` as `buildServer`. Fetch and
+search share one capacity of `OPERATION_CAPACITY` calls, default 10. Each call
+holds its slot through DNS, rendering, cleaning, and cleanup until settlement.
+A call above that limit returns a safe `busy` result without a queue.
 [RHD-02](../implementation/rhd-02.md) adds the public portal and local health to
 this production opener. The hosted public base path must be `/`. Before
 listening, startup validates the portal build and runs a bounded version check
