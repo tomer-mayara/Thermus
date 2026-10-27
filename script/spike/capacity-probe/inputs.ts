@@ -5,9 +5,9 @@ import {
   type ImageRef, type Region,
 } from '../render-tenant-lifecycle/inputs.ts';
 
-export const STEP_IDS = ['setup', 'calls-free', 'plan-team', 'calls-team', 'cleanup'] as const;
+const STEP_IDS = ['setup', 'calls-free', 'plan-team', 'calls-team', 'cleanup'] as const;
 export type StepId = (typeof STEP_IDS)[number];
-export const WORKLOADS = ['page9m', 'js', 'search'] as const;
+const WORKLOADS = ['page9m', 'js', 'search'] as const;
 export type Workload = (typeof WORKLOADS)[number];
 
 export const TENANT_PREFIX = `${SERVICE_PREFIX}cap-`;

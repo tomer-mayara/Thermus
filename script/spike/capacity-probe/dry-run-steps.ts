@@ -28,7 +28,7 @@ export interface Plan {
   readonly reused: Readonly<Record<Role, boolean>>;
 }
 
-export function every(poll: { readonly everyMs: number; readonly attempts: number }): string {
+function every(poll: { readonly everyMs: number; readonly attempts: number }): string {
   return `Every ${poll.everyMs / 1000} s, at most ${poll.attempts} times`;
 }
 

@@ -30,7 +30,7 @@ function reasonOf(details: unknown): string | undefined {
   return `${parts.join(', ')}${oom}${exit}`;
 }
 
-export function eventViewsOf(value: unknown): readonly EventView[] {
+function eventViewsOf(value: unknown): readonly EventView[] {
   const events = listItems(value, 'event').items.filter(isJson);
   const views = events.map((event) => ({
     type: typeof event.type === 'string' ? event.type : 'unknown',

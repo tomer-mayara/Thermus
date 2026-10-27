@@ -3,9 +3,9 @@ import type { Variables } from '../render-tenant-lifecycle/calls.ts';
 import type { HostedLiveSettings } from '../../../test/support/hosted-live/settings.ts';
 
 // The setting of D-15: 10 fetch or search calls at the same time in one process.
-export const OPERATION_CAPACITY = '10';
+const OPERATION_CAPACITY = '10';
+// The dry run shows each secret value as this text. The report holds no variable value.
 export const SECRET_SHOWN = '<set>';
-const SECRET_KEYS: ReadonlySet<string> = new Set(['WORKOS_API_KEY', 'WORKOS_COOKIE_PASSWORD']);
 
 // Render gives a web service the host <name>.onrender.com when the name is free; the setup checks the answer.
 export function predictedOrigin(name: string): string {
@@ -39,8 +39,4 @@ export function tenantVariables(origin: string, workos: HostedLiveSettings, cook
 // 32 random bytes give 43 characters; the hosted server needs at least 32. Each create gets a new one.
 export function newCookiePassword(): string {
   return randomBytes(32).toString('base64url');
-}
-
-export function shownVariables(variables: Variables): Variables {
-  return variables.map(([key, value]) => [key, SECRET_KEYS.has(key) ? SECRET_SHOWN : value]);
 }

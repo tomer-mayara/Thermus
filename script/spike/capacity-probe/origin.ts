@@ -7,7 +7,7 @@ import { healthFromHere, liveService, readOrigin, STEP_OF } from './services.ts'
 
 const STEP = STEP_OF.pages;
 const PAGE_TIMEOUT_MS = 60_000;
-export const PAGES_DIGEST = PAGES_IMAGE.slice(PAGES_IMAGE.indexOf('@') + 1);
+const PAGES_DIGEST = PAGES_IMAGE.slice(PAGES_IMAGE.indexOf('@') + 1);
 
 // A public image needs no registry credential, and the pages need no variable.
 export function pagesCreateCall(source: { readonly owner: string; readonly region: string }, name: string): Call {

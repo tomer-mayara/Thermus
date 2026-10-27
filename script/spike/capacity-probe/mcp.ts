@@ -7,12 +7,12 @@ import { PAGES } from './pages.ts';
 // The tool names and inputs of docs/reference/mcp-fetch-tool.md and docs/reference/mcp-search-tool.md.
 export const FETCH_TOOL = 'getURLAsMarkdown';
 export const SEARCH_TOOL = 'search';
-export const SEARCH_QUERY = 'Lightpanda browser documentation';
-export const CALL_REASON = 'Measure the memory and capacity of a hosted tenant service (SO-01e probe)';
-export const BUSY_TEXT = 'Server busy. Try again later.';
+const SEARCH_QUERY = 'Lightpanda browser documentation';
+const CALL_REASON = 'Measure the memory and capacity of a hosted tenant service (SO-01e probe)';
+const BUSY_TEXT = 'Server busy. Try again later.';
 // The renderer has a 60 s process limit, but the cleaning of a 9 MiB page has none, so a call can take minutes on a
 // starved instance. The client gives each call 5 minutes.
-export const CALL_TIMEOUT_MS = 300_000;
+const CALL_TIMEOUT_MS = 300_000;
 const CONNECT_TIMEOUT_MS = 30_000;
 const TEXT_LIMIT = 100;
 const SEARCH_RESULT = /\]\(https?:\/\//;
@@ -51,7 +51,7 @@ function textOf(result: CallToolResult): string {
 }
 
 // The tool errors are fixed public texts (the failure tables of the two references), so the probe records them.
-export function resultOutcome(result: CallToolResult, call: ToolCall): Omit<CallOutcome, 'ms'> {
+function resultOutcome(result: CallToolResult, call: ToolCall): Omit<CallOutcome, 'ms'> {
   const text = textOf(result);
   if (result.isError === true) {
     const outcome = text === BUSY_TEXT ? 'busy' : `error: ${text.slice(0, TEXT_LIMIT)}`;

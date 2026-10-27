@@ -45,7 +45,7 @@ export interface WindowRecord {
   readonly events: string;
 }
 
-export interface WorkOSWrite {
+interface WorkOSWrite {
   readonly step: string;
   readonly call: string;
   readonly status: string;
@@ -60,7 +60,7 @@ interface Report {
 }
 
 // The OAuth resource of the tenant service. The cleanup deletes only an ID that this run created.
-export interface ResourceState {
+interface ResourceState {
   readonly uri: string;
   readonly id: string;
   readonly createdInRun: boolean;
