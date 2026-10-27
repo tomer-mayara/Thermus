@@ -1269,8 +1269,8 @@ or verification-only ticket is needed.
 The original ticket specifications and TDD steps below preserve the pre-implementation plan.
 Each **Pre-implementation red expectation** describes the earlier starting point,
 not a current gap or a new test result. Actual red/green history belongs in the
-implementation records and linked PR evidence. The separately marked outstanding
-UI-02 density correction is new follow-up work.
+implementation records and linked PR evidence. The separately marked UI-02
+density correction records the implemented follow-up and its test-first evidence.
 
 For new source behavior, start with executable BDD through public HTTP or real
 browser interfaces. Run it before source changes and record the actual red result.
