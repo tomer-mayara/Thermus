@@ -1,4 +1,5 @@
 import { action, type Plan } from './calls.ts';
+import { checkout, checkoutPlan } from './checkout.ts';
 import { cleanup, cleanupPlan, sweep, sweepPlan } from './cleanup.ts';
 import { redacted, type ProbeContext, type ProbeStep } from './context.ts';
 import type { WorkStepId } from './inputs.ts';
@@ -33,7 +34,7 @@ export const workSteps: readonly WorkStep[] = [
   {
     id: 'checkout', name: 'Checkout',
     spec: 'Given the price, when the probe creates a Checkout Session in subscription mode with required terms acceptance and Stripe Tax, and the operator completes it with a Stripe test card, then the session shows the accepted terms and an active subscription without a quantity.',
-    run: notBuilt('Checkout'), plan: notBuiltPlan('Checkout'),
+    run: redacted(checkout), plan: checkoutPlan,
   },
   {
     id: 'webhook', name: 'Webhook',

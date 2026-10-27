@@ -1,14 +1,13 @@
 import type Stripe from 'stripe';
 import { planned, type Placeholders, type PlannedCall } from './calls.ts';
 import { earlierObjects, earlierObjectsPlan, systemsOf } from './cleanup.ts';
-import { addRow, stripeOf, type ProbeContext } from './context.ts';
+import { addRow, messageOf, stripeOf, type ProbeContext } from './context.ts';
 import { usesStripe, type ProbeInputs } from './inputs.ts';
+import { checkRules, type Rule } from './rules.ts';
 import { defaultPortalCall, meterCall, priceCall, taxSettingsCall } from './stripe-calls.ts';
 import { EXPECTED_METER } from './stripe-params.ts';
 
 const STEP = 'Preflight';
-
-type Rule<T> = readonly [string, (value: T) => boolean];
 
 // The price of the owner steps: a metered monthly price in USD on the meter of the WorkOS seat sync. The test clock
 // step needs a whole-cent unit amount, so that three seats bill three times that amount.
@@ -34,11 +33,13 @@ const PORTAL_RULES: readonly Rule<Stripe.BillingPortal.Configuration>[] = [
   ['no quantity update', (portal) => !portal.features.subscription_update.enabled || !portal.features.subscription_update.default_allowed_updates.includes('quantity')],
 ];
 
+// An owner setting that does not hold stops the run before any write: the record names the owner step.
 function check<T>(context: ProbeContext, subject: { readonly what: string; readonly value: T }, rules: readonly Rule<T>[]): void {
-  const { what, value } = subject;
-  const failed = rules.filter(([, holds]) => !holds(value)).map(([name]) => name);
-  addRow(context, STEP, { check: what, expected: rules.map(([name]) => name).join('; '), measured: failed.length === 0 ? 'each rule holds' : `missing: ${failed.join('; ')}` });
-  if (failed.length > 0) throw new Error(`${what} does not have: ${failed.join('; ')}. See the owner steps of the record.`);
+  try {
+    checkRules(context, { step: STEP, ...subject }, rules);
+  } catch (error) {
+    throw new Error(`${messageOf(error)} See the owner steps of the record.`, { cause: error });
+  }
 }
 
 async function readPriceAndMeter(context: ProbeContext, priceId: string): Promise<string> {
