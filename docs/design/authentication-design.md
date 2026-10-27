@@ -467,8 +467,10 @@ A test can give the composition a connection to a local fake of the WorkOS API:
   gives the restrictions and the required browser-first live proof.
 - The account operation is `portalAccessOperation()`, the protected portal
   request `<base>portal/access`. It needs `product:access` and gives the
-  organization and the roles of the grants that give a permission;
-  otherwise it answers `403` with `{"access":"denied"}`.
+  organization and the roles of the grants that give a permission, and since
+  SO-08 the plan, `free` with `memberLimit` or `team`, from a billing read
+  that the composition supplies; otherwise it answers `403` with
+  `{"access":"denied"}`.
 - The organization directory is one `WorkOSOrganizations` with the WorkOS
   authority, since AUTH-07W. `WorkOSAuthProvider` gets it as `grants`, for
   the access resolution, and the account routes get it as `organizations`,
@@ -1784,7 +1786,8 @@ The [user portal](../user-portal.md) uses these routes and the protected portal
 request `<base>portal/access`. It keeps no session or token of its own and no
 longer uses the AuthKit JavaScript SDK.
 
-The protected response includes the free plan and the configured MCP endpoint.
+The protected response includes the plan, `free` with its member limit or
+`team` (SO-08), and the configured MCP endpoint.
 The portal shows native client connection steps and explains that each client
 chooses its own workspace at Connect consent. A browser selection cannot
 retarget an MCP token. An authenticated MCP request without product access gets
