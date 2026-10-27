@@ -6,8 +6,8 @@ export type StripeCall<Result> = Call<Stripe, Result>;
 export type Removal = 'deleted' | 'gone';
 
 const TIMEOUT_MS = 30_000;
-// The SDK repeats a failed request only after a network failure or an answer that Stripe marks as safe to repeat,
-// and it sends one idempotency key with every attempt of a POST, so a repeated create cannot double its effect.
+// The SDK repeats a request after a network failure, a 409, or a 5xx answer, unless Stripe marks it as not safe to
+// repeat. It sends one idempotency key with every attempt of a POST, so a repeated create cannot double its effect.
 const NETWORK_RETRIES = 2;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
