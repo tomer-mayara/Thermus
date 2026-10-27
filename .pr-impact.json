@@ -3,53 +3,34 @@
   "classification": {
     "container": false,
     "external": false,
-    "contract": true,
-    "deployment": true,
-    "crossCutting": false,
+    "contract": false,
+    "deployment": false,
     "component": false,
     "internalInterface": false,
     "sensitiveBehavior": false,
     "dependencyRisk": false,
     "policy": false,
+    "crossCutting": false,
     "uncertain": false
   },
   "architecture": {
-    "modelUpdated": true,
-    "summary": "The hosted edition reads OPERATION_CAPACITY at startup, a whole number from 1 to 100 with default 10, and its one shared OperationCapacity lets that many fetch or search calls run at the same time in one process; the next call keeps the existing Server busy result, busy completion record, and audit capture, and an invalid value stops startup before listening with a FATAL line that names the setting and the rule but not the value. This changes the documented hosted capacity contract of both MCP tools from one call to the configured number; the self-hosted edition still has no capacity wrapper. The default also raises the renderer runs of one hosted instance from 1 to 10 at the same time, while the recorded Render plan assumed one active fetch; production should set OPERATION_CAPACITY=1 until probe SO-01e measures the capacity, and the manager asks the owner for that setting. No component, component edge, public module, declaration snapshot, or Mermaid view changes: the new config reader is imported by app only, and registry prose and the config ownership entry record it.",
+    "modelUpdated": false,
+    "summary": "Documentation only: adds docs/implementation/self-onboarding-plan.md, the plan for free-tier self signup with one Render container for each tenant behind the existing origin, the free and team tiers, the Stripe upgrade through the WorkOS seat meter, the owner answers to decisions D-1 to D-14 of 26 October 2026, and the tickets SO-00 to SO-15, plus its index line in docs/README.md. No source, test, configuration, dependency, registry, declaration, or deployment change. All registry Mermaid views remain unchanged. The components, edges, and decision records that the plan proposes are declared by their own later tickets, not by this candidate.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
-      "Selected C4 components: tool processing in the Node server",
+      "C4 containers: local edition",
       "Selected C4 components: hosted authentication in the Node server",
-      "Selected C4 components: hosted membership removal in the Node server",
-      "Collaboration overview",
-      "Scenario: MCP page fetch and renderer cancellation",
-      "Scenario: hosted member read",
-      "Deployment view",
-      "Ownership",
-      "Behavior and resource ownership",
-      "Design choices and current soft spots"
+      "Selected C4 components: local authentication in the Node server",
+      "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Selected C4 components: system and audit logs in the Node server",
+      "Runtime view",
+      "Deployment view"
     ],
     "evidence": [
-      "src/app/operation-capacity.ts",
-      "src/app/fetch-tool.ts",
-      "src/runtime/config/operation-capacity-config.ts",
-      "test/acceptance/mcp/hosted-capacity-setting.test.ts",
-      "test/acceptance/auth/hosted-startup.test.ts",
-      "test/acceptance/mcp/hosted-search-capacity.test.ts",
-      "test/acceptance/mcp/hosted-fetch-tool.test.ts",
-      "test/integration/mcp/hosted-tool-operations.test.ts",
-      "test/unit/app/operation-capacity.test.ts",
-      "test/unit/config/operation-capacity-config.test.ts",
-      ".env.example",
-      "README.md",
-      "architecture/components.md",
-      "docs/reference/mcp-fetch-tool.md",
-      "docs/reference/mcp-search-tool.md",
-      "docs/design/authentication-design.md",
-      "docs/testing/test-list.md",
-      "package.json",
-      "docs/implementation/test-gate-policy.md"
+      "docs/implementation/self-onboarding-plan.md",
+      "docs/README.md",
+      "architecture/components.md"
     ]
   }
 }
