@@ -1,7 +1,7 @@
 import { parseArgs } from 'node:util';
 import { UsageError } from '../render-tenant-lifecycle/inputs.ts';
 
-export const WORK_STEP_IDS = ['seat-sync', 'checkout', 'webhook', 'test-clock'] as const;
+const WORK_STEP_IDS = ['seat-sync', 'checkout', 'webhook', 'test-clock'] as const;
 export type WorkStepId = (typeof WORK_STEP_IDS)[number];
 const SWEEP_STEP = 'cleanup';
 

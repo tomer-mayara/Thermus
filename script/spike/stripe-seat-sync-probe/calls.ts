@@ -2,7 +2,7 @@ import type { ProbeInputs } from './inputs.ts';
 
 // One SDK call of the probe. The dry run prints the REST line, the SDK method, and the parameters; real mode passes
 // the same parameters to the same SDK method, so the printed parameters are the sent parameters.
-export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export interface Call<Client, Result> {
   readonly method: Method;

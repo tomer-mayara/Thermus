@@ -33,7 +33,7 @@ function found(kind: ObjectKind, id: string): CreatedObject {
 }
 
 // The objects of the probe in WorkOS and in Stripe. A create whose answer was lost still left a named object.
-export async function findObjects(context: ProbeContext, finder: Finder): Promise<readonly CreatedObject[]> {
+async function findObjects(context: ProbeContext, finder: Finder): Promise<readonly CreatedObject[]> {
   const objects: CreatedObject[] = [];
   if (context.workos !== undefined) {
     const organizations = await context.workos.read(organizationsCall(), context.signal);

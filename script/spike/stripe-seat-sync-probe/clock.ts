@@ -3,11 +3,11 @@ import { poll, type PollPlan } from '../render-tenant-lifecycle/polls.ts';
 import { addRow, stripeOf, type ProbeContext } from './context.ts';
 import { advanceClockCall, clockCall, invoiceCall, subscriptionCall } from './stripe-calls.ts';
 
-// "After a successful API request or Dashboard operation, it takes a few seconds to advance to the specified time"
-// (test clock guide). Each advance waits at most 5 minutes for the status ready.
+// The test clock guide says that an advance takes a few seconds. Each advance waits at most 5 minutes for the status
+// ready.
 export const CLOCK_POLL: PollPlan = { everyMs: 2_000, attempts: 150 };
 export const HOUR = 3_600;
-export const DAY = 86_400;
+const DAY = 86_400;
 const RETRY_STEP_S = 7 * DAY;
 // The longest Smart Retries window is 2 months, and one advance may not pass two intervals of the subscription.
 const RETRY_WINDOW_S = 63 * DAY;

@@ -4,7 +4,7 @@ import { meterSummaryCall } from './stripe-calls.ts';
 
 // Stripe processes meter events asynchronously, so a summary can lag the event. The probe reads the summary until
 // it shows the expected value; the delay is the time from the WorkOS answer to that read.
-export const SEAT_POLL: PollPlan = { everyMs: 2_000, attempts: 300 };
+const SEAT_POLL: PollPlan = { everyMs: 2_000, attempts: 300 };
 
 export interface SeatWindow {
   readonly meterId: string;

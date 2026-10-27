@@ -6,7 +6,7 @@ import { cleanupStep, preflightStep, sweepStep, workosOnlyStep, workSteps } from
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
-export const DRY_RUN_TOKEN = 'YYYYMMDD-HHMMSS-xxxx';
+const DRY_RUN_TOKEN = 'YYYYMMDD-HHMMSS-xxxx';
 
 const FLAT_LIMIT = 110;
 

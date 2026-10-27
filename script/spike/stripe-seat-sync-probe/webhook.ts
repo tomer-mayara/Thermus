@@ -21,7 +21,7 @@ function priceIdOf(context: ProbeContext): string {
 }
 
 // A payload with one changed value: the subscription status. The signature of the original no longer matches.
-export function changedPayload(raw: string): string {
+function changedPayload(raw: string): string {
   const event = JSON.parse(raw) as { data: { object: Record<string, unknown> } };
   event.data.object.status = event.data.object.status === 'canceled' ? 'active' : 'canceled';
   return JSON.stringify(event, null, 2);

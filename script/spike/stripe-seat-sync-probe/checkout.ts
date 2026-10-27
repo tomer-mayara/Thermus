@@ -8,9 +8,9 @@ import { CHECKOUT_LIFETIME_S, checkoutParams, customerParams } from './stripe-pa
 
 const STEP = 'Checkout';
 // The operator has 15 minutes to pay in a browser. The session itself expires after 31 minutes.
-export const CHECKOUT_POLL: PollPlan = { everyMs: 5_000, attempts: 180 };
+const CHECKOUT_POLL: PollPlan = { everyMs: 5_000, attempts: 180 };
 
-export const OPERATOR_STEPS = [
+const OPERATOR_STEPS = [
   'Open the Checkout URL in a browser within 15 minutes. Pay with the Stripe test card 4242 4242 4242 4242, any future',
   'expiry date, and any CVC. Tick the terms box, and enter a billing address, for example in the United States. Stripe',
   'then opens example.com; close that page. The probe reads the session from Stripe.',

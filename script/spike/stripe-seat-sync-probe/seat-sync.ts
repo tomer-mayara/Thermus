@@ -48,7 +48,7 @@ async function seatSync(context: ProbeContext): Promise<string> {
 }
 
 // A value with the format of a Stripe customer ID. No Stripe customer has it.
-export function fakeCustomerId(run: string): string {
+function fakeCustomerId(run: string): string {
   return `cus_ThermusSpike${run.slice(-4)}`;
 }
 

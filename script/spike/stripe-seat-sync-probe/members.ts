@@ -10,7 +10,7 @@ interface Change {
   readonly apply: (members: Members) => Promise<void>;
 }
 
-export interface Observation {
+interface Observation {
   readonly meter: string;
   readonly delay: string;
 }

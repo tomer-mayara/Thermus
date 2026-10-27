@@ -68,8 +68,8 @@ export async function cliVersion(signal: AbortSignal): Promise<string> {
   return redact(result.output.trim().split('\n')[0] ?? 'unknown');
 }
 
-// The secret of the CLI forwarding: "The webhook signing secret provided will not change between restarts to the
-// listen command" (Stripe CLI reference). It stays in memory.
+// The secret of the CLI forwarding. The Stripe CLI reference says that it does not change between restarts of
+// stripe listen. It stays in memory.
 export async function readSigningSecret(signal: AbortSignal): Promise<string> {
   const result = await runCli(['listen', '--print-secret'], { timeoutMs: 30_000, signal });
   const secret = result.output.trim();

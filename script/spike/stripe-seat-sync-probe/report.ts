@@ -10,7 +10,7 @@ function cell(value: string): string {
   return redact(value).replaceAll('|', '\\|').replace(/\s*\n\s*/g, ' ');
 }
 
-export function packageVersion(name: string): string {
+function packageVersion(name: string): string {
   try {
     const entry = pathToFileURL(createRequire(import.meta.url).resolve(name));
     for (const relative of ['../package.json', '../../package.json']) {

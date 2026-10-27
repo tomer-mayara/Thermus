@@ -3,10 +3,10 @@ import { objectName, PREFIX, probeEmail, probeMetadata } from './context.ts';
 
 // The parameters of the Stripe writes. The dry run prints them with placeholders, and real mode sends them.
 // Checkout returns the browser to example.com, a page with no Thermus code: the probe reads the session from Stripe.
-export const RETURN_URL = 'https://example.com/thermus-spike/checkout-return?session_id={CHECKOUT_SESSION_ID}';
+const RETURN_URL = 'https://example.com/thermus-spike/checkout-return?session_id={CHECKOUT_SESSION_ID}';
 // Stripe allows 30 minutes to 24 hours. One more minute keeps the value valid when this clock is a little ahead.
 export const CHECKOUT_LIFETIME_S = 31 * 60;
-// "Attaching this card to a Customer object succeeds, but attempts to charge the customer fail." (Stripe testing)
+// The test card 4000 0000 0000 0341: it attaches to a customer, but each charge fails (Stripe testing page).
 export const FAILING_PAYMENT_METHOD = 'pm_card_chargeCustomerFail';
 export const CLOCK_SEATS = 3;
 
