@@ -1,5 +1,91 @@
 # Test inventory
 
+## Current SO-05 inventory scope
+
+SO-05 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+adds the MCP gateway of the control plane, the relay route `/internal/audit`,
+and the switch `MCP_TENANTS_ENABLED`. The
+[authentication design](../design/authentication-design.md#mcp-gateway-and-audit-relay)
+gives the rules. The files run offline in the ordinary suite, except the one
+runtime file below. Inventory presence is not a passing result; the pull
+request records the runs.
+
+- `test/acceptance/mcp/hosted-gateway.test.ts` (23 cases) runs the real
+  control plane against the WorkOS fake, with the real registry rules over an
+  in-memory registry and a clock of the test, a spy of the resume operation,
+  and a fake tenant upstream (`test/support/doubles/mcp/tenant-upstream-fake.ts`)
+  that verifies the signed context and serves MCP. It checks the forward with
+  the audit export and the public audience and metadata; the switch off, as
+  today; the denials of today with no forward and no tenant request; `503`
+  with `Retry-After: 15` for `requested`, `creating`, and `deploying`; one
+  resume with `Retry-After: 60`, also for two calls at the same time; one
+  report for a failed tenant; the tenant request and the full cap; no client
+  context and no hop-by-hop header at the tenant; progress before the result;
+  the abort of a 2026-07-28 call before and after the tenant answers, seen
+  within 100 ms; the forwarded `notifications/cancelled` POST and `GET` stream
+  of a 2025-era client; the restart tool error for HTTP `502` and a reset, and
+  the end of a started stream; one `last_active_at` write a minute; one log
+  line and no audit event for a refusal; the limit of 5 searches across two
+  organizations; and the stale bound of the registry copy.
+- `test/acceptance/logging/audit/audit-relay.test.ts` (5 cases) sends relays
+  to `POST /internal/audit` of the same control plane: one capture and one
+  export; refusals for another organization, another user, another key, an
+  expired, a malformed, and no context, with nothing captured; the drop of a
+  repeated operation ID; `404` for the public host and other paths; and
+  refused events.
+- `test/acceptance/auth/hosted-startup.test.ts` moves the `FREE_TENANT_LIMIT`
+  rows behind the switch and adds 4 cases on the built server process: an
+  invalid `FREE_TENANT_LIMIT` with the switch on; an invalid switch and each
+  missing or invalid gateway setting; the switch without the hosted storage;
+  and the switch off, which reads none of the settings.
+- `test/unit/mcp/mcp-gateway.test.ts` (30 cases) checks the gateway with
+  doubles of the registry port, the signer, and the fetch of the tenant: the
+  answer and the `Retry-After` of each state and tenant request; the resume
+  and its failure report; one report for a failed tenant; the header rules,
+  the target, and the signed claims; the `GET` stream and a notification; the
+  streamed answer and its headers; both abort paths and a cancel of the
+  client; the restart answers for tool calls, other requests, batches, and
+  bodies without a request; the end of a started stream; the search limit;
+  the `413` of the SDK limit; and no activity after an answer of `500`.
+- `test/unit/mcp/forward-step.test.ts` (3 cases) checks the forward step of
+  `MCPServer`: the decided context, the bearer token, and the lifetime after
+  both checks, no step after a refusal, and the lifetime at close.
+- `test/unit/tenants/tenant-resumes.test.ts` (6 cases), `tenant-activity.test.ts`
+  (4 cases), and `pg-tenant-registry-store.test.ts` (5 more cases) check one
+  resume for concurrent calls, the restore after a failed resume, one write of
+  `last_active_at` a minute with a clock double, and the SQL of the three
+  gateway writes with a double of the SQL runtime.
+- `test/unit/auth/signed-access-context.test.ts` (8 more cases) checks
+  `verifyRelay()`: no bearer token, 30 seconds of grace, and each refusal.
+- `test/unit/logging/audit/audit-relay-capture.test.ts` (19 cases) checks the
+  copy of a relayed tool completion with the projection rules, the redaction,
+  each broken field, and the capture.
+- `test/unit/config/mcp-tenants-config.test.ts` (8 cases) and
+  `gateway-settings.test.ts` (15 cases) check the switch and the gateway
+  settings, with no value in a message. `test/unit/web/accepted-relays.test.ts`
+  (3 cases) checks the memory of the accepted operation IDs.
+- `test/integration/logging/audit/audit-relay-route.test.ts` (5 cases) runs the
+  route with the real context check of `identity` and the real capture and
+  dispatch of `audit-logs`.
+- `test/integration/mcp/gateway-tenant-processes.test.ts` (1 case) runs both
+  roles as two local processes on loopback: a client calls a tool through the
+  control plane, the tenant answers, and its relay reaches the control plane.
+- `test/integration/tenants/tenant-registry-store.runtime.ts` (3 more cases)
+  checks the gateway writes on disposable PostgreSQL with the scoped role. It
+  runs in `npm run test:logging:postgres`.
+
+```sh
+npm run build && node --test dist/test/acceptance/mcp/hosted-gateway.test.js dist/test/acceptance/logging/audit/audit-relay.test.js
+npm run build && node --test --test-name-pattern="MCP_TENANTS_ENABLED" dist/test/acceptance/auth/hosted-startup.test.js
+npm run build && node --test dist/test/unit/mcp/mcp-gateway.test.js dist/test/unit/mcp/forward-step.test.js
+npm run build && node --test dist/test/unit/tenants/tenant-resumes.test.js dist/test/unit/tenants/tenant-activity.test.js dist/test/unit/tenants/pg-tenant-registry-store.test.js
+npm run build && node --test dist/test/unit/auth/signed-access-context.test.js dist/test/unit/logging/audit/audit-relay-capture.test.js
+npm run build && node --test dist/test/unit/config/mcp-tenants-config.test.js dist/test/unit/config/gateway-settings.test.js dist/test/unit/web/accepted-relays.test.js
+npm run build && node --test dist/test/integration/logging/audit/audit-relay-route.test.js dist/test/integration/mcp/gateway-tenant-processes.test.js
+```
+
+`npm run build:hosted` runs both acceptance files too.
+
 ## Current SO-06 inventory scope
 
 SO-06 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)

@@ -469,6 +469,8 @@ then runs these emitted files directly, without another build:
    `dist/test/acceptance/mcp/hosted-capacity-setting.test.js`,
    `dist/test/acceptance/mcp/hosted-tenant-role.test.js`,
    `dist/test/acceptance/mcp/hosted-tenant-capacity.test.js`,
+   `dist/test/acceptance/mcp/hosted-gateway.test.js`,
+   `dist/test/acceptance/logging/audit/audit-relay.test.js`,
    `dist/test/acceptance/mcp/search-lifecycle.test.js`,
    `dist/test/acceptance/mcp/hosted-process-shutdown.test.js`,
    `dist/test/acceptance/mcp/server-only-modules.test.js`,
@@ -488,6 +490,14 @@ image with `THERMUS_ROLE=tenant`: the signed access context, its routes, its
 audit relay, and the capacity of a tenant. They are offline cases too: a local
 key set stands in for AuthKit, and a loopback spy for the relay route of the
 control plane.
+
+The gateway and relay files, added by SO-05, cover the control plane with
+`MCP_TENANTS_ENABLED=true`: the forward to the tenant of the organization with
+the signed access context, the `503` answers of each tenant state, the restart
+answer, the search limit, the cancellation paths, and the relay route
+`/internal/audit`. They are offline cases: the WorkOS fake, an in-memory
+registry, a spy of the resume operation, and a fake tenant upstream on a
+loopback port stand in for the real parts.
 
 The exact selection is in `package.json`. It includes the current emitted
 integration glob and explicit, nonempty acceptance and interface paths. It
