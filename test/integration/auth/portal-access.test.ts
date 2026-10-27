@@ -8,12 +8,16 @@ import { portalBaseUrl as base, portalContext as contextWith, productUserGrant a
 const userManagerGrant: RoleGrant = { role: 'test-user-manager', permissions: ['user-grants:manage'] };
 const member: RoleGrant = { role: 'member', permissions: [] };
 
-const free = (organizationId: string): BillingState => ({ organizationId, plan: 'free', memberLimit: 5, billedSeats: 0 });
-
-async function access(grants: readonly RoleGrant[], path = '/team/portal/access', method = 'GET', billingOf = async (organizationId: string) => free(organizationId)) {
-  const operation = portalAccessOperation(base, 'https://mcp.example/service/mcp', { organizationNameOf: async () => 'Acme Labs', billingOf });
-  return operation(new Request(`https://thermus.example${path}`, { method }), contextWith(grants));
+// The portal request of Acme Labs, with the free plan unless a case gives another billing read.
+function operationWith(billingOf = async (organizationId: string): Promise<BillingState> => ({ organizationId, plan: 'free', memberLimit: 5, billedSeats: 0 })) {
+  return portalAccessOperation(base, 'https://mcp.example/service/mcp', { organizationNameOf: async () => 'Acme Labs', billingOf });
 }
+
+async function access(grants: readonly RoleGrant[], path = '/team/portal/access', method = 'GET') {
+  return operationWith()(new Request(`https://thermus.example${path}`, { method }), contextWith(grants));
+}
+
+const productRequest = () => new Request('https://thermus.example/team/portal/access');
 
 describe('Product access of the portal with the real permission check', () => {
   test('Given User and synthetic user-manager grants, when the portal reads its product access, then it gets the organization and the roles that give a permission, without a highest role', async () => {
@@ -27,7 +31,7 @@ describe('Product access of the portal with the real permission check', () => {
     const reads: string[] = [];
     const team = async (organizationId: string): Promise<BillingState> => { reads.push(organizationId); return { organizationId, plan: 'team', billedSeats: 4 }; };
 
-    const response = await access([user], '/team/portal/access', 'GET', team);
+    const response = await operationWith(team)(productRequest(), contextWith([user]));
 
     assert.deepEqual(await response.json(), { organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: ['user'], plan: 'team', mcpUrl: 'https://mcp.example/service/mcp' });
     assert.deepEqual(reads, ['org_01ACME']);
@@ -36,7 +40,7 @@ describe('Product access of the portal with the real permission check', () => {
   test('Given a billing read that fails, when the portal reads its product access, then the failure reaches the account routes and no product data is given', async () => {
     const outage = new Error('billing read timed out');
 
-    await assert.rejects(access([user], '/team/portal/access', 'GET', async () => { throw outage; }), outage);
+    await assert.rejects(operationWith(async () => { throw outage; })(productRequest(), contextWith([user])), outage);
   });
 
   test('Given only a synthetic user-manager grant, only the default role, or no grant, when the portal reads its product access, then it gets 403 and no organization data', async () => {

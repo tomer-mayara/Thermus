@@ -62,6 +62,14 @@ export function seatUsageIn(body: string): string | undefined {
   return /\b\d+ of \d+ seats used\b/.exec(body)?.[0];
 }
 
+// The refusal of an invitation beyond the 5 seats of a free workspace, in the words of the owner of 27 October 2026.
+// It has no link: the Upgrade button comes with SO-13.
+export function assertSeatLimitNotice(answer: BrowserAnswer): void {
+  assert.equal(answer.status, 409, answer.body);
+  assert.ok(answer.body.includes('<p>This free workspace has 5 of 5 seats. Upgrade to Team to add more members.</p>'), answer.body);
+  assert.doesNotMatch(answer.body, /<a\b/);
+}
+
 export function rolesOf(site: Pick<OrganizationSite, 'directory'>, subject: string, organizationId: string): readonly string[] {
   return site.directory.membershipIn(subject, organizationId)?.grants.map(({ role }) => role) ?? [];
 }

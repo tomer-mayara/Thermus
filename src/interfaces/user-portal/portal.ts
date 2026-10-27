@@ -1,4 +1,5 @@
 import { renderConnectionGuide } from './connection-guide.ts';
+import { productAccess, type ProductAccess } from './product-access.ts';
 import { productFlow } from './product-flow.ts';
 
 // The server owns the browser session: it signs in, keeps the sealed HttpOnly cookie, and signs out. The portal only
@@ -17,16 +18,6 @@ interface SessionView {
   readonly name?: string;
   readonly csrfToken: string;
 }
-
-// A free plan has a member limit; a team plan has none.
-type ProductPlan = { readonly plan: 'free'; readonly memberLimit: number } | { readonly plan: 'team' };
-
-type ProductAccess = ProductPlan & {
-  readonly organizationId: string;
-  readonly organizationName: string;
-  readonly roles: readonly string[];
-  readonly mcpUrl: string;
-};
 
 // The paths are relative, so the portal works under any public base path of the server.
 const paths = { session: 'session', productAccess: 'portal/access', signIn: 'login', signOut: 'logout' };
@@ -79,22 +70,6 @@ async function showProductAccess(container: HTMLElement, fetch: PortalFetch): Pr
   link.href = 'signup';
   link.textContent = 'Start free access';
   status.append(link);
-}
-
-function productAccess(body: unknown): ProductAccess {
-  const { organizationId, organizationName, roles, plan, memberLimit, mcpUrl } = (body ?? {}) as Partial<Record<'organizationId' | 'organizationName' | 'roles' | 'plan' | 'memberLimit' | 'mcpUrl', unknown>>;
-  if (typeof organizationId !== 'string' || typeof organizationName !== 'string' || organizationName.trim() === ''
-    || !Array.isArray(roles) || typeof mcpUrl !== 'string') throw new Error('The product access answer is not valid');
-  const endpoint = new URL(mcpUrl);
-  if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) throw new Error('The MCP endpoint is not valid');
-  return { organizationId, organizationName, roles: roles.map(String), mcpUrl, ...productPlan(plan, memberLimit) };
-}
-
-// The member limit of a free plan is a whole number of 1 or more. Another plan name is not valid.
-function productPlan(plan: unknown, memberLimit: unknown): ProductPlan {
-  if (plan === 'team') return { plan };
-  if (plan === 'free' && typeof memberLimit === 'number' && Number.isSafeInteger(memberLimit) && memberLimit > 0) return { plan, memberLimit };
-  throw new Error('The product access answer has no valid plan');
 }
 
 function showWorkspaceNavigation(container: HTMLElement, roles: readonly string[]): void {

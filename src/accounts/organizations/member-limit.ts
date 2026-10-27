@@ -44,7 +44,6 @@ export class MemberLimit {
   }
 }
 
-// An invitation beyond the limit would give more members than the plan allows.
 export function limitReached(usage: SeatUsage | undefined): boolean {
   return usage !== undefined && usage.used >= usage.limit;
 }

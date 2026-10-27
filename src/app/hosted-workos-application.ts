@@ -115,8 +115,7 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
     const storage = loggingStorage;
     loggingStorage = { ...storage, close: () => { snapshots.close(); return storage.close(); } };
   }
-  const { BillingFree } = await import('../accounts/billing/billing-free.ts');
-  const billing = parts.billing ?? new BillingFree();
+  const billing = await billingOf(parts);
   const providerParts = await workosProviderParts(config, connection, { ...parts, buildServer, billing });
   const application = composeHostedApplication(config, providerParts, {
     reportFailure: accountFailureReporter(parts.logger),
@@ -131,6 +130,12 @@ export async function composeWorkOSApplication(config: RouteConfig, connection: 
   }, loggingStorage);
   owned.move();
   return application;
+}
+
+async function billingOf(parts: WorkOSApplicationParts): Promise<Billing> {
+  if (parts.billing !== undefined) return parts.billing;
+  const { BillingFree } = await import('../accounts/billing/billing-free.ts');
+  return new BillingFree();
 }
 
 async function workosProviderParts(config: RouteConfig, connection: WorkOSConnection, parts: WorkOSApplicationParts & { readonly billing: Billing }): Promise<HostedProviderParts & { readonly organizations: WorkOSOrganizations }> {

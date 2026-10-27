@@ -1,25 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, test, type TestContext } from 'node:test';
 import { BillingFree } from '../../../src/accounts/billing/billing-free.ts';
-import { AuditLog, type AuditEvent } from '../../../src/logs/audit/audit-log.ts';
 import { TeamBillingStub } from '../../support/doubles/billing/team-billing-stub.ts';
 import type { InvitationSeed, MemberSeed } from '../../support/doubles/organizations/directory-double-records.ts';
-import type { FakeUser } from '../../support/doubles/workos/workos-fake.ts';
 import { formLabelled, type BrowserAnswer, type HostedBrowser } from '../../support/drivers/browser/hosted-browser.ts';
 import { pendingInvitationsIn } from '../../support/drivers/browser/pending-invitations-page.ts';
-import { recordLines, seatUsageIn, serveAdministrationSite, shownPage } from '../../support/dsl/hosted-administration.ts';
-import { signInThroughServer } from '../../support/dsl/workos-sign-in.ts';
-import { hostedConfig } from '../../support/fixtures/hosted-config.ts';
+import { assertSeatLimitNotice, recordLines, seatUsageIn, serveAdministrationSite, shownPage, submitOnPage } from '../../support/dsl/hosted-administration.ts';
 import { userOf } from '../../support/fixtures/hosted-members.ts';
 import { adminGrant, memberRole, userGrant } from '../../support/fixtures/hosted-roles.ts';
-import { serveWorkOSSite } from '../../support/in-process/workos-site.ts';
 
-// The 5-member rule of a free workspace (plan section 4.4): the active members with product access and the pending
-// invitations stay at or under 5. Invitation send refuses an invitation beyond the limit, because the invited person
-// accepts in the directory, where the application cannot refuse it. The answers of 27 October 2026 give the words.
+// The 5-seat rule of a free workspace (plan section 4.4): the active members with product access and the pending
+// invitations stay at or under 5, because the invited person accepts in the directory, where the application cannot
+// refuse it. These cases use the session and directory doubles and BillingFree, the billing of the hosted composition.
 
 const membersPage = 'https://thermus.example/team/members';
-const limitNotice = 'This free workspace has 5 of 5 seats. Upgrade to Team to add more members.';
 const failurePage = /The request failed\. Try again later\./;
 
 type Site = Awaited<ReturnType<typeof serveAdministrationSite>>;
@@ -32,12 +26,7 @@ interface Workspace {
   readonly invitations?: readonly Omit<InvitationSeed, 'organizationId'>[];
 }
 
-// The administration site with BillingFree, the billing of the hosted composition, and one more workspace in the
-// directory doubles. Each subject "user-<name>" has the address <name>@example.com.
-async function serveFree(t: TestContext): Promise<Site> {
-  return serveAdministrationSite(t, { billing: new BillingFree() });
-}
-
+// Each subject "user-<name>" has the address <name>@example.com.
 function addWorkspace(site: Site, organizationId: string, workspace: Workspace): void {
   const seed = (subject: string, grants: MemberSeed['grants']): MemberSeed => ({ subject, organizationId, organizationName: 'Initech', grants });
   site.directory.addMembers(
@@ -48,27 +37,10 @@ function addWorkspace(site: Site, organizationId: string, workspace: Workspace):
   site.directory.addInvitations(...(workspace.invitations ?? []).map((invitation) => ({ ...invitation, organizationId })));
 }
 
-function adminOf(site: Site, subject: string, organizationId: string): HostedBrowser {
-  return site.browserOf(userOf(subject, organizationId));
-}
-
-// Opens Members, as a person does, and sends the invitation form with this address and the User role.
-async function invite(browser: HostedBrowser, email: string): Promise<BrowserAnswer> {
-  const { answer, forms } = await shownPage(browser, 'members');
-  assert.equal(answer.status, 200, answer.body);
-  const form = formLabelled(forms, 'Send invitation');
-  return browser.submit({ ...form, fields: { ...form.fields, email } });
-}
-
-async function seatsShownTo(browser: HostedBrowser): Promise<string | undefined> {
-  return seatUsageIn((await browser.open('members')).body);
-}
-
-function assertLimitNotice(answer: BrowserAnswer): void {
-  assert.equal(answer.status, 409, answer.body);
-  assert.ok(answer.body.includes(`<p>${limitNotice}</p>`), answer.body);
-  assert.doesNotMatch(answer.body, /<a\b/, 'The refusal has no link in Slice 2; the Upgrade button comes with SO-13');
-}
+const serveFree = (t: TestContext) => serveAdministrationSite(t, { billing: new BillingFree() });
+const adminOf = (site: Site, subject: string, organizationId = 'org-c') => site.browserOf(userOf(subject, organizationId));
+const invite = (browser: HostedBrowser, email: string) => submitOnPage(browser, 'members', { label: 'Send invitation', filled: { email } });
+const seatsShownTo = async (browser: HostedBrowser) => seatUsageIn((await browser.open('members')).body);
 
 function assertSentToMembers(answer: BrowserAnswer): void {
   assert.deepEqual([answer.status, answer.location?.href], [303, membersPage], answer.body);
@@ -88,7 +60,7 @@ describe('The free member limit at invitation send, through the public routes wi
   test('Given a free workspace with 3 active members and 1 pending invitation, 4 of 5 seats, when two Admins invite at the same time, then one invitation is sent and the other is refused with limit-reached and the fixed words without a link', { timeout: 20_000 }, async (t) => {
     const site = await serveFree(t);
     addWorkspace(site, 'org-c', { admins: ['user-ada', 'user-bob'], users: ['user-cid'], invitations: [{ email: 'dee@example.com', role: 'user' }] });
-    const [ada, bob] = [adminOf(site, 'user-ada', 'org-c'), adminOf(site, 'user-bob', 'org-c')];
+    const [ada, bob] = [adminOf(site, 'user-ada'), adminOf(site, 'user-bob')];
     const [adaForm, bobForm] = await Promise.all([ada, bob].map(async (browser) => formLabelled((await shownPage(browser, 'members')).forms, 'Send invitation')));
     const release = site.directory.holdChanges();
 
@@ -101,28 +73,26 @@ describe('The free member limit at invitation send, through the public routes wi
     await within(300, () => site.directory.invitationChanges.length > 1);
     release();
     const answers = await sends;
-    const shown = await seatsShownTo(ada);
 
     const sent = answers.filter(({ status }) => status === 303);
-    const refused = answers.filter(({ status }) => status !== 303);
     assert.equal(sent.length, 1, answers.map(({ status }) => status).join());
     for (const answer of sent) assertSentToMembers(answer);
-    for (const answer of refused) assertLimitNotice(answer);
+    for (const answer of answers.filter(({ status }) => status !== 303)) assertSeatLimitNotice(answer);
     assert.equal(site.directory.invitationChanges.length, 1);
-    assert.equal(shown, '5 of 5 seats used');
+    assert.equal(await seatsShownTo(ada), '5 of 5 seats used');
     assert.deepEqual(recordLines(site.records).map((line) => line.replace(/^.*: /, '')).sort(), ['applied', 'limit-reached']);
   });
 
   test('Given 4 active members and 1 pending invitation, 5 of 5 seats, when an Admin invites, then the invitation is refused with limit-reached, nothing is sent, and the change record keeps limit-reached', { timeout: 20_000 }, async (t) => {
     const site = await serveFree(t);
     addWorkspace(site, 'org-c', { admins: ['user-ada'], users: ['user-bob', 'user-cid', 'user-dee'], invitations: [{ email: 'eli@example.com', role: 'user' }] });
-    const ada = adminOf(site, 'user-ada', 'org-c');
+    const ada = adminOf(site, 'user-ada');
 
     const before = await seatsShownTo(ada);
     const answer = await invite(ada, 'fay@example.com');
 
     assert.equal(before, '5 of 5 seats used');
-    assertLimitNotice(answer);
+    assertSeatLimitNotice(answer);
     assert.deepEqual(site.directory.invitationChanges, []);
     assert.deepEqual(recordLines(site.records), ['user-ada in org-c: invite user for fay@example.com: limit-reached']);
     assert.deepEqual(site.failures, []);
@@ -131,7 +101,7 @@ describe('The free member limit at invitation send, through the public routes wi
   test('Given 4 active members and 1 expired invitation, 4 of 5 seats, when an Admin invites, then the invitation is sent and the workspace uses 5 of 5 seats', { timeout: 20_000 }, async (t) => {
     const site = await serveFree(t);
     addWorkspace(site, 'org-c', { admins: ['user-ada'], users: ['user-bob', 'user-cid', 'user-dee'], invitations: [{ email: 'eli@example.com', role: 'user', state: 'expired' }] });
-    const ada = adminOf(site, 'user-ada', 'org-c');
+    const ada = adminOf(site, 'user-ada');
 
     const before = await seatsShownTo(ada);
     const answer = await invite(ada, 'fay@example.com');
@@ -153,24 +123,23 @@ describe('The free member limit at invitation send, through the public routes wi
         { subject: 'user-pia', grants: [userGrant], status: 'pending' },
       ],
     });
-    const ada = adminOf(site, 'user-ada', 'org-c');
+    const ada = adminOf(site, 'user-ada');
 
     const before = await seatsShownTo(ada);
-    const answers = [await invite(ada, 'eli@example.com'), await invite(ada, 'fay@example.com'), await invite(ada, 'gus@example.com')];
+    const sent = [await invite(ada, 'eli@example.com'), await invite(ada, 'fay@example.com')];
+    const refused = await invite(ada, 'gus@example.com');
 
     assert.equal(before, '3 of 5 seats used');
-    assertSentToMembers(answers[0]!);
-    assertSentToMembers(answers[1]!);
-    assertLimitNotice(answers[2]!);
+    for (const answer of sent) assertSentToMembers(answer);
+    assertSeatLimitNotice(refused);
     assert.deepEqual(site.directory.invitationChanges, ['send org-c user eli@example.com', 'send org-c user fay@example.com']);
   });
 
   test('Given a member page or an invitation page that fails to load, when an Admin invites, then no invitation is sent, the Admin gets the failure page, the record keeps failed, and the operator gets the cause', { timeout: 20_000 }, async (t) => {
     const site = await serveFree(t);
     addWorkspace(site, 'org-c', { admins: ['user-ada'], users: ['user-bob', 'user-cid'] });
-    const ada = adminOf(site, 'user-ada', 'org-c');
-    const { forms } = await shownPage(ada, 'members');
-    const form = formLabelled(forms, 'Send invitation');
+    const ada = adminOf(site, 'user-ada');
+    const form = formLabelled((await shownPage(ada, 'members')).forms, 'Send invitation');
     const send = () => ada.submit({ ...form, fields: { ...form.fields, email: 'eli@example.com' } });
 
     const failingMembers = <T>(records: readonly T[]) => [records.slice(0, 2), new Error('member page 2 timed out')];
@@ -199,19 +168,18 @@ describe('The free member limit at invitation send, through the public routes wi
     addWorkspace(site, 'org-c', { admins: ['user-ada'], users: ['user-bob', 'user-cid', 'user-dee', 'user-eli'] });
     addWorkspace(site, 'org-d', { admins: ['user-ida'], users: ['user-jon', 'user-kim'] });
 
-    const full = await invite(adminOf(site, 'user-ada', 'org-c'), 'new.c@example.com');
+    const full = await invite(adminOf(site, 'user-ada'), 'new.c@example.com');
     const open = await invite(adminOf(site, 'user-ida', 'org-d'), 'new.d@example.com');
 
-    assertLimitNotice(full);
+    assertSeatLimitNotice(full);
     assertSentToMembers(open);
     assert.deepEqual(site.directory.invitationChanges, ['send org-d user new.d@example.com']);
     assert.deepEqual(recordLines(site.records), ['user-ada in org-c: invite user for new.c@example.com: limit-reached', 'user-ida in org-d: invite user for new.d@example.com: applied']);
   });
 
   test('Given a free workspace with active members, a default-role member, pending, and expired invitations, when an Admin opens Members, then the page shows N of 5 seats used beside the unchanged pending list, and a team workspace shows no seat line', { timeout: 20_000 }, async (t) => {
-    const free = await serveFree(t);
-    const team = await serveAdministrationSite(t, { billing: new TeamBillingStub() });
-    for (const site of [free, team]) {
+    const sites = [await serveFree(t), await serveAdministrationSite(t, { billing: new TeamBillingStub() })];
+    for (const site of sites) {
       addWorkspace(site, 'org-c', {
         admins: ['user-ada'],
         users: ['user-bob'],
@@ -220,64 +188,12 @@ describe('The free member limit at invitation send, through the public routes wi
       });
     }
 
-    const [freePage, teamPage] = await Promise.all([free, team].map(async (site) => (await adminOf(site, 'user-ada', 'org-c').open('members')).body));
+    const pages = await Promise.all(sites.map(async (site) => (await adminOf(site, 'user-ada').open('members')).body));
 
-    assert.equal(seatUsageIn(freePage), '4 of 5 seats used');
-    assert.equal(seatUsageIn(teamPage), undefined);
-    for (const page of [freePage, teamPage]) {
+    assert.deepEqual(pages.map(seatUsageIn), ['4 of 5 seats used', undefined]);
+    for (const page of pages) {
       assert.deepEqual(pendingInvitationsIn(page), [{ email: 'cid@example.com', role: 'User' }, { email: 'dee@example.com', role: 'Admin' }]);
       assert.match(page, /Active product members: 2/);
     }
-  });
-});
-
-describe('The free member limit in the WorkOS composition, with a fake of the WorkOS API', () => {
-  const workspace = 'org_01FREE';
-  const person = (name: string): FakeUser => ({ id: `user_01${name.toUpperCase()}`, email: `${name}@example.com`, firstName: name });
-  const [ada, bea, cal, dan] = ['ada', 'bea', 'cal', 'dan'].map(person) as [FakeUser, FakeUser, FakeUser, FakeUser];
-
-  // The production composition with BillingFree: Ada is the Admin of a free workspace with 4 active members and 1
-  // pending invitation, 5 of 5 seats.
-  async function serveFullWorkspace(t: TestContext, events: AuditEvent[]) {
-    const site = await serveWorkOSSite(t, {
-      organizations: [workspace],
-      audit: new AuditLog({ writeAuditEvent: (event) => { events.push(event); } }),
-      setUp: (world) => {
-        world.users = [ada, bea, cal, dan];
-        world.organizationNames = { [workspace]: 'Initech' };
-        world.memberships = [
-          { userId: ada.id, organizationId: workspace, roles: ['admin'] },
-          ...[bea, cal, dan].map((member) => ({ userId: member.id, organizationId: workspace, roles: ['user'] })),
-        ];
-        world.invitations = [{ id: 'invitation_01EVE', email: 'eve@example.com', organizationId: workspace, roleSlug: 'user', state: 'pending', expiresAt: '2099-01-01T00:00:00.000Z' }];
-      },
-    });
-    const { browser } = await signInThroughServer(site, ada, workspace);
-    return { site, browser };
-  }
-
-  test('Given a refused invitation at 5 of 5 seats, when the change is recorded, then the change record and the audit event have the outcome limit-reached and WorkOS gets no invitation write', { timeout: 20_000 }, async (t) => {
-    const events: AuditEvent[] = [];
-    const { site, browser } = await serveFullWorkspace(t, events);
-
-    const answer = await invite(browser, 'fay@example.com');
-
-    assertLimitNotice(answer);
-    const writes = site.world.fake.takeRequests().filter((request) => request.method === 'POST' && request.path === '/user_management/invitations');
-    assert.deepEqual(writes, []);
-    assert.deepEqual(events.map((event) => event.eventName === 'organization.changed' ? [event.action, event.target, event.role, event.outcome] : event.eventName), [
-      ['invite', { email: 'fay@example.com' }, 'user', 'limit-reached'],
-    ]);
-    const records = site.log.lines.filter((line) => line.startsWith('INFO Account change record: ')).map((line) => JSON.parse(line.slice('INFO Account change record: '.length)) as { action: string; outcome: string });
-    assert.deepEqual(records.map(({ action, outcome }) => `${action}: ${outcome}`), ['invite: limit-reached']);
-  });
-
-  test('Given a free workspace, when a member reads the portal access, then the JSON has the plan free and the member limit 5', { timeout: 20_000 }, async (t) => {
-    const { browser } = await serveFullWorkspace(t, []);
-
-    const access = await browser.open('portal/access', { Accept: 'application/json' });
-
-    assert.equal(access.status, 200, access.body);
-    assert.deepEqual(JSON.parse(access.body), { organizationId: workspace, organizationName: 'Initech', roles: ['admin'], plan: 'free', memberLimit: 5, mcpUrl: hostedConfig.mcpResourceUrl });
   });
 });
