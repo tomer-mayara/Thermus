@@ -1220,10 +1220,9 @@ event of a request goes with the context of that request:
   the tenant drops the pending events.
 
 SO-05 adds the gateway that writes the context and the route
-`/internal/audit`. The route accepts a relay only with a valid context for the
-same organization and decides its own tolerance for a context that expires
-while an event waits: the age bound of 30 seconds and the time limits of a
-tool call keep that window short. Traffic on the private network is plain
+`/internal/audit`; [MCP gateway and audit relay](#mcp-gateway-and-audit-relay)
+gives their rules, also the 30 seconds of grace for a context that expires
+while an event waits in the relay. Traffic on the private network is plain
 HTTP, as the plan accepts. A context can be used again within its 2 minutes,
 but only with its own token and at the tenant of its organization. A 2025-era
 `notifications/cancelled` POST does not stop a running call (board ticket
@@ -1239,6 +1238,157 @@ with its [capacity cases](../../test/acceptance/mcp/hosted-tenant-capacity.test.
 and the start cases in the [hosted startup](../../test/acceptance/auth/hosted-startup.test.ts).
 They run offline with a local key set for AuthKit and a loopback spy of the
 relay route; they are no proof of WorkOS or Render behavior.
+
+### MCP gateway and audit relay
+
+SO-05 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#42-flows)
+adds the MCP gateway of the control plane and the route `/internal/audit`.
+The rollout switch `MCP_TENANTS_ENABLED` turns both on: `true` or `false`,
+written exactly, default `false`; another value stops the start with
+`MCP_TENANTS_ENABLED must be exactly true or false.`. With `false`, the
+control plane reads no setting of the tenants, and `MCPServer` runs the tools
+as before. With `true`, the control plane reads these settings before it
+listens:
+
+| Setting | Rule |
+| --- | --- |
+| `FREE_TENANT_LIMIT` | The rule of SO-04: a whole number from 0 to 1000, default 25. Without the switch, the cap is 25 and the setting is not read. |
+| `GATEWAY_SIGNING_KEY` | One Ed25519 private key in PEM form (`-----BEGIN PRIVATE KEY-----`, PKCS #8). It signs each access context. Only the control plane holds it; each tenant gets its public key in `GATEWAY_PUBLIC_KEY`. |
+| `CONTROL_PLANE_INTERNAL_URL` | The origin of the control plane on the private network, with the rule of the tenant setting. It is the value that each tenant gets, and the relay route answers only its host. |
+
+A missing setting gives `<NAME> is required when MCP_TENANTS_ENABLED is true.`,
+and a refused value gives the rule of the setting. No message shows a value.
+The switch also needs the private hosted storage: without the tenant registry,
+the start stops with `MCP_TENANTS_ENABLED=true needs the tenant registry:
+DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.`.
+
+**The gateway.** The [gateway](../../src/interfaces/mcp/mcp-gateway.ts) is the
+forward step of `MCPServer`: it runs after the Origin check, the bearer check,
+and the access check of today, in place of the local dispatch. Thus each
+denial of today stays, and a token without a current `product:access` grant
+requests no tenant. The protected-resource metadata, the bearer challenge, the
+token audience, and the metadata URLs stay public. The gateway reads the row
+of the organization from the in-memory copy of the registry (SO-04):
+
+| Row | Answer |
+| --- | --- |
+| `live` | The forward below, to `internal_url` with the signed context. |
+| `requested`, `creating`, `deploying` | `503`, `Retry-After: 15`, "Your workspace is not ready yet. Try again in 15 seconds." |
+| `suspended` | The row moves to `deploying`, one resume call goes through the resume operation, then `503`, `Retry-After: 60`, "Your workspace is restarting after a pause. Try again in a minute." |
+| `failed` | `503`, "Workspace setup failed. We have been notified and will fix it.", and one operator report for each organization. |
+| `deleted` | `503`, "Your workspace is not available. Contact Thermus support." |
+| No row | One tenant request (SO-04), then the answer of a `requested` row; at a full cap, `503` with "All free workspaces are in use. Try again later." |
+| No usable copy | After a failed refresh, the copy serves up to 60 s; then `503`, `Retry-After: 15`, "The service is temporarily unavailable. Try again in 15 seconds." |
+
+Each `503` has the body `{"error":"temporarily_unavailable","error_description":"<the words>"}`.
+Each refusal writes one system log line, `MCP gateway refusal: {...}`, with the
+organization, the reason, and the state; a refusal that reports to the
+operator is an `ERROR` line. No refusal writes an audit event, because no tool
+ran.
+
+The resume follows answer 3 of 27 October 2026. Only the call that moves the
+row from `suspended` to `deploying` sends the resume call, so concurrent calls,
+also of another process, send one. A failed resume sets the row back to
+`suspended` and makes the refusal line an `ERROR` line with the reason, so the
+next call tries again. The provisioner of SO-06 watches the newest deploy of a
+`deploying` row and records `live`. Until SO-10 connects the resume operation
+to the Render API, each resume fails with "The resume operation is not
+connected yet (SO-10)."; no tenant is suspended before the idle sweep of SO-10.
+
+**The forward.** The gateway is a light streaming proxy (record SO-01d):
+
+- It sends the method, the path and the query, the body, and the headers of
+  the client to `<internal_url><path>`. It removes the hop-by-hop headers
+  (`Connection` and each header that it names, `Keep-Alive`,
+  `Proxy-Connection`, `TE`, `Trailer`, `Transfer-Encoding`, `Upgrade`,
+  `Proxy-Authenticate`, `Proxy-Authorization`), `Host`, `Content-Length`, and
+  `Cookie`: a session cookie of the control plane is one of its credentials.
+  It replaces each `Thermus-Access` value of the client with the context that
+  it signs for the request: the authority, the subject, the optional name, the
+  organization, and the grants of the resolved access, and the hash of the
+  bearer token.
+- It reads the body within the 4 MiB limit of the MCP SDK and answers a larger
+  body with the `413` of the SDK. Of the body, it reads only the `id`, the
+  `method`, and, for `tools/call`, the tool name `params.name` of each
+  JSON-RPC message, for its own answers and the search limit. It reads no
+  argument, no metadata, and nothing of the answer. A 2026-07-28 client also
+  sends `Mcp-Method` and `Mcp-Name`; the gateway forwards them, and the SDK of
+  the tenant refuses a header that the body does not match.
+- It streams the answer back chunk by chunk, without the hop-by-hop headers and
+  without `Content-Length` and `Content-Encoding`, because the fetch of Node
+  decodes a compressed answer.
+- Cancellation has two paths. Before the tenant answers, the abort of the
+  client (the `close` of its response) aborts the pending fetch. After that,
+  the abort and a cancel of the client cancel the answer body of the tenant. A
+  2026-07-28 client that aborts a call stops the handler of the tenant within
+  100 ms.
+- A 2025-era `notifications/cancelled` POST and the `GET` stream of a 2025-era
+  client go to the tenant like each other request; the client gets the `202`
+  and the `405` of the tenant.
+- A tenant failure before the first answer byte (HTTP `502` or a reset
+  connection) gives an answer of the gateway: for each request of the body, a
+  tool error for `tools/call` (`isError: true`, "Server restarted. Try again
+  in a minute.") and a JSON-RPC error with the same words for each other
+  method. A body without a request gets `503` with `Retry-After: 60`. After
+  the first answer byte, the gateway ends the answer stream. Both cases write
+  one `ERROR` line, `MCP gateway tenant restart: {...}`, with the organization,
+  the phase, and the cause: the operator report, and the line of the restart
+  alert of SO-11.
+- 5 searches at a time pass across all tenants (answer 4): a request takes one
+  place for each `tools/call` of `search` that it holds, until its answer
+  stream ends. The sixth gets the tool error "Server busy. Try again later.",
+  one refusal line, and no forward.
+- After a successful forward, that is, when the tenant answers with a status
+  below 500, the gateway records the use of the tenant. The registry writes
+  `last_active_at` at most once a minute for each organization, with the time
+  of the last write in memory.
+
+**The relay route.** [`POST /internal/audit`](../../src/interfaces/web/internal/audit-relay-route.ts)
+takes the audit relays of the tenants (answer 6 of 27 October 2026):
+
+1. A request whose `Host` header is not the host of `CONTROL_PLANE_INTERNAL_URL`
+   gets `404`, also each other path under `/internal/`. Another method gets
+   `405`. With the switch off, `/internal/*` stays an account path that needs
+   a sign-in.
+2. The body has at most 256 KiB (`413` above) and must be JSON (`400`). It must
+   be a tool completion event that passes the projection rules of the audit
+   capture again (`400`): the control plane checks and copies each field and
+   redacts the input and the result text again.
+3. The organization is the part of the tenant ID of the event after the
+   authority of the control plane (`403` for another authority). The
+   `Thermus-Access` context must be valid for that organization, with the
+   public key of `GATEWAY_SIGNING_KEY`: the checks of a tenant without the
+   bearer token, which a relay does not carry, and with 30 seconds of grace
+   after the expiry, the age bound of a relayed event (`403`). The actor of the
+   event must have the authority and the subject of the context (`403`).
+4. A repeated operation ID of the same tenant within 160 s, the longest time
+   that its context can pass, gets `202` and is not captured again. A full
+   memory of 16,384 operation IDs gives `503`, so the tenant tries again.
+5. An accepted relay gets `202`. The audit capture of today takes the event and
+   exports it with the destination settings of the organization.
+
+Each refused relay writes one `ERROR` line, `Audit relay refusal: {...}`, with
+the reason, the reason of a refused context, and the organization; it never
+shows the context or the event. During a rotation of the signing key, a relay
+of a context of the old key is refused, because the route knows only the
+current key.
+
+The tests: the acceptance specifications of the
+[gateway](../../test/acceptance/mcp/hosted-gateway.test.ts) and the
+[relay](../../test/acceptance/logging/audit/audit-relay.test.ts), with a fake
+tenant upstream, the real registry rules over an in-memory registry, and a spy
+of the resume operation; the unit tests of the
+[gateway](../../test/unit/mcp/mcp-gateway.test.ts), the
+[forward step](../../test/unit/mcp/forward-step.test.ts), the registry writes
+in [tenants](../../test/unit/tenants/), the
+[relay check](../../test/unit/auth/signed-access-context.test.ts), and the
+[relayed capture](../../test/unit/logging/audit/audit-relay-capture.test.ts);
+the [route integration](../../test/integration/logging/audit/audit-relay-route.test.ts)
+with the real context check and capture; the
+[two-process integration](../../test/integration/mcp/gateway-tenant-processes.test.ts)
+of both roles; and the start cases of the
+[hosted startup](../../test/acceptance/auth/hosted-startup.test.ts). They run
+offline; they are no proof of Render behavior.
 
 ### Pinned WorkOS SDK proof
 
