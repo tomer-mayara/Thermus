@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-27T12:43:17Z",
+  "source": "Root manager attestations in current task; this documentation worker ran no Git or remote action.",
+  "mergedPr": 263,
+  "approvedHead": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "mergeCommit": "115bb51298b86297475870f3d390110d32ccb33d",
+  "mergeCount": 1,
+  "deployment": "No deployment claimed.",
+  "rootChecks": [
+    "Fetched main after merge.",
+    "git diff --exit-code 37046bbd1426566d90bf1a32f8578584d7173060 origin/main passed: identical tree.",
+    "PR264 retargeted to main at 115bb51298b86297475870f3d390110d32ccb33d; head614 unchanged, Draft; merge-base370 unchanged.",
+    "PR266 parent614 and PR268 parentaa8 unchanged."
+  ],
+  "historicalFullCandidateMain": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "currentMain": "115bb51298b86297475870f3d390110d32ccb33d",
+  "currentMainMergeBase": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "evidenceLimit": "No new source, test, metric or checker result is claimed. Incremental comparison inputs remain unchanged."
+}
