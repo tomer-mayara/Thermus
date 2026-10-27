@@ -3193,9 +3193,13 @@ no service named `thermus-spike-*`.
 ## SO-02: release path on each merge to main
 
 Date: 27 October 2026 (UTC). Branch `self-ob-s2-so-02-release-workflow-1d4667`,
-from main `77477864`. The runs used the workflow and the deploy script of
-commit `a0f94659`. The later commits of the branch change documents and code
-comments only, so the code of the runs is the code of the candidate.
+first from main `77477864`, then rebased onto main `f6b52396`, which holds the
+tenant role of SO-03 ([#280](https://github.com/tomer-mayara/Thermus/pull/280)).
+Runs A to E used commit `a0f94659` on the first base; its workflow and deploy
+script differ from the candidate in code comments only. Run A2 used the rebased
+commit `72015de3`, whose workflow and deploy script are those of the candidate,
+so its image holds the tenant role of SO-03. The later commits change documents
+only.
 
 [`hosted-image.yml`](../../.github/workflows/hosted-image.yml) keeps the build,
 the gate, and the push of [SO-01b](#so-01b-hosted-image-on-a-native-amd64-runner)
@@ -3216,10 +3220,12 @@ and adds two things, as the answers of 27 October 2026 decided:
 ### Runs
 
 The digests: D1 `sha256:9c034b74b8a55c3faeb61c8ea6f063334e2e3fe78b0493b6530ed2e7008402e8`
-(commit `a0f94659`) and D2
+(commit `a0f94659`), D2
 `sha256:3a9beb582cceb154b17dd8cbb248c06305ee9c704344021f24f36fe4d5a3a304`
-(throwaway commit `1ba8a4f0`). Each is 154.7 MB (147.6 MiB) compressed, in 16
-layers, `linux/amd64`. Neither is a release digest.
+(throwaway commit `1ba8a4f0`), and D3
+`sha256:0cff4e4a38241563852d3b9417f8b94f8f5bee7586179cff1e4513ef72aa48eb`
+(rebased commit `72015de3`). Each is about 154.7 MB (147.6 MiB) compressed, in
+16 layers, `linux/amd64`. None is a release digest.
 
 | Run | Commit and event | Result | Times |
 | --- | --- | --- | --- |
@@ -3229,15 +3235,21 @@ layers, `linux/amd64`. Neither is a release digest.
 | D, [40582508603](https://github.com/tomer-mayara/Thermus/actions/runs/40582508603) | `1ba8a4f0`, throwaway branch `so-02-deploy-check`; push | Passed: build, gate 7 of 7, push of D2, and record. The deploy job was skipped. | Build 356 s, gate 13 s, push 15 s; job 8 min 11 s |
 | G, [40583680586](https://github.com/tomer-mayara/Thermus/actions/runs/40583680586) | `1ba8a4f0`; dispatch with a digest of zeros and the disposable service | The request check passed. The GHCR check failed with "not found", and the deploy step was skipped. | Job 23 s |
 | E, [40583851233](https://github.com/tomer-mayara/Thermus/actions/runs/40583851233) | `1ba8a4f0`; dispatch with D1 and the disposable service | Passed: GHCR check, deploy `dep-dbgh4l59el5s739oujgg` (`update_in_progress` > `live`), D1 in the live deploy and in `imagePath`, and `/healthz` `200` with `ok` at the first request. | Live 29.6 s after the deploy call; Render: 22.4 s; deploy step 30 s; job 60 s |
+| A2, [40586231957](https://github.com/tomer-mayara/Thermus/actions/runs/40586231957) | `72015de3`, the candidate rebased onto main `f6b52396`; dispatch without inputs | Passed: build, gate 7 of 7, push of D3, and record. The deploy job was skipped. | Build 505 s, gate 20 s, push 19 s; job 11 min 17 s |
 
 In runs A and D, `npm run build:hosted` in the image build passed backend
 units 3,353 of 3,353, portal units 31 of 31, portal acceptance 20 of 20,
 integration 1,169 of 1,169, the selected acceptance and interface files 123
-of 123, and the renderer gate 13 of 13. The hosted image gate passed 7 of 7.
-No test failed, was cancelled, was skipped, or was todo. The gate wrote
-"Reused the caller-built image" with the tag of the run. Each run used the
-GitHub-hosted image `ubuntu-24.04` version 20261012.334.1, with 2 CPUs,
-7,938 MiB of memory, 12 GB of free disk of 72 GB, and Docker Engine 28.0.4.
+of 123, and the renderer gate 13 of 13. In run A2, with the tenant role of
+SO-03, it passed backend units 3,468 of 3,468, portal units 31 of 31, portal
+acceptance 20 of 20, integration 1,176 of 1,176, the selected acceptance and
+interface files 139 of 139, among them the tenant role and tenant capacity
+files of SO-03, and the renderer gate 13 of 13. The hosted image gate passed
+7 of 7 in each run. No test failed, was cancelled, was skipped, or was todo.
+The gate wrote "Reused the caller-built image" with the tag of the run. Runs A
+and D used the GitHub-hosted image `ubuntu-24.04` version 20261012.334.1, and
+run A2 version 20261025.353.1, each with 2 CPUs, about 7,930 MiB of memory,
+11 to 12 GB of free disk of 72 GB, and Docker Engine 28.0.4.
 
 GitHub reads the trigger `push` on `main` and the branch rule of the deploy
 only on `main`, so they run for the first time at the merge. Before the merge,
@@ -3297,8 +3309,9 @@ These checks used scripts in the session scratchpad, not in the branch:
 - The existing web service answered `/healthz` at the first request after the
   deploy. The new web service answered `502` once before `200`, as in SO-01d
   part two, so the repeat after a `502` stays.
-- The image build took 356 and 370 s, against 472 to 490 s in SO-01b; the
-  push took 15 s. A merge run takes about 8 to 9 minutes.
+- The image build took 356 and 370 s on the first base and 505 s on main
+  `f6b52396`, against 472 to 490 s in SO-01b; the push took 15 to 19 s. A
+  merge run takes about 8 to 12 minutes.
 
 ### Limits
 
