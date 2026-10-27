@@ -1231,26 +1231,40 @@ Each ticket must leave a working page; later tickets are not its exit conditions
 #### Reviewed UI state
 
 Restacked on 26 October 2026 against main
-`2b3ad13b9e2e61e206479b82e91359192cae1d00`. All four PRs are Draft while fresh
-complete-candidate validation and review evidence are prepared. The current
-source candidates form one chain; the maintained PR descriptions and comments
-pin the final heads and evidence after document and metric-record updates.
-This state claims no merge or deployment.
+`9507e751215fec32748bf4e944f2393928e61cf5`. This preparation record captures
+one source chain before final quality-record updates. All four PRs were Draft
+at this point. Their maintained descriptions and comments own the final heads,
+check results and merge status. No deployment is claimed by this record.
 
-| Ticket / PR | Source candidate at restack | Actual parent | State and remaining holds |
+Main's latest change adds operator-probe scripts, a Knip entry and documents.
+The recorded before/after comparison verifies unchanged production source,
+tests, dependencies, build configuration, public declarations and registry.
+Functional executions retain their original pins. The added scripts change
+quality/typecheck inputs and the Docker build context, so those checks need
+fresh evidence.
+
+| Ticket / PR | Source candidate before quality-record updates | Actual parent | State and remaining holds |
 | --- | --- | --- | --- |
-| UI-01 / [#263](https://github.com/tomer-mayara/Thermus/pull/263) | `639827bcf410d325d25bbf77582c4d0c32ff3c29` | main above | Fresh complete-candidate checks and review are in progress. |
-| UI-02 / [#264](https://github.com/tomer-mayara/Thermus/pull/264) | `317075ca0bec0034854a2c09c6a642a06d54e3dc` | UI-01 | Density correction passes; full checks and review remain. Staging is blocked as described below. |
-| UI-03 / [#266](https://github.com/tomer-mayara/Thermus/pull/266) | `05dda697b7c9ec99707bbfbeb5acd320923e0959` | UI-02 | Counted-heading migration and combined 51-case browser group pass; full checks and review remain. |
-| UI-04 / [#268](https://github.com/tomer-mayara/Thermus/pull/268) | `4dc9b10590748883f89addbc921af2746c742a5d` (source commit, before this review record) | UI-03 | All four increments are present; 130 focused cases and 71 browser cases pass. Full checks and review remain. |
+| UI-01 / [#263](https://github.com/tomer-mayara/Thermus/pull/263) | `4f5402fe04b52c9964d016e5375a0e44383c8bc5` | main above | Native functional checks passed at the earlier pins; fresh type/quality evidence and local AMD64 image proof remain. |
+| UI-02 / [#264](https://github.com/tomer-mayara/Thermus/pull/264) | `c4c3490d3b5ab7808c84599537e25489ced5c37a` | UI-01 | Native functional checks and density correction passed at the earlier pins; fresh type/quality evidence, local AMD64 image proof and staging remain. |
+| UI-03 / [#266](https://github.com/tomer-mayara/Thermus/pull/266) | `dd4630aabe7e2bae7fd1822a2a1e9d0799ded599` | UI-02 | Native functional checks passed at `6ced8db3`; Collector first passed 7/10, then 10/10 after a private dependency copy with the same package bytes. Fresh type/quality evidence, local AMD64 image proof and staging remain. |
+| UI-04 / [#268](https://github.com/tomer-mayara/Thermus/pull/268) | `c7db4fba5680ed7d5c0c0a178812de3f100cfbbb` | UI-03 | All four increments are present. Native checks are in progress at `07285735`; earlier 130 focused and 71 browser passes retain their original provenance. Fresh type/quality evidence, local AMD64 image proof and staging remain. |
 
-The fresh UI-02 staging run passed 22 of 29 cases. Six failures share a WorkOS
-sandbox invitation-email quota error during fixture setup. The scoped removal
-journey separately returned HTTP 503 instead of 303 on reinvitation; its cause
-is not established. Exact owned-resource cleanup completed. Keep these failures
-separate. Retry the full selected live group after the external quota is cleared
-at no cost; do not weaken assertions or buy quota. UI-03 and UI-04 also require
-the live group on their final combined candidates.
+UI-01 functional passes retain the original `7acd90d4` execution pin and its
+verified rebind to `4a761fec`; UI-02 native passes were run at `82788735`.
+These are reused results with input comparisons, not new executions at the
+source candidates above. All candidates still require final gate verification
+and independent authorized current-head human approval. Keep image checks local;
+no Actions dispatch is planned.
+
+The earlier UI-02 staging run at `2ec671eb` passed 22 of 29 cases. Six failures
+share a WorkOS sandbox invitation-email quota error during fixture setup. The
+scoped removal journey separately returned HTTP 503 instead of 303 on
+reinvitation; its cause is not established. Exact owned-resource cleanup
+completed. Keep these failures separate. Retry the full selected live group
+after the external quota is cleared at no cost; do not weaken assertions or buy
+quota. UI-03 and UI-04 also require the live group on their final combined
+candidates.
 
 Keep the four existing PRs and merge in **UI-01 → UI-02 → UI-03 → UI-04** order
 only after their required checks and review requirements pass. All need final
