@@ -614,8 +614,10 @@ egress to `https://example.com/`. The file
 `test/acceptance/auth/hosted-image.test.ts` uses the standard acceptance-test
 name. The ordinary `test` and `test:acceptance` command globs explicitly exclude
 `hosted-image.test.js`. Only this command runs the [hosted image gate](docs/implementation/test-gate-policy.md#hosted-image-gate).
-To run the gate on a native AMD64 runner, dispatch the manual workflow
-[`.github/workflows/hosted-image.yml`](.github/workflows/hosted-image.yml); it runs this command there and pushes the tested image to GHCR.
+The workflow [`.github/workflows/hosted-image.yml`](.github/workflows/hosted-image.yml)
+runs this command on a native AMD64 runner at each merge to `main` and at each
+manual dispatch without deploy inputs, and then pushes the tested image to GHCR.
+[Hosted release](#hosted-release) gives the release path.
 The [RHD-03 record](docs/implementation/rhd-03.md) gives the current proof
 status and the completed Linux AMD64 image proof. The image ships the
 owner-selected pinned EasyList snapshot for the hosted rules. The [hosted image policy](docs/reference/ad-rules.md#hosted-image-policy)
@@ -677,3 +679,86 @@ npm run test:container
 ```
 
 For `habit-hooks`, correct each finding or give the reason that you keep it. Then build the release image with `docker compose build`. The [test gate policy](docs/implementation/test-gate-policy.md#self-hosted-release) gives the release rules. A self-hosted release does not claim payment collection, hosted features, or migration between editions.
+
+### Hosted release
+
+The workflow [`.github/workflows/hosted-image.yml`](.github/workflows/hosted-image.yml)
+is the release path of the hosted image, from SO-02 of the
+[self on-boarding plan](docs/implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end).
+The [SO-02 record](docs/implementation/self-onboarding-s1.md#so-02-release-path-on-each-merge-to-main)
+gives its runs.
+
+- **Build on each merge.** Each push to `main` starts the job "Build, gate,
+  and push the hosted image". It builds `Dockerfile.hosted` for `linux/amd64`
+  one time, runs the [hosted image gate](docs/implementation/test-gate-policy.md#hosted-image-gate)
+  against that image, and pushes the tested image as
+  `ghcr.io/tomer-mayara/thermus-hosted:<commit SHA>`. The job summary and the
+  log give the digest, the compressed size, and the build, gate, and push
+  times. A failed offline check stops the build, and a failed gate stops the
+  job, so nothing is pushed. A manual dispatch without inputs does the same
+  for the branch that it names.
+- **Deploy only by a manual dispatch on `main`.** A merge deploys nothing. Give
+  two inputs: `digest`, the digest of an image that a run pushed
+  (`sha256:<64 hex>`), and `service_id`, the Render web service, for example
+  `gh workflow run hosted-image.yml --repo tomer-mayara/Thermus --ref main -f digest=sha256:<digest> -f service_id=srv-<ID>`.
+  The job "Deploy a pushed digest to a Render web service" checks the request
+  before any call, checks that GHCR has the digest as one `linux/amd64` image,
+  and then calls the Render API deploy with `imageUrl`
+  (`POST /v1/services/<ID>/deploys`). That call also sets the image setting
+  `imagePath` of the service, so later Render deploys use the same image. A
+  deploy hook does not: after a hook deploy, later deploys use the image of the
+  service settings, so the workflow uses no deploy hook. The job reads the
+  deploy every 5 s until it is `live`, for at most 15 minutes. Then it checks
+  that the live deploy and `imagePath` name the digest, and it requests
+  `/healthz` on the public URL of the service until the answer is `200` with
+  `ok`. After a `502`, it sends the request again, at most 6 requests 5 s
+  apart; each other answer fails the job. The public URL is a verified custom
+  domain, such as `app.thermus.ai`, or else the `onrender.com` URL. The job
+  summary names the service, the deploy ID, the image before and after, and
+  the health result. A failed step fails the run.
+- **Refusals.** A deploy request on another branch fails before any call. The
+  service must be a web service of the Thermus AI workspace that runs an
+  image of `ghcr.io/tomer-mayara/thermus-hosted` and is not suspended. Tenants
+  are private services; the fleet script of SO-09 deploys them. The production
+  service `srv-db8mnqg473hc739d529g` also needs the third input
+  `confirm_production` with that same service ID.
+- **Production.** Production still builds from Git, with automatic deploys off
+  (`autoDeploy: no`). It changes to the image at step 5 of the SO-12 order, an
+  API deploy of the release candidate digest. Do not dispatch a deploy of
+  production before that step.
+- **Key.** The deploy job reads the repository secret `RENDER_API_KEY`, the API
+  key of a dedicated Render user who is a Member of the Thermus AI workspace,
+  and `GITHUB_TOKEN`. It never prints them. There is no GitHub environment, so
+  a workflow on any branch of this repository can read the secret; the branch
+  rule is in the workflow and the script of each branch.
+
+GHCR facts, from the GitHub documentation read on 26 and 27 October 2026:
+
+- **Quota.** Container image storage and bandwidth of the Container registry
+  are free now, and GitHub gives at least one month of notice before a change.
+  Other private packages share 500 MB on GitHub Free, or 2 GB on Pro and Team,
+  with Actions artifacts.
+- **Visibility.** The package `ghcr.io/tomer-mayara/thermus-hosted` is private
+  and linked to this repository, and it gets its access from the repository.
+  Render pulls it with the registry credential `ghcr-thermus-hosted-read` of
+  the Thermus AI workspace, whose token has only `read:packages`.
+- **Limits.** 10 GB for each layer and 10 minutes for each upload. The image is
+  about 148 MiB compressed, in 16 layers.
+- **Retention.** GHCR deletes no version automatically. Each build adds one
+  version. A deleted version can be restored for 30 days.
+
+**Pruning rule (27 October 2026).** Keep every digest that the control plane or
+a tenant runs, and the last ten release digests for a rollback. A release
+digest is the image of a commit on `main`: its tag is that commit SHA. Once a
+month, delete the other versions:
+
+1. Get a token with `read:packages` and `delete:packages`, for example with
+   `gh auth refresh --scopes read:packages,delete:packages`.
+2. List the versions with their digests, dates, and tags:
+   `gh api --paginate /user/packages/container/thermus-hosted/versions --jq '.[] | [.id, .name, .created_at, (.metadata.container.tags | join(","))] | @tsv'`.
+3. Write down the digests to keep: the `imagePath` of the control plane, from
+   the Render Dashboard or `GET /v1/services/<ID>`; the `image_digest` of each
+   `tenants` row that is not `deleted`; and the ten newest versions whose tag
+   is a commit of `main` (`git merge-base --is-ancestor <tag> origin/main`).
+4. Delete each other version on the package page (**Delete version**), or with
+   `gh api --method DELETE /user/packages/container/thermus-hosted/versions/<version ID>`.
