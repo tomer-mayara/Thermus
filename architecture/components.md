@@ -597,12 +597,13 @@ and a plain HTTP address to a private service name. The `subscriptions` and
 The [provisioner](../src/tenancy/tenants/tenant-provisioner.ts) moves rows only
 from `requested` to `live` and, after a resume, from `deploying` to `live`. Its
 [SQL adapter](../src/tenancy/tenants/pg-tenant-provisioning-store.ts) claims the
-next row in one short transaction: a `creating` or `deploying` row first, else
-the oldest `requested` row, which becomes `creating` with its service name, the
-prefix of `TENANT_NAME_PREFIX` and the organization ID in lower case, and the free
-plan. Each later record names the state that it starts from. The loop works
-behind the [`TenantPlatform`](../src/tenancy/tenants/tenant-platform.ts) contract:
-the search by name, the create, the newest deploy, the internal address, and the
+next row in one short [transaction](../src/tenancy/tenants/pg-tenant-claim.ts):
+a `creating` or `deploying` row first, else the oldest `requested` row, which
+becomes `creating` with its service name, the prefix of `TENANT_NAME_PREFIX` and
+the organization ID in lower case, and the free plan. Each later record names
+the state that it starts from. The loop works behind the
+[`TenantPlatform`](../src/tenancy/tenants/tenant-platform.ts) contract: the
+search by name, the create, the newest deploy, the internal address, and the
 delete. The [Render adapter](../src/tenancy/providers/render/render-tenant-platform.ts)
 implements it with the calls of the SO-01c probe. The create call carries a
 closed list of tenant variables of plan section 4.1 with `OPERATION_CAPACITY=5`
