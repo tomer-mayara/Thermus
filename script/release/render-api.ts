@@ -1,6 +1,5 @@
-// A small client of the Render API for the deploy job of .github/workflows/hosted-image.yml. The key stays in a
-// private field: no output holds the key or a request header. A read repeats after a 429, a 5xx answer, or a network
-// failure. A write goes one time only, because a repeated deploy can double its effect.
+// A read repeats after a 429, a 5xx answer, or a network failure. A write goes one time only, because a repeated
+// deploy can double its effect. No output holds the key or a request header.
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const API_BASE = 'https://api.render.com/v1';

@@ -1,5 +1,4 @@
-// The deploy request of a manual dispatch of .github/workflows/hosted-image.yml, read from the environment of the
-// deploy job. Each rule holds before any registry or Render call, so a refused request reaches no service.
+// Each rule holds before any registry or Render call, so that a refused deploy request reaches no service.
 
 export const IMAGE = 'ghcr.io/tomer-mayara/thermus-hosted';
 const PRODUCTION_SERVICE_ID = 'srv-db8mnqg473hc739d529g';

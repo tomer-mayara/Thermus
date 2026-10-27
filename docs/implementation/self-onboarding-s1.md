@@ -3193,8 +3193,9 @@ no service named `thermus-spike-*`.
 ## SO-02: release path on each merge to main
 
 Date: 27 October 2026 (UTC). Branch `self-ob-s2-so-02-release-workflow-1d4667`,
-from main `77477864`. The workflow and the deploy script of the runs are those
-of commit `a0f94659`; the later commits of the branch change documents only.
+from main `77477864`. The runs used the workflow and the deploy script of
+commit `a0f94659`. The later commits of the branch change documents and code
+comments only, so the code of the runs is the code of the candidate.
 
 [`hosted-image.yml`](../../.github/workflows/hosted-image.yml) keeps the build,
 the gate, and the push of [SO-01b](#so-01b-hosted-image-on-a-native-amd64-runner)

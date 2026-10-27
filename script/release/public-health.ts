@@ -1,4 +1,3 @@
-// The /healthz check of a deployed web service on its public URL. The request sends no Render key.
 import { setTimeout as sleep } from 'node:timers/promises';
 import { itemsOf, shown, textOf, type ServiceView } from './render-answers.ts';
 import { messageOf, type RenderApi } from './render-api.ts';

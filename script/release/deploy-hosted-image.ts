@@ -53,7 +53,6 @@ const SERVICE_RULES: readonly ServiceRule[] = [
   },
 ];
 
-// A failed deploy writes the rows that it has, so that the summary still names the service and the deploy.
 class Report {
   readonly #rows: (readonly [string, string])[] = [];
 

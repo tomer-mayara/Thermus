@@ -1,6 +1,3 @@
-// The fields of the Render API answers that the deploy job reads. A missing or malformed field stays undefined, so
-// each check names what the answer held.
-
 export interface ServiceView {
   readonly id: string;
   readonly name?: string;
