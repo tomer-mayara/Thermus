@@ -118,21 +118,27 @@ export class RenderFake {
     this.#faults.push({ route, fault });
   }
 
-  private async answer(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  private async answer(input: Parameters<typeof fetch>[0], init: RequestInit = {}): Promise<Response> {
     init.signal?.throwIfAborted();
-    const url = new URL(input instanceof Request ? input.url : input);
-    const method = init.method ?? 'GET';
-    const route = routeOf(method, url.pathname);
-    const body = typeof init.body === 'string' ? JSON.parse(init.body) as unknown : undefined;
-    const authorized = new Headers(init.headers).get('Authorization') === `Bearer ${this.#account.apiKey}`;
-    const at = this.#account.now?.() ?? 0;
-    this.requests.push({ route, method, path: url.pathname.replace(/^\/v1/, ''), query: url.searchParams, body, authorized, at });
-    const fault = route === 'unknown' ? undefined : this.takeFault(route);
+    const request = this.recorded(new URL(input instanceof Request ? input.url : input), init);
+    const fault = request.route === 'unknown' ? undefined : this.takeFault(request.route);
     if (fault === 'network') throw new TypeError('fetch failed');
     if (fault !== undefined && fault !== 'lost') return responseOf(fault);
-    const answer = authorized ? this.handle(route, url, body) : { status: 401, body: { message: 'Unauthorized' } };
+    const answer = request.authorized ? this.handle(request) : { status: 401, body: { message: 'Unauthorized' } };
     if (fault === 'lost') throw new TypeError('fetch failed');
     return responseOf(answer);
+  }
+
+  private recorded(url: URL, init: RequestInit): RenderRequest {
+    const method = init.method ?? 'GET';
+    const request: RenderRequest = {
+      route: routeOf(method, url.pathname), method, path: url.pathname.replace(/^\/v1/, ''), query: url.searchParams,
+      body: typeof init.body === 'string' ? JSON.parse(init.body) as unknown : undefined,
+      authorized: new Headers(init.headers).get('Authorization') === `Bearer ${this.#account.apiKey}`,
+      at: this.#account.now?.() ?? 0,
+    };
+    this.requests.push(request);
+    return request;
   }
 
   private takeFault(route: RenderRoute): RenderFault | undefined {
@@ -140,13 +146,13 @@ export class RenderFake {
     return index === -1 ? undefined : this.#faults.splice(index, 1)[0]?.fault;
   }
 
-  private handle(route: RenderRoute | 'unknown', url: URL, body: unknown): Answer {
-    const id = /^\/v1\/services\/([^/]+)/.exec(url.pathname)?.[1] ?? '';
-    switch (route) {
-      case 'list services': return this.listServices(url.searchParams);
-      case 'create service': return this.createService(body);
+  private handle(request: RenderRequest): Answer {
+    const id = /^\/services\/([^/]+)/.exec(request.path)?.[1] ?? '';
+    switch (request.route) {
+      case 'list services': return this.listServices(request.query);
+      case 'create service': return this.createService(request.body);
       case 'read service': return this.readService(id);
-      case 'list deploys': return this.listDeploys(id, url.searchParams);
+      case 'list deploys': return this.listDeploys(id, request.query);
       case 'delete service': return this.deleteService(id);
       default: return notFound;
     }
@@ -255,18 +261,46 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-// The checks of Render on a create body, as far as the tenant platform uses them. A string names the refused part.
+function recordOf(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
+}
+
+function isText(value: unknown): value is string {
+  return typeof value === 'string' && value !== '';
+}
+
+interface CreateParts {
+  readonly service: Record<string, unknown>;
+  readonly image: Record<string, unknown>;
+  readonly details: Record<string, unknown>;
+}
+
+// The checks of Render on a create body, as far as the tenant platform uses them. The first text names the refused part.
+const createChecks: readonly (readonly [string, (parts: CreateParts, ownerId: string) => boolean])[] = [
+  ['invalid service', ({ service }, ownerId) => service.type === 'private_service' && service.ownerId === ownerId && isText(service.name)],
+  ['invalid image', ({ image }, ownerId) => image.ownerId === ownerId && isText(image.imagePath)],
+  ['invalid serviceDetails', ({ details }) => details.runtime === 'image' && isText(details.plan) && isText(details.region)],
+];
+
 function createInputOf(body: unknown, ownerId: string): ServiceInput | string {
-  if (!isRecord(body) || body.type !== 'private_service' || body.ownerId !== ownerId || typeof body.name !== 'string' || body.name === '') return 'invalid service';
-  const image = isRecord(body.image) ? body.image : {};
-  const details = isRecord(body.serviceDetails) ? body.serviceDetails : {};
-  if (image.ownerId !== ownerId || typeof image.imagePath !== 'string') return 'invalid image';
-  if (details.runtime !== 'image' || typeof details.plan !== 'string' || typeof details.region !== 'string') return 'invalid serviceDetails';
-  const envVars: unknown[] = Array.isArray(body.envVars) ? body.envVars : [];
-  if (!envVars.every((item) => isRecord(item) && typeof item.key === 'string' && typeof item.value === 'string')) return 'invalid envVars';
+  const service = recordOf(body);
+  const parts: CreateParts = { service, image: recordOf(service.image), details: recordOf(service.serviceDetails) };
+  const refusal = createChecks.find(([, valid]) => !valid(parts, ownerId))?.[0];
+  if (refusal !== undefined) return refusal;
+  const envVars = variablesOf(service.envVars);
+  return envVars === undefined ? 'invalid envVars' : serviceInputOf(parts, envVars);
+}
+
+function serviceInputOf({ service, image, details }: CreateParts, envVars: ReadonlyMap<string, string>): ServiceInput {
   const credential = typeof image.registryCredentialId === 'string' ? { registryCredentialId: image.registryCredentialId } : {};
-  const variables = envVars.filter(isRecord).map((item): [string, string] => [String(item.key), String(item.value)]);
-  return { name: body.name, imagePath: image.imagePath, plan: details.plan, region: details.region, ...credential, envVars: new Map(variables) };
+  return { name: String(service.name), imagePath: String(image.imagePath), plan: String(details.plan), region: String(details.region), ...credential, envVars };
+}
+
+function variablesOf(value: unknown): Map<string, string> | undefined {
+  const items: unknown[] = Array.isArray(value) ? value : [];
+  const pairs = items.map(recordOf);
+  if (!pairs.every((pair) => typeof pair.key === 'string' && typeof pair.value === 'string')) return undefined;
+  return new Map(pairs.map((pair) => [String(pair.key), String(pair.value)]));
 }
 
 function deployJson(deploy: FakeDeploy): unknown {

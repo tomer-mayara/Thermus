@@ -9,15 +9,18 @@ import type { SystemLog } from '../logs/system/system-logger.ts';
 import type { DestinationSettingsStore } from '../logs/audit/destination-settings-store.ts';
 import type { RemovalOperationStore } from '../accounts/organizations/removal-operation-store.ts';
 import type { BoundedSqlRuntime } from '../runtime/sql/bounded-sql-runtime.ts';
+import { PgTenantProvisioningStore } from '../tenancy/tenants/pg-tenant-provisioning-store.ts';
 import { PgTenantRegistryStore } from '../tenancy/tenants/pg-tenant-registry-store.ts';
 import { TenantLookup } from '../tenancy/tenants/tenant-lookup.ts';
+import type { TenantProvisioningStore } from '../tenancy/tenants/tenant-provisioning-store.ts';
 import { TenantRequests } from '../tenancy/tenants/tenant-requests.ts';
 
-// One private SQL runtime owns destination settings, membership-removal intent, and the tenant registry.
+// One private SQL runtime owns destination settings, membership-removal intent, and the tenant registry with its
+// provisioning statements.
 export interface HostedLoggingStorage {
   readonly store: DestinationSettingsStore;
   readonly removalStore?: RemovalOperationStore;
-  readonly tenants?: { readonly requests: TenantRequests; readonly lookup: TenantLookup };
+  readonly tenants?: { readonly requests: TenantRequests; readonly lookup: TenantLookup; readonly provisioning: TenantProvisioningStore };
   readonly service?: DestinationSettingsService;
   readonly dispatch?: RevisionBoundAuditSink;
   close(): Promise<void>;
@@ -43,7 +46,7 @@ export async function openLoggingStorage(environment: Readonly<Record<string, st
 
 function tenantRegistry(runtime: BoundedSqlRuntime, freeTenantLimit: number): NonNullable<HostedLoggingStorage['tenants']> {
   const store = new PgTenantRegistryStore(runtime);
-  return { requests: new TenantRequests(store, freeTenantLimit), lookup: new TenantLookup(store) };
+  return { requests: new TenantRequests(store, freeTenantLimit), lookup: new TenantLookup(store), provisioning: new PgTenantProvisioningStore(runtime) };
 }
 
 /** Test and customer export share the sender's native DNS, TLS, and HTTP admission. */

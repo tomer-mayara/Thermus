@@ -196,6 +196,8 @@ public_surface:
       - src/runtime/http/request-cancellation.ts
     sql:
       - src/runtime/sql/bounded-sql-runtime.ts # the one bounded SQL runtime of the stores; app opens it
+    tenants:
+      - src/tenancy/tenants/tenant-platform.ts # the platform of the tenant containers; render implements it
     organizations:
       - src/accounts/organizations/administration-overviews.ts
       - src/accounts/organizations/change-records.ts
@@ -311,7 +313,10 @@ dependency_graph:
     - { from: audit-logs, to: sql, kind: type }
     - { from: tenants, to: sql, kind: type }
     - { from: audit-logs, to: identity, kind: runtime } # SO-03: the relay sink sends the Thermus-Access context
-    # 60 permitted owner edges on 2026-10-27; runtime includes public types.
+    - { from: tenants, to: system-logs, kind: type }
+    - { from: app, to: render, kind: runtime }
+    - { from: render, to: tenants, kind: type }
+    # 63 permitted owner edges on 2026-10-27; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }
@@ -344,6 +349,8 @@ dependency_graph:
     - { from: config, to: app }
     - { from: sql, to: app }
     - { from: tenants, to: app }
+    - { from: render, to: app }
+    - { from: tenants, to: [ render ] } # the owner of the platform contract never names its Render adapter
   file_guards: keep # the eslint import rules in .habit-hooks continue to apply
   known_cycles: []
   allowed_external_imports:
@@ -402,6 +409,7 @@ dependency_graph:
     config: { roots: [ src/runtime/config/ ] }
     sql: { roots: [ src/runtime/sql/ ] }
     tenants: { roots: [ src/tenancy/tenants/ ] }
+    render: { roots: [ src/tenancy/providers/render/ ] }
 
 # The facts that the check establishes from the merge base and HEAD. Each is
 # T2 Need architect: an architect reviews the pull request. The check reads the
