@@ -7,19 +7,24 @@ adds the tenant provisioner, the Render adapter of the tenant platform, and the
 switch `MCP_TENANTS_ENABLED`. Inventory presence is not a passing result; the
 pull request records the runs.
 
-- `test/acceptance/tenants/provisioner.test.ts` has the twelve acceptance cases
-  of the ticket and its answers of 27 October 2026. It runs the loop as app
-  composes it from the control plane settings, against the fake of the Render
-  API `test/support/doubles/render/render-fake.ts`, the registry fake
+- `test/acceptance/tenants/provisioner.test.ts` has the fourteen acceptance
+  cases of the ticket, its answers of 27 October 2026, and the name rule of the
+  manager. It runs the loop as app composes it from the control plane settings,
+  against the fake of the Render API
+  `test/support/doubles/render/render-fake.ts`, which makes the slug as Render
+  does from the name up to its first underscore, the registry fake
   `test/support/doubles/tenants/tenant-provisioning-store-fake.ts`, and a
   virtual clock: a requested row reaches `live` with `http://<slug>:8080` and
-  `OPERATION_CAPACITY=5`; the create call holds the tenant variables and no
-  secret; a `429` waits for `Retry-After`; a restart and a lost create answer
+  `OPERATION_CAPACITY=5`; the service name is the prefix and the organization ID
+  in lower case with each character outside a-z, 0-9, and hyphen as a hyphen,
+  and the address holds that whole name; the hosted image reads the create
+  variables in the tenant role; the create call holds the tenant variables and
+  no secret; a `429` waits for `Retry-After`; a restart and a lost create answer
   find the service by name; two services of the name and a failed deploy give
-  `failed` with one report; one row at a time; failed reads repeat within
-  their bound; a `deploying` row after a resume goes `live`; other states stay;
-  and the adapter refuses a write for a service that the registry does not
-  own, and always for the production service.
+  `failed` with one report; one row at a time; failed reads repeat within their
+  bound; a `deploying` row after a resume goes `live`; other states stay; and
+  the adapter refuses a write for a service that the registry does not own, and
+  always for the production service.
 - `test/integration/tenants/provisioner-registry.runtime.ts` runs the
   provisioner with the real registry store and the `sql` runtime on disposable
   PostgreSQL 17: one row at a time, a stop during a deploy and a second
@@ -971,7 +976,7 @@ Only the hosted edition reads `MCP_TENANTS_ENABLED`, and only with `true` the te
 
 A fake of the tenant platform, the registry fake, a virtual clock, and a spy of the operator log run the state machine; the SQL adapter runs on the real bounded runtime over a client double.
 
-[V] A requested row is named with the prefix and the organization ID in lower case, created once on the free plan with the closed list of tenant variables and `OPERATION_CAPACITY` 5, and recorded as `creating`, `deploying`, and `live`, with one record line for each state
+[V] A requested row is named with the prefix and the organization ID in lower case, each character outside a-z, 0-9, and hyphen as a hyphen (also for capital letters, dots, plus signs, and letters outside a-z), created once on the free plan with the closed list of tenant variables and `OPERATION_CAPACITY` 5, and recorded as `creating`, `deploying`, and `live`, with one record line for each state
 [V] One service of the name is taken without a create; two services, a refused create, and a failed deploy give `failed` with the reason and one operator report
 [V] A create without a clear answer waits 30 s and searches by name before another create; a rate-limited create waits the given time, at most one hour; three attempts without a service, or three unavailable service lists, give `failed`
 [V] The newest deploy is read every 5 s for at most 15 minutes, 180 reads; a live deploy waits for the internal address; a gone service fails the row

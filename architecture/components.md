@@ -600,8 +600,9 @@ from `requested` to `live` and, after a resume, from `deploying` to `live`. Its
 next row in one short [transaction](../src/tenancy/tenants/pg-tenant-claim.ts):
 a `creating` or `deploying` row first, else the oldest `requested` row, which
 becomes `creating` with its service name, the prefix of `TENANT_NAME_PREFIX` and
-the organization ID in lower case, and the free plan. Each later record names
-the state that it starts from. The loop works behind the
+the organization ID in lower case with each character outside a-z, 0-9, and
+hyphen as a hyphen, and the free plan. Each later record names the state that it
+starts from. The loop works behind the
 [`TenantPlatform`](../src/tenancy/tenants/tenant-platform.ts) contract: the
 search by name, the create, the newest deploy, the internal address, and the
 delete. The [Render adapter](../src/tenancy/providers/render/render-tenant-platform.ts)
@@ -1663,10 +1664,15 @@ The following limits affect architectural decisions today:
   slow deploy holds the queue for up to 15 minutes, and the creates of one hour
   are 20 for each Render user. The tenants run in the region oregon, the region
   of the control plane, as a constant of the adapter.
-- In both live runs, the slug of a name with an underscore was the name up to
-  the underscore. Each tenant name has one after `org`, so the slugs of the tenants
-  can share a start; the adapter reads the address from Render and never
-  computes it, but the slug of a second such service is not yet measured.
+- Render makes the slug of a private service from its name up to the first
+  underscore (SO-06 live runs 1 and 2), so the old name rule gave each tenant the
+  slug `thermus-tenant-org`. Since 27 October 2026 a tenant name has no
+  underscore: each character of the organization ID outside a-z, 0-9, and hyphen
+  becomes a hyphen, and live run 3 got the whole name as the slug. The adapter
+  still reads the address from Render. The name is one to one only for
+  organization IDs of the WorkOS form, `org_` and capital letters and digits: two
+  IDs that differ only in case or in such a character would share a name, and
+  the search by name would take the service of the other organization.
 - The free-tenant cap counts registry rows by state, not by tier, and a tenant
   request keeps an existing row in every state, also `failed` and `deleted`.
   Slice 3 must decide whether a team tenant holds a free place, and the repair

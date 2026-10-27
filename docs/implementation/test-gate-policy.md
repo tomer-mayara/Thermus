@@ -705,8 +705,9 @@ to the test run itself. The file never prints the key or a request header.
 Given the workspace Thermus AI (`tea-db8i6ceq1p3s73dev9og`), the registry
 credential `ghcr-thermus-hosted-read`, and a hosted image digest, the file
 creates one disposable tenant through the real Render adapter, in a private
-service named `thermus-spike-tenant-org_01live<UTC time>`. Its deploy must reach
-`live`, its internal address must have the form `http://<slug>:8080`, and its
+service named `thermus-spike-tenant-org-01live<UTC time>` by the name rule of the
+provisioner. Its deploy must reach `live`, its internal address must be
+`http://<the whole name>:8080`, and its
 delete must leave no service of the test. Before any call, the file refuses the
 workspace My Workspace (`tea-d3mlbrvdiees73ca4rdg`), and the adapter refuses
 each write for a service that the test did not create and for the production
