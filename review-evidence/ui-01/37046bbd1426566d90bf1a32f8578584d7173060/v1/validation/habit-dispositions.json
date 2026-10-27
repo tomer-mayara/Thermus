@@ -1,0 +1,20 @@
+{
+  "candidate": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "exitCode": 0,
+  "snooze": [],
+  "findings": [
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "line": 25,
+      "kind": "non-essential-comment",
+      "reason": "Keeps the read-failure atomicity rule explicit: both complete reads must succeed before Members renders current access and pending invitations."
+    },
+    {
+      "file": "src/interfaces/web/account/members-page-layout.ts",
+      "line": 13,
+      "kind": "non-essential-comment",
+      "reason": "Explains why style bytes and their CSP hash have one owner, so future style edits cannot make the response hash drift."
+    }
+  ]
+}

@@ -1,0 +1,566 @@
+{
+  "head": "4a761fecf5ed1719959d286f104ecd3884068478",
+  "base": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "results": {
+    "final-hosted-amd64-image.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-27T03:06:39.366Z",
+      "ended": "2026-10-27T03:25:33.614Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/final-hosted-amd64-image.log"
+    },
+    "4a761fec-api.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "started": "2026-10-27T03:36:04.892Z",
+      "ended": "2026-10-27T03:36:06.693Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/4a761fec-api.log"
+    },
+    "snapshot-head.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T03:27:41.980Z",
+      "ended": "2026-10-27T03:27:46.046Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/snapshot-head.log"
+    },
+    "hosted-offline.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-27T02:39:19.851Z",
+      "ended": "2026-10-27T02:40:43.204Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/hosted-offline.log"
+    },
+    "hosted-amd64-image.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-27T02:40:43.316Z",
+      "ended": "2026-10-27T02:54:34.191Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/hosted-amd64-image.log"
+    },
+    "final-typecheck.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T03:06:21.932Z",
+      "ended": "2026-10-27T03:06:23.793Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/final-typecheck.log"
+    },
+    "portal-build.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:user-portal"
+      ],
+      "started": "2026-10-27T02:34:20.971Z",
+      "ended": "2026-10-27T02:34:22.086Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/portal-build.log"
+    },
+    "members-browser-build.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "started": "2026-10-27T02:34:22.122Z",
+      "ended": "2026-10-27T02:34:23.785Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/members-browser-build.log"
+    },
+    "self-hosted-container.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-27T02:34:33.172Z",
+      "ended": "2026-10-27T02:39:19.790Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/self-hosted-container.log"
+    },
+    "final-habit-hooks.log.result.json": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00"
+      ],
+      "started": "2026-10-27T03:26:19.899Z",
+      "ended": "2026-10-27T03:26:26.858Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/final-habit-hooks.log"
+    },
+    "coverage-compatibility.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        ".cache/ui-stack-finish/ui01/coverage-compatibility-crap.json"
+      ],
+      "started": "2026-10-27T03:30:31.877Z",
+      "ended": "2026-10-27T03:30:41.327Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/coverage-compatibility.log"
+    },
+    "snapshot-base.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00"
+      ],
+      "started": "2026-10-27T03:27:37.517Z",
+      "ended": "2026-10-27T03:27:41.924Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/snapshot-base.log"
+    },
+    "coverage.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ],
+      "started": "2026-10-27T03:26:27.277Z",
+      "ended": "2026-10-27T03:27:37.468Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/coverage.log"
+    },
+    "npm-test.log.result.json": {
+      "command": "npm",
+      "args": [
+        "test"
+      ],
+      "started": "2026-10-27T02:28:16.471Z",
+      "ended": "2026-10-27T02:34:17.681Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/npm-test.log"
+    },
+    "4a761fec-crap.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T03:35:59.668Z",
+      "ended": "2026-10-27T03:36:04.849Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/4a761fec-crap.log"
+    },
+    "4a761fec-habit-hooks.log.result.json": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00"
+      ],
+      "started": "2026-10-27T03:36:06.731Z",
+      "ended": "2026-10-27T03:36:08.674Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/4a761fec-habit-hooks.log"
+    },
+    "members-browser.log.result.json": {
+      "command": "node",
+      "args": [
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "started": "2026-10-27T02:34:23.827Z",
+      "ended": "2026-10-27T02:34:33.119Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/members-browser.log"
+    },
+    "crap.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T03:28:10.052Z",
+      "ended": "2026-10-27T03:28:10.583Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/crap.log"
+    },
+    "hosted-amd64-image-retry.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-27T02:58:39.132Z",
+      "ended": "2026-10-27T03:04:58.204Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/hosted-amd64-image-retry.log"
+    },
+    "habit-hooks.log.result.json": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "origin/main"
+      ],
+      "started": "2026-10-27T02:54:34.259Z",
+      "ended": "2026-10-27T02:54:37.108Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/habit-hooks.log"
+    },
+    "process-rerun.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T03:30:41.658Z",
+      "ended": "2026-10-27T03:31:11.420Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/process-rerun.log"
+    },
+    "4a761fec-process.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T03:35:36.604Z",
+      "ended": "2026-10-27T03:35:59.613Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/4a761fec-process.log"
+    },
+    "api-surface.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "started": "2026-10-27T03:32:31.219Z",
+      "ended": "2026-10-27T03:32:36.023Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/api-surface.log"
+    },
+    "process.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T03:27:46.105Z",
+      "ended": "2026-10-27T03:28:09.994Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/process.log"
+    },
+    "crap-rerun.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T03:32:02.962Z",
+      "ended": "2026-10-27T03:32:20.085Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/crap-rerun.log"
+    },
+    "4a761fec-snapshot-head.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T03:35:33.574Z",
+      "ended": "2026-10-27T03:35:36.568Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/4a761fec-snapshot-head.log"
+    },
+    "4a761fec-checker.log.result.json": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/check.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--repo",
+        "tomer-mayara/Thermus",
+        "--impact",
+        "ast-report/impact.json",
+        "--base-snapshot",
+        "ast-report/snapshot-base.json",
+        "--head-snapshot",
+        "ast-report/snapshot.json",
+        "--crap",
+        "ast-report/crap.json",
+        "--process",
+        "ast-report/process.json",
+        "--review",
+        "ast-report/review.json",
+        "--json"
+      ],
+      "started": "2026-10-27T03:36:37.847Z",
+      "ended": "2026-10-27T03:36:40.732Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/4a761fec-checker.log"
+    },
+    "typecheck.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T02:34:18.582Z",
+      "ended": "2026-10-27T02:34:20.929Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/typecheck.log"
+    },
+    "hosted-offline-retry.log.result.json": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-27T02:55:48.142Z",
+      "ended": "2026-10-27T02:58:12.347Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/hosted-offline-retry.log"
+    }
+  },
+  "reportedCountLines": {
+    "coverage-compatibility.log": [],
+    "coverage.log": [
+      "\u2139 tests 1159",
+      "\u2139 pass 1159",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "4a761fec-api.log": [],
+    "npm-test.log": [
+      "\u2139 tests 5153",
+      "\u2139 pass 5153",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 49",
+      "\u2139 pass 49",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "amd64-build.log": [],
+    "crap-rerun.log": [],
+    "amd64-build-retry.log": [],
+    "process.log": [],
+    "habit-hooks.log": [],
+    "crap.log": [],
+    "final-hosted-amd64-image.log": [
+      "\u2139 tests 1",
+      "\u2139 pass 0",
+      "\u2139 fail 1",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "snapshot-head.log": [],
+    "4a761fec-checker.log": [],
+    "hosted-amd64-image-retry.log": [
+      "\u2139 tests 1",
+      "\u2139 pass 0",
+      "\u2139 fail 1",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "typecheck.log": [],
+    "snapshot-base.log": [],
+    "final-habit-hooks.log": [],
+    "final-typecheck.log": [],
+    "4a761fec-snapshot-head.log": [],
+    "hosted-amd64-image.log": [
+      "\u2139 tests 1",
+      "\u2139 pass 0",
+      "\u2139 fail 1",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "amd64-build-progress.log": [],
+    "4a761fec-habit-hooks.log": [],
+    "hosted-offline.log": [
+      "\u2139 tests 3319",
+      "\u2139 pass 3319",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 29",
+      "\u2139 pass 29",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 20",
+      "\u2139 pass 20",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 1159",
+      "\u2139 pass 1155",
+      "\u2139 fail 4",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "self-hosted-container.log": [
+      "\u2139 tests 11",
+      "\u2139 pass 11",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "4a761fec-process.log": [],
+    "hosted-offline-retry.log": [
+      "\u2139 tests 3319",
+      "\u2139 pass 3319",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 29",
+      "\u2139 pass 29",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 20",
+      "\u2139 pass 20",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 1159",
+      "\u2139 pass 1159",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 123",
+      "\u2139 pass 123",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0",
+      "\u2139 tests 13",
+      "\u2139 pass 13",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "members-browser.log": [
+      "\u2139 tests 7",
+      "\u2139 pass 7",
+      "\u2139 fail 0",
+      "\u2139 skipped 0",
+      "\u2139 todo 0"
+    ],
+    "api-surface.log": [],
+    "portal-build.log": [],
+    "process-rerun.log": [],
+    "final-amd64-build.log": [],
+    "members-browser-build.log": [],
+    "4a761fec-crap.log": []
+  }
+}

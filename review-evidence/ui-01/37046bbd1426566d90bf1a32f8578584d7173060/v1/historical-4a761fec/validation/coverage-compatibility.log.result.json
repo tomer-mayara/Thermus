@@ -1,0 +1,18 @@
+{
+  "command": "pnpm",
+  "args": [
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-crap.ts",
+    "--base",
+    "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+    "--json",
+    ".cache/ui-stack-finish/ui01/coverage-compatibility-crap.json"
+  ],
+  "started": "2026-10-27T03:30:31.877Z",
+  "ended": "2026-10-27T03:30:41.327Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui01/coverage-compatibility.log"
+}

@@ -1,0 +1,16 @@
+{
+  "command": "pnpm",
+  "args": [
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-snapshot.ts",
+    "--base",
+    "9507e751215fec32748bf4e944f2393928e61cf5"
+  ],
+  "started": "2026-10-27T04:52:45.327Z",
+  "ended": "2026-10-27T04:52:48.664Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-snapshot-base.log"
+}

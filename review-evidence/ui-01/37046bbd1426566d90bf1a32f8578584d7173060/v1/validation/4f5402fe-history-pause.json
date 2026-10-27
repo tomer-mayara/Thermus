@@ -1,0 +1,11 @@
+{
+  "candidate": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "stage": "process",
+  "records": [
+    {
+      "path": "docs/metrics/2026-10-26-9507e751.json",
+      "sha256": "bb152f9fb3ebe94c01d2c39a85cdf9e1335175c332454d8d5935c0b9a582bc42"
+    }
+  ]
+}

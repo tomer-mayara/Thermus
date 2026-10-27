@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "typecheck"
+  ],
+  "started": "2026-10-27T03:06:21.932Z",
+  "ended": "2026-10-27T03:06:23.793Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui01/final-typecheck.log"
+}

@@ -1,0 +1,83 @@
+[
+  {
+    "name": "snapshot-base",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-snapshot.ts",
+      "--base",
+      "9507e751215fec32748bf4e944f2393928e61cf5"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-snapshot-base.log"
+  },
+  {
+    "name": "snapshot-head",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-snapshot.ts"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-snapshot-head.log"
+  },
+  {
+    "name": "process",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-process.ts",
+      "--base",
+      "9507e751215fec32748bf4e944f2393928e61cf5",
+      "--json",
+      "ast-report/process.json"
+    ],
+    "exitCode": 1,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-process.log"
+  },
+  {
+    "name": "crap",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/code-quality/ast-metrics-crap.ts",
+      "--base",
+      "9507e751215fec32748bf4e944f2393928e61cf5",
+      "--json",
+      "ast-report/crap.json"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-crap.log"
+  },
+  {
+    "name": "api",
+    "command": [
+      "pnpm",
+      "--config.verifyDepsBeforeRun=false",
+      "exec",
+      "node",
+      "script/pr-review/api-surface.ts",
+      "--check"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-api.log"
+  },
+  {
+    "name": "habit-hooks",
+    "command": [
+      "habit-hooks",
+      "--branch",
+      "9507e751215fec32748bf4e944f2393928e61cf5"
+    ],
+    "exitCode": 0,
+    "log": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-habit-hooks.log"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "candidate": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "branch": "codex/validate-ui-01-4f5402fe",
+  "ports": {
+    "46443": "free",
+    "46480": "free"
+  },
+  "clean": true,
+  "privateNodeAlias": "../node/bin/node",
+  "privateNodeResolved": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/node_modules/.pnpm/node@runtime+24.20.0/node_modules/node/bin/node",
+  "authorized": "Refresh only, then checker if no new history record. No ordinary/browser/container/image/live.",
+  "time": "2026-10-27T04:48:08.483382+00:00"
+}

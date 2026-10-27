@@ -1,0 +1,29 @@
+
+> thermus@0.0.0 test:container
+> npm run build && THERMUS_CONTAINER_GATE=1 node --test dist/test/acceptance/auth/self-hosted-container.test.js
+
+
+> thermus@0.0.0 build
+> test ! -L dist && { test ! -e dist || test -d dist; } && rm -rf dist && tsc --project tsconfig.build.json --outDir dist
+
+▶ Self-hosted evaluation container without outbound access
+  ✔ Given a fresh image and data volume with outbound access denied and the production telemetry settings of the image, when stopped-server command containers add two users and register a native client for each and the server container starts, then each user signs in and consents on the bundled pages, and each SDK client works with a resource-bound token for its own user, client, and browser session in the one shared tenant; a fetch tool call for a public address reports a renderer connection failure, because the container has no route out, and the server log gets no renderer setup report, because the renderer of the image starts; a token that is no longer accepted leads to a new authorization without the pages, no refresh grant exists, and no container tries an outbound connection (10908.745625ms)
+  ✔ Given two users with tokens and consents, when the server container restarts, is replaced by a new container, and is replaced by a container of a rebuilt image on the same volume, then after each change the tenant, the user IDs, the native clients, the signing keys, the browser sessions, the consents, and the tokens of both users stay usable (16206.611042ms)
+  ✔ Given two users with tokens and a stopped server, when the operator backs up the complete data volume and restores it into a new volume for a new server container, then both users keep their IDs, the tenant, their tokens, browser sessions, and consents; a fresh volume starts a new tenant, and a restored volume without its installation identity or without auth.secret stops the server before it listens, asks for a restore, and gets no new identity (20389.812291ms)
+  ✔ Given a server container of the image with trusted rules, outbound access denied, and a test-only JavaScript page on 127.0.0.1 that only the renderer of this container can reach, when an authorized MCP client calls getURLAsMarkdown for the page, then LIGHTPANDA_BIN names the pinned executable, which reports 1.0.0, the client gets the exact cleaned Markdown, the server writes one safe completion record, and no container tries an outbound connection (18020.794584ms)
+  ✔ Given a server container with the production renderer settings, outbound access denied, and a test-only page on port 8090 of the container, when an authorized MCP client calls getURLAsMarkdown for the page by its loopback address, by the private address of the container, and by localhost, which the first lookup gives as a public address, then the fetcher blocks both addresses before a renderer starts, the renderer blocks the loopback socket of localhost, the address-policy refusals keep the generic fetch error, the renderer refusal reports a connection failure, each call gets one fetch_failed record, the page gets no connection, and no container tries an outbound connection (10159.486208ms)
+  ✔ Given a fresh volume and a self-hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account (11759.571459ms)
+  ✔ Given a fresh volume and a hosted server container without the trusted rules file, when the server starts, then it stops before listening with a FATAL line that names AD_RULES_FILE and writes nothing to the volume, and a command container still adds an account (7353.215833ms)
+  ✔ Given two users with tokens, when the operator resets the password of one user and later disables the other user in stopped-server command containers, then after each restart only the target loses its token and old credentials, the reset user signs in again without a new consent, the disabled user cannot sign in, and the peer keeps working (16588.527833ms)
+  ✔ Given a live server container, when one-off command containers mount the same data volume or a command runs inside the server container, then each command fails with the lock error, asks for no password, and changes no account (10476.876042ms)
+  ✔ Given an installation that starts with zero accounts and later has only a disabled account, when the server is stopped and a command container adds an account, then the new account signs in, consents, and uses MCP through the installation client, and the tenant stays the same (9784.077625ms)
+  ✔ Given the self-hosted image and a signed-in local user, when the user calls hosted, paid, and private provider paths, then each gives 404 without adding an account and MCP lists only the fetch tool; when the image starts with DEPLOYMENT=hosted and valid WorkOS settings, then the missing hosted portal stops startup before listening with a safe FATAL line, no local data, and no outbound calls (8517.116458ms)
+✔ Self-hosted evaluation container without outbound access (282460.164167ms)
+ℹ tests 11
+ℹ suites 1
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 283196.145667

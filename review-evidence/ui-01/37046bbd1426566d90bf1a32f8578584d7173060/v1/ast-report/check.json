@@ -1,0 +1,126 @@
+{
+  "tier": "T1",
+  "tierName": "T1 Team review",
+  "eligibility": "eligible",
+  "blockers": [],
+  "candidate": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "mergeBase": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "architecture": {
+    "policy": "facts",
+    "facts": [],
+    "summary": "T0: no architecture fact"
+  },
+  "reasons": [
+    {
+      "tier": "T1",
+      "key": "read_paths",
+      "fact": "docs/implementation/test-gate-policy.md"
+    }
+  ],
+  "questions": [],
+  "changedPaths": [
+    {
+      "status": "M",
+      "path": ".pr-impact.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/organization-admin-plan.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/design/portal-design.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/implementation/admin-ui-01.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/implementation/test-gate-policy.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-26-2b3ad13b.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/metrics/2026-10-26-9507e751.json"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/administration-pages.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-page-layout.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/interfaces/web/account/members-style.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/acceptance/auth/hosted-members.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/drivers/browser/admin-shell-browser.ts"
+    },
+    {
+      "status": "A",
+      "path": "test/support/drivers/browser/admin-shell-measurements.ts"
+    },
+    {
+      "status": "M",
+      "path": "test/support/in-process/hosted-member-removal-site.ts"
+    }
+  ],
+  "lineCounts": {
+    "production": 33,
+    "productionLimit": 400,
+    "total": 1262,
+    "totalLimit": 1500
+  },
+  "tests": {
+    "added": 5,
+    "removed": 1,
+    "skippedOrTodo": []
+  },
+  "mi": [
+    "changed: src/interfaces/web/account/administration-pages.ts: 61.31208823309486 to 61.25134231438237",
+    "changed: src/interfaces/web/account/members-page-layout.ts: 81.00095501476565 to 80.3695659257948",
+    "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+  ],
+  "crap": [
+    "src/interfaces/web/account/members-page-layout.ts: membersPageLayout: 8.0",
+    "src/interfaces/web/account/administration-pages.ts: membersPage: 3.0",
+    "src/interfaces/web/account/administration-pages.ts: (anonymous): 1.0"
+  ],
+  "metrics": [
+    "Delta: goal miss",
+    "Review: goal miss",
+    "CRAP: passed",
+    "Architecture: passed",
+    "outside scopes.production: test/acceptance/auth/hosted-member-removal-browser.runtime.ts: Maintainability index: 33 -> 28 (below 85 is hard to maintain)",
+    "0 findings on unchanged files, reason unchanged by this PR"
+  ],
+  "factsToDeclare": [],
+  "declaredFacts": [],
+  "surfaceDifferences": [],
+  "informational": [
+    "49 public modules, 0 snapshots changed"
+  ],
+  "notes": [
+    "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+  ],
+  "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+}

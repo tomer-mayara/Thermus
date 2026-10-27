@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "tool": "0.43.1-thermus.1",
+  "commit": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "date": "2026-10-26T20:42:19-06:00",
+  "title": "Probe the MCP gateway proxy locally (SO-01d part one) (#269)",
+  "modularity": 0.33,
+  "crossShare": 0.31,
+  "cycles": 1,
+  "maintainability": 55.3,
+  "paths": 4223,
+  "files": 189,
+  "functions": 1526,
+  "communities": [
+    {
+      "label": "accounts",
+      "files": 28,
+      "loc": 4370,
+      "maintainability": 56.9,
+      "paths": 794
+    },
+    {
+      "label": "app",
+      "files": 75,
+      "loc": 6039,
+      "maintainability": 59.3,
+      "paths": 1640
+    },
+    {
+      "label": "pipelines",
+      "files": 71,
+      "loc": 5059,
+      "maintainability": 49.5,
+      "paths": 1590
+    },
+    {
+      "label": "shared kernel",
+      "files": 4,
+      "loc": 275,
+      "maintainability": 59.6,
+      "paths": 84
+    }
+  ],
+  "components": [
+    {
+      "name": "app",
+      "files": 9,
+      "loc": 858,
+      "maintainability": 60.2,
+      "paths": 177
+    },
+    {
+      "name": "audit-logs",
+      "files": 21,
+      "loc": 1590,
+      "maintainability": 53.4,
+      "paths": 610
+    },
+    {
+      "name": "better-auth",
+      "files": 5,
+      "loc": 844,
+      "maintainability": 58.7,
+      "paths": 166
+    },
+    {
+      "name": "billing",
+      "files": 2,
+      "loc": 27,
+      "maintainability": 68.8,
+      "paths": 6
+    },
+    {
+      "name": "cli",
+      "files": 2,
+      "loc": 202,
+      "maintainability": 53.7,
+      "paths": 56
+    },
+    {
+      "name": "config",
+      "files": 4,
+      "loc": 275,
+      "maintainability": 59.6,
+      "paths": 84
+    },
+    {
+      "name": "execution",
+      "files": 4,
+      "loc": 69,
+      "maintainability": 83.4,
+      "paths": 10
+    },
+    {
+      "name": "html-processing",
+      "files": 37,
+      "loc": 3024,
+      "maintainability": 46.9,
+      "paths": 946
+    },
+    {
+      "name": "http",
+      "files": 4,
+      "loc": 235,
+      "maintainability": 64.5,
+      "paths": 66
+    },
+    {
+      "name": "identity",
+      "files": 5,
+      "loc": 221,
+      "maintainability": 66.4,
+      "paths": 19
+    },
+    {
+      "name": "mcp",
+      "files": 9,
+      "loc": 685,
+      "maintainability": 51.2,
+      "paths": 186
+    },
+    {
+      "name": "organizations",
+      "files": 11,
+      "loc": 803,
+      "maintainability": 69.9,
+      "paths": 192
+    },
+    {
+      "name": "page-fetch",
+      "files": 5,
+      "loc": 270,
+      "maintainability": 49.9,
+      "paths": 109
+    },
+    {
+      "name": "search",
+      "files": 6,
+      "loc": 331,
+      "maintainability": 48.3,
+      "paths": 131
+    },
+    {
+      "name": "search-engine",
+      "files": 2,
+      "loc": 134,
+      "maintainability": 33,
+      "paths": 56
+    },
+    {
+      "name": "system-logs",
+      "files": 3,
+      "loc": 199,
+      "maintainability": 63.1,
+      "paths": 39
+    },
+    {
+      "name": "user-portal",
+      "files": 8,
+      "loc": 491,
+      "maintainability": 51.2,
+      "paths": 71
+    },
+    {
+      "name": "web",
+      "files": 30,
+      "loc": 2638,
+      "maintainability": 60.2,
+      "paths": 613
+    },
+    {
+      "name": "website-fetcher",
+      "files": 6,
+      "loc": 439,
+      "maintainability": 60.9,
+      "paths": 133
+    },
+    {
+      "name": "workos",
+      "files": 16,
+      "loc": 3103,
+      "maintainability": 55.9,
+      "paths": 553
+    }
+  ],
+  "sourceFingerprint": "20980eb22a7e4252c93cf49004f4c887f955449f0b9dc71ef31d06dd0d87ec8d"
+}

@@ -1,0 +1,18 @@
+{
+  "command": "pnpm",
+  "args": [
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-process.ts",
+    "--base",
+    "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+    "--json",
+    "ast-report/process.json"
+  ],
+  "started": "2026-10-27T03:27:46.105Z",
+  "ended": "2026-10-27T03:28:09.994Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui01/process.log"
+}

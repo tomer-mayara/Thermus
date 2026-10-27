@@ -1,0 +1,493 @@
+{
+  "head": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+  "base": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "branch": "codex/validate-ui-01-639827bc",
+  "checks": {
+    "final-hosted-amd64-image": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-27T03:06:39.366Z",
+      "ended": "2026-10-27T03:25:33.614Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/final-hosted-amd64-image.log"
+    },
+    "snapshot-head": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T03:27:41.980Z",
+      "ended": "2026-10-27T03:27:46.046Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/snapshot-head.log"
+    },
+    "hosted-offline": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-27T02:39:19.851Z",
+      "ended": "2026-10-27T02:40:43.204Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/hosted-offline.log"
+    },
+    "hosted-amd64-image": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-27T02:40:43.316Z",
+      "ended": "2026-10-27T02:54:34.191Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/hosted-amd64-image.log"
+    },
+    "final-typecheck": {
+      "command": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T03:06:21.932Z",
+      "ended": "2026-10-27T03:06:23.793Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/final-typecheck.log"
+    },
+    "portal-build": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:user-portal"
+      ],
+      "started": "2026-10-27T02:34:20.971Z",
+      "ended": "2026-10-27T02:34:22.086Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/portal-build.log"
+    },
+    "members-browser-build": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "started": "2026-10-27T02:34:22.122Z",
+      "ended": "2026-10-27T02:34:23.785Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/members-browser-build.log"
+    },
+    "self-hosted-container": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container"
+      ],
+      "started": "2026-10-27T02:34:33.172Z",
+      "ended": "2026-10-27T02:39:19.790Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/self-hosted-container.log"
+    },
+    "final-habit-hooks": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00"
+      ],
+      "started": "2026-10-27T03:26:19.899Z",
+      "ended": "2026-10-27T03:26:26.858Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/final-habit-hooks.log"
+    },
+    "coverage-compatibility": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        ".cache/ui-stack-finish/ui01/coverage-compatibility-crap.json"
+      ],
+      "started": "2026-10-27T03:30:31.877Z",
+      "ended": "2026-10-27T03:30:41.327Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/coverage-compatibility.log"
+    },
+    "snapshot-base": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00"
+      ],
+      "started": "2026-10-27T03:27:37.517Z",
+      "ended": "2026-10-27T03:27:41.924Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/snapshot-base.log"
+    },
+    "coverage": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ],
+      "started": "2026-10-27T03:26:27.277Z",
+      "ended": "2026-10-27T03:27:37.468Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/coverage.log"
+    },
+    "npm-test": {
+      "command": "npm",
+      "args": [
+        "test"
+      ],
+      "started": "2026-10-27T02:28:16.471Z",
+      "ended": "2026-10-27T02:34:17.681Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/npm-test.log"
+    },
+    "members-browser": {
+      "command": "node",
+      "args": [
+        "--test",
+        "dist/test/acceptance/auth/hosted-member-removal-browser.runtime.js"
+      ],
+      "started": "2026-10-27T02:34:23.827Z",
+      "ended": "2026-10-27T02:34:33.119Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/members-browser.log"
+    },
+    "crap": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T03:28:10.052Z",
+      "ended": "2026-10-27T03:28:10.583Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/crap.log"
+    },
+    "hosted-amd64-image-retry": {
+      "command": "npm",
+      "args": [
+        "run",
+        "test:container:hosted"
+      ],
+      "started": "2026-10-27T02:58:39.132Z",
+      "ended": "2026-10-27T03:04:58.204Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/hosted-amd64-image-retry.log"
+    },
+    "habit-hooks": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "origin/main"
+      ],
+      "started": "2026-10-27T02:54:34.259Z",
+      "ended": "2026-10-27T02:54:37.108Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/habit-hooks.log"
+    },
+    "process-rerun": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T03:30:41.658Z",
+      "ended": "2026-10-27T03:31:11.420Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/process-rerun.log"
+    },
+    "api-surface": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "started": "2026-10-27T03:32:31.219Z",
+      "ended": "2026-10-27T03:32:36.023Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/api-surface.log"
+    },
+    "process": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T03:27:46.105Z",
+      "ended": "2026-10-27T03:28:09.994Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/process.log"
+    },
+    "crap-rerun": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T03:32:02.962Z",
+      "ended": "2026-10-27T03:32:20.085Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/crap-rerun.log"
+    },
+    "typecheck": {
+      "command": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T02:34:18.582Z",
+      "ended": "2026-10-27T02:34:20.929Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/typecheck.log"
+    },
+    "hosted-offline-retry": {
+      "command": "npm",
+      "args": [
+        "run",
+        "build:hosted"
+      ],
+      "started": "2026-10-27T02:55:48.142Z",
+      "ended": "2026-10-27T02:58:12.347Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": ".cache/ui-stack-finish/ui01/hosted-offline-retry.log"
+    }
+  },
+  "coverage": {
+    "commit": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+    "suite": [
+      "integration"
+    ],
+    "processes": 288,
+    "files": 164,
+    "status": "verified",
+    "provenance": {
+      "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+      "inputsFingerprint": "23affb68471d151d3797477c237eee2898084957d324ea6b6b4408be069776a7",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": [
+        "integration"
+      ],
+      "comparisonIdentity": {
+        "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+        "inputsFingerprint": "23affb68471d151d3797477c237eee2898084957d324ea6b6b4408be069776a7",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+      "buildFingerprint": "354e430a6a606da5eb2799056ee99795356457b580bd2587c88f9ee6ff89709f",
+      "captureManifestFingerprint": "28209a75e26f5dc8aa582adc7da97a996dcd741d1b18fda6d4235c97205dbacf",
+      "captures": [
+        {
+          "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+          "inputsFingerprint": "00e455e092df3bcefa05ec8483caf8b45393d46c30982b53068bef8c707c10ac",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "integration",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "a7e9d03905c9b7740841735452400bebd256e9c8748e66be829d456fd8cb0966",
+          "comparisonIdentity": {
+            "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+            "inputsFingerprint": "23affb68471d151d3797477c237eee2898084957d324ea6b6b4408be069776a7",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+          "buildFingerprint": "354e430a6a606da5eb2799056ee99795356457b580bd2587c88f9ee6ff89709f",
+          "captureManifestFingerprint": "8a522bb52cf8a5c1c24373d0a0c241c6712d4d23bdefb4fb39a0d9f0c64f3ae8"
+        }
+      ]
+    }
+  },
+  "metrics": {
+    "processHead": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+    "processBase": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+    "outcomes": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "reviewSummary": {
+      "filesChanged": 7,
+      "filesAdded": 4,
+      "filesDeleted": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 2,
+      "improvements": 1
+    },
+    "reviewFindings": [
+      {
+        "kind": "regression",
+        "severity": "high",
+        "rule": "maintainability-regression",
+        "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+        "message": "Maintainability index: 33 -> 28 (below 85 is hard to maintain)",
+        "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+        "before": 33.36848160538813,
+        "after": 28.1507108226631
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "bugs-regression",
+        "file": "test/acceptance/auth/hosted-members.test.ts",
+        "message": "Estimated bugs (Halstead): 1.30 -> 1.80",
+        "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+        "before": 1.2950316426655943,
+        "after": 1.803554963077646
+      },
+      {
+        "kind": "regression",
+        "severity": "low",
+        "rule": "bugs-regression",
+        "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+        "message": "Estimated bugs (Halstead): 2.56 -> 2.83",
+        "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+        "before": 2.5646113853164993,
+        "after": 2.834427639536826
+      }
+    ],
+    "crapRequired": [
+      {
+        "file": "src/interfaces/web/account/members-page-layout.ts",
+        "function": "membersPageLayout",
+        "change": "changed",
+        "paths": 8,
+        "share": 0.998,
+        "crap": 8.000000512,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPageLayout\",\"start\":687,\"end\":2749,\"body\":\"fb0b37c5340c750743231bb41c7043475d6963eb7f09c691c1ab69ba9de6b1df\",\"signature\":\"334ff702ff5e66478135471905d8f95c478f966024a94dfc505f5bcf776ed8ed\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "membersPage",
+        "change": "changed",
+        "paths": 3,
+        "share": 0.98,
+        "crap": 3.000072,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3587,\"body\":\"9e7e37a26f6bd56d23f6a000ff2a15def00ec3e5c4ed668ccac9e1ca6511bc9e\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+      }
+    ]
+  },
+  "retainedReasons": {
+    "src/interfaces/web/account/administration-pages.ts": "The cohesive page markup keeps escaping and trusted name handoff together. Existing-file MI drops0.061; no added decision paths.",
+    "src/interfaces/web/account/members-page-layout.ts": "The cohesive shared page and CSP owner keep navigation and byte-derived hashes together. Existing-file MI drops0.631 with one optional display-name branch.",
+    "src/interfaces/web/account/members-style.ts": "Static string-only module; complete snapshot has zero functions, so no supported MI or CRAP measure.",
+    "test/acceptance/auth/hosted-member-removal-browser.runtime.ts": "Browser acceptance covers JS on/off, narrow/desktop, keyboard focus, text resize and Audit tablet behavior. Protocol operations already move to focused browser drivers. Tests have no production MI goal.",
+    "test/acceptance/auth/hosted-members.test.ts": "Added public-route assertions specify escaped trusted workspace naming and shared shell behavior. Halstead estimate is volume-derived, not an observed bug.",
+    "test/integration/hosted-admin/account-routes-administration-pages.test.ts": "Added integration assertions check trusted name handoff and no extra provider read. Halstead estimate is volume-derived, not an observed bug.",
+    "habit-hooks": "Two retained comments explain read-failure atomicity and CSP byte/hash ownership; snooze remains[].",
+    "architecture": "Unchanged unresolved CSS import makes global graph incomplete. Integration-only capture leaves global unknown functions; all required changed/new function identities and assessments are known. No component/public contract/boundary change."
+  },
+  "immutableRecord": {
+    "path": "docs/metrics/2026-10-26-2b3ad13b.json",
+    "sha256": "c8667245834f54c60ddbb98398fdaaa8fc5317d4e61ab2229c285524adace248",
+    "status": "valid generated untracked; root must commit before finalchecker"
+  },
+  "holds": [
+    "Current-context LinuxAMD64 image did not pass: fake WorkOS read timeout408 plus two server-stop timeouts; runtime image cases did not run.",
+    "Final checker awaits root history commit and candidate stamping.",
+    "ExpectedT1 Team review needs current-head independent human approval."
+  ],
+  "invalidEvidence": "invalid-detached-ast-report holds discarded process/review/CRAP output with head=base and owned archived history; never use as candidate evidence."
+}

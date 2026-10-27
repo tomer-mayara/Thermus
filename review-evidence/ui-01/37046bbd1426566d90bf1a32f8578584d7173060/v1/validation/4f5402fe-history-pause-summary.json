@@ -1,0 +1,47 @@
+{
+  "pause": {
+    "candidate": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+    "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+    "stage": "process",
+    "records": [
+      {
+        "path": "docs/metrics/2026-10-26-9507e751.json",
+        "sha256": "bb152f9fb3ebe94c01d2c39a85cdf9e1335175c332454d8d5935c0b9a582bc42"
+      }
+    ]
+  },
+  "process": {
+    "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+    "head": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+    "outcomes": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ]
+  },
+  "coverage": {
+    "commit": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+    "status": "verified",
+    "suite": [
+      "integration"
+    ],
+    "files": 164,
+    "processes": 288
+  },
+  "status": "?? docs/metrics/2026-10-26-9507e751.json\n",
+  "branch": "codex/validate-ui-01-4f5402fe",
+  "heavyProcesses": "All selected subprocesses have settled. Stopped before standalone CRAP/API/habit/checker."
+}

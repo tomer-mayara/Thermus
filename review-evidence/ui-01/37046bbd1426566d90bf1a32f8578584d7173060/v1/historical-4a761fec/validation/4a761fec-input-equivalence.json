@@ -1,0 +1,21 @@
+{
+  "old": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+  "new": "4a761fecf5ed1719959d286f104ecd3884068478",
+  "changedPaths": [
+    "M\tdocs/implementation/admin-ui-01.md",
+    "A\tdocs/metrics/2026-10-26-2b3ad13b.json"
+  ],
+  "identicalBlobs": {
+    "src": "cec5d0d4693808eee4d6635329eaded8680c8488",
+    "test": "86c3d3cfc0710c7b1dbb2cf0615938bbb9521c2d",
+    "package.json": "5f84bb7a20e631a23cca127d51e9281f145b475e",
+    "pnpm-lock.yaml": "1f3b6d8dafdeaf0b759b8218e01d81f5c2c2deec",
+    "tsconfig.json": "229ff3b3551b7bbc1bacd835255cf52969cec05e",
+    "tsconfig.build.json": "1bba4a3987dbf3fd02308d74c0da5154faed21b0",
+    "tsconfig.user-portal.json": "9d3be27ea030b3165505f23a48020ef8082eca85",
+    ".pr-impact.json": "2d0e0e30c955334be6bb40b07e6087e15c602d2e",
+    "Dockerfile.hosted": "fa65a52dfce7e694a6a8c00c221964d5b1168e01",
+    "Dockerfile.hosted.dockerignore": "773cfc0dd2d5c6e43e6d9dfe2daa728cfb481adc"
+  },
+  "recordHashUnchanged": true
+}

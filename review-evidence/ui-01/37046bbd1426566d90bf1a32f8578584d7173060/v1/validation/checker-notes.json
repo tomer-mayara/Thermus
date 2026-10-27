@@ -1,0 +1,30 @@
+{
+  "candidate": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "reasons": [
+    {
+      "key": "read_paths",
+      "path": "docs/implementation/test-gate-policy.md",
+      "reason": "The inventory row is updated to describe the browser matrix. The command, gate selection and approval authority stay unchanged."
+    }
+  ],
+  "informational": [
+    {
+      "text": "49 public modules, 0 snapshots changed",
+      "reason": "All 49 public declaration snapshots match regeneration. This increment adds no public module, declaration or architecture fact."
+    }
+  ],
+  "lineCounts": {
+    "production": 33,
+    "total": 1262,
+    "limits": [
+      400,
+      1500
+    ],
+    "reason": "Both counts are below their informational thresholds; the checker emits no large-change note. Both generated immutable history records remain committed evidence."
+  },
+  "preliminaryNote": {
+    "text": "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval.",
+    "reason": "Local structural and metric eligibility does not supply passing current-context image evidence, source publication, manager sign-off or required independent human approval."
+  }
+}

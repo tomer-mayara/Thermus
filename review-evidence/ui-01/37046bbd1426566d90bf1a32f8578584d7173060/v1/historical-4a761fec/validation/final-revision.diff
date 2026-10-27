@@ -1,0 +1,969 @@
+diff --git a/docs/implementation/admin-ui-01.md b/docs/implementation/admin-ui-01.md
+index 31df0cb4..bb96609f 100644
+--- a/docs/implementation/admin-ui-01.md
++++ b/docs/implementation/admin-ui-01.md
+@@ -47,7 +47,10 @@ for an unchanged form, access rule or provider behavior. Full red/green logs,
+ screenshots, check results and quality reports are linked from the PR's
+ maintained Validation and Quality review comments.
+ 
+-## Validation and review
++## Original validation and review
++
++This section records the original candidate at `a017020e`. It is history, not
++fresh proof for a rebased head. The maintained PR comments pin current evidence.
+ 
+ | Check | Result |
+ | --- | --- |
+@@ -95,3 +98,26 @@ The updated browser inventory row in the test-gate document selects T1 Team
+ review through the policy's read-path rule. It changes no gate command or
+ decision authority. Current-candidate owner/team approval is required before
+ merge; agent review is not human approval.
++
++## Rebase verification
++
++The stack was rebased onto main `9a3ac1f9`, then onto `2b3ad13b` after the local
++gateway-probe tooling landed. The second main change affects probe scripts,
++Knip configuration and documentation. The application source, tests, dependencies,
++lockfile and build configuration are unchanged between those two UI-01 candidates.
++
++Fresh verification on the first rebased source passed 5,153 ordinary tests,
++49 portal tests, typecheck, portal build, seven Members browser cases and all
++11 self-hosted container cases. The standalone hosted offline build passed
++3,319 unit, 49 portal, 1,159 integration, 123 acceptance/interface and 13 renderer
++cases. An earlier offline attempt had a local port collision; its isolated retry
++passed. An AMD64 build hit the unchanged one-second authentication cancellation
++test timeout. That test passed in the isolated host run; no cause is asserted
++and no timeout or assertion was changed.
++
++Current typecheck, AMD64 image and quality evidence must use the final rebased
++inputs. The maintained PR comments record those results, original run pins,
++input comparisons and failure history. A check on an earlier candidate is not
++relabeled as a new execution. Independent source review found no defect in the
++UI-01 increment or the combined page; final gates and T1 human approval remain
++separate requirements.
+diff --git a/docs/implementation/self-onboarding-s1.md b/docs/implementation/self-onboarding-s1.md
+index b4bd3310..376cd097 100644
+--- a/docs/implementation/self-onboarding-s1.md
++++ b/docs/implementation/self-onboarding-s1.md
+@@ -224,3 +224,203 @@ token. The owner does these steps:
+ 
+ To replace the token before it expires, make a new token with the same scope,
+ update the credential in Render, and then delete the old token on GitHub.
++
++## SO-01d: gateway proxy and private network
++
++Date: 26 October 2026. Part one is a local probe, in pull request
++[#269](https://github.com/tomer-mayara/Thermus/pull/269), branch
++`self-ob-s1-so-01d-gateway-proxy-probe-012463`. Part two needs the private
++service of SO-01c.
++
++### Part one: what the probe models
++
++[`gateway-proxy-probe.ts`](../../script/spike/gateway-proxy-probe.ts) models
++the MCP gateway of the plan, sections 4.1 and 4.2. It starts three parts in
++one Node process, each on its own loopback port:
++
++1. A stand-in tenant upstream,
++   [`upstream.ts`](../../script/spike/gateway-proxy/upstream.ts). It serves
++   `createMcpHandler` of `@modelcontextprotocol/server` 2.3.1, with one server
++   for each request, through a small `node:http` bridge in the pattern of
++   [`fetch-exchange.ts`](../../src/runtime/http/fetch-exchange.ts). Before any
++   MCP handling, it checks the `Thermus-Access` header. It answers `403` with
++   a JSON error when the header is missing, has a bad signature, or has an
++   expired context. Its one tool, `slow`, sends a progress notification every
++   200 ms for 3 seconds. Then it answers with text that names the
++   organization of the verified context. It obeys the abort signal of the
++   request and records the time when the signal fires.
++2. A proxy, [`proxy.ts`](../../script/spike/gateway-proxy/proxy.ts). It
++   forwards `POST /mcp` to the upstream with Node's fetch and a streamed body
++   (`duplex: 'half'`). It removes the hop-by-hop headers and sets its own
++   signed `Thermus-Access` header. It passes the abort of the client to the
++   upstream request and streams the answer back, chunk by chunk.
++3. An MCP client, `@modelcontextprotocol/client` 2.3.1, with the streamable
++   HTTP transport, pinned to protocol 2026-07-28. It connects through the
++   proxy.
++
++[`access-context.ts`](../../script/spike/gateway-proxy/access-context.ts) has
++the header format: a base64url JSON body `{ organizationId, subject,
++expiresAt }`, a dot, and a base64url Ed25519 signature of the raw body bytes.
++`expiresAt` is in milliseconds since the Unix epoch. The proxy signs a context
++that is valid for 2 minutes. Each run makes new key pairs with
++`generateKeyPairSync('ed25519')`.
++
++To run the probe, type `node script/spike/gateway-proxy-probe.ts` in the
++repository root. A run takes about 7 seconds and uses no network. The steps go
++to stderr and the report goes to stdout. A failed step writes
++`FAIL <step>: <reason>`, and the exit code is 1.
++
++### Part one: steps
++
++Each step is an assertion of the script. The two steps marked "extra" are not
++in the ticket. Headers checks the header rules of the proxy. Early abort
++checks the abort path that the 500 ms abort does not reach (see the mutation
++checks).
++
++| Step | Given, when, then |
++| --- | --- |
++| Streaming | Given the three parts, when the client lists the tools and calls `slow`, then 15 progress notifications arrive before the result, each at most 250 ms after its tick. |
++| Headers (extra) | Given the requests of that call, when they reach the upstream, then they carry the bearer token of the client, and not `TE`, `Trailer`, `Proxy-Probe`, or the `Thermus-Access` value of the client. |
++| Abort | Given a second `slow` call, when the client aborts it after 500 ms, then the upstream handler sees its signal within 100 ms of the abort and stops within 20 ms of the signal. |
++| Early abort (extra) | Given a third call, when the client aborts it after 50 ms, before the upstream answers, then the same limits apply. |
++| Signed header | Given a request with no header, a header signed by another key pair, or an expired context, when it goes to the upstream directly, then the answer is `403` before any MCP handling. Through the proxy, a normal call gets its result. |
++| Cleanup | Given the end of the probe, then both listeners are closed and no TCP handle is open. A timer that does not keep the process alive stops the process with code 1 if it does not exit within 5 seconds. |
++
++### Part one: measured times
++
++Run 1 of 5, on 26 October 2026, on the owner's Mac (Darwin 27.0.0), with the
++probe source of pull request #269; the later commits of that pull request
++change only the record and the declaration. The table and the conclusions are
++as the script printed them. The
++script printed this line first: "Node v24.20.0, @modelcontextprotocol/server
++2.3.1, @modelcontextprotocol/client 2.3.1, protocol 2026-07-28. Times are
++milliseconds after the start of each call, on one clock; a "+" time is after
++the client abort."
++
++| Part | Event | Expected | Measured |
++| --- | --- | --- | --- |
++| Streaming | Progress 1 received | about 200 ms | 215.7 ms (sent 207.7 ms) |
++| Streaming | Progress 2 received | about 400 ms | 412.7 ms (sent 408.8 ms) |
++| Streaming | Progress 3 received | about 600 ms | 611.4 ms (sent 607.7 ms) |
++| Streaming | Progress 4 received | about 800 ms | 814.5 ms (sent 809.2 ms) |
++| Streaming | Progress 5 received | about 1000 ms | 1009.6 ms (sent 1006.1 ms) |
++| Streaming | Progress 6 received | about 1200 ms | 1211.4 ms (sent 1207.8 ms) |
++| Streaming | Progress 7 received | about 1400 ms | 1413.1 ms (sent 1409.6 ms) |
++| Streaming | Progress 8 received | about 1600 ms | 1612.1 ms (sent 1607.8 ms) |
++| Streaming | Progress 9 received | about 1800 ms | 1808.2 ms (sent 1805.7 ms) |
++| Streaming | Progress 10 received | about 2000 ms | 2008.5 ms (sent 2007.3 ms) |
++| Streaming | Progress 11 received | about 2200 ms | 2207.4 ms (sent 2206.4 ms) |
++| Streaming | Progress 12 received | about 2400 ms | 2408.8 ms (sent 2407.6 ms) |
++| Streaming | Progress 13 received | about 2600 ms | 2609.0 ms (sent 2606.2 ms) |
++| Streaming | Progress 14 received | about 2800 ms | 2806.4 ms (sent 2805.8 ms) |
++| Streaming | Progress 15 received | about 3000 ms | 3012.7 ms (sent 3009.6 ms) |
++| Streaming | Result received | after progress 15 | 3014.2 ms |
++| Headers | Bearer token at the upstream | forwarded | forwarded in 3 of 3 requests (server/discover, tools/list, tools/call) |
++| Headers | TE, Trailer, and Proxy-Probe at the upstream | removed | removed in 3 of 3 requests |
++| Headers | Thermus-Access value of the client | replaced | replaced in 3 of 3 requests |
++| Abort | Client abort | about 500 ms | 502.2 ms |
++| Abort | Progress received before the abort | 2 | 2 |
++| Abort | Proxy sees the client go (response close) | after the abort | +6.4 ms |
++| Abort | Upstream handler signal | within 100 ms of the abort | +8.2 ms |
++| Abort | Upstream handler stops | within 20 ms of its signal | +8.4 ms |
++| Abort | Proxy incoming request close event | not a client signal | 2.0 ms, at the body end |
++| Early abort | Client abort | about 50 ms | 52.5 ms |
++| Early abort | Progress received before the abort | 0 | 0 |
++| Early abort | Proxy sees the client go (response close) | after the abort | +2.5 ms |
++| Early abort | Upstream handler signal | within 100 ms of the abort | +3.6 ms |
++| Early abort | Upstream handler stops | within 20 ms of its signal | +3.9 ms |
++| Signed header | Direct request, no header | 403 | 403, reason missing |
++| Signed header | Direct request, signed by another key pair | 403 | 403, reason bad_signature |
++| Signed header | Direct request, expired context | 403 | 403, reason expired |
++| Signed header | MCP handling of the refused requests | none | none |
++| Signed header | Call through the proxy | result | result at 3006.6 ms |
++| Cleanup | Open listeners and TCP handles | 0 | 0 |
++
++- PASS Streaming: 15 progress notifications arrived before the result, from 215.7 ms to 3012.7 ms; the result came at 3014.2 ms.
++- PASS Headers: the bearer token reached the upstream in 3 of 3 requests; TE, Trailer, and Proxy-* did not; the proxy replaced the Thermus-Access value of the client.
++- PASS Abort: the upstream handler saw its signal 8.2 ms after the client abort (limit 100 ms) and stopped; the proxy used the close event of its response, because the close event of the incoming request came at the body end.
++- PASS Early abort: before the upstream answered, the proxy aborted its pending upstream request; the handler saw its signal 3.6 ms after the client abort.
++- PASS Signed header: direct requests with no header, another key pair, or an expired context got 403 before MCP handling; the call through the proxy got its result.
++- PASS Cleanup: both listeners are closed and no TCP handle is open; a watchdog stops the process with code 1 if it does not exit.
++
++Five runs in sequence, all with exit code 0:
++
++| Measure | Range of five runs |
++| --- | --- |
++| Progress arrival after its planned tick | 6.4 to 20.1 ms |
++| Upstream send to client arrival, the largest in a run | 7.2 to 10.5 ms |
++| Result of the first call | 3,011.0 to 3,017.7 ms |
++| Abort at 500 ms: the proxy sees the client go | +1.9 to +9.2 ms |
++| Abort at 500 ms: upstream handler signal | +2.8 to +12.4 ms |
++| Abort at 500 ms: handler stop after its signal | 0.1 to 0.3 ms |
++| Abort at 50 ms: upstream handler signal | +1.3 to +3.6 ms |
++| Close event of the incoming request at the proxy | 2.0 to 4.4 ms after the call start |
++| Direct requests: no header, other key pair, expired context | `403`, with reason `missing`, `bad_signature`, and `expired`, in each run |
++| Run time | 6.84 to 6.85 s |
++
++### Part one: mutation checks
++
++To show that each assertion can fail, the worker changed one line at a time,
++ran the probe, and then reverted the change. No change is in the branch.
++
++| Change | Result |
++| --- | --- |
++| The proxy reads the whole answer before it sends it. | `FAIL Streaming`: progress 1 arrived at 3,012.3 ms, after the 450 ms limit. |
++| The proxy aborts the upstream request on the `close` event of the incoming request. | `FAIL Setup`: the first request, the version negotiation probe, failed with "fetch failed". |
++| The proxy does not set its signed header. | `FAIL Setup`: the server denied access (HTTP 403). |
++| The proxy forwards the hop-by-hop request headers. | `FAIL Headers`: the proxy forwarded `te`. |
++| The upstream handler ignores its abort signal. | `FAIL Abort`: the handler stopped 95.9 ms after its signal; the limit is 20 ms. The first version of this check had a limit of 100 ms after the abort, and the change failed it by only 1.7 ms. |
++| The proxy does not abort its pending upstream request. | `FAIL Early abort`: the upstream signal fired 157.2 ms after the abort. Before the Early abort step was added, this change passed. |
++| The proxy listener stays open. | `FAIL Cleanup`: the proxy listener is still open. The timer then stopped the process with code 1, 5 seconds later. |
++
++### Part one: findings for the gateway
++
++- The proxy streams. Each progress notification reached the client 6.4 to
++  20.1 ms after its tick. A buffered answer delivers all of them at about
++  3,000 ms, as the first mutation check shows.
++- In protocol 2026-07-28, the SDK client cancels a call when it closes the
++  HTTP stream of that call (SDK client source). The abort crosses the proxy as
++  a closed connection. The upstream handler saw its signal 1.3 to 12.4 ms
++  after the client abort.
++- Watch the `close` event of the response, with `writableFinished` false. Do
++  not use the `close` event of the incoming request. In Node 24, the incoming
++  request closes when its body ends: 2.0 to 4.4 ms after the call start. An
++  abort on that event stopped the first request of the client immediately.
++  The bridge in `fetch-exchange.ts` uses the same response rule.
++- The abort has two paths. Before the upstream answers, only the abort of the
++  pending fetch stops the upstream request. After the answer starts, a cancel
++  of the response body also stops it. The gateway must have the two paths.
++- The proxy must replace a `Thermus-Access` value that the client sends. The
++  Headers step checks that the upstream never sees the client value.
++- For connect, list, and call, the client sent three requests through the
++  proxy: `server/discover`, `tools/list`, and `tools/call`. The proxy signed
++  each one. The refused direct requests started no MCP server.
++- Seen in a separate check with Node 24.20.0: Node's fetch refuses a request
++  with a `keep-alive`, `transfer-encoding`, or `upgrade` header ("invalid
++  header"). So the gateway must remove these headers before its fetch. A
++  client that sends a chunked body sends `transfer-encoding`. The probe client
++  sends none of the three.
++
++### Part one: limits
++
++- One process, one clock, and loopback ports. No TLS and no real network. The
++  Render private network adds latency; part two checks only that the private
++  address answers.
++- A model, not the production code. The upstream does not check the bearer
++  token, its hash, the pinned organization, the grants, or a repeated context.
++  The proxy signs one fixed organization and subject.
++- Only protocol 2026-07-28. In protocol 2025-11-25, the SDK client cancels
++  with a `notifications/cancelled` POST and does not close the stream (SDK
++  client source). The probe does not test that era.
++- No compressed answer, no large body, no slow reader, and no calls at the same
++  time. SO-01e measures the capacity. The proxy forwards only `POST /mcp` and
++  answers `404` to other requests.
++
++### Part two: Render private network
++
++This part waits for SO-01c. When the private service of SO-01c is live, the
++operator starts a disposable web service from the same image, in the same
++workspace and region. The operator opens a Render shell on the web service and
++requests `/healthz` at the internal address of the private service. The answer
++must be `200` with `ok`. From the public internet, the internal address must
++not resolve. The transcript of that check goes here.
+diff --git a/knip.json b/knip.json
+index 1ad5c6c3..f7c9205b 100644
+--- a/knip.json
++++ b/knip.json
+@@ -19,7 +19,8 @@
+         "script/code-quality/coverage/loader-observer.ts",
+         "script/pr-review/check.ts",
+         "script/pr-review/api-surface.ts",
+-        "script/pr-review/replay.ts"
++        "script/pr-review/replay.ts",
++        "script/spike/gateway-proxy-probe.ts"
+       ]
+     },
+     ".habit-hooks": {
+diff --git a/script/spike/gateway-proxy-probe.ts b/script/spike/gateway-proxy-probe.ts
+new file mode 100644
+index 00000000..8f86c3bf
+--- /dev/null
++++ b/script/spike/gateway-proxy-probe.ts
+@@ -0,0 +1,111 @@
++#!/usr/bin/env node
++// SO-01d part one: a local model of the MCP gateway of the self on-boarding plan, sections 4.1 and 4.2. One process
++// starts three parts on loopback ports: the stand-in tenant upstream, the proxy, and an MCP client, in
++// gateway-proxy/upstream.ts, proxy.ts, and client.ts. The upstream accepts only a Thermus-Access header with a valid
++// Ed25519 signature (gateway-proxy/access-context.ts); both listeners use gateway-proxy/http-bridge.ts. Each step of
++// gateway-proxy/steps.ts asserts one Given-When-Then specification. At the end, the script prints one Markdown table
++// of the measured times and one conclusion for each step. This is a probe, not production code.
++// Run it from the repository root: node script/spike/gateway-proxy-probe.ts
++import assert from 'node:assert/strict';
++import { generateKeyPairSync } from 'node:crypto';
++import { readFileSync } from 'node:fs';
++import { createRequire } from 'node:module';
++import { pathToFileURL } from 'node:url';
++import { probeContext, signAccess } from './gateway-proxy/access-context.ts';
++import { connectClient, newClient, PROTOCOL_VERSION } from './gateway-proxy/client.ts';
++import { startProxy } from './gateway-proxy/proxy.ts';
++import { cleanupStep, messageOf, partSteps, type Parts, type ProbeStep, type Report } from './gateway-proxy/steps.ts';
++import { startUpstream } from './gateway-proxy/upstream.ts';
++
++type Closer = () => Promise<void>;
++
++async function startParts(closers: Closer[]): Promise<Parts> {
++  const gateway = generateKeyPairSync('ed25519');
++  const keys = { gateway, other: generateKeyPairSync('ed25519') };
++  const upstream = await startUpstream(gateway.publicKey);
++  closers.push(() => upstream.close());
++  const proxy = await startProxy(new URL('/mcp', upstream.url), () => signAccess(probeContext(), gateway.privateKey));
++  closers.push(() => proxy.close());
++  const client = newClient();
++  closers.push(() => client.close());
++  await connectClient(client, proxy.url);
++  assert.equal(client.getNegotiatedProtocolVersion(), PROTOCOL_VERSION, 'The client must negotiate the pinned protocol version');
++  return { keys, upstream, proxy, client };
++}
++
++async function check(step: ProbeStep, parts: Parts, report: Report): Promise<void> {
++  process.stderr.write(`gateway-proxy-probe: ${step.name}: ${step.spec}\n`);
++  try {
++    report.conclusions.push(`- PASS ${step.name}: ${await step.run(parts, report)}`);
++  } catch (error) {
++    throw new Error(`${step.name}: ${messageOf(error)}`, { cause: error });
++  }
++}
++
++async function closeAll(closers: Closer[]): Promise<unknown> {
++  let failure: unknown;
++  for (const close of closers.reverse()) {
++    try {
++      await close();
++    } catch (error) {
++      failure ??= error;
++    }
++  }
++  return failure;
++}
++
++async function runProbe(report: Report): Promise<void> {
++  const closers: Closer[] = [];
++  let parts: Parts | undefined;
++  let failure: unknown;
++  try {
++    parts = await startParts(closers);
++    for (const step of partSteps) await check(step, parts, report);
++  } catch (error) {
++    failure = parts === undefined ? new Error(`Setup: ${messageOf(error)}`, { cause: error }) : error;
++  }
++  const closeFailure = await closeAll(closers);
++  if (failure !== undefined) throw failure;
++  if (closeFailure !== undefined) throw new Error(`Cleanup: ${messageOf(closeFailure)}`, { cause: closeFailure });
++  assert.ok(parts !== undefined);
++  await check(cleanupStep, parts, report);
++}
++
++function renderReport(report: Report): string {
++  const versions = `Node ${process.version}, @modelcontextprotocol/server ${sdkVersion('@modelcontextprotocol/server')}, @modelcontextprotocol/client ${sdkVersion('@modelcontextprotocol/client')}, protocol ${PROTOCOL_VERSION}`;
++  return [
++    '## Gateway proxy probe', '',
++    `${versions}. Times are milliseconds after the start of each call, on one clock; a "+" time is after the client abort.`, '',
++    '| Part | Event | Expected | Measured |', '| --- | --- | --- | --- |',
++    ...report.rows.map((row) => `| ${row.part} | ${row.event} | ${row.expected} | ${row.measured} |`), '',
++    '### Conclusions', '', ...report.conclusions, '',
++  ].join('\n');
++}
++
++function sdkVersion(name: string): string {
++  const entry = pathToFileURL(createRequire(import.meta.url).resolve(name));
++  const manifest = JSON.parse(readFileSync(new URL('../package.json', entry), 'utf8')) as { version?: unknown };
++  return typeof manifest.version === 'string' ? manifest.version : 'unknown';
++}
++
++async function main(): Promise<number> {
++  const report: Report = { rows: [], conclusions: [] };
++  try {
++    await runProbe(report);
++  } catch (error) {
++    process.stderr.write(`gateway-proxy-probe: FAIL ${messageOf(error)}\n`);
++    return 1;
++  }
++  process.stdout.write(renderReport(report));
++  return 0;
++}
++
++function failIfAHandleKeepsTheProcessAlive(): void {
++  setTimeout(() => {
++    process.stderr.write('gateway-proxy-probe: FAIL Cleanup: the process did not exit within 5 s; a handle is still open\n');
++    process.exit(1);
++  }, 5_000).unref();
++}
++
++process.exitCode = await main();
++failIfAHandleKeepsTheProcessAlive();
+diff --git a/script/spike/gateway-proxy/access-context.ts b/script/spike/gateway-proxy/access-context.ts
+new file mode 100644
+index 00000000..0b932ff6
+--- /dev/null
++++ b/script/spike/gateway-proxy/access-context.ts
+@@ -0,0 +1,53 @@
++import { sign, verify, type KeyObject } from 'node:crypto';
++
++export const ORGANIZATION_ID = 'org_probe_a';
++const SUBJECT = 'user_probe';
++const CONTEXT_LIFETIME_MS = 120_000;
++
++export interface AccessContext { readonly organizationId: string; readonly subject: string; readonly expiresAt: number }
++export type Refusal = 'missing' | 'malformed' | 'bad_signature' | 'expired';
++type AccessDecision = { readonly context: AccessContext } | { readonly reason: Refusal };
++
++export function probeContext(expiresAt = Date.now() + CONTEXT_LIFETIME_MS): AccessContext {
++  return { organizationId: ORGANIZATION_ID, subject: SUBJECT, expiresAt };
++}
++
++export function signAccess(context: AccessContext, privateKey: KeyObject): string {
++  const body = Buffer.from(JSON.stringify(context));
++  return `${body.toString('base64url')}.${sign(null, body, privateKey).toString('base64url')}`;
++}
++
++export function verifyAccess(header: string | undefined, publicKey: KeyObject): AccessDecision {
++  if (header === undefined) return { reason: 'missing' };
++  const [encodedBody, encodedSignature, ...rest] = header.split('.');
++  if (rest.length > 0 || !isBase64Url(encodedBody) || !isBase64Url(encodedSignature)) return { reason: 'malformed' };
++  const body = Buffer.from(encodedBody, 'base64url');
++  if (!signatureMatches(body, Buffer.from(encodedSignature, 'base64url'), publicKey)) return { reason: 'bad_signature' };
++  const context = contextOf(body);
++  if (context === undefined) return { reason: 'malformed' };
++  return context.expiresAt > Date.now() ? { context } : { reason: 'expired' };
++}
++
++function isBase64Url(value: string | undefined): value is string {
++  return value !== undefined && /^[A-Za-z0-9_-]+$/.test(value);
++}
++
++function signatureMatches(body: Buffer, signature: Buffer, publicKey: KeyObject): boolean {
++  try {
++    return verify(null, body, publicKey, signature);
++  } catch {
++    return false;
++  }
++}
++
++function contextOf(body: Buffer): AccessContext | undefined {
++  let value: unknown;
++  try {
++    value = JSON.parse(body.toString('utf8'));
++  } catch {
++    return undefined;
++  }
++  const { organizationId, subject, expiresAt } = (typeof value === 'object' && value !== null ? value : {}) as Record<string, unknown>;
++  if (typeof organizationId !== 'string' || typeof subject !== 'string' || typeof expiresAt !== 'number') return undefined;
++  return { organizationId, subject, expiresAt };
++}
+diff --git a/script/spike/gateway-proxy/client.ts b/script/spike/gateway-proxy/client.ts
+new file mode 100644
+index 00000000..da081d55
+--- /dev/null
++++ b/script/spike/gateway-proxy/client.ts
+@@ -0,0 +1,64 @@
++import { Client, StreamableHTTPClientTransport, type CallToolResult } from '@modelcontextprotocol/client';
++
++export const PROTOCOL_VERSION = '2026-07-28';
++export const BEARER_TOKEN = 'probe-bearer-token';
++export const FORGED_ACCESS = 'forged.forged';
++const probeHopHeaders = { TE: 'trailers', Trailer: 'x-probe-trailer', 'Proxy-Probe': 'drop' };
++export const PROBE_HOP_HEADERS = Object.keys(probeHopHeaders).map((name) => name.toLowerCase());
++
++export interface CallRun { readonly startedAt: number; readonly progressAt: number[]; abortAt?: number; resultAt?: number; text?: string; error?: unknown }
++interface DirectAnswer { readonly status: number; readonly type: string | null; readonly body: unknown }
++
++export function newClient(): Client {
++  return new Client({ name: 'gateway-probe-client', version: '0.0.0' }, { versionNegotiation: { mode: { pin: PROTOCOL_VERSION } } });
++}
++
++export async function connectClient(client: Client, proxy: URL): Promise<void> {
++  await client.connect(new StreamableHTTPClientTransport(proxy, {
++    authProvider: { token: async () => BEARER_TOKEN },
++    requestInit: { headers: { ...probeHopHeaders, 'Thermus-Access': FORGED_ACCESS } },
++  }), { timeout: 5_000 });
++}
++
++export async function timedCall(client: Client, label: string, abortAfterMs?: number): Promise<CallRun> {
++  const controller = new AbortController();
++  const run: CallRun = { startedAt: performance.now(), progressAt: [] };
++  const timer = abortAfterMs === undefined ? undefined : setTimeout(() => {
++    run.abortAt = performance.now();
++    controller.abort();
++  }, abortAfterMs);
++  try {
++    const result = await client.callTool({ name: 'slow', arguments: { label } }, {
++      signal: controller.signal,
++      onprogress: () => { run.progressAt.push(performance.now()); },
++    });
++    run.resultAt = performance.now();
++    run.text = textOf(result);
++  } catch (error) {
++    run.error = error;
++  } finally {
++    clearTimeout(timer);
++  }
++  return run;
++}
++
++export async function directRequest(upstream: URL, header: string | undefined): Promise<DirectAnswer> {
++  const headers = new Headers({ 'content-type': 'application/json', accept: 'application/json, text/event-stream', 'mcp-protocol-version': PROTOCOL_VERSION });
++  if (header !== undefined) headers.set('thermus-access', header);
++  const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} });
++  const response = await fetch(new URL('/mcp', upstream), { method: 'POST', headers, body });
++  return { status: response.status, type: response.headers.get('content-type'), body: jsonOrText(await response.text()) };
++}
++
++function textOf(result: CallToolResult): string | undefined {
++  const [item] = result.content;
++  return item?.type === 'text' ? item.text : undefined;
++}
++
++function jsonOrText(text: string): unknown {
++  try {
++    return JSON.parse(text);
++  } catch {
++    return text;
++  }
++}
+diff --git a/script/spike/gateway-proxy/http-bridge.ts b/script/spike/gateway-proxy/http-bridge.ts
+new file mode 100644
+index 00000000..2ed52ada
+--- /dev/null
++++ b/script/spike/gateway-proxy/http-bridge.ts
+@@ -0,0 +1,99 @@
++import { once } from 'node:events';
++import type { IncomingMessage, Server, ServerResponse } from 'node:http';
++import type { AddressInfo } from 'node:net';
++import { Readable } from 'node:stream';
++
++const HOP_BY_HOP = new Set(['connection', 'keep-alive', 'transfer-encoding', 'te', 'trailer', 'upgrade']);
++const SET_BY_FETCH = new Set(['host']);
++
++export function fetchRequest(incoming: IncomingMessage, outgoing: ServerResponse): Request {
++  const disconnected = new AbortController();
++  outgoing.once('close', () => {
++    if (!outgoing.writableFinished) disconnected.abort();
++  });
++  const body = incoming.method === 'GET' || incoming.method === 'HEAD' ? {} : { body: Readable.toWeb(incoming), duplex: 'half' as const };
++  return new Request(new URL(incoming.url ?? '/', 'http://localhost'), {
++    method: incoming.method, headers: headersOf(incoming.rawHeaders, () => true), signal: disconnected.signal, ...body,
++  });
++}
++
++export function forwardedHeaders(incoming: IncomingMessage): Headers {
++  const named = headersNamedByConnection(incoming.headers.connection);
++  return headersOf(incoming.rawHeaders, (name) => !isHopByHop(name, named) && !SET_BY_FETCH.has(name.toLowerCase()));
++}
++
++export function singleHeader(incoming: IncomingMessage, name: string): string | undefined {
++  const value = incoming.headers[name];
++  return typeof value === 'string' ? value : undefined;
++}
++
++export async function sendResponse(response: Response, outgoing: ServerResponse): Promise<void> {
++  const named = headersNamedByConnection(response.headers.get('connection'));
++  outgoing.writeHead(response.status, [...response.headers].filter(([name]) => !isHopByHop(name, named)).flat());
++  const body = response.body;
++  if (body === null || outgoing.destroyed) {
++    outgoing.end();
++    await body?.cancel();
++    return;
++  }
++  outgoing.flushHeaders();
++  const reader = body.getReader();
++  const cancel = (): void => { reader.cancel().catch(() => undefined); };
++  outgoing.once('close', cancel);
++  try {
++    for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
++      if (!outgoing.write(chunk.value)) await drainedOrClosed(outgoing);
++    }
++  } finally {
++    outgoing.off('close', cancel);
++  }
++  outgoing.end();
++}
++
++export function sendJson(outgoing: ServerResponse, status: number, body: object): void {
++  outgoing.req.resume();
++  const text = JSON.stringify(body);
++  outgoing.writeHead(status, { 'content-type': 'application/json', 'content-length': Buffer.byteLength(text) });
++  outgoing.end(text);
++}
++
++export async function listen(server: Server): Promise<URL> {
++  server.listen(0, '127.0.0.1');
++  await once(server, 'listening');
++  const { port } = server.address() as AddressInfo;
++  return new URL(`http://127.0.0.1:${port}/`);
++}
++
++export async function closeServer(server: Server): Promise<void> {
++  if (!server.listening) return;
++  const closed = new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
++  server.closeAllConnections();
++  await closed;
++}
++
++function isHopByHop(name: string, namedByConnection: ReadonlySet<string>): boolean {
++  const lower = name.toLowerCase();
++  return HOP_BY_HOP.has(lower) || lower.startsWith('proxy-') || namedByConnection.has(lower);
++}
++
++function headersNamedByConnection(value: string | null | undefined): Set<string> {
++  return new Set((value ?? '').split(',').map((token) => token.trim().toLowerCase()).filter((token) => token !== ''));
++}
++
++function headersOf(raw: readonly string[], keep: (name: string) => boolean): Headers {
++  const headers = new Headers();
++  for (let index = 0; index < raw.length; index += 2) {
++    if (keep(raw[index])) headers.append(raw[index], raw[index + 1]);
++  }
++  return headers;
++}
++
++function drainedOrClosed(outgoing: ServerResponse): Promise<void> {
++  return new Promise((resolve) => {
++    const settle = (): void => {
++      outgoing.off('drain', settle).off('close', settle);
++      resolve();
++    };
++    outgoing.on('drain', settle).on('close', settle);
++  });
++}
+diff --git a/script/spike/gateway-proxy/proxy.ts b/script/spike/gateway-proxy/proxy.ts
+new file mode 100644
+index 00000000..238a6208
+--- /dev/null
++++ b/script/spike/gateway-proxy/proxy.ts
+@@ -0,0 +1,44 @@
++import { createServer, type IncomingMessage, type Server as HttpServer, type ServerResponse } from 'node:http';
++import { Readable } from 'node:stream';
++import { closeServer, forwardedHeaders, listen, sendJson, sendResponse } from './http-bridge.ts';
++
++interface ProxyExchange { readonly startedAt: number; requestClosedAt?: number; clientGoneAt?: number; status?: number }
++export interface Proxy { readonly url: URL; readonly server: HttpServer; readonly exchanges: ProxyExchange[]; close(): Promise<void> }
++interface Route { readonly upstream: URL; readonly signContext: () => string; readonly exchanges: ProxyExchange[] }
++
++export async function startProxy(upstream: URL, signContext: () => string): Promise<Proxy> {
++  const exchanges: ProxyExchange[] = [];
++  const server = createServer((incoming, outgoing) => {
++    void forward(incoming, outgoing, { upstream, signContext, exchanges });
++  });
++  const url = new URL('/mcp', await listen(server));
++  return { url, server, exchanges, close: () => closeServer(server) };
++}
++
++async function forward(incoming: IncomingMessage, outgoing: ServerResponse, route: Route): Promise<void> {
++  if (incoming.url !== '/mcp' || incoming.method !== 'POST') return sendJson(outgoing, 404, { error: 'not_forwarded' });
++  const exchange: ProxyExchange = { startedAt: performance.now() };
++  route.exchanges.push(exchange);
++  // Node ends the incoming request when its body ends, so this close event cannot tell that the client went away.
++  incoming.once('close', () => { exchange.requestClosedAt = performance.now(); });
++  const clientGone = new AbortController();
++  outgoing.once('close', () => {
++    if (outgoing.writableFinished) return;
++    exchange.clientGoneAt = performance.now();
++    clientGone.abort();
++  });
++  try {
++    const response = await fetch(route.upstream, upstreamRequest(incoming, route.signContext(), clientGone.signal));
++    exchange.status = response.status;
++    await sendResponse(response, outgoing);
++  } catch {
++    if (clientGone.signal.aborted || outgoing.headersSent) outgoing.destroy();
++    else sendJson(outgoing, 502, { error: 'bad_gateway' });
++  }
++}
++
++function upstreamRequest(incoming: IncomingMessage, access: string, signal: AbortSignal): RequestInit {
++  const headers = forwardedHeaders(incoming);
++  headers.set('thermus-access', access);
++  return { method: 'POST', headers, body: Readable.toWeb(incoming), duplex: 'half', signal, redirect: 'manual' };
++}
+diff --git a/script/spike/gateway-proxy/steps.ts b/script/spike/gateway-proxy/steps.ts
+new file mode 100644
+index 00000000..d903738b
+--- /dev/null
++++ b/script/spike/gateway-proxy/steps.ts
+@@ -0,0 +1,181 @@
++import assert from 'node:assert/strict';
++import type { KeyObject } from 'node:crypto';
++import { setTimeout as delay } from 'node:timers/promises';
++import type { Client } from '@modelcontextprotocol/client';
++import { ORGANIZATION_ID, probeContext, signAccess, type Refusal } from './access-context.ts';
++import { BEARER_TOKEN, directRequest, FORGED_ACCESS, PROBE_HOP_HEADERS, timedCall } from './client.ts';
++import type { Proxy } from './proxy.ts';
++import { TICK_MS, TICKS, type SlowCall, type Upstream } from './upstream.ts';
++
++// A buffered answer delivers every notification at about 3000 ms; a streamed answer delivers each one near its tick.
++const ARRIVAL_SLACK_MS = 250;
++const ABORT_AFTER_MS = 500;
++const EARLY_ABORT_AFTER_MS = 50;
++const ABORT_LIMIT_MS = 100;
++const STOP_LIMIT_MS = 20;
++const RESULT_TEXT = `slow finished for ${ORGANIZATION_ID}`;
++
++interface Keys { readonly gateway: { readonly privateKey: KeyObject }; readonly other: { readonly privateKey: KeyObject } }
++export interface Parts { readonly keys: Keys; readonly upstream: Upstream; readonly proxy: Proxy; readonly client: Client }
++interface Row { readonly part: string; readonly event: string; readonly expected: string; readonly measured: string }
++export interface Report { readonly rows: Row[]; readonly conclusions: string[] }
++export interface ProbeStep { readonly name: string; readonly spec: string; run(parts: Parts, report: Report): Promise<string> }
++type StoppedCall = SlowCall & { readonly signalAt: number; readonly stoppedAt: number };
++type Exchange = Proxy['exchanges'][number] & { readonly clientGoneAt: number };
++interface AbortMeasure { readonly startedAt: number; readonly abortAt: number; readonly progress: number; readonly call: StoppedCall; readonly exchange: Exchange }
++
++async function streaming({ client, upstream }: Parts, report: Report): Promise<string> {
++  const { tools } = await client.listTools();
++  assert.deepEqual(tools.map((tool) => tool.name), ['slow'], 'The upstream must list exactly the tool slow');
++  const run = await timedCall(client, 'stream');
++  assert.equal(run.error, undefined, `The call through the proxy failed: ${messageOf(run.error)}`);
++  assert.ok(run.resultAt !== undefined);
++  assert.equal(run.text, RESULT_TEXT, 'The result must name the organization of the verified context');
++  assert.equal(run.progressAt.length, TICKS, `The client must receive ${TICKS} progress notifications`);
++  const sent = upstream.calls.get('stream')?.progressSentAt ?? [];
++  for (const [index, arrivedAt] of run.progressAt.entries()) {
++    const planned = (index + 1) * TICK_MS;
++    const elapsed = arrivedAt - run.startedAt;
++    assert.ok(arrivedAt < run.resultAt, `Progress ${index + 1} arrived after the result`);
++    assert.ok(elapsed <= planned + ARRIVAL_SLACK_MS, `Progress ${index + 1} arrived at ${ms(elapsed)}, after ${planned + ARRIVAL_SLACK_MS} ms: the answer was buffered`);
++    const sentAt = sent[index] === undefined ? 'unknown' : ms(sent[index] - run.startedAt);
++    report.rows.push({ part: 'Streaming', event: `Progress ${index + 1} received`, expected: `about ${planned} ms`, measured: `${ms(elapsed)} (sent ${sentAt})` });
++  }
++  const resultAt = run.resultAt - run.startedAt;
++  assert.ok(resultAt >= TICKS * TICK_MS, `The result arrived at ${ms(resultAt)}, before the tool could finish`);
++  report.rows.push({ part: 'Streaming', event: 'Result received', expected: `after progress ${TICKS}`, measured: ms(resultAt) });
++  return `${TICKS} progress notifications arrived before the result, from ${ms(run.progressAt[0] - run.startedAt)} to ${ms(run.progressAt[TICKS - 1] - run.startedAt)}; the result came at ${ms(resultAt)}.`;
++}
++
++async function headers({ upstream }: Parts, report: Report): Promise<string> {
++  assert.ok(upstream.accepted.length > 0, 'The upstream must accept the requests of the proxy');
++  for (const { headers: received, context } of upstream.accepted) {
++    assert.equal(received.get('authorization'), `Bearer ${BEARER_TOKEN}`, 'The proxy must forward the bearer token');
++    for (const name of PROBE_HOP_HEADERS) assert.equal(received.get(name), null, `The proxy forwarded the hop-by-hop header ${name}`);
++    assert.notEqual(received.get('thermus-access'), FORGED_ACCESS, 'The proxy forwarded the Thermus-Access value of the client');
++    assert.equal(context.organizationId, ORGANIZATION_ID, 'The upstream must verify the context that the proxy signed');
++  }
++  const methods = upstream.accepted.map(({ headers: received }) => received.get('mcp-method') ?? 'unknown').join(', ');
++  const count = `${upstream.accepted.length} of ${upstream.accepted.length} requests`;
++  report.rows.push(
++    { part: 'Headers', event: 'Bearer token at the upstream', expected: 'forwarded', measured: `forwarded in ${count} (${methods})` },
++    { part: 'Headers', event: 'TE, Trailer, and Proxy-Probe at the upstream', expected: 'removed', measured: `removed in ${count}` },
++    { part: 'Headers', event: 'Thermus-Access value of the client', expected: 'replaced', measured: `replaced in ${count}` },
++  );
++  return `the bearer token reached the upstream in ${count}; TE, Trailer, and Proxy-* did not; the proxy replaced the Thermus-Access value of the client.`;
++}
++
++async function measureAbort({ client, upstream, proxy }: Parts, label: string, afterMs: number): Promise<AbortMeasure> {
++  const run = await timedCall(client, label, afterMs);
++  assert.ok(run.abortAt !== undefined && run.error !== undefined, 'The aborted call must fail at the client');
++  const abortAt = run.abortAt;
++  const call = await waitFor(() => stoppedCall(upstream.calls.get(label)), 1_000, 'the upstream handler to stop');
++  const signalDelay = call.signalAt - abortAt;
++  assert.ok(signalDelay >= 0 && signalDelay <= ABORT_LIMIT_MS, `The upstream signal fired ${ms(signalDelay)} after the abort; the limit is ${ABORT_LIMIT_MS} ms`);
++  assert.ok(call.stoppedAt - call.signalAt <= STOP_LIMIT_MS, `The upstream handler stopped ${ms(call.stoppedAt - call.signalAt)} after its signal; the limit is ${STOP_LIMIT_MS} ms`);
++  assert.equal(call.finishedAt, undefined, 'The aborted handler must not finish');
++  assert.ok(call.progressSentAt.every((at) => at < abortAt), 'The handler must send no progress after the abort');
++  const exchange = proxy.exchanges.find((item) => item.startedAt >= run.startedAt);
++  assert.ok(exchange?.clientGoneAt !== undefined, 'The proxy must see the client go away');
++  return { startedAt: run.startedAt, abortAt, progress: run.progressAt.length, call, exchange: { ...exchange, clientGoneAt: exchange.clientGoneAt } };
++}
++
++function abortRows(part: string, measure: AbortMeasure, afterMs: number): Row[] {
++  const { startedAt, abortAt, call, exchange } = measure;
++  return [
++    { part, event: 'Client abort', expected: `about ${afterMs} ms`, measured: ms(abortAt - startedAt) },
++    { part, event: 'Progress received before the abort', expected: `${Math.floor(afterMs / TICK_MS)}`, measured: `${measure.progress}` },
++    { part, event: 'Proxy sees the client go (response close)', expected: 'after the abort', measured: `+${ms(exchange.clientGoneAt - abortAt)}` },
++    { part, event: 'Upstream handler signal', expected: `within ${ABORT_LIMIT_MS} ms of the abort`, measured: `+${ms(call.signalAt - abortAt)}` },
++    { part, event: 'Upstream handler stops', expected: `within ${STOP_LIMIT_MS} ms of its signal`, measured: `+${ms(call.stoppedAt - abortAt)}` },
++  ];
++}
++
++async function abort(parts: Parts, report: Report): Promise<string> {
++  const measure = await measureAbort(parts, 'abort', ABORT_AFTER_MS);
++  assert.equal(measure.exchange.status, 200, 'The abort must come while the answer streams');
++  const closedAt = measure.exchange.requestClosedAt;
++  report.rows.push(...abortRows('Abort', measure, ABORT_AFTER_MS), {
++    part: 'Abort', event: 'Proxy incoming request close event', expected: 'not a client signal',
++    measured: closedAt === undefined ? 'not seen' : `${ms(closedAt - measure.startedAt)}, at the body end`,
++  });
++  return `the upstream handler saw its signal ${ms(measure.call.signalAt - measure.abortAt)} after the client abort (limit ${ABORT_LIMIT_MS} ms) and stopped; the proxy used the close event of its response, because the close event of the incoming request came at the body end.`;
++}
++
++async function earlyAbort(parts: Parts, report: Report): Promise<string> {
++  const measure = await measureAbort(parts, 'early-abort', EARLY_ABORT_AFTER_MS);
++  assert.equal(measure.exchange.status, undefined, 'The early abort must come before the upstream answers');
++  report.rows.push(...abortRows('Early abort', measure, EARLY_ABORT_AFTER_MS));
++  return `before the upstream answered, the proxy aborted its pending upstream request; the handler saw its signal ${ms(measure.call.signalAt - measure.abortAt)} after the client abort.`;
++}
++
++async function signedHeader({ keys, upstream, client }: Parts, report: Report): Promise<string> {
++  const before = upstream.stats.mcpRequests;
++  const cases: { name: string; header?: string; reason: Refusal }[] = [
++    { name: 'no header', reason: 'missing' },
++    { name: 'signed by another key pair', header: signAccess(probeContext(), keys.other.privateKey), reason: 'bad_signature' },
++    { name: 'expired context', header: signAccess(probeContext(Date.now() - 1_000), keys.gateway.privateKey), reason: 'expired' },
++  ];
++  for (const item of cases) {
++    const answer = await directRequest(upstream.url, item.header);
++    assert.equal(answer.status, 403, `A direct request with ${item.name} got ${answer.status}`);
++    assert.match(answer.type ?? '', /^application\/json/, `The 403 answer for ${item.name} must be JSON`);
++    assert.deepEqual(answer.body, { error: 'access_denied', reason: item.reason }, `The 403 answer for ${item.name} has the wrong reason`);
++    report.rows.push({ part: 'Signed header', event: `Direct request, ${item.name}`, expected: '403', measured: `403, reason ${item.reason}` });
++  }
++  assert.equal(upstream.stats.mcpRequests, before, 'A refused request must not reach MCP handling');
++  const run = await timedCall(client, 'signed');
++  assert.equal(run.error, undefined, `The call through the proxy failed: ${messageOf(run.error)}`);
++  assert.equal(run.text, RESULT_TEXT, 'The result must name the organization of the verified context');
++  assert.ok(run.resultAt !== undefined);
++  report.rows.push(
++    { part: 'Signed header', event: 'MCP handling of the refused requests', expected: 'none', measured: 'none' },
++    { part: 'Signed header', event: 'Call through the proxy', expected: 'result', measured: `result at ${ms(run.resultAt - run.startedAt)}` },
++  );
++  return 'direct requests with no header, another key pair, or an expired context got 403 before MCP handling; the call through the proxy got its result.';
++}
++
++async function cleanup({ upstream, proxy }: Parts, report: Report): Promise<string> {
++  assert.equal(upstream.server.listening, false, 'The upstream listener is still open');
++  assert.equal(proxy.server.listening, false, 'The proxy listener is still open');
++  const deadline = performance.now() + 1_000;
++  while (tcpHandles().length > 0 && performance.now() < deadline) await delay(10);
++  assert.deepEqual(tcpHandles(), [], `Open TCP handles after the close: ${tcpHandles().join(', ')}`);
++  report.rows.push({ part: 'Cleanup', event: 'Open listeners and TCP handles', expected: '0', measured: '0' });
++  return 'both listeners are closed and no TCP handle is open; a watchdog stops the process with code 1 if it does not exit.';
++}
++
++export const partSteps: readonly ProbeStep[] = [
++  { name: 'Streaming', spec: 'Given the three parts, when the client lists the tools and calls slow, then the progress notifications arrive before the result.', run: streaming },
++  { name: 'Headers', spec: 'Given the requests of that call, when they reach the upstream, then they carry the bearer token and no hop-by-hop or client Thermus-Access value.', run: headers },
++  { name: 'Abort', spec: `Given a second slow call, when the client aborts it after ${ABORT_AFTER_MS} ms, then the upstream handler sees its signal within ${ABORT_LIMIT_MS} ms.`, run: abort },
++  { name: 'Early abort', spec: `Given another slow call, when the client aborts it after ${EARLY_ABORT_AFTER_MS} ms, before the upstream answers, then the handler sees its signal within ${ABORT_LIMIT_MS} ms.`, run: earlyAbort },
++  { name: 'Signed header', spec: 'Given no header, another key pair, or an expired context, when a request reaches the upstream directly, then 403; through the proxy, a result.', run: signedHeader },
++];
++export const cleanupStep: ProbeStep = { name: 'Cleanup', spec: 'Given the end of the probe, then every listener is closed and no socket keeps the process alive.', run: cleanup };
++
++function stoppedCall(call: SlowCall | undefined): StoppedCall | undefined {
++  if (call?.signalAt === undefined || call.stoppedAt === undefined) return undefined;
++  return { ...call, signalAt: call.signalAt, stoppedAt: call.stoppedAt };
++}
++
++function tcpHandles(): string[] {
++  return process.getActiveResourcesInfo().filter((name) => name.startsWith('TCP'));
++}
++
++async function waitFor<T>(read: () => T | undefined, timeoutMs: number, what: string): Promise<T> {
++  const deadline = performance.now() + timeoutMs;
++  for (let value = read(); ; value = read()) {
++    if (value !== undefined) return value;
++    if (performance.now() > deadline) throw new Error(`Timed out after ${timeoutMs} ms waiting for ${what}`);
++    await delay(5);
++  }
++}
++
++function ms(value: number): string {
++  return `${value.toFixed(1)} ms`;
++}
++
++export function messageOf(error: unknown): string {
++  return error instanceof Error ? error.message : String(error);
++}
+diff --git a/script/spike/gateway-proxy/upstream.ts b/script/spike/gateway-proxy/upstream.ts
+new file mode 100644
+index 00000000..557450f2
+--- /dev/null
++++ b/script/spike/gateway-proxy/upstream.ts
+@@ -0,0 +1,110 @@
++import type { KeyObject } from 'node:crypto';
++import { createServer, type IncomingMessage, type Server as HttpServer, type ServerResponse } from 'node:http';
++import { setTimeout as delay } from 'node:timers/promises';
++import {
++  createMcpHandler, ProtocolError, ProtocolErrorCode, Server,
++  type AuthInfo, type CallToolRequest, type McpHttpHandler, type ServerContext,
++} from '@modelcontextprotocol/server';
++import { verifyAccess, type AccessContext } from './access-context.ts';
++import { closeServer, fetchRequest, listen, sendJson, sendResponse, singleHeader } from './http-bridge.ts';
++
++export const TICK_MS = 200;
++export const TICKS = 15;
++
++export interface SlowCall {
++  readonly label: string;
++  readonly startedAt: number;
++  readonly progressSentAt: number[];
++  signalAt?: number;
++  stoppedAt?: number;
++  finishedAt?: number;
++}
++interface AcceptedRequest { readonly headers: Headers; readonly context: AccessContext }
++interface Gate { readonly handler: McpHttpHandler; readonly publicKey: KeyObject; readonly accepted: AcceptedRequest[] }
++export interface Upstream {
++  readonly url: URL;
++  readonly server: HttpServer;
++  readonly calls: Map<string, SlowCall>;
++  readonly accepted: AcceptedRequest[];
++  readonly stats: { mcpRequests: number };
++  close(): Promise<void>;
++}
++
++const slowTool = {
++  name: 'slow',
++  description: 'Send a progress notification every 200 ms for 3 seconds, then answer with text.',
++  inputSchema: { type: 'object' as const, properties: { label: { type: 'string' } }, required: ['label'], additionalProperties: false },
++};
++
++export async function startUpstream(publicKey: KeyObject): Promise<Upstream> {
++  const calls = new Map<string, SlowCall>();
++  const accepted: AcceptedRequest[] = [];
++  const stats = { mcpRequests: 0 };
++  const handler = createMcpHandler(({ authInfo }) => {
++    stats.mcpRequests += 1;
++    return slowServer(organizationOf(authInfo), calls);
++  });
++  const server = createServer((incoming, outgoing) => {
++    serveUpstream(incoming, outgoing, { handler, publicKey, accepted }).catch(() => outgoing.destroy());
++  });
++  const url = await listen(server);
++  return { url, server, calls, accepted, stats, close: async () => { await closeServer(server); await handler.close(); } };
++}
++
++async function serveUpstream(incoming: IncomingMessage, outgoing: ServerResponse, gate: Gate): Promise<void> {
++  if (incoming.url !== '/mcp') return sendJson(outgoing, 404, { error: 'not_found' });
++  const decision = verifyAccess(singleHeader(incoming, 'thermus-access'), gate.publicKey);
++  if ('reason' in decision) return sendJson(outgoing, 403, { error: 'access_denied', reason: decision.reason });
++  const request = fetchRequest(incoming, outgoing);
++  gate.accepted.push({ headers: new Headers(request.headers), context: decision.context });
++  const authInfo: AuthInfo = { token: '', clientId: 'gateway-probe', scopes: [], extra: { organizationId: decision.context.organizationId } };
++  await sendResponse(await gate.handler.fetch(request, { authInfo }), outgoing);
++}
++
++function organizationOf(authInfo: AuthInfo | undefined): string {
++  const organizationId = authInfo?.extra?.organizationId;
++  if (typeof organizationId !== 'string') throw new Error('The request has no verified access context');
++  return organizationId;
++}
++
++function slowServer(organizationId: string, calls: Map<string, SlowCall>): Server {
++  const server = new Server({ name: 'gateway-probe-upstream', version: '0.0.0' }, { capabilities: { tools: {} } });
++  server.setRequestHandler('tools/list', () => ({ tools: [slowTool] }));
++  server.setRequestHandler('tools/call', async (request, ctx) => {
++    if (request.params.name !== 'slow') throw new ProtocolError(ProtocolErrorCode.InvalidParams, 'Unknown tool');
++    const call = newCall(request);
++    calls.set(call.label, call);
++    await runSlow(call, ctx);
++    return server.projectCallToolResult({ content: [{ type: 'text', text: `slow finished for ${organizationId}` }] }, undefined);
++  });
++  return server;
++}
++
++function newCall(request: CallToolRequest): SlowCall {
++  const label = request.params.arguments?.label;
++  if (typeof label !== 'string') throw new ProtocolError(ProtocolErrorCode.InvalidParams, 'The slow tool needs a label');
++  return { label, startedAt: performance.now(), progressSentAt: [] };
++}
++
++async function runSlow(call: SlowCall, ctx: ServerContext): Promise<void> {
++  const signal = ctx.mcpReq.signal;
++  signal.addEventListener('abort', () => { call.signalAt = performance.now(); }, { once: true });
++  const progressToken = ctx.mcpReq._meta?.progressToken;
++  try {
++    for (let tick = 1; tick <= TICKS; tick += 1) {
++      await delay(msUntilTick(call.startedAt, tick), undefined, { signal });
++      call.progressSentAt.push(performance.now());
++      if (progressToken !== undefined) {
++        await ctx.mcpReq.notify({ method: 'notifications/progress', params: { progressToken, progress: tick, total: TICKS } });
++      }
++    }
++    call.finishedAt = performance.now();
++  } catch (error) {
++    call.stoppedAt = performance.now();
++    throw error;
++  }
++}
++
++function msUntilTick(startedAt: number, tick: number): number {
++  return Math.max(0, startedAt + tick * TICK_MS - performance.now());
++}

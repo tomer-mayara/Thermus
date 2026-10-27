@@ -1,0 +1,46 @@
+{
+  "candidate": "7acd90d44e90769e335c4b2f095d3791d82dc3d4",
+  "base": "9a3ac1f9763b9d8927ec2d1d5cd4527982d33619",
+  "comparison": "origin/main",
+  "node": "v24.20.0",
+  "lockEquality": "pnpm-lock.yaml byte-equal to original ui-01-refined-tabs checkout",
+  "inputsFile": "source-test-inputs.json",
+  "ordinaryTests": 5153,
+  "portalTests": 49,
+  "browserTests": 7,
+  "selfHostedContainerTests": 11,
+  "selected": [
+    "npm test",
+    "npm run typecheck",
+    "npm run build:user-portal",
+    "Members browser",
+    "npm run test:container",
+    "npm run build:hosted",
+    "npm run test:container:hosted",
+    "habit-hooks",
+    "unit and integration coverage",
+    "source snapshots",
+    "metrics process",
+    "CRAP",
+    "API snapshots --check"
+  ],
+  "notSelected": {
+    "hosted-live": "Only presentation changes; no provider authentication/read/change behavior or live assertion changed.",
+    "postgres": "No settings/removal/SQL runtime/config/lifetime change.",
+    "collector": "No encoding, protocol, transport, destination address/TLS policy or export journey behavior change.",
+    "search-live": "No search source or live proof change.",
+    "separateRendererGate": "No renderer gate source paths; real renderer checked by selected hosted offline and image gates."
+  },
+  "firstHostedOfflineAttempt": {
+    "status": "environmental failure",
+    "reason": "Four integration cases could not bind127.0.0.1:46443 while concurrent UI02 hosted-live gate held it.1155 integration cases passed. Root confirmed scheduling collision.",
+    "retry": "Wait for explicit root host-lane release; rerun complete command."
+  },
+  "visualReview": [
+    "members-normal-320.png",
+    "members-normal-1280.png",
+    "audit-tablet-800.png"
+  ],
+  "architecture": "Three changed source files stay within Web. No component, allowed-edge, public module/snapshot, registry Mermaid, boundary, provider operation, storage or deployment change. Existing views remain accurate; no callable production public contract changed. L4 not selected.",
+  "expectedTier": "T1 Team review: test-gate-policy read path removes/replaces inventory text; no architectural fact expected. Final committed declaration/checker is root responsibility."
+}

@@ -1,0 +1,521 @@
+{
+  "candidate": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "branch": "codex/validate-ui-01-4f5402fe",
+  "treeClean": true,
+  "hostLane": "Released; no test/build/coverage/metrics processes remain.",
+  "functionalRebind": "functional-rebind.json",
+  "recordOnlyRebind": "37046bbd-record-rebind.json",
+  "historicalFunctional": {
+    "evidence": ".cache/ui-stack-finish/archive-ui01-4a761fec/validation/evidence-summary.json",
+    "actualOriginalHead": "7acd90d44e90769e335c4b2f095d3791d82dc3d4",
+    "originalMain": "9a3ac1f9763b9d8927ec2d1d5cd4527982d33619",
+    "counts": {
+      "ordinary": 5153,
+      "portal": 49,
+      "browser": 7,
+      "selfHostedContainer": 11,
+      "offlineUnit": 3319,
+      "offlinePortal": 49,
+      "offlineIntegration": 1159,
+      "offlineAcceptanceInterface": 123,
+      "offlineRenderer": 13
+    },
+    "claim": "These are the original executions, not runs at the current head. Reuse is supported by the archived source/input comparisons, the after-main-270 byte proof, and the record-only current-head diff."
+  },
+  "freshTypecheck": {
+    "executedHead": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+    "result": "passed",
+    "currentHeadReuse": "The only 4f\u2192370 change is the immutable metrics JSON record. Typecheck inputs stay identical.",
+    "log": "4f5402fe-typecheck.log"
+  },
+  "freshCoverage": {
+    "executedHead": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+    "tests": 1159,
+    "suite": [
+      "integration"
+    ],
+    "status": "verified",
+    "files": 164,
+    "processes": 288,
+    "reuse": "Native process accepted verified compatible integration coverage for current head. No report or capture was edited.",
+    "provenance": {
+      "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+      "inputsFingerprint": "29de8f8ea3990bc5e0c46b8d4a8ad24b7fbf27cd48af7b3242086a1c421b811a",
+      "runtime": "node-24.20.0",
+      "compiler": "typescript-7.0.2",
+      "measurementVersion": "own-characters-1",
+      "suite": [
+        "integration"
+      ],
+      "comparisonIdentity": {
+        "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+        "inputsFingerprint": "29de8f8ea3990bc5e0c46b8d4a8ad24b7fbf27cd48af7b3242086a1c421b811a",
+        "runtime": "node-24.20.0",
+        "compiler": "typescript-7.0.2",
+        "measurementVersion": "own-characters-1",
+        "suite": "unit"
+      },
+      "status": "verified",
+      "capturedCommit": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+      "buildFingerprint": "354e430a6a606da5eb2799056ee99795356457b580bd2587c88f9ee6ff89709f",
+      "captureManifestFingerprint": "47cdcd5b58cd75d7ddd739c1026cf0a1f48182db3eeac655d2c441c2853fc2fa",
+      "captures": [
+        {
+          "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+          "inputsFingerprint": "10ced96935e9663b2d9589064d5831aa469da673ab718f03f572968354d1e81b",
+          "runtime": "node-24.20.0",
+          "compiler": "typescript-7.0.2",
+          "measurementVersion": "own-characters-1",
+          "suite": "integration",
+          "completionProtocol": "normal-exit-or-sealed-or-loader-1",
+          "captureId": "41d9c2682b4b0c63cdb6ded7d949d142b89a587721e7f8d7a6ab8dc1d96c402e",
+          "comparisonIdentity": {
+            "sourceFingerprint": "66c7303a9af9b6c6397a6ae85b15f96bc3c0dfb02752bd1f636734a09e89321f",
+            "inputsFingerprint": "29de8f8ea3990bc5e0c46b8d4a8ad24b7fbf27cd48af7b3242086a1c421b811a",
+            "runtime": "node-24.20.0",
+            "compiler": "typescript-7.0.2",
+            "measurementVersion": "own-characters-1",
+            "suite": "unit"
+          },
+          "status": "verified",
+          "capturedCommit": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+          "buildFingerprint": "354e430a6a606da5eb2799056ee99795356457b580bd2587c88f9ee6ff89709f",
+          "captureManifestFingerprint": "caab31005aee6ae1a7edfc7dfe212414df5798494aeccd313787010043642c35"
+        }
+      ]
+    }
+  },
+  "quality": {
+    "candidate": "37046bbd1426566d90bf1a32f8578584d7173060",
+    "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+    "outcomes": [
+      {
+        "name": "Delta",
+        "status": "goal miss"
+      },
+      {
+        "name": "Review",
+        "status": "goal miss"
+      },
+      {
+        "name": "CRAP",
+        "status": "passed"
+      },
+      {
+        "name": "Architecture",
+        "status": "passed"
+      }
+    ],
+    "requiredCrap": [
+      {
+        "file": "src/interfaces/web/account/members-page-layout.ts",
+        "function": "membersPageLayout",
+        "change": "changed",
+        "paths": 8,
+        "share": 0.998,
+        "crap": 8.000000512,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPageLayout\",\"start\":687,\"end\":2749,\"body\":\"fb0b37c5340c750743231bb41c7043475d6963eb7f09c691c1ab69ba9de6b1df\",\"signature\":\"334ff702ff5e66478135471905d8f95c478f966024a94dfc505f5bcf776ed8ed\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "membersPage",
+        "change": "changed",
+        "paths": 3,
+        "share": 0.98,
+        "crap": 3.000072,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3587,\"body\":\"9e7e37a26f6bd56d23f6a000ff2a15def00ec3e5c4ed668ccac9e1ca6511bc9e\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+      },
+      {
+        "file": "src/interfaces/web/account/administration-pages.ts",
+        "function": "(anonymous)",
+        "change": "new",
+        "paths": 1,
+        "share": 1,
+        "crap": 1,
+        "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+      }
+    ],
+    "metricDispositions": "metric-dispositions.json",
+    "habitDispositions": "habit-dispositions.json",
+    "api": "49 snapshots current; scoped generator filters33 errors in2 nonpublic files. Fresh full typecheck passed with identical current type inputs.",
+    "snooze": []
+  },
+  "historyRecords": [
+    {
+      "path": "docs/metrics/2026-10-26-2b3ad13b.json",
+      "commit": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+      "sha256": "c8667245834f54c60ddbb98398fdaaa8fc5317d4e61ab2229c285524adace248",
+      "captureCommit": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+      "reason": "Immutable historical main-base record. Structural values belong to its pinned base; any CRAP coverage estimate is derived from its original head capture, not measured base coverage."
+    },
+    {
+      "path": "docs/metrics/2026-10-26-9507e751.json",
+      "commit": "9507e751215fec32748bf4e944f2393928e61cf5",
+      "sha256": "bb152f9fb3ebe94c01d2c39a85cdf9e1335175c332454d8d5935c0b9a582bc42",
+      "captureCommit": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+      "reason": "Immutable historical main-base record. Structural values belong to its pinned base; any CRAP coverage estimate is derived from its original head capture, not measured base coverage."
+    }
+  ],
+  "checker": {
+    "tier": "T1",
+    "tierName": "T1 Team review",
+    "eligibility": "eligible",
+    "blockers": [],
+    "candidate": "37046bbd1426566d90bf1a32f8578584d7173060",
+    "mergeBase": "9507e751215fec32748bf4e944f2393928e61cf5",
+    "architecture": {
+      "policy": "facts",
+      "facts": [],
+      "summary": "T0: no architecture fact"
+    },
+    "reasons": [
+      {
+        "tier": "T1",
+        "key": "read_paths",
+        "fact": "docs/implementation/test-gate-policy.md"
+      }
+    ],
+    "questions": [],
+    "changedPaths": [
+      {
+        "status": "M",
+        "path": ".pr-impact.json"
+      },
+      {
+        "status": "M",
+        "path": "docs/design/organization-admin-plan.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/design/portal-design.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/implementation/admin-ui-01.md"
+      },
+      {
+        "status": "M",
+        "path": "docs/implementation/test-gate-policy.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/metrics/2026-10-26-2b3ad13b.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/metrics/2026-10-26-9507e751.json"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/administration-pages.ts"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/members-page-layout.ts"
+      },
+      {
+        "status": "M",
+        "path": "src/interfaces/web/account/members-style.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/acceptance/auth/hosted-members.test.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/integration/hosted-admin/account-routes-administration-pages.test.ts"
+      },
+      {
+        "status": "A",
+        "path": "test/support/drivers/browser/admin-shell-browser.ts"
+      },
+      {
+        "status": "A",
+        "path": "test/support/drivers/browser/admin-shell-measurements.ts"
+      },
+      {
+        "status": "M",
+        "path": "test/support/in-process/hosted-member-removal-site.ts"
+      }
+    ],
+    "lineCounts": {
+      "production": 33,
+      "productionLimit": 400,
+      "total": 1262,
+      "totalLimit": 1500
+    },
+    "tests": {
+      "added": 5,
+      "removed": 1,
+      "skippedOrTodo": []
+    },
+    "mi": [
+      "changed: src/interfaces/web/account/administration-pages.ts: 61.31208823309486 to 61.25134231438237",
+      "changed: src/interfaces/web/account/members-page-layout.ts: 81.00095501476565 to 80.3695659257948",
+      "not applicable: src/interfaces/web/account/members-style.ts: no raw MI in the base snapshot"
+    ],
+    "crap": [
+      "src/interfaces/web/account/members-page-layout.ts: membersPageLayout: 8.0",
+      "src/interfaces/web/account/administration-pages.ts: membersPage: 3.0",
+      "src/interfaces/web/account/administration-pages.ts: (anonymous): 1.0"
+    ],
+    "metrics": [
+      "Delta: goal miss",
+      "Review: goal miss",
+      "CRAP: passed",
+      "Architecture: passed",
+      "outside scopes.production: test/acceptance/auth/hosted-member-removal-browser.runtime.ts: Maintainability index: 33 -> 28 (below 85 is hard to maintain)",
+      "0 findings on unchanged files, reason unchanged by this PR"
+    ],
+    "factsToDeclare": [],
+    "declaredFacts": [],
+    "surfaceDifferences": [],
+    "informational": [
+      "49 public modules, 0 snapshots changed"
+    ],
+    "notes": [
+      "Local eligibility is preliminary. The manager or Delamain session must verify current local checks, holds, and required independent human approval."
+    ],
+    "label": "gh pr edit <n> --repo tomer-mayara/Thermus --add-label 'T1 Team review' --remove-label 'T2 Need architect' --remove-label 'T0 Auto merge'"
+  },
+  "checkerDispositions": "checker-notes.json",
+  "currentChecks": {
+    "4f5402fe-integration-coverage": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-coverage.ts",
+        "--suite",
+        "integration"
+      ],
+      "started": "2026-10-27T04:48:13.642Z",
+      "ended": "2026-10-27T04:48:49.527Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/4f5402fe-integration-coverage.log"
+    },
+    "37046bbd-habit-hooks": {
+      "command": "habit-hooks",
+      "args": [
+        "--branch",
+        "9507e751215fec32748bf4e944f2393928e61cf5"
+      ],
+      "started": "2026-10-27T04:53:28.089Z",
+      "ended": "2026-10-27T04:53:30.209Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-habit-hooks.log"
+    },
+    "4f5402fe-typecheck": {
+      "command": "npm",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "started": "2026-10-27T04:48:08.806Z",
+      "ended": "2026-10-27T04:48:13.492Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/4f5402fe-typecheck.log"
+    },
+    "37046bbd-crap": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-crap.ts",
+        "--base",
+        "9507e751215fec32748bf4e944f2393928e61cf5",
+        "--json",
+        "ast-report/crap.json"
+      ],
+      "started": "2026-10-27T04:53:19.498Z",
+      "ended": "2026-10-27T04:53:25.785Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-crap.log"
+    },
+    "37046bbd-checker": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/check.ts",
+        "--base",
+        "9507e751215fec32748bf4e944f2393928e61cf5",
+        "--repo",
+        "tomer-mayara/Thermus",
+        "--impact",
+        "ast-report/impact.json",
+        "--base-snapshot",
+        "ast-report/snapshot-base.json",
+        "--head-snapshot",
+        "ast-report/snapshot.json",
+        "--crap",
+        "ast-report/crap.json",
+        "--process",
+        "ast-report/process.json",
+        "--review",
+        "ast-report/review.json",
+        "--json"
+      ],
+      "started": "2026-10-27T04:55:52.354Z",
+      "ended": "2026-10-27T04:56:00.121Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-checker.log"
+    },
+    "37046bbd-snapshot-base": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "9507e751215fec32748bf4e944f2393928e61cf5"
+      ],
+      "started": "2026-10-27T04:52:45.327Z",
+      "ended": "2026-10-27T04:52:48.664Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-snapshot-base.log"
+    },
+    "4f5402fe-snapshot-head": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T04:48:53.026Z",
+      "ended": "2026-10-27T04:48:55.597Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/4f5402fe-snapshot-head.log"
+    },
+    "37046bbd-api": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/pr-review/api-surface.ts",
+        "--check"
+      ],
+      "started": "2026-10-27T04:53:25.947Z",
+      "ended": "2026-10-27T04:53:27.951Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-api.log"
+    },
+    "4f5402fe-snapshot-base": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts",
+        "--base",
+        "9507e751215fec32748bf4e944f2393928e61cf5"
+      ],
+      "started": "2026-10-27T04:48:49.685Z",
+      "ended": "2026-10-27T04:48:52.872Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/4f5402fe-snapshot-base.log"
+    },
+    "37046bbd-process": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "9507e751215fec32748bf4e944f2393928e61cf5",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T04:52:51.111Z",
+      "ended": "2026-10-27T04:53:19.240Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-process.log"
+    },
+    "4f5402fe-process": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-process.ts",
+        "--base",
+        "9507e751215fec32748bf4e944f2393928e61cf5",
+        "--json",
+        "ast-report/process.json"
+      ],
+      "started": "2026-10-27T04:48:55.770Z",
+      "ended": "2026-10-27T04:49:19.609Z",
+      "exitCode": 1,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/4f5402fe-process.log"
+    },
+    "37046bbd-snapshot-head": {
+      "command": "pnpm",
+      "args": [
+        "--config.verifyDepsBeforeRun=false",
+        "exec",
+        "node",
+        "script/code-quality/ast-metrics-snapshot.ts"
+      ],
+      "started": "2026-10-27T04:52:48.808Z",
+      "ended": "2026-10-27T04:52:50.972Z",
+      "exitCode": 0,
+      "signal": null,
+      "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/37046bbd-snapshot-head.log"
+    }
+  },
+  "imageHistory": {
+    "archive": ".cache/ui-stack-finish/archive-ui01-4a761fec/validation",
+    "attempts": [
+      {
+        "log": "hosted-amd64-image.log",
+        "head": "7acd90d44e90769e335c4b2f095d3791d82dc3d4",
+        "result": "Failed: nested unchanged authenticate cancellation test timed out."
+      },
+      {
+        "log": "hosted-amd64-image-retry.log",
+        "head": "7acd90d44e90769e335c4b2f095d3791d82dc3d4",
+        "result": "Cancelled by manager because main advancement made checked-build context obsolete."
+      },
+      {
+        "log": "final-hosted-amd64-image.log",
+        "head": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+        "result": "Failed/interrupted: local fake WorkOS read timeout and server-stop timeouts; owned stuck worker stopped for diagnostic settlement."
+      }
+    ],
+    "claim": "No passing current-context AMD64 image or runtime claim."
+  },
+  "sourcePublication": "Historical source-publication evidence remains at its original pins in the primary UI01 bundle. This worker has not pushed or claimed publication of current source or PR reports.",
+  "holds": [
+    "Passing current-context Linux AMD64 image evidence remains pending.",
+    "Current source publication and PR report steps remain manager work.",
+    "T1 Team review requires independent authorized approval of the current head."
+  ],
+  "notSelected": {
+    "hostedLive": "UI01 changes no provider authentication/read/change behavior or live assertions. No staging retry selected.",
+    "sqlCollector": "UI01 changes no SQL/store or sender/transport behavior or dedicated SQL/Collector assertion. These gates were not selected.",
+    "functionalReruns": "Source, tests, dependencies, build configurations and policy trees are byte-identical to the validated UI01 feature; only type/global tool inputs were refreshed."
+  }
+}

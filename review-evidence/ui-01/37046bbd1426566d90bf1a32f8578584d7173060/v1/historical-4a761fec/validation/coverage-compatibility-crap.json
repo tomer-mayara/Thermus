@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "base": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+  "head": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+  "rows": [
+    {
+      "file": "src/interfaces/web/account/members-page-layout.ts",
+      "function": "membersPageLayout",
+      "change": "changed",
+      "paths": 8,
+      "share": 0.998,
+      "crap": 8.000000512,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPageLayout\",\"start\":687,\"end\":2749,\"body\":\"fb0b37c5340c750743231bb41c7043475d6963eb7f09c691c1ab69ba9de6b1df\",\"signature\":\"334ff702ff5e66478135471905d8f95c478f966024a94dfc505f5bcf776ed8ed\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "membersPage",
+      "change": "changed",
+      "paths": 3,
+      "share": 0.98,
+      "crap": 3.000072,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"membersPage\",\"start\":1693,\"end\":3587,\"body\":\"9e7e37a26f6bd56d23f6a000ff2a15def00ec3e5c4ed668ccac9e1ca6511bc9e\",\"signature\":\"16f0253aee78552103740607de26a07553eb2fa08b12f8236a13d5c5758cc2dc\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 3,
+      "share": 1,
+      "crap": 3,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":1968,\"end\":2253,\"body\":\"7e6851bc52fb1de473b17862e8e23f2e81f841861ac394705eefd7c496e78c8d\",\"signature\":\"a12528639c242ac6a651440c7c2593376be9ce0ea91009a89537f7ffc84fbcc2\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "sendForm",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 0.983,
+      "crap": 2.000019652,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"sendForm\",\"start\":4411,\"end\":5157,\"body\":\"d62663be3392d043c65e78766a8a94e338107cda080df861e8c226236d9e13d4\",\"signature\":\"49d7301d22edfdd1e36c9b8a4159dbb6bd0bc35cd07c3223fe0f7f1f3fda7efb\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:invitationRow\",\"name\":\"(anonymous)\",\"start\":5289,\"end\":5595,\"body\":\"5b1a464d0db96985689c1311ccda88ce580adaf92d037a829ea993744ffed802\",\"signature\":\"6f409f3593628bbf808307f32efe598a8f1c013cbc414ee985c7de62c8e3fa03\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:sendForm\",\"name\":\"(anonymous)\",\"start\":4579,\"end\":4762,\"body\":\"408b753a2dc11cd76d98e53fe7dca7c6215b69d4666251d88d35aed6362dec94\",\"signature\":\"37050a4c3750e847047bd0f43ae2379dccc092c75b1dab34ad94c0194b4779f8\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "identityPolicyText",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"identityPolicyText\",\"start\":6047,\"end\":6396,\"body\":\"efc9f6c90b72546821ba20df79808f6481b48ff02a675963ecf9cf1a0a54e555\",\"signature\":\"3e82e23e0b373955d6da8837c0f93f382c31fdef6650b261e2f5f5b962bb5451\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "rolesText",
+      "change": "unchanged",
+      "paths": 2,
+      "share": 1,
+      "crap": 2,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"rolesText\",\"start\":6398,\"end\":6554,\"body\":\"29565283b3899d582520af2027024ea166f30923a949b0ac72dcab0cbfd9af80\",\"signature\":\"fbe573602f16aba81de2a68096ecf8915b6eec3d5a4515453f9ed9475943cd6b\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "new",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"\",\"name\":\"(anonymous)\",\"start\":887,\"end\":972,\"body\":\"8759331c3cc75ac46bc61c45d51e2f614529a7e4d5d002360df60999094ca864\",\"signature\":\"fce7b55878c3b96254fb565eaee750d1b12cf515a1d7d4f17ee0cbe125b5eab0\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":1802,\"end\":1837,\"body\":\"4f402a6b0c0cc8246200a07cf566b81eb179d7fd380061482274c4c990c83c0e\",\"signature\":\"9d145d87dcaf15a322632bf156892203ba76c9a46824299c2edd3ae15fd27373\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":1898,\"end\":1932,\"body\":\"aa8a09835b577ff46b9ea6d6e1a1b9d4b17c6a7554d7f119f17b34c590e96aab\",\"signature\":\"a51ef8d464a76de4d05f05d39ef1c4200263fb40648e90173d8e11ec81d15101\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:membersPage\",\"name\":\"(anonymous)\",\"start\":3354,\"end\":3401,\"body\":\"4737cd2f3f0787d1c1ecf32f43d1706dcf4f85db576f3db6f94f90a111443e49\",\"signature\":\"2fc3fe246c646efcff37bca76a2f1990f701953d3c98fb92f8c12c48095a0a91\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "(anonymous)",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"ArrowFunction\",\"owner\":\"FunctionDeclaration:rolesText\",\"name\":\"(anonymous)\",\"start\":6502,\"end\":6539,\"body\":\"8ee232e73e652c2542515ed8f032f5c8dea384e055df77c63ca58184fcffd371\",\"signature\":\"37050a4c3750e847047bd0f43ae2379dccc092c75b1dab34ad94c0194b4779f8\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "invitationRow",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"invitationRow\",\"start\":5159,\"end\":5959,\"body\":\"22f9e4dac18f21a7045d53b9ed909af6e2308349c13bb4fc15bdeb3f91ad899c\",\"signature\":\"f7d6a0ef78fbf10dc6626094b43fedbc882672ddb47208633a94ec0ecfece9ff\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "removalForm",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"removalForm\",\"start\":3589,\"end\":4409,\"body\":\"934831f36b2c3f20ce15800e5cf1c229dbc63e5f00ead08953e8269b1922d9b7\",\"signature\":\"9132db80a4c5a3629bc50d2ae11fe2f401200979dbdd038d9a42bb388eff2c99\"}"
+    },
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "function": "roleLabel",
+      "change": "unchanged",
+      "paths": 1,
+      "share": 1,
+      "crap": 1,
+      "identity": "{\"version\":\"typescript-tokens-v2\",\"kind\":\"FunctionDeclaration\",\"owner\":\"\",\"name\":\"roleLabel\",\"start\":5961,\"end\":6045,\"body\":\"32dd512193e5fb4572038af5ec724fad95a3137bad24b63a7cd1ee750cfe6b30\",\"signature\":\"3c221b92babd8b070a130f2de14c0a579cf1743bc647adee6aa564cc6163945d\"}"
+    }
+  ]
+}

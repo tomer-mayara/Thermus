@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "build:hosted"
+  ],
+  "started": "2026-10-27T02:39:19.851Z",
+  "ended": "2026-10-27T02:40:43.204Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": "/Users/tomermayara/.codex/worktrees/ui-stack-validation/Thermus/.cache/ui-stack-finish/ui01/hosted-offline.log"
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "path": "docs/metrics/2026-10-26-2b3ad13b.json",
+    "commit": "2b3ad13b9e2e61e206479b82e91359192cae1d00",
+    "sha256": "c8667245834f54c60ddbb98398fdaaa8fc5317d4e61ab2229c285524adace248",
+    "captureCommit": "639827bcf410d325d25bbf77582c4d0c32ff3c29",
+    "reason": "Immutable historical main-base record. Structural values belong to its pinned base; any CRAP coverage estimate is derived from its original head capture, not measured base coverage."
+  },
+  {
+    "path": "docs/metrics/2026-10-26-9507e751.json",
+    "commit": "9507e751215fec32748bf4e944f2393928e61cf5",
+    "sha256": "bb152f9fb3ebe94c01d2c39a85cdf9e1335175c332454d8d5935c0b9a582bc42",
+    "captureCommit": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+    "reason": "Immutable historical main-base record. Structural values belong to its pinned base; any CRAP coverage estimate is derived from its original head capture, not measured base coverage."
+  }
+]

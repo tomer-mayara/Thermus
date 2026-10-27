@@ -1,0 +1,12 @@
+{
+  "command": "npm",
+  "args": [
+    "run",
+    "test:container:hosted"
+  ],
+  "started": "2026-10-27T02:58:39.132Z",
+  "ended": "2026-10-27T03:04:58.204Z",
+  "exitCode": 1,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui01/hosted-amd64-image-retry.log"
+}

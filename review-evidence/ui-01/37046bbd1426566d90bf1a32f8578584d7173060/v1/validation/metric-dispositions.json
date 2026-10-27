@@ -1,0 +1,52 @@
+{
+  "candidate": "37046bbd1426566d90bf1a32f8578584d7173060",
+  "base": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "coverageCapture": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+  "reusedCoverage": "Native process accepted verified compatible integration capture after record-only commit.",
+  "production": [
+    {
+      "file": "src/interfaces/web/account/administration-pages.ts",
+      "before": 61.31208823309486,
+      "after": 61.25134231438237,
+      "reason": "The cohesive page markup keeps escaping and trusted name handoff together. Existing-file MI drops0.061; no added decision paths."
+    },
+    {
+      "file": "src/interfaces/web/account/members-page-layout.ts",
+      "before": 81.00095501476565,
+      "after": 80.3695659257948,
+      "reason": "The cohesive shared page and CSP owner keep navigation and byte-derived hashes together. Existing-file MI drops0.631 with one optional display-name branch."
+    },
+    {
+      "file": "src/interfaces/web/account/members-style.ts",
+      "measure": "not applicable",
+      "reason": "Static exported style string; complete snapshots contain zero functions and no supported raw MI."
+    }
+  ],
+  "review": [
+    {
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "rule": "maintainability-regression",
+      "severity": "high",
+      "before": 33.36848160538813,
+      "after": 28.1507108226631,
+      "reason": "Browser acceptance covers JS on/off, narrow/desktop, keyboard focus, text resize and Audit tablet behavior. Protocol operations already move to focused browser drivers. Tests have no production MI goal."
+    },
+    {
+      "file": "test/acceptance/auth/hosted-members.test.ts",
+      "rule": "bugs-regression",
+      "severity": "low",
+      "before": 1.2950316426655943,
+      "after": 1.803554963077646,
+      "reason": "Added public-route assertions specify escaped trusted workspace naming and shared shell behavior. Halstead estimate is volume-derived, not an observed bug."
+    },
+    {
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "rule": "bugs-regression",
+      "severity": "low",
+      "before": 2.5646113853164993,
+      "after": 2.834427639536826,
+      "reason": "Added integration assertions check trusted name handoff and no extra provider read. Halstead estimate is volume-derived, not an observed bug."
+    }
+  ],
+  "architectureLimit": "Unchanged unresolved CSS import makes global graph incomplete. Integration-only capture leaves global unknown functions; all required changed/new function identities and assessments are known. No component/public contract/boundary change."
+}

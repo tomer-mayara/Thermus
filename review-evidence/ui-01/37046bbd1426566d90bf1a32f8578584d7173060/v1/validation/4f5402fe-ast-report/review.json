@@ -1,0 +1,59 @@
+{
+  "methodologyVersion": "1.1",
+  "baseRef": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "baseSha": "9507e751215fec32748bf4e944f2393928e61cf5",
+  "headSha": "4f5402fe04b52c9964d016e5375a0e44383c8bc5",
+  "summary": {
+    "filesChanged": 7,
+    "filesAdded": 7,
+    "filesDeleted": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 2,
+    "improvements": 1
+  },
+  "regressions": [
+    {
+      "kind": "regression",
+      "severity": "high",
+      "rule": "maintainability-regression",
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "message": "Maintainability index: 33 -\u003e 28 (below 85 is hard to maintain)",
+      "suggestion": "Refactor long or deeply nested functions and reduce responsibilities in this file",
+      "before": 33.36848160538813,
+      "after": 28.1507108226631
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/acceptance/auth/hosted-members.test.ts",
+      "message": "Estimated bugs (Halstead): 1.30 -\u003e 1.80",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 1.2950316426655943,
+      "after": 1.803554963077646
+    },
+    {
+      "kind": "regression",
+      "severity": "low",
+      "rule": "bugs-regression",
+      "file": "test/integration/hosted-admin/account-routes-administration-pages.test.ts",
+      "message": "Estimated bugs (Halstead): 2.56 -\u003e 2.83",
+      "suggestion": "This estimate grows with code volume and complexity; consider simplifying or splitting this file",
+      "before": 2.5646113853164993,
+      "after": 2.834427639536826
+    }
+  ],
+  "improvements": [
+    {
+      "kind": "improvement",
+      "severity": "low",
+      "rule": "bugs-improvement",
+      "file": "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
+      "message": "Estimated bugs (Halstead): 0.72 -\u003e 0.43",
+      "before": 0.721379155684723,
+      "after": 0.42749520353888215
+    }
+  ],
+  "gate": "failed"
+}

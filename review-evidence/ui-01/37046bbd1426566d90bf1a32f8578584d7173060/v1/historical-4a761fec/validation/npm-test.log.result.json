@@ -1,0 +1,11 @@
+{
+  "command": "npm",
+  "args": [
+    "test"
+  ],
+  "started": "2026-10-27T02:28:16.471Z",
+  "ended": "2026-10-27T02:34:17.681Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui01/npm-test.log"
+}

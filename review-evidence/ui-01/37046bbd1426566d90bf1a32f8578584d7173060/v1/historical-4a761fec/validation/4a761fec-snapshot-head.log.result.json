@@ -1,0 +1,14 @@
+{
+  "command": "pnpm",
+  "args": [
+    "--config.verifyDepsBeforeRun=false",
+    "exec",
+    "node",
+    "script/code-quality/ast-metrics-snapshot.ts"
+  ],
+  "started": "2026-10-27T03:35:33.574Z",
+  "ended": "2026-10-27T03:35:36.568Z",
+  "exitCode": 0,
+  "signal": null,
+  "logPath": ".cache/ui-stack-finish/ui01/4a761fec-snapshot-head.log"
+}
