@@ -131,10 +131,20 @@ export function routeLocalRequests(config: RouteConfig, handlers: LocalRequestHa
   };
 }
 
-// The hosted edition loads its provider only here, as the self-hosted edition does.
+// The hosted edition loads its provider only here, as the self-hosted edition does. THERMUS_ROLE selects the role of
+// the hosted image: the control plane, or a tenant that serves the tools of one organization.
 async function createHostedApplication(config: HostedConfig, logger: SystemLog, environment: Environment): Promise<Application> {
+  if (config.role === 'tenant') {
+    const { openTenantApplication } = await import('./tenant-application.ts');
+    return openTenantApplication(config, logger, environment);
+  }
   const { openWorkOSApplication } = await import('./hosted-workos-application.ts');
   return openWorkOSApplication(config, logger, environment);
+}
+
+// The denial of an MCP request without product access, the same on the control plane and on a tenant.
+export function accessDeniedDescription(publicBaseUrl: string): string {
+  return `Access denied. Open ${new URL('signup', publicBaseUrl).href} to check free signup availability. If you already have access, reauthorize this MCP client and choose the intended workspace.`;
 }
 
 export function accountFailureReporter(logger: SystemLog): AccountFailureReporter {
