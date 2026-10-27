@@ -107,7 +107,7 @@ test('Given product access, when the portal opens, then it keeps setup visible a
   assert.match(details.textContent ?? '', /You have product access in organization org_01ACME\. Roles: user\./);
   assert.match(details.textContent ?? '', /only affects this browser.*own consent/s);
   assert.equal(details.querySelector('.product-access')?.getAttribute('role'), null, 'Closed technical details must not be announced as a status');
-  assert.equal(document.querySelector('a[href="organizations"]')?.textContent, 'Switch workspace');
+  assert.equal(document.querySelector('a[href="organizations"]')?.textContent, 'Switch Workspace');
 });
 
 test('Given no product access, when the portal opens, then signup recovery remains visible', async () => {
@@ -209,13 +209,17 @@ for (const role of ['admin', 'user']) {
     const { document, requests } = await openPortal({ session: { ...ada, roles: ['admin'] }, productAccess: {
       organizationId: 'org_01ACME', organizationName: 'Acme Labs', roles: [role], plan: 'free', mcpUrl: 'https://thermus.example/mcp',
     } });
-    const navigation = document.querySelector('nav[aria-label="Workspace"]');
+    const navigation = document.querySelector('header nav[aria-label="Workspace"]');
     assert.ok(navigation);
-    assert.equal(navigation.querySelector('a[aria-current="page"]')?.textContent, 'Product / Connect');
+    assert.deepEqual([...navigation.querySelectorAll('a')].map(link => link.textContent), role === 'admin'
+      ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
+    assert.equal(document.querySelectorAll('nav[aria-label="Workspace"]').length, 1);
+    assert.equal(document.querySelector('main nav[aria-label="Workspace"]'), null);
+    assert.equal(navigation.querySelector('a[aria-current="page"]')?.textContent, 'Connect');
     assert.equal(navigation.querySelector('a[aria-current="page"]')?.getAttribute('href'), './');
-    assert.equal(navigation.querySelector('a[href="organizations"]')?.textContent, 'Switch workspace');
+    assert.equal(navigation.querySelector('a[href="organizations"]')?.textContent, 'Switch Workspace');
     assert.equal(navigation.querySelector('a[href="members"]')?.textContent ?? null, role === 'admin' ? 'Members' : null);
-    assert.equal(navigation.querySelector('a[href="logging"]')?.textContent ?? null, role === 'admin' ? 'Audit logs' : null);
+    assert.equal(navigation.querySelector('a[href="logging"]')?.textContent ?? null, role === 'admin' ? 'Audit Log' : null);
     assert.doesNotMatch(navigation.textContent ?? '', /Security|Remove|Change role|MFA/);
     assert.equal(document.querySelector('footer a[href="https://thermus.ai/privacy"]')?.textContent, 'Privacy Notice');
     assert.equal(document.querySelector('footer a[href="https://thermus.ai/terms"]')?.textContent, 'Terms of Service');

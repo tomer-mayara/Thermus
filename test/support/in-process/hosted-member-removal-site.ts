@@ -14,9 +14,10 @@ export const removalAdmin = { id: 'user_ADMIN', email: 'admin@example.com', firs
 export const remainingAdmin = { id: 'user_ADMIN2', email: 'admin2@example.com', firstName: 'Second Admin' };
 export const removalUser = { id: 'user_USER', email: 'user@example.com', firstName: 'User' };
 
-export async function serveMemberRemovalSite(t: TestContext, options: { readonly setUp?: (world: WorkOSFake) => void; readonly audit?: AuditLog; readonly portal?: HostedPortal; readonly loggingService?: DestinationSettingsService } = {}) {
+export async function serveMemberRemovalSite(t: TestContext, options: { readonly config?: Parameters<typeof serveWorkOSSite>[1]['config']; readonly setUp?: (world: WorkOSFake) => void; readonly audit?: AuditLog; readonly portal?: HostedPortal; readonly loggingService?: DestinationSettingsService } = {}) {
   const removalStore = new RemovalOperationStoreFake();
   const site = await serveWorkOSSite(t, {
+    config: options.config,
     organizations: [removalOrganization, otherOrganization],
     signupFake: true,
     signup: { enabled: true, documents: signupDocuments },

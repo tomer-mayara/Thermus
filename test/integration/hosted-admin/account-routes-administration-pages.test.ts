@@ -106,15 +106,15 @@ describe('HostedAccountRoutes combined Members page', () => {
     });
   }
 
-  test('Given a trusted workspace name with markup, when Members receives a forged name, then the header shows the escaped overview name beside Switch workspace', async () => {
+  test('Given a trusted workspace name with markup, when Members receives a forged name, then the header keeps the escaped overview name above the workspace menu', async () => {
     const organizationName = 'Acme <script>alert("name")</script> & Labs';
     const { routes, organizations } = serveAdministration({ ...current, members: { ...acmeMembers, organizationName } });
     const response = await routes.handle(accountRequest('/members?organizationName=Forged&organizationId=org-b', 'session=ann'));
     const body = await response.text();
     const document = parseHTML(body).document;
-    const switchLink = [...document.querySelectorAll('header a')].find(link => link.textContent === 'Switch workspace');
-    assert.ok(switchLink);
-    assert.equal(switchLink.parentElement?.textContent, `${organizationName}Switch workspace`);
+    assert.equal(document.querySelector('header .workspace-name')?.textContent, organizationName);
+    assert.equal(document.querySelector('.workspace-context a'), null);
+    assert.deepEqual([...document.querySelectorAll('header nav a')].map(link => link.textContent), ['Connect', 'Switch Workspace', 'Members', 'Audit Log']);
     assert.equal(document.querySelectorAll('header script').length, 0);
     assert.doesNotMatch(body, /Forged|<script>/);
     assert.deepEqual(organizations.administrationCalls.map(({ operation, request }) => [operation, request]), [['memberOverview', 'org-a'], ['invitationOverview', 'org-a']]);
@@ -279,8 +279,8 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.deepEqual([...new Set(formsIn(body).map(({ action }) => action))], ['/team/invitations/send', '/team/members/remove', '/team/invitations/resend', '/team/invitations/revoke']);
     assert.match(body, /href="\/team\/">Connect<\/a>/);
     assert.match(body, /href="\/team\/members" aria-current="page">Members<\/a>/);
-    assert.match(body, /href="\/team\/logging" >Audit logs<\/a>/);
-    assert.match(body, /href="\/team\/organizations">Switch workspace<\/a>/);
+    assert.match(body, /href="\/team\/logging" >Audit Log<\/a>/);
+    assert.match(body, /href="\/team\/organizations">Switch Workspace<\/a>/);
     assert.equal((await routes.handle(accountRequest('/team/invitations', 'session=ann'))).headers.get('Location'), 'https://thermus.example/team/members');
   });
 

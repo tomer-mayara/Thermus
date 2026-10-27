@@ -48,19 +48,20 @@ describe('Members through the hosted HTTP server', () => {
     assert.deepEqual(site.directory.invitationChanges, []);
   });
 
-  test('Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit logs open through their page links, then workspace context stays beside Switch workspace and only the current page is marked', async (t) => {
+  test('Given an Admin in Acme Labs and unavailable Audit storage, when Members and Audit open through their page links, then one ordered header menu retains workspace context and marks only the current page', async (t) => {
     const site = await serveAdministrationSite(t);
     site.directory.replaceMemberships(administrationMembers.map(member => ({ ...member, organizationName: member.organizationId === 'org-a' ? 'Acme Labs' : member.organizationName })));
     const admin = site.browserOf(userOf('user-eve', 'org-a'));
     let answer = await admin.open('members');
     let document = parseHTML(answer.body).document;
-    const switchLink = [...document.querySelectorAll('header a')].find(link => link.textContent === 'Switch workspace');
-    assert.ok(switchLink);
-    assert.match(switchLink.parentElement?.textContent ?? '', /Acme Labs/, 'The workspace name must be beside Switch workspace');
-    for (const [current, destination] of [['Members', 'Audit logs'], ['Audit logs', 'Members']] as const) {
+    assert.equal(document.querySelector('header .workspace-name')?.textContent, 'Acme Labs');
+    assert.equal(document.querySelector('.workspace-context a'), null, 'Workspace context must not create a second menu');
+    for (const [current, destination] of [['Members', 'Audit Log'], ['Audit Log', 'Members']] as const) {
       assert.equal(answer.status, current === 'Members' ? 200 : 503);
-      const links = [...document.querySelectorAll('header a')];
-      for (const label of ['Connect', 'Members', 'Audit logs', 'Switch workspace']) assert.ok(links.some(link => link.textContent === label && link.getAttribute('href')?.startsWith('/team/')), `${label} must be a page link`);
+      const links = [...document.querySelectorAll('header nav[aria-label="Workspace"] a')];
+      assert.deepEqual(links.map(link => [link.textContent, link.getAttribute('href')]), [
+        ['Connect', '/team/'], ['Switch Workspace', '/team/organizations'], ['Members', '/team/members'], ['Audit Log', '/team/logging'],
+      ]);
       assert.deepEqual(links.filter(link => link.hasAttribute('aria-current')).map(link => [link.textContent, link.getAttribute('aria-current')]), [[current, 'page']]);
       const next = links.find(link => link.textContent === destination)?.getAttribute('href');
       assert.ok(next);
@@ -100,8 +101,8 @@ describe('Members through the hosted HTTP server', () => {
     assert.equal(forms[0]?.fields.organization_id, 'org-a');
     assert.match(answer.body, /href="\/team\/">Connect<\/a>/);
     assert.match(answer.body, /href="\/team\/members" aria-current="page">Members<\/a>/);
-    assert.match(answer.body, /href="\/team\/logging"[^>]*>Audit logs<\/a>/);
-    assert.match(answer.body, /href="\/team\/organizations">Switch workspace<\/a>/);
+    assert.match(answer.body, /href="\/team\/logging"[^>]*>Audit Log<\/a>/);
+    assert.match(answer.body, /href="\/team\/organizations">Switch Workspace<\/a>/);
     assert.match(answer.body, /eve@example\.com[\s\S]*?You/);
     assert.ok(pendingInvitationsIn(answer.body).some(entry => entry.email === 'new@example.com' && entry.role === 'User'));
     assert.match(answer.body, /Expires <time datetime="[^"]+">/);

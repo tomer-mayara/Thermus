@@ -92,10 +92,11 @@ function showWorkspaceNavigation(container: HTMLElement, roles: readonly string[
   const navigation = container.ownerDocument.createElement('nav');
   navigation.className = 'workspace-navigation';
   navigation.setAttribute('aria-label', 'Workspace');
-  navigation.innerHTML = `<a href="./" aria-current="page">Product / Connect</a>
-    ${roles.includes('admin') ? '<a href="members">Members</a><a href="logging">Audit logs</a>' : ''}
-    <a href="organizations">Switch workspace</a>`;
-  container.querySelector('.auth-container')?.prepend(navigation);
+  navigation.innerHTML = `<a href="./" aria-current="page">Connect</a><a href="organizations">Switch Workspace</a>
+    ${roles.includes('admin') ? '<a href="members">Members</a><a href="logging">Audit Log</a>' : ''}`;
+  const header = container.querySelector('.header-content');
+  header?.classList.add('workspace-header');
+  header?.append(navigation);
 }
 
 function showConnection(container: HTMLElement, access: ProductAccess): void {

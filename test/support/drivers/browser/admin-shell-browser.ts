@@ -29,14 +29,15 @@ export class AdminShellBrowser {
     await this.writeMeasurements(measurements);
     const banner = this.page.getByRole('banner');
     assert.equal(await banner.getByText(organizationName, { exact: true }).isVisible(), true);
-    assert.equal(await banner.getByRole('link', { name: 'Switch workspace', exact: true }).evaluate(element => element.parentElement?.textContent), `${organizationName}Switch workspace`);
+    assert.equal(await banner.locator('.workspace-context a').count(), 0);
+    assert.deepEqual(await banner.getByRole('navigation', { name: 'Workspace', exact: true }).getByRole('link').allTextContents(), ['Connect', 'Switch Workspace', 'Members', 'Audit Log']);
     await this.checkReflow('Long workspace and member values must fit');
     const bounds = await skipLink.boundingBox();
     assert.ok(bounds, 'The focused skip link must be visible');
     assert.ok(bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= this.options.width);
     await this.page.keyboard.press('Enter');
     assert.equal(await this.page.getByRole('main').evaluate(element => element.matches(':focus')), true, 'Skip to content must move focus into main');
-    await this.checkTargets('link', ['Connect', 'Members', 'Audit logs', 'Switch workspace']);
+    await this.checkTargets('link', ['Connect', 'Switch Workspace', 'Members', 'Audit Log']);
     const invitation = this.page.locator('details.member-invitation');
     assert.equal(await invitation.getAttribute('open'), null);
     assert.equal(await invitation.getByRole('button', { name: 'Send invitation', exact: true }).isVisible(), false);
@@ -66,7 +67,7 @@ export class AdminShellBrowser {
 
   async openAudit(organizationName: string): Promise<void> {
     await this.page.goto('https://thermus.example/team/members');
-    await this.navigateTo('Audit logs');
+    await this.navigateTo('Audit Log');
     assert.equal(await this.page.getByRole('heading', { name: 'Audit logs', exact: true }).isVisible(), true);
     assert.equal(await this.page.getByRole('banner').getByText(organizationName, { exact: true }).count(), 0, 'Audit must keep its existing context without a workspace-name lookup');
   }
@@ -121,6 +122,35 @@ export class AdminShellBrowser {
   async returnToMembers(organizationName: string): Promise<void> {
     await this.navigateTo('Members');
     assert.equal(await this.page.getByRole('banner').getByText(organizationName, { exact: true }).isVisible(), true);
+  }
+
+  async inspectConnect(admin: boolean): Promise<void> {
+    await this.page.goto('https://thermus.example/');
+    const navigation = this.page.getByRole('banner').getByRole('navigation', { name: 'Workspace', exact: true });
+    await navigation.waitFor();
+    await this.page.locator('html').evaluate(element => element.ownerDocument.fonts.ready);
+    const labels = admin ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace'];
+    assert.equal(await this.page.getByRole('navigation', { name: 'Workspace', exact: true }).count(), 1);
+    assert.equal(await this.page.getByRole('main').getByRole('navigation').count(), 0);
+    assert.deepEqual(await navigation.getByRole('link').allTextContents(), labels);
+    assert.deepEqual(await navigation.locator('[aria-current]').allTextContents(), ['Connect']);
+    assert.deepEqual(await navigation.getByRole('link').evaluateAll(links => links.map(link => {
+      const view = link.ownerDocument.defaultView;
+      if (view === null) throw new Error('The navigation has no browser window');
+      const style = view.getComputedStyle(link);
+      return { size: style.fontSize, background: style.backgroundColor, border: style.borderBottomColor, borderWidth: style.borderBottomWidth };
+    })), labels.map((_, index) => ({ size: '15px', background: 'rgba(0, 0, 0, 0)', border: index === 0 ? 'rgb(232, 85, 42)' : 'rgba(0, 0, 0, 0)', borderWidth: '2px' })));
+    await this.checkTargets('link', labels);
+    for (const name of labels) {
+      const link = navigation.getByRole('link', { name, exact: true });
+      await tabTo(this.page, link);
+      assert.equal(await link.evaluate(element => element.ownerDocument.defaultView?.getComputedStyle(element).outlineWidth), '3px');
+    }
+    await this.checkReflow('Connect navigation must fit without horizontal scrolling');
+    await this.screenshot(`connect-${admin ? 'admin' : 'user'}-${this.suffix}.png`);
+    await tabTo(this.page, navigation.getByRole('link', { name: 'Switch Workspace', exact: true }));
+    await Promise.all([this.page.waitForNavigation(), this.page.keyboard.press('Enter')]);
+    assert.equal(new URL(this.page.url()).pathname, '/organizations');
   }
 
   private async navigateTo(name: string): Promise<void> {

@@ -15,11 +15,10 @@ a{color:inherit;text-underline-offset:.2em}
 .brand img{display:block;width:166px;height:auto}
 .workspace-context{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:16px;min-width:0;max-width:100%;font-size:15px;color:#B4BAC0}
 .workspace-name{flex:0 1 auto;min-width:0;max-width:40ch;overflow-wrap:anywhere}
-.workspace-context>a{flex-shrink:0}
 nav{grid-column:1/-1;display:flex;align-items:center;gap:28px;flex-wrap:wrap}
-nav a,.workspace-context>a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}
+nav a{display:inline-flex;align-items:center;min-height:48px;text-decoration:none;color:#B4BAC0;font-size:15px}
 nav a{border-bottom:2px solid transparent}
-nav a:hover,.workspace-context>a:hover{color:#F3F2EE;text-decoration:underline}
+nav a:hover{color:#F3F2EE;text-decoration:underline}
 nav [aria-current]{color:#F3F2EE;border-bottom-color:#E8552A}
 .members-layout{display:grid;gap:32px;align-content:start;align-items:start;padding-block:48px 72px}
 .members-layout:not(.logging-layout){grid-template-columns:minmax(0,1fr);grid-template-areas:"intro" "lists";gap:24px;max-width:none;padding-top:32px}
