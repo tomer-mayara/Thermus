@@ -1,5 +1,54 @@
 # Test inventory
 
+## Current SO-08 inventory scope
+
+SO-08 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
+adds the 5-seat member limit of a free organization at invitation send.
+Inventory presence is not a passing result; the pull request records the runs.
+
+- `test/acceptance/auth/hosted-free-member-limit.test.ts` has nine acceptance
+  cases. Seven use the administration site with the session and directory
+  doubles and `BillingFree`: two Admins at 4 of 5 seats (3 members and 1
+  pending invitation) with a held directory send, so one invitation is sent
+  and one is refused; the refusal at 5 of 5 with the owner's words and no
+  link; an expired invitation that holds no seat; default-role, inactive, and
+  pending memberships that hold none; a failed member page and a failed
+  invitation page, which send nothing; two free workspaces, one at the limit;
+  and the seat line "N of 5 seats used" beside the unchanged pending list,
+  absent on the team plan. Two use the WorkOS composition with a fake WorkOS
+  API: the change record and the audit event of a refusal keep
+  `limit-reached` with no WorkOS invitation write, and the portal JSON of a
+  free workspace has `plan: 'free'` and `memberLimit: 5`.
+- `test/acceptance/billing/free-billing.test.ts` and
+  `test/unit/billing/billing-free.test.ts` check the member limit 5 of the
+  free state; `test/acceptance/user-portal/portal.test.ts` and
+  `test/unit/user-portal/portal.test.ts` check that the portal accepts the team
+  plan and reads the member limit of a free plan.
+- `test/unit/organizations/organization-administration-invitations.test.ts`
+  has seven member limit cases: the count with a pending and an expired
+  invitation, the repeat of a pending invitation at 5 of 5, a failed member
+  page, invitation page, or billing read, two concurrent sends at 4 of 5, two
+  organizations that do not wait for each other, and the team plan.
+  `organization-administration-invitation-overview.test.ts`,
+  `change-records.test.ts`, and `test/unit/logging/audit/audit-log.test.ts`
+  check the seats of the overview and `limit-reached` in the record and the
+  audit event.
+- `test/integration/hosted-admin/account-routes-administration-changes.test.ts`,
+  `account-routes-administration-pages.test.ts`, and
+  `account-routes-billing-page.test.ts` check the refusal through the routes,
+  the seat line, and the team billing page; `test/integration/auth/portal-access.test.ts`
+  and `portal-organization-name.test.ts` check the plan of the portal answer.
+- Cases that invite in organizations above 5 seats use
+  `test/support/doubles/billing/team-billing-stub.ts`, the team plan without a
+  member limit: the administration site of `test/support/dsl/hosted-administration.ts`
+  by default, the hosted and WorkOS administration integration cases, and the
+  WorkOS administration acceptance cases. The live invitation case of
+  organization C in `test/acceptance/auth/hosted-live/administration-server.ts`
+  reaches 5 of 5 seats and proves the refusal against WorkOS Staging.
+
+All files except the live case are in the ordinary suite. The live case runs in
+`npm run test:hosted-live`.
+
 ## Current SO-03 inventory scope
 
 SO-03 of the [self on-boarding plan](../implementation/self-onboarding-plan.md#slice-2-free-tier-end-to-end)
@@ -719,6 +768,7 @@ local interaction. They do not prove live client installation or OAuth flows.
 
 [V] `test/acceptance/user-portal/portal.test.ts`: the default Claude Code guide and six native selector changes show client-specific steps, the server's custom base-path MCP endpoint, the common test prompt, and the official client link; selection makes no further server request
 [V] The generic setup list is removed; free-access terms and the exact endpoint paragraph remain visible; technical Details starts closed and stays last below the guide; a user without access has signup recovery and no guide
+[V] The team plan is accepted: the guide shows without the free-access line (SO-08); the unit cases also refuse a free plan without a member limit of 1 or more, and another plan name, with the safe error
 [V] `test/unit/user-portal/connection-guide.test.ts`: a copy reports success only when its write resolves and shows Copied on its button; a new attempt restores the Copy label while pending; unavailable or rejected clipboard access shows Copy failed and gives a manual-copy instruction and retains selectable text; a late copy result cannot replace the status after selection changes
 [V] Dynamic endpoints with shell metacharacters, quotes, and HTML remain one CLI argument and valid JSON URL values; they cannot create HTML
 
@@ -1112,6 +1162,12 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] When the invited person accepts after the service read the invitation as pending, the `not-pending` answer of the directory to the revoke reaches the caller, and the acceptance stays
 [V] Sends nothing and gives `unchanged` while an invitation to the same address for the same role is pending, also for a retry after an unknown outcome and for the address in other letter case; sends an invitation for another role, and a new invitation after a revoke; the check reads only the explicit state `pending`, and each request is recorded
 [V] The denied record of a revoke of an invitation of another organization names no role; the denied record of an invitation of the organization keeps its role
+[V] In a free organization with 3 seats and a pending and an expired invitation, the first send is applied at 4 of 5 and the second is `limit-reached` at 5 of 5; the pending invitation counts and the expired one does not
+[V] At 5 of 5 seats, a repeat of a pending invitation stays `unchanged` and a new address is `limit-reached`; the count reads every active member-fact page and no display page
+[V] A failed member page, invitation page, or billing read fails the send; nothing is sent, and the record keeps `failed`
+[V] With 3 members and 1 pending invitation, two Admins send at the same time while the directory holds the first send: the second check waits, so one send is applied and the other is `limit-reached`
+[V] The send of one free organization does not wait for a held send of another, and a failed send releases its organization for the next send
+[V] A team organization has no member limit: the send is applied after one billing read and no member read
 
 Run only these tests:
 
@@ -1125,6 +1181,8 @@ npm run build && node --test dist/test/unit/organizations/organization-administr
 [V] A Super Admin alone can invite and change only Admin, and a member with both roles both; the overview gives the `provider-rules` policy of the directory
 [V] Gives a failed invitation page to the caller, and does not list a record of another organization
 [V] Refuses the invitation overview with `denied` for a User without Admin or Super Admin and with `mfa-required` for an Admin whose sign-in did not complete MFA; reads no invitation page
+[V] A free organization above its limit after a downgrade has the seats 7 of 5 in its frozen overview; a team organization has none; the count makes no display read
+[V] A failed member page of a free organization fails the overview without a partial seat count
 
 Run only these tests:
 
@@ -1262,7 +1320,8 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Rejects a seat count that is negative, fractional, NaN, infinite, or above `Number.MAX_SAFE_INTEGER` with a `RangeError`
 [V] Refuses input with a rejected promise, never a synchronous throw; a refused call confirms no state
 [V] Accepts 0 seats and `Number.MAX_SAFE_INTEGER` seats and confirms the free plan with no billed seat
-[V] Gives frozen state records that keep the free state
+[V] Gives each organization the free plan with the member limit 5 and no billed seat, also after a seat count
+[V] Gives frozen state records that keep the free state and the member limit
 
 **Customer audit logs — API foundation** (`test/acceptance/logging/audit/audit-log.test.ts`, `test/unit/logging/audit/audit-log.test.ts`)
 
@@ -1270,6 +1329,7 @@ npm run build && node --test dist/test/unit/auth-workos/workos-organizations-inv
 [V] Projects explicit actor and target fields and excludes extra source, line, stack, and message fields
 [V] Keeps caller location in system output; an audit event does not enter that stream
 [V] Preserves the completed action when a synchronous audit sink throws
+[V] Projects the outcome `limit-reached` of an invitation refused at the member limit
 [V] Type checking rejects substitution between the concrete AuditLog event API and SystemLog diagnostics
 [V] Redacts credential URLs while preserving adjacent public JSON fields and ordinary Markdown syntax, with exact exported byte counts
 
@@ -1297,7 +1357,7 @@ content; they establish no client receipt, settings snapshot, or delivery.
 - `test/unit/logging/audit/audit-capture.test.ts` specifies named-field projection, recognized credential fields and URL parameters, unchanged valid input, JSON/UTF-8 budgets, Unicode truncation, metadata refusal, and non-throwing sink admission. Redaction cases preserve complete quoted values, URI keys, ordinary Markdown links and autolinks; raw URL punctuation and incomplete values remain private. Malformed escaped-quote input has a behavior case and a separate manual performance check.
 - `test/acceptance/logging/audit/administration-capture.test.ts` specifies signed-in invitation and Audit logs Save/Test metadata, separation of synthetic Test records, and preservation of completed writes after sink throw/refusal or an internal recorder failure.
 - `test/integration/hosted-admin/account-routes-audit.test.ts` specifies invitation send/resend/revoke, stale A naming B routing, failed/unconfirmed phases, Audit logs Save/Test without settings-read capture, and isolation from a throwing capture API.
-- `test/unit/organizations/change-records.test.ts` specifies preservation of a completed provider write and original check/provider failure when post-write recording throws.
+- `test/unit/organizations/change-records.test.ts` specifies preservation of a completed provider write and original check/provider failure when post-write recording throws, and one `limit-reached` record of a check that finds all seats used.
 - `test/integration/mcp/tool-completion-record.test.ts` and `test/unit/mcp/tool-completion-record.test.ts` specify content-free operator records. The renderer setup, HTTP fetch, and renderer runtime specifications retain this privacy assertion.
 
 The S2-03b snapshots and S2-03c bounded dispatch are specified below.
@@ -1825,6 +1885,7 @@ This file and the two files below also use `fixtures/administration-routes-fixtu
 [V] For a failed overview, each page gets the 500 failure page with the session cookies, and the operator gets the path and the cause
 [V] Under a public URL path, each form posts under that path, and each link points under it
 [V] For a decided context without an organization, each page gets the 403 access denial, and the service is not asked
+[V] The seats of a free invitation overview give "N of 5 seats used" in the Active members card after the product member count, beside the unchanged pending list; an overview without seats gives no seat line
 
 Run only these tests:
 
@@ -1835,6 +1896,7 @@ npm run build && node --test dist/test/integration/hosted-admin/account-routes-a
 **Invitation route changes** (`test/integration/hosted-admin/account-routes-administration-changes.test.ts`)
 
 [V] An address-in-use notice explains the conflict without offering retired member-role controls
+[V] A `limit-reached` result gives 409 with "This free workspace has 5 of 5 seats. Upgrade to Team to add more members.", no link, the session cookies, and an audit event with `limit-reached`
 [V] A valid send, resend, or revoke passes only the form fields and trusted actor/MFA context to the service; applied or unchanged results give 303 to Invitations with session cookies
 [V] A session without completed MFA receives the existing MFA notice and session cookies
 [V] Denied, stale, not-pending, address-in-use, and unsupported results give the matching notice/status and no redirect
@@ -2170,6 +2232,7 @@ npm run build && node --test dist/test/integration/auth/workos-provider-administ
 [V] User plus a synthetic user-manager grant gives the organization and the roles that give a permission, without a highest role, and `Cache-Control: no-store`
 [V] A synthetic user-manager grant only, the default role only, and no grant give 403 `{"access":"denied"}` without organization data
 [V] Another path gives 404, and another method gives 405 with `Allow: GET, HEAD`
+[V] A free plan gives `plan: 'free'` and `memberLimit`, a team plan gives `plan: 'team'` without a limit, and only the selected organization is read; a failed billing read reaches the account routes without product data
 
 **Portal organization display name** (`test/integration/auth/portal-organization-name.test.ts`)
 
@@ -2177,6 +2240,7 @@ npm run build && node --test dist/test/integration/auth/workos-provider-administ
 [V] Denied product access causes no name lookup
 [V] Missing, empty, and whitespace names give a retryable 503 without organization data
 [V] Cancellation stays effective when the provider read later completes
+[V] Cancellation stays effective when the billing read later completes
 
 Run only these tests:
 
@@ -2727,7 +2791,7 @@ npm run build && node --test dist/test/acceptance/billing/hosted-billing.test.js
 
 The tests use `BillingFree` through the `Billing` interface. They do not cover paid billing.
 
-[V] Given a new hosted organization, its billing is on the free plan, and no seat is billed
+[V] Given a new hosted organization, its billing is on the free plan with the member limit 5, and no seat is billed
 [V] Given active User seats that go from 3 to 5, to 4, and to 0, each update confirms the free plan with no billed seat
 [V] Given a repeated count or an older count, the result does not change
 [V] Given two organizations, a seat change in one does not change the other
@@ -2912,6 +2976,24 @@ Run only these tests:
 
 ```sh
 npm run build && node --test dist/test/acceptance/auth/hosted-seats.test.js
+```
+
+**Hosted free member limit** (`test/acceptance/auth/hosted-free-member-limit.test.ts`)
+
+[V] Given 3 active members and 1 pending invitation, 4 of 5 seats, when two Admins invite at the same time, then one invitation is sent and the other gets 409 `limit-reached` with the owner's words and no link
+[V] Given 4 active members and 1 pending invitation, 5 of 5 seats, an invitation gets `limit-reached`, nothing is sent, and the record keeps `limit-reached`
+[V] Given 4 active members and 1 expired invitation, the invitation is sent, and Members then shows 5 of 5 seats used
+[V] Given a default-role, an inactive, and a pending membership beside 3 members with product access, only the 3 count: two invitations are sent and the third is refused
+[V] Given a member page or an invitation page that fails, no invitation is sent, the Admin gets the failure page, and the record keeps `failed`
+[V] Given two free workspaces, one at the limit, an Admin of the other can still invite
+[V] Given a free workspace, Members shows "N of 5 seats used" beside the unchanged pending list; a team workspace shows no seat line
+[V] Given the WorkOS composition, a refusal keeps `limit-reached` in the change record and the audit event, and WorkOS gets no invitation write
+[V] Given the WorkOS composition, the portal JSON of a free workspace has `plan: 'free'` and `memberLimit: 5`
+
+Run only these tests:
+
+```sh
+npm run build && node --test dist/test/acceptance/auth/hosted-free-member-limit.test.js
 ```
 
 **Self-hosted startup** (`test/acceptance/auth/self-hosted-startup.test.ts`)

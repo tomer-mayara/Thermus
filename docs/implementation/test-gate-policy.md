@@ -745,6 +745,8 @@ They are in the existing suites:
   `npm run test:acceptance`. The self-hosted container gate also checks that
   `DEPLOYMENT=hosted` with placeholder WorkOS settings fails before listening,
   because that image has no built portal.
+  SO-08 added `test/acceptance/auth/hosted-free-member-limit.test.ts` to the
+  same acceptance suite.
 
 Select only the groups and focused files required by the changed paths.
 The lists above are an inventory, not a requirement to run all hosted tests.

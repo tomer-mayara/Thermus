@@ -34,6 +34,7 @@ export declare class OrganizationAdministration {
     private readonly directory;
     private readonly changes;
     private readonly billing;
+    private readonly limit;
     private readonly removals;
     constructor(options: OrganizationAdministrationOptions);
     removeMember(actor: Actor, request: MemberRemovalRequest): Promise<RemovalResult>;
@@ -47,6 +48,5 @@ export declare class OrganizationAdministration {
     resendInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult>;
     revokeInvitation(actor: Actor, request: InvitationChangeRequest): Promise<ChangeResult>;
     private changeInvitation;
-    private isPending;
     private managedBy;
 }

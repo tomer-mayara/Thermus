@@ -23,11 +23,16 @@ export interface InvitationEntry {
     readonly expiresAt: string;
     readonly changes: readonly InvitationChange[];
 }
+export interface SeatUsage {
+    readonly used: number;
+    readonly limit: number;
+}
 export interface InvitationOverview {
     readonly organizationId: string;
     readonly invitations: readonly InvitationEntry[];
     readonly invitableRoles: readonly AssignableRole[];
     readonly identityPolicy: InvitationIdentityPolicy;
+    readonly seats?: SeatUsage;
 }
 export declare function readMemberOverview(directory: OrganizationDirectory, organizationId: string, organizationName: string): Promise<MemberOverview>;
 export declare function activeUserSeatCount(directory: OrganizationDirectory, organizationId: string): Promise<number>;
