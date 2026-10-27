@@ -82,3 +82,25 @@ function goals then passed. This needed no source change or metric exception.
 The earlier unit capture also passed 3,301 emitted and 29 portal unit tests.
 The Quality review comment records the retained maintainability findings and
 the scope of each coverage report.
+
+## Density correction
+
+The stack review found that the three short closed rows exceeded the 72px
+desktop fixture bound. A new browser acceptance case first failed at 1280px
+after the production fonts loaded: the rows measured 118.39px, 118.39px and
+98.39px. The same case checks visible, unclipped Member, Role and Action facts,
+closed disclosures, quiet triggers and 48px action targets.
+
+Above 860px, each fact now places its label beside its value, and member rows
+use 10px vertical padding. Semantic definition lists and aligned fact columns
+remain. The rows now measure 70.25px, 70.25px and 60.25px. This is a fixture
+bound, not a fixed row height. Long values, enlarged text and open confirmations
+can increase row height. The stacked layout through 860px is unchanged.
+
+The focused case passed after the CSS change. All 20 current Members browser
+cases then passed, including long values, 200% text, 320px and 1280px layouts,
+expanded confirmations at 481px, 600px, 860px and 861px, native Cancel and confirmation,
+and shared Audit controls. The current portal and server builds passed before
+these runs. Screenshots were checked for compact rows and expanded content.
+No markup, protected form, route, identity rule, product count or help changed.
+These focused results do not replace the manager's complete-candidate gates.
