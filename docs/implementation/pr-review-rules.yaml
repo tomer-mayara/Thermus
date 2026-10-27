@@ -114,7 +114,7 @@ protected_paths:
     # is an architecture fact. On 2026-10-24 the list shrank from 28 entries
     # over 101 source files to 13 entries over 33 source files; the
     # sensitiveBehavior flag covers the rest. On 2026-10-27 SO-03 added the five
-    # files that admit a tenant request: 18 entries over 44 source files.
+    # files that admit a tenant request: 18 entries over 45 source files.
     paths:
       - src/pipelines/providers/website-fetcher/network-policy.ts # which destinations may be fetched
       - src/pipelines/html-processing/prompt-injection-remover/** # untrusted text that reaches the model

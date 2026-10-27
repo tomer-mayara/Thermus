@@ -165,7 +165,7 @@ owner accepts the regenerated files one time. This is rare and visible.
 
 The list keeps as T1 the files whose behavior is a guarantee even when their
 declarations do not change. It has 18 entries, 16 files and 2 folders, that
-cover 44 source files. On 2026-10-24 it had 13 entries that covered 33 source
+cover 45 source files. On 2026-10-24 it had 13 entries that covered 33 source
 files; on 2026-10-27, SO-03 added the five files that admit a tenant request.
 The earlier list had 28 entries that covered 101 source files.
 
