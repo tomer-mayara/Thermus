@@ -69,8 +69,7 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const connection = await openWorkOSConnection(config, logger, environment);
   const { createHostedToolOperations } = await import('./fetch-tool.ts');
   const operations = createHostedToolOperations(environment, logger);
-  const gateways = await import('./mcp-gateway-composition.ts');
-  const tenants = await gateways.tenantsSettingsOf(environment);
+  const gateway = (await import('./mcp-gateway-composition.ts')).gatewayStartOf(environment);
   const provisioningSettings = await tenantProvisioningSettingsOf(environment);
   if (new URL(config.publicBaseUrl).pathname !== '/') throw new Error('The hosted portal requires PUBLIC_BASE_URL with the base path /.');
   const { assertHostedRenderer } = await import('./hosted-renderer-startup.ts');
@@ -79,13 +78,12 @@ export async function openWorkOSApplication(config: RouteConfig, logger: SystemL
   const portal = await HostedPortal.load(['https://api.workos.com', connection.settings.authkitIssuer]);
   const { openLoggingStorage } = await import('./logging-storage.ts');
   await using resources = new AsyncDisposableStack();
-  const opened = await openLoggingStorage(environment, logger, tenants?.freeTenantLimit);
+  const opened = await openLoggingStorage(environment, logger, gateway.freeTenantLimit);
   const loggingStorage = provisioningSettings === undefined ? opened : (await import('./tenant-provisioning.ts')).withTenantProvisioning(opened, {
     settings: provisioningSettings, publicBaseUrl: config.publicBaseUrl, authkitIssuer: connection.settings.authkitIssuer, logger,
   });
   if (loggingStorage !== undefined) resources.defer(() => loggingStorage.close());
-  const gateway = tenants === undefined ? undefined : gateways.gatewayPartsOf(tenants.gateway, loggingStorage);
-  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway });
+  const application = await composeWorkOSApplication(config, connection, { logger, toolOperations: operations, signup, loggingStorage, gateway: gateway.partsOn(loggingStorage) });
   resources.move();
   return portal.withApplication(application);
 }

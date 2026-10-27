@@ -25,9 +25,18 @@ export interface GatewayParts {
 }
 
 /** The settings that the control plane reads only with MCP_TENANTS_ENABLED on (plan section 4.1). */
-export interface TenantsSettings {
+interface TenantsSettings {
   readonly freeTenantLimit: number;
   readonly gateway: GatewaySettings;
+}
+
+/**
+ * The gateway of one start of the control plane: the cap of the tenant registry, read only with the switch on, and the
+ * gateway parts on the hosted storage, or none with the switch off.
+ */
+export interface GatewayStart {
+  readonly freeTenantLimit?: number;
+  partsOn(storage: Pick<HostedLoggingStorage, 'tenants'> | undefined): GatewayParts | undefined;
 }
 
 /** The parts that the gateway gives the hosted composition: the forward step of MCPServer and the internal routes. */
@@ -44,11 +53,18 @@ export interface GatewayRegistry {
   readonly activity: Pick<TenantActivity, 'recordActive'>;
 }
 
+/** The gateway of a start: the settings first, so an invalid setting stops the start before the server listens. */
+export function gatewayStartOf(environment: Readonly<Record<string, string | undefined>>): GatewayStart {
+  const settings = tenantsSettingsOf(environment);
+  if (settings === undefined) return { partsOn: () => undefined };
+  return { freeTenantLimit: settings.freeTenantLimit, partsOn: (storage) => gatewayPartsOf(settings.gateway, storage) };
+}
+
 /**
  * With MCP_TENANTS_ENABLED off, the control plane reads none of the settings of the tenants, and the registry keeps
  * its default cap. An invalid setting stops the start before the server listens; FREE_TENANT_LIMIT comes first.
  */
-export function tenantsSettingsOf(environment: Readonly<Record<string, string | undefined>>): TenantsSettings | undefined {
+function tenantsSettingsOf(environment: Readonly<Record<string, string | undefined>>): TenantsSettings | undefined {
   if (!loadMcpTenantsEnabled(environment)) return undefined;
   return { freeTenantLimit: loadFreeTenantLimit(environment), gateway: loadGatewaySettings(environment) };
 }
@@ -67,7 +83,7 @@ const unconnectedResume: TenantResume = {
 };
 
 /** The gateway parts of the production control plane: the gateway settings and the registry of the hosted storage. */
-export function gatewayPartsOf(settings: GatewaySettings, storage: Pick<HostedLoggingStorage, 'tenants'> | undefined, resume: TenantResume = unconnectedResume): GatewayParts {
+function gatewayPartsOf(settings: GatewaySettings, storage: Pick<HostedLoggingStorage, 'tenants'> | undefined, resume: TenantResume = unconnectedResume): GatewayParts {
   if (storage?.tenants === undefined) {
     throw new DeploymentConfigError('MCP_TENANTS_ENABLED=true needs the tenant registry: DATABASE_URL and LOGGING_DESTINATION_ENCRYPTION_KEY must be valid.');
   }

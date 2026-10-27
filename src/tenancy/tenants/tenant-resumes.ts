@@ -21,8 +21,11 @@ const UNAVAILABLE: ResumeResult = Object.freeze({ status: 'unavailable' });
  * the newest deploy of the deploying row and records live.
  */
 export class TenantResumes {
+  /** The conditional registry statements of a resume. */
   private readonly store: Pick<TenantGatewayStore, 'markResuming' | 'restoreSuspended'>;
+  /** The resume call of the platform; SO-10 connects it to Render. */
   private readonly operation: TenantResume;
+  /** The organizations whose resume runs in this process. */
   private readonly running = new Set<string>();
 
   constructor(store: Pick<TenantGatewayStore, 'markResuming' | 'restoreSuspended'>, operation: TenantResume) {
@@ -44,18 +47,18 @@ export class TenantResumes {
   private async resumeOnce(organizationId: string): Promise<ResumeResult> {
     const mark = await this.store.markResuming(organizationId);
     if (mark.status !== 'resuming') return mark.status === 'moved' ? PENDING : UNAVAILABLE;
-    const outcome = await this.callPlatform({ organizationId, serviceId: mark.serviceId });
+    const outcome = await platformResume(this.operation, { organizationId, serviceId: mark.serviceId });
     if (outcome.status === 'resumed') return SENT;
     await this.store.restoreSuspended(organizationId);
     return { status: 'failed', reason: outcome.reason };
   }
+}
 
-  // The outcome is never an exception. An exception gives a fixed reason, because its text can hold platform details.
-  private async callPlatform(service: ResumedService): Promise<ResumeOutcome> {
-    try {
-      return await this.operation.resume(service);
-    } catch {
-      return { status: 'failed', reason: 'The resume call failed unexpectedly.' };
-    }
+// The outcome is never an exception. An exception gives a fixed reason, because its text can hold platform details.
+async function platformResume(operation: TenantResume, service: ResumedService): Promise<ResumeOutcome> {
+  try {
+    return await operation.resume(service);
+  } catch {
+    return { status: 'failed', reason: 'The resume call failed unexpectedly.' };
   }
 }

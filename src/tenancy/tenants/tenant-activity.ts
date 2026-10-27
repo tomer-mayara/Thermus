@@ -11,8 +11,11 @@ const CLEANUP_SIZE = 1_024;
  * for a minute. The write does not delay the forward: a failed write is not repeated before the minute ends.
  */
 export class TenantActivity {
+  /** The registry statement that writes last_active_at. */
   private readonly store: Pick<TenantGatewayStore, 'recordActive'>;
+  /** A monotonic clock in milliseconds; tests give a double. */
   private readonly now: () => number;
+  /** The time of the last write of each organization. */
   private readonly lastWrites = new Map<string, number>();
 
   constructor(store: Pick<TenantGatewayStore, 'recordActive'>, now: () => number = () => performance.now()) {
@@ -22,15 +25,19 @@ export class TenantActivity {
 
   recordActive(organizationId: string): void {
     const now = this.now();
-    const lastWrite = this.lastWrites.get(organizationId);
-    if (lastWrite !== undefined && now - lastWrite < WRITE_INTERVAL_MS) return;
-    if (this.lastWrites.size >= CLEANUP_SIZE) this.forgetBefore(now - WRITE_INTERVAL_MS);
+    if (!writeIsDue(this.lastWrites, organizationId, now)) return;
     this.lastWrites.set(organizationId, now);
     this.store.recordActive(organizationId).catch(() => undefined);
   }
+}
 
-  // An entry of more than a minute stops no write, so it can go.
-  private forgetBefore(time: number): void {
-    for (const [organizationId, lastWrite] of this.lastWrites) if (lastWrite <= time) this.lastWrites.delete(organizationId);
+// A write is due one minute after the last write. Before a new entry, a full memory forgets the entries of more than a
+// minute: they stop no write.
+function writeIsDue(lastWrites: Map<string, number>, organizationId: string, now: number): boolean {
+  const lastWrite = lastWrites.get(organizationId);
+  if (lastWrite !== undefined && now - lastWrite < WRITE_INTERVAL_MS) return false;
+  if (lastWrites.size >= CLEANUP_SIZE) {
+    for (const [organization, time] of lastWrites) if (time <= now - WRITE_INTERVAL_MS) lastWrites.delete(organization);
   }
+  return true;
 }

@@ -7,7 +7,9 @@ export type RelayAdmission = 'new' | 'repeated' | 'full';
 
 /** The operation IDs of the accepted relays of each tenant, for as long as a repeat can still pass the context check. */
 export class AcceptedRelays {
+  /** A monotonic clock in milliseconds; tests give a double. */
   private readonly now: () => number;
+  /** For each tenant and operation ID, the time until which a repeat is dropped. */
   private readonly until = new Map<string, number>();
 
   constructor(now: () => number) {
@@ -19,13 +21,15 @@ export class AcceptedRelays {
     const now = this.now();
     const key = `${tenantId}\u0000${operationId}`;
     if ((this.until.get(key) ?? 0) > now) return 'repeated';
-    if (this.until.size >= MEMORY_SIZE) this.forgetBefore(now);
-    if (this.until.size >= MEMORY_SIZE) return 'full';
+    if (!placeFor(this.until, now)) return 'full';
     this.until.set(key, now + MEMORY_MS);
     return 'new';
   }
+}
 
-  private forgetBefore(now: number): void {
-    for (const [key, until] of this.until) if (until <= now) this.until.delete(key);
-  }
+// A full memory first forgets the operation IDs whose time ended; it is full when none ended.
+function placeFor(until: Map<string, number>, now: number): boolean {
+  if (until.size < MEMORY_SIZE) return true;
+  for (const [key, time] of until) if (time <= now) until.delete(key);
+  return until.size < MEMORY_SIZE;
 }

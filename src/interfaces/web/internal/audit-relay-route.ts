@@ -27,8 +27,11 @@ const STATUS_OF: Readonly<Record<RelayRefusal['reason'], number>> = { body: 400,
  * under /internal/ gets 404.
  */
 export class AuditRelayRoute {
+  /** The rule of the relay check, the capture, and the report of each refusal. */
   private readonly options: AuditRelayRouteOptions;
+  /** The host of the internal origin, in lower case. */
   private readonly internalHost: string;
+  /** The operation IDs that the route accepted, so that a repeat is not captured again. */
   private readonly accepted: AcceptedRelays;
 
   constructor(options: AuditRelayRouteOptions) {
@@ -37,15 +40,15 @@ export class AuditRelayRoute {
     this.accepted = new AcceptedRelays(options.now ?? (() => Date.now()));
   }
 
+  /** Each path under /internal/, so that no internal path reaches the account routes. */
   handles(pathname: string): boolean {
     return pathname.startsWith(INTERNAL_PREFIX);
   }
 
+  /** 202 for an accepted relay and for a repeat of one; else the status of the refusal and one report line. */
   async handle(request: Request): Promise<Response> {
-    const { pathname } = new URL(request.url);
-    // The public host and each other internal path get 404, so the public origin shows no internal route.
-    if (request.headers.get('host')?.toLowerCase() !== this.internalHost || pathname !== RELAY_PATH) return new Response('Not Found', { status: 404 });
-    if (request.method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } });
+    const transport = transportRefusalOf(request, this.internalHost);
+    if (transport !== undefined) return transport;
     const body = await readBoundedBody(request, MAX_BODY_BYTES, request.signal);
     if (body === undefined) return this.refused({ reason: 'body' }, 413);
     const checked = await checkRelay(this.options, body.toString('utf8'), request.headers.get(ACCESS_CONTEXT_HEADER));
@@ -57,8 +60,18 @@ export class AuditRelayRoute {
     return new Response(null, { status: 202 });
   }
 
+  /** A refusal: one report line for the operator, and an answer that tells the tenant whether to try again. */
   private refused(refusal: RelayRefusal, status = STATUS_OF[refusal.reason]): Response {
     this.options.reportRefusal(refusal);
     return Response.json({ error: status === 503 ? 'temporarily_unavailable' : 'relay_refused' }, { status });
   }
+}
+
+// The public host and each other internal path get 404, so the public origin shows no internal route. The relay path
+// takes POST only.
+function transportRefusalOf(request: Request, internalHost: string): Response | undefined {
+  const { pathname } = new URL(request.url);
+  if (request.headers.get('host')?.toLowerCase() !== internalHost || pathname !== RELAY_PATH) return new Response('Not Found', { status: 404 });
+  if (request.method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } });
+  return undefined;
 }
