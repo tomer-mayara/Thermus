@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import {
-  createServiceCall, envVarsCall, FREE_PLAN, HEALTH_CHECK_PATH, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall, type ServiceType,
+  createServiceCall, FREE_PLAN, HEALTH_CHECK_PATH, LISTEN_PORT, PLACEHOLDER_ENVIRONMENT, serviceCall, type ServiceType,
 } from '../render-tenant-lifecycle/calls.ts';
-import { addressFields, fieldText, listItems, samePlan, serviceOf, type ServiceView } from '../render-tenant-lifecycle/answers.ts';
+import { addressFields, samePlan, serviceOf, type ServiceView } from '../render-tenant-lifecycle/answers.ts';
 import { addRow, progress, seconds, serviceIdOf, shown } from '../render-tenant-lifecycle/context.ts';
-import { renderTimes, sendCreate } from '../render-tenant-lifecycle/create.ts';
+import { renderTimes, sendCreate, variableKeys } from '../render-tenant-lifecycle/create.ts';
 import { readService, recentDeploys, waitForLive } from '../render-tenant-lifecycle/waits.ts';
 import { sessionOf, type ProbeContext, type Role } from './context.ts';
 import { checkPublicHealth } from './web-health.ts';
@@ -19,11 +19,6 @@ function assertService(context: ProbeContext, role: Role, service: ServiceView):
   assert.ok(samePlan(service.plan, FREE_PLAN), `The plan is ${shown(service.plan)}, not ${FREE_PLAN}`);
   assert.equal(service.region, context.inputs.region, `The region is ${shown(service.region)}`);
   assert.ok(service.imagePath?.includes(context.inputs.image.digest), `The image setting is ${shown(service.imagePath)}, not the given image`);
-}
-
-async function variableKeys(context: ProbeContext, serviceId: string): Promise<readonly string[]> {
-  const answer = await context.client.read(envVarsCall(serviceId), context.signal);
-  return listItems(answer.json, 'envVar').items.map((item) => fieldText(item, 'key') ?? '').sort();
 }
 
 async function checkVariables(context: ProbeContext, role: Role, serviceId: string): Promise<void> {

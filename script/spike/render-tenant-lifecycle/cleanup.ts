@@ -1,20 +1,12 @@
 import assert from 'node:assert/strict';
-import { deleteServiceCall, servicesNamedCall } from './calls.ts';
-import { listItems, serviceOf } from './answers.ts';
+import { deleteServiceCall, PRIVATE_SERVICES } from './calls.ts';
 import { addRow, messageOf, seconds, type ProbeContext, type ProbeStep } from './context.ts';
-import { poll, POLLS, watch } from './polls.ts';
+import { createdIds, untilGone } from './create.ts';
 import { probeServices } from './waits.ts';
 
-async function servicesToDelete(context: ProbeContext): Promise<readonly string[]> {
-  if (context.state.serviceId !== undefined) return [context.state.serviceId];
-  if (!context.state.createSent) return [];
-  const named = await watch({ plan: POLLS.window, signal: context.signal, what: `a service named ${context.name}` }, async () => {
-    const answer = await context.client.read(servicesNamedCall(context.inputs.owner, context.name), context.signal);
-    const ids = listItems(answer.json, 'service').items.map(serviceOf).filter((service) => service.name === context.name).map((service) => service.id);
-    for (const id of ids) context.client.confirmOwnService(id, context.name);
-    return ids.length > 0 ? ids : undefined;
-  });
-  return named ?? [];
+function servicesToDelete(context: ProbeContext): Promise<readonly string[]> {
+  const { serviceId, createSent } = context.state;
+  return createdIds({ client: context.client, signal: context.signal, owner: context.inputs.owner }, { serviceId, createSent, name: context.name });
 }
 
 async function deleteService(context: ProbeContext, id: string): Promise<void> {
@@ -41,10 +33,8 @@ async function cleanup(context: ProbeContext): Promise<string> {
   for (const id of ids) await deleteService(context, id);
   const name = context.state.serviceName ?? context.name;
   const started = performance.now();
-  const remaining = await poll({ plan: POLLS.cleanup, signal: context.signal, what: `${name} to leave the service list` }, async () => {
-    const names = (await probeServices(context, context.signal)).map((service) => service.name);
-    return names.includes(name) ? undefined : names;
-  });
+  const lister = { client: context.client, signal: context.signal, owner: context.inputs.owner };
+  const remaining = await untilGone(lister, { names: [name], types: PRIVATE_SERVICES, what: `${name} to leave the service list` });
   assert.deepEqual(remaining, [], `Services of an earlier run remain: ${remaining.join(', ')}. Delete them in the Render Dashboard.`);
   addRow(context, 'Cleanup', { check: 'Services named thermus-spike-*', expected: '0', measured: `0, ${seconds(performance.now() - started)} after the delete` });
   return `${ids.length === 0 ? 'no service of this run existed' : `deleted ${ids.join(', ')}`}; no service named thermus-spike-* exists.`;

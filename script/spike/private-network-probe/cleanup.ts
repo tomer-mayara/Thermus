@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
-import { deleteServiceCall, servicesNamedCall } from '../render-tenant-lifecycle/calls.ts';
-import { listItems, serviceOf } from '../render-tenant-lifecycle/answers.ts';
+import { deleteServiceCall } from '../render-tenant-lifecycle/calls.ts';
 import { addRow, messageOf, seconds } from '../render-tenant-lifecycle/context.ts';
-import { poll, POLLS, watch } from '../render-tenant-lifecycle/polls.ts';
+import { createdIds, untilGone } from '../render-tenant-lifecycle/create.ts';
 import { probeServices } from '../render-tenant-lifecycle/waits.ts';
 import { cancelJobCall, jobStatusCall } from './calls.ts';
 import { ROLES, serviceLine, type ProbeContext, type ProbeStep, type Role } from './context.ts';
@@ -24,17 +23,8 @@ async function cancelOpenJob(context: ProbeContext): Promise<void> {
 }
 
 // A create that got no answer can still have made the service, so the cleanup looks for its exact name (SO-01c rule).
-async function idsToDelete(context: ProbeContext, role: Role): Promise<readonly string[]> {
-  const state = context.state.services[role];
-  if (state.serviceId !== undefined) return [state.serviceId];
-  if (!state.createSent) return [];
-  const named = await watch({ plan: POLLS.window, signal: context.signal, what: `a service named ${state.name}` }, async () => {
-    const answer = await context.client.read(servicesNamedCall(context.inputs.owner, state.name), context.signal);
-    const ids = listItems(answer.json, 'service').items.map(serviceOf).filter((service) => service.name === state.name).map((service) => service.id);
-    for (const id of ids) context.client.confirmOwnService(id, state.name);
-    return ids.length > 0 ? ids : undefined;
-  });
-  return named ?? [];
+function idsToDelete(context: ProbeContext, role: Role): Promise<readonly string[]> {
+  return createdIds({ client: context.client, signal: context.signal, owner: context.inputs.owner }, context.state.services[role]);
 }
 
 async function deleteService(context: ProbeContext, role: Role, id: string): Promise<string | undefined> {
@@ -83,10 +73,8 @@ async function cleanup(context: ProbeContext): Promise<string> {
   const deleted = await deleteAll(context);
   const names = ROLES.map((role) => context.state.services[role].name);
   const started = performance.now();
-  const remaining = await poll({ plan: POLLS.cleanup, signal: context.signal, what: 'the services of this run to leave the service list' }, async () => {
-    const listed = (await probeServices(context, context.signal, ANY_TYPE)).map((service) => service.name);
-    return names.some((name) => listed.includes(name)) ? undefined : listed;
-  });
+  const lister = { client: context.client, signal: context.signal, owner: context.inputs.owner };
+  const remaining = await untilGone(lister, { names, types: ANY_TYPE, what: 'the services of this run to leave the service list' });
   addRow(context, STEP, { check: 'Services named thermus-spike-*, any type', expected: '0', measured: `${remaining.length}, ${seconds(performance.now() - started)} after the deletes` });
   assert.deepEqual(remaining, [], `Services of an earlier run remain: ${remaining.join(', ')}. Delete them in the Render Dashboard.`);
   return `${deleted.length === 0 ? 'no service of this run existed' : `deleted ${deleted.join(' and ')}`}; no service named thermus-spike-* exists.`;
