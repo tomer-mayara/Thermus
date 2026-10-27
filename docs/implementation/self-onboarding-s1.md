@@ -1512,8 +1512,351 @@ From the pages above, with what the runs showed:
 Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01e-capacity-probe-7e8c5c`,
 stacked on the SO-01d part two branch `self-ob-s1-so-01d-private-network-012463`.
 
-Status: in progress. The probe
-[`capacity-probe.ts`](../../script/spike/capacity-probe.ts) and its helper
-modules under [`capacity-probe/`](../../script/spike/capacity-probe/) are being
-built. This section gets the design, the steps, the planned calls, and the
-measured tables when the runs are complete.
+Status: waits for the launcher. The probe is built, its dry run and guards
+pass, and a rehearsal of its calls step passed against a local stand-in. The
+pages origin is live on Render and kept for the later runs. No tenant service
+exists yet. Each WorkOS step, the calls on Render, and the measured tables wait
+for the WorkOS Staging launcher: `~/.config/thermus/with-workos-staging.cjs`
+accepts only the `3-headed-monkey/Thermus` origins, and the origin of the
+repository is now `https://github.com/tomer-mayara/Thermus.git`, so the launcher
+stops each run with "Run this command from a Thermus checkout with the expected
+origin." The owner adds the new origin to the launcher.
+
+### What the probe does
+
+[`capacity-probe.ts`](../../script/spike/capacity-probe.ts) runs a preflight
+that only reads, and then four steps and the cleanup. Each step is an
+assertion of the script. The helper modules are in
+[`capacity-probe/`](../../script/spike/capacity-probe/). In the workspace
+Thermus AI, the probe makes two web services, or reuses them with
+`--service-id` and `--pages-id`:
+
+- The tenant service, `thermus-spike-cap-<UTC start time>`, from the hosted
+  image of SO-01b with the registry credential, on `0.5c-512mb` with one
+  instance, and later on `1c-2g`.
+- The pages origin, `thermus-spike-pages-<UTC start time>`, that serves the
+  controlled pages of the RHD-05 protocol.
+
+Then the probe registers `https://<tenant host>/mcp` as an OAuth resource of the
+WorkOS Staging environment, makes the hosted-live fixtures, and gets a Connect
+token. It sends 1, 5, and 10 MCP calls at the same time for each workload, and
+it reads the Render metrics and events of each window.
+
+The probe reuses the Render client, the calls, the waits, the polls, the plan
+change, and the answers of SO-01c, and the web service create, the public
+check, and the requests from this machine of SO-01d part two. For this reuse,
+the shared modules changed in small ways:
+
+- The create call takes its variables and a Docker command. For a public
+  image, it needs no registry credential. A new call updates one variable.
+- The client also refuses a `/metrics/*` read that names no service of the run
+  in its `resource` parameters. Without a `resource` parameter, Render reads
+  each service of the owner, also the production service.
+- The waits take one service session, and the deploy takes any image. The plan
+  change of SO-01c is exported with the image of its deploy.
+- Three probes now have the same code for some parts, so they share it (DRY3):
+  the step runner, the signal handling, the exit codes, and the run token in
+  [`runner.ts`](../../script/spike/render-tenant-lifecycle/runner.ts); and the
+  service create, the variable keys, the Render times of a deploy, the services
+  of a run, and the wait until they leave the list in
+  [`create.ts`](../../script/spike/render-tenant-lifecycle/create.ts).
+
+The SO-01c and SO-01d part two dry runs printed the same output, byte for byte,
+before and after these changes, for eight option sets.
+
+Run it from the repository root, through the WorkOS Staging launcher:
+
+```sh
+node ~/.config/thermus/with-workos-staging.cjs node --env-file=/Users/tomermayara/git/Thermus/.env.local \
+  script/spike/capacity-probe.ts --owner tea-db8i6ceq1p3s73dev9og --registry-credential ghcr-thermus-hosted-read \
+  --image ghcr.io/tomer-mayara/thermus-hosted@sha256:d6b8a8fd3174c02984267f6aef54a7ee4e4bc783776ae9b856685202972dbfbd
+```
+
+Options:
+
+- `--owner`, `--registry-credential`, `--image`, `--region`, `--dry-run`, and
+  `--preflight`: as in SO-01c.
+- `--service-id` and `--pages-id`: use a live tenant service and a live pages
+  origin. The preflight must find each one in the service list. Its name must
+  start with `thermus-spike-cap-` or `thermus-spike-pages-`.
+- `--steps`: run only some of `setup`, `calls-free`, `plan-team`, and
+  `calls-team`, in this order. The three later steps need `setup`, because
+  setup checks the services and gets the token. The cleanup always runs last.
+  `--steps cleanup` alone runs only the preflight and the cleanup.
+- `--keep`: keep both services and the OAuth resource for a later run. The
+  WorkOS fixtures of the run are always deleted.
+- `--parallelism`: the numbers of calls at the same time, from 1 to 20. The
+  default is `1,5,10`.
+- `--workloads`: any of `page9m`, `js`, and `search`. The default is all three.
+
+Rules of the script, in addition to the rules of SO-01c:
+
+- Real mode needs `RENDER_API_KEY`, `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, and
+  `WORKOS_AUTHKIT_ISSUER` in the environment. The WorkOS key must start with
+  `sk_test_`, and the client and the issuer must be those of the WorkOS Staging
+  environment. Each other value stops the script with exit code 2 before any
+  call. No message holds a value.
+- No output holds a key, a token, or a variable value. The dry run shows each
+  secret value as `<set>`. The report gives the lifetime and the claims checks
+  of the token, not the token.
+- The OAuth resource. The setup reads the resource list. When the tenant URI is
+  not listed, it sends one `POST`, which adds one indicator and changes no
+  other. After the create, the list must still hold the live gate URI
+  `https://localhost:46443/mcp`. The cleanup deletes only an ID that this run
+  created, and not with `--keep`. It never deletes the live gate URI.
+- The fixtures. The organization, the user, and the Connect application have
+  the run ID `so01e-<UTC start time>` in their names and email. The probe does
+  not delete stale fixtures of other runs. The cleanup deletes the fixtures of
+  the run and then checks that none remains.
+- Exit code 0: each step and the cleanup passed. Exit code 1: a step or the
+  cleanup failed. Exit code 2: a usage error.
+
+### The pages origin
+
+The pages origin is an image-backed web service from the public image
+`docker.io/library/node@sha256:2dd9a4f758e173b65fee15388f7706af6fb01ef50cf7a2c0538711d67a6981ae`.
+This is the linux/amd64 manifest of `node:24-slim`, version 24-bookworm-slim,
+created on 21 October 2026. Its index is
+`sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205`.
+The Docker command of the service is `node -e '<program>'`, 2,108 characters.
+The program builds both pages in memory at its start, and it serves them with
+`/healthz`, `content-length`, and `cache-control: no-store`. The program has no
+single quote, backslash, dollar sign, or backtick, so a shell and a
+shell-style word split give the same arguments, as for the SO-01d part two job.
+The source is [`pages.ts`](../../script/spike/capacity-probe/pages.ts).
+
+Reason for this form: it needs no repository change, no registry credential,
+and no GitHub access for Render. A Render static site needs the branch on
+GitHub and the GitHub app of Render. The Render documentation says that the
+Docker command replaces the `CMD` of the image
+([Docker on Render](https://render.com/docs/docker)). The `node:24-slim` entry
+point runs that command.
+
+The pages hold generated words only, no real content:
+
+| Page | Path | Bytes | Marker | Marker in the raw HTML |
+| --- | --- | --- | --- | --- |
+| Near-limit page: a short body, then 9 MiB (9,437,184 bytes) of inert JSON hydration input in a `script type=application/json` tag | `/page9m` | 9,437,483 | "Near-limit page marker 7319" | yes |
+| Representative JavaScript page: generated paragraphs; a script adds the marker paragraph with `String.fromCharCode` | `/js` | 14,845 | "JavaScript page marker 2741" | no |
+
+Local check of the pages, 27 October 2026, on the owner's Mac. The check ran
+the Docker command through `/bin/sh -c` on a loopback port, rendered each page
+with the pinned Lightpanda 1.0.0 (without the private network block of the
+fetcher), and cleaned the rendered HTML with the pipeline of the hosted fetch
+tool: the ad cleaner with `docker/hosted-ad-rules.txt`, the prompt injection
+sanitizer, and Defuddle.
+
+| Page | Served | Lightpanda | Rendered HTML | Cleaning | Markdown |
+| --- | --- | --- | --- | --- | --- |
+| `/page9m` | 200, 9,437,483 bytes | 2.7 s | 9,437,492 bytes, marker present | 2.6 s; the Node RSS grew from 208 MiB to 616 MiB | 74 characters with the marker (RHD-05: 73) |
+| `/js` | 200, 14,845 bytes, marker absent | 0.15 s | 14,884 bytes, marker present: the script ran | 58 ms | 13,698 characters with the marker |
+
+On Render, 27 October 2026 at 05:52:51 UTC, a development driver (in the
+session scratchpad, not in the branch) used the modules of the probe to create
+the pages origin and check it:
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+| Pages origin | Create answer | 201 with the service and deployId | 201 after 1.9 s: srv-dbg3od0m7kps73bafuvg, `web_service`, plan `0.5c-512mb` |
+| Pages origin | First deploy | live; time recorded | live 17.7 s after the create call (update_in_progress > live); Render: createdAt 2026-10-27T05:52:53.338584Z, finishedAt 2026-10-27T05:53:06.286376Z, 12.9 s |
+| Pages origin | Public URL | https://<name>.onrender.com in serviceDetails.url | `https://thermus-spike-pages-20261027-055251.onrender.com` |
+| Pages origin | GET https://thermus-spike-pages-20261027-055251.onrender.com/healthz from this machine | 200 with body ok | 200, body "ok", after 137 ms; request 2 of at most 24, 5.7 s after the first |
+| Pages origin | GET https://thermus-spike-pages-20261027-055251.onrender.com/page9m from this machine | 200, 9437483 bytes, marker in the HTML | 200, 9437483 bytes, marker in the HTML, after 0.4 s |
+| Pages origin | GET https://thermus-spike-pages-20261027-055251.onrender.com/js from this machine | 200, 14845 bytes, marker not in the HTML | 200, 14845 bytes, marker not in the HTML, after 0.1 s |
+
+The create had `Ratelimit-Limit 20`, `Ratelimit-Remaining 14`, and
+`Ratelimit-Reset 428`. The pages origin `srv-dbg3od0m7kps73bafuvg` is kept for
+the later runs with `--pages-id`. The final run deletes it.
+
+### The tenant service (waits for the launcher)
+
+The create call has every variable that the hosted image does not set itself:
+
+| Variable | Value | Reason |
+| --- | --- | --- |
+| `PUBLIC_BASE_URL` | `https://thermus-spike-cap-<time>.onrender.com/`, from the name | The server takes its MCP resource from it: `new URL('mcp', base)` ([`deployment-config.ts`](../../src/runtime/config/deployment-config.ts)). Each Connect token must have that resource as its audience ([`workos-auth-provider.ts`](../../src/accounts/providers/workos/workos-auth-provider.ts)). |
+| `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `WORKOS_AUTHKIT_ISSUER` | the WorkOS Staging values from the environment; the key shown as `<set>` | The server checks each membership with WorkOS on each call. |
+| `WORKOS_REDIRECT_URI` | `<PUBLIC_BASE_URL>callback` | It must be inside `PUBLIC_BASE_URL`. |
+| `WORKOS_COOKIE_PASSWORD` | 43 random characters, new for each create; shown as `<set>` | At least 32 characters. |
+| `OPERATION_CAPACITY` | `10` | D-15. |
+
+The setup reads `serviceDetails.url` and `PUBLIC_BASE_URL`. When
+`PUBLIC_BASE_URL` does not name the public URL of the service, the probe
+updates `PUBLIC_BASE_URL` and `WORKOS_REDIRECT_URI` and deploys. In SO-01d part
+two, the web service got the host `<name>.onrender.com`. A reused tenant
+service that is on `1c-2g` goes back to `0.5c-512mb` with the plan change of
+SO-01c.
+
+The Connect token. The probe uses an automated browser, as the hosted-live
+fixtures do; no person signs in. The browser is a headless Chromium of
+Playwright through `LiveBrowser`, and `visitAuthKit` fills the AuthKit email,
+password, and consent pages. The authorization URL is the one of
+`connectAuthorizationRequest` (PKCE S256, state, the scope of the live gate,
+and the redirect URI of the OAuth application fixture), with the tenant
+resource in place of the live gate resource. The code exchange is
+`exchangeConnectCode` with the tenant resource. The probe refreshes the token
+through `refreshAuthorization` of the MCP SDK when less than 2 minutes are
+left: an earlier run measured a lifetime of 300 s. The browser flow needs
+password sign-in without MFA in WorkOS Staging, as the hosted live gate needs.
+If AuthKit asks for MFA, the driver stops with its message.
+
+### Steps
+
+| Step | Given, when, then |
+| --- | --- |
+| Preflight | Given the inputs, when the probe reads the workspace, its registry credentials, its services of every type, and the WorkOS Staging resources, then the credential exists, no other `thermus-spike-*` service exists, and the live gate URI is listed. |
+| Setup | Given the inputs, when the probe makes or reuses the pages origin and the tenant service on `0.5c-512mb`, registers the tenant resource, and gets a Connect token, then both pages answer with their sizes and markers, `/healthz` answers `200` with `ok`, and `tools/list` names `getURLAsMarkdown` and `search`. |
+| Calls on `0.5c-512mb` | Given the tenant service on `0.5c-512mb`, when the probe sends 1, 5, and 10 calls at the same time for the 9 MiB page, the JavaScript page, and the search, then each call has its outcome and duration, and each window has its memory peak, memory limit, CPU peak, instance count, kills, and restart time. |
+| Plan `1c-2g` | Given the tenant service, when the probe updates the plan to `1c-2g` and deploys, then the service shows `1c-2g`, a new instance replaced the old one, and `/healthz` answers `200` with `ok`. |
+| Calls on `1c-2g` | The calls step again, on `1c-2g`. |
+| Cleanup | Given any step, when the probe fails or ends, then it deletes the WorkOS fixtures of the run, and, unless `--keep`, the OAuth resource that this run created and the two services; no service of this run remains in the list. |
+
+A window. The clients connect first, one client for each call, pinned to
+protocol 2026-07-28. Then all tool calls leave at the same time. Each call has
+5 minutes, because the cleaning of a 9 MiB page has no time limit of its own.
+The outcome of a call is one of these:
+
+- `ok`: the result has the marker. For a search, the marker is a result link.
+- `ok, no marker`.
+- `busy`: the tool error "Server busy. Try again later.".
+- `error: <text>`: another tool error. The texts are the fixed public texts of
+  the [fetch tool](../reference/mcp-fetch-tool.md#public-fetch-failures) and
+  the [search tool](../reference/mcp-search-tool.md#results-and-failures).
+- A transport failure: `HTTP <status>`, `network <code>`, `client timeout`, or
+  `connect <failure>`.
+
+After the calls, the probe waits for the final metrics of the window. Then it
+reads the memory peak, the memory limit, the CPU peak, the instance count, and
+the events since the window start. A `server_failed` event is a kill. After a
+kill or a transport failure, the probe waits until `/healthz` answers again,
+and the restart time counts from the event or from the window end. The next
+window starts at least two buckets (60 s) after the end of the window before
+it.
+
+### Planned calls
+
+The Render calls of SO-01c and SO-01d part two keep their documentation pages
+(see those sections). The new calls:
+
+| Step | Method | Path or URL | Documentation page |
+| --- | --- | --- | --- |
+| Setup | `POST` | `/services` with `envSpecificDetails.dockerCommand` and no `registryCredentialId` | [Create service](https://api-docs.render.com/reference/create-service), [Deploy a Prebuilt Docker Image](https://render.com/docs/deploying-an-image), [Docker on Render](https://render.com/docs/docker), [Web Services](https://render.com/docs/web-services) |
+| Setup | `GET` | `/services/{serviceId}/env-vars/PUBLIC_BASE_URL` | [Retrieve environment variable](https://api-docs.render.com/reference/retrieve-env-var) |
+| Setup, only when the host differs | `PUT` | `/services/{serviceId}/env-vars/{key}` | [Add or update environment variable](https://api-docs.render.com/reference/update-env-var) |
+| Calls | `GET` | `/metrics/memory`, `/metrics/memory-limit`, `/metrics/cpu` with `aggregationMethod=MAX`, `/metrics/instance-count`, each with `resource`, `startTime`, `endTime`, and `resolutionSeconds=30` | [Get memory usage](https://api-docs.render.com/reference/get-memory), [Get memory limit](https://api-docs.render.com/reference/get-memory-limit), [Get CPU usage](https://api-docs.render.com/reference/get-cpu), [Get instance count](https://api-docs.render.com/reference/get-instance-count) |
+| Calls | `GET` | `/services/{serviceId}/events?limit=100` | [List events](https://api-docs.render.com/reference/list-events) |
+| Preflight, Setup, Cleanup | `GET`, `POST`, `DELETE` | `https://api.workos.com/user_management/authkit_oauth_resources` | [MCP resource indicator](https://workos.com/docs/reference/authkit/oauth-resource), [Model Context Protocol](https://workos.com/docs/authkit/mcp) |
+| Setup | SDK | create organization, user, organization membership, Connect application | [Create an organization](https://workos.com/docs/reference/organization/create), [Create a user](https://workos.com/docs/reference/authkit/user/create), [Create an organization membership](https://workos.com/docs/reference/authkit/organization-membership/create), [Create a Connect application](https://workos.com/docs/reference/workos-connect/applications/create) |
+| Setup, Calls | `POST` | `https://<tenant host>/mcp`: initialize, `tools/list`, `tools/call` | [MCP fetch tool](../reference/mcp-fetch-tool.md), [MCP search tool](../reference/mcp-search-tool.md) |
+
+### Metrics facts, measured on the pages origin
+
+The manager allowed reads and writes on Render on 27 October 2026. Until the
+launcher works, the pages origin stands in for the tenant service in the
+metrics and event reads. All reads were from this machine, on 27 October 2026
+between 05:53 and 06:30 UTC.
+
+- Resolution. `resolutionSeconds` 1, 10, and 15 got `400` with
+  "resolutionSeconds must be >= 30". 30, 60, and 90 got `200`. At 30, the
+  points were 30 s apart. The smallest resolution is 30 s, as the OpenAPI
+  minimum says.
+- Time form. `startTime=1793078696` (epoch seconds) got `400` with "invalid
+  filter parameter: could not parse input 1793078696 for field startTime".
+  ISO 8601 got `200`. The OpenAPI document says "Epoch/Unix timestamp" in the
+  description, but its schema is a `date-time` string. The probe sends ISO
+  8601.
+- Point placement. Render places the points of a read at start + k × 30 s. A
+  read that ends now gives a point at now, which can still change. Reads of
+  the same minutes with starts 10 and 20 s later gave other points: the read
+  with the start 20 s later showed the memory step from 31.9 MB to 42.3 MB 10 s
+  before the aligned read showed it. For each window, the probe therefore reads
+  a fixed range and takes the peak of three reads with starts 0, 10, and 20 s
+  later. A shift gave the same CPU values.
+- Series and units. Memory: one series with the labels `instance`,
+  `resource`, and `service`, unit `bytes`. Memory limit: unit `bytes`,
+  536,870,900 for `0.5c-512mb`. CPU with `aggregationMethod=MAX`: one series
+  without labels, unit `cpu`. Instance count: label `resource`, unit
+  `unitless`. For the new service, the memory limit and instance count series
+  came about 2.5 minutes after the create; memory and CPU came earlier.
+- Lag. The probe calls the values of a window final when three reads, 10 s
+  apart, after the window range ends, give the same values. In six rehearsal
+  windows, the final values came 23.4 to 62.1 s after the window end. Up to
+  32 s of this is the wait for the bucket of the window end to close.
+- Rate limit. The metrics reads answered `Ratelimit-Limit 30` with a reset of
+  under 60 s; other reads answered 400. The probe reads one range until the
+  values are final, and the shifted ranges only once at the end: 67 reads for
+  six windows.
+- Events. The create of the pages origin gave `deploy_started` (+2.2 s) and
+  `deploy_ended` (+14.9 s). A `server_failed` event has `instanceID` and a
+  `reason` object with `oomKilled.memoryLimit`, `nonZeroExit`, `earlyExit`,
+  `evicted`, and other keys (OpenAPI document). The report keeps the reason
+  keys, the memory limit, and the exit code only.
+
+### Rehearsal of the calls step
+
+A development script (in the session scratchpad, not in the branch) ran the
+calls step of the probe against a local stand-in MCP server. The stand-in had
+the two tool names, a capacity of 3, and canned Markdown with the page
+markers. It answered `HTTP 502` to every 7th `tools/call` request, and for 12 s
+it closed its listener with each connection. The pages origin gave the page
+URLs, and its service ID stood in for the tenant service in the metrics and
+event reads. These runs measure nothing about the tenant. They show that the
+windows, the outcome classes, the metrics reads, the recovery, and the report
+work:
+
+| Parallelism | Workload | Outcomes | Restart | Metrics lag |
+| --- | --- | --- | --- | --- |
+| 1 | page9m | 1 ok | none | 54.4 s (4 reads) |
+| 1 | js | 1 ok | none | 37.0 s (4 reads) |
+| 1 | search | 1 ok | none | 35.4 s (4 reads) |
+| 5 | page9m | 3 ok, 1 HTTP 502, 1 busy | /healthz 200 0.0 s after the window end | 23.7 s (3 reads) |
+| 5 | js | 4 network UND_ERR_SOCKET, 1 network ECONNRESET | /healthz 200 15.0 s after the window end | 23.4 s (3 reads) |
+| 5 | search | 3 ok, 1 HTTP 502, 1 busy | /healthz 200 0.0 s after the window end | 62.1 s (4 reads) |
+
+The first rehearsal found two faults, which are now corrected. The restart time
+held the metrics wait, so the health check now starts at the window end. The
+settle reads used most of the metrics rate limit, so the shifted reads now come
+once at the end.
+
+### Checks before the writes
+
+- `--dry-run` prints the calls of each step and exits with 0. With a network
+  blocker preload, it makes no outbound attempt, and the output holds no secret.
+- Each of these stops the script with exit code 2 before any call, with no
+  outbound attempt: no `--owner`; `--owner tea-d3mlbrvdiees73ca4rdg`;
+  `--service-id` or `--pages-id` with `srv-db8mnqg473hc739d529g`; one ID for
+  both options; `--steps calls-free` without `setup`; `--steps cleanup` with
+  `--keep`; `--parallelism 0,5`; an unknown workload; real mode without
+  `RENDER_API_KEY`; without `WORKOS_API_KEY`; with a key that does not start
+  with `sk_test_`; with another client; with another issuer.
+- The SO-01c and SO-01d part two dry runs are the same as before, for eight
+  option sets.
+- `npm run typecheck`, `eslint` with the habit-hooks configuration on
+  `script/spike`, and `knip` pass; knip gives only its two earlier hints.
+
+### Measured (waits for the launcher)
+
+The complete runs, one for each instance plan, come here with their tables as
+the script prints them.
+
+### Recommendation for D-15 (waits for the measured runs)
+
+The recommendation for the free and team capacity values, the alert threshold,
+and the words of the failure message come from the measured runs.
+
+### Limits
+
+- A memory value is a value of the Render series at a point, not a kernel
+  peak. The probe takes the largest of three reads with starts 10 s apart, so
+  a peak shorter than about 10 s can still be lower in the record. A container
+  that is killed restarts before a later point can show it.
+- The renderer is a child process in the same container. A memory kill can
+  stop only the renderer: then the call gets "Page fetch failed: Renderer
+  process was killed", and no `server_failed` event comes. The report counts
+  these calls apart from the kills.
+- One region, one instance, and one pages origin in the same region. The
+  search uses the public Brave website, which can refuse or rate-limit many
+  searches from one address.
+- The hosted-live fixtures have the name prefix "Thermus live". A hosted live
+  gate run that starts during a probe run deletes them as stale fixtures, so
+  the two must not run at the same time.

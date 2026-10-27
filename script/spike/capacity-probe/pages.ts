@@ -44,7 +44,6 @@ function literal(text: string): string {
   return quoted;
 }
 
-// The JSON array holds small records, then one filler record that makes it exactly NEAR_JSON_BYTES long.
 function nearPageFunction(): string {
   return [
     `function nearPage(){const target=${NEAR_JSON_BYTES};const items=[];let size=2;`,
@@ -55,7 +54,6 @@ function nearPageFunction(): string {
   ].join('');
 }
 
-// Paragraphs of generated sentences, then one padding paragraph that makes the page exactly JS_BYTES long.
 function jsPageFunction(): string {
   return [
     `function jsPage(){const head=${literal(JS_HEAD)};const tail=${literal(JS_TAIL)};let body="";`,
@@ -78,7 +76,7 @@ function serverStatements(): string {
 
 // One line with no single quote, backslash, dollar sign, or backtick, as the SO-01d part two job program: a shell
 // and a shell-style word split give the same arguments.
-export function pagesProgram(): string {
+function pagesProgram(): string {
   const program = `${nearPageFunction()}${jsPageFunction()}${serverStatements()}`;
   if (/['\\$`\n]/.test(program)) throw new Error('The pages program must not contain a quote, backslash, dollar sign, backtick, or new line.');
   return program;
