@@ -2437,3 +2437,565 @@ The owner decides D-15. These values come from the runs above.
 - The hosted-live fixtures have the name prefix "Thermus live". A hosted live
   gate run that starts during a probe run deletes them as stale fixtures, so
   the two must not run at the same time.
+
+## SO-01f: Stripe Checkout, webhooks, test clocks, and WorkOS seat sync
+
+Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01f-stripe-seat-sync-7e93b8`,
+stacked on the SO-01e branch `self-ob-s1-so-01e-capacity-probe-7e8c5c`.
+
+Status: built and checked before the real run. The real run waits for the
+[owner steps](#owner-steps). On 27 October 2026, the WorkOS Stripe add-on of
+the Staging environment was not connected, Seat Sync and Entitlements were
+off, `.env.local` held no Stripe variable, and the Stripe CLI was not
+installed on the owner's Mac (`stripe` was not found).
+
+The WorkOS organization check needs no Stripe key and no add-on, but it also
+waits: the WorkOS Staging launcher `~/.config/thermus/with-workos-staging.cjs`
+refuses this checkout, because its origin allow-list names only the old owner
+`3-headed-monkey`. The probe does not change or bypass the launcher. The check
+is built (`--workos-only`), and it ran only against the stand-in of the
+[checks before the real run](#checks-before-the-real-run).
+
+### What the probe does
+
+[`stripe-seat-sync-probe.ts`](../../script/spike/stripe-seat-sync-probe.ts)
+runs a preflight that only reads, then the steps of the ticket in a fixed
+order, then the cleanup. Each step is an assertion of the script. The helper
+modules are in
+[`stripe-seat-sync-probe/`](../../script/spike/stripe-seat-sync-probe/). The
+probe reuses the step runner and the polls of SO-01c,
+[`runner.ts`](../../script/spike/render-tenant-lifecycle/runner.ts) and
+[`polls.ts`](../../script/spike/render-tenant-lifecycle/polls.ts).
+
+The probe calls Stripe through the `stripe` package, pinned to the exact
+version 23.0.1 in the dev dependencies. This version pins the Stripe API
+version `2026-09-30.endive`
+([stripe-node changelog](https://github.com/stripe/stripe-node/blob/master/CHANGELOG.md)).
+No file under `src/` imports the package. The probe calls WorkOS through
+`@workos-inc/node` 11.0.0, the version of `src/`.
+[`stripe-calls.ts`](../../script/spike/stripe-seat-sync-probe/stripe-calls.ts)
+and [`workos-calls.ts`](../../script/spike/stripe-seat-sync-probe/workos-calls.ts)
+build each call, and
+[`stripe-params.ts`](../../script/spike/stripe-seat-sync-probe/stripe-params.ts)
+builds the parameters of the Stripe writes. The dry run prints these calls,
+and real mode sends them, so the printed parameters are the sent parameters.
+
+Run it from the repository root, through the WorkOS Staging launcher, with the
+git-ignored `.env.local` of the main checkout:
+
+```sh
+node ~/.config/thermus/with-workos-staging.cjs node --env-file=/Users/tomermayara/git/Thermus/.env.local \
+  script/spike/stripe-seat-sync-probe.ts [--steps <step,...>] [--workos-only] [--keep] [--dry-run]
+```
+
+Options:
+
+- `--steps`: `seat-sync`, `checkout`, `webhook`, and `test-clock`, in this
+  order. The default is all of them. `--steps cleanup` runs alone: it deletes
+  the objects of earlier runs (the sweep).
+- `--workos-only`: only the WorkOS part of seat-sync, with the fake customer
+  ID `cus_ThermusSpike` and the last four characters of the run token. No
+  Stripe call and no Stripe key.
+- `--keep`: keep the objects of the run when every step passed. The next run
+  refuses to start until `--steps cleanup` deletes them.
+- `--dry-run`: print the planned calls. No network call and no key.
+
+Rules of the script:
+
+- Every object carries the run token, the UTC start time and four random
+  hexadecimal digits (`YYYYMMDD-HHMMSS-xxxx`). The WorkOS organization is
+  named `thermus-spike-stripe-<run> seat-sync`, and each user has the email
+  `thermus-spike-stripe-<run>-member-<n>@example.net`. Each Stripe customer
+  has a name with the token and the metadata `thermus_probe: so-01f` and
+  `thermus_probe_run: <run>`. The test clock has a name with the token. The
+  Checkout Session, its subscription, and the subscriptions of the CLI
+  trigger and of the test clock carry the same metadata. The prefix differs
+  from the `Thermus live` prefix of the hosted-live fixtures, so neither
+  cleanup deletes the objects of the other.
+- The secrets come only from the environment. No output holds a key or the
+  signing secret: the dry run prints `<set>`, and each message and report
+  line goes through a redaction of key, signing-secret, and bearer patterns.
+  The Stripe CLI runs with no variable of the probe secrets and no
+  `STRIPE_API_KEY`, so it uses its own login.
+- Before any call, the script stops with exit code 2 for: a key that the
+  selected steps need and that is not set; a Stripe key that starts with
+  `rk_live_` or `sk_live_`; a Stripe secret key, `sk_test_`, instead of a
+  restricted key; a missing or malformed `STRIPE_PRICE_ID`; a WorkOS key that
+  starts with `sk_live_` or not with `sk_test_`; and a `WORKOS_CLIENT_ID` of
+  the WorkOS Production environment, `client_01M4VDKC291XX3CDEFP5ZKY5KP`.
+- The preflight makes reads only; both clients refuse each write until it
+  passes. It refuses to start while an object of an earlier run exists. The
+  Stripe client also stops at any answer that holds a live-mode object.
+- Stripe calls go through the SDK with 2 network retries. The SDK repeats a
+  request after a network failure, a `409`, or a `5xx` answer, unless Stripe
+  marks it as not safe to repeat, and it sends one idempotency key with every
+  attempt of a POST (`RequestSender.js` of the package). WorkOS creates go one
+  time only. WorkOS deletes have up to 3 attempts after a network failure, a
+  `429`, or a `5xx` answer.
+- Each wait has a fixed bound: the meter, every 2 s, at most 300 reads (10
+  minutes) for each membership change; Checkout, every 5 s, at most 180 reads
+  (15 minutes); a test clock advance, every 2 s, at most 150 reads;
+  `stripe listen`, 60 s until "Ready!"; `stripe trigger`, 120 s; the
+  forwarded event, 60 s; the retries of the test clock, at most 14 advances
+  and 63 days of clock time.
+- The cleanup runs after each run, also after a failed step and after the
+  first `SIGINT` or `SIGTERM`. It removes the objects that the steps remember
+  and the objects that it finds by the run token, and then reads each one
+  until it is gone. A second signal stops the probe at once and can leave
+  objects.
+- Exit code 0: each step and the cleanup passed. Exit code 1: a step or the
+  cleanup failed. Exit code 2: a usage error.
+
+### Owner steps
+
+Each Stripe step is in the Stripe Dashboard of the standard Stripe account,
+in test mode: "WorkOS does not currently support connecting to a Stripe
+Sandbox account"
+([WorkOS Stripe add-on](https://workos.com/docs/authkit/add-ons/stripe)). No
+step puts a secret in the repository, a ticket, a chat, or a log.
+
+1. WorkOS Dashboard, Staging environment: **Authentication** > **Add-ons** >
+   Stripe > **Enable**. In the dialog, select **Stripe entitlements** and
+   **organization seat count sync**, and leave Radar payment outcomes off.
+   Click **Continue**, approve the connection in Stripe, and close the tab.
+   Then, in Stripe test mode, **Billing** > **Meters** lists the meter "User
+   Seat Count" with the event name `workos_seat_count`.
+2. Stripe: **Product catalog** > **Create product**, for example "Thermus
+   Team (test)". Select **Recurring**, then **More pricing options** >
+   **Usage-based** > **Per unit**. Set an amount in USD in whole cents (the
+   probe reads it), the meter "User Seat Count", and the billing period
+   **Monthly**. Set the tax behavior of the price, or the default tax
+   behavior of step 3. Copy the price ID.
+3. Stripe: **Settings** > **Tax**: the head office address, a preset product
+   tax code, and the default tax behavior, until the status of the tax
+   settings is active. A registration (**Tax** > **Registrations**) is
+   optional for the probe: "Stripe Tax only collects tax in jurisdictions
+   where you have an active registration"
+   ([Collect tax with the Checkout page](https://docs.stripe.com/tax/checkout/page)),
+   so without one the session shows a tax of 0.
+4. Stripe: **Settings** > **Business** > **Public details**: a terms of
+   service URL. Checkout refuses `consent_collection.terms_of_service:
+   required` without "a valid terms of service URL set in your Dashboard
+   settings"
+   ([Create a Checkout Session](https://docs.stripe.com/api/checkout/sessions/create)).
+   The owner chooses the URL. No customer reaches Checkout before SO-14
+   (D-11).
+5. Stripe: **Settings** > **Billing** > **Customer portal**: cancellation on,
+   at the end of the billing period; **Update quantities** and **Switch
+   plan** off. Save, so that a default configuration exists.
+6. Stripe: **Billing** > **Revenue recovery** > **Retries**: a retry policy,
+   for example the recommended Smart Retries of 8 tries within 2 weeks, and
+   **Cancel the subscription** when all retries for a payment fail
+   ([Automate payment retries](https://docs.stripe.com/billing/revenue-recovery/smart-retries)).
+7. Stripe: **Developers** > **API keys** > **Create restricted key**, in
+   test mode, named for example `thermus-so-01f-probe`, with the
+   [permissions below](#permissions-of-the-restricted-key) and **None** for
+   every other resource. Copy the key value one time.
+8. Main checkout `.env.local`, which git ignores: add `STRIPE_RESTRICTED_KEY`
+   with the key of step 7 and `STRIPE_PRICE_ID` with the price ID of step 2.
+9. This Mac: install the Stripe CLI, for example with
+   `brew install stripe/stripe-cli/stripe`, and sign in with `stripe login`.
+   The login makes an API key for the CLI that "is valid for 90 days"
+   ([Set up events](https://docs.stripe.com/events/set-up-events)). Then
+   `stripe listen --print-secret` must exit with code 0. Do not copy its
+   output: it is the signing secret.
+10. The WorkOS Staging launcher must accept the origin
+    `https://github.com/tomer-mayara/Thermus.git`. Today it names only
+    `3-headed-monkey/Thermus`.
+
+### Variables
+
+| Variable | Source | Rule |
+| --- | --- | --- |
+| `STRIPE_RESTRICTED_KEY` | `.env.local` of the main checkout | A restricted key of Stripe test mode, `rk_test_…`. The probe refuses `rk_live_…`, `sk_live_…`, and `sk_test_…`. |
+| `STRIPE_PRICE_ID` | `.env.local` | `price_…`, the metered monthly price of owner step 2. |
+| `WORKOS_API_KEY` | the Staging launcher, from the Keychain | `sk_test_…`; the probe refuses `sk_live_…`. Node keeps a variable of the environment over the file. |
+| `WORKOS_CLIENT_ID` | the Staging launcher | Not used. The probe refuses the client of the Production environment. |
+
+There is no `STRIPE_WEBHOOK_SECRET`. The webhook step reads the signing secret
+at run time with `stripe listen --print-secret`, keeps it in memory, and
+prints it nowhere. The CLI reference says that "the webhook signing secret
+provided will not change between restarts to the listen command"
+([stripe listen](https://docs.stripe.com/cli/listen)), and the secret of the
+CLI differs from the secret of a Dashboard endpoint
+([Manage webhook endpoints](https://docs.stripe.com/events/manage-webhook-endpoints)).
+A stored copy would add one more secret at rest and no check. SO-13 uses the
+secret of its Dashboard endpoint, `STRIPE_WEBHOOK_SECRET` of plan section 4.1.
+
+### Permissions of the restricted key
+
+From the calls of the probe, with the rules of
+[Restricted API keys](https://docs.stripe.com/keys/restricted-api-keys) ("GET"
+is a read; "POST" and "DELETE" are writes; "Write permissions include Read
+permissions") and the resource names of the
+[Stripe permissions reference](https://docs.stripe.com/stripe-apps/reference/permissions):
+
+| Resource | Permission | Calls of the probe |
+| --- | --- | --- |
+| Customers | Write | create, retrieve, update the default payment method, delete, search |
+| Payment Methods | Write | attach `pm_card_chargeCustomerFail` |
+| Checkout Sessions | Write | create, retrieve with the subscription expanded, expire |
+| Subscriptions | Write | create (test clock), retrieve, cancel |
+| Invoices | Read | list by subscription, retrieve |
+| Prices | Read | retrieve `STRIPE_PRICE_ID` |
+| Billing Meters | Read | retrieve the meter, list the event summaries of a customer |
+| Billing Meter Events | Write | report the seats of the test clock customer |
+| Test Clocks | Write | create, retrieve, list, advance, delete |
+| Customer Portal | Read | list the default configuration |
+| Tax Settings, Registrations | Read | retrieve the tax settings |
+| Every other resource | None | |
+
+The real run confirms the list. When a restricted key lacks a permission,
+"the response body includes an error message explaining which permissions to
+add" (restricted key guide), and the probe prints that message with the key
+replaced by `<key>`. The final list of the real run replaces this table. The
+Stripe CLI does not use this key: `stripe listen` and `stripe trigger` use
+the login of the CLI. SO-13 also creates Customer Portal sessions, which this
+probe does not do.
+
+### Steps
+
+| Step | Given, when, then |
+| --- | --- |
+| Preflight (extra) | Given the inputs, when the probe reads the price, its meter, the tax settings and the default Customer Portal configuration (with `checkout`), the Stripe CLI (with `webhook`), and the objects of earlier runs, then the price is active, USD, monthly, metered, and per unit with a whole-cent unit amount, on a meter with the event name `workos_seat_count`, the aggregation `last`, and the status `active`; the tax settings are `active`; the portal cancels at the period end and allows no quantity update; the CLI gives a signing secret; and no object of an earlier run exists. |
+| Seat sync | Given a new Stripe customer and a disposable WorkOS organization with that `stripe_customer_id`, when the probe adds one membership, then a second, and then removes one, then WorkOS shows 1, 2, and 1 active memberships, the meter shows the counts 1, 2, and 1 for the customer, and the record has the delay of each event. |
+| Seat sync, WorkOS only (extra) | Given no Stripe key, when the probe creates a disposable organization, sets the fake `stripe_customer_id`, reads the organization, adds one membership, then a second, and removes one, then the record says whether WorkOS accepts the field without the Stripe add-on, and WorkOS shows 1, 2, and 1 active memberships. |
+| Checkout | Given the price, when the probe creates a Checkout Session in subscription mode with required terms acceptance and Stripe Tax, and the operator completes it with a Stripe test card, then the session is `complete` with `consent.terms_of_service` `accepted`, automatic tax on, and a billing address, and its subscription is `active`, with one item on the price and no quantity. |
+| Webhook | Given the Stripe CLI forwarding to the probe's local listener, when the CLI triggers `customer.subscription.created`, then the listener accepts the signed event of the run with `200`, and refuses with `400` the same event with a changed status and the original signature, and the same event without a signature. |
+| Test clock | Given a test clock customer with the metered price and three reported seats, when the clock passes the period end, then the cycle invoice has a subtotal of three times the unit amount; when the payment method fails and the clock passes the retries, then the subscription is `past_due` and then `canceled`. |
+| Cleanup | Given the end of the probe, when it cleans up, then no Checkout Session of the run is open, its subscriptions are canceled, and its customers, test clock, WorkOS organization, and users are deleted, also after a failure or the first stop signal. |
+| Sweep (extra) | Given objects of earlier runs, when the probe runs with `--steps cleanup`, then it deletes each WorkOS organization and user with the probe prefix and each Stripe customer and test clock with the probe tag, and none remains. |
+
+How each step works:
+
+- Seat sync. The probe creates the organization, then the Stripe customer
+  with the metadata `workos_organization_id`, and then sets
+  `stripe_customer_id` with the update call: the create call of WorkOS takes
+  no such field
+  ([Update organization](https://workos.com/docs/reference/organization/update);
+  the create options of `@workos-inc/node` 11.0.0 have no `stripeCustomerId`).
+  The memberships have the role `user`. After each change, the probe reads
+  the active memberships from WorkOS, and then one event summary of the
+  customer with no `value_grouping_window`: with the `last` aggregation, its
+  value is the value of the last event. The window starts at the minute
+  boundary before the step start and ends at the minute boundary after the
+  read; "start_time" and "end_time" must align with minute boundaries
+  ([List billing meter event summaries](https://docs.stripe.com/api/billing/meter-event-summary/list)).
+  The delay is the time from the WorkOS answer to the first summary that
+  shows the new count, with a resolution of 2 s. Stripe processes meter
+  events asynchronously, so a summary can show a new event late
+  ([Record usage with the API](https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage-api)).
+  WorkOS sends a count "whenever a member is added, removed, deactivated, or
+  activated" (WorkOS Stripe add-on).
+- Checkout. The probe creates the customer first, as the upgrade of SO-13
+  does, so the session gets `customer_update` `address: auto` with
+  `billing_address_collection: required` for the tax location, and
+  `name: auto` for tax ID collection
+  ([Collect tax with the Checkout page](https://docs.stripe.com/tax/checkout/page),
+  [Collect customer tax IDs with Checkout](https://docs.stripe.com/tax/checkout/tax-ids)).
+  The line item has no quantity: "Quantity should not be defined when
+  `recurring.usage_type=metered`" (Create a Checkout Session). The session
+  expires 31 minutes after the create, because `expires_at` "can be anywhere
+  from 30 minutes to 24 hours after Checkout Session creation". The success
+  URL is a page of example.com with the session ID, so no Thermus code runs
+  and the probe reads the session from Stripe. The probe prints the session
+  URL on stderr and reads the session every 5 s for at most 15 minutes. The
+  operator pays with the card 4242 4242 4242 4242, any future expiry date,
+  and any CVC, ticks the terms box, and enters a billing address.
+- Webhook. The listener serves `POST /stripe/events` on the loopback address
+  and calls `stripe.webhooks.constructEvent(raw body, Stripe-Signature,
+  secret)` on the raw body ([Set up events](https://docs.stripe.com/events/set-up-events)):
+  `200` when it returns the event, `400` when it throws. `stripe listen`
+  forwards `customer.created` and `customer.subscription.created`. The CLI
+  fixture of `customer.subscription.created` makes a customer, a product, a
+  price, and a subscription
+  ([fixture](https://github.com/stripe/stripe-cli/blob/master/pkg/fixtures/triggers/customer.subscription.created.json)).
+  The trigger skips the product and the price, puts the price of the run on
+  the subscription with `--override`, and adds the run token to the customer
+  and the subscription with `--add` ([stripe trigger](https://docs.stripe.com/cli/trigger)).
+  So every object that the trigger makes can be deleted, and the cleanup
+  deletes the customer, which "immediately cancels any active subscriptions"
+  ([Delete a customer](https://docs.stripe.com/api/customers/delete)). The
+  changed payload is the event with its subscription status changed and
+  written again with two-space indents; the probe posts it with the original
+  `Stripe-Signature` header. An unchanged repeat must still get `200`: the
+  check alone accepts a repeat in its tolerance of 300 s, so SO-13 drops a
+  repeated event ID.
+- Test clock. The clock starts at the time of this machine. The customer is
+  on the clock with the test card `pm_card_chargeCustomerFail`, which
+  attaches to a customer but fails each charge
+  ([Testing](https://docs.stripe.com/testing)), set as
+  `invoice_settings.default_payment_method`
+  ([Attach a PaymentMethod](https://docs.stripe.com/api/payment_methods/attach)).
+  The subscription has no billing mode in the call, so it is `flexible`, and
+  Stripe "excludes metered line items from the first invoice since no prior
+  usage exists to bill"
+  ([Create a subscription](https://docs.stripe.com/api/subscriptions/create),
+  [Set up a pay-as-you-go pricing model](https://docs.stripe.com/billing/subscriptions/usage-based/implementation-guide)).
+  One meter event of the probe reports 3 seats one second after the frozen
+  time, with the event name and the payload keys of the meter. The timestamp
+  of a meter event can be at most 35 days in the past and 5 minutes in the
+  future ([Create a billing meter event](https://docs.stripe.com/api/billing/meter-event/create)),
+  and no page says whether a test clock moves that window, so the probe
+  reports usage in the first period only, where both readings hold. The
+  clock then goes to the period end of the subscription item plus 2 hours:
+  "By default, the invoice appears in a draft status for one hour"
+  ([Test clocks: API and advanced usage](https://docs.stripe.com/billing/testing/test-clocks/api-advanced-usage)),
+  and then Stripe tries the payment. The cycle invoice must have the subtotal
+  3 times the unit amount, the status `open`, and at least one attempt, and
+  the subscription must be `past_due`. Then each advance goes to one hour
+  after the `next_payment_attempt` of the invoice, or 7 days on, until the
+  subscription is `canceled`. One advance can go at most two intervals of the
+  shortest subscription of the clock
+  ([Advance a test clock](https://docs.stripe.com/api/test_clocks/advance)).
+  The longest Smart Retries window is 2 months.
+
+### Planned calls
+
+The probe sends each Stripe call to `https://api.stripe.com` with the
+restricted key, and each WorkOS call to `https://api.workos.com` with the
+Staging key, through the SDKs. The pages were read on 27 October 2026 (UTC).
+
+| Step | Call | SDK method | Documentation page |
+| --- | --- | --- | --- |
+| Preflight | `GET /v1/prices/{id}` | `prices.retrieve` | [The Price object](https://docs.stripe.com/api/prices/object) |
+| Preflight | `GET /v1/billing/meters/{id}` | `billing.meters.retrieve` | [The Meter object](https://docs.stripe.com/api/billing/meter/object) |
+| Preflight, with `checkout` | `GET /v1/tax/settings` | `tax.settings.retrieve` | [The Tax Setting object](https://docs.stripe.com/api/tax/settings/object) |
+| Preflight, with `checkout` | `GET /v1/billing_portal/configurations?is_default=true&limit=1` | `billingPortal.configurations.list` | [List portal configurations](https://docs.stripe.com/api/customer_portal/configurations/list), [The portal configuration object](https://docs.stripe.com/api/customer_portal/configurations/object) |
+| Preflight, with `webhook` | `stripe --version`, `stripe listen --print-secret` | CLI | [stripe listen](https://docs.stripe.com/cli/listen) |
+| Preflight, Cleanup, Sweep | `GET /organizations?limit=100`, every page | `organizations.listOrganizations` | [List organizations](https://workos.com/docs/reference/organization/list) |
+| Preflight, Cleanup, Sweep | `GET /user_management/users?limit=100`, every page | `userManagement.listUsers` | [List users](https://workos.com/docs/reference/authkit/user/list) |
+| Preflight, Cleanup, Sweep | `GET /v1/customers/search?query=metadata['thermus_probe']:'so-01f'` (the run token in the cleanup) | `customers.search` | [Search customers](https://docs.stripe.com/api/customers/search), [Search](https://docs.stripe.com/search) |
+| Preflight, Cleanup, Sweep | `GET /v1/test_helpers/test_clocks?limit=100` | `testHelpers.testClocks.list` | [Test clocks: API and advanced usage](https://docs.stripe.com/billing/testing/test-clocks/api-advanced-usage) |
+| Seat sync | `POST /organizations` | `organizations.createOrganization` | [Create an organization](https://workos.com/docs/reference/organization/create) |
+| Seat sync, Checkout, Test clock | `POST /v1/customers` | `customers.create` | [Set up a pay-as-you-go pricing model](https://docs.stripe.com/billing/subscriptions/usage-based/implementation-guide) |
+| Seat sync | `PUT /organizations/{id}` with `stripe_customer_id` | `organizations.updateOrganization` | [Update organization](https://workos.com/docs/reference/organization/update), [WorkOS Stripe add-on](https://workos.com/docs/authkit/add-ons/stripe) |
+| Seat sync | `POST /user_management/users` | `userManagement.createUser` | [Create a user](https://workos.com/docs/reference/authkit/user/create) |
+| Seat sync | `POST /user_management/organization_memberships` | `userManagement.createOrganizationMembership` | [Create an organization membership](https://workos.com/docs/reference/authkit/organization-membership/create) |
+| Seat sync | `DELETE /user_management/organization_memberships/{id}` | `userManagement.deleteOrganizationMembership` | [Delete organization membership](https://workos.com/docs/reference/authkit/organization-membership/delete) |
+| Seat sync | `GET /user_management/organization_memberships?organization_id=…&statuses=active` | `userManagement.listOrganizationMemberships` | [List organization memberships](https://workos.com/docs/reference/authkit/organization-membership/list) |
+| Seat sync, Test clock | `GET /v1/billing/meters/{id}/event_summaries?customer=…&start_time=…&end_time=…` | `billing.meters.listEventSummaries` | [List billing meter event summaries](https://docs.stripe.com/api/billing/meter-event-summary/list) |
+| Checkout | `POST /v1/checkout/sessions` | `checkout.sessions.create` | [Create a Checkout Session](https://docs.stripe.com/api/checkout/sessions/create) |
+| Checkout, Cleanup | `GET /v1/checkout/sessions/{id}?expand[]=subscription` | `checkout.sessions.retrieve` | [The Checkout Session object](https://docs.stripe.com/api/checkout/sessions/object) |
+| Cleanup, only for an open session | `POST /v1/checkout/sessions/{id}/expire` | `checkout.sessions.expire` | [Expire a Checkout Session](https://docs.stripe.com/api/checkout/sessions/expire) |
+| Webhook | `stripe listen --forward-to …`, `stripe trigger customer.subscription.created …` | CLI, as child processes | [stripe listen](https://docs.stripe.com/cli/listen), [stripe trigger](https://docs.stripe.com/cli/trigger) |
+| Webhook | `stripe.webhooks.constructEvent` in the listener | SDK, local | [Set up events](https://docs.stripe.com/events/set-up-events), [Manage webhook endpoints](https://docs.stripe.com/events/manage-webhook-endpoints) |
+| Test clock | `POST /v1/test_helpers/test_clocks` | `testHelpers.testClocks.create` | [Test clocks: API and advanced usage](https://docs.stripe.com/billing/testing/test-clocks/api-advanced-usage) |
+| Test clock | `POST /v1/payment_methods/pm_card_chargeCustomerFail/attach` | `paymentMethods.attach` | [Attach a PaymentMethod](https://docs.stripe.com/api/payment_methods/attach), [Testing](https://docs.stripe.com/testing) |
+| Test clock | `POST /v1/customers/{id}` with `invoice_settings.default_payment_method` | `customers.update` | [Attach a PaymentMethod](https://docs.stripe.com/api/payment_methods/attach) |
+| Test clock | `POST /v1/subscriptions` | `subscriptions.create` | [Create a subscription](https://docs.stripe.com/api/subscriptions/create) |
+| Test clock | `POST /v1/billing/meter_events` | `billing.meterEvents.create` | [Create a billing meter event](https://docs.stripe.com/api/billing/meter-event/create) |
+| Test clock | `POST /v1/test_helpers/test_clocks/{id}/advance`, then `GET /v1/test_helpers/test_clocks/{id}` | `testHelpers.testClocks.advance`, `.retrieve` | [Advance a test clock](https://docs.stripe.com/api/test_clocks/advance) |
+| Test clock | `GET /v1/invoices?subscription=…`, `GET /v1/invoices/{id}` | `invoices.list`, `invoices.retrieve` | [List all invoices](https://docs.stripe.com/api/invoices/list), [Test your Billing integration](https://docs.stripe.com/billing/testing) |
+| Test clock, Cleanup | `GET /v1/subscriptions/{id}` | `subscriptions.retrieve` | [Automate payment retries](https://docs.stripe.com/billing/revenue-recovery/smart-retries) |
+| Cleanup, only when not canceled | `DELETE /v1/subscriptions/{id}` | `subscriptions.cancel` | [Cancel a subscription](https://docs.stripe.com/api/subscriptions/cancel) |
+| Cleanup, Sweep | `DELETE /v1/customers/{id}`, then `GET /v1/customers/{id}` | `customers.del`, `customers.retrieve` | [Delete a customer](https://docs.stripe.com/api/customers/delete) |
+| Cleanup, Sweep | `DELETE /v1/test_helpers/test_clocks/{id}` | `testHelpers.testClocks.del` | [Test clocks: API and advanced usage](https://docs.stripe.com/billing/testing/test-clocks/api-advanced-usage) |
+| Cleanup, Sweep | `DELETE /user_management/users/{id}`, then `GET` | `userManagement.deleteUser`, `getUser` | [Delete a user](https://workos.com/docs/reference/authkit/user/delete) |
+| Cleanup, Sweep | `DELETE /organizations/{id}`, then `GET` | `organizations.deleteOrganization`, `getOrganization` | [Delete an organization](https://workos.com/docs/reference/organization/delete) |
+
+The parameters of the Checkout Session, as the dry run prints them:
+
+```json
+{
+  "mode": "subscription",
+  "customer": "{customerId}",
+  "line_items": [{ "price": "{STRIPE_PRICE_ID}" }],
+  "consent_collection": { "terms_of_service": "required" },
+  "automatic_tax": { "enabled": true },
+  "billing_address_collection": "required",
+  "tax_id_collection": { "enabled": true },
+  "customer_update": { "address": "auto", "name": "auto" },
+  "client_reference_id": "thermus-spike-stripe-YYYYMMDD-HHMMSS-xxxx",
+  "metadata": { "thermus_probe": "so-01f", "thermus_probe_run": "YYYYMMDD-HHMMSS-xxxx" },
+  "subscription_data": { "metadata": { "thermus_probe": "so-01f", "thermus_probe_run": "YYYYMMDD-HHMMSS-xxxx" } },
+  "success_url": "https://example.com/thermus-spike/checkout-return?session_id={CHECKOUT_SESSION_ID}",
+  "expires_at": "{now + 1860}"
+}
+```
+
+The trigger of the webhook step, as the dry run prints it; real mode passes
+the same arguments with no shell:
+
+```sh
+stripe trigger customer.subscription.created --skip product --skip price \
+  --override 'subscription:items[0].price={STRIPE_PRICE_ID}' \
+  --override 'customer:description=thermus-spike-stripe-YYYYMMDD-HHMMSS-xxxx webhook' \
+  --add 'customer:name=thermus-spike-stripe-YYYYMMDD-HHMMSS-xxxx webhook' \
+  --add customer:metadata.thermus_probe=so-01f --add customer:metadata.thermus_probe_run=YYYYMMDD-HHMMSS-xxxx \
+  --add subscription:metadata.thermus_probe=so-01f --add subscription:metadata.thermus_probe_run=YYYYMMDD-HHMMSS-xxxx
+```
+
+### Checks before the real run
+
+- `--dry-run` prints 261 lines of planned calls and exits with code 0. With
+  the network blocker preload of the tests,
+  [`deny-network.ts`](../../test/support/processes/deny-network.ts), it makes
+  no outbound attempt, also with fake keys of the right prefixes set. It
+  prints `<set>` for a set key and never a value.
+- The guards stop the script with exit code 2 and no outbound attempt, with
+  the preload, and no output holds the fake key values:
+
+| Case | Options | Exit code | Message, after `stripe-seat-sync-probe:` |
+| --- | --- | --- | --- |
+| No `STRIPE_RESTRICTED_KEY` | `--steps checkout` | 2 | STRIPE_RESTRICTED_KEY is not set. The Stripe steps need a restricted key of Stripe test mode; --dry-run and --workos-only need none. |
+| `STRIPE_RESTRICTED_KEY=rk_live_…` | none | 2 | STRIPE_RESTRICTED_KEY is a live key. The probe runs in Stripe test mode only; give a restricted test key (rk_test_). |
+| `STRIPE_RESTRICTED_KEY=sk_live_…` | none | 2 | The same message. |
+| `STRIPE_RESTRICTED_KEY=sk_test_…` | none | 2 | STRIPE_RESTRICTED_KEY is a secret key. Give a restricted test key (rk_test_) with the permissions of the record. |
+| No `STRIPE_PRICE_ID` | `--steps test-clock` | 2 | STRIPE_PRICE_ID is not set. The Stripe steps need the ID of the metered monthly price on the meter "User Seat Count". |
+| `STRIPE_PRICE_ID=prod_…` | `--steps test-clock` | 2 | STRIPE_PRICE_ID must be a Stripe price ID: price_ and letters or digits. |
+| No `WORKOS_API_KEY` | `--workos-only` | 2 | WORKOS_API_KEY is not set. Run the probe through the WorkOS Staging launcher, ~/.config/thermus/with-workos-staging.cjs. |
+| `WORKOS_API_KEY=sk_live_…` | `--workos-only` | 2 | WORKOS_API_KEY is a production key. The probe runs in the WorkOS Staging environment only. |
+| `WORKOS_CLIENT_ID` of Production | `--workos-only` | 2 | WORKOS_CLIENT_ID names the client of the WorkOS Production environment. The probe never touches it; run it through the Staging launcher. |
+| `cleanup` with another step | `--steps cleanup,checkout` | 2 | --steps cleanup runs alone: it deletes the objects of earlier runs. |
+| `--workos-only` with `--steps` | `--workos-only --steps seat-sync` | 2 | --workos-only runs only the WorkOS part of seat-sync, so it takes no --steps. |
+| The sweep with `--keep` | `--steps cleanup --keep` | 2 | --steps cleanup deletes objects, so it takes no --keep. |
+| An unknown step | `--steps portal` | 2 | --steps names unknown steps: portal. The steps are seat-sync, checkout, webhook, test-clock, cleanup. |
+
+- Real mode ran against a stand-in for the Stripe and WorkOS APIs and the
+  Stripe CLI: a local HTTP server, a preload that sent the calls of the SDKs
+  for `api.stripe.com` and `api.workos.com` to it, and a stand-in `stripe`
+  command on the `PATH`. The stand-in models the documented behavior that
+  the probe relies on, with a WorkOS seat sync that reports the active count
+  to the meter after 1.5 s, an operator who completes Checkout after two
+  reads, an invoice that bills the last meter value of the period, and a
+  retry schedule of three retries, 3 days apart, then a cancellation. These
+  runs measure nothing about Stripe or WorkOS. They show that each assertion
+  can fail and that the cleanup runs. The run with all steps passed with exit
+  code 0, made 30 writes and 55 reads, and removed 12 objects. No output of any run held
+  a key, the signing secret, or a bearer token.
+
+| Change in the stand-in | Options | Exit code | Result |
+| --- | --- | --- | --- |
+| None | none | 0 | Each step and the cleanup passed. |
+| None | `--workos-only` | 0 | Pass: "WorkOS accepted the stripe_customer_id … without the Stripe add-on"; 1, 2, and 1 active memberships. The cleanup removed 3 objects. |
+| WorkOS refuses `stripe_customer_id` with `422` | `--workos-only` | 0 | Pass: "WorkOS refused the stripe_customer_id … (read back: absent)". |
+| The same | `--steps seat-sync` | 1 | `FAIL Seat sync`: "PUT /organizations/… answered HTTP 422". The cleanup removed 2 objects. |
+| The meter shows one seat too many | `--steps seat-sync` | 1 | `FAIL Seat sync`: "Timed out after 300 reads every 2 s waiting for the meter to show 1 for cus_… Values seen: no summary, 2." The cleanup removed 3 objects. |
+| The price is licensed | `--steps test-clock` | 1 | `FAIL Preflight`: "… does not have: usage_type metered", and no write. |
+| The meter aggregation is `sum` | `--steps seat-sync` | 1 | `FAIL Preflight`: "… does not have: default_aggregation last". |
+| The price answer is in live mode | `--steps test-clock` | 1 | `FAIL Preflight`: "… answered with a live-mode object. The probe stops: it runs in Stripe test mode only." |
+| The tax settings are `pending` | `--steps checkout` | 1 | `FAIL Preflight`: "Tax settings does not have: status active". |
+| The portal allows quantity updates | `--steps checkout` | 1 | `FAIL Preflight`: "… does not have: no quantity update". |
+| The CLI is not signed in | `--steps webhook` | 1 | `FAIL Preflight`: "stripe listen --print-secret gave exit code 1 and no signing secret: You have not configured API keys yet …". |
+| The key lacks the customer permission (`403`) | `--steps checkout` | 1 | `FAIL Preflight` with the permission that the answer names and the key as `<key>`. `FAIL Cleanup`: "removed 0 objects; none is left. The search for other objects of this run failed …". |
+| The key lacks the Checkout permission (`403`) | `--steps checkout` | 1 | `FAIL Checkout`: "POST /v1/checkout/sessions answered HTTP 403 …". The cleanup removed the customer. |
+| The session completes without accepted terms | `--steps checkout` | 1 | `FAIL Checkout`: "… does not have: consent.terms_of_service accepted". The cleanup removed 3 objects. |
+| The subscription item has a quantity | `--steps checkout` | 1 | `FAIL Checkout`: "Subscription of the session does not have: no quantity on the item". |
+| The operator never pays | `--steps checkout` | 1 | `FAIL Checkout`: "Timed out after 180 reads every 5 s waiting for the operator to complete the Checkout Session cs_test_…". The cleanup expired the session and deleted the customer. |
+| The operator never pays, and `SIGINT` comes 1 s after the URL | `--steps checkout` | 1 | `FAIL Checkout: Stopped by SIGINT`. The cleanup expired the session and deleted the customer. |
+| `stripe trigger` fails | `--steps webhook` | 1 | `FAIL Webhook`: "stripe trigger failed: Trigger failed: Request failed, status=400 …". |
+| The CLI signs with another secret | `--steps webhook` | 1 | `FAIL Webhook`: "No matching delivery within 60 s", with both forwarded events refused with `400`. |
+| The invoice bills twice the seats | `--steps test-clock` | 1 | `FAIL Test clock`: "Invoice of the first period does not have: subtotal 3000: 3 times 1000". |
+| The meter event is refused | `--steps test-clock` | 1 | `FAIL Test clock`: "POST /v1/billing/meter_events answered HTTP 400 …". |
+| The clock reports `internal_failure` | `--steps test-clock` | 1 | `FAIL Test clock`: "The test clock … stopped with the status internal_failure". |
+| The subscription stays `past_due` after the retries | `--steps test-clock` | 1 | `FAIL Test clock`: "The subscription stayed past_due 65 days after the first failed payment. Set Billing > Revenue recovery > Retries to cancel the subscription after the last retry." |
+| None, with `--keep`; then a second run; then the sweep | `--steps checkout --keep`; `--steps checkout`; `--steps cleanup` | 0; 1; 0 | Kept 3 objects. Then `FAIL Preflight`: "Objects of earlier runs exist: Stripe customer …". Then `PASS Sweep`: the customer was removed; deleting it canceled the kept subscription. |
+
+The stand-in, its scenario runner, and the guard runner are in the session
+scratchpad, not in the branch. Two stand-in faults found gaps of the stand-in,
+not of the probe: the automatic tax flag of a completed session, and the
+retrieve of one invoice. The scenario with no customer write permission found
+a gap of the probe: the cleanup stopped when its search failed. The cleanup
+now removes the remembered objects first, and then fails with the reason.
+
+### WorkOS organization check
+
+Waits for the launcher, as the status says. When the launcher accepts this
+checkout, the first real run is:
+
+```sh
+node ~/.config/thermus/with-workos-staging.cjs node --env-file=/Users/tomermayara/git/Thermus/.env.local \
+  script/spike/stripe-seat-sync-probe.ts --workos-only
+```
+
+It creates one disposable organization and two users in the WorkOS Staging
+environment, sets `stripe_customer_id` to `cus_ThermusSpike` and the last
+four characters of the run token, reads the organization back, adds and
+removes the memberships, and deletes the users and the organization. The
+record then says whether WorkOS accepts the field without the Stripe add-on.
+The planned calls are the "Seat sync (WorkOS only)" and "Cleanup" parts of
+`--dry-run --workos-only`.
+
+### Measured
+
+Waits for the owner steps. The script prints these tables; the record gets
+them as the script prints them.
+
+| Step | Check | Expected | Measured |
+| --- | --- | --- | --- |
+
+| Change | Active memberships in WorkOS | Meter value | Delay after the WorkOS answer |
+| --- | --- | --- | --- |
+
+| System | Object | ID | Created in | Cleanup |
+| --- | --- | --- | --- | --- |
+
+| Step | Call | Status | Duration |
+| --- | --- | --- | --- |
+
+### Documentation facts for Slice 3
+
+From the pages above, read on 27 October 2026 (UTC), for SO-13 to SO-15:
+
+- WorkOS sets the seat count meter up and sends the count; Thermus only sets
+  `stripe_customer_id`, with the update call. The add-on page names the event
+  fields "Customer ID" and "Value" but not their payload keys; the meter
+  gives them in `customer_mapping.event_payload_key` and
+  `value_settings.event_payload_key`, and the probe reads them.
+- Stripe marks Billing Meters "Not Recommended" for a new usage-based
+  integration and points to Metronome (Set up a pay-as-you-go pricing
+  model). The WorkOS Seat Sync uses a Billing Meter, and D-3 depends on the
+  Seat Sync.
+- A new subscription is `flexible` by default and has no first invoice for a
+  metered item. The first charge comes at the end of the first period, as
+  section 4.2 of the plan says.
+- Checkout with an existing customer needs `customer_update` `address: auto`
+  and `billing_address_collection: required` for the tax location,
+  `name: auto` for the tax ID, a terms of service URL in the public details,
+  and no quantity on a metered line item.
+- Stripe recommends thin events for new integrations ("Use thin events for
+  new integrations", Set up events); stripe-node 23.0.0 adds thin
+  notifications for subscriptions, such as `V1CustomerSubscriptionUpdatedEvent`.
+  The ticket checks snapshot events with `constructEvent`; SO-13 chooses the
+  format.
+- The signature check alone accepts a repeated event in its tolerance, so the
+  event ID table of SO-13 stays necessary. In stripe-node 23, a tolerance of
+  0 skips the timestamp check, and 23.0.1 refuses a signing secret of only
+  white space (changelog).
+- A list call omits the objects of a test clock unless it names a parent,
+  such as the subscription (Test clocks: API and advanced usage). A customer
+  search lags writes by less than a minute, and "up to an hour" during
+  outages (Search customers).
+- A deleted customer can still be read, with `deleted: true` (Delete a
+  customer). A subscription cancel stops the automatic collection of the
+  finalized invoices of the customer (Cancel a subscription).
+
+### Limits
+
+- The real run waits for the owner steps and the launcher. Only the stand-in
+  exercised the Stripe and WorkOS code paths, and it models the pages as the
+  probe reads them, so it cannot show the real behavior. The real run must
+  answer these points: whether the summary call accepts an `end_time` at the
+  next minute boundary, which is in the future; whether the CLI accepts
+  `--skip product --skip price` with the price override; whether a meter
+  event at the frozen time plus one second counts for a test clock customer;
+  whether WorkOS sends a count when the probe sets `stripe_customer_id`; the
+  billing reason of the first invoice in flexible mode; and the permissions
+  that the key really needs.
+- The sweep finds customers by search and test clocks by name. It expires no
+  open Checkout Session of an earlier run (a session expires on its own 31
+  minutes after its create) and cancels no subscription directly (the
+  customer delete cancels it).
+- Meter events cannot be deleted; they stay with the deleted customers.
+- No step checks Entitlements: the ticket has no criterion for it, and the
+  plan reads the tier from PostgreSQL, not from the `entitlements` claim.
+- The test clock reports usage in one period only.
+- The webhook step uses the secret of the CLI and snapshot events. SO-13 uses
+  a Dashboard endpoint and its own secret.
+- Under Claude Code, stripe-node 23.0.1 writes one hint line to stderr when
+  it loads, and the SDK sends the name of the agent in its user agent
+  (`stripe.esm.node.js` of the package). The report on stdout does not
+  change.
+- Test mode only, one run, and one meter. A membership with only the default
+  role is not checked.

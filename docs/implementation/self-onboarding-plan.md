@@ -738,7 +738,9 @@ and the recommendation are in the record section
   repeat; 5. the cleanup, also after a failure.
 
 **SO-01f Stripe and WorkOS seat sync probe.** Size M. Needed before Slice 3;
-it can run later than the other probes.
+it can run later than the other probes. The probe, the owner steps, the
+variables, and the permissions of the restricted key are in the record section
+[SO-01f: Stripe Checkout, webhooks, test clocks, and WorkOS seat sync](self-onboarding-s1.md#so-01f-stripe-checkout-webhooks-test-clocks-and-workos-seat-sync).
 
 - Owner steps in the dashboards, recorded without secrets: connect the
   WorkOS Stripe add-on of the Staging environment to the Stripe account in
