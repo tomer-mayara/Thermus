@@ -23,10 +23,12 @@ export function jobOf(value: unknown): JobView {
   return { id: renderId(fieldJson(value, 'id'), 'job.id'), status: text('status'), planId: text('planId'), createdAt: text('createdAt'), startedAt: text('startedAt'), finishedAt: text('finishedAt') };
 }
 
+// startedAt and finishedAt have whole seconds, and createdAt has fractions, so a start can come out below zero.
 function between(from: string | undefined, to: string | undefined): string {
   const start = Date.parse(from ?? '');
   const end = Date.parse(to ?? '');
-  return Number.isFinite(start) && Number.isFinite(end) ? seconds(end - start) : 'unknown';
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return 'unknown';
+  return end < start ? 'under 1 s' : seconds(end - start);
 }
 
 async function createJob(context: ProbeContext, webId: string, command: string): Promise<{ readonly job: JobView; readonly started: number }> {
@@ -69,7 +71,9 @@ function lineOk(line: ProbeLine): boolean {
 
 function recordLines(context: ProbeContext, targets: readonly Target[], read: LinesRead): readonly ProbeLine[] {
   const resources = [...new Set(read.lines.map((line) => line.entry.labels.resource ?? 'absent'))].join(', ') || 'none';
-  addRow(context, 'Job', { check: 'Log lines of this run', expected: `${targets.length}, one for each request`, measured: `${read.lines.length} of ${read.entries} log entries, ${seconds(read.ms)} after the job end (${read.reads} reads of GET /logs with resource ${read.resources.join(' and ')}); resource labels: ${resources}` });
+  const limits = `Ratelimit-Limit ${read.limits.limit ?? 'absent'}, Ratelimit-Remaining ${read.limits.remaining ?? 'absent'}`;
+  const reads = `${read.reads} ${read.reads === 1 ? 'read' : 'reads'}`;
+  addRow(context, 'Job', { check: 'Log lines of this run', expected: `${targets.length}, one for each request`, measured: `${read.lines.length} of ${read.entries} log entries, ${seconds(read.ms)} after the job end (${reads} of GET /logs with resource ${read.resources.join(' and ')}; the last read: ${limits}); resource label of the lines: ${resources}` });
   context.report.transcript.push(...transcriptOf(read.lines));
   for (const target of targets) {
     const line = read.lines.find((item) => item.from === target.from);
@@ -88,8 +92,9 @@ export async function job(context: ProbeContext): Promise<string> {
   const ended = await waitForEnd(context, webId, created);
   const createdAt = Date.parse(ended.createdAt ?? '');
   const since = { createdAt: Number.isFinite(createdAt) ? createdAt : Date.now() - 600_000, targets: targets.length };
-  const lines = recordLines(context, targets, await readProbeLines(context, [webId], since));
-  assert.ok(lines.length > 0, `The logs of ${webId} hold no line of this run (job ${ended.id} ended ${shown(ended.status)}). The job may not have run the start command, or its lines went to another resource.`);
+  // The lines of a job carry the job ID as their resource, not the ID of its service (development run of SO-01d).
+  const lines = recordLines(context, targets, await readProbeLines(context, [webId, ended.id], since));
+  assert.ok(lines.length > 0, `The logs of ${webId} and ${ended.id} hold no line of this run (the job ended ${shown(ended.status)}). The job may not have run the start command.`);
   const ok = lines.filter(lineOk).map((line) => line.from);
   const failed = lines.filter((line) => !lineOk(line)).map((line) => `${line.from}: ${lineText(line)}`);
   assert.ok(ok.length > 0, `No request of the job answered 200 with ok: ${failed.join('; ')}`);

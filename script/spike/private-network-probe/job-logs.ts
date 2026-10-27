@@ -1,5 +1,6 @@
 import { fieldJson, fieldText } from '../render-tenant-lifecycle/answers.ts';
 import { sleep } from '../render-tenant-lifecycle/polls.ts';
+import type { RateLimits } from '../render-tenant-lifecycle/render-client.ts';
 import { logsCall, PROBE_MARK } from './calls.ts';
 import type { ProbeContext, TranscriptLine } from './context.ts';
 
@@ -30,6 +31,7 @@ export interface LinesRead {
   readonly reads: number;
   readonly ms: number;
   readonly resources: readonly string[];
+  readonly limits: RateLimits;
 }
 
 function labelsOf(value: unknown): Readonly<Record<string, string>> {
@@ -65,14 +67,14 @@ function probeLine(entry: LogEntry, run: string): ProbeLine | undefined {
   };
 }
 
-async function readWindow(context: ProbeContext, resources: readonly string[], startTime: string): Promise<readonly LogEntry[]> {
+async function readWindow(context: ProbeContext, resources: readonly string[], startTime: string): Promise<{ readonly entries: readonly LogEntry[]; readonly limits: RateLimits }> {
   const entries: LogEntry[] = [];
   let window = { startTime, endTime: new Date().toISOString() };
   for (let page = 1; page <= MAX_PAGES; page++) {
     const answer = await context.client.read(logsCall(context.inputs.owner, resources, window), context.signal);
     entries.push(...entriesOf(answer.json));
     const next = { startTime: fieldText(answer.json, 'nextStartTime'), endTime: fieldText(answer.json, 'nextEndTime') };
-    if (fieldJson(answer.json, 'hasMore') !== true || next.startTime === undefined || next.endTime === undefined) return entries;
+    if (fieldJson(answer.json, 'hasMore') !== true || next.startTime === undefined || next.endTime === undefined) return { entries, limits: answer.limits };
     window = { startTime: next.startTime, endTime: next.endTime };
   }
   throw new Error(`The log list has more than ${MAX_PAGES} pages for one window`);
@@ -82,11 +84,10 @@ async function readWindow(context: ProbeContext, resources: readonly string[], s
 export async function readProbeLines(context: ProbeContext, resources: readonly string[], since: { readonly createdAt: number; readonly targets: number }): Promise<LinesRead> {
   const started = performance.now();
   const startTime = new Date(since.createdAt - WINDOW_SLACK_MS).toISOString();
-  let entries: readonly LogEntry[] = [];
   for (let reads = 1; ; reads++) {
-    entries = await readWindow(context, resources, startTime);
+    const { entries, limits } = await readWindow(context, resources, startTime);
     const lines = entries.map((entry) => probeLine(entry, context.run)).filter((line) => line !== undefined);
-    if (lines.length >= since.targets || reads === LOG_POLL.attempts) return { lines, entries: entries.length, reads, ms: performance.now() - started, resources };
+    if (lines.length >= since.targets || reads === LOG_POLL.attempts) return { lines, entries: entries.length, reads, ms: performance.now() - started, resources, limits };
     await sleep(LOG_POLL.everyMs, context.signal);
   }
 }

@@ -82,7 +82,7 @@ function jobCalls(plan: Plan): readonly Planned[] {
   return [
     api(jobCall(plan.ids.web, command), `Without JSON escapes, the start command is: ${command}`),
     api(jobStatusCall(plan.ids.web, '{jobId}'), `${every(JOB_POLL)}, until the status is succeeded, failed, or canceled.`),
-    api(logsCall(plan.inputs.owner, [plan.ids.web], window), `startTime is the createdAt of the job less 10 s, and endTime the time of the read, in ISO 8601. ${every(LOG_POLL)}, with each next page while hasMore, until each request has its line: a JSON object with probe "SO-01d" and run "${RUN}".`),
+    api(logsCall(plan.inputs.owner, [plan.ids.web, '{jobId}'], window), `The lines of a job carry the job ID as their resource. startTime is the createdAt of the job less 10 s, and endTime the time of the read, in ISO 8601. ${every(LOG_POLL)}, with each next page while hasMore, until each request has its line: a JSON object with probe "SO-01d" and run "${RUN}".`),
   ];
 }
 
