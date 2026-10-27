@@ -95,7 +95,7 @@ test('Given production logging storage configuration, when settings and removal 
   const certificate = join(directory, 'database-ca.pem');
   await writeFile(certificate, site.connection.ca);
   const errors: unknown[] = [];
-  const storage = await openLoggingStorage({ DATABASE_URL: site.connection.connectionString, DATABASE_CA_CERT_PATH: certificate, LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64') }, { info: () => {}, error: message => { errors.push(message); } });
+  const storage = await openLoggingStorage({ DATABASE_URL: site.connection.connectionString, DATABASE_CA_CERT_PATH: certificate, LOGGING_DESTINATION_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64') }, { info: () => {}, error: message => { errors.push(message); } }, 25);
   assert.ok(storage);
   t.after(() => storage.close());
   assert.ok(storage.removalStore);
