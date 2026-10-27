@@ -5,6 +5,9 @@ plan ([PR #259](https://github.com/tomer-mayara/Thermus/pull/259)). Each ticket
 or probe adds one section: what ran and where, the durations and limits, and
 what a client saw. The record holds no secret.
 
+SO-03 of Slice 2 adds its measurement of the private address of the control
+plane here, because it extends the private network probe of SO-01d.
+
 ## SO-01b: hosted image on a native AMD64 runner
 
 Date: 26 October 2026. Branch `self-ob-s1-so-01b-hosted-image-workflow-656360`,
@@ -3073,3 +3076,114 @@ From the pages above, read on 27 October 2026 (UTC), for SO-13 to SO-15:
   change.
 - Test mode only, one run, and one meter. A membership with only the default
   role is not checked.
+
+## SO-03: private address of the control plane
+
+Date: 27 October 2026 (UTC). Ticket SO-03 of Slice 2 (board ticket 4673f5),
+branch `self-ob-s2-so-03-tenant-role-4673f5`. The plan (section 6, SO-03) asks
+this ticket to measure the private address of the control plane with a one-off
+job from a disposable tenant to `http://<control-plane-slug>:8080/healthz`, and
+to fix `CONTROL_PLANE_INTERNAL_URL` from the result (open question 2 of the
+ticket). The tenant relays its audit events to that address. SO-01d part two
+measured only the opposite direction: a job of a web service to a private
+service. No probe had requested a web service through the private network.
+
+Status: measured. `CONTROL_PLANE_INTERNAL_URL` is
+`http://<slug of the control plane>:8080`: the `slug` of the control plane
+service with the port of the server in the image. From a job of a private
+service, the web service answered `200` with `ok` on port 8080 and on port
+10000, 76 s after its first deploy was live. 16 s after its first deploy was
+live, both ports refused the connection.
+
+The probe of SO-01d part two gained the step `control-plane`, run with
+`--steps private,web,control-plane`. The private service plays the tenant and
+the web service plays the control plane; both are disposable
+`thermus-spike-*` services in the workspace Thermus AI, never the production
+service. The step reads the `slug` and the public URL of the web service, waits
+60 s, and starts one one-off job on the private service. The job program first
+logs the DNS answers of both slugs, then requests `/healthz` at
+`http://<own slug>:8080` (a control), `http://<web slug>:8080`,
+`http://<web slug>:10000`, and the public URL of the web service (a control).
+Only an answer of the web service on the private network passes the step. The
+cleanup cancels a job that has not ended on the service that runs it, and
+deletes both services. The dry runs of the earlier option sets of SO-01d part
+two stay byte-identical to the dry runs of the script on main, and the job
+program of the SO-01d run of this record stays byte-identical too.
+
+```sh
+node --env-file=/Users/tomermayara/git/Thermus/.env.local script/spike/private-network-probe.ts \
+  --owner tea-db8i6ceq1p3s73dev9og --registry-credential ghcr-thermus-hosted-read \
+  --image ghcr.io/tomer-mayara/thermus-hosted@sha256:d6b8a8fd3174c02984267f6aef54a7ee4e4bc783776ae9b856685202972dbfbd \
+  --steps private,web,control-plane
+```
+
+| Step | Given, when, then |
+| --- | --- |
+| Control plane | Given both services live, when a one-off job on the private service requests `/healthz` of the web service at its slug on port 8080 and on port 10000, then its log lines show at least one `200` with `ok` from the web service. |
+
+### Runs
+
+Two complete runs on the owner's Mac, Node v24.20.0. Each ran the preflight
+(no `thermus-spike-*` service of any type) and ended with the full cleanup.
+
+| Run | Start (UTC) | Private service (the tenant) | Web service (the control plane) | Job | First request after the web deploy was live |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 18:38:47 | `thermus-spike-20261027-183847`, `srv-dbgeveek1f9s73945n00` | `thermus-spike-web-20261027-183847`, `srv-dbgf01fb9u1s73c5hmvg` | `job-dbgf0p942hec738thrc0`, succeeded | 16.5 s (deploy finished 18:41:35.0, request 18:41:51.5); no wait step yet |
+| 2 | 18:46:09 | `thermus-spike-20261027-184609`, `srv-dbgf2st9fdbs738677eg` | `thermus-spike-web-20261027-184609`, `srv-dbgf3difngtc738rs0q0` | `job-dbgf4jl9el5s73arfdk0`, succeeded | 76.4 s (deploy finished 18:48:36.9, request 18:49:53.3), with the wait of 60 s |
+
+| Run | Request in the job | Answer |
+| --- | --- | --- |
+| 1 | `GET http://thermus-spike-web-20261027-183847:8080/healthz` | no answer: `ECONNREFUSED`, "connect ECONNREFUSED 10.12.228.8:8080", after 114 ms |
+| 1 | `GET http://thermus-spike-web-20261027-183847:10000/healthz` | no answer: `ECONNREFUSED`, "connect ECONNREFUSED 10.12.228.8:10000", after 5 ms |
+| 2 | DNS lookup of `thermus-spike-web-20261027-184609` | `10.15.25.140`, after 8 ms |
+| 2 | DNS lookup of `thermus-spike-20261027-184609` | `10.15.67.103`, after 2 ms |
+| 2 | `GET http://thermus-spike-20261027-184609:8080/healthz` (own service, control) | `200`, body "ok\n", after 102 ms |
+| 2 | `GET http://thermus-spike-web-20261027-184609:8080/healthz` | `200`, body "ok\n", after 7 ms |
+| 2 | `GET http://thermus-spike-web-20261027-184609:10000/healthz` | `200`, body "ok\n", after 4 ms |
+| 2 | `GET https://thermus-spike-web-20261027-184609.onrender.com/healthz` (public, control) | `200`, body "ok\n", after 147 ms |
+
+The other measured times: the private services were `live` 75.8 s and 67.0 s
+after their create calls, the web services 91.9 s and 81.8 s. The public
+`/healthz` of the new web service answered `502` one time in run 1 and two
+times in run 2 before its `200`, from this machine. Each job started in under
+1 s and ran 15 s and 6 s. Writes: 5 in each run, 10 in all: 4 creates, 2 jobs,
+and 4 deletes, each delete `204`. A reads-only preflight at 18:50:36 UTC listed
+no service named `thermus-spike-*`.
+
+### Findings for Slice 2
+
+- A tenant reaches the control plane at `http://<slug>:8080`, the port of the
+  server in the hosted image, as the control plane reaches a tenant at
+  `http://<slug>:8080` (SO-01d part two). Port 10000 answered too: the
+  [Private Network](https://render.com/docs/private-network) page says that
+  port 10000 of a web service always routes to its primary HTTP server. The
+  setting uses 8080, the port that the image owns, for both directions.
+- The private address of a new web service refused connections for some time
+  after its first deploy was `live`: 16.5 s after `live`, both ports refused,
+  while its public URL already answered. 76.4 s after `live`, both ports
+  answered. The public router of a new web service lags too (`502`, then
+  `200`, as in SO-01d). The control plane is a long-lived service, so this
+  matters for a new control plane, for example in a rehearsal of SO-12, and
+  for the first relays after it; a relay in that window fails and loses its
+  event, as the bounded relay accepts.
+- The slug of a web service is its `slug` field in the API answer, the same
+  name as its public subdomain. The disabled public subdomain of the
+  production service does not change this name (plan section 6, SO-03); SO-12
+  reads the slug of the production service when it sets the variable.
+- In each run, the slug of the web service resolved to one `10.` address,
+  another address in each run, as for a private service. The tenant uses the
+  name, not the address.
+
+### Limits
+
+- Two runs in one region, with one instance of each service, on
+  `0.5c-512mb`. The job runs on its own instance of the private service, not
+  on a running tenant: it shows the network path of the private service, not
+  the relay code of SO-03.
+- The window after a first deploy was measured at two points only, 16.5 s and
+  76.4 s. The probe did not measure where it ends, and it did not measure the
+  private address during a later deploy of a live web service.
+- The production service was not read: its slug, and the private network of a
+  service with a custom domain and a disabled subdomain, stay unmeasured.
+- The services ran with the placeholder WorkOS values of SO-01c, so the web
+  service was a control plane without real WorkOS settings.

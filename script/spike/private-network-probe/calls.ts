@@ -49,18 +49,57 @@ export function healthTargets(slug: string, url: string): readonly Target[] {
   ];
 }
 
+// SO-03: the private address of the control plane, a web service. The server of the image listens on LISTEN_PORT;
+// the Private Network page routes port 10000 of a web service to its primary HTTP server. Two controls: the own
+// private service of the job on LISTEN_PORT, and the public URL of the web service.
+export function controlPlaneTargets(web: { readonly slug: string; readonly publicUrl: string }, privateSlug: string): readonly Target[] {
+  return [
+    { from: `own:${LISTEN_PORT}`, url: `http://${privateSlug}:${LISTEN_PORT}${HEALTH_CHECK_PATH}` },
+    { from: `control-plane:${LISTEN_PORT}`, url: `http://${web.slug}:${LISTEN_PORT}${HEALTH_CHECK_PATH}` },
+    { from: `control-plane:${RENDER_PRIVATE_PORT}`, url: `http://${web.slug}:${RENDER_PRIVATE_PORT}${HEALTH_CHECK_PATH}` },
+    { from: 'control-plane:public', url: `${web.publicUrl.replace(/\/$/, '')}${HEALTH_CHECK_PATH}` },
+  ];
+}
+
 // The docs do not say whether Render runs a start command through a shell. Without quotes, backslashes, dollar
 // signs, and backticks, the single-quoted program reaches node -e the same way through a shell or a word split.
 export function healthProgram(targets: readonly Target[], run: string): string {
-  const mark = `probe:"${PROBE_MARK}",run:"${run}"`;
-  const program = [
-    `const targets=${JSON.stringify(targets.map((target) => [target.from, target.url]))};`,
-    '(async()=>{for(const [from,url] of targets){const started=Date.now();',
+  return checkedProgram([targetList(targets), '(async()=>{', requestLoop(run), '})()'].join(''));
+}
+
+// SO-03: the DNS answers of the names first, as lines with status 0 and the addresses as the body, then the requests.
+export function lookupAndHealthProgram(names: readonly string[], targets: readonly Target[], run: string): string {
+  const mark = probeMark(run);
+  return checkedProgram([
+    targetList(targets), `const names=${JSON.stringify(names)};`,
+    '(async()=>{for(const name of names){const started=Date.now();',
+    'try{const found=await require("node:dns").promises.lookup(name,{all:true});',
+    `console.log(JSON.stringify({${mark},from:"dns:"+name,url:name,status:0,body:found.map((entry)=>entry.address).join(" "),ms:Date.now()-started}))}`,
+    `catch(error){console.log(JSON.stringify({${mark},from:"dns:"+name,url:name,error:error.code||error.name,message:String(error.message).slice(0,200),ms:Date.now()-started}))}}`,
+    requestLoop(run), '})()',
+  ].join(''));
+}
+
+function probeMark(run: string): string {
+  return `probe:"${PROBE_MARK}",run:"${run}"`;
+}
+
+function targetList(targets: readonly Target[]): string {
+  return `const targets=${JSON.stringify(targets.map((target) => [target.from, target.url]))};`;
+}
+
+function requestLoop(run: string): string {
+  const mark = probeMark(run);
+  return [
+    'for(const [from,url] of targets){const started=Date.now();',
     `try{const response=await fetch(url,{signal:AbortSignal.timeout(${REQUEST_TIMEOUT_MS})});`,
     `console.log(JSON.stringify({${mark},from,url,status:response.status,body:(await response.text()).slice(0,100),ms:Date.now()-started}))}`,
     'catch(error){const cause=error.cause||{};',
-    `console.log(JSON.stringify({${mark},from,url,error:cause.code||error.name,message:String(cause.message||error.message).slice(0,200),ms:Date.now()-started}))}}})()`,
+    `console.log(JSON.stringify({${mark},from,url,error:cause.code||error.name,message:String(cause.message||error.message).slice(0,200),ms:Date.now()-started}))}}`,
   ].join('');
+}
+
+function checkedProgram(program: string): string {
   if (/['\\$`\n]/.test(program)) throw new Error('The health program must not contain a quote, backslash, dollar sign, backtick, or new line.');
   return program;
 }

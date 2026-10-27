@@ -4,9 +4,11 @@ import {
 } from '../render-tenant-lifecycle/calls.ts';
 import { POLLS } from '../render-tenant-lifecycle/polls.ts';
 import {
-  cancelJobCall, healthProgram, healthTargets, jobCall, jobStatusCall, logsCall, RENDER_PRIVATE_PORT, REQUEST_TIMEOUT_MS, startCommand,
+  cancelJobCall, controlPlaneTargets, healthProgram, healthTargets, jobCall, jobStatusCall, logsCall, lookupAndHealthProgram, RENDER_PRIVATE_PORT,
+  REQUEST_TIMEOUT_MS, startCommand,
 } from './calls.ts';
 import { newState, ROLES, type Role } from './context.ts';
+import { CONTROL_PLANE_SETTLE_MS, lastJobRole } from './control-plane-job.ts';
 import type { ProbeInputs, StepId } from './inputs.ts';
 import { LOG_POLL } from './job-logs.ts';
 import { JOB_POLL } from './job.ts';
@@ -76,13 +78,13 @@ function liveService(plan: Plan, role: Role): readonly Planned[] {
   ];
 }
 
-function jobCalls(plan: Plan): readonly Planned[] {
-  const command = startCommand(healthProgram(healthTargets(SLUG, URL_FIELD), RUN));
+function jobCalls(plan: Plan, on: Role, program: string): readonly Planned[] {
+  const command = startCommand(program);
   const window = { startTime: '{createdAt-10s}', endTime: '{now}' };
   return [
-    api(jobCall(plan.ids.web, command), `Without JSON escapes, the start command is: ${command}`),
-    api(jobStatusCall(plan.ids.web, '{jobId}'), `${every(JOB_POLL)}, until the status is succeeded, failed, or canceled.`),
-    api(logsCall(plan.inputs.owner, [plan.ids.web, '{jobId}'], window), `The lines of a job carry the job ID as their resource. startTime is the createdAt of the job less 10 s, and endTime the time of the read, in ISO 8601. ${every(LOG_POLL)}, with each next page while hasMore, until each request has its line: a JSON object with probe "SO-01d" and run "${RUN}".`),
+    api(jobCall(plan.ids[on], command), `Without JSON escapes, the start command is: ${command}`),
+    api(jobStatusCall(plan.ids[on], '{jobId}'), `${every(JOB_POLL)}, until the status is succeeded, failed, or canceled.`),
+    api(logsCall(plan.inputs.owner, [plan.ids[on], '{jobId}'], window), `The lines of a job carry the job ID as their resource. startTime is the createdAt of the job less 10 s, and endTime the time of the read, in ISO 8601. ${every(LOG_POLL)}, with each next page while hasMore, until each request has its line: a JSON object with probe "SO-01d" and run "${RUN}".`),
   ];
 }
 
@@ -96,7 +98,11 @@ const builders: Readonly<Record<StepId, (plan: Plan) => PlannedStep>> = {
     api(serviceCall(plan.ids.web), 'serviceDetails.url must be an https URL. It becomes {publicUrl}.'),
     here(`GET {publicUrl}${HEALTH_CHECK_PATH}`, `${every(PUBLIC_HEALTH)}, with a ${PUBLIC_HEALTH.timeoutMs / 1000} s timeout, until 200 with body ok.`),
   ] }),
-  job: (plan) => ({ title: 'One-off job on the web service', calls: jobCalls(plan) }),
+  job: (plan) => ({ title: 'One-off job on the web service', calls: jobCalls(plan, 'web', healthProgram(healthTargets(SLUG, URL_FIELD), RUN)) }),
+  'control-plane': (plan) => ({ title: 'One-off job on the private service to the control plane (SO-03)', calls: [
+    api(serviceCall(plan.ids.web), `The slug of the web service becomes {webSlug} and its URL {publicUrl}. Then the probe waits ${CONTROL_PLANE_SETTLE_MS / 1000} s.`),
+    ...jobCalls(plan, 'private', lookupAndHealthProgram(['{webSlug}', SLUG], controlPlaneTargets({ slug: '{webSlug}', publicUrl: '{publicUrl}' }, SLUG), RUN)),
+  ] }),
   'public-check': (plan) => ({ title: 'Public internet check', calls: [
     here(`DNS lookup of ${SLUG}`, 'The lookup must fail. The error code is recorded.'),
     here(`GET http://${SLUG}:${RENDER_PRIVATE_PORT}${HEALTH_CHECK_PATH}`, `With a ${REQUEST_TIMEOUT_MS / 1000} s timeout. The request must get no answer.`),
@@ -106,12 +112,13 @@ const builders: Readonly<Record<StepId, (plan: Plan) => PlannedStep>> = {
 };
 
 function cleanup(plan: Plan): PlannedStep {
+  const jobService = plan.ids[lastJobRole(plan.inputs.steps)];
   const deleteNote = plan.inputs.keep ? 'Only after a failed step: --keep keeps the services when every step passed.' : 'Up to 3 attempts. A 404 answer means that the service is already gone.';
   const byName = ROLES.filter((role) => !plan.reused[role])
     .map((role) => api(servicesNamedCall(plan.inputs.owner, plan.names[role]), 'Only when the create answer gave no service ID: each service with this exact name is deleted.'));
   return { title: 'Cleanup (always, also after a failure or a stop signal)', calls: [
-    api(jobStatusCall(plan.ids.web, '{jobId}'), 'Only when the job did not end in its step.'),
-    api(cancelJobCall(plan.ids.web, '{jobId}'), 'Only when that read shows pending or running.', true),
+    api(jobStatusCall(jobService, '{jobId}'), 'Only when the job did not end in its step.'),
+    api(cancelJobCall(jobService, '{jobId}'), 'Only when that read shows pending or running.', true),
     api(deleteServiceCall(plan.ids.web), deleteNote, plan.inputs.keep),
     api(deleteServiceCall(plan.ids.private), deleteNote, plan.inputs.keep),
     ...byName,

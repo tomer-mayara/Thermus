@@ -5,7 +5,7 @@ import {
   type ImageRef, type Region,
 } from '../render-tenant-lifecycle/inputs.ts';
 
-const STEP_IDS = ['private', 'web', 'job', 'public-check'] as const;
+const STEP_IDS = ['private', 'web', 'job', 'control-plane', 'public-check'] as const;
 export type StepId = (typeof STEP_IDS)[number];
 
 export const WEB_PREFIX = `${SERVICE_PREFIX}web-`;
@@ -35,7 +35,9 @@ export const USAGE = [
   `  --private-service-id  Use this live ${SERVICE_PREFIX}* private service of the owner. No create.`,
   `  --web-service-id      Use this live ${WEB_PREFIX}* web service of the owner. No create.`,
   `  --steps               Run only these steps, in the fixed order: ${STEP_IDS.join(', ')}. The default is all`,
-  '                        of them. job needs private and web; public-check needs private.',
+  '                        of them. job and control-plane need private and web; public-check needs private.',
+  '                        control-plane (SO-03) runs the job on the private service, the tenant, and requests',
+  '                        /healthz of the web service, the control plane, at its slug on port 8080 and 10000.',
   '  --keep                Keep both services when every step passed. After a failure, the cleanup deletes them.',
   `The probe runs in the workspace Thermus AI, ${PROBE_WORKSPACE_ID}, with a private service ${SERVICE_PREFIX}<time>`,
   `and a web service ${WEB_PREFIX}<time>, both from the image and on ${FREE_PLAN}. It touches no other service,`,
@@ -67,6 +69,13 @@ export function parseInputs(args: readonly string[]): ProbeInputs {
   return Object.freeze(inputs);
 }
 
+// The steps that a step needs, with the reason that its usage error gives.
+const NEEDED_STEPS: Readonly<Partial<Record<StepId, { readonly steps: readonly StepId[]; readonly reason?: string }>>> = {
+  job: { steps: ['private', 'web'], reason: 'the job runs on the web service and requests the private service' },
+  'control-plane': { steps: ['private', 'web'], reason: 'the job runs on the private service and requests the web service' },
+  'public-check': { steps: ['private'] },
+};
+
 function isStepId(value: string): value is StepId {
   return STEP_IDS.some((id) => id === value);
 }
@@ -78,11 +87,15 @@ function stepSelection(value: string | undefined): readonly StepId[] {
   if (unknown.length > 0) throw new UsageError(`--steps names unknown steps: ${unknown.join(', ')}. The steps are ${STEP_IDS.join(', ')}.`);
   if (new Set(named).size !== named.length) throw new UsageError('--steps names a step more than one time.');
   const steps = STEP_IDS.filter((id) => named.includes(id));
-  if (steps.includes('job') && !(steps.includes('private') && steps.includes('web'))) {
-    throw new UsageError('--steps names job, so it must also name private and web: the job runs on the web service and requests the private service.');
-  }
-  if (steps.includes('public-check') && !steps.includes('private')) throw new UsageError('--steps names public-check, so it must also name private.');
+  for (const step of steps) requireNeededSteps(step, steps);
   return steps;
+}
+
+function requireNeededSteps(step: StepId, steps: readonly StepId[]): void {
+  const needed = NEEDED_STEPS[step];
+  if (needed === undefined || needed.steps.every((id) => steps.includes(id))) return;
+  const reason = needed.reason === undefined ? '' : `: ${needed.reason}`;
+  throw new UsageError(`--steps names ${step}, so it must also name ${needed.steps.join(' and ')}${reason}.`);
 }
 
 function parseOptions(args: readonly string[]): ReturnType<typeof parseProbeArgs> {
