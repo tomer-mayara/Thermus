@@ -15,7 +15,7 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Probe tooling only: script/spike/render-tenant-lifecycle.ts and its helper modules under script/spike/render-tenant-lifecycle/ probe the Render private service lifecycle through the Render REST API (create, internal address, image deploy, plan change and back, suspend and resume, delete), with a dry-run mode, a reads-only preflight, and a client guard that touches only the thermus-spike-* service of the run and never the production service; knip lists the script as an entry point. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md gains the section SO-01c: Render private service lifecycle, and the Slice 1 preamble of docs/implementation/self-onboarding-plan.md records the owner decision that Render probes run in the Thermus AI workspace. No source, runtime, registry view, declaration, or deployment change.",
+    "summary": "Probe tooling only: script/spike/private-network-probe.ts and its helper modules under script/spike/private-network-probe/ probe the Render private network for SO-01d part two through the Render REST API: they create the private service of SO-01c and a disposable web service from the same image, run a one-off job on the web service that requests /healthz of the private service on port 10000 and on port 8080, read the job lines through the logs endpoint, check from this machine that the internal address does not resolve, and delete both services, with a dry-run mode, a reads-only preflight, and the client guard of SO-01c that touches only the thermus-spike-* services of the run and never the production service. Small export and type changes in script/spike/render-tenant-lifecycle/ let the new probe reuse the SO-01c modules, and the SO-01c dry run output stays the same; knip lists the new script as an entry point. The Slice 1 evidence record docs/implementation/self-onboarding-s1.md fills the subsection Part two: Render private network of the section SO-01d and adds the result to one SO-01c finding, and docs/implementation/self-onboarding-plan.md states the confirmed internal address form in the SO-06 ticket and the one-off job in the SO-01d ticket. No source, runtime, registry view, declaration, or deployment change.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
@@ -27,7 +27,7 @@
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "script/spike/render-tenant-lifecycle.ts",
+      "script/spike/private-network-probe.ts",
       "docs/implementation/self-onboarding-s1.md",
       "docs/implementation/self-onboarding-plan.md"
     ]
