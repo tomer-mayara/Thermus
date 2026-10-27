@@ -2,8 +2,9 @@
 
 Scope: [UI-02](../design/organization-admin-plan.md#ui-02--member-rows-and-quiet-removal)
 of the Refined tabs plan. This work is stacked on
-[UI-01, PR #263](https://github.com/tomer-mayara/Thermus/pull/263), at
-`a017020ebe2448f5de6cc7d9cbb0700367fc80b1`.
+[UI-01, PR #263](https://github.com/tomer-mayara/Thermus/pull/263). The original
+evidence below used parent `a017020ebe2448f5de6cc7d9cbb0700367fc80b1`;
+the maintained PR comments record the restacked parent and current candidate.
 Candidate: [PR #264](https://github.com/tomer-mayara/Thermus/pull/264).
 UI-02 is implemented. This record claims no merge or deployment.
 Current validation, review status, pins and results are in its maintained
@@ -38,7 +39,7 @@ image gates. Trace changed test helpers to all consuming groups. Root review
 owns complete-candidate quality, architecture assessment and PR evidence.
 
 
-## Implementation evidence
+## Original implementation evidence
 
 New HTTP and integration cases first failed for the missing active-row count,
 labelled facts and trusted self-action name. Browser cases first failed for
@@ -104,3 +105,18 @@ and shared Audit controls. The current portal and server builds passed before
 these runs. Screenshots were checked for compact rows and expanded content.
 No markup, protected form, route, identity rule, product count or help changed.
 These focused results do not replace the manager's complete-candidate gates.
+
+## Rebase verification
+
+UI-02 now follows the rebased UI-01 on main `2b3ad13b`. The source and tests
+remain the same as the density-corrected candidate; later main changes add only
+local probe tooling and documentation. Current complete-candidate checks and
+input comparisons belong in the maintained PR evidence.
+
+The fresh staging run before that tooling-only rebase passed 22 of 29 cases.
+Six failures share a WorkOS sandbox invitation-email quota error in fixture
+setup. The scoped removal journey separately returned HTTP 503 instead of 303
+on reinvitation; the diagnostic does not establish its provider cause. Exact
+owned-resource cleanup completed. Neither failure is a source-review finding,
+and neither is a pass. The required full staging group must pass before merge;
+no paid quota, provider setting change or test waiver is part of this fix.
