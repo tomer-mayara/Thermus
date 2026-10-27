@@ -1,3 +1,4 @@
+import { pendingInvitationsIn } from '../../support/drivers/browser/pending-invitations-page.ts';
 import assert from 'node:assert/strict';
 import '../../support/processes/use-hosted-portal-fixture.ts';
 import { describe, test, type TestContext } from 'node:test';
@@ -37,7 +38,7 @@ describe('Hosted invitation management with the real composition, routes, servic
     assert.match(failed.body, /The invitation change is not confirmed/);
     assert.deepEqual(formsIn(failed.body), []);
     assert.equal(retry.status, 303);
-    assert.match(page.answer.body, /new@example\.com: User invitation, pending/);
+    assert.ok(pendingInvitationsIn(page.answer.body).some(entry => entry.email === 'new@example.com' && entry.role === 'User'));
     assert.equal(site.directory.invitationChanges.length, 1);
     assert.deepEqual(site.logger.lines, []);
     assert.deepEqual(recordLines(site.records), [

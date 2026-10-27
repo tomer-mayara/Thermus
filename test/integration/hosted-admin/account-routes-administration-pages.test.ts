@@ -26,6 +26,45 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.deepEqual(organizations.administrationCalls.map(({ operation }) => operation), ['memberOverview', 'invitationOverview']);
   });
 
+  for (const count of [0, 2]) {
+    test(`Given a complete overview with ${count} pending invitations and a terminal entry, when Members opens, then its native disclosure counts pending entries and starts ${count === 0 ? 'closed' : 'open'}`, async () => {
+      const invitations = count === 0 ? acmeInvitations.invitations.filter(entry => entry.state !== 'pending') : acmeInvitations.invitations;
+      const { routes, organizations } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitations } });
+      const document = parseHTML(await (await routes.handle(accountRequest('/members', 'session=ann'))).text()).document;
+      const disclosure = document.querySelector('details.pending-invitations');
+      assert.ok(disclosure, 'Pending invitations has a native disclosure');
+      assert.equal(disclosure.querySelector('summary')?.textContent, `Pending invitations · ${count}`);
+      assert.equal(disclosure.hasAttribute('open'), count > 0);
+      assert.equal(disclosure.querySelectorAll('li').length, count);
+      assert.equal(organizations.administrationCalls.filter(call => call.operation === 'invitationOverview').length, 1);
+      if (count === 0) assert.match(disclosure.textContent ?? '', /No pending invitations/);
+      const surfaces = [...document.querySelector('.member-lists')!.children];
+      assert.equal(surfaces[0], document.querySelector('section[aria-labelledby="active-heading"]'));
+      assert.equal(surfaces[1], disclosure);
+      assert.equal(surfaces[2], document.querySelector('details[data-help="members"]'));
+    });
+  }
+
+  test('Given pending invitations with different allowed actions, when Members opens, then labelled row facts keep UTC expiry and only the exact protected forms for each row', async () => {
+    const entries = acmeInvitations.invitations.slice(0, 2).map((entry, index) => ({ ...entry, changes: index === 0 ? ['resend' as const] : [] }));
+    const { routes } = serveAdministration({ ...current, invitations: { ...acmeInvitations, invitations: entries } });
+    const body = await (await routes.handle(accountRequest('/members', 'session=ann'))).text();
+    const rows = [...parseHTML(body).document.querySelectorAll('.invitation-row')];
+    assert.equal(rows.length, 2);
+    for (const [index, row] of rows.entries()) {
+      const entry = entries[index]!;
+      assert.equal(row.querySelector('.invitation-email')?.textContent, entry.email);
+      assert.equal(row.querySelector('.invitation-role')?.textContent, `Role ${index === 0 ? 'User' : 'Admin'}`);
+      assert.equal(row.querySelector('time')?.getAttribute('datetime'), entry.expiresAt);
+      assert.equal(row.querySelector('time')?.textContent, `2099-01-0${index + 1} 00:00:00 UTC`);
+      assert.deepEqual([...row.querySelectorAll('button')].map(button => [button.textContent, button.getAttribute('aria-label')]), index === 0 ? [['Resend', 'Resend the invitation to new@example.com']] : []);
+      assert.equal(row.querySelectorAll('details').length, 0);
+    }
+    assert.deepEqual(formsIn(body).filter(form => form.fields.invitation_id !== undefined), [
+      { action: '/invitations/resend', fields: { csrf_token: annToken, organization_id: 'org-a', invitation_id: 'invitation-1' }, label: 'Resend the invitation to new@example.com' },
+    ]);
+  });
+
   test('Given an invitable role, when Members opens, then one closed native disclosure beside Members contains the protected Send invitation form before the list', async () => {
     const { routes } = serveAdministration(current);
     const document = parseHTML(await (await routes.handle(accountRequest('/members', 'session=ann'))).text()).document;
@@ -180,6 +219,7 @@ describe('HostedAccountRoutes combined Members page', () => {
     assert.match(body, /Invite to Acme &quot;&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h2>/);
     assert.equal(formsIn(body)[0]?.fields.organization_id, 'org-a');
     assert.deepEqual(formsIn(body).at(-1)?.fields.invitation_id, hostile);
+    assert.equal(formsIn(body).at(-1)?.label, `Revoke the invitation to <i>new</i>${hostile}@example.com`);
     assert.equal(formsIn(body).filter(form => form.action.endsWith('/members/remove')).length, 0);
     assert.doesNotMatch(body, /Change role/);
   });

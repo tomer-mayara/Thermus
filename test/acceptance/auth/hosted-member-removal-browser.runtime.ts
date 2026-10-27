@@ -9,6 +9,7 @@ import type { WorkOSFake } from '../../support/doubles/workos/workos-fake.ts';
 import { DestinationSettingsService } from '../../../src/logs/audit/destination-settings-service.ts';
 import { DestinationSettingsFake } from '../../support/doubles/logging/destination-settings-fake.ts';
 import { HostedPortal } from '../../../src/app/hosted-portal.ts';
+import { PendingInvitationsBrowser } from '../../support/drivers/browser/pending-invitations-browser.ts';
 import { InvitationBrowser } from '../../support/drivers/browser/invitation-browser.ts';
 import { AdminShellBrowser } from '../../support/drivers/browser/admin-shell-browser.ts';
 import { memberActionStyle, memberRemovalBrowser, tabTo } from '../../support/drivers/browser/member-removal-browser.ts';
@@ -186,6 +187,62 @@ for (const self of [false, true]) {
           assert.equal(await page.getByRole('link', { name: 'sign in again', exact: true }).isVisible(), true);
           assert.equal(await page.locator('form').count(), 0, 'The result must not repeat removal');
         }
+      });
+    }
+  }
+}
+
+for (const javaScriptEnabled of [false, true]) {
+  for (const width of [320, 1280]) {
+    const layout = `JavaScript ${javaScriptEnabled ? 'on' : 'off'} at ${width}px`;
+    for (const count of [0, 2]) {
+      test(`Given a complete invitation overview with ${count} pending entries and terminal entries with ${layout}, when Members opens, then its counted native disclosure starts ${count === 0 ? 'closed' : 'open'} and can be discovered by keyboard`, async (t) => {
+        const { site, page } = await adminBrowser(t, { javaScriptEnabled, setUp: world => {
+          world.invitationPageSize = 1;
+          world.invitations = [
+            ...Array.from({ length: count }, (_, index) => ({ id: `pending-${index}`, email: `pending${index}@example.com`, organizationId: removalOrganization, roleSlug: 'user', state: 'pending' as const, expiresAt: '2099-10-26T12:00:00.000Z' })),
+            { id: 'terminal', email: 'terminal@example.com', organizationId: removalOrganization, roleSlug: 'admin', state: 'revoked', expiresAt: '2099-10-26T12:00:00.000Z' },
+          ];
+        } });
+        await page.setViewportSize({ width, height: 844 });
+        site.world.fake.takeRequests();
+        await page.goto('https://thermus.example/team/members');
+        const disclosure = page.locator('details.pending-invitations');
+        assert.equal(await disclosure.count(), 1, 'Pending invitations must be a native disclosure');
+        assert.equal(await disclosure.locator('li').count(), count);
+        assert.equal(await page.getByText('terminal@example.com', { exact: true }).count(), 0);
+        await new PendingInvitationsBrowser(page, `${count}-${javaScriptEnabled ? 'on' : 'off'}-${width}`).discoverByKeyboard(count);
+        assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'POST').length, 0);
+      });
+    }
+
+    test(`Given short and long pending invitations with ${layout}, when Members is read at normal and 200% text, then compact rows show roles, UTC expiry and quiet allowed actions in order`, async (t) => {
+      const { page } = await adminBrowser(t, { javaScriptEnabled, setUp: world => {
+        world.invitations = [
+          { id: 'short', email: 'new@example.com', organizationId: removalOrganization, roleSlug: 'user', state: 'pending', expiresAt: '2099-10-26T12:00:00.000Z' },
+          { id: 'long', email: `${'long'.repeat(50)}@example.com`, organizationId: removalOrganization, roleSlug: 'admin', state: 'pending', expiresAt: '2099-10-26T12:00:00.000Z' },
+        ];
+      } });
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('https://thermus.example/team/members');
+      await new PendingInvitationsBrowser(page, `${javaScriptEnabled ? 'on' : 'off'}-${width}`).inspectRows(width);
+    });
+
+    for (const action of ['Resend', 'Revoke'] as const) {
+      test(`Given an independent pending invitation with ${layout}, when an Admin uses ${action} by keyboard, then one existing protected POST returns to Members with the current pending state`, async (t) => {
+        const { site, page } = await adminBrowser(t, { javaScriptEnabled, setUp: world => {
+          world.invitations = [{ id: 'pending-one', email: 'pending@example.com', organizationId: removalOrganization, roleSlug: 'user', state: 'pending', expiresAt: '2099-10-26T12:00:00.000Z' }];
+        } });
+        await page.setViewportSize({ width, height: 844 });
+        await page.goto('https://thermus.example/team/members');
+        site.world.fake.takeRequests();
+        await new PendingInvitationsBrowser(page, `change-${action}-${width}`).change(action, 'pending@example.com');
+        assert.equal(site.world.invitations[0]?.state, action === 'Resend' ? 'pending' : 'revoked');
+        const pending = page.locator('details.pending-invitations');
+        assert.equal(await pending.locator('summary').innerText(), `Pending invitations · ${action === 'Resend' ? 1 : 0}`);
+        assert.equal(await pending.getAttribute('open') !== null, action === 'Resend');
+        assert.equal(site.world.fake.takeRequests().filter(request => request.method === 'POST').length, 1);
+        assert.equal(site.removalStore.admissions.length, 0);
       });
     }
   }

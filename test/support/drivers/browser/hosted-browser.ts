@@ -115,7 +115,7 @@ export function listenerTransport(listenUrl: URL): BrowserTransport {
   };
 }
 
-// Reads the submitted hidden fields and checked radios, with the button text. Visible fields are filled by the caller.
+// Reads hidden fields and checked radios, with the accessible button name. Visible fields are filled by the caller.
 export function formsIn(html: string): PageForm[] {
   const forms = html.matchAll(/<form method="post" action="([^"]*)">([\s\S]*?)<\/form>/g);
   return [...forms].flatMap(([, action = '', content = '']) => {
@@ -123,7 +123,7 @@ export function formsIn(html: string): PageForm[] {
       .filter(([, type, , , attributes = '']) => type === 'hidden' || /\bchecked\b/.test(attributes))
       .map(([, , name = '', value = '']) => [decodeHtml(name), decodeHtml(value)]));
     return [...content.matchAll(/<button type="submit"([^>]*)>([^<]*)<\/button>/g)].map(([, attributes = '', label = '']) => ({
-      action: decodeHtml(/\bformaction="([^"]*)"/.exec(attributes)?.[1] ?? action), fields, label: decodeHtml(label),
+      action: decodeHtml(/\bformaction="([^"]*)"/.exec(attributes)?.[1] ?? action), fields, label: decodeHtml(/\baria-label="([^"]*)"/.exec(attributes)?.[1] ?? label),
     }));
   });
 }
