@@ -174,6 +174,7 @@ public_surface:
       - src/logs/audit/audit-send.ts
     identity:
       - src/accounts/identity/access-context.ts
+      - src/accounts/identity/signed-access-context.ts
       - src/accounts/identity/browser-session.ts
       - src/accounts/identity/browser-session-controls.ts
       - src/accounts/identity/identity-verifier.ts
@@ -261,7 +262,7 @@ dependency_graph:
     - { from: app, to: web, kind: runtime }
     - { from: app, to: website-fetcher, kind: runtime }
     - { from: app, to: workos, kind: runtime }
-    - { from: app, to: identity, kind: type }
+    - { from: app, to: identity, kind: runtime } # runtime since SO-03: the tenant composition verifies the signed access context
     - { from: organizations, to: identity, kind: type }
     - { from: organizations, to: billing, kind: type }
     - { from: workos, to: identity, kind: runtime }
@@ -303,7 +304,8 @@ dependency_graph:
     - { from: app, to: tenants, kind: runtime }
     - { from: audit-logs, to: sql, kind: type }
     - { from: tenants, to: sql, kind: type }
-    # 59 permitted owner edges on 2026-10-27; runtime includes public types.
+    - { from: audit-logs, to: identity, kind: runtime } # SO-03: the relay sink sends the Thermus-Access context
+    # 60 permitted owner edges on 2026-10-27; runtime includes public types.
   forbidden_edges:
     - { from: html-processing, to: [ mcp ] }
     - { from: website-fetcher, to: [ identity, workos, better-auth, web, cli ] }
@@ -341,6 +343,7 @@ dependency_graph:
   allowed_external_imports:
     # Observed per component; logging additions checked on 2026-10-23; pg moved to sql on 2026-10-27. No inherited parent allowances.
     workos: [ "@workos-inc/node", jose ]
+    identity: [ jose ] # SO-03: the signed access context, an EdDSA JWT
     web: [ linkedom, micromark, micromark-extension-gfm ]
     better-auth: [ "@better-auth/mcp", better-auth ]
     config: [ "@modelcontextprotocol/server" ]
@@ -354,6 +357,7 @@ dependency_graph:
   allowed_node_builtins:
     # Observed per component; logging/config additions checked on 2026-10-23. No inherited parent allowances.
     workos: [ node:crypto ]
+    identity: [ node:crypto ] # SO-03: the Ed25519 keys and the SHA-256 token hash of the signed access context
     web: [ node:crypto ]
     better-auth: [ node:crypto, node:fs, node:path, node:sqlite ]
     cli: [ node:util ]
