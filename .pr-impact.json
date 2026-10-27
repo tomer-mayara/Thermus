@@ -15,20 +15,26 @@
   },
   "architecture": {
     "modelUpdated": false,
-    "summary": "Documents only: docs/implementation/self-onboarding-plan.md records the 24 Slice 2 design answers of 27 October 2026, each dated where the plan describes the design or the ticket. Section 4.1: the new settings read only with MCP_TENANTS_ENABLED on, FREE_TENANT_LIMIT 0 to 1000 with default 25, TENANT_NAME_PREFIX, several keys in GATEWAY_PUBLIC_KEY, the context as an EdDSA JWT with jose in the Thermus-Access header, and the tenant deny list at start. Section 4.2: the gateway restart answer, Retry-After 15 and 60, the limit of 5 searches, the resume through deploying, last_active_at once a minute, the Host check of /internal/audit, the portal words and meta refresh, the accepted cap race, the release by manual dispatch and API deploy, the fleet health, commands, and batches, the daily idle sweep and the organization sweep that confirms by ID, and the registry copy. Sections 4.3 to 4.5: the cap count, no marked-for-deletion state, the reuse of thermus_logging, the seat rule and its words. Section 6: the Slice 2 tickets SO-02 to SO-12, with the SO-08 race example corrected to 3 members and 1 invitation and the SO-12 order with the image switch at step 5 and the rollback in the rehearsal. Section 7: the Axiom monitors, the shared search limit, the GHCR rule, and the registry credential token rotation; D-9 gets a dated amendment. The two decision records under architecture/decisions/ get one dated amendment sentence each, where an answer changes a stated fact: the reuse of thermus_logging (container record, item 8) and the refusal without a link (tiers record, members row). No source, runtime, registry view, declaration, or deployment change.",
+    "summary": "The Connect portal and server-rendered administration pages use one compact header menu: Connect, Switch Workspace, Members, Audit Log. The portal shows Members and Audit Log only for the existing exact admin grant. The web and user-portal owners retain separate renderers and styles. Existing routes, server access checks, browser session authority, public interfaces, dependencies, containers, and deployment remain unchanged. Registry prose names the menu; all diagrams remain accurate.",
     "views": [
       "Context",
       "C4 containers: hosted edition",
-      "Selected C4 components: tool processing in the Node server",
       "Selected C4 components: hosted authentication in the Node server",
       "Selected C4 components: hosted Audit logs settings and delivery in the Node server",
+      "Scenario: hosted default sign-in landing",
+      "Scenario: hosted member read",
       "Deployment view",
+      "Ownership",
       "Behavior and resource ownership"
     ],
     "evidence": [
-      "docs/implementation/self-onboarding-plan.md",
-      "architecture/decisions/2026-10-26-per-tenant-containers.md",
-      "architecture/decisions/2026-10-26-tiers-and-billing.md",
+      "src/interfaces/user-portal/portal.ts",
+      "src/interfaces/user-portal/style.css",
+      "src/interfaces/web/account/members-page-layout.ts",
+      "src/interfaces/web/account/members-style.ts",
+      "test/acceptance/user-portal/portal.test.ts",
+      "test/acceptance/auth/hosted-members.test.ts",
+      "test/acceptance/auth/hosted-member-removal-browser.runtime.ts",
       "architecture/components.md"
     ]
   }

@@ -127,19 +127,21 @@ test('Given a session failure, when the error appears, then the brand header and
   assert.equal(document.querySelector('main a[href="./"]')?.textContent, 'Try again');
 });
 
-for (const roles of [['admin'], ['user'], ['Admin'], ['superadmin']]) {
-  test(`Given current roles ${roles}, when navigation renders under a public base path, then only the exact Admin grant shows Members and Audit logs`, async () => {
+for (const roles of [['admin'], ['user', 'admin'], ['user'], ['Admin'], ['superadmin'], []]) {
+  test(`Given current roles ${roles}, when navigation renders under a public base path, then only the exact admin role shows Members and Audit Log`, async () => {
     const { document, options } = portal({ session: signedIn, 'portal/access': async () => Response.json({
       organizationId: 'org_01A', organizationName: 'Acme Labs', roles, plan: 'free', mcpUrl: 'https://thermus.example/team/mcp',
     }) });
     Object.defineProperty(document, 'baseURI', { value: 'https://thermus.example/team/' });
     await initializePortal(options);
-    const navigation = document.querySelector('nav[aria-label="Workspace"]');
+    const navigation = document.querySelector('header nav[aria-label="Workspace"]');
     assert.ok(navigation);
     const links = [...navigation.querySelectorAll('a')];
     assert.deepEqual(links.map((link) => link.getAttribute('href')), roles.includes('admin')
-      ? ['./', 'members', 'logging', 'organizations'] : ['./', 'organizations']);
-    assert.equal(navigation.querySelector('a[href="logging"]')?.textContent ?? null, roles.includes('admin') ? 'Audit logs' : null);
+      ? ['./', 'organizations', 'members', 'logging'] : ['./', 'organizations']);
+    assert.deepEqual(links.map(link => link.textContent), roles.includes('admin')
+      ? ['Connect', 'Switch Workspace', 'Members', 'Audit Log'] : ['Connect', 'Switch Workspace']);
+    assert.deepEqual(links.filter(link => link.hasAttribute('aria-current')).map(link => link.textContent), ['Connect']);
     for (const link of links) assert.equal(link.getAttribute('tabindex'), null);
   });
 }

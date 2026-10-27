@@ -1057,8 +1057,9 @@ The member overview counts each active product-authorized membership once,
 including Admin alone, and labels the count Active product members. These access
 changes add no provider, process, datastore, or component boundary.
 
-The portal uses the current access response to show Product / Connect and
-workspace selection, plus Members for Admin. Link visibility gives no authority.
+The portal uses the current access response to show Connect and Switch Workspace,
+plus Members and Audit Log for the exact `admin` role. Connect and the admin pages
+use one compact header menu in that order. Link visibility gives no authority.
 Invitation POST routes retain origin, CSRF, selected-organization, current-role,
 and pending-target checks. A failure after a directory write starts raises the
 neutral `UnconfirmedChangeError` and keeps an unknown change record. The route

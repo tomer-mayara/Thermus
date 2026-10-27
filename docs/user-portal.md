@@ -76,6 +76,13 @@ approve the connection, and fetch a page. The client's verified Connect token
 sets the MCP workspace through its `org_id`. A browser workspace change does
 not change that token or move an existing client connection.
 
+The signed-in header uses compact underline links in this order: Connect,
+Switch Workspace, Members, Audit Log. Members and Audit Log appear only when
+the current product access response includes the exact `admin` role. The current
+page link has `aria-current="page"`. The links wrap on narrow screens and keep
+48px targets and visible keyboard focus. The protected routes still check access
+independently. Members keeps the trusted workspace name above the same menu.
+
 ## MCP setup guides
 
 Choose CLI or Desktop and Web Apps above the client list. CLI starts with Claude Code
