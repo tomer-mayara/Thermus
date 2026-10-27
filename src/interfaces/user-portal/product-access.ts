@@ -21,6 +21,7 @@ export function productAccess(body: unknown): ProductAccess {
   return { organizationId, organizationName, roles: roles.map(String), mcpUrl, ...productPlan(plan, memberLimit) };
 }
 
+// A plan name that this portal does not know gives the safe error, so that it never shows the text of another plan.
 function productPlan(plan: unknown, memberLimit: unknown): ProductPlan {
   if (plan === 'team') return { plan };
   if (plan === 'free' && typeof memberLimit === 'number' && Number.isSafeInteger(memberLimit) && memberLimit > 0) return { plan, memberLimit };
