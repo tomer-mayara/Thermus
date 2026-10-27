@@ -9,7 +9,7 @@ import { eventsSince, eventsText, KILL_TYPE, type EventView } from './events.ts'
 import type { Workload } from './inputs.ts';
 import { connectTenant, errorOutcome, timedCall, workloadCall, type CallOutcome } from './mcp.ts';
 import { lagText, peakOf, quantity, readMetric, RESOLUTION_SECONDS, settledMemory, windowRange, type MetricName } from './metrics.ts';
-import { waitHealthy } from './services.ts';
+import { waitHealthy, type Health } from './services.ts';
 import { baseUrlOf } from './variables.ts';
 
 // Two buckets between the end of a window and the start of the next, so that their metrics do not overlap.
@@ -56,13 +56,21 @@ function transportFailed(outcomes: readonly CallOutcome[]): boolean {
   return outcomes.some((item) => /^(HTTP|network|client|connect)/.test(item.outcome));
 }
 
+interface RecoveryFacts {
+  readonly events: readonly EventView[];
+  readonly sent: Sent;
+  // Started at the window end after a transport failure, while the metrics settle. An abort gives its error.
+  readonly early?: Promise<Health | Error>;
+}
+
 // After a kill or a transport failure, the next window waits until the service answers again.
-async function recovery(context: ProbeContext, events: readonly EventView[], sent: Sent): Promise<string> {
-  const killed = events.find((event) => event.type === KILL_TYPE);
-  if (killed === undefined && !transportFailed(sent.outcomes)) return 'none';
-  const health = await waitHealthy(context, 'tenant');
+async function recovery(context: ProbeContext, facts: RecoveryFacts): Promise<string> {
+  const killed = facts.events.find((event) => event.type === KILL_TYPE);
+  if (killed === undefined && facts.early === undefined) return 'none';
+  const health = await (facts.early ?? waitHealthy(context, 'tenant'));
+  if (health instanceof Error) throw health;
   assert.ok(health.ok, `The tenant service did not answer again: ${health.text}`);
-  const from = killed === undefined ? { at: sent.endMs, what: 'the window end' } : { at: killed.at, what: 'the server_failed event' };
+  const from = killed === undefined ? { at: facts.sent.endMs, what: 'the window end' } : { at: killed.at, what: 'the server_failed event' };
   return `/healthz 200 ${seconds(health.at - from.at)} after ${from.what}`;
 }
 
@@ -73,6 +81,7 @@ async function peakText(context: ProbeContext, metric: MetricName, range: Return
 
 async function measure(context: ProbeContext, window: Window, sent: Sent): Promise<WindowRecord> {
   const serviceId = serviceIdOf(sessionOf(context, 'tenant'));
+  const early = transportFailed(sent.outcomes) ? waitHealthy(context, 'tenant').catch((error: unknown) => (error instanceof Error ? error : new Error(String(error)))) : undefined;
   const settled = await settledMemory(context, serviceId, sent);
   const range = windowRange(sent);
   const events = await eventsSince(context, serviceId, sent.startMs);
@@ -80,7 +89,7 @@ async function measure(context: ProbeContext, window: Window, sent: Sent): Promi
   return {
     ...window, start: new Date(sent.startMs).toISOString(), calls, memory: quantity(peakOf(settled.series)),
     limit: await peakText(context, 'memory-limit', range), cpu: await peakText(context, 'cpu', range), instances: await peakText(context, 'instance-count', range),
-    lag: lagText(settled), kills: events.filter((event) => event.type === KILL_TYPE).length, restart: await recovery(context, events, sent),
+    lag: lagText(settled), kills: events.filter((event) => event.type === KILL_TYPE).length, restart: await recovery(context, { events, sent, early }),
     events: eventsText(events, sent.startMs),
   };
 }

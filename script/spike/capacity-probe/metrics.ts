@@ -120,8 +120,9 @@ export interface Settled {
   readonly reads: number;
 }
 
-// The memory values of the window are final when 3 reads, 10 s apart, after the shifted ranges have ended give the
-// same values. The lag is the time from the window end to the first of those reads.
+// The memory values of the window are final when 3 reads, 10 s apart, after the window range has ended give the same
+// values. The lag is the time from the window end to the first of those reads. The metrics reads have their own rate
+// limit (30 in the headers), so only the last step reads the shifted ranges too.
 export async function settledMemory(reader: MetricsReader, serviceId: string, window: { readonly startMs: number; readonly endMs: number }): Promise<Settled> {
   const range = windowRange(window);
   const closed = (range.endSeconds + Math.max(...SHIFTS_SECONDS)) * 1_000 + 2_000;
@@ -129,16 +130,14 @@ export async function settledMemory(reader: MetricsReader, serviceId: string, wi
   let previous = '';
   let firstSeen = Date.now();
   let same = 0;
-  let series: readonly Series[] = [];
   for (let reads = 1; reads <= SETTLE.attempts; reads++) {
-    series = await windowSeries(reader, { metric: 'memory', serviceId, range });
-    const values = JSON.stringify(series.map((item) => item.points));
+    const values = JSON.stringify((await readMetric(reader, { metric: 'memory', serviceId, range })).map((item) => item.points));
     if (values === previous) same += 1;
     else [previous, firstSeen, same] = [values, Date.now(), 1];
-    if (same >= SETTLE.stableReads) return { series, final: true, lagMs: firstSeen - window.endMs, reads };
+    if (same >= SETTLE.stableReads) return { series: await windowSeries(reader, { metric: 'memory', serviceId, range }), final: true, lagMs: firstSeen - window.endMs, reads };
     await sleep(SETTLE.everyMs, reader.signal);
   }
-  return { series, final: false, lagMs: Date.now() - window.endMs, reads: SETTLE.attempts };
+  return { series: await windowSeries(reader, { metric: 'memory', serviceId, range }), final: false, lagMs: Date.now() - window.endMs, reads: SETTLE.attempts };
 }
 
 export function lagText(settled: Settled): string {
