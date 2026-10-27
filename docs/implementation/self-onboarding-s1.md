@@ -2441,13 +2441,16 @@ The owner decides D-15. These values come from the runs above.
 ## SO-01f: Stripe Checkout, webhooks, test clocks, and WorkOS seat sync
 
 Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01f-stripe-seat-sync-7e93b8`,
-stacked on the SO-01e branch `self-ob-s1-so-01e-capacity-probe-7e8c5c`.
+on main.
 
-Status: built and checked before the real run. The real run waits for the
-[owner steps](#owner-steps). On 27 October 2026, the WorkOS Stripe add-on of
-the Staging environment was not connected, Seat Sync and Entitlements were
-off, `.env.local` held no Stripe variable, and the Stripe CLI was not
-installed on the owner's Mac (`stripe` was not found).
+Status: built and checked. On 27 October 2026, the owner moved the real run
+of the probe, with the seat sync, Checkout, webhook, and test clock steps, to
+Slice 3. Slice 1 delivers the probe and the WorkOS-only check.
+[Owner steps](#owner-steps) 1 to 9 are the prerequisites of the Slice 3 run.
+On that day, the WorkOS Stripe add-on of the Staging environment was not
+connected, Seat Sync and Entitlements were off, `.env.local` held no Stripe
+variable, and the Stripe CLI was not installed on the owner's Mac (`stripe`
+was not found).
 
 The [WorkOS organization check](#workos-organization-check) needs no Stripe
 key and no add-on. It ran in the WorkOS Staging environment on 27 October
@@ -2934,10 +2937,10 @@ are the "Seat sync (WorkOS only)" and "Cleanup" parts of
 printed `WORKOS_API_KEY: <set>`, and `STRIPE_RESTRICTED_KEY` and
 `STRIPE_PRICE_ID` as `<not set>`. No run made a Stripe call.
 
-| Run | Probe commit | Exit code | Result |
+| Run | Probe | Exit code | Result |
 | --- | --- | --- | --- |
-| `20261027-130244-e432` | `e249f95e` | 1 | The preflight and the seat sync passed. `FAIL Cleanup`: the deletes of the two users and of the organization `org_01M5YQ9EY9C3QC60PYW6B5F2TA` answered, but the read right after the deletes still showed the organization. A read 77 s later answered `404` for the organization and both users, and no organization or user with the probe prefix was listed. |
-| `20261027-132448-e66f` | `9eea5776` | 0 | Each step and the cleanup passed. The organization was gone at read 4, 6.6 s after the deletes. |
+| `20261027-130244-e432` | the probe before the cleanup fix | 1 | The preflight and the seat sync passed. `FAIL Cleanup`: the deletes of the two users and of the organization `org_01M5YQ9EY9C3QC60PYW6B5F2TA` answered, but the read right after the deletes still showed the organization. A read 77 s later answered `404` for the organization and both users, and no organization or user with the probe prefix was listed. |
+| `20261027-132448-e66f` | the probe with the cleanup fix | 0 | Each step and the cleanup passed. The organization was gone at read 4, 6.6 s after the deletes. |
 
 The report of the second run, as the script printed it:
 
@@ -2973,7 +2976,7 @@ Results:
   gave it back. So an accepted update does not show that the add-on is
   connected or that the customer exists; the meter of the seat-sync step
   shows whether the add-on sends counts. Whether WorkOS checks the ID when
-  the add-on is connected waits for the real run.
+  the add-on is connected waits for the real run in Slice 3.
 - WorkOS showed 1, 2, and 1 active memberships at the first read after each
   change.
 - A read by ID can still show a deleted organization for some seconds after
@@ -2987,8 +2990,8 @@ Results:
 
 ### Measured
 
-Waits for the owner steps. The script prints these tables; the record gets
-them as the script prints them.
+Moved to Slice 3 with the real run. The script prints these tables; the
+Slice 3 run adds them here as the script prints them.
 
 | Step | Check | Expected | Measured |
 | --- | --- | --- | --- |
@@ -3041,12 +3044,11 @@ From the pages above, read on 27 October 2026 (UTC), for SO-13 to SO-15:
 
 ### Limits
 
-- The real run waits for the owner steps. Only the stand-in exercised the
-  Stripe code paths and the meter reads of the seat sync, and it models the
-  pages as the probe reads them, so it cannot show the real behavior. The
-  WorkOS organization check is the only real run: two runs, one lag
-  measurement. The real run must
-  answer these points: whether the summary call accepts an `end_time` at the
+- The real run moved to Slice 3. Only the stand-in exercised the Stripe code
+  paths and the meter reads of the seat sync, and it models the pages as the
+  probe reads them, so it cannot show the real behavior. The WorkOS
+  organization check is the only real run in Slice 1: two runs, one lag
+  measurement. The Slice 3 run must answer these points: whether the summary call accepts an `end_time` at the
   next minute boundary, which is in the future; whether the CLI accepts
   `--skip product --skip price` with the price override; whether a meter
   event at the frozen time plus one second counts for a test clock customer;
