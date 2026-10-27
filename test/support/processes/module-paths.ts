@@ -41,6 +41,12 @@ export const lingeringHostedHandle = siblingModule('keep-hosted-handle-open').hr
 export const heldHostedIdentity = siblingModule('hold-hosted-identity').href;
 export const heldHostedCleanup = siblingModule('hold-hosted-cleanup').href;
 
+// The two roles of the hosted image as two processes (SO-05): loopback connections only, WorkOS at a local fake, and a
+// control plane with one live tenant and no PostgreSQL.
+export const loopbackNetworkBlocker = siblingModule('deny-public-network').href;
+export const workosFakeRoute = siblingModule('route-workos-to-fake').href;
+export const oneLiveTenant = siblingModule('serve-one-live-tenant').href;
+
 // The container sites send these scripts into containers. container-site.ts copies the edge and the page seam, and
 // hosted-image-gate.ts mounts the page seam. container-gate.ts and hosted-image-gate.ts send the probe on standard
 // input.

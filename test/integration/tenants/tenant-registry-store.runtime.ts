@@ -145,6 +145,51 @@ test('Given a request whose commit reply is lost, when the organization requests
   assert.deepEqual(await tenantRows(site), ['org_A requested']);
 });
 
+// SO-05: the writes of the MCP gateway, with the scoped runtime role and the row rules of the migration.
+test('Given a suspended row, when two pools mark it resuming at the same time, then one write moves it to deploying with its service ID, the other finds it moved, and a restore after a failed resume makes it suspended again', { timeout: 60_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const [first, second] = [storeOn(t, site), storeOn(t, site)];
+  assert.deepEqual(await new TenantRequests(first, 25).request('org_A'), { status: 'requested' });
+  await site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'suspended', render_service_id = 'srv-d0tenantaaaaaaaaaaaa', updated_at = now() - interval '1 day' WHERE organization_id = 'org_A'");
+
+  const marks = await Promise.all([first.markResuming('org_A'), second.markResuming('org_A')]);
+  const deployingSince = await site.ownerQuery("SELECT state || ' ' || (updated_at > now() - interval '1 minute') FROM thermus_admin.tenants WHERE organization_id = 'org_A'");
+  const restored = await first.restoreSuspended('org_A');
+  const restoredAgain = await second.restoreSuspended('org_A');
+
+  assert.deepEqual(marks.map((mark) => mark.status).sort(), ['moved', 'resuming']);
+  assert.deepEqual(marks.find((mark) => mark.status === 'resuming'), { status: 'resuming', serviceId: 'srv-d0tenantaaaaaaaaaaaa' });
+  assert.equal(deployingSince, 'deploying true');
+  assert.deepEqual([restored, restoredAgain], [{ status: 'recorded' }, { status: 'moved' }]);
+  assert.deepEqual(await tenantRows(site), ['org_A suspended']);
+});
+
+test('Given a suspended row without a service ID, or a row in another state, when the gateway marks it resuming, then nothing changes', { timeout: 60_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const store = storeOn(t, site);
+  const requests = new TenantRequests(store, 25);
+  for (const organizationId of ['org_A', 'org_B']) assert.deepEqual(await requests.request(organizationId), { status: 'requested' });
+  await site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'suspended' WHERE organization_id = 'org_A'");
+
+  assert.deepEqual(await store.markResuming('org_A'), { status: 'moved' });
+  assert.deepEqual(await store.markResuming('org_B'), { status: 'moved' });
+  assert.deepEqual(await store.restoreSuspended('org_B'), { status: 'moved' });
+  assert.deepEqual(await tenantRows(site), ['org_A suspended', 'org_B requested']);
+});
+
+test('Given a row, when the gateway records its use, then last_active_at gets the time of the database and the state and updated_at stay; an organization without a row gets no row', { timeout: 60_000 }, async (t) => {
+  const site = await postgresSettingsSite(t);
+  const store = storeOn(t, site);
+  assert.deepEqual(await new TenantRequests(store, 25).request('org_A'), { status: 'requested' });
+  await site.ownerQuery("UPDATE thermus_admin.tenants SET state = 'live', render_service_id = 'srv-d0tenantaaaaaaaaaaaa', internal_url = 'http://thermus-tenant-org-a:8080', updated_at = now() - interval '1 day' WHERE organization_id = 'org_A'");
+
+  assert.deepEqual(await store.recordActive('org_A'), { status: 'recorded' });
+  assert.deepEqual(await store.recordActive('org_NONE'), { status: 'moved' });
+
+  assert.equal(await site.ownerQuery("SELECT state || ' ' || (last_active_at > now() - interval '1 minute') || ' ' || (updated_at < now() - interval '1 hour') FROM thermus_admin.tenants WHERE organization_id = 'org_A'"), 'live true true');
+  assert.deepEqual(await tenantRows(site), ['org_A live']);
+});
+
 test('Given production storage configuration, when the tenant registry requests and finds a tenant and storage closes, then it shares the SQL runtime and its closure', { timeout: 60_000 }, async (t) => {
   const site = await postgresSettingsSite(t);
   const directory = await mkdtemp(join(tmpdir(), 'thermus-tenants-loader-'));
@@ -159,6 +204,7 @@ test('Given production storage configuration, when the tenant registry requests 
   assert.deepEqual(await storage.tenants.requests.request('org_A'), { status: 'requested' });
   assert.deepEqual(await storage.tenants.requests.request('org_B'), { status: 'full' }, 'The composition applies the supplied FREE_TENANT_LIMIT');
   assert.deepEqual(await storage.tenants.lookup.find('org_A'), { status: 'found', state: 'requested', internalUrl: null });
+  assert.deepEqual(await storage.tenants.gateway.recordActive('org_A'), { status: 'recorded' }, 'The writes of the gateway use the same store');
   assert.equal(await site.settingsConnections(), 1, 'The registry and the settings store share one pool');
   assert.equal((await storage.store.save('org_A', null, { endpoint: 'https://collector.example/v1/logs', auth: 'none', enabled: false, encryptedCredential: null })).status, 'saved');
   await storage.close();
