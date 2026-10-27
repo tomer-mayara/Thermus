@@ -1276,3 +1276,14 @@ From the pages above, with what the runs showed:
 - After the image 2 deploy, `imagePath` showed image 2. So the resume deploy
   of image 2 does not show which of the two Render uses on a resume: the
   image setting or the last deployed image.
+
+## SO-01e: capacity and memory
+
+Date: 27 October 2026 (UTC). Branch `self-ob-s1-so-01e-capacity-probe-7e8c5c`,
+stacked on the SO-01d part two branch `self-ob-s1-so-01d-private-network-012463`.
+
+Status: in progress. The probe
+[`capacity-probe.ts`](../../script/spike/capacity-probe.ts) and its helper
+modules under [`capacity-probe/`](../../script/spike/capacity-probe/) are being
+built. This section gets the design, the steps, the planned calls, and the
+measured tables when the runs are complete.
