@@ -65,6 +65,9 @@ export type AuditEvent = (ToolOutcome & ToolInput & {
 }) | (DestinationTestEvent & {
     readonly eventName: 'audit.destination.test';
 });
+export type RelayedToolCompletion = Extract<AuditEvent, {
+    readonly eventName: 'mcp.tool.completed';
+}>;
 export interface AuditEventSink {
     writeAuditEvent(event: AuditEvent): void | boolean;
 }
@@ -74,4 +77,6 @@ export declare class AuditLog {
     toolCompleted(completion: ToolCompletion): void;
     administrationChanged(change: AdministrationChange): void;
     destinationChanged(change: DestinationChange): void;
+    relayedToolCompletion(value: unknown): RelayedToolCompletion | undefined;
+    toolRelayed(event: RelayedToolCompletion): void;
 }
