@@ -12,19 +12,20 @@ pull request records the runs.
   manager. It runs the loop as app composes it from the control plane settings,
   against the fake of the Render API
   `test/support/doubles/render/render-fake.ts`, which makes the slug as Render
-  does from the name up to its first underscore, the registry fake
+  does: a long name is shortened at a separator, and a second service with the
+  same start gets a suffix, the registry fake
   `test/support/doubles/tenants/tenant-provisioning-store-fake.ts`, and a
   virtual clock: a requested row reaches `live` with `http://<slug>:8080` and
   `OPERATION_CAPACITY=5`; the service name is the prefix and the organization ID
   in lower case with each character outside a-z, 0-9, and hyphen as a hyphen,
-  and the address holds that whole name; the hosted image reads the create
-  variables in the tenant role; the create call holds the tenant variables and
-  no secret; a `429` waits for `Retry-After`; a restart and a lost create answer
-  find the service by name; two services of the name and a failed deploy give
-  `failed` with one report; one row at a time; failed reads repeat within their
-  bound; a `deploying` row after a resume goes `live`; other states stay; and
-  the adapter refuses a write for a service that the registry does not own, and
-  always for the production service.
+  and two tenants with the same shortened start get two addresses; the hosted
+  image reads the create variables in the tenant role; the create call holds the
+  tenant variables and no secret; a `429` waits for `Retry-After`; a restart and
+  a lost create answer find the service by name; two services of the name and a
+  failed deploy give `failed` with one report; one row at a time; failed reads
+  repeat within their bound; a `deploying` row after a resume goes `live`; other
+  states stay; and the adapter refuses a write for a service that the registry
+  does not own, and always for the production service.
 - `test/integration/tenants/provisioner-registry.runtime.ts` runs the
   provisioner with the real registry store and the `sql` runtime on disposable
   PostgreSQL 17: one row at a time, a stop during a deploy and a second
@@ -32,9 +33,11 @@ pull request records the runs.
   deploy, the production storage composition with the switch on, and a
   database that stops while a claim waits. It runs in
   `npm run test:logging:postgres`.
-- `test/interface/render/render-tenant-platform.live.ts` creates one disposable
-  tenant in the workspace Thermus AI through the real Render adapter and deletes
-  it. It runs only through `npm run test:interface:render`, with
+- `test/interface/render/render-tenant-platform.live.ts` creates two disposable
+  tenants whose names share their first 27 characters, one after the other, in
+  the workspace Thermus AI through the real Render adapter, checks that each
+  address is the slug of the API answer and that the two differ, and deletes
+  both. It runs only through `npm run test:interface:render`, with
   `RENDER_API_KEY`; the [test gate policy](../implementation/test-gate-policy.md#render-interface-gate-so-06)
   gives its rules.
 - `test/unit/tenants/provisioner.test.ts`, `pg-tenant-provisioning-store.test.ts`,

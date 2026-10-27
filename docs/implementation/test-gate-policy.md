@@ -28,7 +28,7 @@ cached. `pnpm exec node --version` must report `v24.20.0`. For direct `npm` or
 | Acceptance | `npm run test:acceptance` | `dist/test/acceptance/**/!(hosted-image).test.js` and `test/acceptance/user-portal/**/*.test.ts` | Axiom ingest credentials and public network access for the OTel logger test. |
 | Interface | `npm run test:interface` | `dist/test/interface/**/*.test.js` | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
 | Axiom interface | `npm run test:interface:axiom` | `dist/test/interface/logging/system/otel-logger-axiom.live.js` | Axiom ingest credentials and public network access. Writes one test log to `system-log-test`. |
-| Render interface | `npm run test:interface:render` | `dist/test/interface/render/render-tenant-platform.live.js` only | `RENDER_API_KEY` in the environment, of a Render user that sees the workspace Thermus AI, its registry credential `ghcr-thermus-hosted-read`, and public network access. Creates one disposable private service named `thermus-spike-tenant-*` and deletes it. The [Render interface gate](#render-interface-gate-so-06) gives the details. |
+| Render interface | `npm run test:interface:render` | `dist/test/interface/render/render-tenant-platform.live.js` only | `RENDER_API_KEY` in the environment, of a Render user that sees the workspace Thermus AI, its registry credential `ghcr-thermus-hosted-read`, and public network access. Creates two disposable private services named `thermus-spike-tenant-*`, one after the other, and deletes both. The [Render interface gate](#render-interface-gate-so-06) gives the details. |
 | Audit Collector | `npm run test:logging:collector` | Audit sender integration and hosted audit journey acceptance `.runtime.js` files | Docker Engine and OpenSSL. Pinned image pulls need network access or a local cache. The isolated test network has no outbound access. No live credentials. |
 | Portal | `npm run test:user-portal` | Portal unit and acceptance tests from TypeScript source | Offline. Local DOM and provider doubles. |
 | All | `npm test` | `dist/test/**/!(hosted-image).test.js` and portal source tests: the unit, integration, acceptance, and interface suites | Lightpanda 1.0.0, Axiom ingest credentials, and public network access. |
@@ -704,11 +704,12 @@ to the test run itself. The file never prints the key or a request header.
 
 Given the workspace Thermus AI (`tea-db8i6ceq1p3s73dev9og`), the registry
 credential `ghcr-thermus-hosted-read`, and a hosted image digest, the file
-creates one disposable tenant through the real Render adapter, in a private
-service named `thermus-spike-tenant-org-01live<UTC time>` by the name rule of the
-provisioner. Its deploy must reach `live`, its internal address must be
-`http://<the whole name>:8080`, and its
-delete must leave no service of the test. Before any call, the file refuses the
+creates two disposable tenants through the real Render adapter, one after the
+other, in private services named `thermus-spike-tenant-org-01a<UTC time>` and
+`thermus-spike-tenant-org-01b<UTC time>` by the name rule of the provisioner.
+Each deploy must reach `live`, each internal address must be the slug of the
+API answer on port 8080, the two addresses must differ, and the deletes must
+leave no service of the test. Before any call, the file refuses the
 workspace My Workspace (`tea-d3mlbrvdiees73ca4rdg`), and the adapter refuses
 each write for a service that the test did not create and for the production
 service `srv-db8mnqg473hc739d529g`. A preflight with reads only must find the
@@ -724,10 +725,10 @@ The image digest defaults to the hosted image of the SO-01e record;
 refused. Until a published image has the tenant role of SO-03, the service gets
 the placeholder environment of SO-01c
 ([record](self-onboarding-s1.md#placeholder-environment)), with which the image
-starts as a control plane. Each run uses one of the 20 creates an hour of the
-Render user. A pass gives evidence of the Render calls of the adapter for one
-service in one region; it does not run the provisioner loop, a tenant role, or
-a call over the private network.
+starts as a control plane. Each run uses two of the 20 creates an hour of the
+Render user. A pass gives evidence of the Render calls of the adapter for two
+services of one shortened start in one region; it does not run the provisioner
+loop, a tenant role, or a call over the private network.
 
 ## Hosted offline checks
 

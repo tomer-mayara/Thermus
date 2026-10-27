@@ -1664,12 +1664,14 @@ The following limits affect architectural decisions today:
   slow deploy holds the queue for up to 15 minutes, and the creates of one hour
   are 20 for each Render user. The tenants run in the region oregon, the region
   of the control plane, as a constant of the adapter.
-- Render makes the slug of a private service from its name up to the first
-  underscore (SO-06 live runs 1 and 2), so the old name rule gave each tenant the
-  slug `thermus-tenant-org`. Since 27 October 2026 a tenant name has no
-  underscore: each character of the organization ID outside a-z, 0-9, and hyphen
-  becomes a hyphen, and live run 3 got the whole name as the slug. The adapter
-  still reads the address from Render. The name is one to one only for
+- Render shortens a long service name into its hostname at a separator and
+  keeps hostnames unique: names of up to 33 characters stayed whole, names of
+  42 and 45 characters became `thermus-spike-tenant-org`, and a second service
+  with that start got a suffix (SO-06 live runs). A production tenant name has
+  45 characters, so the provisioner stores the address that Render returns, and
+  the gateway uses it, never one computed from the name. Since 27 October 2026
+  each character of the organization ID outside a-z, 0-9, and hyphen becomes a
+  hyphen in the name, which keeps it DNS-safe. The name is one to one only for
   organization IDs of the WorkOS form, `org_` and capital letters and digits: two
   IDs that differ only in case or in such a character would share a name, and
   the search by name would take the service of the other organization.
